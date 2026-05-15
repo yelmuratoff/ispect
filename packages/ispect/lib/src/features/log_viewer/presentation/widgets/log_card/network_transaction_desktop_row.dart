@@ -110,11 +110,14 @@ class _NetworkTransactionDesktopRowState
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final canShowHoverActions = constraints.maxWidth >= 400;
-                      final isCompact = constraints.maxWidth < 480;
+                      final isCompact =
+                          constraints.maxWidth < kDesktopLogCompactBreakpoint;
                       final compactDetailChips = constraints.maxWidth < 720;
                       final scaled = scaleColumnWidths(
                         available: constraints.maxWidth,
-                        typeWidth: isCompact ? 40 : widget.typeColumnWidth,
+                        typeWidth: isCompact
+                            ? kCompactTypeColumnWidth
+                            : widget.typeColumnWidth,
                         timeWidth: isCompact ? 0 : widget.timeColumnWidth,
                       );
                       return Row(

@@ -252,10 +252,13 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final isCompact = constraints.maxWidth < 480;
+                  final isCompact =
+                      constraints.maxWidth < kDesktopLogCompactBreakpoint;
                   final scaled = scaleColumnWidths(
                     available: constraints.maxWidth,
-                    typeWidth: isCompact ? 40 : widget.typeColumnWidth,
+                    typeWidth: isCompact
+                        ? kCompactTypeColumnWidth
+                        : widget.typeColumnWidth,
                     timeWidth: isCompact ? 0 : widget.timeColumnWidth,
                   );
                   return Row(

@@ -42,10 +42,10 @@ class DesktopLogTableHeader extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isCompact = constraints.maxWidth < 480;
+          final isCompact = constraints.maxWidth < kDesktopLogCompactBreakpoint;
           final scaled = scaleColumnWidths(
             available: constraints.maxWidth,
-            typeWidth: isCompact ? 40 : typeColumnWidth,
+            typeWidth: isCompact ? kCompactTypeColumnWidth : typeColumnWidth,
             timeWidth: isCompact ? 0 : timeColumnWidth,
           );
           return Padding(
@@ -63,7 +63,7 @@ class DesktopLogTableHeader extends StatelessWidget {
                   onTap: onSortTap,
                   labelStyle: labelStyle,
                   labelColor: labelColor,
-                  onResize: onColumnResize,
+                  onResize: isCompact ? null : onColumnResize,
                 ),
                 const Gap(8),
                 if (!isCompact) ...[
@@ -76,7 +76,7 @@ class DesktopLogTableHeader extends StatelessWidget {
                     onTap: onSortTap,
                     labelStyle: labelStyle,
                     labelColor: labelColor,
-                    onResize: onColumnResize,
+                    onResize: isCompact ? null : onColumnResize,
                   ),
                   const Gap(12),
                 ],
