@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom_sheet.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
 import 'package:ispect/src/features/json_viewer/widgets/store_selector.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 class JsonScreen extends StatefulWidget {

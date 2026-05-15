@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
+import 'package:ispect/src/common/errors/ispect_scope_not_found_error.dart';
 import 'package:ispect/src/common/extensions/init.dart';
 import 'package:ispect/src/common/observers/route_observer.dart';
+import 'package:ispect/src/common/services/error_handler_options.dart';
 import 'package:ispect/src/common/services/error_handler_service.dart';
-import 'package:ispect/src/features/ispect/options.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// The main entry point for initializing and managing logging/error handling.
@@ -64,18 +65,13 @@ final class ISpect {
   /// This is the canonical way to access the scope model; prefer it over
   /// `ISpectScopeController.of(context)`, which is deprecated.
   ///
-  /// Throws a [FlutterError] if no `ISpectScopeController` is an ancestor —
-  /// ensure `ISpectBuilder` wraps the widget that uses this context.
+  /// Throws an [ISpectScopeNotFoundError] if no `ISpectScopeController` is an
+  /// ancestor — ensure `ISpectBuilder` wraps the widget that uses this context.
   static ISpectScopeModel read(BuildContext context) {
     final inherited =
         context.dependOnInheritedWidgetOfExactType<ISpectScopeController>();
     if (inherited == null || inherited.notifier == null) {
-      throw FlutterError(
-        'ISpect.read() called with a context that does not contain an '
-        'ISpectScopeController.\n'
-        'Ensure that ISpectBuilder is an ancestor of the widget using this '
-        'context.',
-      );
+      throw ISpectScopeNotFoundError();
     }
     return inherited.notifier!;
   }
@@ -122,7 +118,7 @@ final class ISpect {
     void Function(FlutterErrorDetails, StackTrace?)? onFlutterError,
     void Function(FlutterErrorDetails, StackTrace?)? onPresentError,
     void Function(List<dynamic>)? onUncaughtErrors,
-    ISpectLogOptions options = const ISpectLogOptions(),
+    ISpectErrorHandlerOptions options = const ISpectErrorHandlerOptions(),
     List<String> filters = const [],
   }) {
     if (!kISpectEnabled) {

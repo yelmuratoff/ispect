@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/managers/filter_manager.dart';
+import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// Manages search highlighting state and navigation (desktop).

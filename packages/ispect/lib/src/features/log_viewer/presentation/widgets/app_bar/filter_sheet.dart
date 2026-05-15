@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/controllers/group_button.dart';
-import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
+import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 
 class ISpectFilterSheet extends StatelessWidget {
   const ISpectFilterSheet({

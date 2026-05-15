@@ -1,13 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/controllers/display_controller.dart';
-import 'package:ispect/src/common/controllers/search_highlight_controller.dart';
-import 'package:ispect/src/common/controllers/selection_controller.dart';
-import 'package:ispect/src/common/controllers/sorting_controller.dart';
 import 'package:ispect/src/common/managers/filter_manager.dart';
 import 'package:ispect/src/common/managers/settings_manager.dart';
 import 'package:ispect/src/common/services/log_export_service.dart';
 import 'package:ispect/src/common/services/log_import_service.dart';
+import 'package:ispect/src/features/log_viewer/controllers/display_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/search_highlight_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/selection_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/sorting_controller.dart';
 
 /// Column used for sorting desktop log table.
 enum LogSortColumn { type, time, message }

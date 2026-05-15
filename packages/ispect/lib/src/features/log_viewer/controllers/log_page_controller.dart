@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// A controller for managing the state of the inspector.
-///
-/// This class extends `ChangeNotifier` to allow UI updates when the state changes.
-final class LogPageController extends ChangeNotifier {
+/// Tracks whether the inspector's logger page is currently active so the
+/// floating panel can hide its draggable button while the user is inside the
+/// log viewer.
+final class ISpectLogPageController extends ChangeNotifier {
   bool _inLoggerPage = false;
 
   /// Indicates whether the logger page is currently active.
@@ -30,3 +30,10 @@ final class LogPageController extends ChangeNotifier {
     }
   }
 }
+
+/// Renamed to [ISpectLogPageController] in 5.0.0 for consistency with the
+/// ISpect* package prefix. Will be removed in 6.0.0.
+@Deprecated(
+  'Use ISpectLogPageController instead. Will be removed in 6.0.0.',
+)
+typedef LogPageController = ISpectLogPageController;

@@ -4,8 +4,8 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/observers/transition.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/navigation_flow/actions_sheet.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/navigation_flow/actions_sheet.dart';
 
 final _timestampFormat = DateFormat('dd.MM.yy, HH:mm:ss');
 

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:ispect/src/features/ispect/options.dart';
+import 'package:ispect/src/common/services/error_handler_options.dart';
 import 'package:ispectify/ispectify.dart';
 
 class ErrorHandlerService {
@@ -17,7 +17,7 @@ class ErrorHandlerService {
   bool _isHandlingPrint = false;
 
   void setupErrorHandling({
-    required ISpectLogOptions options,
+    required ISpectErrorHandlerOptions options,
     void Function(Object, StackTrace)? onPlatformDispatcherError,
     void Function(FlutterErrorDetails, StackTrace?)? onFlutterError,
     void Function(FlutterErrorDetails, StackTrace?)? onPresentError,

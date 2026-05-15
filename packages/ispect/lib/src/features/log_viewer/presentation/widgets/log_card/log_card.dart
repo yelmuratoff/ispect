@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/decoration_utils.dart';
 import 'package:ispect/src/common/utils/severity_bar.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/slow_badge.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
-import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_context_menu.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/log_detail_view.dart';
+import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/presentation/screens/navigation_flow.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_context_menu.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
 
 part 'collapsed_body.dart';
 

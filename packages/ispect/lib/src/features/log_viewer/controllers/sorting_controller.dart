@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// Manages desktop column sorting state.

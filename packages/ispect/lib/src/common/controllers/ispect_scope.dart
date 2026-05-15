@@ -150,3 +150,8 @@ class ISpectScopeController extends InheritedNotifier<ISpectScopeModel> {
   @Deprecated('Use ISpect.read(context) instead. Will be removed in 6.0.0.')
   static ISpectScopeModel of(BuildContext context) => ISpect.read(context);
 }
+
+/// Shorter, idiomatic alias for [ISpectScopeController].
+///
+/// Prefer this name when wrapping a subtree, e.g. `ISpectScope(model: ..., child: ...)`.
+typedef ISpectScope = ISpectScopeController;

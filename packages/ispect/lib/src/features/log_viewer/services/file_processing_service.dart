@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:ispect/src/features/ispect/domain/models/file_format.dart';
-import 'package:ispect/src/features/ispect/domain/models/file_processing_result.dart';
+import 'package:ispect/src/features/log_viewer/domain/models/file_format.dart';
+import 'package:ispect/src/features/log_viewer/domain/models/file_processing_result.dart';
 
 /// Service that normalizes and validates raw log content.
 ///

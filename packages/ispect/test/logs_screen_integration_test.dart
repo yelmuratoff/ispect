@@ -10,7 +10,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/widgets/builder/widget_builder.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_builder.dart';
 
 void main() {
   testWidgets(

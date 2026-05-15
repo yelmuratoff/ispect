@@ -7,7 +7,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
-import 'package:ispect/src/features/ispect/presentation/screens/list_screen.dart';
+import 'package:ispect/src/features/log_viewer/presentation/screens/list_screen.dart';
 
 class DailySessionsScreen extends StatefulWidget {
   const DailySessionsScreen({required this.history, super.key});

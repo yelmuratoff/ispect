@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/controllers/draggable_button_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/error_boundary.dart';
-import 'package:ispect/src/features/ispect/presentation/screens/logs_screen.dart';
+import 'package:ispect/src/features/log_viewer/controllers/log_page_controller.dart';
+import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
 import 'package:ispect/src/features/performance/src/builder.dart';
 import 'package:ispect_layout/ispect_layout.dart' as pkg_inspector;
 
@@ -108,7 +108,7 @@ class ISpectBuilder extends StatefulWidget {
 
 class _ISpectBuilderState extends State<ISpectBuilder> {
   late ISpectScopeModel model;
-  late final LogPageController _logPageController;
+  late final ISpectLogPageController _logPageController;
   late final DraggablePanelController _panelController;
 
   ErrorWidgetBuilder? _originalErrorWidgetBuilder;
@@ -117,7 +117,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   void initState() {
     super.initState();
     model = ISpectScopeModel();
-    _logPageController = LogPageController();
+    _logPageController = ISpectLogPageController();
     _panelController = widget.controller ?? DraggablePanelController();
 
     model

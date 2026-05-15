@@ -1,17 +1,18 @@
-/// Options for configuring ISpect's log handling capabilities.
+/// Options for configuring how ISpect installs error/log handlers in the
+/// running app.
 ///
-/// This class allows you to enable or disable various error and logging
-/// handlers that ISpect provides.
+/// These five flags control the runtime error-handling pipeline set up by
+/// [`ISpect.run`]; they do not control logger configuration.
 ///
-/// * `isFlutterPresentHandlingEnabled` - Controls whether Flutter present errors are handled.
-/// * `isPlatformDispatcherHandlingEnabled` - Controls whether PlatformDispatcher errors are handled.
-/// * `isFlutterErrorHandlingEnabled` - Controls whether Flutter framework errors are handled.
-/// * `isUncaughtErrorsHandlingEnabled` - Controls whether uncaught Dart errors are handled.
-/// * `isBlocHandlingEnabled` - Controls whether BLoC library events are logged.
+/// * `isFlutterPresentHandlingEnabled` — Whether Flutter present errors are handled.
+/// * `isPlatformDispatcherHandlingEnabled` — Whether PlatformDispatcher errors are handled.
+/// * `isFlutterErrorHandlingEnabled` — Whether Flutter framework errors are handled.
+/// * `isUncaughtErrorsHandlingEnabled` — Whether uncaught Dart errors are handled.
+/// * `isBlocHandlingEnabled` — Whether BLoC library events are logged.
 ///
-/// By default, all handlers are enabled.
-final class ISpectLogOptions {
-  const ISpectLogOptions({
+/// All handlers are enabled by default.
+final class ISpectErrorHandlerOptions {
+  const ISpectErrorHandlerOptions({
     this.isFlutterPresentHandlingEnabled = true,
     this.isPlatformDispatcherHandlingEnabled = true,
     this.isFlutterErrorHandlingEnabled = true,
@@ -24,3 +25,10 @@ final class ISpectLogOptions {
   final bool isUncaughtErrorsHandlingEnabled;
   final bool isBlocHandlingEnabled;
 }
+
+/// Renamed to [ISpectErrorHandlerOptions] in 5.0.0 to disambiguate from
+/// [ISpectOptions] (UI configuration). Will be removed in 6.0.0.
+@Deprecated(
+  'Use ISpectErrorHandlerOptions instead. Will be removed in 6.0.0.',
+)
+typedef ISpectLogOptions = ISpectErrorHandlerOptions;

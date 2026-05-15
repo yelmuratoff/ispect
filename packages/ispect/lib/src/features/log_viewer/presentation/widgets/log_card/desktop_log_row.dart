@@ -2,15 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/common/utils/severity_bar.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/slow_badge.dart';
-import 'package:ispect/src/features/ispect/presentation/screens/navigation_flow.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_context_menu.dart';
+import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/presentation/screens/navigation_flow.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_context_menu.dart';
 
 /// Proportionally scale type/time column widths so they never overflow.
 /// Both columns shrink equally when space is tight.

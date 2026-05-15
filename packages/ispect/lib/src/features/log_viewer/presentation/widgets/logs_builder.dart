@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispectify/ispectify.dart';
 
 typedef ISpectWidgetBuilder = Widget Function(

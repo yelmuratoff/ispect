@@ -5,17 +5,17 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/controllers/group_button.dart';
-import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
-import 'package:ispect/src/features/ispect/presentation/screens/daily_sessions.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/app_bar/filter_button.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/app_bar/filter_sheet.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/app_bar/search_bar.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/onboarding_dialog.dart';
+import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
+import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/presentation/screens/daily_sessions.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_button.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_sheet.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/search_bar.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/onboarding_dialog.dart';
 
 class ISpectAppBar extends StatefulWidget {
   const ISpectAppBar({

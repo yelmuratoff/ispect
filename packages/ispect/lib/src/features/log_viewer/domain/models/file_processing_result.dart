@@ -4,7 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/features/ispect/domain/models/models.dart';
+import 'package:ispect/src/features/log_viewer/domain/models/models.dart';
 
 /// Result of file processing operation
 @immutable

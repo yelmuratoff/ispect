@@ -3,8 +3,8 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/observers/transition.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/navigation_flow/actions_sheet.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/navigation_flow/navigation_transition_card.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/navigation_flow/actions_sheet.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/navigation_flow/navigation_transition_card.dart';
 
 class ISpectNavigationFlowScreen extends StatefulWidget {
   const ISpectNavigationFlowScreen({

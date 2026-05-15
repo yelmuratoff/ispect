@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/empty_logs_widget.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/empty_logs_widget.dart';
 
 import '../helpers/pump_ispect.dart';
 

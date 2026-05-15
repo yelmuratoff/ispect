@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/controllers/group_button.dart';
-import 'package:ispect/src/common/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/string.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
 import 'package:ispect/src/common/widgets/resizable_split_view.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/app_bar.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/log_card/desktop_log_row.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/log_card/log_card.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/log_detail_view.dart';
-import 'package:ispect/src/features/ispect/presentation/widgets/share_log_bottom_sheet.dart';
+import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
+import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/desktop_log_row.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
 
 /// Screen for browsing, searching, and filtering application logs.
 ///
