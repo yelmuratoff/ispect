@@ -146,6 +146,10 @@ class _MyAppState extends State<MyApp> {
         child: child!,
         options: ISpectOptions(
           observer: _observer,
+          onSettingsChanged: (settings) {
+            ISpect.logger.log('Settings changed: ${settings.toString()}',
+                additionalData: settings.toMap());
+          },
           onOpenFile: (path) async => OpenFilex.open(path),
           onShare: (req) async => SharePlus.instance.share(ShareParams(
             text: req.text,
