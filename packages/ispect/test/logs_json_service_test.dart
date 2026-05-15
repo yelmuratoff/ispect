@@ -295,6 +295,54 @@ void main() {
     });
 
     test(
+        'exportToJson applies redactionService when provided alongside '
+        'enableRedaction', () async {
+      final sensitiveLog = ISpectLogData(
+        'Sensitive payload',
+        time: DateTime(2025, 1, 1, 12),
+        logLevel: LogLevel.info,
+        additionalData: const {
+          'authorization': 'Bearer super-secret-token',
+          'safe': 'visible',
+        },
+      );
+
+      final jsonString = await service.exportToJson(
+        [sensitiveLog],
+        redactionService: RedactionService(),
+      );
+      final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
+      final logs = jsonData['logs'] as List<dynamic>;
+      final additional = (logs.first as Map<String, dynamic>)['additional-data']
+          as Map<String, dynamic>;
+
+      expect(
+        additional['authorization'],
+        isNot(contains('super-secret-token')),
+      );
+      expect(additional['safe'], equals('visible'));
+    });
+
+    test(
+        'exportToJson skips export-time redaction when redactionService '
+        'is null', () async {
+      final sensitiveLog = ISpectLogData(
+        'Sensitive payload',
+        time: DateTime(2025, 1, 1, 12),
+        logLevel: LogLevel.info,
+        additionalData: const {'authorization': 'Bearer raw'},
+      );
+
+      final jsonString = await service.exportToJson([sensitiveLog]);
+      final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
+      final logs = jsonData['logs'] as List<dynamic>;
+      final additional = (logs.first as Map<String, dynamic>)['additional-data']
+          as Map<String, dynamic>;
+
+      expect(additional['authorization'], equals('Bearer raw'));
+    });
+
+    test(
         'should handle empty filtered logs gracefully in shareFilteredLogsAsJsonFile',
         () async {
       // Arrange

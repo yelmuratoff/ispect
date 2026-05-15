@@ -31,11 +31,17 @@ class LogsJsonService {
   /// Maximum number of log entries allowed in import
   static const int maxLogEntries = 100000;
 
-  /// Exports logs to JSON format with metadata
+  /// Exports logs to JSON format with metadata.
+  ///
+  /// The export-time redaction is an **opt-in defense-in-depth pass**.
+  /// Captured payloads (network bodies, DB args, etc.) are already redacted
+  /// at interceptor capture time, so the export pass only runs when the
+  /// caller passes [redactionService]. Pass `enableRedaction: false` to skip
+  /// the pass even when a service is provided.
   ///
   /// - Parameters: logs (list of entries), includeMetadata (flag for metadata),
-  ///   redactionService (optional, applies redaction to log data when provided),
-  ///   enableRedaction (default: true for security; pass false to disable)
+  ///   redactionService (optional; when null the export pass is skipped),
+  ///   enableRedaction (default: true; combined with non-null [redactionService])
   /// - Return: JSON string ready for file export
   /// - Usage example: `final jsonString = await service.exportToJson(logs);`
   /// - Edge case notes: Processes in chunks to prevent memory issues, handles large datasets
