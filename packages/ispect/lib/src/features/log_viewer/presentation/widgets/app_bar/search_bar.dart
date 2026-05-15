@@ -1,7 +1,92 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 
+/// Styled `SearchBar` shared across the log list and JSON viewer screens.
+///
+/// Callers compose the [trailing] widgets, letting each screen contribute its
+/// own match-navigation or clear-button affordances without duplicating the
+/// surrounding chrome (background, hint style, search-leading icon, etc).
+class ISpectSearchField extends StatelessWidget {
+  const ISpectSearchField({
+    required this.controller,
+    required this.onChanged,
+    this.focusNode,
+    this.hintText,
+    this.trailing = const [],
+    super.key,
+  });
+
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final FocusNode? focusNode;
+  final String? hintText;
+  final List<Widget> trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final onSurface = context.appTheme.colorScheme.onSurface;
+    final cardColor = context.ispectTheme.card?.resolve(context) ??
+        context.appTheme.colorScheme.surfaceContainerHigh;
+
+    return SearchBar(
+      focusNode: focusNode,
+      controller: controller,
+      backgroundColor: WidgetStatePropertyAll(cardColor),
+      constraints: BoxConstraints(minHeight: context.ispectInputMinHeight),
+      shape: const WidgetStatePropertyAll(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+      ),
+      padding: const WidgetStatePropertyAll(
+        EdgeInsets.symmetric(horizontal: 10),
+      ),
+      textStyle: WidgetStatePropertyAll(
+        TextStyle(fontSize: 14, color: onSurface),
+      ),
+      hintStyle: WidgetStatePropertyAll(
+        TextStyle(fontSize: 14, color: onSurface.withValues(alpha: 0.5)),
+      ),
+      leading: Icon(
+        Icons.search_rounded,
+        size: 18,
+        color: onSurface.withValues(alpha: 0.5),
+      ),
+      trailing: trailing,
+      hintText: hintText ?? context.ispectL10n.search,
+      onChanged: onChanged,
+      elevation: const WidgetStatePropertyAll(0),
+    );
+  }
+}
+
+/// Clear button styled to match [ISpectSearchField].
+class ISpectSearchClearButton extends StatelessWidget {
+  const ISpectSearchClearButton({required this.onPressed, super.key});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final onSurface = context.appTheme.colorScheme.onSurface;
+    return IconButton(
+      iconSize: 16,
+      constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+      padding: EdgeInsets.zero,
+      onPressed: onPressed,
+      tooltip: context.ispectL10n.clearSearch,
+      icon: Icon(
+        Icons.close_rounded,
+        color: onSurface.withValues(alpha: 0.5),
+      ),
+    );
+  }
+}
+
+/// Log list search bar — wraps [ISpectSearchField] with the match-navigation
+/// and keyboard-shortcut affordances that only the log list needs.
 class ISpectSearchBar extends StatelessWidget {
   const ISpectSearchBar({
     required this.focusNode,
@@ -30,34 +115,11 @@ class ISpectSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onSurface = context.appTheme.colorScheme.onSurface;
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.colorScheme.surfaceContainerHigh;
-
-    return SearchBar(
+    final isDesktop = context.screenSize.isDesktop;
+    return ISpectSearchField(
       focusNode: focusNode,
       controller: searchController,
-      backgroundColor: WidgetStatePropertyAll(cardColor),
-      constraints: const BoxConstraints(minHeight: 40),
-      shape: const WidgetStatePropertyAll(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-      ),
-      padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: 10),
-      ),
-      textStyle: WidgetStatePropertyAll(
-        TextStyle(fontSize: 14, color: onSurface),
-      ),
-      hintStyle: WidgetStatePropertyAll(
-        TextStyle(fontSize: 14, color: onSurface.withValues(alpha: 0.5)),
-      ),
-      leading: Icon(
-        Icons.search_rounded,
-        size: 18,
-        color: onSurface.withValues(alpha: 0.5),
-      ),
+      onChanged: onChanged,
       trailing: [
         if (isHighlightMode && hasSearchText)
           _SearchMatchNavigation(
@@ -67,26 +129,10 @@ class ISpectSearchBar extends StatelessWidget {
             onPrevious: onPreviousMatch,
           )
         else if (hasSearchText)
-          IconButton(
-            iconSize: 16,
-            constraints: const BoxConstraints.tightFor(
-              width: 32,
-              height: 32,
-            ),
-            padding: EdgeInsets.zero,
-            onPressed: onClear,
-            tooltip: context.ispectL10n.clearSearch,
-            icon: Icon(
-              Icons.close_rounded,
-              color: onSurface.withValues(alpha: 0.5),
-            ),
-          )
-        else if (context.screenSize.isDesktop)
+          ISpectSearchClearButton(onPressed: onClear)
+        else if (isDesktop)
           const _SearchShortcutBadge(),
       ],
-      hintText: context.ispectL10n.search,
-      onChanged: onChanged,
-      elevation: const WidgetStatePropertyAll(0),
     );
   }
 }
@@ -179,7 +225,7 @@ class _SearchShortcutBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final onSurface = context.appTheme.colorScheme.onSurface;
     final isApple = Theme.of(context).platform == TargetPlatform.macOS;
-    final label = isApple ? '\u2318K' : 'Ctrl+K';
+    final label = isApple ? '⌘K' : 'Ctrl+K';
 
     return Padding(
       padding: const EdgeInsets.only(right: 8),

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -95,102 +96,113 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
       _hasActiveFilters || widget.controller.searchMode == SearchMode.filter;
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder(
-        valueListenable: _hasSearchText,
-        builder: (context, hasText, _) => SliverAppBar(
-          elevation: 0,
-          pinned: true,
-          leading: IconButton(
-            onPressed: () => context.iSpect.options.pop(context),
-            tooltip: context.ispectL10n.back,
-            icon: const Icon(Icons.arrow_back_rounded),
+  Widget build(BuildContext context) {
+    final compactDensity = context.ispectAppBarButtonDensity;
+    final toolbarHeight = context.ispectAppBarToolbarHeight;
+    final iconSize = context.ispectAppBarIconSize;
+
+    return ValueListenableBuilder(
+      valueListenable: _hasSearchText,
+      builder: (context, hasText, _) => SliverAppBar(
+        elevation: 0,
+        pinned: true,
+        toolbarHeight: toolbarHeight ?? kToolbarHeight,
+        leading: IconButton(
+          visualDensity: compactDensity,
+          iconSize: iconSize,
+          onPressed: () => context.iSpect.options.pop(context),
+          tooltip: context.ispectL10n.back,
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        backgroundColor: widget.backgroundColor ??
+            context.ispectTheme.background?.resolve(context) ??
+            context.appTheme.scaffoldBackgroundColor,
+        actions: [
+          IconButton(
+            visualDensity: compactDensity,
+            iconSize: iconSize,
+            onPressed: widget.controller.toggleLogOrder,
+            tooltip: context.ispectL10n.reverseLogs,
+            icon: Icon(
+              Icons.swap_vert_rounded,
+              color: !widget.controller.isLogOrderReversed
+                  ? context.appTheme.colorScheme.primary
+                  : null,
+            ),
           ),
-          scrolledUnderElevation: 0,
-          surfaceTintColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          backgroundColor: widget.backgroundColor ??
-              context.ispectTheme.background?.resolve(context) ??
-              context.appTheme.scaffoldBackgroundColor,
-          actions: [
+          IconButton(
+            visualDensity: compactDensity,
+            iconSize: iconSize,
+            onPressed: () => ISpectOnboardingDialog.show(context),
+            tooltip: context.ispectL10n.tips,
+            icon: const Icon(Icons.lightbulb_outline_rounded),
+          ),
+          if (widget.onSettingsTap != null)
             IconButton(
-              onPressed: widget.controller.toggleLogOrder,
-              tooltip: context.ispectL10n.reverseLogs,
-              icon: Icon(
-                Icons.swap_vert_rounded,
-                size: 22,
-                color: !widget.controller.isLogOrderReversed
-                    ? context.appTheme.colorScheme.primary
-                    : null,
-              ),
+              visualDensity: compactDensity,
+              iconSize: iconSize,
+              onPressed: widget.onSettingsTap,
+              tooltip: context.ispectL10n.settings,
+              icon: const Icon(Icons.settings_rounded),
             ),
-            IconButton(
-              onPressed: () => ISpectOnboardingDialog.show(context),
-              tooltip: context.ispectL10n.tips,
-              icon: const Icon(
-                Icons.lightbulb_outline_rounded,
-                size: 22,
+          const Gap(6),
+        ],
+        title: _AppBarTitle(title: widget.title),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(50),
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: context.screenSizeWhen(
+                phone: () => 16.0,
+                tablet: () => 16.0,
+                desktop: () => 20.0,
               ),
+              right: context.screenSizeWhen(
+                phone: () => 16.0,
+                tablet: () => 16.0,
+                desktop: () => 20.0,
+              ),
+              bottom: 4,
             ),
-            if (widget.onSettingsTap != null)
-              IconButton(
-                onPressed: widget.onSettingsTap,
-                tooltip: context.ispectL10n.settings,
-                icon: const Icon(Icons.settings_rounded),
-              ),
-            const Gap(6),
-          ],
-          title: _AppBarTitle(title: widget.title),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(50),
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: context.screenSizeWhen(
-                  phone: () => 16.0,
-                  tablet: () => 16.0,
-                  desktop: () => 20.0,
-                ),
-                right: context.screenSizeWhen(
-                  phone: () => 16.0,
-                  tablet: () => 16.0,
-                  desktop: () => 20.0,
-                ),
-                bottom: 4,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ISpectSearchBar(
-                      focusNode: widget.focusNode,
-                      searchController: _searchController,
-                      hasSearchText: hasText,
-                      isHighlightMode:
-                          widget.controller.searchMode == SearchMode.highlight,
-                      focusedMatchPosition:
-                          widget.controller.focusedMatchPosition,
-                      searchMatchCount: widget.controller.searchMatchCount,
-                      onChanged: _onSearchChanged,
-                      onClear: _onSearchClear,
-                      onNextMatch: () {
-                        widget.controller.focusNextMatch();
-                        widget.onScrollToFocusedMatch?.call();
-                      },
-                      onPreviousMatch: () {
-                        widget.controller.focusPreviousMatch();
-                        widget.onScrollToFocusedMatch?.call();
-                      },
-                    ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ISpectSearchBar(
+                    focusNode: widget.focusNode,
+                    searchController: _searchController,
+                    hasSearchText: hasText,
+                    isHighlightMode:
+                        widget.controller.searchMode == SearchMode.highlight,
+                    focusedMatchPosition:
+                        widget.controller.focusedMatchPosition,
+                    searchMatchCount: widget.controller.searchMatchCount,
+                    onChanged: _onSearchChanged,
+                    onClear: _onSearchClear,
+                    onNextMatch: () {
+                      widget.controller.focusNextMatch();
+                      widget.onScrollToFocusedMatch?.call();
+                    },
+                    onPreviousMatch: () {
+                      widget.controller.focusPreviousMatch();
+                      widget.onScrollToFocusedMatch?.call();
+                    },
                   ),
-                  const Gap(8),
-                  ISpectFilterButton(
-                    hasActiveState: _hasAnyActiveState,
-                    onPressed: () => _showFilterSheet(context),
-                  ),
-                ],
-              ),
+                ),
+                const Gap(8),
+                ISpectFilterButton(
+                  hasActiveState: _hasAnyActiveState,
+                  onPressed: () => _showFilterSheet(context),
+                ),
+              ],
             ),
           ),
         ),
-      );
+      ),
+    );
+  }
 
   void _onSearchChanged(String query) {
     _hasSearchText.value = query.isNotEmpty;
@@ -261,8 +273,8 @@ class _AppBarTitle extends StatelessWidget {
               Flexible(
                 child: Text(
                   title ?? '',
-                  style: const TextStyle(
-                    fontSize: 26,
+                  style: TextStyle(
+                    fontSize: context.ispectAppBarTitleSize(26),
                     fontWeight: FontWeight.w900,
                     letterSpacing: 0.5,
                   ),

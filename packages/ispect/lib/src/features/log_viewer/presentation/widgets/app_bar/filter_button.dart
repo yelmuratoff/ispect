@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/desktop_metrics.dart';
 
 class ISpectFilterButton extends StatelessWidget {
   const ISpectFilterButton({
@@ -16,12 +17,13 @@ class ISpectFilterButton extends StatelessWidget {
     final primaryColor = context.appTheme.colorScheme.primary;
     final cardColor = context.ispectTheme.card?.resolve(context) ??
         context.appTheme.colorScheme.surfaceContainerHigh;
+    final size = context.ispectSquareControlSize;
 
     return Tooltip(
       message: context.ispectL10n.filters,
       child: SizedBox(
-        width: 40,
-        height: 40,
+        width: size,
+        height: size,
         child: Material(
           color:
               hasActiveState ? primaryColor.withValues(alpha: 0.12) : cardColor,

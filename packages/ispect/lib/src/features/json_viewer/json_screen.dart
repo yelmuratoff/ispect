@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
 import 'package:ispect/src/features/json_viewer/widgets/store_selector.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/search_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
@@ -115,6 +117,11 @@ class _JsonScreenState extends State<JsonScreen> {
     final logKey = widget.data['key']?.toString();
     final logColor = iSpect.theme.getTypeColor(context, key: logKey);
     final logIcon = iSpect.theme.getTypeIcon(context, key: logKey);
+    final compactDensity = context.ispectAppBarButtonDensity;
+    final toolbarHeight = context.ispectAppBarToolbarHeight;
+    final iconSize = context.ispectAppBarIconSize;
+    final titleFontSize = context.ispectAppBarTitleSize(16);
+    final titleIconSize = context.ispectAppBarTitleSize(28);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -124,7 +131,10 @@ class _JsonScreenState extends State<JsonScreen> {
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
         backgroundColor: bgColor ?? context.appTheme.scaffoldBackgroundColor,
+        toolbarHeight: toolbarHeight ?? kToolbarHeight,
         leading: IconButton(
+          visualDensity: compactDensity,
+          iconSize: iconSize,
           icon: const Icon(Icons.arrow_back_rounded),
           tooltip: context.ispectL10n.back,
           onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
@@ -134,20 +144,24 @@ class _JsonScreenState extends State<JsonScreen> {
           children: [
             if (logColor != null)
               Container(
-                width: 28,
-                height: 28,
+                width: titleIconSize,
+                height: titleIconSize,
                 decoration: BoxDecoration(
                   color: logColor.withValues(alpha: 0.12),
                   borderRadius: const BorderRadius.all(Radius.circular(8)),
                 ),
-                child: Icon(logIcon, size: 16, color: logColor),
+                child: Icon(
+                  logIcon,
+                  size: titleIconSize * (16 / 28),
+                  color: logColor,
+                ),
               ),
             const Gap(10),
             Flexible(
               child: Text(
                 logKey ?? 'JSON Viewer',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: titleFontSize,
                   fontWeight: FontWeight.w600,
                   color: logColor,
                 ),
@@ -165,12 +179,16 @@ class _JsonScreenState extends State<JsonScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.unfold_more_rounded, size: 22),
+                    visualDensity: compactDensity,
+                    iconSize: iconSize,
+                    icon: const Icon(Icons.unfold_more_rounded),
                     tooltip: context.ispectL10n.expandLogs,
                     onPressed: _store.expandAll,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.unfold_less_rounded, size: 22),
+                    visualDensity: compactDensity,
+                    iconSize: iconSize,
+                    icon: const Icon(Icons.unfold_less_rounded),
                     tooltip: context.ispectL10n.collapseLogs,
                     onPressed: _store.collapseAll,
                   ),
@@ -180,7 +198,9 @@ class _JsonScreenState extends State<JsonScreen> {
           ),
           if (context.iSpect.options.onShare != null)
             IconButton(
-              icon: const Icon(Icons.share_rounded, size: 22),
+              visualDensity: compactDensity,
+              iconSize: iconSize,
+              icon: const Icon(Icons.share_rounded),
               tooltip: context.ispectL10n.shareLogsFile,
               onPressed: () async {
                 await ISpectShareLogBottomSheet(
@@ -209,63 +229,13 @@ class _JsonScreenState extends State<JsonScreen> {
               builder: (context, hasText, _) => Row(
                 children: [
                   Expanded(
-                    child: Builder(
-                      builder: (context) {
-                        final onSurface =
-                            context.appTheme.colorScheme.onSurface;
-                        return SearchBar(
-                          controller: _searchController,
-                          constraints: const BoxConstraints(minHeight: 40),
-                          backgroundColor: WidgetStatePropertyAll(
-                            context.ispectTheme.card?.resolve(context) ??
-                                context
-                                    .appTheme.colorScheme.surfaceContainerHigh,
-                          ),
-                          shape: const WidgetStatePropertyAll(
-                            RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
-                            ),
-                          ),
-                          padding: const WidgetStatePropertyAll(
-                            EdgeInsets.symmetric(horizontal: 10),
-                          ),
-                          textStyle: WidgetStatePropertyAll(
-                            TextStyle(fontSize: 14, color: onSurface),
-                          ),
-                          hintStyle: WidgetStatePropertyAll(
-                            TextStyle(
-                              fontSize: 14,
-                              color: onSurface.withValues(alpha: 0.5),
-                            ),
-                          ),
-                          leading: Icon(
-                            Icons.search_rounded,
-                            size: 18,
-                            color: onSurface.withValues(alpha: 0.5),
-                          ),
-                          trailing: [
-                            if (hasText)
-                              IconButton(
-                                iconSize: 16,
-                                constraints: const BoxConstraints.tightFor(
-                                  width: 32,
-                                  height: 32,
-                                ),
-                                padding: EdgeInsets.zero,
-                                onPressed: _onSearchClear,
-                                tooltip: context.ispectL10n.clearSearch,
-                                icon: Icon(
-                                  Icons.close_rounded,
-                                  color: onSurface.withValues(alpha: 0.5),
-                                ),
-                              ),
-                          ],
-                          hintText: context.ispectL10n.search,
-                          onChanged: _onSearchChanged,
-                          elevation: const WidgetStatePropertyAll(0),
-                        );
-                      },
+                    child: ISpectSearchField(
+                      controller: _searchController,
+                      onChanged: _onSearchChanged,
+                      trailing: [
+                        if (hasText)
+                          ISpectSearchClearButton(onPressed: _onSearchClear),
+                      ],
                     ),
                   ),
                   JsonStoreSelector<

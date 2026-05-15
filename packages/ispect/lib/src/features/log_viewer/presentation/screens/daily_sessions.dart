@@ -7,6 +7,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/list_screen.dart';
 
 class DailySessionsScreen extends StatefulWidget {
@@ -102,6 +103,9 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   Widget build(BuildContext context) {
     final iSpect = context.iSpect;
     final backgroundColor = iSpect.theme.background?.resolve(context);
+    final compactDensity = context.ispectAppBarButtonDensity;
+    final toolbarHeight = context.ispectAppBarToolbarHeight;
+    final iconSize = context.ispectAppBarIconSize;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -112,15 +116,18 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
         shadowColor: Colors.transparent,
         backgroundColor:
             backgroundColor ?? context.appTheme.scaffoldBackgroundColor,
+        toolbarHeight: toolbarHeight ?? kToolbarHeight,
         title: Text(
           context.ispectL10n.sessions,
-          style: const TextStyle(
-            fontSize: 18,
+          style: TextStyle(
+            fontSize: context.ispectAppBarTitleSize(18),
             fontWeight: FontWeight.w900,
             letterSpacing: 0.5,
           ),
         ),
         leading: IconButton(
+          visualDensity: compactDensity,
+          iconSize: iconSize,
           onPressed: () => Navigator.of(context).pop(),
           tooltip: context.ispectL10n.back,
           icon: const Icon(Icons.arrow_back_rounded),
@@ -129,22 +136,30 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
         actions: [
           if (context.iSpect.options.onOpenFile != null)
             IconButton(
+              visualDensity: compactDensity,
+              iconSize: iconSize,
               icon: const Icon(Icons.open_in_new_rounded),
               onPressed: _openPath,
               tooltip: context.ispectL10n.openPath,
             ),
           IconButton(
+            visualDensity: compactDensity,
+            iconSize: iconSize,
             icon: const Icon(Icons.copy_all_rounded),
             onPressed: _copyPathToClipboard,
             tooltip: context.ispectL10n.copyPath,
           ),
           IconButton(
+            visualDensity: compactDensity,
+            iconSize: iconSize,
             icon: const Icon(Icons.refresh_rounded),
             onPressed: () => _loadSessions(isRefreshing: true),
             tooltip: context.ispectL10n.refresh,
           ),
           if (widget.history != null)
             IconButton(
+              visualDensity: compactDensity,
+              iconSize: iconSize,
               icon: const Icon(Icons.clear_all_rounded),
               onPressed: _showClearAllDialog,
               tooltip: context.ispectL10n.clearAllSessions,
