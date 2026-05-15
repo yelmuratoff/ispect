@@ -12,7 +12,7 @@ class ResizableSplitView extends StatefulWidget {
     this.initialRatio = 0.4,
     this.minRatio = 0.2,
     this.maxRatio = 0.8,
-    this.dividerWidth = 8,
+    this.dividerWidth = 1,
     this.dividerColor,
     this.onRatioChanged,
     super.key,
@@ -143,16 +143,9 @@ class _DragDivider extends StatelessWidget {
           onHorizontalDragEnd: (_) => onDragEnd(),
           child: SizedBox(
             width: width,
-            child: Center(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                width: isActive ? 3 : 1,
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  color: lineColor,
-                  borderRadius: const BorderRadius.all(Radius.circular(2)),
-                ),
-              ),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              decoration: BoxDecoration(color: lineColor),
             ),
           ),
         ),
