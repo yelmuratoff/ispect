@@ -1,6 +1,6 @@
 name: ispectify_dio
 description: Dio interceptor for ISpect that captures correlated request, response, error, timing, and redacted payload diagnostics.
-version: 5.0.0-dev57
+version: 5.0.0-dev58
 homepage: https://github.com/yelmuratoff/ispect
 repository: https://github.com/yelmuratoff/ispect
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
@@ -15,7 +15,7 @@ dependency_overrides:
 dependencies:
   ansicolor: ^2.0.3
   dio: ^5.8.0+1
-  ispectify: ^5.0.0-dev57
+  ispectify: ^5.0.0-dev58
 
 dev_dependencies:
   lints: ^5.1.1
