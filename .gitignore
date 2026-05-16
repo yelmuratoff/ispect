@@ -29,6 +29,8 @@ migrate_working_dir/
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
+coverage/
+**/coverage/
 
 .env
 .DS_Store

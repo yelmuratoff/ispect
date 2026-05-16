@@ -87,7 +87,7 @@ class HumanLogEntryFormatter implements ILogEntryFormatter {
         : data.formattedTime;
 
     final metadata = _buildMetadata(data, settings);
-    final metadataSection = metadata.isEmpty ? '' : ' $metadata';
+    final metadataSection = metadata.isEmpty ? '' : ' $metadata |';
 
     return '$paddedLevel$sourceLabel$categoryLabel | $timestamp |$metadataSection ';
   }
