@@ -4,6 +4,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/decoration_utils.dart';
 import 'package:ispect/src/common/utils/severity_bar.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_search_highlight_surface.dart';
 import 'package:ispect/src/common/widgets/slow_badge.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
@@ -41,95 +42,45 @@ class LogCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.cardColor;
-
-    final primaryColor = context.appTheme.colorScheme.primary;
-    final isFocused = searchMatchState == SearchMatchState.focused;
-    final isMatch = searchMatchState == SearchMatchState.match;
-
-    final defaultBorder =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
     final sev = severityBar(data);
-    final accentColor = color.withValues(
-      alpha: isExpanded ? 0.9 : sev.alpha,
-    );
-
-    final Color effectiveBg;
-    final Color effectiveBorder;
-    final double borderWidth;
-    final List<BoxShadow>? boxShadow;
-
-    if (isFocused) {
-      effectiveBg = primaryColor.withValues(alpha: 0.12);
-      effectiveBorder = primaryColor;
-      borderWidth = 2;
-      boxShadow = [
-        BoxShadow(
-          color: primaryColor.withValues(alpha: 0.25),
-          blurRadius: 10,
-          spreadRadius: 1,
-        ),
-      ];
-    } else if (isMatch) {
-      effectiveBg = primaryColor.withValues(alpha: 0.06);
-      effectiveBorder = primaryColor.withValues(alpha: 0.5);
-      borderWidth = 1.5;
-      boxShadow = null;
-    } else {
-      effectiveBg = cardColor;
-      effectiveBorder = defaultBorder;
-      borderWidth = 1;
-      boxShadow = null;
-    }
+    final accentColor = color.withValues(alpha: isExpanded ? 0.9 : sev.alpha);
 
     return RepaintBoundary(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: effectiveBg,
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-          border: Border.all(
-            color: effectiveBorder,
-            width: borderWidth,
-          ),
-          boxShadow: boxShadow,
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                  color: accentColor,
-                  width: isExpanded ? sev.width + 1 : sev.width,
-                ),
+      child: ISpectSearchHighlightSurface(
+        searchMatchState: searchMatchState,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                color: accentColor,
+                width: isExpanded ? sev.width + 1 : sev.width,
               ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _LogCardHeader(
-                  icon: icon,
-                  color: color,
-                  data: data,
-                  isExpanded: isExpanded,
-                  onTap: onTap,
-                  onShareTap: onShareTap,
-                  observer: observer,
-                  onShowRelated: onShowRelated,
-                ),
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOutCubic,
-                  alignment: Alignment.topCenter,
-                  child: isExpanded
-                      ? _ExpandedContent(data: data, color: color)
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _LogCardHeader(
+                icon: icon,
+                color: color,
+                data: data,
+                isExpanded: isExpanded,
+                onTap: onTap,
+                onShareTap: onShareTap,
+                observer: observer,
+                onShowRelated: onShowRelated,
+              ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                child: isExpanded
+                    ? _ExpandedContent(data: data, color: color)
+                    : const SizedBox.shrink(),
+              ),
+            ],
           ),
         ),
       ),

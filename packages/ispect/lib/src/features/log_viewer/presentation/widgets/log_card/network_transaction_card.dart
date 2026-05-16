@@ -3,6 +3,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_search_highlight_surface.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
@@ -92,123 +93,76 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
   @override
   Widget build(BuildContext context) {
     final color = transactionColor(tx);
-
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.cardColor;
     final accentColor = color.withValues(alpha: _expanded ? 0.9 : 0.5);
-    final primaryColor = context.appTheme.colorScheme.primary;
-    final isFocused = widget.searchMatchState == SearchMatchState.focused;
-    final isMatch = widget.searchMatchState == SearchMatchState.match;
 
-    final Color effectiveBg;
-    final Color effectiveBorder;
-    final double borderWidth;
-    final List<BoxShadow>? boxShadow;
-
-    if (isFocused) {
-      effectiveBg = primaryColor.withValues(alpha: 0.12);
-      effectiveBorder = primaryColor;
-      borderWidth = 2;
-      boxShadow = [
-        BoxShadow(
-          color: primaryColor.withValues(alpha: 0.25),
-          blurRadius: 10,
-          spreadRadius: 1,
-        ),
-      ];
-    } else if (isMatch) {
-      effectiveBg = primaryColor.withValues(alpha: 0.06);
-      effectiveBorder = primaryColor.withValues(alpha: 0.5);
-      borderWidth = 1.5;
-      boxShadow = null;
-    } else {
-      effectiveBg = cardColor;
-      effectiveBorder =
-          context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
-      borderWidth = 1;
-      boxShadow = null;
-    }
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: effectiveBg,
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        border: Border.all(color: effectiveBorder, width: borderWidth),
-        boxShadow: boxShadow,
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          decoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(
-                color: accentColor,
-                width: _expanded ? 5 : 3,
-              ),
-            ),
+    return ISpectSearchHighlightSurface(
+      searchMatchState: widget.searchMatchState,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(color: accentColor, width: _expanded ? 5 : 3),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Semantics(
-                button: true,
-                expanded: _expanded,
-                label:
-                    '${tx.method ?? "HTTP"} ${tx.url ?? ""} — ${tx.statusCode ?? "pending"}',
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Semantics(
+              button: true,
+              expanded: _expanded,
+              label:
+                  '${tx.method ?? "HTTP"} ${tx.url ?? ""} — ${tx.statusCode ?? "pending"}',
+              onTap: () {
+                setState(() => _expanded = !_expanded);
+                widget.onTap?.call();
+              },
+              child: GestureDetector(
+                excludeFromSemantics: true,
+                behavior: HitTestBehavior.opaque,
                 onTap: () {
                   setState(() => _expanded = !_expanded);
                   widget.onTap?.call();
                 },
-                child: GestureDetector(
-                  excludeFromSemantics: true,
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    setState(() => _expanded = !_expanded);
-                    widget.onTap?.call();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: _MobileHeader(
-                      tx: tx,
-                      color: color,
-                      expanded: _expanded,
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: _MobileHeader(
+                    tx: tx,
+                    color: color,
+                    expanded: _expanded,
                   ),
                 ),
               ),
-              AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOutCubic,
-                alignment: Alignment.topCenter,
-                child: _expanded
-                    ? Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TransactionDetails(tx: tx, color: color),
-                            const Gap(8),
-                            Row(
-                              children: buildActionWidgets(
-                                context: context,
-                                tx: tx,
-                                color: color,
-                                useDesktopStyle: false,
-                                onOpenRequestDetail: widget.onOpenRequestDetail,
-                                onOpenResponseDetail:
-                                    widget.onOpenResponseDetail,
-                              ),
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: _expanded
+                  ? Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TransactionDetails(tx: tx, color: color),
+                          const Gap(8),
+                          Row(
+                            children: buildActionWidgets(
+                              context: context,
+                              tx: tx,
+                              color: color,
+                              useDesktopStyle: false,
+                              onOpenRequestDetail: widget.onOpenRequestDetail,
+                              onOpenResponseDetail: widget.onOpenResponseDetail,
                             ),
-                          ],
-                        ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
-          ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
         ),
       ),
     );
