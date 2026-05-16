@@ -122,8 +122,7 @@ class _SearchModeSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = context.appTheme.colorScheme.primary;
-    final borderColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
+    final borderColor = context.ispectFaintBorderColor;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,8 +256,7 @@ class _LogTypeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cardColor = context.ispectRowCardColor;
-    final borderColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
+    final borderColor = context.ispectFaintBorderColor;
 
     return Semantics(
       toggled: isSelected,
@@ -268,8 +266,8 @@ class _LogTypeChip extends StatelessWidget {
         excludeFromSemantics: true,
         onTap: () => onSelected(!isSelected),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
+          duration: ISpectMotion.short,
+          curve: ISpectMotion.standardCurve,
           decoration: BoxDecoration(
             color: isSelected ? typeColor.withValues(alpha: 0.1) : cardColor,
             borderRadius: const BorderRadius.all(Radius.circular(10)),

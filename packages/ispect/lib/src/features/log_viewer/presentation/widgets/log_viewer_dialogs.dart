@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_input.dart';
 
 /// Choice for how to load log content.
@@ -11,9 +12,7 @@ class LogSourceDialog extends StatelessWidget {
   const LogSourceDialog({super.key});
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-        backgroundColor: context.ispectBackgroundColor,
-        surfaceTintColor: Colors.transparent,
+  Widget build(BuildContext context) => ISpectAlertDialog(
         title: Text(context.ispectL10n.loadFileContent),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -82,9 +81,7 @@ class _PasteContentDialogState extends State<PasteContentDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-        backgroundColor: context.ispectBackgroundColor,
-        surfaceTintColor: Colors.transparent,
+  Widget build(BuildContext context) => ISpectAlertDialog(
         title: Text(context.ispectL10n.pasteContent),
         content: SizedBox(
           width: MediaQuery.sizeOf(context).width * 0.8,

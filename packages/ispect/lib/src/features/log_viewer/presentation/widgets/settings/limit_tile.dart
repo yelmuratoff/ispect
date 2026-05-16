@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_input.dart';
 
@@ -164,9 +165,7 @@ class _LimitEditorDialogState extends State<_LimitEditorDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-        backgroundColor: context.ispectBackgroundColor,
-        surfaceTintColor: Colors.transparent,
+  Widget build(BuildContext context) => ISpectAlertDialog(
         titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
         contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
         actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 16),

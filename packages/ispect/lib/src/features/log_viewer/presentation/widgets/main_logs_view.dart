@@ -239,8 +239,8 @@ class _MainLogsViewState extends State<MainLogsView> {
             builder: (context, hasNew, _) {
               final newestAtTop = _controller.isNewestAtTop;
               return AnimatedPositioned(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOutCubic,
+                duration: ISpectMotion.short,
+                curve: ISpectMotion.standardCurve,
                 left: 0,
                 right: 0,
                 top: newestAtTop ? (hasNew ? 100 : -40) : null,
@@ -255,8 +255,8 @@ class _MainLogsViewState extends State<MainLogsView> {
         ValueListenableBuilder(
           valueListenable: _controller.scrollDirection,
           builder: (context, direction, _) => AnimatedPositioned(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
+            duration: ISpectMotion.short,
+            curve: ISpectMotion.standardCurve,
             right: 16,
             bottom: direction != null ? (isDesktop ? 44 : 16) : -56,
             child: ScrollToEdgeFab(

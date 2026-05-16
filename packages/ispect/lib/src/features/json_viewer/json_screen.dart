@@ -6,6 +6,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
+import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
@@ -119,25 +120,13 @@ class _JsonScreenState extends State<JsonScreen> {
     final logColor = iSpect.theme.getTypeColor(context, key: logKey);
     final logIcon = iSpect.theme.getTypeIcon(context, key: logKey);
     final compactDensity = context.ispectAppBarButtonDensity;
-    final toolbarHeight = context.ispectAppBarToolbarHeight;
     final iconSize = context.ispectAppBarIconSize;
 
     return Scaffold(
       backgroundColor: bgColor,
-      appBar: AppBar(
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        backgroundColor: bgColor ?? context.appTheme.scaffoldBackgroundColor,
-        toolbarHeight: toolbarHeight ?? kToolbarHeight,
-        leading: IconButton(
-          visualDensity: compactDensity,
-          iconSize: iconSize,
-          icon: const Icon(Icons.arrow_back_rounded),
-          tooltip: context.ispectL10n.back,
-          onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
-        ),
+      appBar: ISpectFlatAppBar(
+        backgroundColor: bgColor,
+        leading: ISpectAppBarBackButton(onPressed: widget.onClose),
         title: ISpectAppBarTitle(
           child: Row(
             mainAxisSize: MainAxisSize.min,

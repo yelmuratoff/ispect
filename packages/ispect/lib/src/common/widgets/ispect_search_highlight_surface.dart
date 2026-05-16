@@ -53,8 +53,7 @@ class ISpectSearchHighlightSurface extends StatelessWidget {
         boxShadow = null;
       case SearchMatchState.none:
         effectiveBg = cardColor;
-        effectiveBorder =
-            context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
+        effectiveBorder = context.ispectFaintBorderColor;
         borderWidth = 1;
         boxShadow = null;
     }

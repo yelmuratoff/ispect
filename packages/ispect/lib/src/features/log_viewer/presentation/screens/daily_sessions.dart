@@ -8,7 +8,9 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
+import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
+import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/list_screen.dart';
 
 class DailySessionsScreen extends StatefulWidget {
@@ -102,21 +104,12 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = context.ispectThemeBackground;
     final compactDensity = context.ispectAppBarButtonDensity;
-    final toolbarHeight = context.ispectAppBarToolbarHeight;
     final iconSize = context.ispectAppBarIconSize;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        backgroundColor:
-            backgroundColor ?? context.appTheme.scaffoldBackgroundColor,
-        toolbarHeight: toolbarHeight ?? kToolbarHeight,
+      backgroundColor: context.ispectThemeBackground,
+      appBar: ISpectFlatAppBar(
         title: ISpectAppBarTitle(
           child: Text(
             context.ispectL10n.sessions,
@@ -127,13 +120,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
             ),
           ),
         ),
-        leading: IconButton(
-          visualDensity: compactDensity,
-          iconSize: iconSize,
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: context.ispectL10n.back,
-          icon: const Icon(Icons.arrow_back_rounded),
-        ),
+        leading: const ISpectAppBarBackButton(),
         actionsPadding: const EdgeInsets.only(right: 12),
         actions: [
           if (context.iSpect.options.onOpenFile != null)
@@ -193,9 +180,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   void _showClearAllDialog() {
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: context.ispectBackgroundColor,
-        surfaceTintColor: Colors.transparent,
+      builder: (context) => ISpectAlertDialog(
         title: Text(context.ispectL10n.clearAllSessions),
         content: Text(context.ispectL10n.confirmClearAllDailySessions),
         actions: [
@@ -244,9 +229,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   void _showErrorDialog(String message) {
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: context.ispectBackgroundColor,
-        surfaceTintColor: Colors.transparent,
+      builder: (context) => ISpectAlertDialog(
         title: Text(context.ispectL10n.error),
         content: Text(message),
         actions: [

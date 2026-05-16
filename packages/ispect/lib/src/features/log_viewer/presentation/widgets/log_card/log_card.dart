@@ -49,8 +49,8 @@ class LogCard extends StatelessWidget {
       child: ISpectSearchHighlightSurface(
         searchMatchState: searchMatchState,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
+          duration: ISpectMotion.short,
+          curve: ISpectMotion.standardCurve,
           decoration: BoxDecoration(
             border: Border(
               left: BorderSide(
@@ -73,8 +73,8 @@ class LogCard extends StatelessWidget {
                 onShowRelated: onShowRelated,
               ),
               AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOutCubic,
+                duration: ISpectMotion.short,
+                curve: ISpectMotion.standardCurve,
                 alignment: Alignment.topCenter,
                 child: isExpanded
                     ? _ExpandedContent(data: data, color: color)

@@ -5,6 +5,7 @@ import 'package:ispect/src/common/observers/transition.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
+import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/navigation_flow/actions_sheet.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/navigation_flow/navigation_transition_card.dart';
 
@@ -52,28 +53,14 @@ class _ISpectNavigationFlowScreenState
   @override
   Widget build(BuildContext context) {
     final compactDensity = context.ispectAppBarButtonDensity;
-    final toolbarHeight = context.ispectAppBarToolbarHeight;
     final iconSize = context.ispectAppBarIconSize;
     return Scaffold(
-      backgroundColor: context.ispectTheme.background?.resolve(context),
-      appBar: AppBar(
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        toolbarHeight: toolbarHeight ?? kToolbarHeight,
+      backgroundColor: context.ispectThemeBackground,
+      appBar: ISpectFlatAppBar(
         title: ISpectAppBarTitle(
           child: Text(context.ispectL10n.navigationFlow),
         ),
-        backgroundColor: context.ispectTheme.background?.resolve(context) ??
-            context.appTheme.scaffoldBackgroundColor,
-        leading: IconButton(
-          visualDensity: compactDensity,
-          iconSize: iconSize,
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: context.ispectL10n.back,
-          icon: const Icon(Icons.arrow_back_rounded),
-        ),
+        leading: const ISpectAppBarBackButton(),
         actionsPadding: const EdgeInsets.only(right: 12),
         actions: [
           IconButton(

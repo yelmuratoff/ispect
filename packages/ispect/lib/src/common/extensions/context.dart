@@ -61,6 +61,21 @@ extension ISpectColorTokens on BuildContext {
   /// Subtle 1px border tint shared by tiles, inputs, and chips.
   Color get ispectSubtleBorderColor =>
       appTheme.colorScheme.onSurface.withValues(alpha: 0.08);
+
+  /// Even fainter (0.06 alpha) border tint used by dense rows (desktop log
+  /// rows, status bar, search-match background).
+  Color get ispectFaintBorderColor =>
+      appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
+}
+
+/// Shared motion tokens. Keep card expands, sheet reveals, and filter chips
+/// using the same duration/curve so the UI feels coherent.
+abstract final class ISpectMotion {
+  /// Standard duration for expand/collapse and reveal animations.
+  static const Duration short = Duration(milliseconds: 200);
+
+  /// Default easing curve used with [short].
+  static const Curve standardCurve = Curves.easeOutCubic;
 }
 
 extension OptionsExtension on ISpectOptions {

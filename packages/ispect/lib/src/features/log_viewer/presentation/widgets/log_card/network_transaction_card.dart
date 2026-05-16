@@ -98,8 +98,8 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
     return ISpectSearchHighlightSurface(
       searchMatchState: widget.searchMatchState,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
+        duration: ISpectMotion.short,
+        curve: ISpectMotion.standardCurve,
         decoration: BoxDecoration(
           border: Border(
             left: BorderSide(color: accentColor, width: _expanded ? 5 : 3),
@@ -136,8 +136,8 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
               ),
             ),
             AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOutCubic,
+              duration: ISpectMotion.short,
+              curve: ISpectMotion.standardCurve,
               alignment: Alignment.topCenter,
               child: _expanded
                   ? Padding(

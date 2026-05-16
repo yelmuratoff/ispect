@@ -46,7 +46,7 @@ class _NetworkTransactionDesktopRowState
   Widget build(BuildContext context) {
     final color = transactionColor(tx);
     final onSurface = context.appTheme.colorScheme.onSurface;
-    final borderColor = onSurface.withValues(alpha: 0.06);
+    final borderColor = context.ispectFaintBorderColor;
     final cardColor = context.ispectRowCardColor;
 
     final primaryColor = context.appTheme.colorScheme.primary;
@@ -221,8 +221,8 @@ class _NetworkTransactionDesktopRowState
               ),
             ),
             AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOutCubic,
+              duration: ISpectMotion.short,
+              curve: ISpectMotion.standardCurve,
               alignment: Alignment.topCenter,
               child: _expanded
                   ? DecoratedBox(

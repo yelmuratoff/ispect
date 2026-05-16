@@ -270,7 +270,7 @@ class _LogTypeChip extends StatelessWidget {
           onTap: onToggled,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+            duration: ISpectMotion.short,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: isEnabled

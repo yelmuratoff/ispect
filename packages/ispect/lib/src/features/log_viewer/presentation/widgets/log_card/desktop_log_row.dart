@@ -181,7 +181,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
   Widget build(BuildContext context) {
     final cardColor = context.ispectRowCardColor;
     final onSurface = context.appTheme.colorScheme.onSurface;
-    final borderColor = onSurface.withValues(alpha: 0.06);
+    final borderColor = context.ispectFaintBorderColor;
 
     // Zebra striping
     final isOdd = widget.index.isOdd;
