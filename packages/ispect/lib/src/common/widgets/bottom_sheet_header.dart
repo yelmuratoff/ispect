@@ -167,23 +167,41 @@ class ISpectDragHandle extends StatelessWidget {
 }
 
 /// An uppercase section label for grouping content in sheets.
+///
+/// Pass [trailing] to add a right-aligned action (e.g. "Select all"); the
+/// label then renders as a baseline-aligned [Row].
 class ISpectSectionLabel extends StatelessWidget {
-  const ISpectSectionLabel({required this.title, super.key});
+  const ISpectSectionLabel({
+    required this.title,
+    this.trailing,
+    this.padding = const EdgeInsets.fromLTRB(20, 20, 20, 8),
+    super.key,
+  });
 
   final String title;
+  final Widget? trailing;
+  final EdgeInsetsGeometry padding;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-        child: Text(
-          title.toUpperCase(),
-          style: context.appTheme.textTheme.labelSmall?.copyWith(
-            color: context.appTheme.textColor.withValues(alpha: 0.45),
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1.2,
-          ),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final label = Text(
+      title.toUpperCase(),
+      style: context.appTheme.textTheme.labelSmall?.copyWith(
+        color: context.appTheme.textColor.withValues(alpha: 0.45),
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.2,
+      ),
+    );
+    return Padding(
+      padding: padding,
+      child: trailing == null
+          ? label
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [label, trailing!],
+            ),
+    );
+  }
 }
 
 /// A styled action button for bottom sheets (icon + label chip).

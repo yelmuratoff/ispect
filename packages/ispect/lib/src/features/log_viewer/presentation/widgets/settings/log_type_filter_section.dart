@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/log_description.dart';
@@ -46,54 +47,22 @@ class LogTypeFilterSection extends StatelessWidget {
     // Group by category
     final groups = _groupLogTypes(context, logDescriptions);
 
+    final selectAllLabel = _isAllEnabled
+        ? context.ispectL10n.deselectAll
+        : context.ispectL10n.selectAll;
+    final onSelectAllTap = _isAllEnabled ? onDeselectAll : onSelectAll;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
+          ISpectSectionLabel(
+            title: context.ispectL10n.iSpectifyLogsInfo,
             padding: const EdgeInsets.fromLTRB(4, 10, 4, 2),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  context.ispectL10n.iSpectifyLogsInfo.toUpperCase(),
-                  style: context.appTheme.textTheme.labelSmall?.copyWith(
-                    color: context.appTheme.textColor.withValues(alpha: 0.45),
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                Semantics(
-                  button: true,
-                  label: _isAllEnabled
-                      ? context.ispectL10n.deselectAll
-                      : context.ispectL10n.selectAll,
-                  onTap: _isAllEnabled ? onDeselectAll : onSelectAll,
-                  child: GestureDetector(
-                    excludeFromSemantics: true,
-                    onTap: _isAllEnabled ? onDeselectAll : onSelectAll,
-                    behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 4,
-                      ),
-                      child: Text(
-                        _isAllEnabled
-                            ? context.ispectL10n.deselectAll
-                            : context.ispectL10n.selectAll,
-                        style: context.appTheme.textTheme.labelSmall?.copyWith(
-                          color: context.appTheme.textColor
-                              .withValues(alpha: 0.55),
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            trailing: _SelectAllLink(
+              label: selectAllLabel,
+              onTap: onSelectAllTap,
             ),
           ),
           ...groups.entries.map(
@@ -173,6 +142,36 @@ class LogTypeFilterSection extends StatelessWidget {
       _ => l10n.groupGeneral,
     };
   }
+}
+
+class _SelectAllLink extends StatelessWidget {
+  const _SelectAllLink({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: label,
+        onTap: onTap,
+        child: GestureDetector(
+          excludeFromSemantics: true,
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Text(
+              label,
+              style: context.appTheme.textTheme.labelSmall?.copyWith(
+                color: context.appTheme.textColor.withValues(alpha: 0.55),
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ),
+        ),
+      );
 }
 
 class _LogTypeGroup extends StatelessWidget {

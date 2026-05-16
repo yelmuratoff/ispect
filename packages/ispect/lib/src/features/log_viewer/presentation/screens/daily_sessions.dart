@@ -12,6 +12,7 @@ import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/list_screen.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/empty_logs_widget.dart';
 
 class DailySessionsScreen extends StatefulWidget {
   const DailySessionsScreen({required this.history, super.key});
