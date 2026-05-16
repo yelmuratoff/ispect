@@ -94,6 +94,8 @@ class _FormatChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final primaryColor = context.ispectTheme.primary?.resolve(context) ??
         context.appTheme.colorScheme.primary;
+    final outlineColor =
+        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.12);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -102,14 +104,36 @@ class _FormatChips extends StatelessWidget {
         runSpacing: 4,
         children: [
           for (final format in controller.availableFormats)
-            ChoiceChip(
-              label: Text(format.label),
-              avatar: Icon(format.icon, size: 16),
-              selected: controller.selectedFormat == format,
-              selectedColor: primaryColor.withValues(alpha: 0.15),
-              showCheckmark: false,
-              onSelected: (_) => controller.selectFormat(format),
-              visualDensity: VisualDensity.compact,
+            Builder(
+              builder: (context) {
+                final isSelected = controller.selectedFormat == format;
+                return ChoiceChip(
+                  label: Text(
+                    format.label,
+                    style: TextStyle(
+                      color: isSelected ? primaryColor : null,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                  avatar: Icon(
+                    format.icon,
+                    size: 16,
+                    color: isSelected ? primaryColor : null,
+                  ),
+                  selected: isSelected,
+                  selectedColor: primaryColor.withValues(alpha: 0.18),
+                  side: BorderSide(
+                    color: isSelected
+                        ? primaryColor.withValues(alpha: 0.7)
+                        : outlineColor,
+                    width: isSelected ? 1.4 : 1,
+                  ),
+                  showCheckmark: false,
+                  onSelected: (_) => controller.selectFormat(format),
+                  visualDensity: VisualDensity.compact,
+                );
+              },
             ),
         ],
       ),

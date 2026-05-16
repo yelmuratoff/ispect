@@ -26,7 +26,7 @@ Future<T?> showISpectSheet<T>(
       phone: () {
         final iSpect = ISpect.read(context);
         final bgColor = iSpect.theme.background?.resolve(context) ??
-            context.appTheme.scaffoldBackgroundColor;
+            context.appTheme.colorScheme.surfaceContainerLowest;
         final borderRadius = topOnlyRadius
             ? const BorderRadius.vertical(top: Radius.circular(16))
             : const BorderRadius.all(Radius.circular(16));
@@ -69,7 +69,8 @@ Future<T?> showISpectSheet<T>(
       },
       orElse: () {
         final iSpect = ISpect.read(context);
-        final bgColor = iSpect.theme.background?.resolve(context);
+        final bgColor = iSpect.theme.background?.resolve(context) ??
+            context.appTheme.colorScheme.surfaceContainerLowest;
 
         return showDialog<T>(
           context: context,
