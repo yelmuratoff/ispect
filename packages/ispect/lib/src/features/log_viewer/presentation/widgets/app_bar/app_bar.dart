@@ -128,7 +128,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
             onPressed: widget.controller.toggleLogOrder,
             tooltip: context.ispectL10n.reverseLogs,
             icon: Icon(
-              Icons.swap_vert_rounded,
+              Icons.import_export_rounded,
               color: !widget.controller.isLogOrderReversed
                   ? context.appTheme.colorScheme.primary
                   : null,
@@ -139,7 +139,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
             iconSize: iconSize,
             onPressed: () => ISpectOnboardingDialog.show(context),
             tooltip: context.ispectL10n.tips,
-            icon: const Icon(Icons.lightbulb_outline_rounded),
+            icon: const Icon(Icons.tips_and_updates_outlined),
           ),
           if (widget.onSettingsTap != null)
             IconButton(
@@ -147,7 +147,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
               iconSize: iconSize,
               onPressed: widget.onSettingsTap,
               tooltip: context.ispectL10n.settings,
-              icon: const Icon(Icons.settings_rounded),
+              icon: const Icon(Icons.tune_rounded),
             ),
           const Gap(6),
         ],

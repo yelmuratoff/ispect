@@ -27,58 +27,60 @@ class _OnboardingContent extends StatelessWidget {
       title: Row(
         children: [
           Icon(
-            Icons.lightbulb_outline_rounded,
+            Icons.tips_and_updates_outlined,
             color: Theme.of(context).colorScheme.primary,
           ),
           const Gap(8),
           Text(l10n.tips),
         ],
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _HintRow(
-            icon: Icons.search_rounded,
-            text: l10n.tipSearchLogs,
-          ),
-          const Gap(12),
-          _HintRow(
-            icon: Icons.touch_app_rounded,
-            text: l10n.tipLongPress,
-          ),
-          const Gap(12),
-          _HintRow(
-            icon: Icons.filter_alt_rounded,
-            text: l10n.tipFilter,
-          ),
-          const Gap(12),
-          _HintRow(
-            icon: Icons.open_in_full_rounded,
-            text: l10n.tipExpand,
-          ),
-          const Gap(12),
-          _HintRow(
-            icon: Icons.alt_route_rounded,
-            text: l10n.tipNavigationFlow,
-          ),
-          const Gap(12),
-          _HintRow(
-            icon: Icons.ios_share_rounded,
-            text: l10n.tipShareSession,
-          ),
-          const Gap(12),
-          _HintRow(
-            icon: Icons.swap_vert_rounded,
-            text: l10n.tipReverseLogs,
-          ),
-          if (isDesktop) ...[
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _HintRow(
+              icon: Icons.search_rounded,
+              text: l10n.tipSearchLogs,
+            ),
             const Gap(12),
             _HintRow(
-              icon: Icons.keyboard_rounded,
-              text: l10n.tipKeyboard,
+              icon: Icons.touch_app_rounded,
+              text: l10n.tipLongPress,
             ),
+            const Gap(12),
+            _HintRow(
+              icon: Icons.filter_alt_rounded,
+              text: l10n.tipFilter,
+            ),
+            const Gap(12),
+            _HintRow(
+              icon: Icons.open_in_full_rounded,
+              text: l10n.tipExpand,
+            ),
+            const Gap(12),
+            _HintRow(
+              icon: Icons.alt_route_rounded,
+              text: l10n.tipNavigationFlow,
+            ),
+            const Gap(12),
+            _HintRow(
+              icon: Icons.ios_share_rounded,
+              text: l10n.tipShareSession,
+            ),
+            const Gap(12),
+            _HintRow(
+              icon: Icons.import_export_rounded,
+              text: l10n.tipReverseLogs,
+            ),
+            if (isDesktop) ...[
+              const Gap(12),
+              _HintRow(
+                icon: Icons.keyboard_rounded,
+                text: l10n.tipKeyboard,
+              ),
+            ],
           ],
-        ],
+        ),
       ),
       actions: [
         FilledButton(
