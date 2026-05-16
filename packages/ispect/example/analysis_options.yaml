@@ -1,1 +1,7 @@
 include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.gr.dart"
+    - "lib/autoroute_example.dart"
+    - "lib/src/auto_route_example/**"
