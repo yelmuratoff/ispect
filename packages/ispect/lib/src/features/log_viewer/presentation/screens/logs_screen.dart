@@ -112,7 +112,7 @@ class _LogsScreenState extends State<LogsScreen> {
     final iSpect = ISpect.read(context);
     final isDesktop = context.screenSize.isDesktop;
     return Scaffold(
-      backgroundColor: iSpect.theme.background?.resolve(context),
+      backgroundColor: context.ispectThemeBackground,
       body: ISpectLogsBuilder(
         logger: ISpect.logger,
         controller: _logsViewController,

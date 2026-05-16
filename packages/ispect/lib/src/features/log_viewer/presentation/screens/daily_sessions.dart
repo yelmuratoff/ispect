@@ -102,8 +102,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final iSpect = context.iSpect;
-    final backgroundColor = iSpect.theme.background?.resolve(context);
+    final backgroundColor = context.ispectThemeBackground;
     final compactDensity = context.ispectAppBarButtonDensity;
     final toolbarHeight = context.ispectAppBarToolbarHeight;
     final iconSize = context.ispectAppBarIconSize;
@@ -192,13 +191,11 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   }
 
   void _showClearAllDialog() {
-    final iSpect = context.iSpect;
-    final backgroundColor = iSpect.theme.background?.resolve(context);
-
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: backgroundColor,
+        backgroundColor: context.ispectBackgroundColor,
+        surfaceTintColor: Colors.transparent,
         title: Text(context.ispectL10n.clearAllSessions),
         content: Text(context.ispectL10n.confirmClearAllDailySessions),
         actions: [
@@ -245,13 +242,11 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   }
 
   void _showErrorDialog(String message) {
-    final iSpect = context.iSpect;
-    final backgroundColor = iSpect.theme.background?.resolve(context);
-
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: backgroundColor,
+        backgroundColor: context.ispectBackgroundColor,
+        surfaceTintColor: Colors.transparent,
         title: Text(context.ispectL10n.error),
         content: Text(message),
         actions: [

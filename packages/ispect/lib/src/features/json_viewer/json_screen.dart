@@ -114,7 +114,7 @@ class _JsonScreenState extends State<JsonScreen> {
   @override
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
-    final bgColor = iSpect.theme.background?.resolve(context);
+    final bgColor = context.ispectThemeBackground;
     final logKey = widget.data['key']?.toString();
     final logColor = iSpect.theme.getTypeColor(context, key: logKey);
     final logIcon = iSpect.theme.getTypeIcon(context, key: logKey);

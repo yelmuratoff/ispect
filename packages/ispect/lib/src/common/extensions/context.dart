@@ -38,6 +38,14 @@ extension ISpectColorTokens on BuildContext {
       ispectTheme.background?.resolve(this) ??
       appTheme.colorScheme.surfaceContainerLowest;
 
+  /// Nullable variant of [ispectBackgroundColor] — returns the
+  /// user-configured ISpect background or `null` when nothing is set.
+  ///
+  /// Use this for `Scaffold.backgroundColor` and screen-level surfaces where
+  /// `null` means "fall back to the host app's scaffold theme", not the sheet
+  /// fallback color.
+  Color? get ispectThemeBackground => ispectTheme.background?.resolve(this);
+
   /// Background for inset cards, tiles, and input fields living on top of the
   /// background surface.
   Color get ispectCardColor =>

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_input.dart';
 
 /// Choice for how to load log content.
 enum LogSourceChoice { external, paste }
@@ -11,40 +11,36 @@ class LogSourceDialog extends StatelessWidget {
   const LogSourceDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final iSpect = ISpect.read(context);
-    final backgroundColor = iSpect.theme.background?.resolve(context);
-
-    return AlertDialog(
-      backgroundColor: backgroundColor,
-      title: Text(context.ispectL10n.loadFileContent),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.file_open),
-            title: Text(context.ispectL10n.loadFileContent),
-            subtitle: Text(context.ispectL10n.selectTxtOrJsonFromDevice),
-            onTap: () => Navigator.of(context).pop(LogSourceChoice.external),
-          ),
-          const Gap(16),
-          ListTile(
-            leading: const Icon(Icons.content_paste),
-            title: Text(context.ispectL10n.pasteContent),
-            subtitle: Text(context.ispectL10n.pasteTxtOrJsonHere),
-            onTap: () => Navigator.of(context).pop(LogSourceChoice.paste),
+  Widget build(BuildContext context) => AlertDialog(
+        backgroundColor: context.ispectBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+        title: Text(context.ispectL10n.loadFileContent),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.file_open),
+              title: Text(context.ispectL10n.loadFileContent),
+              subtitle: Text(context.ispectL10n.selectTxtOrJsonFromDevice),
+              onTap: () => Navigator.of(context).pop(LogSourceChoice.external),
+            ),
+            const Gap(16),
+            ListTile(
+              leading: const Icon(Icons.content_paste),
+              title: Text(context.ispectL10n.pasteContent),
+              subtitle: Text(context.ispectL10n.pasteTxtOrJsonHere),
+              onTap: () => Navigator.of(context).pop(LogSourceChoice.paste),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(context.ispectL10n.cancel),
           ),
         ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(context.ispectL10n.cancel),
-        ),
-      ],
-    );
-  }
+      );
 }
 
 /// Dialog widget for pasting file content.
@@ -86,56 +82,49 @@ class _PasteContentDialogState extends State<PasteContentDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final iSpect = ISpect.read(context);
-    final backgroundColor = iSpect.theme.background?.resolve(context);
-
-    return AlertDialog(
-      backgroundColor: backgroundColor,
-      title: Text(context.ispectL10n.pasteContent),
-      content: SizedBox(
-        width: MediaQuery.sizeOf(context).width * 0.8,
-        height: MediaQuery.sizeOf(context).height * 0.6,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(context.ispectL10n.pasteYourFileContentBelow),
-            const Gap(8),
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                maxLines: null,
-                expands: true,
-                textAlignVertical: TextAlignVertical.top,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
+  Widget build(BuildContext context) => AlertDialog(
+        backgroundColor: context.ispectBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+        title: Text(context.ispectL10n.pasteContent),
+        content: SizedBox(
+          width: MediaQuery.sizeOf(context).width * 0.8,
+          height: MediaQuery.sizeOf(context).height * 0.6,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(context.ispectL10n.pasteYourFileContentBelow),
+              const Gap(8),
+              Expanded(
+                child: ISpectTextField(
+                  controller: _controller,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
                   hintText:
                       context.ispectL10n.pasteYourTxtOrJsonFileContentHere,
-                ),
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 12,
+                  textStyle: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(context.ispectL10n.cancel),
-        ),
-        ElevatedButton(
-          onPressed: _hasContent
-              ? () async {
-                  Navigator.of(context).pop();
-                  await widget.onContentProcessed(_controller.text);
-                }
-              : null,
-          child: Text(context.ispectL10n.process),
-        ),
-      ],
-    );
-  }
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(context.ispectL10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: _hasContent
+                ? () async {
+                    Navigator.of(context).pop();
+                    await widget.onContentProcessed(_controller.text);
+                  }
+                : null,
+            child: Text(context.ispectL10n.process),
+          ),
+        ],
+      );
 }

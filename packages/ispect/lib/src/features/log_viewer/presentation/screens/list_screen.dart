@@ -80,7 +80,7 @@ class _LogsScreenState extends State<LogsV2Screen> {
   Widget build(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
-      backgroundColor: iSpect.theme.background?.resolve(context),
+      backgroundColor: context.ispectThemeBackground,
       body: ListenableBuilder(
         listenable: _logsViewController,
         builder: (_, __) {
