@@ -192,10 +192,45 @@ class _LimitEditorDialogState extends State<_LimitEditorDialog> {
   Widget build(BuildContext context) {
     final primaryColor = context.ispectTheme.primary?.resolve(context) ??
         context.appTheme.colorScheme.primary;
+    final bgColor = context.ispectTheme.background?.resolve(context) ??
+        context.appTheme.colorScheme.surfaceContainerLowest;
+    final fieldColor = context.ispectTheme.card?.resolve(context) ??
+        context.appTheme.colorScheme.surfaceContainerHigh;
+    final textColor = context.appTheme.textColor;
+    final onSurface = context.appTheme.colorScheme.onSurface;
+    final borderColor = onSurface.withValues(alpha: 0.08);
 
     return AlertDialog(
-      icon: Icon(widget.icon, color: primaryColor),
-      title: Text(widget.label),
+      backgroundColor: bgColor,
+      surfaceTintColor: Colors.transparent,
+      titlePadding: const EdgeInsets.fromLTRB(20, 20, 12, 8),
+      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      title: Row(
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: primaryColor.withValues(alpha: 0.12),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Icon(widget.icon, color: primaryColor, size: 22),
+            ),
+          ),
+          const Gap(12),
+          Expanded(
+            child: Text(
+              widget.label,
+              style: context.appTheme.textTheme.titleLarge?.copyWith(
+                color: textColor,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+              ),
+            ),
+          ),
+        ],
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,7 +238,7 @@ class _LimitEditorDialogState extends State<_LimitEditorDialog> {
           Text(
             widget.description,
             style: context.appTheme.textTheme.bodySmall?.copyWith(
-              color: context.appTheme.textColor.withValues(alpha: 0.65),
+              color: textColor.withValues(alpha: 0.55),
             ),
           ),
           const Gap(12),
@@ -212,22 +247,49 @@ class _LimitEditorDialogState extends State<_LimitEditorDialog> {
             autofocus: true,
             keyboardType: TextInputType.number,
             onSubmitted: (_) => _submit(),
+            style: TextStyle(
+              fontSize: 14,
+              color: onSurface,
+              fontWeight: FontWeight.w600,
+            ),
             decoration: InputDecoration(
-              labelText: 'Value',
+              filled: true,
+              fillColor: fieldColor,
               hintText: '0 disables this limit',
+              hintStyle: TextStyle(
+                fontSize: 14,
+                color: onSurface.withValues(alpha: 0.5),
+              ),
               errorText: _error,
-              border: const OutlineInputBorder(),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                borderSide: BorderSide(color: borderColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                borderSide: BorderSide(color: primaryColor, width: 1.2),
+              ),
             ),
           ),
           const Gap(12),
           Wrap(
-            spacing: 6,
-            runSpacing: 6,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               for (final preset in widget.presets)
-                ActionChip(
-                  label: Text(widget.formatter(preset)),
-                  onPressed: () => _selectPreset(preset),
+                _PresetChip(
+                  label: widget.formatter(preset),
+                  selected: preset == int.tryParse(_controller.text.trim()),
+                  onTap: () => _selectPreset(preset),
                 ),
             ],
           ),
@@ -243,6 +305,58 @@ class _LimitEditorDialogState extends State<_LimitEditorDialog> {
           child: const Text('Apply'),
         ),
       ],
+    );
+  }
+}
+
+class _PresetChip extends StatelessWidget {
+  const _PresetChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
+        context.appTheme.colorScheme.primary;
+    final cardColor = context.ispectTheme.card?.resolve(context) ??
+        context.appTheme.colorScheme.surfaceContainerHigh;
+    final onSurface = context.appTheme.colorScheme.onSurface;
+
+    final bg = selected ? primaryColor.withValues(alpha: 0.12) : cardColor;
+    final border = selected
+        ? primaryColor.withValues(alpha: 0.35)
+        : onSurface.withValues(alpha: 0.08);
+    final fg = selected ? primaryColor : context.appTheme.textColor;
+
+    return Material(
+      color: bg,
+      borderRadius: const BorderRadius.all(Radius.circular(10)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(color: border),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            child: Text(
+              label,
+              style: context.appTheme.textTheme.labelMedium?.copyWith(
+                color: fg,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
