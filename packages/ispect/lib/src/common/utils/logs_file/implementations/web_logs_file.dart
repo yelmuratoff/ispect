@@ -231,15 +231,8 @@ class WebLogsFile extends BaseLogsFile {
   }
 
   /// Creates timestamped filename for direct download
-  static String _createTimestampedFileName(String fileName) {
-    final now = DateTime.now();
-    final timestamp = '${now.year}-${now.month.toString().padLeft(2, '0')}-'
-        '${now.day.toString().padLeft(2, '0')}_'
-        '${now.hour.toString().padLeft(2, '0')}-'
-        '${now.minute.toString().padLeft(2, '0')}-'
-        '${now.second.toString().padLeft(2, '0')}';
-    return '${fileName}_$timestamp.json';
-  }
+  static String _createTimestampedFileName(String fileName) =>
+      '${fileName}_${DateFormatter.nowAsFileTimestamp()}.json';
 
   /// Revokes all cached object URLs and clears metadata.
   ///
