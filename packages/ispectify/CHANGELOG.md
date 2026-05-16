@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.0.0-dev58
+## 5.0.0
 
 ### Breaking Changes
 
