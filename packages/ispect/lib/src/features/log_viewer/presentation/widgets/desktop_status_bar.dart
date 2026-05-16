@@ -30,8 +30,7 @@ class DesktopStatusBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.cardColor;
+    final cardColor = context.ispectRowCardColor;
     final onSurface = context.appTheme.colorScheme.onSurface;
     final borderColor = onSurface.withValues(alpha: 0.1);
     final labelColor = onSurface.withValues(alpha: 0.55);

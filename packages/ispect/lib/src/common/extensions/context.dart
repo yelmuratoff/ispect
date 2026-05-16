@@ -52,6 +52,12 @@ extension ISpectColorTokens on BuildContext {
       ispectTheme.card?.resolve(this) ??
       appTheme.colorScheme.surfaceContainerHigh;
 
+  /// Row / list / status-bar surface. Falls back to [ThemeData.cardColor]
+  /// (typically `surfaceContainerLow`) so it sits one elevation step *below*
+  /// [ispectCardColor] tiles.
+  Color get ispectRowCardColor =>
+      ispectTheme.card?.resolve(this) ?? appTheme.cardColor;
+
   /// Subtle 1px border tint shared by tiles, inputs, and chips.
   Color get ispectSubtleBorderColor =>
       appTheme.colorScheme.onSurface.withValues(alpha: 0.08);

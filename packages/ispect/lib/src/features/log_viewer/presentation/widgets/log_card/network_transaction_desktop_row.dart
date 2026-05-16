@@ -47,8 +47,7 @@ class _NetworkTransactionDesktopRowState
     final color = transactionColor(tx);
     final onSurface = context.appTheme.colorScheme.onSurface;
     final borderColor = onSurface.withValues(alpha: 0.06);
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.cardColor;
+    final cardColor = context.ispectRowCardColor;
 
     final primaryColor = context.appTheme.colorScheme.primary;
     final isFocused = widget.searchMatchState == SearchMatchState.focused;

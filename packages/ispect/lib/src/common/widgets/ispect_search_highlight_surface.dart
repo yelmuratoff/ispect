@@ -27,8 +27,7 @@ class ISpectSearchHighlightSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = context.appTheme.colorScheme.primary;
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.cardColor;
+    final cardColor = context.ispectRowCardColor;
 
     final Color effectiveBg;
     final Color effectiveBorder;

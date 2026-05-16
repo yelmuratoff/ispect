@@ -191,8 +191,7 @@ class _LogTypeGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.cardColor;
+    final cardColor = context.ispectRowCardColor;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),

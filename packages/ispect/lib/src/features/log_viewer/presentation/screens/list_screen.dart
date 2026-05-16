@@ -215,8 +215,7 @@ class EmptyLogsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final onSurface = context.appTheme.colorScheme.onSurface;
     final muted = onSurface.withValues(alpha: 0.15);
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.cardColor;
+    final cardColor = context.ispectRowCardColor;
 
     return Center(
       child: Padding(

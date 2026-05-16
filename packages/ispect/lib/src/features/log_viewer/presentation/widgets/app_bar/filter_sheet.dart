@@ -256,8 +256,7 @@ class _LogTypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.cardColor;
+    final cardColor = context.ispectRowCardColor;
     final borderColor =
         context.appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
 

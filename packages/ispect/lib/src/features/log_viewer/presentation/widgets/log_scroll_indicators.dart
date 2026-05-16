@@ -69,8 +69,7 @@ class ScrollToEdgeFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.cardColor;
+    final cardColor = context.ispectRowCardColor;
     final borderColor = context.ispectSubtleBorderColor;
 
     return SizedBox(
