@@ -11,6 +11,7 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
+import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/daily_sessions.dart';
@@ -98,9 +99,12 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
 
   @override
   Widget build(BuildContext context) {
-    final compactDensity = context.ispectAppBarButtonDensity;
     final toolbarHeight = context.ispectAppBarToolbarHeight;
-    final iconSize = context.ispectAppBarIconSize;
+    final horizontalPadding = context.screenSizeWhen(
+      phone: () => 16.0,
+      tablet: () => 16.0,
+      desktop: () => 20.0,
+    );
 
     return ValueListenableBuilder(
       valueListenable: _hasSearchText,
@@ -108,46 +112,36 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
         elevation: 0,
         pinned: true,
         toolbarHeight: toolbarHeight ?? kToolbarHeight,
-        leading: IconButton(
-          visualDensity: compactDensity,
-          iconSize: iconSize,
-          onPressed: () => context.iSpect.options.pop(context),
+        leading: ISpectAppBarIconButton(
+          icon: Icons.arrow_back_rounded,
           tooltip: context.ispectL10n.back,
-          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => context.iSpect.options.pop(context),
         ),
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
         backgroundColor: widget.backgroundColor ??
-            context.ispectTheme.background?.resolve(context) ??
+            context.ispectThemeBackground ??
             context.appTheme.scaffoldBackgroundColor,
         actions: [
-          IconButton(
-            visualDensity: compactDensity,
-            iconSize: iconSize,
-            onPressed: widget.controller.toggleLogOrder,
+          ISpectAppBarIconButton(
+            icon: Icons.import_export_rounded,
             tooltip: context.ispectL10n.reverseLogs,
-            icon: Icon(
-              Icons.import_export_rounded,
-              color: !widget.controller.isLogOrderReversed
-                  ? context.ispectPrimaryColor
-                  : null,
-            ),
+            onPressed: widget.controller.toggleLogOrder,
+            color: !widget.controller.isLogOrderReversed
+                ? context.ispectPrimaryColor
+                : null,
           ),
-          IconButton(
-            visualDensity: compactDensity,
-            iconSize: iconSize,
-            onPressed: () => ISpectOnboardingDialog.show(context),
+          ISpectAppBarIconButton(
+            icon: Icons.tips_and_updates_outlined,
             tooltip: context.ispectL10n.tips,
-            icon: const Icon(Icons.tips_and_updates_outlined),
+            onPressed: () => ISpectOnboardingDialog.show(context),
           ),
           if (widget.onSettingsTap != null)
-            IconButton(
-              visualDensity: compactDensity,
-              iconSize: iconSize,
-              onPressed: widget.onSettingsTap,
+            ISpectAppBarIconButton(
+              icon: Icons.settings_outlined,
               tooltip: context.ispectL10n.settings,
-              icon: const Icon(Icons.settings_outlined),
+              onPressed: widget.onSettingsTap,
             ),
           const Gap(6),
         ],
@@ -155,18 +149,11 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Padding(
-            padding: EdgeInsets.only(
-              left: context.screenSizeWhen(
-                phone: () => 16.0,
-                tablet: () => 16.0,
-                desktop: () => 20.0,
-              ),
-              right: context.screenSizeWhen(
-                phone: () => 16.0,
-                tablet: () => 16.0,
-                desktop: () => 20.0,
-              ),
-              bottom: 4,
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              0,
+              horizontalPadding,
+              4,
             ),
             child: Row(
               children: [

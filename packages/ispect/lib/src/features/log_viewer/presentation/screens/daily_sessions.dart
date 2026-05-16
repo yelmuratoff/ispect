@@ -7,7 +7,6 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
-import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
@@ -104,79 +103,66 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final compactDensity = context.ispectAppBarButtonDensity;
-    final iconSize = context.ispectAppBarIconSize;
-
-    return Scaffold(
-      backgroundColor: context.ispectThemeBackground,
-      appBar: ISpectFlatAppBar(
-        title: ISpectAppBarTitle(
-          child: Text(
-            context.ispectL10n.sessions,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.5,
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: context.ispectThemeBackground,
+        appBar: ISpectFlatAppBar(
+          title: ISpectAppBarTitle(
+            child: Text(
+              context.ispectL10n.sessions,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
+          leading: const ISpectAppBarBackButton(),
+          actionsPadding: const EdgeInsets.only(right: 12),
+          actions: [
+            if (context.iSpect.options.onOpenFile != null)
+              ISpectAppBarIconButton(
+                icon: Icons.open_in_new_rounded,
+                tooltip: context.ispectL10n.openPath,
+                onPressed: _openPath,
+              ),
+            ISpectAppBarIconButton(
+              icon: Icons.copy_all_rounded,
+              tooltip: context.ispectL10n.copyPath,
+              onPressed: _copyPathToClipboard,
+            ),
+            ISpectAppBarIconButton(
+              icon: Icons.refresh_rounded,
+              tooltip: context.ispectL10n.refresh,
+              onPressed: () => _loadSessions(isRefreshing: true),
+            ),
+            if (widget.history != null)
+              ISpectAppBarIconButton(
+                icon: Icons.clear_all_rounded,
+                tooltip: context.ispectL10n.clearAllSessions,
+                onPressed: _showClearAllDialog,
+              ),
+          ],
         ),
-        leading: const ISpectAppBarBackButton(),
-        actionsPadding: const EdgeInsets.only(right: 12),
-        actions: [
-          if (context.iSpect.options.onOpenFile != null)
-            IconButton(
-              visualDensity: compactDensity,
-              iconSize: iconSize,
-              icon: const Icon(Icons.open_in_new_rounded),
-              onPressed: _openPath,
-              tooltip: context.ispectL10n.openPath,
-            ),
-          IconButton(
-            visualDensity: compactDensity,
-            iconSize: iconSize,
-            icon: const Icon(Icons.copy_all_rounded),
-            onPressed: _copyPathToClipboard,
-            tooltip: context.ispectL10n.copyPath,
-          ),
-          IconButton(
-            visualDensity: compactDensity,
-            iconSize: iconSize,
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => _loadSessions(isRefreshing: true),
-            tooltip: context.ispectL10n.refresh,
-          ),
-          if (widget.history != null)
-            IconButton(
-              visualDensity: compactDensity,
-              iconSize: iconSize,
-              icon: const Icon(Icons.clear_all_rounded),
-              onPressed: _showClearAllDialog,
-              tooltip: context.ispectL10n.clearAllSessions,
-            ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator.adaptive())
-          : _dates.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.only(top: 16, left: 16),
-                  child: EmptyLogsWidget(),
-                )
-              : ListView.builder(
-                  itemCount: _dates.length,
-                  itemBuilder: (context, index) {
-                    final session = _dates[index];
-                    return _SessionListTile(
-                      key: ObjectKey(session),
-                      session: session,
-                      history: widget.history!,
-                      onTap: () => _navigateToSession(session),
-                    );
-                  },
-                ),
-    );
-  }
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator.adaptive())
+            : _dates.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.only(top: 16, left: 16),
+                    child: EmptyLogsWidget(),
+                  )
+                : ListView.builder(
+                    itemCount: _dates.length,
+                    itemBuilder: (context, index) {
+                      final session = _dates[index];
+                      return _SessionListTile(
+                        key: ObjectKey(session),
+                        session: session,
+                        history: widget.history!,
+                        onTap: () => _navigateToSession(session),
+                      );
+                    },
+                  ),
+      );
 
   void _showClearAllDialog() {
     showDialog<void>(

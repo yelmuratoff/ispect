@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
@@ -119,9 +118,6 @@ class _JsonScreenState extends State<JsonScreen> {
     final logKey = widget.data['key']?.toString();
     final logColor = iSpect.theme.getTypeColor(context, key: logKey);
     final logIcon = iSpect.theme.getTypeIcon(context, key: logKey);
-    final compactDensity = context.ispectAppBarButtonDensity;
-    final iconSize = context.ispectAppBarIconSize;
-
     return Scaffold(
       backgroundColor: bgColor,
       appBar: ISpectFlatAppBar(
@@ -164,17 +160,13 @@ class _JsonScreenState extends State<JsonScreen> {
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    visualDensity: compactDensity,
-                    iconSize: iconSize,
-                    icon: const Icon(Icons.unfold_more_rounded),
+                  ISpectAppBarIconButton(
+                    icon: Icons.unfold_more_rounded,
                     tooltip: context.ispectL10n.expandLogs,
                     onPressed: _store.expandAll,
                   ),
-                  IconButton(
-                    visualDensity: compactDensity,
-                    iconSize: iconSize,
-                    icon: const Icon(Icons.unfold_less_rounded),
+                  ISpectAppBarIconButton(
+                    icon: Icons.unfold_less_rounded,
                     tooltip: context.ispectL10n.collapseLogs,
                     onPressed: _store.collapseAll,
                   ),
@@ -183,10 +175,8 @@ class _JsonScreenState extends State<JsonScreen> {
             },
           ),
           if (context.iSpect.options.onShare != null)
-            IconButton(
-              visualDensity: compactDensity,
-              iconSize: iconSize,
-              icon: const Icon(Icons.share_rounded),
+            ISpectAppBarIconButton(
+              icon: Icons.share_rounded,
               tooltip: context.ispectL10n.shareLogsFile,
               onPressed: () async {
                 await ISpectShareLogBottomSheet(

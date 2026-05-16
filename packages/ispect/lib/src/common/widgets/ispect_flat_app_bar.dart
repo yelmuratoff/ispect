@@ -63,11 +63,36 @@ class ISpectAppBarBackButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
+  Widget build(BuildContext context) => ISpectAppBarIconButton(
+        icon: Icons.arrow_back_rounded,
+        tooltip: context.ispectL10n.back,
+        onPressed: onPressed ?? () => Navigator.of(context).pop(),
+      );
+}
+
+/// [IconButton] preset that picks up ISpect's AppBar density / icon-size
+/// tokens automatically. Use anywhere a screen needs an `actions:`/`leading:`
+/// button on top of [ISpectFlatAppBar] or the main sliver AppBar.
+class ISpectAppBarIconButton extends StatelessWidget {
+  const ISpectAppBarIconButton({
+    required this.icon,
+    required this.onPressed,
+    this.tooltip,
+    this.color,
+    super.key,
+  });
+
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final String? tooltip;
+  final Color? color;
+
+  @override
   Widget build(BuildContext context) => IconButton(
         visualDensity: context.ispectAppBarButtonDensity,
         iconSize: context.ispectAppBarIconSize,
-        onPressed: onPressed ?? () => Navigator.of(context).pop(),
-        tooltip: context.ispectL10n.back,
-        icon: const Icon(Icons.arrow_back_rounded),
+        onPressed: onPressed,
+        tooltip: tooltip,
+        icon: Icon(icon, color: color),
       );
 }
