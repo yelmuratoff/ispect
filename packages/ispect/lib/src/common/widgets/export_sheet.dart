@@ -92,8 +92,7 @@ class _FormatChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
-        context.appTheme.colorScheme.primary;
+    final primaryColor = context.ispectPrimaryColor;
     final outlineColor =
         context.appTheme.colorScheme.onSurface.withValues(alpha: 0.12);
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_icon_badge.dart';
 
 /// Title block shared by bottom sheets and dialogs: optional icon badge,
@@ -183,54 +184,28 @@ class ISpectSheetActionButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) {
-    final disabled = onPressed == null;
-    final cardColor = context.ispectCardColor;
-    final primaryColor = context.ispectPrimaryColor;
-    final disabledAlpha = disabled ? 0.4 : 1.0;
-
-    return Opacity(
-      opacity: disabledAlpha,
-      child: Material(
-        color: cardColor,
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        child: Semantics(
-          button: true,
-          label: label,
+  Widget build(BuildContext context) => Opacity(
+        opacity: onPressed == null ? 0.4 : 1.0,
+        child: ISpectBorderedSurface(
           onTap: onPressed,
-          child: InkWell(
-            excludeFromSemantics: true,
-            onTap: onPressed,
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                border: Border.all(color: context.ispectSubtleBorderColor),
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(icon, size: 16, color: primaryColor),
-                    const Gap(8),
-                    Flexible(
-                      child: Text(
-                        label,
-                        style: context.appTheme.textTheme.labelMedium?.copyWith(
-                          color: context.appTheme.textColor,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
+          semanticsLabel: label,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: context.ispectPrimaryColor),
+              const Gap(8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: context.appTheme.textTheme.labelMedium?.copyWith(
+                    color: context.appTheme.textColor,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
-      ),
-    );
-  }
+      );
 }

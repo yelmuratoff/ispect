@@ -157,8 +157,7 @@ class JsonExplorerTheme {
         : Colors.yellow;
     const focusedFg = Colors.black;
 
-    final keyColor = context.ispectTheme.primary?.resolve(context) ??
-        Theme.of(context).colorScheme.primary;
+    final keyColor = context.ispectPrimaryColor;
 
     return JsonExplorerTheme(
       propertyKeyTextStyle: TextStyle(

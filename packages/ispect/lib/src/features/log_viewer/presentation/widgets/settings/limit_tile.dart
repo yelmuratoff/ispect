@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_input.dart';
 
 String formatCount(int value) {
@@ -46,89 +47,67 @@ class LimitTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = context.ispectCardColor;
     final primaryColor = context.ispectPrimaryColor;
     final textColor = context.appTheme.textColor;
 
-    return Material(
-      color: cardColor,
-      borderRadius: const BorderRadius.all(Radius.circular(10)),
-      child: InkWell(
-        onTap: () => _openEditor(context),
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(color: context.ispectSubtleBorderColor),
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
+    return ISpectBorderedSurface(
+      onTap: () => _openEditor(context),
+      semanticsLabel: label,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: primaryColor.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 16, color: primaryColor),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
+          const Gap(10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, size: 16, color: primaryColor),
-                ),
-                const Gap(10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: context.appTheme.textTheme.labelLarge?.copyWith(
-                          color: textColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        description,
-                        style: context.appTheme.textTheme.bodySmall?.copyWith(
-                          color: textColor.withValues(alpha: 0.55),
-                        ),
-                      ),
-                    ],
+                Text(
+                  label,
+                  style: context.appTheme.textTheme.labelLarge?.copyWith(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withValues(alpha: 0.1),
-                    borderRadius: const BorderRadius.all(Radius.circular(8)),
-                    border: Border.all(
-                      color: primaryColor.withValues(alpha: 0.35),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        formatter(value),
-                        style: context.appTheme.textTheme.labelMedium?.copyWith(
-                          color: primaryColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const Gap(4),
-                      Icon(
-                        Icons.edit_rounded,
-                        size: 14,
-                        color: primaryColor,
-                      ),
-                    ],
+                Text(
+                  description,
+                  style: context.appTheme.textTheme.bodySmall?.copyWith(
+                    color: textColor.withValues(alpha: 0.55),
                   ),
                 ),
               ],
             ),
           ),
-        ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: primaryColor.withValues(alpha: 0.1),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              border: Border.all(color: primaryColor.withValues(alpha: 0.35)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  formatter(value),
+                  style: context.appTheme.textTheme.labelMedium?.copyWith(
+                    color: primaryColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Gap(4),
+                Icon(Icons.edit_rounded, size: 14, color: primaryColor),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -250,35 +229,17 @@ class _PresetChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = context.ispectPrimaryColor;
-    final bg = selected
-        ? primaryColor.withValues(alpha: 0.12)
-        : context.ispectCardColor;
-    final border = selected
-        ? primaryColor.withValues(alpha: 0.35)
-        : context.ispectSubtleBorderColor;
-    final fg = selected ? primaryColor : context.appTheme.textColor;
-
-    return Material(
-      color: bg,
-      borderRadius: const BorderRadius.all(Radius.circular(10)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(color: border),
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            child: Text(
-              label,
-              style: context.appTheme.textTheme.labelMedium?.copyWith(
-                color: fg,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+    return ISpectBorderedSurface(
+      onTap: onTap,
+      semanticsLabel: label,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      backgroundColor: selected ? primaryColor.withValues(alpha: 0.12) : null,
+      borderColor: selected ? primaryColor.withValues(alpha: 0.35) : null,
+      child: Text(
+        label,
+        style: context.appTheme.textTheme.labelMedium?.copyWith(
+          color: selected ? primaryColor : context.appTheme.textColor,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

@@ -46,13 +46,11 @@ class CompactToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
-        context.appTheme.colorScheme.primary;
+    final primaryColor = context.ispectPrimaryColor;
     final cardColor = context.ispectTheme.card?.resolve(context) ??
         context.appTheme.cardColor;
     final textColor = context.appTheme.textColor;
-    final outlineColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.08);
+    final outlineColor = context.ispectSubtleBorderColor;
 
     final disabled = !spec.canEdit;
     final enabled = spec.enabled;

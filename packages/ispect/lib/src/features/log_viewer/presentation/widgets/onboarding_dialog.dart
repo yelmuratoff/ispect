@@ -5,6 +5,7 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_icon_badge.dart';
 
 /// Shows a tips sheet with helpful hints about the logs screen.
@@ -90,29 +91,22 @@ class _HintRow extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border.all(color: context.ispectSubtleBorderColor),
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ISpectIconBadge(icon: icon, size: ISpectIconBadgeSize.small),
-              const Gap(10),
-              Expanded(
-                child: Text(
-                  text,
-                  style: context.appTheme.textTheme.bodyMedium?.copyWith(
-                    color: context.appTheme.textColor,
-                    fontWeight: FontWeight.w500,
-                  ),
+  Widget build(BuildContext context) => ISpectBorderedSurface(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ISpectIconBadge(icon: icon, size: ISpectIconBadgeSize.small),
+            const Gap(10),
+            Expanded(
+              child: Text(
+                text,
+                style: context.appTheme.textTheme.bodyMedium?.copyWith(
+                  color: context.appTheme.textColor,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
 }

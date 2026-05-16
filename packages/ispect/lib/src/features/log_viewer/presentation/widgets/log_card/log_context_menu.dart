@@ -5,6 +5,7 @@ import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_icon_badge.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
 import 'package:ispectify/ispectify.dart';
@@ -208,55 +209,32 @@ class _ActionTile extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-        button: true,
-        label: label,
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 3),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-            child: InkWell(
-              excludeFromSemantics: true,
-              onTap: onTap,
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  border: Border.all(color: context.ispectSubtleBorderColor),
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  child: Row(
-                    children: [
-                      ISpectIconBadge(
-                        icon: icon,
-                        size: ISpectIconBadgeSize.small,
-                      ),
-                      const Gap(10),
-                      Expanded(
-                        child: Text(
-                          label,
-                          style:
-                              context.appTheme.textTheme.bodyMedium?.copyWith(
-                            color: context.appTheme.textColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        size: 16,
-                        color:
-                            context.appTheme.textColor.withValues(alpha: 0.3),
-                      ),
-                    ],
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: ISpectBorderedSurface(
+          onTap: onTap,
+          backgroundColor: Colors.transparent,
+          semanticsLabel: label,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Row(
+            children: [
+              ISpectIconBadge(icon: icon, size: ISpectIconBadgeSize.small),
+              const Gap(10),
+              Expanded(
+                child: Text(
+                  label,
+                  style: context.appTheme.textTheme.bodyMedium?.copyWith(
+                    color: context.appTheme.textColor,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-            ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 16,
+                color: context.appTheme.textColor.withValues(alpha: 0.3),
+              ),
+            ],
           ),
         ),
       );

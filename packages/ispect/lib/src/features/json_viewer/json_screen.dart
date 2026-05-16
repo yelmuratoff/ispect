@@ -308,8 +308,7 @@ class _JsonScreenState extends State<JsonScreen> {
                 child: ClipRRect(
                   borderRadius: const BorderRadius.all(Radius.circular(12)),
                   child: ColoredBox(
-                    color: context.ispectTheme.card?.resolve(context) ??
-                        context.appTheme.colorScheme.surfaceContainerHigh,
+                    color: context.ispectCardColor,
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
                       child: JsonExplorer(
@@ -684,8 +683,7 @@ class _BreadcrumbBar extends StatelessWidget {
     final mutedColor = onSurface.withValues(alpha: 0.45);
     final activeColor = onSurface.withValues(alpha: 0.85);
 
-    final chipColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.colorScheme.surfaceContainerHigh;
+    final chipColor = context.ispectCardColor;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),

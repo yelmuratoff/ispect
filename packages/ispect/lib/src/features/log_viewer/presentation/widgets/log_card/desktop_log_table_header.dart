@@ -27,7 +27,7 @@ class DesktopLogTableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onSurface = context.appTheme.colorScheme.onSurface;
-    final borderColor = onSurface.withValues(alpha: 0.08);
+    final borderColor = context.ispectSubtleBorderColor;
     final labelColor = onSurface.withValues(alpha: 0.45);
     const labelStyle = TextStyle(
       fontSize: 11,

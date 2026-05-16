@@ -125,8 +125,7 @@ class _DragDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     final isActive = isDragging || isHovered;
     final primaryColor = context.appTheme.colorScheme.primary;
-    final defaultColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.08);
+    final defaultColor = context.ispectSubtleBorderColor;
     final lineColor =
         isActive ? primaryColor.withValues(alpha: 0.5) : defaultColor;
 
