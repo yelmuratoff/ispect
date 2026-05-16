@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/common/widgets/ispect_input.dart';
 
 /// Styled search field shared across log list and JSON viewer screens.
 ///
@@ -25,28 +26,22 @@ class ISpectSearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onSurface = context.appTheme.colorScheme.onSurface;
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.colorScheme.surfaceContainerHigh;
 
     return SearchBar(
       focusNode: focusNode,
       controller: controller,
-      backgroundColor: WidgetStatePropertyAll(cardColor),
+      backgroundColor: WidgetStatePropertyAll(context.ispectCardColor),
       constraints: BoxConstraints(minHeight: context.ispectInputMinHeight),
       shape: const WidgetStatePropertyAll(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
+        RoundedRectangleBorder(borderRadius: ISpectInputStyle.borderRadius),
       ),
       padding: const WidgetStatePropertyAll(
         EdgeInsets.symmetric(horizontal: 10),
       ),
       textStyle: WidgetStatePropertyAll(
-        TextStyle(fontSize: 14, color: onSurface),
+        TextStyle(fontSize: ISpectInputStyle.fontSize, color: onSurface),
       ),
-      hintStyle: WidgetStatePropertyAll(
-        TextStyle(fontSize: 14, color: onSurface.withValues(alpha: 0.5)),
-      ),
+      hintStyle: WidgetStatePropertyAll(ISpectInputStyle.hintStyle(context)),
       leading: Icon(
         Icons.search_rounded,
         size: 18,

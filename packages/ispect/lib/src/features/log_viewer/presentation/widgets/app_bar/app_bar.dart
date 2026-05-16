@@ -147,7 +147,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
               iconSize: iconSize,
               onPressed: widget.onSettingsTap,
               tooltip: context.ispectL10n.settings,
-              icon: const Icon(Icons.tune_rounded),
+              icon: const Icon(Icons.settings_outlined),
             ),
           const Gap(6),
         ],

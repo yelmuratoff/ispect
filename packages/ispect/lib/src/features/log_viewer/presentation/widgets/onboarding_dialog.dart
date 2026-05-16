@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_icon_badge.dart';
 
 /// Shows a tips dialog with helpful hints about the logs screen.
 class ISpectOnboardingDialog {
@@ -24,45 +26,16 @@ class _OnboardingContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = ISpectLocalization.of(context);
-    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
-        context.appTheme.colorScheme.primary;
-    final bgColor = context.ispectTheme.background?.resolve(context) ??
-        context.appTheme.colorScheme.surfaceContainerLowest;
 
     return AlertDialog(
-      backgroundColor: bgColor,
+      backgroundColor: context.ispectBackgroundColor,
       surfaceTintColor: Colors.transparent,
-      titlePadding: const EdgeInsets.fromLTRB(20, 20, 12, 8),
+      titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
       contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
       actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-      title: Row(
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.12),
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Icon(
-                Icons.tips_and_updates_outlined,
-                color: primaryColor,
-                size: 22,
-              ),
-            ),
-          ),
-          const Gap(12),
-          Expanded(
-            child: Text(
-              l10n.tips,
-              style: context.appTheme.textTheme.titleLarge?.copyWith(
-                color: context.appTheme.textColor,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.5,
-              ),
-            ),
-          ),
-        ],
+      title: ISpectDialogHeader(
+        title: l10n.tips,
+        icon: Icons.tips_and_updates_outlined,
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -129,45 +102,29 @@ class _HintRow extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) {
-    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
-        context.appTheme.colorScheme.primary;
-    final borderColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.08);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(color: borderColor),
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.1),
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(icon, size: 16, color: primaryColor),
-              ),
-            ),
-            const Gap(10),
-            Expanded(
-              child: Text(
-                text,
-                style: context.appTheme.textTheme.bodyMedium?.copyWith(
-                  color: context.appTheme.textColor,
-                  fontWeight: FontWeight.w500,
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(color: context.ispectSubtleBorderColor),
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ISpectIconBadge(icon: icon, size: ISpectIconBadgeSize.small),
+              const Gap(10),
+              Expanded(
+                child: Text(
+                  text,
+                  style: context.appTheme.textTheme.bodyMedium?.copyWith(
+                    color: context.appTheme.textColor,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }

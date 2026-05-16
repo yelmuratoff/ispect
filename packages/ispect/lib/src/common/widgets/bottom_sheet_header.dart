@@ -2,6 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_icon_badge.dart';
+
+/// Title block shared by bottom sheets and dialogs: optional icon badge,
+/// title, optional subtitle.
+class _HeaderTitleSection extends StatelessWidget {
+  const _HeaderTitleSection({
+    required this.title,
+    this.subtitle,
+    this.icon,
+  });
+
+  final String title;
+  final String? subtitle;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = context.appTheme.textColor;
+    return Row(
+      children: [
+        if (icon != null) ...[
+          ISpectIconBadge(icon: icon!),
+          const Gap(12),
+        ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: context.appTheme.textTheme.titleLarge?.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              if (subtitle != null)
+                Text(
+                  subtitle!,
+                  style: context.appTheme.textTheme.bodySmall?.copyWith(
+                    color: textColor.withValues(alpha: 0.5),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 /// Reusable header widget for bottom sheets with icon, title, subtitle,
 /// and close button.
@@ -20,67 +70,56 @@ class ISpectBottomSheetHeader extends StatelessWidget {
   final VoidCallback? onClose;
 
   @override
-  Widget build(BuildContext context) {
-    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
-        context.appTheme.colorScheme.primary;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 12, 4),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.12),
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Icon(icon, color: primaryColor, size: 22),
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 12, 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: _HeaderTitleSection(
+                title: title,
+                subtitle: subtitle,
+                icon: icon,
               ),
             ),
-            const Gap(12),
+            IconButton(
+              onPressed: onClose ?? () => Navigator.pop(context),
+              tooltip: context.ispectL10n.close,
+              style: IconButton.styleFrom(
+                backgroundColor: context.appTheme.colorScheme.onSurface
+                    .withValues(alpha: 0.06),
+                shape: const CircleBorder(),
+              ),
+              icon: Icon(
+                Icons.close_rounded,
+                color: context.appTheme.textColor.withValues(alpha: 0.6),
+                size: 20,
+              ),
+            ),
           ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: context.appTheme.textTheme.titleLarge?.copyWith(
-                    color: context.appTheme.textColor,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                if (subtitle != null)
-                  Text(
-                    subtitle!,
-                    style: context.appTheme.textTheme.bodySmall?.copyWith(
-                      color: context.appTheme.textColor.withValues(alpha: 0.5),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: onClose ?? () => Navigator.pop(context),
-            tooltip: context.ispectL10n.close,
-            style: IconButton.styleFrom(
-              backgroundColor: context.appTheme.colorScheme.onSurface
-                  .withValues(alpha: 0.06),
-              shape: const CircleBorder(),
-            ),
-            icon: Icon(
-              Icons.close_rounded,
-              color: context.appTheme.textColor.withValues(alpha: 0.6),
-              size: 20,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      );
+}
+
+/// Dialog title row mirroring [ISpectBottomSheetHeader] without a close
+/// button (dialogs surface dismissal through action buttons instead).
+class ISpectDialogHeader extends StatelessWidget {
+  const ISpectDialogHeader({
+    required this.title,
+    super.key,
+    this.subtitle,
+    this.icon,
+  });
+
+  final String title;
+  final String? subtitle;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) => _HeaderTitleSection(
+        title: title,
+        subtitle: subtitle,
+        icon: icon,
+      );
 }
 
 /// A small drag indicator bar for bottom sheets.
@@ -146,10 +185,8 @@ class ISpectSheetActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final disabled = onPressed == null;
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.cardColor;
-    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
-        context.appTheme.colorScheme.primary;
+    final cardColor = context.ispectCardColor;
+    final primaryColor = context.ispectPrimaryColor;
     final disabledAlpha = disabled ? 0.4 : 1.0;
 
     return Opacity(
@@ -167,10 +204,7 @@ class ISpectSheetActionButton extends StatelessWidget {
             borderRadius: const BorderRadius.all(Radius.circular(10)),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                border: Border.all(
-                  color: context.appTheme.colorScheme.onSurface
-                      .withValues(alpha: 0.08),
-                ),
+                border: Border.all(color: context.ispectSubtleBorderColor),
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
               ),
               child: Padding(

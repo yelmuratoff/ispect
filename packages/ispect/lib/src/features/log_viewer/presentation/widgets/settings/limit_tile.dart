@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_input.dart';
 
 String formatCount(int value) {
   if (value >= 1000 && value % 1000 == 0) return '${value ~/ 1000}k';
@@ -44,10 +46,8 @@ class LimitTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.cardColor;
-    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
-        context.appTheme.colorScheme.primary;
+    final cardColor = context.ispectCardColor;
+    final primaryColor = context.ispectPrimaryColor;
     final textColor = context.appTheme.textColor;
 
     return Material(
@@ -58,11 +58,7 @@ class LimitTile extends StatelessWidget {
         borderRadius: const BorderRadius.all(Radius.circular(10)),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            border: Border.all(
-              color: context.appTheme.colorScheme.onSurface.withValues(
-                alpha: 0.08,
-              ),
-            ),
+            border: Border.all(color: context.ispectSubtleBorderColor),
             borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           child: Padding(
@@ -189,124 +185,55 @@ class _LimitEditorDialogState extends State<_LimitEditorDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
-        context.appTheme.colorScheme.primary;
-    final bgColor = context.ispectTheme.background?.resolve(context) ??
-        context.appTheme.colorScheme.surfaceContainerLowest;
-    final fieldColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.colorScheme.surfaceContainerHigh;
-    final textColor = context.appTheme.textColor;
-    final onSurface = context.appTheme.colorScheme.onSurface;
-    final borderColor = onSurface.withValues(alpha: 0.08);
-
-    return AlertDialog(
-      backgroundColor: bgColor,
-      surfaceTintColor: Colors.transparent,
-      titlePadding: const EdgeInsets.fromLTRB(20, 20, 12, 8),
-      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-      actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-      title: Row(
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.12),
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Icon(widget.icon, color: primaryColor, size: 22),
-            ),
-          ),
-          const Gap(12),
-          Expanded(
-            child: Text(
-              widget.label,
-              style: context.appTheme.textTheme.titleLarge?.copyWith(
-                color: textColor,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.5,
-              ),
-            ),
-          ),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.description,
-            style: context.appTheme.textTheme.bodySmall?.copyWith(
-              color: textColor.withValues(alpha: 0.55),
-            ),
-          ),
-          const Gap(12),
-          TextField(
-            controller: _controller,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            onSubmitted: (_) => _submit(),
-            style: TextStyle(
-              fontSize: 14,
-              color: onSurface,
-              fontWeight: FontWeight.w600,
-            ),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: fieldColor,
+  Widget build(BuildContext context) => AlertDialog(
+        backgroundColor: context.ispectBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+        title: ISpectDialogHeader(
+          title: widget.label,
+          subtitle: widget.description,
+          icon: widget.icon,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ISpectTextField(
+              controller: _controller,
+              autofocus: true,
+              keyboardType: TextInputType.number,
               hintText: '0 disables this limit',
-              hintStyle: TextStyle(
-                fontSize: 14,
-                color: onSurface.withValues(alpha: 0.5),
-              ),
               errorText: _error,
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                borderSide: BorderSide(color: borderColor),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                borderSide: BorderSide(color: borderColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                borderSide: BorderSide(color: primaryColor, width: 1.2),
-              ),
+              onSubmitted: (_) => _submit(),
             ),
+            const Gap(12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final preset in widget.presets)
+                  _PresetChip(
+                    label: widget.formatter(preset),
+                    selected: preset == int.tryParse(_controller.text.trim()),
+                    onTap: () => _selectPreset(preset),
+                  ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
           ),
-          const Gap(12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final preset in widget.presets)
-                _PresetChip(
-                  label: widget.formatter(preset),
-                  selected: preset == int.tryParse(_controller.text.trim()),
-                  onTap: () => _selectPreset(preset),
-                ),
-            ],
+          FilledButton(
+            onPressed: _submit,
+            child: const Text('Apply'),
           ),
         ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: _submit,
-          child: const Text('Apply'),
-        ),
-      ],
-    );
-  }
+      );
 }
 
 class _PresetChip extends StatelessWidget {
@@ -322,16 +249,13 @@ class _PresetChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = context.ispectTheme.primary?.resolve(context) ??
-        context.appTheme.colorScheme.primary;
-    final cardColor = context.ispectTheme.card?.resolve(context) ??
-        context.appTheme.colorScheme.surfaceContainerHigh;
-    final onSurface = context.appTheme.colorScheme.onSurface;
-
-    final bg = selected ? primaryColor.withValues(alpha: 0.12) : cardColor;
+    final primaryColor = context.ispectPrimaryColor;
+    final bg = selected
+        ? primaryColor.withValues(alpha: 0.12)
+        : context.ispectCardColor;
     final border = selected
         ? primaryColor.withValues(alpha: 0.35)
-        : onSurface.withValues(alpha: 0.08);
+        : context.ispectSubtleBorderColor;
     final fg = selected ? primaryColor : context.appTheme.textColor;
 
     return Material(

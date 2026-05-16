@@ -115,7 +115,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.settings_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
       },
     );
 
@@ -127,7 +127,7 @@ void main() {
         await tester.pumpWidget(buildAppBar());
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.settings_rounded), findsNothing);
+        expect(find.byIcon(Icons.settings_outlined), findsNothing);
       },
     );
   });

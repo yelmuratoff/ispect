@@ -198,7 +198,7 @@ class _SettingsContentState extends State<_SettingsContent> {
               child: ISpectBottomSheetHeader(
                 title: 'ISpect',
                 subtitle: context.ispectL10n.settings,
-                icon: Icons.tune_rounded,
+                icon: Icons.settings_outlined,
               ),
             ),
           ),
