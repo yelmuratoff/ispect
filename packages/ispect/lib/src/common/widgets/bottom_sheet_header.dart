@@ -12,19 +12,24 @@ class _HeaderTitleSection extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.icon,
+    this.iconColor,
   });
 
   final String title;
   final String? subtitle;
   final IconData? icon;
 
+  /// Optional tint for the icon badge. Defaults to the theme's primary color.
+  final Color? iconColor;
+
   @override
   Widget build(BuildContext context) {
     final textColor = context.appTheme.textColor;
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (icon != null) ...[
-          ISpectIconBadge(icon: icon!),
+          ISpectIconBadge(icon: icon!, color: iconColor),
           const Gap(12),
         ],
         Expanded(
@@ -62,24 +67,30 @@ class ISpectBottomSheetHeader extends StatelessWidget {
     super.key,
     this.subtitle,
     this.icon,
+    this.iconColor,
     this.onClose,
   });
 
   final String title;
   final String? subtitle;
   final IconData? icon;
+
+  /// Optional tint for the icon badge. Defaults to the theme's primary color.
+  final Color? iconColor;
   final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 12, 4),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: _HeaderTitleSection(
                 title: title,
                 subtitle: subtitle,
                 icon: icon,
+                iconColor: iconColor,
               ),
             ),
             IconButton(
@@ -109,17 +120,22 @@ class ISpectDialogHeader extends StatelessWidget {
     super.key,
     this.subtitle,
     this.icon,
+    this.iconColor,
   });
 
   final String title;
   final String? subtitle;
   final IconData? icon;
 
+  /// Optional tint for the icon badge. Defaults to the theme's primary color.
+  final Color? iconColor;
+
   @override
   Widget build(BuildContext context) => _HeaderTitleSection(
         title: title,
         subtitle: subtitle,
         icon: icon,
+        iconColor: iconColor,
       );
 }
 

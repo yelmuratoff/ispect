@@ -31,11 +31,14 @@ Future<void> showLogContextMenu({
   void Function(String)? onTypeFilterTap,
 }) async {
   final l10n = context.ispectL10n;
+  final theme = context.iSpect.theme;
 
   final hasFilterActions = data.key != null && onTypeFilterTap != null;
   final hasNavigationFlow = onNavigationFlowTap != null;
-  final logDescription =
-      context.iSpect.theme.getTypeDescription(context, key: data.key);
+  final logKey = data.key;
+  final logDescription = theme.getTypeDescription(context, key: logKey);
+  final logIcon = theme.getTypeIcon(context, key: logKey);
+  final logColor = theme.getTypeColor(context, key: logKey);
 
   // Sheet sizing roughly tracks how many tiles we render.
   final tileCount = 3 // copy, share, expand always present
@@ -56,7 +59,10 @@ Future<void> showLogContextMenu({
         hasNavigationFlow: hasNavigationFlow,
         hasFilterActions: hasFilterActions,
         l10n: l10n,
-        subtitle: logDescription,
+        headerTitle: _formatLogType(logKey, l10n.actions),
+        headerSubtitle: logDescription,
+        headerIcon: logIcon,
+        headerIconColor: logColor,
         scrollController: scrollController,
       ),
     ),
@@ -85,13 +91,23 @@ Future<void> showLogContextMenu({
   }
 }
 
+/// Capitalises the log type for display, or falls back to the generic
+/// "Actions" label when the log carries no key.
+String _formatLogType(String? key, String fallback) {
+  if (key == null || key.isEmpty) return fallback;
+  return key[0].toUpperCase() + key.substring(1);
+}
+
 class _LogContextMenuSheet extends StatelessWidget {
   const _LogContextMenuSheet({
     required this.hasCurl,
     required this.hasNavigationFlow,
     required this.hasFilterActions,
     required this.l10n,
-    this.subtitle,
+    required this.headerTitle,
+    required this.headerIcon,
+    this.headerSubtitle,
+    this.headerIconColor,
     this.scrollController,
   });
 
@@ -99,7 +115,10 @@ class _LogContextMenuSheet extends StatelessWidget {
   final bool hasNavigationFlow;
   final bool hasFilterActions;
   final ISpectGeneratedLocalization l10n;
-  final String? subtitle;
+  final String headerTitle;
+  final String? headerSubtitle;
+  final IconData headerIcon;
+  final Color? headerIconColor;
   final ScrollController? scrollController;
 
   @override
@@ -110,9 +129,10 @@ class _LogContextMenuSheet extends StatelessWidget {
           const ISpectDragHandle(),
           const Gap(8),
           ISpectBottomSheetHeader(
-            title: l10n.actions,
-            subtitle: subtitle,
-            icon: Icons.more_horiz_rounded,
+            title: headerTitle,
+            subtitle: headerSubtitle,
+            icon: headerIcon,
+            iconColor: headerIconColor,
           ),
           const Gap(8),
           Flexible(
