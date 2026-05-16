@@ -121,7 +121,7 @@ class _SearchModeSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = context.appTheme.colorScheme.primary;
+    final primaryColor = context.ispectPrimaryColor;
     final borderColor = context.ispectFaintBorderColor;
 
     return Column(

@@ -49,7 +49,7 @@ class _NetworkTransactionDesktopRowState
     final borderColor = context.ispectFaintBorderColor;
     final cardColor = context.ispectRowCardColor;
 
-    final primaryColor = context.appTheme.colorScheme.primary;
+    final primaryColor = context.ispectPrimaryColor;
     final isFocused = widget.searchMatchState == SearchMatchState.focused;
     final isMatch = widget.searchMatchState == SearchMatchState.match;
 

@@ -269,7 +269,7 @@ class _CorrelationBanner extends StatelessWidget {
         ? ISpectLogType.httpResponse.key
         : ISpectLogType.httpRequest.key;
     final targetColor = theme.getTypeColor(context, key: targetKey) ??
-        context.appTheme.colorScheme.primary;
+        context.ispectPrimaryColor;
 
     return DecoratedBox(
       decoration: BoxDecoration(

@@ -147,7 +147,7 @@ class _SearchMatchNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = context.appTheme.colorScheme.primary;
+    final primaryColor = context.ispectPrimaryColor;
     final mutedColor =
         context.appTheme.colorScheme.onSurface.withValues(alpha: 0.3);
     final hasMatches = totalMatches > 0;

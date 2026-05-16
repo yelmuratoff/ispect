@@ -163,7 +163,7 @@ class DesktopStatusBar extends StatelessWidget {
                             : Icons.schedule_rounded,
                         size: 14,
                         color: useRelativeTime
-                            ? context.appTheme.colorScheme.primary
+                            ? context.ispectPrimaryColor
                             : labelColor,
                       ),
                     ),

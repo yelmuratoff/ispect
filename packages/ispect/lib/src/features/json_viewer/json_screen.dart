@@ -518,7 +518,7 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
     final correlatedKey = correlatedLogData['key']?.toString();
     final targetColor =
         iSpect.theme.getTypeColor(context, key: correlatedKey) ??
-            context.appTheme.colorScheme.primary;
+            context.ispectPrimaryColor;
 
     return DecoratedBox(
       decoration: BoxDecoration(

@@ -130,7 +130,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
             icon: Icon(
               Icons.import_export_rounded,
               color: !widget.controller.isLogOrderReversed
-                  ? context.appTheme.colorScheme.primary
+                  ? context.ispectPrimaryColor
                   : null,
             ),
           ),

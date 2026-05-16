@@ -187,7 +187,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
     final isOdd = widget.index.isOdd;
     final zebraColor = isOdd ? onSurface.withValues(alpha: 0.015) : cardColor;
 
-    final primaryColor = context.appTheme.colorScheme.primary;
+    final primaryColor = context.ispectPrimaryColor;
     final isFocused = widget.searchMatchState == SearchMatchState.focused;
     final isMatch = widget.searchMatchState == SearchMatchState.match;
 

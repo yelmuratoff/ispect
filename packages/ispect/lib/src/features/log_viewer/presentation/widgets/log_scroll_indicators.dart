@@ -15,7 +15,7 @@ class NewLogsIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = context.appTheme.colorScheme.primary;
+    final primary = context.ispectPrimaryColor;
 
     return Center(
       child: Material(

@@ -14,7 +14,7 @@ class ISpectFilterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = context.appTheme.colorScheme.primary;
+    final primaryColor = context.ispectPrimaryColor;
     final cardColor = context.ispectCardColor;
     final size = context.ispectSquareControlSize;
 
