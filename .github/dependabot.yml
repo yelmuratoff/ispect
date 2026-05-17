@@ -5,7 +5,47 @@
 
 version: 2
 updates:
-  - package-ecosystem: "" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pub"
+    directory: "/packages/ispect"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pub"
+    directory: "/packages/ispect_layout"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pub"
+    directory: "/packages/ispectify"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pub"
+    directory: "/packages/ispectify_bloc"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pub"
+    directory: "/packages/ispectify_db"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pub"
+    directory: "/packages/ispectify_dio"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pub"
+    directory: "/packages/ispectify_http"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pub"
+    directory: "/packages/ispectify_ws"
     schedule:
       interval: "weekly"
