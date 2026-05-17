@@ -20,8 +20,7 @@ final Dio dio = Dio(
   BaseOptions(baseUrl: 'https://jsonplaceholder.typicode.com'),
 );
 
-final http_interceptor.InterceptedClient client =
-    http_interceptor.InterceptedClient.build(interceptors: []);
+late final http_interceptor.InterceptedClient client;
 
 final Dio dummyDio = Dio(BaseOptions(baseUrl: 'https://api.escuelajs.co'));
 

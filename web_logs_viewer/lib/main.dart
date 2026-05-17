@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
+import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify_http/ispectify_http.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
@@ -24,7 +25,9 @@ void main() {
     },
     onInit: () {
       Bloc.observer = ISpectBlocObserver(logger: logger);
-      client.interceptors.add(ISpectHttpInterceptor(logger: logger));
+      client = InterceptedClient.build(
+        interceptors: [ISpectHttpInterceptor(logger: logger)],
+      );
       dio.interceptors.add(ISpectDioInterceptor(logger: logger));
       dummyDio.interceptors.add(ISpectDioInterceptor(logger: logger));
     },

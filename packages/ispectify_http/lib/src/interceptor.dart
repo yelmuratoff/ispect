@@ -1,15 +1,18 @@
+import 'dart:async';
+
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/_data.dart';
 import 'package:ispectify_http/src/settings.dart';
 
 /// HTTP client interceptor that logs requests/responses via the trace API.
-class ISpectHttpInterceptor extends InterceptorContract
+class ISpectHttpInterceptor
     with
         NetworkLoggerMixin,
         NetworkRedactionMixin,
         NetworkConfigurationMixin,
-        BaseNetworkInterceptor {
+        BaseNetworkInterceptor
+    implements HttpInterceptor {
   ISpectHttpInterceptor({
     ISpectLogger? logger,
     ISpectHttpInterceptorSettings settings =
@@ -44,6 +47,13 @@ class ISpectHttpInterceptor extends InterceptorContract
   void applyConfigurableSettings(BaseNetworkInterceptorSettings updated) {
     _settings = updated as ISpectHttpInterceptorSettings;
   }
+
+  @override
+  FutureOr<bool> shouldInterceptRequest({required BaseRequest request}) => true;
+
+  @override
+  FutureOr<bool> shouldInterceptResponse({required BaseResponse response}) =>
+      true;
 
   @override
   Future<BaseRequest> interceptRequest({
