@@ -157,9 +157,11 @@ Example `claude.json`:
 For tools without separate rules/skills directories, use inline options:
 
 - **`inline_into_agents: true`** (rules) — appends lightweight rule REFERENCES (name + title) to the agents file instead of syncing rules as separate files. Used by: Codex, Gemini.
-- **`inline_into_agents: true`** (skills) — appends lightweight skill INDEX (name + description) to the agents file instead of syncing skills as directories. Used by: Junie, Cline, Amazon Q, Augment, Aider, Zed, Continue.
-- **`prepend_agents: true`** (rules with `merge_to_file`) — prepends AGENTS.md content before merged rules in a single output file. Used by: Aider, Zed, Continue.
-- **`00-context.md` pattern** — for directory-based tools without separate agents support, AGENTS.md is copied as `00-context.md` inside the rules directory. Used by: Cline, Amazon Q, Augment.
+- **`inline_into_agents: true`** (skills) — appends lightweight skill INDEX (name + description) to the agents file instead of syncing skills as directories. Used by: Junie, Cline, Amazon Q, Zed.
+- **`as_skills: true`** (commands) — emits each `.ai/src/commands/<name>.md` as a generated skill at `<targets.skills.dest>/command-<name>/SKILL.md`. For tools that have a skills dir but no native slash-command surface. Requires `targets.skills.dest`. Used by: Codex.
+- **`inline_into_agents: true`** (commands) — appends a `## Commands` index (one `` `/<name>` — description `` line per command) to the agents file. For tools that have neither a commands dir nor a skills dir. Requires `targets.agents.dest` (or `rules.merge_to_file` fallback). Used by: Amazon Q, Zed.
+- **`prepend_agents: true`** (rules with `merge_to_file`) — prepends AGENTS.md content before merged rules in a single output file. Used by: Zed.
+- **`00-context.md` pattern** — for directory-based tools without separate agents support, AGENTS.md is copied as `00-context.md` inside the rules directory. Used by: Amazon Q.
 
 ## Adding a New Tool
 
@@ -239,5 +241,5 @@ Modes: default walks up to the nearest parent `.ai/src/` (bounded by the git rep
 - Run `agentsync sync` after every change to distribute updates.
 - Tool-specific frontmatter fields (like `context: fork`) are passed through as-is — agentsync doesn't validate them.
 - Keep skill triggers mutually exclusive. When two skills could fire on the same task, merge them or sharpen their descriptions.
-- Commands and agents only work in tools that support them (Claude, Gemini for commands; Claude, Copilot for agents).
+- Native commands and subagents only land in tools that support them — Claude, Cursor, Junie, Windsurf, Antigravity for commands; Claude, Copilot for subagents. For tools without a commands surface, AgentSync converts: Codex gets generated skills under `command-*/`; Amazon Q and Zed get a `## Commands` index inlined into their agents file. Gemini receives commands as TOML.
 - Settings and MCP files are per-tool — each tool has its own format.
