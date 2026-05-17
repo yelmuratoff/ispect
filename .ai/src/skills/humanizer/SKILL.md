@@ -52,11 +52,19 @@ Vary sentence length on purpose. Put a short sentence after a long one sometimes
 
 React to the material when the tone allows it. A short aside, an honest note of uncertainty, a mild opinion, these are what makes writing feel like a person and not a template. Aim for the tone of a smart person explaining something to a friend. Direct, a little informal, still respectful of the subject.
 
+## Matching a sample
+
+If the user provides their own writing as a reference (inline, by file path, or as "use my style from X"), read it before rewriting. Note sentence-length patterns, how paragraphs start, recurring word choices, punctuation habits, any verbal tics. Match those in the rewrite instead of defaulting to the voice described above. Do not upgrade their casual words to formal ones, do not lengthen their short sentences, do not regularise their idiosyncrasies. The rewrite should sound like the same person on a good day, not like a polished stranger.
+
+When no sample is provided, use the default voice from the Voice section.
+
 ## Patterns to rewrite as direct statements
 
 When any of the following show up in a draft, rewrite. State the actual point plainly.
 
 Contrastive negation ("Not X, but Y," "It's not X, it's Y," "Not just X, but Y," "Not X, not Y, but Z") becomes one positive sentence that says the point directly. The same shape works in any language — the giveaway is the negated half existing only as a setup for the affirmative half. Write the affirmative half on its own.
+
+Tailing negation fragments (a sentence followed by a comma and a clipped two or three word negation that carries the real point — ", no guessing," ", no wasted motion," ", no manual setup") get expanded into a real clause or absorbed into the sentence. The fragment shape is a strong AI tell because a human writing the same idea usually finishes the thought.
 
 Faux reframes ("more than just X," "goes beyond Y," "represents more than just") become a plain statement of what the thing actually is.
 
@@ -82,6 +90,8 @@ Forced triads, ideas grouped into threes to sound balanced, get trimmed to only 
 
 Vague authority ("experts argue," "observers note") gets replaced with the claim itself, or with a specific source if one exists in the original.
 
+Persuasive authority tropes ("The real question is," "At its core," "In reality," "What really matters," "Fundamentally," "The heart of the matter") get deleted. They pretend the next sentence is cutting through noise to a deeper truth, but the sentence that follows almost always just restates an ordinary point with extra ceremony around it.
+
 Generic upbeat endings ("the future looks bright," "exciting times lie ahead") get replaced with a specific concrete detail.
 
 Hedging stacks ("could potentially perhaps be somewhat") get one qualifier and then move on.
@@ -90,21 +100,29 @@ Empty intensifiers (powerful, compelling, meaningful, profound, robust, scalable
 
 Pivot transitions (That said, That being said, Having said that, With that in mind, On that note) get deleted. If the next sentence actually pivots, the content does the work; the announcement is redundant.
 
+Signposting and self-narration ("Let's dive in," "Let's explore," "Let's break this down," "Here's what you need to know," "Now let's look at," "Without further ado") get deleted. Announcing what you are about to say is filler. Just say it.
+
+Elegant variation (cycling through synonyms for the same noun within a passage — "the protagonist… the main character… the central figure… the hero") gets collapsed back to one consistent word, with pronouns where natural. Real writers repeat nouns when the alternative is forced. AI swaps synonyms mechanically because its repetition penalty refuses to.
+
 Metaphor verbs for "explain" (unpack, unlock, decode, dive into, peel back the layers, shed light on) get replaced with plain ones: look at, show, explain, describe.
 
 ## Paragraph structure
 
 Vary how paragraphs begin. Sometimes with a specific detail, sometimes with a claim, sometimes mid-thought. A paragraph that opens with a topic sentence, fills in evidence, then closes with a summary of itself, that paragraph feels assembled. Real writing varies its shape.
 
+Fragmented headers — a heading followed by a single short sentence that restates the heading, then a blank line, then the actual content — get fixed by deleting the restatement. The heading should lead straight into real material. If the warm-up line carries a real thought, fold it into the next paragraph instead of leaving it stranded.
+
 ## Final pass
 
-Before returning the result, read what you wrote with fresh eyes and check three things.
+Before returning the result, read what you wrote with fresh eyes and check four things.
 
 First, scan for forbidden marks. Any em dashes, en dashes, hyphens used as pauses, semicolons, framing colons that slipped through, fix them now. Any bold mid-paragraph, kill it.
 
 Second, scan for the banned vocabulary list. The longer the piece, the more likely a "delve" or "utilize" or "данный" snuck back in. Replace it.
 
 Third, find any sentence that still sounds templated, promotional, or structurally identical to a nearby sentence. Rewrite those.
+
+Fourth, ask the question directly: what in this draft still reads as AI? Name the remaining tells in one mental beat — a too-symmetrical rhythm, a closing that feels slogan-y, a paragraph that lands on a tidy summary, a placeholder-sounding name or statistic — then rewrite those specific spots. This catches the assembled feeling that survives the first three checks.
 
 Only then return the result.
 
