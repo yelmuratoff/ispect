@@ -719,6 +719,9 @@ List<PropSpec> backdropFilterProps(RenderBackdropFilter target) => [
       (
         icon: Icons.blur_on,
         subtitle: 'filter',
+        // `filter` is deprecated in Flutter >=3.40 in favour of `filterConfig`,
+        // but the pinned CI Flutter (3.32.6) only exposes `filter`.
+        // ignore: deprecated_member_use
         child: EllipsizedText(describeImageFilter(target.filter)),
       ),
       if (target.blendMode != BlendMode.srcOver)

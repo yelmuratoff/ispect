@@ -52,6 +52,12 @@ jobs:
         if: always()
         run: |
           cd packages/${{ matrix.package }}
+          if ! find coverage -type f \( -name '*.vm.json' -o -name '*.json' \) -print -quit | grep -q .; then
+            echo "::warning::No coverage data found in packages/${{ matrix.package }}/coverage — skipping lcov conversion."
+            mkdir -p coverage
+            : > coverage/lcov.info
+            exit 0
+          fi
           dart pub global activate coverage
           dart pub global run coverage:format_coverage \
             --lcov \
