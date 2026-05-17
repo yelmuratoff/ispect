@@ -34,6 +34,14 @@ jobs:
                   channel: stable
                   cache: true
 
+            - name: Scaffold Android platform code
+              working-directory: packages/ispect/example
+              run: |
+                  # The example's `android/` and `ios/` directories are gitignored
+                  # to keep platform code out of the package source. CI rebuilds the
+                  # Android scaffolding so `flutter build apk` has a project to compile.
+                  flutter create --platforms=android --org com.example .
+
             - name: Install dependencies
               working-directory: packages/ispect/example
               run: flutter pub get
@@ -44,7 +52,8 @@ jobs:
                   flutter build apk \
                     --release \
                     --obfuscate \
-                    --split-debug-info=build/symbols
+                    --split-debug-info=build/symbols \
+                    --no-tree-shake-icons
 
             - name: Check residual ISpect strings
               id: footprint

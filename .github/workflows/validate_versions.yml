@@ -128,13 +128,16 @@ jobs:
             exit 1
           fi
 
-          # Validate that the version section has content
-          version_line_num=$(grep -n "^## \[\?${VERSION}\]\?" CHANGELOG.md | head -1 | cut -d: -f1)
+          # Validate that the version section has content.
+          # `sed | sed '/^## /q' | tail` triggers SIGPIPE under `pipefail`
+          # because the inner sed exits at the next `## ` and closes the pipe
+          # while the outer sed is still streaming. Use awk to read in one pass.
+          version_line_num=$(grep -n "^## \[\?${VERSION}\]\?" CHANGELOG.md | head -1 | cut -d: -f1 || true)
           if [[ -n "$version_line_num" ]]; then
-            # Get content between this version and next version (or end of file)
-            version_content=$(sed -n "${version_line_num},\$p" CHANGELOG.md | sed '/^## /q' | tail -n +2)
-            # Remove empty lines and check if there's actual content
-            if [[ -z "$(echo "$version_content" | grep -v "^[[:space:]]*$")" ]]; then
+            version_content=$(awk -v start="$version_line_num" '
+              NR > start { if (/^## /) exit; print }
+            ' CHANGELOG.md)
+            if [[ -z "$(echo "$version_content" | grep -v "^[[:space:]]*$" || true)" ]]; then
               echo "⚠️  Warning: Version '$VERSION' section appears to be empty. Consider adding release notes."
             fi
           fi
