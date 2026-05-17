@@ -4,6 +4,7 @@ on:
    push:
       branches-ignore:
          - "auto/sync/**"
+         - "dependabot/**"
       paths:
          - "CHANGELOG.md"
          - "ROADMAP.md"
