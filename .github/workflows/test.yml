@@ -68,7 +68,7 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-dart-${{ matrix.package }}
           path: packages/${{ matrix.package }}/coverage/lcov.info
@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-flutter-${{ matrix.package }}-${{ matrix.flutter.version }}
           path: packages/${{ matrix.package }}/coverage/lcov.info
