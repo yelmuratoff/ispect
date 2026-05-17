@@ -2,9 +2,9 @@ name: Sync Versions, Changelogs, and READMEs
 
 on:
    push:
-      branches-ignore:
-         - "auto/sync/**"
-         - "dependabot/**"
+      branches:
+         - main
+         - develop
       paths:
          - "CHANGELOG.md"
          - "ROADMAP.md"
