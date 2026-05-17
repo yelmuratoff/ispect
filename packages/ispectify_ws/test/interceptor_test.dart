@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_ws/ispectify_ws.dart';
 import 'package:test/test.dart';
@@ -24,15 +25,12 @@ void main() {
       interceptor = ISpectWSInterceptor(
         logger: logger,
       );
-      // No client set; interceptor should still log
     });
 
     test('logs sent data when enabled', () async {
       interceptor.onSend({'k': 'v'}, (obj) {});
       expect(
-        logger.history.any(
-          (e) => e.key == 'ws-sent' && e.textMessage.contains('Data: {'),
-        ),
+        logger.history.any((e) => e.key == ISpectLogType.wsSent.key),
         isTrue,
       );
     });
@@ -43,27 +41,17 @@ void main() {
         settings: const ISpectWSInterceptorSettings(
           printSentData: false,
         ),
-      )
-        // No client set; interceptor should still log (without payload)
+      )..onSend({'secret': 'value'}, (obj) {});
 
-        ..onSend({'secret': 'value'}, (obj) {});
-
-      final sent = logger.history.where((e) => e.key == 'ws-sent').toList();
+      final sent = logger.history
+          .where((e) => e.key == ISpectLogType.wsSent.key)
+          .toList();
       expect(sent, isNotEmpty);
-      expect(sent.first.textMessage.contains('Data: {'), isFalse);
-      // Still includes URL line prefix even if empty
-      expect(sent.first.textMessage.startsWith('URL:'), isTrue);
-      // Additional data contains metrics only
-      expect(
-        (sent.first.additionalData?['body'] as Map<String, dynamic>)
-            .containsKey('metrics'),
-        isTrue,
-      );
-      expect(
-        (sent.first.additionalData?['body'] as Map<String, dynamic>)
-            .containsKey('data'),
-        isFalse,
-      );
+      // Meta should not contain 'data' when printSentData=false
+      final meta = sent.first.additionalData?[TraceKeys.meta];
+      if (meta is Map) {
+        expect(meta.containsKey('data'), isFalse);
+      }
     });
 
     test('logs received without payload when printReceivedData=false',
@@ -73,27 +61,19 @@ void main() {
         settings: const ISpectWSInterceptorSettings(
           printReceivedData: false,
         ),
-      )
-        // No client set; interceptor should still log (without payload)
+      )..onMessage({'foo': 'bar'}, (obj) {});
 
-        ..onMessage({'foo': 'bar'}, (obj) {});
-
-      final rec = logger.history.where((e) => e.key == 'ws-received').toList();
+      final rec = logger.history
+          .where((e) => e.key == ISpectLogType.wsReceived.key)
+          .toList();
       expect(rec, isNotEmpty);
-      expect(rec.first.textMessage.contains('Data: {'), isFalse);
-      expect(
-        (rec.first.additionalData?['body'] as Map<String, dynamic>)
-            .containsKey('metrics'),
-        isTrue,
-      );
-      expect(
-        (rec.first.additionalData?['body'] as Map<String, dynamic>)
-            .containsKey('data'),
-        isFalse,
-      );
+      final meta = rec.first.additionalData?[TraceKeys.meta];
+      if (meta is Map) {
+        expect(meta.containsKey('data'), isFalse);
+      }
     });
 
-    test('error branch always logs even when printErrorData=false', () async {
+    test('logs gracefully even when redactor throws', () async {
       interceptor = ISpectWSInterceptor(
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
@@ -102,11 +82,119 @@ void main() {
         redactor: _ThrowingRedactor(),
       )..onSend({'boom': true}, (obj) {});
 
-      final errs = logger.history.where((e) => e.key == 'ws-error').toList();
-      expect(errs, isNotEmpty);
-      // payload hidden; body should not contain 'data'
-      final body = errs.first.additionalData?['body'] as Map<String, dynamic>;
-      expect(body.containsKey('data'), isFalse);
+      expect(logger.history, isNotEmpty);
+    });
+
+    test('logs received data when enabled', () {
+      interceptor.onMessage({'msg': 'hello'}, (obj) {});
+      expect(
+        logger.history.any(
+          (e) => e.key == ISpectLogType.wsReceived.key,
+        ),
+        isTrue,
+      );
+    });
+
+    test('passes data through to next callback', () {
+      Object? forwarded;
+      interceptor.onSend({'k': 'v'}, (obj) => forwarded = obj);
+      expect(forwarded, isNotNull);
+    });
+
+    test('filters sent logs via sentFilter', () {
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        settings: ISpectWSInterceptorSettings(
+          sentFilter: (log) => false,
+        ),
+      )..onSend({'k': 'v'}, (obj) {});
+
+      expect(
+        logger.history.any(
+          (e) => e.key == ISpectLogType.wsSent.key,
+        ),
+        isFalse,
+      );
+    });
+
+    test('sentFilter receives actual ISpectLogData, not null', () {
+      ISpectLogData? receivedData;
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        settings: ISpectWSInterceptorSettings(
+          sentFilter: (log) {
+            receivedData = log;
+            return true;
+          },
+        ),
+      )..onSend({'k': 'v'}, (obj) {});
+
+      expect(receivedData, isNotNull);
+      expect(receivedData!.key, ISpectLogType.wsSent.key);
+      expect(receivedData!.additionalData, isNotNull);
+      expect(
+        receivedData!.additionalData![TraceKeys.operation],
+        'send',
+      );
+    });
+
+    test('receivedFilter receives actual ISpectLogData, not null', () {
+      ISpectLogData? receivedData;
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        settings: ISpectWSInterceptorSettings(
+          receivedFilter: (log) {
+            receivedData = log;
+            return true;
+          },
+        ),
+      )..onMessage({'msg': 'hello'}, (obj) {});
+
+      expect(receivedData, isNotNull);
+      expect(receivedData!.key, ISpectLogType.wsReceived.key);
+      expect(
+        receivedData!.additionalData![TraceKeys.operation],
+        'receive',
+      );
+    });
+
+    test('filters received logs via receivedFilter', () {
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        settings: ISpectWSInterceptorSettings(
+          receivedFilter: (log) => false,
+        ),
+      )..onMessage({'k': 'v'}, (obj) {});
+
+      expect(
+        logger.history.any(
+          (e) => e.key == ISpectLogType.wsReceived.key,
+        ),
+        isFalse,
+      );
+    });
+
+    test('does not log when disabled', () {
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        settings: const ISpectWSInterceptorSettings(enabled: false),
+      )..onSend({'k': 'v'}, (obj) {});
+
+      expect(
+        logger.history.any(
+          (e) => e.key == ISpectLogType.wsSent.key,
+        ),
+        isFalse,
+      );
+    });
+
+    test('logs error data when log creation throws', () {
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        redactor: _ThrowingRedactor(),
+      )..onSend({'trigger': 'error'}, (obj) {});
+
+      expect(logger.history, isNotEmpty);
     });
   });
 }

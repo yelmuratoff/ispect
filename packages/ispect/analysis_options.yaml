@@ -100,7 +100,7 @@ linter:
     - library_annotations
     - library_prefixes
     # - lines_longer_than_80_chars
-    # - library_private_types_in_public_api
+    - library_private_types_in_public_api
     - matching_super_parameters
     - missing_whitespace_between_adjacent_strings
     - literal_only_boolean_expressions
@@ -129,7 +129,6 @@ linter:
     - prefer_constructors_over_static_methods
     - prefer_contains
     - prefer_expression_function_bodies
-    - prefer_equal_for_default_values
     - prefer_adjacent_string_concatenation
     - prefer_final_fields
     - prefer_final_in_for_each

@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
-import 'package:ispectify_dio/src/models/_models.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -25,21 +24,30 @@ void main() {
 
     test('onRequest method should log http request', () {
       final options = RequestOptions(path: '/test');
-      final logMessage = '${options.uri}';
       interceptor.onRequest(options, RequestInterceptorHandler());
-      expect(logger.history.last.message, logMessage);
+      final last = logger.history.last;
+      expect(last.key, ISpectLogType.httpRequest.key);
+      expect(
+        last.additionalData?[TraceKeys.category],
+        TraceCategoryIds.network,
+      );
+      expect(last.additionalData?[TraceKeys.source], 'dio');
     });
 
     test('onResponse method should log http response', () {
       final options = RequestOptions(path: '/test');
       final response =
           Response<dynamic>(requestOptions: options, statusCode: 200);
-      final logMessage = '${response.requestOptions.uri}';
       interceptor.onResponse(response, ResponseInterceptorHandler());
-      expect(logger.history.last.message, logMessage);
+      final last = logger.history.last;
+      expect(last.key, ISpectLogType.httpResponse.key);
+      expect(
+        last.additionalData?[TraceKeys.category],
+        TraceCategoryIds.network,
+      );
     });
 
-    test('onError should log DioErrorLog', () async {
+    test('onError should log error trace', () async {
       final logger = ISpectLogger();
       final interceptor = ISpectDioInterceptor(logger: logger);
       final dio = Dio();
@@ -48,12 +56,14 @@ void main() {
       try {
         // ignore: inference_failure_on_function_invocation
         await dio.get('asdsada');
-      } catch (_) {}
+      } catch (_) {
+        // Expected: Dio throws on invalid URL.
+      }
       expect(logger.history, isNotEmpty);
-      expect(logger.history.last, isA<DioErrorLog>());
+      expect(logger.history.last.key, ISpectLogType.httpError.key);
     });
 
-    test('onResponse method should log http response headers', () {
+    test('onResponse method should log http response with meta', () {
       final interceptor = ISpectDioInterceptor(
         logger: logger,
         settings:
@@ -67,15 +77,11 @@ void main() {
         headers: Headers()..add('HEADER', 'VALUE'),
       );
       interceptor.onResponse(response, ResponseInterceptorHandler());
-      expect(
-          logger.history.last.textMessage,
-          '[http-response] [GET] /test\n'
-          'Status: 200\n'
-          'Headers: {\n'
-          '  "HEADER": [\n'
-          '    "VALUE"\n'
-          '  ]\n'
-          '}');
+      final last = logger.history.last;
+      expect(last.key, ISpectLogType.httpResponse.key);
+      final meta = last.additionalData?[TraceKeys.meta];
+      expect(meta, isA<Map<String, dynamic>>());
+      expect((meta as Map<String, dynamic>)['status-code'], 200);
     });
   });
 }

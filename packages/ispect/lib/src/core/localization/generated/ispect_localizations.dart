@@ -152,7 +152,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @allLogsCopied.
   ///
   /// In en, this message translates to:
-  /// **'All logs copied in buffer'**
+  /// **'All logs copied to clipboard'**
   String get allLogsCopied;
 
   /// No description provided for @analyticsLogDesc.
@@ -290,7 +290,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @clearHistory.
   ///
   /// In en, this message translates to:
-  /// **'Clean history'**
+  /// **'Clear history'**
   String get clearHistory;
 
   /// No description provided for @clearCache.
@@ -392,7 +392,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @environmentTapNumber.
   ///
   /// In en, this message translates to:
-  /// **'To open the dialog, it remains: {number}'**
+  /// **'Taps remaining to open dialog: {number}'**
   String environmentTapNumber(Object number);
 
   /// No description provided for @errorCacheClearing.
@@ -536,7 +536,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @logItemCopied.
   ///
   /// In en, this message translates to:
-  /// **'Log item is copied in clipboard'**
+  /// **'Log item copied to clipboard'**
   String get logItemCopied;
 
   /// No description provided for @login.
@@ -575,6 +575,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'not found'**
   String get notFound;
 
+  /// No description provided for @noResultsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different query or adjust filters'**
+  String get noResultsHint;
+
   /// No description provided for @otherLogsForDevelopers.
   ///
   /// In en, this message translates to:
@@ -584,7 +590,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @pageNotFound.
   ///
   /// In en, this message translates to:
-  /// **'Oops, the page on this path'**
+  /// **'Oops, the page on this path was not found'**
   String get pageNotFound;
 
   /// No description provided for @path.
@@ -758,7 +764,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @shareLogsFile.
   ///
   /// In en, this message translates to:
-  /// **'Share logs file'**
+  /// **'Share log file'**
   String get shareLogsFile;
 
   /// No description provided for @statusCode.
@@ -1088,13 +1094,13 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @shareLogFull.
   ///
   /// In en, this message translates to:
-  /// **'Share log (full)'**
+  /// **'Share full log'**
   String get shareLogFull;
 
   /// No description provided for @copyToClipboardTruncated.
   ///
   /// In en, this message translates to:
-  /// **'Copy to clipboard (truncated)'**
+  /// **'Copy summary to clipboard'**
   String get copyToClipboardTruncated;
 
   /// No description provided for @viewThemeScheme.
@@ -1360,6 +1366,606 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Database operation failed'**
   String get dbErrorLogDesc;
+
+  /// No description provided for @reverseLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the display order of logs from newest-first to oldest-first or vice versa'**
+  String get reverseLogsDesc;
+
+  /// No description provided for @copyAllLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy all log entries to the clipboard as text'**
+  String get copyAllLogsDesc;
+
+  /// No description provided for @expandLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show full details for all log entries'**
+  String get expandLogsDesc;
+
+  /// No description provided for @collapseLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse all log entries to a compact view'**
+  String get collapseLogsDesc;
+
+  /// No description provided for @clearHistoryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all saved log entries from memory'**
+  String get clearHistoryDesc;
+
+  /// No description provided for @shareLogsFileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Export logs as a file and share via system share sheet'**
+  String get shareLogsFileDesc;
+
+  /// No description provided for @navigationFlowDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View the sequence of screen transitions in your app'**
+  String get navigationFlowDesc;
+
+  /// No description provided for @dailySessionsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse log files saved from previous app sessions'**
+  String get dailySessionsDesc;
+
+  /// No description provided for @logViewerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Open an external log viewer to inspect log files'**
+  String get logViewerDesc;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select All'**
+  String get selectAll;
+
+  /// No description provided for @deselectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect All'**
+  String get deselectAll;
+
+  /// No description provided for @groupHttp.
+  ///
+  /// In en, this message translates to:
+  /// **'HTTP'**
+  String get groupHttp;
+
+  /// No description provided for @groupBloc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bloc'**
+  String get groupBloc;
+
+  /// No description provided for @groupRiverpod.
+  ///
+  /// In en, this message translates to:
+  /// **'Riverpod'**
+  String get groupRiverpod;
+
+  /// No description provided for @groupWebSocket.
+  ///
+  /// In en, this message translates to:
+  /// **'WebSocket'**
+  String get groupWebSocket;
+
+  /// No description provided for @groupDatabase.
+  ///
+  /// In en, this message translates to:
+  /// **'Database'**
+  String get groupDatabase;
+
+  /// No description provided for @groupNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation'**
+  String get groupNavigation;
+
+  /// No description provided for @groupGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get groupGeneral;
+
+  /// No description provided for @categoryAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Auth'**
+  String get categoryAuth;
+
+  /// No description provided for @categoryStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage'**
+  String get categoryStorage;
+
+  /// No description provided for @categoryPush.
+  ///
+  /// In en, this message translates to:
+  /// **'Push'**
+  String get categoryPush;
+
+  /// No description provided for @categoryPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get categoryPayment;
+
+  /// No description provided for @categoryAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get categoryAnalytics;
+
+  /// No description provided for @categorySse.
+  ///
+  /// In en, this message translates to:
+  /// **'SSE'**
+  String get categorySse;
+
+  /// No description provided for @categoryGrpc.
+  ///
+  /// In en, this message translates to:
+  /// **'gRPC'**
+  String get categoryGrpc;
+
+  /// No description provided for @categoryGraphql.
+  ///
+  /// In en, this message translates to:
+  /// **'GraphQL'**
+  String get categoryGraphql;
+
+  /// No description provided for @wsErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'WebSocket connection error'**
+  String get wsErrorLogDesc;
+
+  /// No description provided for @authSuccessLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication successful'**
+  String get authSuccessLogDesc;
+
+  /// No description provided for @authErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed'**
+  String get authErrorLogDesc;
+
+  /// No description provided for @storageResultLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage operation completed'**
+  String get storageResultLogDesc;
+
+  /// No description provided for @storageQueryLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage query executed'**
+  String get storageQueryLogDesc;
+
+  /// No description provided for @storageErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage operation failed'**
+  String get storageErrorLogDesc;
+
+  /// No description provided for @pushReceivedLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notification received'**
+  String get pushReceivedLogDesc;
+
+  /// No description provided for @pushSentLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notification sent'**
+  String get pushSentLogDesc;
+
+  /// No description provided for @pushErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notification error'**
+  String get pushErrorLogDesc;
+
+  /// No description provided for @paymentSuccessLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment completed'**
+  String get paymentSuccessLogDesc;
+
+  /// No description provided for @paymentErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed'**
+  String get paymentErrorLogDesc;
+
+  /// No description provided for @stateChangeLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'State changed'**
+  String get stateChangeLogDesc;
+
+  /// No description provided for @stateErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'State management error'**
+  String get stateErrorLogDesc;
+
+  /// No description provided for @sseReceivedLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Server-Sent Event received'**
+  String get sseReceivedLogDesc;
+
+  /// No description provided for @sseErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'SSE connection error'**
+  String get sseErrorLogDesc;
+
+  /// No description provided for @grpcRequestLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'gRPC request sent'**
+  String get grpcRequestLogDesc;
+
+  /// No description provided for @grpcResponseLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'gRPC response received'**
+  String get grpcResponseLogDesc;
+
+  /// No description provided for @grpcErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'gRPC call failed'**
+  String get grpcErrorLogDesc;
+
+  /// No description provided for @graphqlRequestLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'GraphQL query sent'**
+  String get graphqlRequestLogDesc;
+
+  /// No description provided for @graphqlResponseLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'GraphQL response received'**
+  String get graphqlResponseLogDesc;
+
+  /// No description provided for @graphqlErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'GraphQL operation failed'**
+  String get graphqlErrorLogDesc;
+
+  /// No description provided for @transitionPush.
+  ///
+  /// In en, this message translates to:
+  /// **'Push'**
+  String get transitionPush;
+
+  /// No description provided for @transitionPop.
+  ///
+  /// In en, this message translates to:
+  /// **'Pop'**
+  String get transitionPop;
+
+  /// No description provided for @transitionReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get transitionReplace;
+
+  /// No description provided for @transitionRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get transitionRemove;
+
+  /// No description provided for @transitionStartUserGesture.
+  ///
+  /// In en, this message translates to:
+  /// **'Start User Gesture'**
+  String get transitionStartUserGesture;
+
+  /// No description provided for @transitionStopUserGesture.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop User Gesture'**
+  String get transitionStopUserGesture;
+
+  /// No description provided for @copyAsCurl.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy as cURL'**
+  String get copyAsCurl;
+
+  /// No description provided for @relativeJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get relativeJustNow;
+
+  /// No description provided for @relativeSecondsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sec ago'**
+  String relativeSecondsAgo(int count);
+
+  /// No description provided for @relativeMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min ago'**
+  String relativeMinutesAgo(int count);
+
+  /// No description provided for @relativeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} h ago'**
+  String relativeHoursAgo(int count);
+
+  /// No description provided for @showOnlyThisType.
+  ///
+  /// In en, this message translates to:
+  /// **'Show only this type'**
+  String get showOnlyThisType;
+
+  /// No description provided for @hideThisType.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide this type'**
+  String get hideThisType;
+
+  /// No description provided for @clearAllFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all filters'**
+  String get clearAllFilters;
+
+  /// No description provided for @httpRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get httpRequest;
+
+  /// No description provided for @httpResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Response'**
+  String get httpResponse;
+
+  /// No description provided for @pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pending;
+
+  /// No description provided for @groupHttpLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Group HTTP Logs'**
+  String get groupHttpLogs;
+
+  /// No description provided for @groupHttpLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Group related HTTP requests and responses together'**
+  String get groupHttpLogsDesc;
+
+  /// No description provided for @duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get duration;
+
+  /// No description provided for @ungroupHttpLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Ungroup HTTP Logs'**
+  String get ungroupHttpLogs;
+
+  /// No description provided for @ungroupHttpLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show HTTP requests and responses as separate entries'**
+  String get ungroupHttpLogsDesc;
+
+  /// No description provided for @tips.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips'**
+  String get tips;
+
+  /// No description provided for @tipSearchLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Search logs by text — searches full JSON body too'**
+  String get tipSearchLogs;
+
+  /// No description provided for @tipLongPress.
+  ///
+  /// In en, this message translates to:
+  /// **'Long press a log card for quick actions'**
+  String get tipLongPress;
+
+  /// No description provided for @tipFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by log type using chips or settings'**
+  String get tipFilter;
+
+  /// No description provided for @tipExpand.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap expand to view full JSON with search'**
+  String get tipExpand;
+
+  /// No description provided for @tipKeyboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Use arrow keys to navigate, Enter to open, / to search'**
+  String get tipKeyboard;
+
+  /// No description provided for @tipNavigationFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Navigation Flow from settings to see route history visually'**
+  String get tipNavigationFlow;
+
+  /// No description provided for @tipShareSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the log file for bug reports — payloads are auto-redacted'**
+  String get tipShareSession;
+
+  /// No description provided for @tipReverseLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the reverse arrows in the app bar to flip log order'**
+  String get tipReverseLogs;
+
+  /// No description provided for @gotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotIt;
+
+  /// No description provided for @filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filters;
+
+  /// No description provided for @compare.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare'**
+  String get compare;
+
+  /// No description provided for @cancelCompare.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelCompare;
+
+  /// No description provided for @tapWidgetToCompare.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a widget to compare'**
+  String get tapWidgetToCompare;
+
+  /// No description provided for @comparedWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Compared with'**
+  String get comparedWith;
+
+  /// No description provided for @distanceLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'left'**
+  String get distanceLeft;
+
+  /// No description provided for @distanceTop.
+  ///
+  /// In en, this message translates to:
+  /// **'top'**
+  String get distanceTop;
+
+  /// No description provided for @distanceRight.
+  ///
+  /// In en, this message translates to:
+  /// **'right'**
+  String get distanceRight;
+
+  /// No description provided for @distanceBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'bottom'**
+  String get distanceBottom;
+
+  /// No description provided for @searchMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Search mode'**
+  String get searchMode;
+
+  /// No description provided for @logTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'Log types'**
+  String get logTypes;
+
+  /// No description provided for @includeSensitiveData.
+  ///
+  /// In en, this message translates to:
+  /// **'Include sensitive data'**
+  String get includeSensitiveData;
+
+  /// No description provided for @correlationIdCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'ID copied. Paste it into the search bar to filter related logs.'**
+  String get correlationIdCopied;
+
+  /// No description provided for @downloadLogsFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Download log file'**
+  String get downloadLogsFile;
+
+  /// No description provided for @logsFileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'File saved: {path}'**
+  String logsFileSaved(String path);
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get clearSearch;
+
+  /// No description provided for @previousMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous match'**
+  String get previousMatch;
+
+  /// No description provided for @nextMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Next match'**
+  String get nextMatch;
+
+  /// No description provided for @moreOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get moreOptions;
 }
 
 class _ISpectGeneratedLocalizationDelegate

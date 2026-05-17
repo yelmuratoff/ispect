@@ -1,5 +1,5 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/observer_registry.dart';
+import 'package:ispectify/src/observer/observer_registry.dart';
 
 /// Manages lifecycle and notification of `ISpectObserver`s for a logger.
 ///
@@ -21,7 +21,7 @@ class ObserverManager {
   void remove(ISpectObserver observer) => _registry.remove(observer);
 
   /// Replaces all observers with a single [observer]. If null, clears all.
-  void replace(ISpectObserver? observer) => _registry.replaceWith(observer);
+  void replace(ISpectObserver? observer) => _registry.replace(observer);
 
   /// Registers an observer and returns a disposer to remove it later.
   ISpectObserverDisposer observe(ISpectObserver observer) =>

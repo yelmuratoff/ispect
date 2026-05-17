@@ -6,6 +6,7 @@ import 'package:collection/collection.dart';
 import 'package:draggable_panel/draggable_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/action_item.dart';
+import 'package:ispect/src/common/plugins/inspector_plugin.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
 
@@ -18,7 +19,7 @@ import 'package:ispect/src/core/res/ispect_callbacks.dart';
 /// - Action items (`actionItems`).
 /// - Custom panel items (`panelItems`).
 /// - Additional panel buttons (`panelButtons`).
-/// - Custom data builder (`itemsBuilder`).
+/// - Custom log card builder (`logBuilder`).
 ///
 /// ### Example Usage:
 /// ```dart
@@ -61,7 +62,8 @@ final class ISpectOptions {
     this.actionItems = const [],
     this.panelItems = const [],
     this.panelButtons = const [],
-    this.itemsBuilder,
+    this.plugins = const [],
+    this.logBuilder,
     this.onShare,
     this.onOpenFile,
     this.onLoadLogContent,
@@ -127,11 +129,25 @@ final class ISpectOptions {
   /// - `onTap`: A callback function triggered when the button is tapped
   final List<DraggablePanelButtonItem> panelButtons;
 
-  /// A builder for customizing the data displayed in the `ISpect` screen.
+  /// A list of plugins that extend the inspector panel with custom screens.
   ///
-  /// When provided, this builder allows for custom rendering of data
-  /// within the ISpect interface, enabling advanced customization scenarios.
-  final ISpectLogDataBuilder? itemsBuilder;
+  /// Each plugin provides an icon, title, and screen that will be added
+  /// to the draggable panel. Plugins also support lifecycle hooks
+  /// ([InspectorPlugin.onInit] and [InspectorPlugin.onDispose]).
+  final List<InspectorPlugin> plugins;
+
+  /// Custom builder for log card widget. If null, uses default card.
+  ///
+  /// When provided, completely replaces the default log card rendering
+  /// in both mobile and desktop layouts.
+  ///
+  /// Example:
+  /// ```dart
+  /// ISpectOptions(
+  ///   logBuilder: (context, log) => MyCustomLogCard(log: log),
+  /// )
+  /// ```
+  final ISpectLogDataBuilder? logBuilder;
 
   /// Custom handler for share actions triggered inside ISpect.
   ///
@@ -212,7 +228,8 @@ final class ISpectOptions {
     List<ISpectActionItem>? actionItems,
     List<DraggablePanelItem>? panelItems,
     List<DraggablePanelButtonItem>? panelButtons,
-    ISpectLogDataBuilder? itemsBuilder,
+    List<InspectorPlugin>? plugins,
+    ISpectLogDataBuilder? logBuilder,
     ISpectShareCallback? onShare,
     ISpectOpenFileCallback? onOpenFile,
     ISpectLoadLogContentCallback? onLoadLogContent,
@@ -229,7 +246,8 @@ final class ISpectOptions {
       actionItems: actionItems ?? this.actionItems,
       panelItems: panelItems ?? this.panelItems,
       panelButtons: panelButtons ?? this.panelButtons,
-      itemsBuilder: itemsBuilder ?? this.itemsBuilder,
+      plugins: plugins ?? this.plugins,
+      logBuilder: logBuilder ?? this.logBuilder,
       onShare: onShare ?? this.onShare,
       onOpenFile: onOpenFile ?? this.onOpenFile,
       onLoadLogContent: onLoadLogContent ?? this.onLoadLogContent,
@@ -253,7 +271,8 @@ final class ISpectOptions {
         listEquals(other.actionItems, actionItems) &&
         listEquals(other.panelItems, panelItems) &&
         listEquals(other.panelButtons, panelButtons) &&
-        other.itemsBuilder == itemsBuilder &&
+        listEquals(other.plugins, plugins) &&
+        other.logBuilder == logBuilder &&
         other.onShare == onShare &&
         other.onOpenFile == onOpenFile &&
         other.onLoadLogContent == onLoadLogContent &&
@@ -261,23 +280,28 @@ final class ISpectOptions {
         other.initialSettings == initialSettings;
   }
 
+  static const _deepEquality = DeepCollectionEquality();
+
   @override
   int get hashCode {
-    return locale.hashCode ^
-        observer.hashCode ^
-        isLogPageEnabled.hashCode ^
-        isPerformanceEnabled.hashCode ^
-        isInspectorEnabled.hashCode ^
-        isColorPickerEnabled.hashCode ^
-        actionItems.hashCode ^
-        panelItems.hashCode ^
-        panelButtons.hashCode ^
-        itemsBuilder.hashCode ^
-        onShare.hashCode ^
-        onOpenFile.hashCode ^
-        onLoadLogContent.hashCode ^
-        onSettingsChanged.hashCode ^
-        initialSettings.hashCode;
+    return Object.hash(
+      locale,
+      observer,
+      isLogPageEnabled,
+      isPerformanceEnabled,
+      isInspectorEnabled,
+      isColorPickerEnabled,
+      _deepEquality.hash(actionItems),
+      _deepEquality.hash(panelItems),
+      _deepEquality.hash(panelButtons),
+      _deepEquality.hash(plugins),
+      logBuilder,
+      onShare,
+      onOpenFile,
+      onLoadLogContent,
+      onSettingsChanged,
+      initialSettings,
+    );
   }
 
   @override
@@ -292,7 +316,8 @@ final class ISpectOptions {
       actionItems: $actionItems,
       panelItems: $panelItems,
       panelButtons: $panelButtons,
-      itemsBuilder: $itemsBuilder,
+      plugins: $plugins,
+      logBuilder: $logBuilder,
       onShare: $onShare,
       onOpenFile: $onOpenFile,
       onLoadLogContent: $onLoadLogContent,

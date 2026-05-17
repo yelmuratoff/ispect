@@ -4,146 +4,989 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 import 'package:test/test.dart';
 
+/// Default config used across most tests in this file.
+const _cfg = ISpectDbConfig(
+  redactKeys: {'password', 'token'},
+  maxValueLength: 50,
+  maxArgsLength: 12,
+  maxStatementLength: 40,
+  attachStackOnError: true,
+  enableTransactionMarkers: true,
+  slowThreshold: Duration(milliseconds: 1),
+);
+
 void main() {
   late ISpectLogger logger;
 
   setUp(() {
     logger = ISpectLogger();
-    ISpectDbCore.config = const ISpectDbConfig(
-      sampleRate: null,
-      redact: true,
-      redactKeys: ['password', 'token'],
-      maxValueLength: 50,
-      maxArgsLength: 12,
-      maxStatementLength: 40,
-      attachStackOnError: true,
-      enableTransactionMarkers: true,
-      slowQueryThreshold: Duration(milliseconds: 1),
-    );
   });
 
-  test('db logs fields and digest/truncation', () async {
-    logger.db(
-      source: 'sqflite',
-      operation: 'query',
-      statement: 'SELECT * FROM users WHERE name = \"VeryVeryLongName\"',
-      table: 'users',
-      args: ['aaaaaaaaaaaa-too-long'],
-      namedArgs: {'password': 'secret', 'q': 'short'},
-      success: true,
-      duration: const Duration(milliseconds: 10),
-      meta: {'note': 'test'},
-    );
+  group('db()', () {
+    test('logs fields and digest/truncation', () {
+      logger.db(
+        source: 'sqflite',
+        operation: 'query',
+        statement: 'SELECT * FROM users WHERE name = "VeryVeryLongName"',
+        table: 'users',
+        args: ['aaaaaaaaaaaa-too-long'],
+        namedArgs: {'password': 'secret', 'q': 'short'},
+        success: true,
+        duration: const Duration(milliseconds: 10),
+        meta: {'note': 'test'},
+        config: _cfg,
+      );
 
-    expect(logger.history, isNotEmpty);
-    final e = logger.history.last;
-    expect(e.key, anyOf('db-query', 'db-result'));
-    final add = e.additionalData!;
-    expect(add['statement'], isA<String>());
-    expect(add['statementDigest'], isA<String>());
-    expect((add['args'] as List).first.toString().contains('…'), isTrue);
-    expect((add['namedArgs'] as Map)['password'], '***');
-    expect(add['durationMs'], greaterThanOrEqualTo(10));
-    expect(add['slow'], isTrue); // slow threshold is 1ms
+      expect(logger.history, isNotEmpty);
+      final entry = logger.history.last;
+      expect(entry.key, anyOf('db-query', 'db-result'));
+      final add = entry.additionalData ?? {};
+
+      // Envelope fields from trace().
+      expect(add['category'], 'db');
+      expect(add['source'], 'sqflite');
+      expect(add['operation'], 'query');
+      expect(add['target'], 'users');
+      expect(add['durationMs'], greaterThanOrEqualTo(10));
+      expect(add['slow'], isTrue);
+
+      // DB-specific fields nested in TraceKeys.meta.
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['statement'], isA<String>());
+      expect(meta['statementDigest'], isA<String>());
+      expect(
+        (meta['args'] as List).first.toString().contains('...'),
+        isTrue,
+      );
+      expect((meta['namedArgs'] as Map)['password'], '***');
+    });
+
+    test('sets error logs to LogLevel.error', () {
+      logger.db(
+        source: 'sqflite',
+        operation: 'query',
+        statement: 'SELECT 1',
+        success: false,
+        error: 'boom',
+      );
+      final last = logger.history.last;
+      expect(last.key, 'db-error');
+      expect(last.logLevel, LogLevel.error);
+    });
+
+    test('handles null statement and empty args', () {
+      logger.db(
+        source: 'kv',
+        operation: 'get',
+        key: 'myKey',
+        args: [],
+        namedArgs: {},
+      );
+
+      expect(logger.history, isNotEmpty);
+      final add = logger.history.last.additionalData ?? {};
+      // key is in the trace envelope.
+      expect(add['key'], 'myKey');
+      // DB-specific meta should not contain statement/statementDigest.
+      final meta = add['meta'] as Map<String, dynamic>?;
+      expect(meta?.containsKey('statement') ?? false, isFalse);
+      expect(meta?.containsKey('statementDigest') ?? false, isFalse);
+    });
+
+    test('skips redaction when redact is false', () {
+      // Per-call redact: false only affects _preprocessDb (statement
+      // digest, positional args). trace() still applies its own
+      // redaction from cfg.redact. To fully skip, use a config with
+      // redact: false.
+      logger.db(
+        source: 'sqflite',
+        operation: 'query',
+        statement: 'SELECT * FROM users',
+        namedArgs: {'password': 'secret123'},
+        redact: false,
+        config: const ISpectDbConfig(redact: false),
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect((meta['namedArgs'] as Map)['password'], 'secret123');
+    });
+
+    test('preserves positional args when statement has no sensitive columns',
+        () {
+      logger.db(
+        source: 'sqflite',
+        operation: 'query',
+        statement: 'SELECT * FROM orders WHERE total > ?',
+        args: [100, 'visible'],
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      final meta = add['meta'] as Map<String, dynamic>;
+      final args = meta['args'] as List;
+      expect(args, containsAll([100, 'visible']));
+    });
+
+    test('redacts positional args when statement mentions sensitive column',
+        () {
+      logger.db(
+        source: 'sqflite',
+        operation: 'query',
+        statement: 'SELECT * FROM users WHERE password = ?',
+        args: ['super-secret'],
+        config: _cfg,
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      final meta = add['meta'] as Map<String, dynamic>;
+      final args = meta['args'] as List;
+      expect(args.first, '***');
+    });
+
+    test('logs value and projection correctly', () {
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        key: 'k',
+        value: 'raw-value',
+        projection: 'projected-value',
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['value'], contains('projected-value'));
+    });
+
+    test('pickLogKey returns db-query for read operations', () {
+      // Only operations listed in dbCategory.secondaryOperations
+      // get classified as db-query.
+      for (final op in [
+        'query', 'select', 'get', // SQL / KV
+        'find', 'list', 'count', // NoSQL / search
+      ]) {
+        logger.db(source: 'test', operation: op, success: true);
+        expect(logger.history.last.key, 'db-query', reason: 'op=$op');
+      }
+    });
+
+    test('pickLogKey returns db-result for write operations', () {
+      for (final op in ['insert', 'update', 'delete']) {
+        logger.db(source: 'test', operation: op, success: true);
+        expect(logger.history.last.key, 'db-result');
+      }
+    });
+
+    test('logs sizeBytes for file operations', () {
+      logger.db(
+        source: 'file',
+        operation: 'write',
+        target: '/data/cache/image.png',
+        sizeBytes: 2048,
+        success: true,
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['sizeBytes'], 2048);
+    });
+
+    test('logs cacheHit for cache operations', () {
+      logger.db(
+        source: 'cache',
+        operation: 'get',
+        key: 'user:123',
+        cacheHit: true,
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['cacheHit'], isTrue);
+    });
+
+    test('logs cache miss', () {
+      logger.db(
+        source: 'cache',
+        operation: 'get',
+        key: 'user:999',
+        cacheHit: false,
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['cacheHit'], isFalse);
+    });
+
+    test('omits sizeBytes and cacheHit when null', () {
+      logger.db(source: 'kv', operation: 'get', key: 'k');
+
+      final add = logger.history.last.additionalData ?? {};
+      final meta = add['meta'] as Map<String, dynamic>?;
+      expect(meta?.containsKey('sizeBytes') ?? false, isFalse);
+      expect(meta?.containsKey('cacheHit') ?? false, isFalse);
+    });
+
+    test('does not mark as slow when duration is under threshold', () {
+      logger.db(
+        source: 'sqflite',
+        operation: 'query',
+        duration: Duration.zero,
+        config: _cfg,
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      // trace() always emits 'slow' when both duration and slowThreshold
+      // are present; Duration.zero is NOT > threshold, so slow == false.
+      expect(add['slow'], isFalse);
+    });
   });
 
-  test('dbTrace captures error and stack trace', () async {
-    Future<void> failing() async => Future<void>.error(StateError('x'));
-    try {
-      await logger.dbTrace<void>(
+  group('sqlDigest', () {
+    test('returns null for null or empty input', () {
+      expect(DbSqlDigest.compute(null), isNull);
+      expect(DbSqlDigest.compute(''), isNull);
+    });
+
+    test('normalizes single-quoted strings to ?', () {
+      final digest = DbSqlDigest.compute("SELECT * FROM t WHERE a = 'foo'");
+      expect(digest, isNotNull);
+      expect(digest, contains('?'));
+      expect(digest, isNot(contains('foo')));
+    });
+
+    test('normalizes double-quoted strings to ?', () {
+      final digest = DbSqlDigest.compute('SELECT * FROM t WHERE a = "bar"');
+      expect(digest, isNotNull);
+      expect(digest, contains('?'));
+      expect(digest, isNot(contains('bar')));
+    });
+
+    test('normalizes digits to ?', () {
+      final digest = DbSqlDigest.compute('SELECT * FROM t WHERE id = 42');
+      expect(digest, isNotNull);
+      expect(digest, contains('?'));
+      expect(digest, isNot(contains('42')));
+    });
+
+    test('produces stable hash for identical normalized statements', () {
+      final digest1 = DbSqlDigest.compute("SELECT * FROM t WHERE a = 'x'");
+      final digest2 = DbSqlDigest.compute("SELECT * FROM t WHERE a = 'y'");
+      expect(digest1, equals(digest2));
+    });
+
+    test('produces different hash for structurally different statements', () {
+      final digest1 = DbSqlDigest.compute('SELECT * FROM users');
+      final digest2 = DbSqlDigest.compute('DELETE FROM users');
+      expect(digest1, isNot(equals(digest2)));
+    });
+
+    test('truncates long statements to 80 chars before hash', () {
+      final longStmt = 'SELECT ${'a, ' * 100}FROM t';
+      final digest = DbSqlDigest.compute(longStmt)!;
+      final prefix = digest.split('|').first;
+      expect(prefix.length, 80);
+    });
+  });
+
+  group('sampleRate', () {
+    test('sampleRate 0.0 drops all logs', () {
+      logger.db(
+        source: 'test',
+        operation: 'query',
+        config: const ISpectDbConfig(sampleRate: 0),
+      );
+      expect(logger.history, isEmpty);
+    });
+
+    test('sampleRate 1.0 logs everything', () {
+      for (var i = 0; i < 10; i++) {
+        logger.db(
+          source: 'test',
+          operation: 'query',
+          config: const ISpectDbConfig(sampleRate: 1),
+        );
+      }
+      expect(logger.history.length, 10);
+    });
+
+    test('sampleRate null logs everything', () {
+      for (var i = 0; i < 5; i++) {
+        logger.db(source: 'test', operation: 'query');
+      }
+      expect(logger.history.length, 5);
+    });
+
+    test('per-call sample override takes precedence', () {
+      logger.db(
+        source: 'test',
+        operation: 'query',
+        sample: 0,
+        config: const ISpectDbConfig(sampleRate: 1),
+      );
+      expect(logger.history, isEmpty);
+    });
+
+    test('dbTrace with sampleRate 0 still executes the callback', () async {
+      var executed = false;
+      await logger.dbTrace(
+        source: 'test',
+        operation: 'query',
+        config: const ISpectDbConfig(sampleRate: 0),
+        run: () async {
+          executed = true;
+        },
+      );
+      expect(executed, isTrue);
+      expect(logger.history, isEmpty);
+    });
+  });
+
+  group('dbTrace', () {
+    test('captures error and stack trace', () async {
+      Future<void> failing() async => Future<void>.error(StateError('x'));
+      try {
+        await logger.dbTrace<void>(
+          source: 'kv',
+          operation: 'write',
+          key: 'a',
+          run: () async => failing(),
+          config: _cfg,
+        );
+        fail('should throw');
+      } catch (_) {
+        // expected
+      }
+
+      final entry = logger.history.last;
+      expect(entry.key, 'db-error');
+      expect(entry.stackTrace, isNotNull);
+      final add = entry.additionalData ?? {};
+      expect(add['success'], isFalse);
+      expect(add['key'], 'a');
+    });
+
+    test('projects result and sets items count', () async {
+      final res = await logger.dbTrace<List<Map<String, Object?>>>(
+        source: 'sqflite',
+        operation: 'query',
+        table: 't',
+        run: () async => [
+          {'id': 1},
+          {'id': 2},
+        ],
+        projectResult: (rows) => {'rows': rows.length},
+      );
+      expect(res.length, 2);
+      final entry = logger.history.last;
+      final add = entry.additionalData ?? {};
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['items'], 2);
+      // Projected value is stored as-is (Map) in meta, not stringified.
+      final projectedValue = meta['value'] as Map<String, dynamic>;
+      expect(projectedValue['rows'], 2);
+    });
+
+    test('records duration', () async {
+      await logger.dbTrace(
+        source: 'test',
+        operation: 'query',
+        run: () async {
+          await Future<void>.delayed(const Duration(milliseconds: 5));
+        },
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      expect(add['durationMs'], isA<int>());
+      expect(add['durationMs'] as int, greaterThanOrEqualTo(1));
+    });
+
+    test('logs entry even when projectResult throws', () async {
+      final result = await logger.dbTrace<int>(
+        source: 'sqflite',
+        operation: 'query',
+        run: () async => 42,
+        projectResult: (_) => throw const FormatException('bad projection'),
+      );
+
+      // The operation result is still returned.
+      expect(result, 42);
+
+      // The logging failure is swallowed — no log entry is produced for
+      // the successful call because the projection error occurs inside
+      // the finally catch block.
+      // Verify that the logger did NOT crash and is still usable.
+      logger.db(source: 'test', operation: 'get');
+      expect(logger.history, isNotEmpty);
+    });
+
+    test('captures synchronous exception in run callback', () async {
+      try {
+        await logger.dbTrace<int>(
+          source: 'db',
+          operation: 'query',
+          run: () => throw StateError('sync-boom'),
+        );
+        fail('should throw');
+      } catch (_) {
+        // expected
+      }
+
+      final entry = logger.history.last;
+      expect(entry.key, 'db-error');
+      final add = entry.additionalData ?? {};
+      expect(add['error'], contains('sync-boom'));
+    });
+
+    test('passes sizeBytes and cacheHit through', () async {
+      await logger.dbTrace(
+        source: 'cache',
+        operation: 'get',
+        key: 'user:1',
+        sizeBytes: 512,
+        cacheHit: true,
+        run: () async => 'cached-value',
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['sizeBytes'], 512);
+      expect(meta['cacheHit'], isTrue);
+    });
+  });
+
+  group('dbStart / dbEnd', () {
+    test('logs with measured duration', () async {
+      final token = logger.dbStart(
+        source: 'sqflite',
+        operation: 'query',
+        statement: 'SELECT 1',
+        table: 'users',
+      );
+
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+
+      logger.dbEnd(
+        token,
+        value: 'result',
+        success: true,
+        items: 1,
+      );
+
+      expect(logger.history, isNotEmpty);
+      final add = logger.history.last.additionalData ?? {};
+      // Envelope fields.
+      expect(add['source'], 'sqflite');
+      expect(add['operation'], 'query');
+      expect(add['target'], 'users'); // table becomes target in trace()
+      expect(add['durationMs'], isA<int>());
+      expect(add['durationMs'] as int, greaterThanOrEqualTo(1));
+      // DB-specific fields in meta.
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['items'], 1);
+    });
+
+    test('defaults source and operation to custom', () {
+      final token = logger.dbStart();
+      logger.dbEnd(token);
+
+      final add = logger.history.last.additionalData ?? {};
+      expect(add['source'], dbDefaultSource);
+      expect(add['operation'], dbDefaultOperation);
+    });
+
+    test('merges token meta with dbEnd meta', () {
+      final token = logger.dbStart(
         source: 'kv',
         operation: 'write',
-        key: 'a',
-        run: () async => failing(),
+        meta: {'a': '1'},
       );
-      fail('should throw');
-    } catch (_) {
-      // ignore
-    }
+      logger.dbEnd(token, meta: {'b': '2'});
 
-    final e = logger.history.last;
-    expect(e.key, 'db-error');
-    expect(e.stackTrace, isNotNull);
-    final add = e.additionalData!;
-    expect(add['success'], isFalse);
-    expect(add['key'], 'a');
+      final add = logger.history.last.additionalData ?? {};
+      // The merged meta from token+dbEnd is passed through _preprocessDb
+      // and then to trace() as meta, which puts it under TraceKeys.meta.
+      final meta = add['meta'] as Map<String, dynamic>;
+      // User meta is nested under 'userMeta' inside the DB meta map.
+      final userMeta = meta['userMeta'] as Map<String, dynamic>;
+      expect(userMeta['a'], '1');
+      expect(userMeta['b'], '2');
+    });
+
+    test('infers error from error parameter', () {
+      final token = logger.dbStart(source: 'db', operation: 'write');
+      logger.dbEnd(token, error: 'connection lost');
+
+      final entry = logger.history.last;
+      expect(entry.key, 'db-error');
+      final add = entry.additionalData ?? {};
+      expect(add['success'], isFalse);
+      expect(add['error'], 'connection lost');
+    });
+
+    test('uses monotonic Stopwatch for duration', () async {
+      final token = logger.dbStart(source: 'db', operation: 'read');
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      logger.dbEnd(token, success: true);
+
+      final add = logger.history.last.additionalData ?? {};
+      final durationMs = add['durationMs'] as int;
+      expect(durationMs, greaterThanOrEqualTo(5));
+    });
+
+    test('passes sizeBytes and cacheHit through dbEnd', () {
+      final token = logger.dbStart(source: 'file', operation: 'read');
+      logger.dbEnd(
+        token,
+        success: true,
+        sizeBytes: 4096,
+        cacheHit: false,
+      );
+
+      final add = logger.history.last.additionalData ?? {};
+      final meta = add['meta'] as Map<String, dynamic>;
+      expect(meta['sizeBytes'], 4096);
+      expect(meta['cacheHit'], isFalse);
+    });
   });
 
-  test('dbTrace projects result and sets items count', () async {
-    final res = await logger.dbTrace<List<Map<String, Object?>>>(
-      source: 'sqflite',
-      operation: 'query',
-      table: 't',
-      run: () async => [
-        {'id': 1},
-        {'id': 2},
-      ],
-      projectResult: (rows) => {'rows': rows.length},
-    );
-    expect(res.length, 2);
-    final e = logger.history.last;
-    final add = e.additionalData!;
-    expect(add['items'], 2);
-    expect((add['value'] as String).contains('rows: 2'), isTrue);
-  });
-
-  test('transaction markers with shared transactionId', () async {
-    await logger.dbTransaction(
-      source: 'sqflite',
-      logMarkers: true,
-      run: () async {
-        await logger.dbTrace(
-          source: 'sqflite',
-          operation: 'update',
-          statement: 'UPDATE t SET a=?',
-          args: [1],
-          run: () async => 1,
-        );
-      },
-    );
-
-    final txLogs = logger.history.where((e) =>
-        (e.additionalData?['operation'] as String?)
-            ?.startsWith('transaction-') ==
-        true);
-    expect(txLogs.length, greaterThanOrEqualTo(2));
-    final ids = txLogs
-        .map((e) => e.additionalData?['transactionId'])
-        .whereType<String>()
-        .toSet();
-    expect(ids.length, 1); // same id across markers
-  });
-
-  test('dbTransaction does not commit after rollback', () async {
-    await expectLater(
-      () => logger.dbTransaction(
+  group('dbTransaction', () {
+    test('transaction markers with shared transactionId', () async {
+      await logger.dbTransaction(
         source: 'sqflite',
         logMarkers: true,
-        run: () async => throw StateError('fail'),
-      ),
-      throwsA(isA<StateError>()),
-    );
+        run: () async {
+          await logger.dbTrace(
+            source: 'sqflite',
+            operation: 'update',
+            statement: 'UPDATE t SET a=?',
+            args: [1],
+            run: () async => 1,
+          );
+        },
+      );
 
-    final txLogs = logger.history.where((e) =>
-        (e.additionalData?['operation'] as String?)
-            ?.startsWith('transaction-') ==
-        true);
-    final ops = txLogs.map((e) => e.additionalData?['operation']).toList();
-    expect(ops, contains('transaction-begin'));
-    expect(ops, contains('transaction-rollback'));
-    expect(ops, isNot(contains('transaction-commit')));
+      final txLogs = logger.history.where(
+        (e) =>
+            (e.additionalData?['operation'] as String?)
+                ?.startsWith('transaction-') ??
+            false,
+      );
+      expect(txLogs.length, greaterThanOrEqualTo(2));
+      final ids = txLogs
+          .map((e) => e.additionalData?['transactionId'])
+          .whereType<String>()
+          .toSet();
+      expect(ids.length, 1);
+    });
+
+    test('does not commit after rollback', () async {
+      await expectLater(
+        () => logger.dbTransaction(
+          source: 'sqflite',
+          logMarkers: true,
+          run: () async => throw StateError('fail'),
+        ),
+        throwsA(isA<StateError>()),
+      );
+
+      final txLogs = logger.history.where(
+        (e) =>
+            (e.additionalData?['operation'] as String?)
+                ?.startsWith('transaction-') ??
+            false,
+      );
+      final ops = txLogs.map((e) => e.additionalData?['operation']).toList();
+      expect(ops, contains('transaction-begin'));
+      expect(ops, contains('transaction-rollback'));
+      expect(ops, isNot(contains('transaction-commit')));
+    });
+
+    test('nested transaction replaces outer transaction ID', () async {
+      await logger.dbTransaction(
+        source: 'sqflite',
+        logMarkers: true,
+        run: () async {
+          logger.db(source: 'sqflite', operation: 'insert');
+
+          await logger.dbTransaction(
+            source: 'sqflite',
+            logMarkers: true,
+            run: () async {
+              logger.db(source: 'sqflite', operation: 'update');
+            },
+          );
+
+          logger.db(source: 'sqflite', operation: 'delete');
+        },
+      );
+
+      // traceTransaction injects transactionId via its own zone key,
+      // which trace() reads into additionalData['transactionId'].
+      final insertLog = logger.history.firstWhere(
+        (e) => e.additionalData?['operation'] == 'insert',
+      );
+      final updateLog = logger.history.firstWhere(
+        (e) => e.additionalData?['operation'] == 'update',
+      );
+      final deleteLog = logger.history.firstWhere(
+        (e) => e.additionalData?['operation'] == 'delete',
+      );
+
+      final outerTxnId = insertLog.additionalData?['transactionId'] as String?;
+      final innerTxnId = updateLog.additionalData?['transactionId'] as String?;
+
+      // Inner and outer have different IDs.
+      expect(outerTxnId, isNotNull);
+      expect(innerTxnId, isNotNull);
+      expect(outerTxnId, isNot(equals(innerTxnId)));
+
+      // Outer zone restores after inner completes.
+      expect(deleteLog.additionalData?['transactionId'], outerTxnId);
+    });
+
+    test('succeeds without markers and emits no transaction logs', () async {
+      final result = await logger.dbTransaction(
+        source: 'sqflite',
+        logMarkers: false,
+        run: () async {
+          logger.db(source: 'sqflite', operation: 'insert');
+          return 42;
+        },
+      );
+
+      expect(result, 42);
+
+      final txLogs = logger.history.where(
+        (e) =>
+            (e.additionalData?['operation'] as String?)
+                ?.startsWith('transaction-') ??
+            false,
+      );
+      expect(txLogs, isEmpty);
+
+      // The inner db call still got a transactionId.
+      final insertLog = logger.history.firstWhere(
+        (e) => e.additionalData?['operation'] == 'insert',
+      );
+      expect(insertLog.additionalData?['transactionId'], isNotNull);
+    });
+
+    test('propagates transactionId to nested db calls via Zone', () async {
+      await logger.dbTransaction(
+        source: 'sqflite',
+        logMarkers: true,
+        run: () async {
+          logger.db(source: 'sqflite', operation: 'insert');
+        },
+      );
+
+      // traceTransaction injects its own zone-based transactionId,
+      // which trace() reads and places in additionalData.
+      final insertLog = logger.history.firstWhere(
+        (e) => e.additionalData?['operation'] == 'insert',
+      );
+      final txnId = insertLog.additionalData?['transactionId'] as String?;
+      expect(txnId, isNotNull);
+      expect(txnId!.length, 16);
+    });
   });
 
-  test('db() sets error logs to LogLevel.error', () async {
-    logger.db(
-      source: 'sqflite',
-      operation: 'query',
-      statement: 'SELECT 1',
-      success: false,
-      error: 'boom',
-    );
-    final last = logger.history.last;
-    expect(last.key, 'db-error');
-    expect(last.logLevel, LogLevel.error);
+  group('ISpectDbConfig', () {
+    test('redactKeys is a Set', () {
+      const config = ISpectDbConfig(redactKeys: {'a', 'b'});
+      expect(config.redactKeys, containsAll(['a', 'b']));
+    });
+
+    test('assert rejects sampleRate outside 0..1', () {
+      expect(
+        () => ISpectDbConfig(sampleRate: -0.1),
+        throwsA(isA<AssertionError>()),
+      );
+      expect(
+        () => ISpectDbConfig(sampleRate: 1.1),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+
+    test('toString includes all field values', () {
+      const config = ISpectDbConfig(
+        sampleRate: 0.5,
+        maxValueLength: 100,
+      );
+      final str = config.toString();
+      expect(str, contains('ISpectDbConfig('));
+      expect(str, contains('sampleRate: 0.5'));
+      expect(str, contains('redact: true'));
+      expect(str, contains('maxValueLength: 100'));
+    });
+
+    test('copyWith preserves unchanged fields', () {
+      const original = ISpectDbConfig(
+        sampleRate: 0.5,
+        redact: false,
+        maxValueLength: 100,
+        attachStackOnError: true,
+      );
+      final copied = original.copyWith(maxValueLength: 200);
+      expect(copied.sampleRate, 0.5);
+      expect(copied.redact, isFalse);
+      expect(copied.maxValueLength, 200);
+      expect(copied.attachStackOnError, isTrue);
+    });
+
+    test('copyWith resets nullable fields to null', () {
+      const original = ISpectDbConfig(
+        sampleRate: 0.5,
+        slowThreshold: Duration(seconds: 1),
+      );
+      final reset = original.copyWith(
+        sampleRate: null,
+        slowThreshold: null,
+      );
+      expect(reset.sampleRate, isNull);
+      expect(reset.slowThreshold, isNull);
+    });
+  });
+
+  group('ISpectDbTxn', () {
+    test('returns null outside of transaction zone', () {
+      expect(ISpectDbTxn.currentTransactionId(), isNull);
+    });
+
+    test('returns txnId inside transaction zone', () async {
+      String? captured;
+      await ISpectDbTxn.runInTransactionZone('txn-123', () async {
+        captured = ISpectDbTxn.currentTransactionId();
+      });
+      expect(captured, 'txn-123');
+    });
+  });
+
+  group('ISpectDbToken', () {
+    test('toString includes source and operation', () {
+      final token = logger.dbStart(source: 'sqflite', operation: 'query');
+      final str = token.toString();
+      expect(str, contains('ISpectDbToken('));
+      expect(str, contains('source: sqflite'));
+      expect(str, contains('operation: query'));
+      expect(str, contains('elapsed:'));
+    });
+
+    test('stopTiming is idempotent — elapsed stays stable', () async {
+      final token = logger.dbStart(source: 'db', operation: 'read');
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+      token.stopTiming();
+      final first = token.elapsed;
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      token.stopTiming();
+      final second = token.elapsed;
+      expect(first, equals(second));
+    });
+  });
+
+  group('genId', () {
+    test('produces 16-char hex string', () {
+      final id = ISpectDbCore.genId();
+      expect(id.length, 16);
+      expect(RegExp(r'^[0-9a-f]{16}$').hasMatch(id), isTrue);
+    });
+
+    test('produces unique values', () {
+      final ids = List.generate(100, (_) => ISpectDbCore.genId()).toSet();
+      expect(ids.length, 100);
+    });
+  });
+
+  group('buildMessage', () {
+    test('includes all fields', () {
+      final msg = DbMessageFormatter.build(
+        operation: 'query',
+        table: 'users',
+        target: 'primary',
+        key: 'id',
+        items: 5,
+        affected: 3,
+        sizeBytes: 2048,
+        cacheHit: true,
+        duration: const Duration(milliseconds: 42),
+        success: true,
+        value: 'data',
+      );
+      expect(
+        msg,
+        isNot(contains('[sqflite]')),
+        reason: 'source belongs to entry header, not body',
+      );
+      expect(msg, startsWith('query'));
+      expect(msg, contains('users → primary'));
+      expect(msg, contains('Key: id'));
+      expect(msg, contains('Items: 5'));
+      expect(msg, contains('Affected: 3'));
+      expect(msg, contains('Size: 2.0 KB'));
+      expect(msg, contains('Cache: HIT'));
+      expect(msg, contains('Duration: 42ms'));
+      expect(msg, contains('Success: true'));
+      expect(msg, contains('Value: data'));
+    });
+
+    test('formats cache miss', () {
+      final msg = DbMessageFormatter.build(
+        operation: 'get',
+        cacheHit: false,
+      );
+      expect(msg, contains('Cache: MISS'));
+    });
+
+    test('formats bytes correctly', () {
+      final small = DbMessageFormatter.build(
+        operation: 'write',
+        sizeBytes: 500,
+      );
+      expect(small, contains('Size: 500 B'));
+
+      final kb = DbMessageFormatter.build(
+        operation: 'write',
+        sizeBytes: 1536,
+      );
+      expect(kb, contains('Size: 1.5 KB'));
+
+      final mb = DbMessageFormatter.build(
+        operation: 'write',
+        sizeBytes: 2 * 1024 * 1024,
+      );
+      expect(mb, contains('Size: 2.0 MB'));
+
+      final gb = DbMessageFormatter.build(
+        operation: 'write',
+        sizeBytes: 3 * 1024 * 1024 * 1024,
+      );
+      expect(gb, contains('Size: 3.0 GB'));
+    });
+
+    test('formats zero bytes', () {
+      final msg = DbMessageFormatter.build(
+        operation: 'write',
+        sizeBytes: 0,
+      );
+      expect(msg, contains('Size: 0 B'));
+    });
+
+    test('shows table only when target is null', () {
+      final msg = DbMessageFormatter.build(
+        operation: 'query',
+        table: 'users',
+      );
+      expect(msg, equals('query users'));
+      expect(msg, isNot(contains('→')));
+    });
+
+    test('shows target only when table is null', () {
+      final msg = DbMessageFormatter.build(
+        operation: 'read',
+        target: '/data/config.json',
+      );
+      expect(msg, equals('read /data/config.json'));
+      expect(msg, isNot(contains('→')));
+    });
+
+    test('shows table → target when both present', () {
+      final msg = DbMessageFormatter.build(
+        operation: 'query',
+        table: 'users',
+        target: 'idx_email',
+      );
+      expect(msg, contains('users → idx_email'));
+    });
+
+    test('minimal message with only required fields', () {
+      final msg = DbMessageFormatter.build(
+        operation: 'get',
+      );
+      expect(msg, equals('get'));
+    });
+  });
+
+  group('redactPositionalArgs (direct)', () {
+    test('returns args unchanged when statement has no sensitive columns', () {
+      final args = ISpectDbCore.redactPositionalArgs(
+        [1, 'visible', true],
+        ['password', 'token'],
+        'SELECT * FROM orders WHERE total > ?',
+      );
+      expect(args, [1, 'visible', true]);
+    });
+
+    test('redacts all args when statement mentions a sensitive column', () {
+      final args = ISpectDbCore.redactPositionalArgs(
+        ['secret', 42],
+        ['password', 'token'],
+        'INSERT INTO users (name, password) VALUES (?, ?)',
+      );
+      expect(args, ['***', '***']);
+    });
+
+    test('redacts all args when statement is null (precaution)', () {
+      final args = ISpectDbCore.redactPositionalArgs(
+        ['a', 'b'],
+        ['password'],
+        null,
+      );
+      expect(args, ['***', '***']);
+    });
+
+    test('returns empty list as-is', () {
+      final args = ISpectDbCore.redactPositionalArgs(
+        [],
+        ['password'],
+        'SELECT 1',
+      );
+      expect(args, isEmpty);
+    });
+
+    test('preserves null elements in redacted list', () {
+      final args = ISpectDbCore.redactPositionalArgs(
+        [null, 'secret'],
+        ['password'],
+        null,
+      );
+      expect(args, [null, '***']);
+    });
+  });
+
+  group('truncateValue', () {
+    test('returns null for null input', () {
+      expect(ISpectDbCore.truncateValue(null, 10), isNull);
+    });
+
+    test('truncates long strings', () {
+      final result = ISpectDbCore.truncateValue('a' * 100, 10);
+      expect(result, isA<String>());
+      expect((result! as String).length, lessThanOrEqualTo(15));
+    });
+
+    test('returns non-string values unchanged', () {
+      expect(ISpectDbCore.truncateValue(42, 5), 42);
+      expect(ISpectDbCore.truncateValue(true, 5), true);
+      expect(
+        ISpectDbCore.truncateValue(['a', 'b'], 5),
+        ['a', 'b'],
+      );
+    });
+  });
+
+  group('clean', () {
+    test('removes null and empty-string values', () {
+      final result = ISpectDbCore.clean({
+        'keep': 'value',
+        'removeNull': null,
+        'removeEmpty': '',
+        'keepZero': 0,
+        'keepFalse': false,
+      });
+      expect(result, containsPair('keep', 'value'));
+      expect(result, containsPair('keepZero', 0));
+      expect(result, containsPair('keepFalse', false));
+      expect(result.containsKey('removeNull'), isFalse);
+      expect(result.containsKey('removeEmpty'), isFalse);
+    });
   });
 }

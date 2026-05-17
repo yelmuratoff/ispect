@@ -24,10 +24,10 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => '안녕하세요! 어떻게 도와드릴까요?';
 
   @override
-  String get allLogsCopied => '모든 로그가 버퍼에 복사됨';
+  String get allLogsCopied => '모든 로그가 클립보드에 복사됨';
 
   @override
-  String get analyticsLogDesc => '분석 서비스로 이벤트 전송 로그';
+  String get analyticsLogDesc => '이벤트가 추적되어 분석 서비스로 전송됨';
 
   @override
   String get apiToken => 'API 토큰';
@@ -130,13 +130,13 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get creatingIssue => '문제 생성 중';
 
   @override
-  String get criticalLogDesc => '즉각적인 주의가 필요한 치명적인 오류 또는 이벤트를 기록하는 데 사용되는 태그';
+  String get criticalLogDesc => '즉각적인 주의가 필요한 치명적인 오류';
 
   @override
   String get data => '데이터';
 
   @override
-  String get debugLogDesc => '앱 동작을 분석하기 위해 디버그 정보를 기록하는 데 사용되는 태그';
+  String get debugLogDesc => '동작 분석을 위한 기술적 세부 정보';
 
   @override
   String get description => '설명';
@@ -156,7 +156,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get errorCacheClearing => '캐시 지우기 오류';
 
   @override
-  String get errorLogDesc => '앱에서 발생하는 오류를 기록하는 데 사용되는 태그';
+  String get errorLogDesc => '앱에서 문제가 발생했습니다';
 
   @override
   String get errorMessage => '오류 메시지';
@@ -165,7 +165,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get errorType => '오류 유형';
 
   @override
-  String get exceptionLogDesc => '앱에서 발생하는 예외를 기록하는 데 사용되는 태그';
+  String get exceptionLogDesc => '예기치 않은 오류가 발생했습니다';
 
   @override
   String get expandLogs => '로그 펼치기';
@@ -192,7 +192,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get goToLogger => '로거로 이동';
 
   @override
-  String get goodLogDesc => '앱에서 성공적인 작업 또는 긍정적인 이벤트를 기록하는 데 사용되는 태그';
+  String get goodLogDesc => '작업이 성공적으로 완료되었습니다';
 
   @override
   String get headers => '헤더';
@@ -210,7 +210,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => '서버 응답 로그';
 
   @override
-  String get infoLogDesc => '앱 작동에 대한 정보 메시지를 기록하는 데 사용되는 태그';
+  String get infoLogDesc => '현재 진행 상황에 대한 일반 정보';
 
   @override
   String get initializationFailed => '초기화 실패';
@@ -244,6 +244,9 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get notFound => '찾을 수 없음';
 
   @override
+  String get noResultsHint => '다른 검색어를 시도하거나 필터를 조정하세요';
+
+  @override
   String get otherLogsForDevelopers => '다른 로그는 이미 개발자가 사용 중임';
 
   @override
@@ -268,7 +271,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get pleaseSelectYourProject => '이제 프로젝트를 선택해 주세요';
 
   @override
-  String get printLogDesc => 'Flutter의 표준 출력 메서드 로그';
+  String get printLogDesc => '콘솔에 메시지가 출력됨';
 
   @override
   String get projectDomain => '프로젝트 도메인';
@@ -523,13 +526,13 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get userEmail => '사용자 이메일';
 
   @override
-  String get verboseLogDesc => '앱을 심층적으로 분석하기 위해 자세한 정보를 기록하는 데 사용되는 태그';
+  String get verboseLogDesc => '디버깅을 위한 상세한 기술 정보';
 
   @override
   String get viewAndManageData => '앱 데이터 보기 및 관리';
 
   @override
-  String get warningLogDesc => '앱에서 잠재적인 문제에 대한 경고 메시지를 기록하는 데 사용되는 태그';
+  String get warningLogDesc => '문제를 일으킬 수 있는 잠재적 이슈';
 
   @override
   String get you => '당신';
@@ -541,10 +544,10 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get noData => '데이터 없음';
 
   @override
-  String get shareLogFull => '로그 공유 (전체)';
+  String get shareLogFull => '전체 로그 공유';
 
   @override
-  String get copyToClipboardTruncated => '클립보드에 복사 (잘린 형태)';
+  String get copyToClipboardTruncated => '요약을 클립보드에 복사';
 
   @override
   String get viewThemeScheme => '테마 스키마 화면 보기';
@@ -680,4 +683,312 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => '데이터베이스 오류 로그';
+
+  @override
+  String get reverseLogsDesc => '로그 표시 순서를 최신순에서 오래된순으로 또는 그 반대로 변경';
+
+  @override
+  String get copyAllLogsDesc => '모든 로그 항목을 텍스트로 클립보드에 복사';
+
+  @override
+  String get expandLogsDesc => '모든 로그 항목의 전체 세부 정보 표시';
+
+  @override
+  String get collapseLogsDesc => '모든 로그 항목을 간결한 보기로 접기';
+
+  @override
+  String get clearHistoryDesc => '메모리에서 저장된 모든 로그 항목 제거';
+
+  @override
+  String get shareLogsFileDesc => '로그를 파일로 내보내고 시스템 공유 메뉴를 통해 공유';
+
+  @override
+  String get navigationFlowDesc => '앱의 화면 전환 순서 보기';
+
+  @override
+  String get dailySessionsDesc => '이전 앱 세션에서 저장된 로그 파일 탐색';
+
+  @override
+  String get logViewerDesc => '로그 파일을 검사하기 위한 외부 뷰어 열기';
+
+  @override
+  String get selectAll => '모두 선택';
+
+  @override
+  String get deselectAll => '모두 해제';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => '데이터베이스';
+
+  @override
+  String get groupNavigation => '내비게이션';
+
+  @override
+  String get groupGeneral => '일반';
+
+  @override
+  String get categoryAuth => 'Auth';
+
+  @override
+  String get categoryStorage => 'Storage';
+
+  @override
+  String get categoryPush => 'Push';
+
+  @override
+  String get categoryPayment => 'Payment';
+
+  @override
+  String get categoryAnalytics => 'Analytics';
+
+  @override
+  String get categorySse => 'SSE';
+
+  @override
+  String get categoryGrpc => 'gRPC';
+
+  @override
+  String get categoryGraphql => 'GraphQL';
+
+  @override
+  String get wsErrorLogDesc => 'WebSocket connection error';
+
+  @override
+  String get authSuccessLogDesc => 'Authentication successful';
+
+  @override
+  String get authErrorLogDesc => 'Authentication failed';
+
+  @override
+  String get storageResultLogDesc => 'Storage operation completed';
+
+  @override
+  String get storageQueryLogDesc => 'Storage query executed';
+
+  @override
+  String get storageErrorLogDesc => 'Storage operation failed';
+
+  @override
+  String get pushReceivedLogDesc => 'Push notification received';
+
+  @override
+  String get pushSentLogDesc => 'Push notification sent';
+
+  @override
+  String get pushErrorLogDesc => 'Push notification error';
+
+  @override
+  String get paymentSuccessLogDesc => 'Payment completed';
+
+  @override
+  String get paymentErrorLogDesc => 'Payment failed';
+
+  @override
+  String get stateChangeLogDesc => 'State changed';
+
+  @override
+  String get stateErrorLogDesc => 'State management error';
+
+  @override
+  String get sseReceivedLogDesc => 'Server-Sent Event received';
+
+  @override
+  String get sseErrorLogDesc => 'SSE connection error';
+
+  @override
+  String get grpcRequestLogDesc => 'gRPC request sent';
+
+  @override
+  String get grpcResponseLogDesc => 'gRPC response received';
+
+  @override
+  String get grpcErrorLogDesc => 'gRPC call failed';
+
+  @override
+  String get graphqlRequestLogDesc => 'GraphQL query sent';
+
+  @override
+  String get graphqlResponseLogDesc => 'GraphQL response received';
+
+  @override
+  String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
+  String get transitionPush => '푸시';
+
+  @override
+  String get transitionPop => '팝';
+
+  @override
+  String get transitionReplace => '교체';
+
+  @override
+  String get transitionRemove => '제거';
+
+  @override
+  String get transitionStartUserGesture => '사용자 제스처 시작';
+
+  @override
+  String get transitionStopUserGesture => '사용자 제스처 종료';
+
+  @override
+  String get copyAsCurl => 'cURL로 복사';
+
+  @override
+  String get relativeJustNow => '방금';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '$count초 전';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count분 전';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count시간 전';
+  }
+
+  @override
+  String get showOnlyThisType => '이 유형만 표시';
+
+  @override
+  String get hideThisType => '이 유형 숨기기';
+
+  @override
+  String get clearAllFilters => '모든 필터 지우기';
+
+  @override
+  String get httpRequest => '요청';
+
+  @override
+  String get httpResponse => '응답';
+
+  @override
+  String get pending => '대기 중';
+
+  @override
+  String get groupHttpLogs => 'HTTP 그룹화';
+
+  @override
+  String get groupHttpLogsDesc => '관련 HTTP 요청과 응답을 함께 그룹화';
+
+  @override
+  String get duration => '소요 시간';
+
+  @override
+  String get ungroupHttpLogs => 'HTTP 그룹 해제';
+
+  @override
+  String get ungroupHttpLogsDesc => 'HTTP 요청과 응답을 별도의 항목으로 표시';
+
+  @override
+  String get tips => '팁';
+
+  @override
+  String get tipSearchLogs => '텍스트로 로그 검색 — 전체 JSON 본문도 검색합니다';
+
+  @override
+  String get tipLongPress => '로그 카드를 길게 눌러 빠른 작업 실행';
+
+  @override
+  String get tipFilter => '칩이나 설정을 사용하여 로그 유형별 필터링';
+
+  @override
+  String get tipExpand => '확장을 눌러 검색 가능한 전체 JSON 보기';
+
+  @override
+  String get tipKeyboard => '화살표 키로 이동, Enter로 열기, /로 검색';
+
+  @override
+  String get tipNavigationFlow => '설정에서 내비게이션 흐름을 열어 경로 기록을 시각적으로 확인';
+
+  @override
+  String get tipShareSession => '버그 리포트용으로 로그 파일을 공유 — 데이터는 자동으로 가려집니다';
+
+  @override
+  String get tipReverseLogs => '앱 바의 화살표를 눌러 로그 순서를 뒤집기';
+
+  @override
+  String get gotIt => '확인';
+
+  @override
+  String get filters => '필터';
+
+  @override
+  String get compare => '비교';
+
+  @override
+  String get cancelCompare => '취소';
+
+  @override
+  String get tapWidgetToCompare => '비교할 위젯을 탭하세요';
+
+  @override
+  String get comparedWith => '비교 대상';
+
+  @override
+  String get distanceLeft => '왼쪽';
+
+  @override
+  String get distanceTop => '위';
+
+  @override
+  String get distanceRight => '오른쪽';
+
+  @override
+  String get distanceBottom => '아래';
+
+  @override
+  String get searchMode => '검색 모드';
+
+  @override
+  String get logTypes => '로그 유형';
+
+  @override
+  String get includeSensitiveData => '민감한 데이터 포함';
+
+  @override
+  String get correlationIdCopied => 'ID가 복사되었습니다. 검색에 붙여넣어 관련 로그를 필터링하세요.';
+
+  @override
+  String get downloadLogsFile => '로그 파일 다운로드';
+
+  @override
+  String logsFileSaved(String path) {
+    return '파일 저장됨: $path';
+  }
+
+  @override
+  String get back => '뒤로';
+
+  @override
+  String get close => '닫기';
+
+  @override
+  String get clearSearch => '검색 지우기';
+
+  @override
+  String get previousMatch => '이전 일치';
+
+  @override
+  String get nextMatch => '다음 일치';
+
+  @override
+  String get moreOptions => '더보기';
 }

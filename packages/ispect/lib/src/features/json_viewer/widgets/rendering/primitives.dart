@@ -4,7 +4,8 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
-import 'package:ispect/src/features/json_viewer/widgets/json_attribute.dart';
+import 'package:ispect/src/features/json_viewer/widgets/explorer.dart'
+    show NodeBuilder;
 import 'package:ispect/src/features/json_viewer/widgets/paints/dot_painter.dart';
 
 class CopyButton extends StatelessWidget {
@@ -18,20 +19,26 @@ class CopyButton extends StatelessWidget {
   final JsonExplorerTheme theme;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-        borderRadius: const BorderRadius.all(Radius.circular(4)),
-        onTap: () {
-          copyClipboard(
-            context,
-            value: '${node.key}: ${JsonTruncatorService.pretty(node.rawValue)}',
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(2),
-          child: Icon(
-            Icons.copy_rounded,
-            size: 14,
-            color: theme.rootKeyTextStyle.color,
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: 'Copy ${node.key}',
+        child: InkWell(
+          excludeFromSemantics: true,
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+          onTap: () {
+            copyClipboard(
+              context,
+              value: '${node.key}: ${JsonTruncator.pretty(node.rawValue)}',
+              redact: true,
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(2),
+            child: Icon(
+              Icons.copy_rounded,
+              size: 14,
+              color: theme.rootKeyTextStyle.color?.withValues(alpha: 0.3),
+            ),
           ),
         ),
       );
@@ -86,8 +93,12 @@ class ArraySuffixWidget extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4),
           child: Text(
             '[$length]',
+            softWrap: false,
+            overflow: TextOverflow.clip,
             style: style.copyWith(
-              color: JsonColors.arrayColor,
+              color: JsonColors.arrayColorFor(
+                Theme.of(context).brightness,
+              ),
             ),
           ),
         ),
@@ -105,79 +116,59 @@ class MapSuffixWidget extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4),
           child: Text(
             '{$length}',
+            softWrap: false,
+            overflow: TextOverflow.clip,
             style: style.copyWith(
-              color: JsonColors.objectColor,
+              color: JsonColors.objectColorFor(
+                Theme.of(context).brightness,
+              ),
             ),
           ),
         ),
       );
 }
 
-/// Text separator widget showing colon between key and value
-class KeySeparatorText extends StatefulWidget {
-  const KeySeparatorText({super.key});
+/// Text separator widget showing colon between key and value.
+class KeySeparatorText extends StatelessWidget {
+  const KeySeparatorText({required this.style, super.key});
+
+  final TextStyle? style;
 
   @override
-  State<KeySeparatorText> createState() => _KeySeparatorTextState();
+  Widget build(BuildContext context) => Text(':', style: style);
 }
 
-class _KeySeparatorTextState extends State<KeySeparatorText> {
-  JsonExplorerTheme? _cachedTheme;
+/// Toggle button for expanding/collapsing nodes.
+class ToggleButton extends StatelessWidget {
+  const ToggleButton({
+    required this.node,
+    required this.iconColor,
+    this.collapsableToggleBuilder,
+    super.key,
+  });
+
+  final NodeViewModelState node;
+  final Color? iconColor;
+  final NodeBuilder? collapsableToggleBuilder;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _cachedTheme =
-        context.findAncestorWidgetOfExactType<JsonAttribute>()?.theme;
-  }
-
-  @override
-  Widget build(BuildContext context) =>
-      Text(':', style: _cachedTheme?.rootKeyTextStyle);
-}
-
-/// Toggle button for expanding/collapsing nodes
-class ToggleButton extends StatefulWidget {
-  const ToggleButton({super.key});
-
-  @override
-  State<ToggleButton> createState() => _ToggleButtonState();
-}
-
-class _ToggleButtonState extends State<ToggleButton> {
-  JsonAttribute? _cachedJsonAttribute;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _cachedJsonAttribute =
-        context.findAncestorWidgetOfExactType<JsonAttribute>();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final jsonAttribute = _cachedJsonAttribute!;
-    final node = jsonAttribute.node;
-    final toggle = jsonAttribute.collapsableToggleBuilder;
-
-    return ListenableBuilder(
-      listenable: node,
-      builder: (context, child) =>
-          toggle?.call(context, node) ??
-          (AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            transitionBuilder: (child, animation) => ScaleTransition(
-              scale: animation,
-              child: child,
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: node,
+        builder: (context, child) =>
+            collapsableToggleBuilder?.call(context, node) ??
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (child, animation) => ScaleTransition(
+                scale: animation,
+                child: child,
+              ),
+              child: Icon(
+                node.isCollapsed
+                    ? Icons.arrow_right_rounded
+                    : Icons.arrow_drop_down_rounded,
+                key: ValueKey(node.isCollapsed),
+                color: iconColor,
+              ),
             ),
-            child: Icon(
-              node.isCollapsed
-                  ? Icons.arrow_right_rounded
-                  : Icons.arrow_drop_down_rounded,
-              key: ValueKey(node.isCollapsed),
-              color: jsonAttribute.theme.rootKeyTextStyle.color,
-            ),
-          )),
-    );
-  }
+      );
 }

@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, avoid_dynamic_calls
+// ignore_for_file: avoid_dynamic_calls
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
@@ -6,14 +6,19 @@ import 'package:ispect/src/core/res/json_color.dart';
 
 /// Utility class containing color and styling helper methods for JSON tree viewing
 class JsonColorsUtils {
-  /// Returns a default color based on the `JsonNodeType`.
-  static Color valueColor(Object? value, Color defaultColor) => switch (value) {
-        null => JsonColors.nullColor,
-        int() || double() || num() => JsonColors.numColor,
-        bool() => JsonColors.boolColor,
-        String() => JsonColors.stringColor,
-        Iterable() || List() => JsonColors.arrayColor,
-        Map() => JsonColors.objectColor,
+  /// Returns a default color based on the value type, adapted for [brightness].
+  static Color valueColor(
+    Object? value,
+    Color defaultColor,
+    Brightness brightness,
+  ) =>
+      switch (value) {
+        null => JsonColors.nullColorFor(brightness),
+        int() || double() || num() => JsonColors.numColorFor(brightness),
+        bool() => JsonColors.boolColorFor(brightness),
+        String() => JsonColors.stringColorFor(brightness),
+        Iterable() || List() => JsonColors.arrayColorFor(brightness),
+        Map() => JsonColors.objectColorFor(brightness),
         _ => defaultColor,
       };
 
@@ -24,8 +29,9 @@ class JsonColorsUtils {
     Object? value,
   ) {
     final theme = ISpect.read(context).theme;
-    // Avoid repeated Theme.of(context) lookups on hot path
-    final defaultSecondary = Theme.of(context).colorScheme.secondary;
+    final appTheme = Theme.of(context);
+    final brightness = appTheme.brightness;
+    final defaultSecondary = appTheme.colorScheme.secondary;
     final result = switch (keyName) {
       'key' => theme.getTypeColor(context, key: value.toString()),
       'title' => theme.getTypeColor(context, key: value.toString()),
@@ -37,15 +43,17 @@ class JsonColorsUtils {
       'location' ||
       'path' ||
       'Authorization' =>
-        JsonColors.stringColor,
-      'status_code' => JsonColors.statusColor(value as int?),
+        JsonColors.stringColorFor(brightness),
+      'status_code' => JsonColors.statusColor(
+          value is int ? value : int.tryParse(value.toString()),
+        ),
       'exception' => theme.getTypeColor(context, key: 'exception'),
       'error' => theme.getTypeColor(context, key: 'error'),
       'stack-trace' => theme.getTypeColor(context, key: 'error'),
       'log-level' => theme.getColorByLogLevel(context, key: value.toString()),
-      'time' || 'date' => JsonColors.dateTimeColor,
-      _ => valueColor(value, defaultSecondary),
+      'time' || 'date' => JsonColors.dateTimeColorFor(brightness),
+      _ => valueColor(value, defaultSecondary, brightness),
     };
-    return result ?? valueColor(value, defaultSecondary);
+    return result ?? valueColor(value, defaultSecondary, brightness);
   }
 }

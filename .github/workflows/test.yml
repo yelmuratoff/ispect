@@ -1,0 +1,154 @@
+name: Test & Analyze
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "packages/**"
+      - ".github/workflows/test.yml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "packages/**"
+      - ".github/workflows/test.yml"
+
+jobs:
+  # Pure Dart packages (no Flutter dependency)
+  test-dart:
+    name: "Test Dart packages"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - ispectify
+          - ispectify_db
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        run: |
+          cd packages/${{ matrix.package }}
+          dart pub get --no-example
+
+      - name: Analyze
+        run: |
+          cd packages/${{ matrix.package }}
+          dart analyze --fatal-infos
+
+      - name: Run tests
+        run: |
+          cd packages/${{ matrix.package }}
+          dart test --coverage=coverage
+
+      - name: Convert coverage to lcov
+        if: always()
+        run: |
+          cd packages/${{ matrix.package }}
+          if ! find coverage -type f \( -name '*.vm.json' -o -name '*.json' \) -print -quit | grep -q .; then
+            echo "::warning::No coverage data found in packages/${{ matrix.package }}/coverage — skipping lcov conversion."
+            mkdir -p coverage
+            : > coverage/lcov.info
+            exit 0
+          fi
+          dart pub global activate coverage
+          dart pub global run coverage:format_coverage \
+            --lcov \
+            --in=coverage \
+            --out=coverage/lcov.info \
+            --report-on=lib \
+            --packages=.dart_tool/package_config.json
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-dart-${{ matrix.package }}
+          path: packages/${{ matrix.package }}/coverage/lcov.info
+
+      - name: Upload to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: packages/${{ matrix.package }}/coverage/lcov.info
+          flags: ${{ matrix.package }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  # Flutter packages
+  test-flutter:
+    name: "Test Flutter packages (${{ matrix.flutter.version }}, ${{ matrix.flutter.channel_signal }})"
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.flutter.channel_signal == 'advisory' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - ispect
+          - ispect_layout
+          - ispectify_dio
+          - ispectify_http
+          - ispectify_ws
+          - ispectify_bloc
+        flutter:
+          - version: "3.32.6"
+            channel_signal: required
+          - version: "stable"
+            channel_signal: advisory
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter (pinned ${{ matrix.flutter.version }})
+        if: matrix.flutter.version != 'stable'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter.version }}
+          channel: stable
+          cache: true
+
+      - name: Setup Flutter (latest stable)
+        if: matrix.flutter.version == 'stable'
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          cd packages/${{ matrix.package }}
+          flutter pub get
+
+      - name: Analyze
+        run: |
+          cd packages/${{ matrix.package }}
+          flutter analyze --fatal-infos
+
+      - name: Run tests
+        run: |
+          cd packages/${{ matrix.package }}
+          flutter test --coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-flutter-${{ matrix.package }}-${{ matrix.flutter.version }}
+          path: packages/${{ matrix.package }}/coverage/lcov.info
+
+      - name: Upload to Codecov
+        if: always() && matrix.flutter.version == '3.32.6'
+        uses: codecov/codecov-action@v5
+        with:
+          files: packages/${{ matrix.package }}/coverage/lcov.info
+          flags: ${{ matrix.package }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false

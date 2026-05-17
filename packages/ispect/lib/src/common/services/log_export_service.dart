@@ -11,9 +11,9 @@ class LogExportService {
   final ISpectShareCallback? _onShare;
   final LogsJsonService _logsJsonService;
 
-  Future<void> downloadLogsFile(String logs) async {
+  Future<void> shareLogsFile(String logs) async {
     final shareCallback = _ensureShareCallback();
-    await LogsFileFactory.downloadFile(logs, onShare: shareCallback);
+    await LogsFileFactory.shareFile(logs, onShare: shareCallback);
   }
 
   Future<void> shareFilteredLogsAsFile(
@@ -22,6 +22,7 @@ class LogExportService {
     ISpectFilter filter, {
     String fileNamePrefix = 'ispect_logs_',
     String fileType = 'json',
+    Set<String>? redactKeys,
   }) async {
     if (filteredLogs.isEmpty) {
       ISpect.logger.info('No logs match the active filters. Skipping export.');
@@ -36,6 +37,8 @@ class LogExportService {
       fileName: '$fileNamePrefix${DateTime.now().millisecondsSinceEpoch}',
       fileType: fileType,
       onShare: shareCallback,
+      enableRedaction: redactKeys != null,
+      redactKeys: redactKeys,
     );
   }
 
@@ -49,6 +52,30 @@ class LogExportService {
       logs,
       fileName: 'ispect_all_logs_${DateTime.now().millisecondsSinceEpoch}',
       onShare: shareCallback,
+    );
+  }
+
+  Future<String> saveFilteredLogsToDevice(
+    List<ISpectLogData> allLogs,
+    List<ISpectLogData> filteredLogs,
+    ISpectFilter filter, {
+    String fileNamePrefix = 'ispect_logs_',
+    String fileType = 'json',
+    Set<String>? redactKeys,
+  }) async {
+    if (filteredLogs.isEmpty) {
+      ISpect.logger.info('No logs match the active filters. Skipping export.');
+      return '';
+    }
+
+    return _logsJsonService.saveFilteredLogsToDevice(
+      allLogs,
+      filteredLogs,
+      filter,
+      fileName: '$fileNamePrefix${DateTime.now().millisecondsSinceEpoch}',
+      fileType: fileType,
+      enableRedaction: redactKeys != null,
+      redactKeys: redactKeys,
     );
   }
 

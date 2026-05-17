@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/features/ispect/domain/models/log_description.dart';
+import 'package:ispect/src/features/log_viewer/domain/models/log_description.dart';
 
 /// `ISpectConstants` class contains all the constants used in the `ISpect` package.
 final class ISpectConstants {
@@ -98,11 +98,48 @@ final class ISpectConstants {
     /// WebSocket
     'ws-sent': Icons.call_made_rounded,
     'ws-received': Icons.call_received_rounded,
+    'ws-error': Icons.error_outline_rounded,
 
     /// Database
     'db-query': Icons.storage_rounded,
     'db-result': Icons.dataset_rounded,
     'db-error': Icons.error_outline_rounded,
+
+    /// Auth
+    'auth-success': Icons.verified_user_rounded,
+    'auth-error': Icons.no_accounts_rounded,
+
+    /// Storage
+    'storage-result': Icons.cloud_done_rounded,
+    'storage-query': Icons.cloud_download_rounded,
+    'storage-error': Icons.cloud_off_rounded,
+
+    /// Push
+    'push-received': Icons.notifications_active_rounded,
+    'push-sent': Icons.send_rounded,
+    'push-error': Icons.notifications_off_rounded,
+
+    /// Payment
+    'payment-success': Icons.payment_rounded,
+    'payment-error': Icons.money_off_rounded,
+
+    /// State
+    'state-change': Icons.change_circle_rounded,
+    'state-error': Icons.error_outline_rounded,
+
+    /// SSE
+    'sse-received': Icons.stream_rounded,
+    'sse-error': Icons.error_outline_rounded,
+
+    /// gRPC
+    'grpc-request': Icons.call_made_rounded,
+    'grpc-response': Icons.call_received_rounded,
+    'grpc-error': Icons.error_outline_rounded,
+
+    /// GraphQL
+    'graphql-request': Icons.hub_rounded,
+    'graphql-response': Icons.hub_rounded,
+    'graphql-error': Icons.error_outline_rounded,
   };
 
   static const lightTypeColors = {
@@ -144,11 +181,48 @@ final class ISpectConstants {
     /// WebSocket
     'ws-sent': Color.fromARGB(255, 162, 0, 190),
     'ws-received': Color.fromARGB(255, 0, 158, 66),
+    'ws-error': Color.fromARGB(255, 192, 38, 38),
 
     /// Database
     'db-query': Color.fromARGB(255, 25, 118, 210),
     'db-result': Color.fromARGB(255, 56, 142, 60),
     'db-error': Color.fromARGB(255, 192, 38, 38),
+
+    /// Auth
+    'auth-success': Color.fromARGB(255, 56, 142, 60),
+    'auth-error': Color.fromARGB(255, 192, 38, 38),
+
+    /// Storage
+    'storage-result': Color.fromARGB(255, 56, 142, 60),
+    'storage-query': Color.fromARGB(255, 25, 118, 210),
+    'storage-error': Color.fromARGB(255, 192, 38, 38),
+
+    /// Push
+    'push-received': Color.fromARGB(255, 245, 124, 0),
+    'push-sent': Color(0xFF9C27B0),
+    'push-error': Color.fromARGB(255, 192, 38, 38),
+
+    /// Payment
+    'payment-success': Color.fromARGB(255, 56, 142, 60),
+    'payment-error': Color.fromARGB(255, 192, 38, 38),
+
+    /// State
+    'state-change': Color.fromARGB(255, 85, 139, 47),
+    'state-error': Color.fromARGB(255, 192, 38, 38),
+
+    /// SSE
+    'sse-received': Color.fromARGB(255, 0, 158, 66),
+    'sse-error': Color.fromARGB(255, 192, 38, 38),
+
+    /// gRPC
+    'grpc-request': Color(0xFF9C27B0),
+    'grpc-response': Color(0xFF00C853),
+    'grpc-error': Color.fromARGB(255, 192, 38, 38),
+
+    /// GraphQL
+    'graphql-request': Color.fromARGB(255, 106, 27, 154),
+    'graphql-response': Color(0xFF00C853),
+    'graphql-error': Color.fromARGB(255, 192, 38, 38),
   };
 
   static const darkTypeColors = {
@@ -190,11 +264,48 @@ final class ISpectConstants {
     /// WebSocket
     'ws-sent': Color(0xFFF602C1),
     'ws-received': Color(0xFF26FF3C),
+    'ws-error': Color.fromARGB(255, 239, 83, 80),
 
     /// Database
     'db-query': Color.fromARGB(255, 66, 165, 245),
     'db-result': Color.fromARGB(255, 120, 230, 129),
     'db-error': Color.fromARGB(255, 239, 83, 80),
+
+    /// Auth
+    'auth-success': Color.fromARGB(255, 120, 230, 129),
+    'auth-error': Color.fromARGB(255, 239, 83, 80),
+
+    /// Storage
+    'storage-result': Color.fromARGB(255, 120, 230, 129),
+    'storage-query': Color.fromARGB(255, 66, 165, 245),
+    'storage-error': Color.fromARGB(255, 239, 83, 80),
+
+    /// Push
+    'push-received': Color.fromARGB(255, 255, 167, 38),
+    'push-sent': Color(0xFFF602C1),
+    'push-error': Color.fromARGB(255, 239, 83, 80),
+
+    /// Payment
+    'payment-success': Color.fromARGB(255, 120, 230, 129),
+    'payment-error': Color.fromARGB(255, 239, 83, 80),
+
+    /// State
+    'state-change': Color(0xFF56FEA8),
+    'state-error': Color.fromARGB(255, 239, 83, 80),
+
+    /// SSE
+    'sse-received': Color(0xFF26FF3C),
+    'sse-error': Color.fromARGB(255, 239, 83, 80),
+
+    /// gRPC
+    'grpc-request': Color(0xFFF602C1),
+    'grpc-response': Color(0xFF26FF3C),
+    'grpc-error': Color.fromARGB(255, 239, 83, 80),
+
+    /// GraphQL
+    'graphql-request': Color.fromARGB(255, 186, 104, 255),
+    'graphql-response': Color(0xFF26FF3C),
+    'graphql-error': Color.fromARGB(255, 239, 83, 80),
   };
 
   /// Converts default log descriptions into a list of `LogDescription`.
@@ -247,42 +358,52 @@ final class ISpectConstants {
       ),
       LogDescription(
         key: 'http-error',
+        title: 'HTTP Error',
         description: l10n.httpErrorLogDesc,
       ),
       LogDescription(
         key: 'http-request',
+        title: 'HTTP Request',
         description: l10n.httpRequestLogDesc,
       ),
       LogDescription(
         key: 'http-response',
+        title: 'HTTP Response',
         description: l10n.httpResponseLogDesc,
       ),
       LogDescription(
         key: 'bloc-event',
+        title: 'BLoC Event',
         description: l10n.blocEventLogDesc,
       ),
       LogDescription(
         key: 'bloc-transition',
+        title: 'BLoC Transition',
         description: l10n.blocTransitionLogDesc,
       ),
       LogDescription(
         key: 'bloc-done',
+        title: 'BLoC Done',
         description: l10n.blocDoneLogDesc,
       ),
       LogDescription(
         key: 'bloc-close',
+        title: 'BLoC Close',
         description: l10n.blocCloseLogDesc,
       ),
       LogDescription(
         key: 'bloc-create',
+        title: 'BLoC Create',
         description: l10n.blocCreateLogDesc,
       ),
       LogDescription(
         key: 'bloc-state',
+        title: 'BLoC State',
         description: l10n.blocStateLogDesc,
       ),
       LogDescription(
         key: 'bloc-error',
+        title: 'BLoC Error',
         description: l10n.blocErrorLogDesc,
       ),
       LogDescription(
@@ -307,23 +428,121 @@ final class ISpectConstants {
       ),
       LogDescription(
         key: 'ws-sent',
+        title: 'WebSocket Sent',
         description: l10n.wsSentLogDesc,
       ),
       LogDescription(
         key: 'ws-received',
+        title: 'WebSocket Received',
         description: l10n.wsReceivedLogDesc,
       ),
       LogDescription(
         key: 'db-query',
+        title: 'Database Query',
         description: l10n.dbQueryLogDesc,
       ),
       LogDescription(
         key: 'db-result',
+        title: 'Database Result',
         description: l10n.dbResultLogDesc,
       ),
       LogDescription(
         key: 'db-error',
+        title: 'Database Error',
         description: l10n.dbErrorLogDesc,
+      ),
+      LogDescription(
+        key: 'ws-error',
+        title: 'WebSocket Error',
+        description: l10n.wsErrorLogDesc,
+      ),
+      LogDescription(
+        key: 'auth-success',
+        description: l10n.authSuccessLogDesc,
+      ),
+      LogDescription(
+        key: 'auth-error',
+        description: l10n.authErrorLogDesc,
+      ),
+      LogDescription(
+        key: 'storage-result',
+        description: l10n.storageResultLogDesc,
+      ),
+      LogDescription(
+        key: 'storage-query',
+        description: l10n.storageQueryLogDesc,
+      ),
+      LogDescription(
+        key: 'storage-error',
+        description: l10n.storageErrorLogDesc,
+      ),
+      LogDescription(
+        key: 'push-received',
+        description: l10n.pushReceivedLogDesc,
+      ),
+      LogDescription(
+        key: 'push-sent',
+        description: l10n.pushSentLogDesc,
+      ),
+      LogDescription(
+        key: 'push-error',
+        description: l10n.pushErrorLogDesc,
+      ),
+      LogDescription(
+        key: 'payment-success',
+        description: l10n.paymentSuccessLogDesc,
+      ),
+      LogDescription(
+        key: 'payment-error',
+        description: l10n.paymentErrorLogDesc,
+      ),
+      LogDescription(
+        key: 'state-change',
+        description: l10n.stateChangeLogDesc,
+      ),
+      LogDescription(
+        key: 'state-error',
+        description: l10n.stateErrorLogDesc,
+      ),
+      LogDescription(
+        key: 'sse-received',
+        title: 'SSE Received',
+        description: l10n.sseReceivedLogDesc,
+      ),
+      LogDescription(
+        key: 'sse-error',
+        title: 'SSE Error',
+        description: l10n.sseErrorLogDesc,
+      ),
+      LogDescription(
+        key: 'grpc-request',
+        title: 'gRPC Request',
+        description: l10n.grpcRequestLogDesc,
+      ),
+      LogDescription(
+        key: 'grpc-response',
+        title: 'gRPC Response',
+        description: l10n.grpcResponseLogDesc,
+      ),
+      LogDescription(
+        key: 'grpc-error',
+        title: 'gRPC Error',
+        description: l10n.grpcErrorLogDesc,
+      ),
+      LogDescription(
+        key: 'graphql-request',
+        title: 'GraphQL Request',
+        description: l10n.graphqlRequestLogDesc,
+      ),
+      LogDescription(
+        key: 'graphql-response',
+        title: 'GraphQL Response',
+        description: l10n.graphqlResponseLogDesc,
+      ),
+      LogDescription(
+        key: 'graphql-error',
+        title: 'GraphQL Error',
+        description: l10n.graphqlErrorLogDesc,
       ),
     ];
   }

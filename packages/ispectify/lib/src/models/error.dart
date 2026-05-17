@@ -1,12 +1,18 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/utils/log_message_formatter.dart';
+import 'package:ispectify/src/logger/log_parts.dart';
 
-class ISpectLogError extends ISpectLogData {
+/// Log entry produced when a Dart [Error] is captured by the logger.
+///
+/// Serialized with `key: ISpectLogType.error.key` and [LogLevel.error]. The
+/// original [Error] is stored on [ISpectLogData.error] and the optional
+/// stack trace on [ISpectLogData.stackTrace].
+base class ISpectLogError extends ISpectLogData {
+  /// Creates an error log entry wrapping [error] with an optional
+  /// human-readable [message] and [stackTrace].
   ISpectLogError(
     Error error, {
     String? message,
     super.stackTrace,
-    super.title,
   }) : super(
           message,
           error: error,

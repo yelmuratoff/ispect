@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'Привет! Чем я могу вам помочь?';
 
   @override
-  String get allLogsCopied => 'Все записи скопированы в буфер обмена';
+  String get allLogsCopied => 'Все логи скопированы в буфер обмена';
 
   @override
   String get analyticsLogDesc => 'Событие отслежено и отправлено в аналитику';
@@ -104,7 +104,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get clearCache => 'Очистить кэш';
 
   @override
-  String get collapseLogs => 'Свернуть журнал';
+  String get collapseLogs => 'Свернуть логи';
 
   @override
   String get common => 'Общие';
@@ -116,7 +116,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get copy => 'Скопировать';
 
   @override
-  String get copyAllLogs => 'Копировать все записи';
+  String get copyAllLogs => 'Скопировать все логи';
 
   @override
   String counterTimesText(Object number) {
@@ -134,7 +134,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get criticalLogDesc =>
-      'Критическая ошибка требующая немедленного внимания';
+      'Критическая ошибка, требующая немедленного внимания';
 
   @override
   String get data => 'Данные';
@@ -173,7 +173,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get exceptionLogDesc => 'Произошла неожиданная ошибка';
 
   @override
-  String get expandLogs => 'Развернуть журнал';
+  String get expandLogs => 'Развернуть логи';
 
   @override
   String get feedbackDescriptionText => 'Опишите проблему';
@@ -191,10 +191,10 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get fullURL => 'Полная ссылка';
 
   @override
-  String get generateReport => 'Генерация отчёта';
+  String get generateReport => 'Сгенерировать отчёт';
 
   @override
-  String get goToLogger => 'Перейти к журналу';
+  String get goToLogger => 'Перейти к логам';
 
   @override
   String get goodLogDesc => 'Операция завершена успешно';
@@ -228,7 +228,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
       '1. Зайдите на свой сайт Jira.\n2. Нажмите на аватар вашего профиля в левом нижнем углу.\n3. Нажмите на Профиль.\n4. Нажмите Управление учетной записью.\n5. Выберите Безопасность.\n6. Прокрутите вниз до раздела Создание и управление API-токенами и нажмите на него.\n7. Создайте токен, затем скопируйте и вставьте его.';
 
   @override
-  String get logItemCopied => 'Запись скопирована в буфер обмена';
+  String get logItemCopied => 'Лог скопирован в буфер обмена';
 
   @override
   String get login => 'Вход';
@@ -237,7 +237,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get logout => 'Выйти';
 
   @override
-  String get logsCount => 'Количество записей';
+  String get logsCount => 'Количество логов';
 
   @override
   String get method => 'Метод';
@@ -247,6 +247,9 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get notFound => 'не найдена';
+
+  @override
+  String get noResultsHint => 'Попробуйте другой запрос или измените фильтры';
 
   @override
   String get otherLogsForDevelopers =>
@@ -284,13 +287,13 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get projectWasSelected => 'Проект выбран';
 
   @override
-  String get requestHeaders => 'Headers запроса';
+  String get requestHeaders => 'Заголовки запроса';
 
   @override
   String get retry => 'Повторить';
 
   @override
-  String get reverseLogs => 'Обратный порядок журнала';
+  String get reverseLogs => 'Обратный порядок логов';
 
   @override
   String get riverpodAddLogDesc => 'Провайдер данных создан';
@@ -341,13 +344,13 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get share => 'Поделиться';
 
   @override
-  String get shareLogsFile => 'Поделиться файлом журнала';
+  String get shareLogsFile => 'Поделиться файлом логов';
 
   @override
   String get statusCode => 'Код статуса';
 
   @override
-  String get statusMessage => 'Cтатус';
+  String get statusMessage => 'Статус';
 
   @override
   String get submitButtonText => 'Отправить';
@@ -417,7 +420,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get iSpectifyTypeAnalytics => 'Метод логирования ивента';
+  String get iSpectifyTypeAnalytics => 'Метод логирования событий';
 
   @override
   String iSpectifyTypeAnalyticsCount(Object text) {
@@ -471,7 +474,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get iSpectifyTypePrint => 'Print метод';
+  String get iSpectifyTypePrint => 'Метод print';
 
   @override
   String iSpectifyTypePrintCount(Object text) {
@@ -538,7 +541,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get warningLogDesc =>
-      'Потенциальная проблема которая может вызвать сбои';
+      'Потенциальная проблема, которая может вызвать сбои';
 
   @override
   String get you => 'Вы';
@@ -550,11 +553,10 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get noData => 'Нет данных';
 
   @override
-  String get shareLogFull => 'Поделиться логом (полностью)';
+  String get shareLogFull => 'Поделиться полным логом';
 
   @override
-  String get copyToClipboardTruncated =>
-      'Скопировать в буфер обмена (сокращенно)';
+  String get copyToClipboardTruncated => 'Скопировать сводку в буфер обмена';
 
   @override
   String get viewThemeScheme => 'Просмотр экрана схемы темы';
@@ -573,13 +575,13 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
       'Переключить отслеживание производительности';
 
   @override
-  String get openLogViewer => 'Открыть просмотрщик логов';
+  String get openLogViewer => 'Открыть просмотр логов';
 
   @override
   String get backToMainScreen => 'Вернуться на главный экран';
 
   @override
-  String get navigationFlow => 'Flow навигации';
+  String get navigationFlow => 'Поток навигации';
 
   @override
   String get noNavigationTransitions => 'Переходы навигации не зафиксированы';
@@ -597,7 +599,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get dailySessions => 'Ежедневные сессии';
 
   @override
-  String get logViewer => 'Просмотрщик логов';
+  String get logViewer => 'Просмотр логов';
 
   @override
   String get sessions => 'Сессии';
@@ -696,4 +698,326 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => 'Операция с базой данных завершилась ошибкой';
+
+  @override
+  String get reverseLogsDesc =>
+      'Изменить порядок отображения логов: сначала новые или сначала старые';
+
+  @override
+  String get copyAllLogsDesc => 'Скопировать все записи логов в буфер обмена';
+
+  @override
+  String get expandLogsDesc => 'Показать полные детали для всех записей логов';
+
+  @override
+  String get collapseLogsDesc => 'Свернуть все записи логов в компактный вид';
+
+  @override
+  String get clearHistoryDesc =>
+      'Удалить все сохранённые записи логов из памяти';
+
+  @override
+  String get shareLogsFileDesc =>
+      'Экспортировать логи в файл и поделиться через системное меню';
+
+  @override
+  String get navigationFlowDesc =>
+      'Просмотр последовательности переходов между экранами';
+
+  @override
+  String get dailySessionsDesc =>
+      'Просмотр лог-файлов из предыдущих сессий приложения';
+
+  @override
+  String get logViewerDesc =>
+      'Открыть внешний просмотрщик для анализа лог-файлов';
+
+  @override
+  String get selectAll => 'Выбрать все';
+
+  @override
+  String get deselectAll => 'Снять все';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => 'База данных';
+
+  @override
+  String get groupNavigation => 'Навигация';
+
+  @override
+  String get groupGeneral => 'Общие';
+
+  @override
+  String get categoryAuth => 'Авторизация';
+
+  @override
+  String get categoryStorage => 'Хранилище';
+
+  @override
+  String get categoryPush => 'Пуш-уведомления';
+
+  @override
+  String get categoryPayment => 'Платежи';
+
+  @override
+  String get categoryAnalytics => 'Аналитика';
+
+  @override
+  String get categorySse => 'SSE';
+
+  @override
+  String get categoryGrpc => 'gRPC';
+
+  @override
+  String get categoryGraphql => 'GraphQL';
+
+  @override
+  String get wsErrorLogDesc => 'Ошибка WebSocket соединения';
+
+  @override
+  String get authSuccessLogDesc => 'Авторизация успешна';
+
+  @override
+  String get authErrorLogDesc => 'Ошибка авторизации';
+
+  @override
+  String get storageResultLogDesc => 'Операция хранилища завершена';
+
+  @override
+  String get storageQueryLogDesc => 'Запрос к хранилищу выполнен';
+
+  @override
+  String get storageErrorLogDesc => 'Ошибка операции хранилища';
+
+  @override
+  String get pushReceivedLogDesc => 'Пуш-уведомление получено';
+
+  @override
+  String get pushSentLogDesc => 'Пуш-уведомление отправлено';
+
+  @override
+  String get pushErrorLogDesc => 'Ошибка пуш-уведомления';
+
+  @override
+  String get paymentSuccessLogDesc => 'Платёж завершён';
+
+  @override
+  String get paymentErrorLogDesc => 'Ошибка платежа';
+
+  @override
+  String get stateChangeLogDesc => 'Состояние изменилось';
+
+  @override
+  String get stateErrorLogDesc => 'Ошибка управления состоянием';
+
+  @override
+  String get sseReceivedLogDesc => 'SSE событие получено';
+
+  @override
+  String get sseErrorLogDesc => 'Ошибка SSE соединения';
+
+  @override
+  String get grpcRequestLogDesc => 'gRPC запрос отправлен';
+
+  @override
+  String get grpcResponseLogDesc => 'gRPC ответ получен';
+
+  @override
+  String get grpcErrorLogDesc => 'Ошибка gRPC вызова';
+
+  @override
+  String get graphqlRequestLogDesc => 'GraphQL запрос отправлен';
+
+  @override
+  String get graphqlResponseLogDesc => 'GraphQL ответ получен';
+
+  @override
+  String get graphqlErrorLogDesc => 'Ошибка GraphQL операции';
+
+  @override
+  String get transitionPush => 'Push';
+
+  @override
+  String get transitionPop => 'Pop';
+
+  @override
+  String get transitionReplace => 'Замена';
+
+  @override
+  String get transitionRemove => 'Удаление';
+
+  @override
+  String get transitionStartUserGesture => 'Начало жеста';
+
+  @override
+  String get transitionStopUserGesture => 'Конец жеста';
+
+  @override
+  String get copyAsCurl => 'Копировать как cURL';
+
+  @override
+  String get relativeJustNow => 'только что';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '$count сек назад';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count мин назад';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count ч назад';
+  }
+
+  @override
+  String get showOnlyThisType => 'Показать только этот тип';
+
+  @override
+  String get hideThisType => 'Скрыть этот тип';
+
+  @override
+  String get clearAllFilters => 'Сбросить все фильтры';
+
+  @override
+  String get httpRequest => 'Запрос';
+
+  @override
+  String get httpResponse => 'Ответ';
+
+  @override
+  String get pending => 'В ожидании';
+
+  @override
+  String get groupHttpLogs => 'Группировка HTTP';
+
+  @override
+  String get groupHttpLogsDesc =>
+      'Группировать связанные HTTP запросы и ответы';
+
+  @override
+  String get duration => 'Длительность';
+
+  @override
+  String get ungroupHttpLogs => 'Разгруппировать HTTP';
+
+  @override
+  String get ungroupHttpLogsDesc =>
+      'Показывать HTTP запросы и ответы отдельными записями';
+
+  @override
+  String get tips => 'Подсказки';
+
+  @override
+  String get tipSearchLogs => 'Поиск по тексту — ищет также в JSON теле лога';
+
+  @override
+  String get tipLongPress =>
+      'Долгое нажатие на карточку лога для быстрых действий';
+
+  @override
+  String get tipFilter => 'Фильтрация по типу лога через чипы или настройки';
+
+  @override
+  String get tipExpand => 'Нажмите развернуть для просмотра JSON с поиском';
+
+  @override
+  String get tipKeyboard =>
+      'Стрелки для навигации, Enter для открытия, / для поиска';
+
+  @override
+  String get tipNavigationFlow =>
+      'Открой Поток навигации в настройках — увидишь историю маршрутов';
+
+  @override
+  String get tipShareSession =>
+      'Поделись файлом логов для багрепортов — данные маскируются автоматически';
+
+  @override
+  String get tipReverseLogs =>
+      'Нажми стрелки в шапке, чтобы перевернуть порядок логов';
+
+  @override
+  String get gotIt => 'Понятно';
+
+  @override
+  String get filters => 'Фильтры';
+
+  @override
+  String get compare => 'Сравнить';
+
+  @override
+  String get cancelCompare => 'Отмена';
+
+  @override
+  String get tapWidgetToCompare => 'Нажмите на виджет для сравнения';
+
+  @override
+  String get comparedWith => 'Сравнение с';
+
+  @override
+  String get distanceLeft => 'слева';
+
+  @override
+  String get distanceTop => 'сверху';
+
+  @override
+  String get distanceRight => 'справа';
+
+  @override
+  String get distanceBottom => 'снизу';
+
+  @override
+  String get searchMode => 'Режим поиска';
+
+  @override
+  String get logTypes => 'Типы логов';
+
+  @override
+  String get includeSensitiveData => 'Включить конфиденциальные данные';
+
+  @override
+  String get correlationIdCopied =>
+      'ID скопирован. Вставьте в поиск, чтобы отфильтровать связанные логи.';
+
+  @override
+  String get downloadLogsFile => 'Скачать файл логов';
+
+  @override
+  String logsFileSaved(String path) {
+    return 'Файл сохранён: $path';
+  }
+
+  @override
+  String get back => 'Назад';
+
+  @override
+  String get close => 'Закрыть';
+
+  @override
+  String get clearSearch => 'Очистить поиск';
+
+  @override
+  String get previousMatch => 'Предыдущее совпадение';
+
+  @override
+  String get nextMatch => 'Следующее совпадение';
+
+  @override
+  String get moreOptions => 'Ещё';
 }

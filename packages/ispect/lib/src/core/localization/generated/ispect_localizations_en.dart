@@ -24,7 +24,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'Hello! How can I help you?';
 
   @override
-  String get allLogsCopied => 'All logs copied in buffer';
+  String get allLogsCopied => 'All logs copied to clipboard';
 
   @override
   String get analyticsLogDesc => 'Event tracked and sent to analytics';
@@ -97,7 +97,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get changeTheme => 'Change theme';
 
   @override
-  String get clearHistory => 'Clean history';
+  String get clearHistory => 'Clear history';
 
   @override
   String get clearCache => 'Clear cache';
@@ -152,7 +152,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String environmentTapNumber(Object number) {
-    return 'To open the dialog, it remains: $number';
+    return 'Taps remaining to open dialog: $number';
   }
 
   @override
@@ -226,7 +226,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
       '1. Go to your Jira website.\n2. Click on your Profile avatar in the bottom left corner.\n3. Click on Profile.\n4. Click Manage your account.\n5. Select Security.\n6. Scroll down to Create and manage API tokens and click on it.\n7. Create a token, then copy and paste it.';
 
   @override
-  String get logItemCopied => 'Log item is copied in clipboard';
+  String get logItemCopied => 'Log item copied to clipboard';
 
   @override
   String get login => 'Login';
@@ -247,11 +247,14 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get notFound => 'not found';
 
   @override
+  String get noResultsHint => 'Try a different query or adjust filters';
+
+  @override
   String get otherLogsForDevelopers =>
       'Other logs are already being used by developers';
 
   @override
-  String get pageNotFound => 'Oops, the page on this path';
+  String get pageNotFound => 'Oops, the page on this path was not found';
 
   @override
   String get path => 'Path';
@@ -339,7 +342,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get share => 'Share';
 
   @override
-  String get shareLogsFile => 'Share logs file';
+  String get shareLogsFile => 'Share log file';
 
   @override
   String get statusCode => 'Status code';
@@ -547,10 +550,10 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get noData => 'No data';
 
   @override
-  String get shareLogFull => 'Share log (full)';
+  String get shareLogFull => 'Share full log';
 
   @override
-  String get copyToClipboardTruncated => 'Copy to clipboard (truncated)';
+  String get copyToClipboardTruncated => 'Copy summary to clipboard';
 
   @override
   String get viewThemeScheme => 'View Theme Scheme screen';
@@ -691,4 +694,325 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => 'Database operation failed';
+
+  @override
+  String get reverseLogsDesc =>
+      'Change the display order of logs from newest-first to oldest-first or vice versa';
+
+  @override
+  String get copyAllLogsDesc => 'Copy all log entries to the clipboard as text';
+
+  @override
+  String get expandLogsDesc => 'Show full details for all log entries';
+
+  @override
+  String get collapseLogsDesc => 'Collapse all log entries to a compact view';
+
+  @override
+  String get clearHistoryDesc => 'Remove all saved log entries from memory';
+
+  @override
+  String get shareLogsFileDesc =>
+      'Export logs as a file and share via system share sheet';
+
+  @override
+  String get navigationFlowDesc =>
+      'View the sequence of screen transitions in your app';
+
+  @override
+  String get dailySessionsDesc =>
+      'Browse log files saved from previous app sessions';
+
+  @override
+  String get logViewerDesc =>
+      'Open an external log viewer to inspect log files';
+
+  @override
+  String get selectAll => 'Select All';
+
+  @override
+  String get deselectAll => 'Deselect All';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => 'Database';
+
+  @override
+  String get groupNavigation => 'Navigation';
+
+  @override
+  String get groupGeneral => 'General';
+
+  @override
+  String get categoryAuth => 'Auth';
+
+  @override
+  String get categoryStorage => 'Storage';
+
+  @override
+  String get categoryPush => 'Push';
+
+  @override
+  String get categoryPayment => 'Payment';
+
+  @override
+  String get categoryAnalytics => 'Analytics';
+
+  @override
+  String get categorySse => 'SSE';
+
+  @override
+  String get categoryGrpc => 'gRPC';
+
+  @override
+  String get categoryGraphql => 'GraphQL';
+
+  @override
+  String get wsErrorLogDesc => 'WebSocket connection error';
+
+  @override
+  String get authSuccessLogDesc => 'Authentication successful';
+
+  @override
+  String get authErrorLogDesc => 'Authentication failed';
+
+  @override
+  String get storageResultLogDesc => 'Storage operation completed';
+
+  @override
+  String get storageQueryLogDesc => 'Storage query executed';
+
+  @override
+  String get storageErrorLogDesc => 'Storage operation failed';
+
+  @override
+  String get pushReceivedLogDesc => 'Push notification received';
+
+  @override
+  String get pushSentLogDesc => 'Push notification sent';
+
+  @override
+  String get pushErrorLogDesc => 'Push notification error';
+
+  @override
+  String get paymentSuccessLogDesc => 'Payment completed';
+
+  @override
+  String get paymentErrorLogDesc => 'Payment failed';
+
+  @override
+  String get stateChangeLogDesc => 'State changed';
+
+  @override
+  String get stateErrorLogDesc => 'State management error';
+
+  @override
+  String get sseReceivedLogDesc => 'Server-Sent Event received';
+
+  @override
+  String get sseErrorLogDesc => 'SSE connection error';
+
+  @override
+  String get grpcRequestLogDesc => 'gRPC request sent';
+
+  @override
+  String get grpcResponseLogDesc => 'gRPC response received';
+
+  @override
+  String get grpcErrorLogDesc => 'gRPC call failed';
+
+  @override
+  String get graphqlRequestLogDesc => 'GraphQL query sent';
+
+  @override
+  String get graphqlResponseLogDesc => 'GraphQL response received';
+
+  @override
+  String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
+  String get transitionPush => 'Push';
+
+  @override
+  String get transitionPop => 'Pop';
+
+  @override
+  String get transitionReplace => 'Replace';
+
+  @override
+  String get transitionRemove => 'Remove';
+
+  @override
+  String get transitionStartUserGesture => 'Start User Gesture';
+
+  @override
+  String get transitionStopUserGesture => 'Stop User Gesture';
+
+  @override
+  String get copyAsCurl => 'Copy as cURL';
+
+  @override
+  String get relativeJustNow => 'just now';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '$count sec ago';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count min ago';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count h ago';
+  }
+
+  @override
+  String get showOnlyThisType => 'Show only this type';
+
+  @override
+  String get hideThisType => 'Hide this type';
+
+  @override
+  String get clearAllFilters => 'Clear all filters';
+
+  @override
+  String get httpRequest => 'Request';
+
+  @override
+  String get httpResponse => 'Response';
+
+  @override
+  String get pending => 'Pending';
+
+  @override
+  String get groupHttpLogs => 'Group HTTP Logs';
+
+  @override
+  String get groupHttpLogsDesc =>
+      'Group related HTTP requests and responses together';
+
+  @override
+  String get duration => 'Duration';
+
+  @override
+  String get ungroupHttpLogs => 'Ungroup HTTP Logs';
+
+  @override
+  String get ungroupHttpLogsDesc =>
+      'Show HTTP requests and responses as separate entries';
+
+  @override
+  String get tips => 'Tips';
+
+  @override
+  String get tipSearchLogs =>
+      'Search logs by text — searches full JSON body too';
+
+  @override
+  String get tipLongPress => 'Long press a log card for quick actions';
+
+  @override
+  String get tipFilter => 'Filter by log type using chips or settings';
+
+  @override
+  String get tipExpand => 'Tap expand to view full JSON with search';
+
+  @override
+  String get tipKeyboard =>
+      'Use arrow keys to navigate, Enter to open, / to search';
+
+  @override
+  String get tipNavigationFlow =>
+      'Open Navigation Flow from settings to see route history visually';
+
+  @override
+  String get tipShareSession =>
+      'Share the log file for bug reports — payloads are auto-redacted';
+
+  @override
+  String get tipReverseLogs =>
+      'Tap the reverse arrows in the app bar to flip log order';
+
+  @override
+  String get gotIt => 'Got it';
+
+  @override
+  String get filters => 'Filters';
+
+  @override
+  String get compare => 'Compare';
+
+  @override
+  String get cancelCompare => 'Cancel';
+
+  @override
+  String get tapWidgetToCompare => 'Tap a widget to compare';
+
+  @override
+  String get comparedWith => 'Compared with';
+
+  @override
+  String get distanceLeft => 'left';
+
+  @override
+  String get distanceTop => 'top';
+
+  @override
+  String get distanceRight => 'right';
+
+  @override
+  String get distanceBottom => 'bottom';
+
+  @override
+  String get searchMode => 'Search mode';
+
+  @override
+  String get logTypes => 'Log types';
+
+  @override
+  String get includeSensitiveData => 'Include sensitive data';
+
+  @override
+  String get correlationIdCopied =>
+      'ID copied. Paste it into the search bar to filter related logs.';
+
+  @override
+  String get downloadLogsFile => 'Download log file';
+
+  @override
+  String logsFileSaved(String path) {
+    return 'File saved: $path';
+  }
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get clearSearch => 'Clear search';
+
+  @override
+  String get previousMatch => 'Previous match';
+
+  @override
+  String get nextMatch => 'Next match';
+
+  @override
+  String get moreOptions => 'More options';
 }

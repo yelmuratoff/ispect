@@ -14,7 +14,7 @@ extension ISpectContextExtension on BuildContext {
   /// Returns the current `ISpectAppLocalizations` of the `BuildContext`.
   ISpectGeneratedLocalization get ispectL10n => ISpectLocalization.of(this);
 
-  ISpectScopeModel get iSpect => ISpectScopeController.of(this);
+  ISpectScopeModel get iSpect => ISpect.read(this);
 
   Color adjustColor(Color color) => isDarkMode
       ? adjustColorBrightness(color, 0.9)
@@ -23,6 +23,59 @@ extension ISpectContextExtension on BuildContext {
 
 extension ISpectColorExtension on ThemeData {
   Color get textColor => colorScheme.onSurface;
+}
+
+/// Shared color tokens used across ISpect's surfaces, sheets, dialogs, and
+/// inputs. Prefer these over re-declaring the same resolve/fallback chain in
+/// every widget.
+extension ISpectColorTokens on BuildContext {
+  /// Primary accent (highlights, focus, icon tint).
+  Color get ispectPrimaryColor =>
+      ispectTheme.primary?.resolve(this) ?? appTheme.colorScheme.primary;
+
+  /// Background for the outermost surface (dialogs, bottom sheets).
+  Color get ispectBackgroundColor =>
+      ispectTheme.background?.resolve(this) ??
+      appTheme.colorScheme.surfaceContainerLowest;
+
+  /// Nullable variant of [ispectBackgroundColor] — returns the
+  /// user-configured ISpect background or `null` when nothing is set.
+  ///
+  /// Use this for `Scaffold.backgroundColor` and screen-level surfaces where
+  /// `null` means "fall back to the host app's scaffold theme", not the sheet
+  /// fallback color.
+  Color? get ispectThemeBackground => ispectTheme.background?.resolve(this);
+
+  /// Background for inset cards, tiles, and input fields living on top of the
+  /// background surface.
+  Color get ispectCardColor =>
+      ispectTheme.card?.resolve(this) ??
+      appTheme.colorScheme.surfaceContainerHigh;
+
+  /// Row / list / status-bar surface. Falls back to [ThemeData.cardColor]
+  /// (typically `surfaceContainerLow`) so it sits one elevation step *below*
+  /// [ispectCardColor] tiles.
+  Color get ispectRowCardColor =>
+      ispectTheme.card?.resolve(this) ?? appTheme.cardColor;
+
+  /// Subtle 1px border tint shared by tiles, inputs, and chips.
+  Color get ispectSubtleBorderColor =>
+      appTheme.colorScheme.onSurface.withValues(alpha: 0.08);
+
+  /// Even fainter (0.06 alpha) border tint used by dense rows (desktop log
+  /// rows, status bar, search-match background).
+  Color get ispectFaintBorderColor =>
+      appTheme.colorScheme.onSurface.withValues(alpha: 0.06);
+}
+
+/// Shared motion tokens. Keep card expands, sheet reveals, and filter chips
+/// using the same duration/curve so the UI feels coherent.
+abstract final class ISpectMotion {
+  /// Standard duration for expand/collapse and reveal animations.
+  static const Duration short = Duration(milliseconds: 200);
+
+  /// Default easing curve used with [short].
+  static const Curve standardCurve = Curves.easeOutCubic;
 }
 
 extension OptionsExtension on ISpectOptions {

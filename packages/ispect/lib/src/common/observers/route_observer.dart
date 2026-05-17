@@ -33,6 +33,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     this.isLogPages = true,
     this.isLogModals = false,
     this.isLogOtherTypes = true,
+    this.isLogInternalRoutes = false,
     this.onPush,
     this.onReplace,
     this.onPop,
@@ -40,17 +41,38 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     this.onStartUserGesture,
     this.onStopUserGesture,
     this.maxTransitions = 200,
+    this.enableArgumentRedaction = true,
   });
+
+  /// The most recently installed `ISpectNavigatorObserver`.
+  ///
+  /// Populated by [observers] when ISpect is enabled. Lets `ISpectBuilder`
+  /// auto-wire the route observer for the navigation drill-down screen
+  /// without requiring callers to pass the same instance into both
+  /// `MaterialApp.navigatorObservers` and `ISpectOptions.observer`.
+  ///
+  /// Always `null` in builds where `kISpectEnabled` is `false`.
+  static ISpectNavigatorObserver? get current => _current;
+  static ISpectNavigatorObserver? _current;
+
+  /// Resets the [current] slot. Intended for `ISpect.dispose()` and tests.
+  static void resetCurrent() => _current = null;
 
   /// Returns a list of navigator observers for use in MaterialApp.
   ///
-  /// When `kISpectEnabled` is `true`, includes ISpect observer.
-  /// When disabled, returns only [additional] observers.
+  /// When `kISpectEnabled` is `true`, includes the ISpect observer and
+  /// publishes it via [current] so `ISpectBuilder.wrap` can pick it up
+  /// without explicit `ISpectOptions.observer` wiring. Repeated calls reuse
+  /// the auto-created singleton.
+  ///
+  /// When `kISpectEnabled` is `false`, returns only [additional] observers
+  /// and never touches [current].
   ///
   /// Simple usage:
   /// ```dart
   /// MaterialApp(
   ///   navigatorObservers: ISpectNavigatorObserver.observers(),
+  ///   builder: (_, child) => ISpectBuilder.wrap(child: child!),
   /// )
   /// ```
   ///
@@ -73,14 +95,17 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   }) {
     if (!kISpectEnabled) return additional;
 
-    return [
-      observer ?? ISpectNavigatorObserver(),
-      ...additional,
-    ];
+    final effective = observer ?? _current ?? ISpectNavigatorObserver();
+    _current = effective;
+
+    return [effective, ...additional];
   }
 
   final int maxTransitions;
   final List<RouteTransition> _transitions = [];
+
+  /// Maps Route → stable correlationId so push/pop/replace/remove share one ID.
+  final Expando<String> _routeCorrelationIds = Expando<String>('route_corr_id');
 
   List<RouteTransition> get transitions => List.unmodifiable(_transitions);
 
@@ -96,6 +121,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   final bool isLogModals;
   final bool isLogOtherTypes;
 
+  final bool isLogInternalRoutes;
+
   final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
       onPush;
   final void Function({Route<dynamic>? newRoute, Route<dynamic>? oldRoute})?
@@ -107,6 +134,11 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
       onStartUserGesture;
   final VoidCallback? onStopUserGesture;
+
+  /// When true, route arguments are redacted in log messages by showing
+  /// only their type and key names (no values). Defaults to true for security.
+  /// Set to false to include full argument details in logs.
+  final bool enableArgumentRedaction;
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
@@ -160,6 +192,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     if (!kISpectEnabled) return;
     if (!_shouldLog(route, previousRoute)) return;
 
+    final correlationId = _resolveCorrelationId(type, route, previousRoute);
+
     final timestamp = DateTime.now();
     final transition = _createRouteTransition(
       type: type,
@@ -171,20 +205,47 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     addTransition(transition);
 
     final logMessage = _buildLogMessage(type, route, previousRoute);
-    ISpect.logger.route(logMessage, transitionId: transition.id);
+    ISpect.logger.route(logMessage, transitionId: correlationId);
+  }
+
+  String? _resolveCorrelationId(
+    TransitionType type,
+    Route<dynamic>? route,
+    Route<dynamic>? previousRoute,
+  ) {
+    if (type == TransitionType.push && route != null) {
+      final id = generateTraceId();
+      _routeCorrelationIds[route] = id;
+      return id;
+    }
+    // Pop/remove/replace: check both routes (args are swapped in didPop)
+    if (route != null) {
+      final id = _routeCorrelationIds[route];
+      if (id != null) return id;
+    }
+    if (previousRoute != null) {
+      return _routeCorrelationIds[previousRoute];
+    }
+    return null;
   }
 
   String _generateTransitionId(DateTime timestamp, Route<dynamic>? route) {
     final micro = timestamp.microsecondsSinceEpoch;
-
     final routeId = route?.hashCode ?? 0;
     final instanceId = identityHashCode(this);
 
-    final String raw = '$micro$routeId$instanceId';
-
-    final int hash = raw.codeUnits.fold(0, (prev, e) => 31 * prev + e);
+    final hash = Object.hash(micro, routeId, instanceId);
 
     return hash.toUnsigned(64).toRadixString(36);
+  }
+
+  /// Extracts lightweight [RouteMetadata] from a live [Route] object.
+  static RouteMetadata? _extractMetadata(Route<dynamic>? route) {
+    if (route == null) return null;
+    return RouteMetadata(
+      name: route.routeName,
+      routeType: route.routeType,
+    );
   }
 
   /// Creates a RouteTransition instance with proper ID generation.
@@ -198,8 +259,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
 
     return RouteTransition(
       id: id,
-      from: previousRoute,
-      to: route,
+      from: _extractMetadata(previousRoute),
+      to: _extractMetadata(route),
       type: type,
       timestamp: timestamp,
       arguments: route?.settings.arguments,
@@ -221,15 +282,22 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     buffer.writeln(
         '${type.title} | $previousRouteName ($previousRouteType) → $routeName ($routeType)');
 
-    // Arguments info (only if present)
+    // Arguments info — redacted by default (only type and key names)
     switch (route?.settings.arguments) {
       case null:
         break;
       case final Map<String, dynamic> args:
-        final formattedArgs = JsonTruncatorService.pretty(args);
-        buffer.writeln('Arguments: $formattedArgs');
+        if (enableArgumentRedaction) {
+          buffer.writeln('Arguments: {${args.keys.join(', ')}}');
+        } else {
+          buffer.writeln('Arguments: $args');
+        }
       case final Object args:
-        buffer.writeln('Arguments: $args');
+        if (enableArgumentRedaction) {
+          buffer.writeln('Arguments: (${args.runtimeType})');
+        } else {
+          buffer.writeln('Arguments: $args');
+        }
     }
 
     return buffer.toString().trim();
@@ -251,6 +319,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   ///
   /// Returns true if the route transition should be logged based on current settings.
   bool _shouldLog(Route<dynamic>? route, Route<dynamic>? previousRoute) {
+    if (!isLogInternalRoutes && _isInternalRoute(route)) return false;
+
     return switch ((route, previousRoute)) {
       // Both pages
       (PageRoute(), PageRoute()) => isLogPages,
@@ -261,5 +331,14 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       // Other types
       _ => isLogOtherTypes,
     };
+  }
+
+  /// Prefix used by all internal ISpect route names.
+  static const _internalRoutePrefix = 'ISpect';
+
+  /// Returns true if the route belongs to the ISpect inspector UI itself.
+  static bool _isInternalRoute(Route<dynamic>? route) {
+    final name = route?.settings.name;
+    return name != null && name.startsWith(_internalRoutePrefix);
   }
 }

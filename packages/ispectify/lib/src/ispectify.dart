@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/factory/log_factory.dart';
 import 'package:ispectify/src/logger/log_pipeline.dart';
+import 'package:ispectify/src/models/log_factory.dart';
 import 'package:ispectify/src/observer/observer_manager.dart';
 
 /// A customizable logging and inspection utility for mobile applications.
@@ -45,8 +45,8 @@ class ISpectLogger {
     ISpectFilter? filter,
     ISpectErrorHandler? errorHandler,
     ILogHistory? history,
-  }) : _loggerStreamController =
-            StreamController<ISpectLogData>.broadcast(sync: true) {
+  })  : _hasCustomErrorHandler = errorHandler != null,
+        _loggerStreamController = StreamController<ISpectLogData>.broadcast() {
     final resolvedOptions = options ?? ISpectLoggerOptions();
     _options = resolvedOptions;
     _logger = logger ?? ISpectBaseLogger();
@@ -66,6 +66,9 @@ class ISpectLogger {
 
   /// Broadcast stream controller for log events.
   final StreamController<ISpectLogData> _loggerStreamController;
+
+  /// Tracks whether a custom errorHandler was provided by the user.
+  bool _hasCustomErrorHandler;
 
   bool _isDisposed = false;
 
@@ -92,23 +95,29 @@ class ISpectLogger {
 
   late ILogHistory _history;
 
-  bool _ensureActive() => !_isDisposed;
+  bool get _isActive => !_isDisposed;
 
   // ======= OBSERVER METHODS =======
 
   /// Adds an observer to be notified of log events.
   ///
-  /// Multiple observers can be registered, and all will be notified.
+  /// The observer remains registered until explicitly removed via
+  /// [removeObserver] or [clearObservers]. Prefer [observe] when you want
+  /// automatic cleanup via a disposer callback.
   ///
   /// - `observer`: The observer to add.
   void addObserver(ISpectObserver observer) {
-    if (!_ensureActive()) return;
+    if (!_isActive) return;
     _observerManager.add(observer);
   }
 
   /// Registers an observer and returns a disposer to remove it later.
+  ///
+  /// Unlike [addObserver]/[removeObserver], this method returns a zero-argument
+  /// callback that removes the observer when invoked — useful for scoped
+  /// subscriptions (e.g. widget lifecycle) where manual tracking is cumbersome.
   ISpectObserverDisposer observe(ISpectObserver observer) {
-    if (!_ensureActive()) return () {};
+    if (!_isActive) return () {};
     return _observerManager.observe(observer);
   }
 
@@ -116,13 +125,13 @@ class ISpectLogger {
   ///
   /// - `observer`: The observer to remove.
   void removeObserver(ISpectObserver observer) {
-    if (!_ensureActive()) return;
+    if (!_isActive) return;
     _observerManager.remove(observer);
   }
 
   /// Removes all registered observers.
   void clearObservers() {
-    if (!_ensureActive()) return;
+    if (!_isActive) return;
     _observerManager.clear();
   }
 
@@ -134,7 +143,7 @@ class ISpectLogger {
   /// Wraps each observer call in a try-catch to prevent one failing
   /// observer from affecting others.
   void _notifyObservers(void Function(ISpectObserver) notify) {
-    if (!_ensureActive()) return;
+    if (!_isActive) return;
     _observerManager.notify(notify);
   }
 
@@ -158,7 +167,7 @@ class ISpectLogger {
     ISpectErrorHandler? errorHandler,
     ILogHistory? history,
   }) {
-    if (!_ensureActive()) return;
+    if (!_isActive) return;
 
     if (filter != null) {
       _filter = filter;
@@ -178,12 +187,17 @@ class ISpectLogger {
 
     if (errorHandler != null) {
       _errorHandler = errorHandler;
-    } else {
-      // Rebuild default handler when options change.
+      _hasCustomErrorHandler = true;
+    } else if (!_hasCustomErrorHandler) {
+      // Rebuild default handler when options change, but only if no custom
+      // handler was ever provided (via constructor or previous configure call).
       _errorHandler = ISpectErrorHandler(_options);
     }
 
     if (history != null) {
+      // Dispose the old history to release resources (e.g. auto-save timers
+      // in FileLogHistory) before replacing it.
+      _history.dispose();
       _history = history;
     } else if (_history is DefaultISpectLoggerHistory) {
       // Rebuild default history to inherit updated options while
@@ -200,6 +214,13 @@ class ISpectLogger {
       history: _history,
       filter: _filter,
     );
+  }
+
+  /// Removes the current filter so that all logs are processed.
+  void clearFilter() {
+    if (!_isActive) return;
+    _filter = null;
+    _pipeline.clearFilter();
   }
 
   /// Stream controller for broadcasting log events.
@@ -221,7 +242,7 @@ class ISpectLogger {
 
   /// Clears all log entries from history.
   void clearHistory() {
-    if (!_ensureActive()) return;
+    if (!_isActive) return;
     _history.clear();
   }
 
@@ -229,16 +250,18 @@ class ISpectLogger {
   ///
   /// When enabled, log entries will be processed and stored.
   void enable() {
-    if (!_ensureActive()) return;
-    _options.enabled = true;
+    if (!_isActive) return;
+    _options = _options.copyWith(enabled: true);
+    _pipeline.update(options: _options);
   }
 
   /// Disables the inspector.
   ///
   /// When disabled, log entries will not be processed or stored.
   void disable() {
-    if (!_ensureActive()) return;
-    _options.enabled = false;
+    if (!_isActive) return;
+    _options = _options.copyWith(enabled: false);
+    _pipeline.update(options: _options);
   }
 
   // ======= LOGGING METHODS =======
@@ -257,14 +280,12 @@ class ISpectLogger {
     StackTrace? stackTrace,
     Object? message,
   }) {
-    if (!_ensureActive()) return;
+    if (!_isActive) return;
 
     final data =
         _errorHandler.handle(exception, stackTrace, message?.toString());
 
-    // Use polymorphic dispatch to notify observers
-    _notifyObservers(data.notifyObserver);
-    _processLog(data, skipObserverNotification: true);
+    _processLog(data);
   }
 
   /// Creates a log entry with custom parameters.
@@ -272,8 +293,10 @@ class ISpectLogger {
   /// This is the primary logging method that other specialized methods use.
   ///
   /// - `message`: The main log message.
-  /// - `logLevel`: The severity level of the log. If not provided, will be inferred from `type` or default to `LogLevel.debug`.
-  /// - `type`: The log type that may imply a specific severity level.
+  /// - `logLevel`: The severity level of the log. If not provided, will be
+  ///   inferred from [type] or default to [LogLevel.debug].
+  /// - `type`: Log type — built-in (`ISpectLogType.httpRequest`) or custom
+  ///   (`const ISpectLogType('my-key', category: 'firebase')`).
   /// - `exception`: Optional exception associated with the log.
   /// - `stackTrace`: Optional stack trace for the log.
   /// - `pen`: Optional styling for console output.
@@ -287,7 +310,6 @@ class ISpectLogger {
     AnsiPen? pen,
     Map<String, dynamic>? additionalData,
   }) {
-    // Determine the appropriate log level
     final effectiveLogLevel = logLevel ?? (type?.level ?? LogLevel.debug);
 
     _handleLog(
@@ -307,7 +329,7 @@ class ISpectLogger {
   ///
   /// - `log`: The custom log data to process.
   void logData(ISpectLogData log) {
-    if (!_ensureActive()) return;
+    if (!_isActive) return;
     _processLog(log);
   }
 
@@ -436,9 +458,13 @@ class ISpectLogger {
   /// Good logs indicate successful operations or positive outcomes.
   ///
   /// - `message`: The log message.
-  void good(String message) {
+  void good(Object? message) {
     _processLog(
-      GoodLog(message),
+      LogFactory.fromType(
+        type: ISpectLogType.good,
+        message: message,
+        options: _options,
+      ),
     );
   }
 
@@ -451,15 +477,16 @@ class ISpectLogger {
   /// - `analytics`: Optional analytics service identifier.
   /// - `parameters`: Optional parameters associated with the event.
   void track(
-    String message, {
+    Object? message, {
     String? event,
     String? analytics,
     Map<String, dynamic>? parameters,
   }) {
     _processLog(
-      AnalyticsLog(
-        '${event ?? 'Event'}: $message\nParameters: $parameters',
-        analytics: analytics,
+      LogFactory.fromType(
+        type: ISpectLogType.analytics,
+        message: '${event ?? 'Event'}: $message\nParameters: $parameters',
+        options: _options,
       ),
     );
   }
@@ -467,8 +494,14 @@ class ISpectLogger {
   /// Creates a basic print log entry.
   ///
   /// - `message`: The log message.
-  void print(String message) {
-    _processLog(PrintLog(message));
+  void print(Object? message) {
+    _processLog(
+      LogFactory.fromType(
+        type: ISpectLogType.print,
+        message: message,
+        options: _options,
+      ),
+    );
   }
 
   /// Creates a route log entry.
@@ -477,10 +510,20 @@ class ISpectLogger {
   ///
   /// - `message`: The log message, typically a route name or path.
   void route(
-    String message, {
+    Object? message, {
     String? transitionId,
   }) {
-    _processLog(RouteLog(message, transitionId: transitionId));
+    _processLog(
+      LogFactory.fromType(
+        type: ISpectLogType.route,
+        message: message,
+        options: _options,
+        additionalData: <String, dynamic>{
+          if (transitionId != null) TraceKeys.correlationId: transitionId,
+          TraceKeys.category: TraceCategoryIds.navigation,
+        },
+      ),
+    );
   }
 
   /// Creates a provider log entry.
@@ -488,8 +531,14 @@ class ISpectLogger {
   /// These logs are used for tracking state management or dependency injection events.
   ///
   /// - `message`: The log message.
-  void provider(String message) {
-    _processLog(ProviderLog(message));
+  void provider(Object? message) {
+    _processLog(
+      LogFactory.fromType(
+        type: ISpectLogType.provider,
+        message: message,
+        options: _options,
+      ),
+    );
   }
 
   /// Internal method to handle basic log creation.
@@ -505,8 +554,7 @@ class ISpectLogger {
     AnsiPen? pen,
     Map<String, dynamic>? additionalData,
   }) {
-    if (!kISpectEnabled) return;
-    if (!_ensureActive()) return;
+    if (!_isActive) return;
 
     final logType = type ?? ISpectLogType.fromLogLevel(logLevel);
     final data = LogFactory.fromType(
@@ -528,28 +576,16 @@ class ISpectLogger {
   /// This method performs the following steps:
   /// 1. Verifies that the logger is still active.
   /// 2. Uses the [_pipeline] to determine whether the log should be processed.
-  /// 3. Notifies observers when the log is accepted.
+  /// 3. Notifies observers via polymorphic dispatch on the log entry.
   /// 4. Delegates side-effects (stream broadcast, history, console) to the pipeline.
   ///
   /// Parameters:
   /// - `data`: The log entry to process, encapsulated in an `ISpectLogData` object.
-  /// - `isError`: A boolean flag indicating whether the log entry is an error. Defaults to `false`.
-  void _processLog(
-    ISpectLogData data, {
-    bool skipObserverNotification = false,
-  }) {
-    if (!kISpectEnabled) return;
-    if (!_ensureActive()) return;
+  void _processLog(ISpectLogData data) {
+    if (!_isActive) return;
     if (!_pipeline.shouldProcess(data)) return;
 
-    if (!skipObserverNotification) {
-      if (data.isError) {
-        _notifyObservers((observer) => observer.onError(data));
-      } else {
-        _notifyObservers((observer) => observer.onLog(data));
-      }
-    }
-
+    _notifyObservers(data.notifyObserver);
     _pipeline.dispatch(data);
   }
 
@@ -561,6 +597,7 @@ class ISpectLogger {
     if (_isDisposed) return;
     _isDisposed = true;
     _observerManager.clear();
+    _history.dispose();
     await _loggerStreamController.close();
   }
 }

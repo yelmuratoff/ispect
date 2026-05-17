@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:ispectify/ispectify.dart';
 
 /// Utility helpers for converting Dio [FormData] into structured maps that can be
 /// logged and redacted consistently across the package.
@@ -13,8 +14,8 @@ final class DioFormDataSerializer {
     final files = _collectFiles(formData);
 
     return {
-      'fields': fields,
-      'files': files,
+      NetworkJsonKeys.fields: fields,
+      NetworkJsonKeys.files: files,
     };
   }
 
@@ -25,10 +26,10 @@ final class DioFormDataSerializer {
       final existing = fields[entry.key];
       if (existing == null) {
         fields[entry.key] = entry.value;
-      } else if (existing is List) {
+      } else if (existing is List<Object?>) {
         existing.add(entry.value);
       } else {
-        fields[entry.key] = [existing, entry.value];
+        fields[entry.key] = <Object?>[existing, entry.value];
       }
     }
 
@@ -39,11 +40,12 @@ final class DioFormDataSerializer {
       formData.files
           .map(
             (file) => <String, Object?>{
-              'key': file.key,
-              'filename': file.value.filename,
-              'contentType': file.value.contentType?.toString(),
-              'length': file.value.length,
-              'headers': file.value.headers,
+              NetworkJsonKeys.fieldName: file.key,
+              NetworkJsonKeys.filename: file.value.filename,
+              NetworkJsonKeys.contentTypeValue:
+                  file.value.contentType?.toString(),
+              NetworkJsonKeys.length: file.value.length,
+              NetworkJsonKeys.headers: file.value.headers,
             },
           )
           .toList();

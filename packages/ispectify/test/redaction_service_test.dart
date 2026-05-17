@@ -27,19 +27,27 @@ void main() {
     });
 
     test('honours ignored values', () {
-      final service = RedactionService()..ignoreValue('SAFE');
+      final service = RedactionService(ignoredValues: {'SAFE'});
 
       final map = service.redact({'token': 'SAFE'}) as Map<String, Object?>?;
       expect(map, isNotNull);
       expect(map!['token'], 'SAFE');
     });
 
-    test('fully masks configured keys', () {
+    test('fully masks configured keys that are also sensitive', () {
       final service = RedactionService(fullyMaskedKeys: {'apiKey'});
       final map =
           service.redact({'apiKey': '123456789'}) as Map<String, Object?>?;
       expect(map, isNotNull);
       expect(map!['apiKey'], '[REDACTED]');
+    });
+
+    test('fully masks configured keys even when not sensitive', () {
+      final service = RedactionService(fullyMaskedKeys: {'filename'});
+      final map =
+          service.redact({'filename': 'report.pdf'}) as Map<String, Object?>?;
+      expect(map, isNotNull);
+      expect(map!['filename'], '[REDACTED]');
     });
 
     test('redacts binary payloads when enabled', () {
@@ -52,6 +60,168 @@ void main() {
       expect(redacted, isNotNull);
       expect(identical(redacted, data), isFalse);
       expect(redacted!.length, data.length);
+    });
+
+    test('deprecated kDefaultSensitiveKeys alias still works', () {
+      // ignore: deprecated_member_use_from_same_package
+      expect(kDefaultSensitiveKeys, equals(defaultSensitiveKeys));
+    });
+
+    group('redactUrl', () {
+      test('returns original URL when nothing to redact', () {
+        final service = RedactionService();
+        const url = 'https://example.com/api/users';
+        expect(service.redactUrl(url), url);
+      });
+
+      test('redacts query parameter values', () {
+        final service = RedactionService();
+        final result =
+            service.redactUrl('https://example.com/api?api_key=secret123');
+        expect(result, contains('api_key='));
+        expect(result, isNot(contains('secret123')));
+      });
+
+      test('redacts userInfo credentials', () {
+        final service = RedactionService();
+        final result = service.redactUrl('https://user:pass@example.com/path');
+        expect(result, contains('REDACTED'));
+        expect(result, isNot(contains('user:pass')));
+      });
+
+      test('returns unparseable URL unchanged', () {
+        final service = RedactionService();
+        const bad = ':::not-a-url';
+        expect(service.redactUrl(bad), bad);
+      });
+    });
+
+    group('redactUrlsInText', () {
+      test('redacts URLs embedded in error messages', () {
+        final service = RedactionService();
+        final result = service.redactUrlsInText(
+          'Connection failed to https://user:pass@api.io/v1?token=abc',
+        );
+        expect(result, contains('REDACTED'));
+        expect(result, isNot(contains('user:pass')));
+        expect(result, startsWith('Connection failed to '));
+      });
+
+      test('leaves text without URLs unchanged', () {
+        final service = RedactionService();
+        const plain = 'No URLs here at all';
+        expect(service.redactUrlsInText(plain), plain);
+      });
+    });
+
+    group('redactWithStats', () {
+      test('returns stats with key-based redaction count', () {
+        final service = RedactionService();
+        final result = service.redactWithStats({
+          'authorization': 'Bearer secret-token',
+          'username': 'john',
+          'safe_field': 'visible',
+        });
+
+        expect(result.data, isA<Map<String, Object?>>());
+        expect(result.stats.keyBased, 2);
+        expect(result.stats.patternBased, 0);
+        expect(result.stats.total, 2);
+        expect(result.stats.hasRedactions, isTrue);
+      });
+
+      test('returns stats with pattern-based redaction count', () {
+        final service = RedactionService();
+        final result = service.redactWithStats({
+          'data': 'ghp_abc123def456ghi789',
+        });
+
+        expect(result.stats.patternBased, greaterThan(0));
+        expect(result.stats.hasRedactions, isTrue);
+      });
+
+      test('returns zero stats when nothing redacted', () {
+        final service = RedactionService();
+        final result = service.redactWithStats({
+          'name': 'hello',
+          'count': 42,
+        });
+
+        expect(result.stats.total, 0);
+        expect(result.stats.hasRedactions, isFalse);
+      });
+    });
+
+    group('redactHeadersWithStats', () {
+      test('returns stats for header redaction', () {
+        final service = RedactionService();
+        final result = service.redactHeadersWithStats({
+          'Authorization': 'Bearer secret-token',
+          'Content-Type': 'application/json',
+        });
+
+        expect(result.headers['Content-Type'], 'application/json');
+        expect(result.stats.hasRedactions, isTrue);
+        expect(result.stats.keyBased, greaterThan(0));
+      });
+    });
+
+    group('tokenPrefixRegex coverage', () {
+      test('detects OpenAI tokens (sk-)', () {
+        final service = RedactionService();
+        final result = service.redactWithStats({
+          'data': 'sk-proj-abc123def456ghi789jkl012',
+        });
+        expect(result.stats.hasRedactions, isTrue);
+      });
+
+      test('detects Anthropic tokens (sk-ant-)', () {
+        final service = RedactionService();
+        final result = service.redactWithStats({
+          'data': 'sk-ant-api03-abc123def456',
+        });
+        expect(result.stats.hasRedactions, isTrue);
+      });
+
+      test('detects Stripe tokens (sk_live_)', () {
+        final service = RedactionService();
+        final result = service.redactWithStats({
+          'data': 'sk_live_abc123def456ghi789',
+        });
+        expect(result.stats.hasRedactions, isTrue);
+      });
+
+      test('detects AWS access keys (AKIA)', () {
+        final service = RedactionService();
+        final result = service.redactWithStats({
+          'data': 'AKIAIOSFODNN7EXAMPLE',
+        });
+        expect(result.stats.hasRedactions, isTrue);
+      });
+
+      test('detects GitLab PATs (glpat-)', () {
+        final service = RedactionService();
+        final result = service.redactWithStats({
+          'data': 'glpat-xxxxxxxxxxxxxxxxxxxx',
+        });
+        expect(result.stats.hasRedactions, isTrue);
+      });
+
+      test('detects Groq tokens (gsk_)', () {
+        final service = RedactionService();
+        final result = service.redactWithStats({
+          'data': 'gsk_abc123def456ghi789jkl',
+        });
+        expect(result.stats.hasRedactions, isTrue);
+      });
+
+      test('detects npm tokens (npm_)', () {
+        final service = RedactionService();
+        final result = service.redactWithStats({
+          'data': 'npm_abc123def456ghi789jkl',
+        });
+        expect(result.stats.hasRedactions, isTrue);
+      });
     });
   });
 }

@@ -6,12 +6,15 @@ on:
          - "auto/sync/**"
       paths:
          - "CHANGELOG.md"
+         - "ROADMAP.md"
+         - "SECURITY.md"
          - "version.config"
-         - "README.md"
+         - "docs/readme/**"
+         - "docs/*.md"
          - ".github/workflows/sync_versions_and_changelogs.yml"
          - "bash/update_versions.sh"
          - "bash/update_changelog.sh"
-         - "bash/sync_readme.sh"
+         - "bash/build_readme.sh"
 
 jobs:
    update-versions-changelogs-readmes:
@@ -36,10 +39,10 @@ jobs:
               chmod +x bash/update_versions.sh
               ./bash/update_versions.sh
 
-         - name: Sync README to all packages
+         - name: Build package READMEs
            run: |
-              chmod +x bash/sync_readme.sh
-              ./bash/sync_readme.sh
+              chmod +x bash/build_readme.sh
+              ./bash/build_readme.sh
 
          - name: Verify Dependencies
            run: |

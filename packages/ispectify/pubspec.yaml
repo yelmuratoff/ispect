@@ -1,7 +1,8 @@
 name: ispectify
-description: Foundation logging system for ISpect toolkit (based on Talker)
-version: 4.7.4
-homepage: https://github.com/yelmuratoff/ispect.git
+description: Pure-Dart structured logging, tracing, filtering, history, observers, export, and redaction core for the ISpect toolkit.
+version: 5.0.0
+homepage: https://github.com/yelmuratoff/ispect
+repository: https://github.com/yelmuratoff/ispect
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
 environment:

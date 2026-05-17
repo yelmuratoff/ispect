@@ -142,37 +142,54 @@ class JsonExplorerTheme {
   );
 
   // ignore: prefer_constructors_over_static_methods
-  static JsonExplorerTheme defaultThemeByContext(BuildContext context) =>
-      JsonExplorerTheme(
-        propertyKeyTextStyle: TextStyle(
-          color: context.ispectTheme.primary?.resolve(context),
-          fontWeight: FontWeight.bold,
-        ),
-        rootKeyTextStyle: TextStyle(
-          color: context.ispectTheme.primary?.resolve(context),
-          fontWeight: FontWeight.bold,
-        ),
-        valueSearchHighlightTextStyle: const TextStyle(
-          color: Colors.black87,
-          backgroundColor: Color.fromARGB(228, 255, 235, 59),
-        ),
-        focusedValueSearchHighlightTextStyle: const TextStyle(
-          color: Colors.black,
-          backgroundColor: Colors.yellow,
-          fontWeight: FontWeight.bold,
-        ),
-        keySearchHighlightTextStyle: const TextStyle(
-          color: Colors.black87,
-          backgroundColor: Color.fromARGB(228, 255, 235, 59),
-        ),
-        focusedKeySearchHighlightTextStyle: const TextStyle(
-          color: Colors.black,
-          backgroundColor: Colors.yellow,
-          fontWeight: FontWeight.bold,
-        ),
-        indentationLineColor:
-            context.ispectTheme.divider?.resolve(context) ?? Colors.grey,
-      );
+  static JsonExplorerTheme defaultThemeByContext(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Secondary matches: warm amber bg, dark text — visible on both themes
+    final highlightBg = isDark
+        ? const Color.fromARGB(200, 255, 193, 7) // amber, bright on dark bg
+        : const Color.fromARGB(228, 255, 235, 59); // yellow
+    const highlightFg = Colors.black87;
+
+    // Focused match: more saturated, bolder — stands out from secondary
+    final focusedBg = isDark
+        ? const Color.fromARGB(240, 255, 160, 0) // deep orange-amber
+        : Colors.yellow;
+    const focusedFg = Colors.black;
+
+    final keyColor = context.ispectPrimaryColor;
+
+    return JsonExplorerTheme(
+      propertyKeyTextStyle: TextStyle(
+        color: keyColor,
+        fontWeight: FontWeight.bold,
+      ),
+      rootKeyTextStyle: TextStyle(
+        color: keyColor,
+        fontWeight: FontWeight.bold,
+      ),
+      valueSearchHighlightTextStyle: TextStyle(
+        color: highlightFg,
+        backgroundColor: highlightBg,
+      ),
+      focusedValueSearchHighlightTextStyle: TextStyle(
+        color: focusedFg,
+        backgroundColor: focusedBg,
+        fontWeight: FontWeight.bold,
+      ),
+      keySearchHighlightTextStyle: TextStyle(
+        color: highlightFg,
+        backgroundColor: highlightBg,
+      ),
+      focusedKeySearchHighlightTextStyle: TextStyle(
+        color: focusedFg,
+        backgroundColor: focusedBg,
+        fontWeight: FontWeight.bold,
+      ),
+      indentationLineColor:
+          context.ispectTheme.divider?.resolve(context) ?? Colors.grey,
+    );
+  }
 
   JsonExplorerTheme copyWith({
     TextStyle? rootKeyTextStyle,

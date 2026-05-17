@@ -1,0 +1,66 @@
+import 'package:flutter/material.dart';
+import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
+import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
+
+/// A unified share bottom sheet that displays a header and a list of action
+/// buttons in a consistent layout.
+///
+/// Use this widget to show share/copy/export actions. Pass [actions] to
+/// customise the available operations.
+class ISpectShareSheet extends StatelessWidget {
+  const ISpectShareSheet({
+    required this.actions,
+    super.key,
+    this.icon = Icons.ios_share_rounded,
+  });
+
+  final IconData icon;
+  final List<Widget> actions;
+
+  /// Shows the share sheet using [showISpectSheet].
+  ///
+  /// [actionsBuilder] receives the sheet's own [BuildContext] so that
+  /// callbacks (e.g. `Navigator.of(ctx).pop()`) use a context that is
+  /// guaranteed to be mounted inside the sheet's navigator.
+  static Future<void> show(
+    BuildContext context, {
+    required List<Widget> Function(BuildContext sheetContext) actionsBuilder,
+    IconData icon = Icons.ios_share_rounded,
+  }) =>
+      showISpectSheet(
+        context,
+        topOnlyRadius: true,
+        builder: (sheetContext, _) => ISpectShareSheet(
+          icon: icon,
+          actions: actionsBuilder(sheetContext),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ISpectDragHandle(),
+            const Gap(8),
+            ISpectBottomSheetHeader(
+              title: context.ispectL10n.share,
+              icon: icon,
+            ),
+            const Gap(16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: actions,
+              ),
+            ),
+          ],
+        ),
+      );
+}

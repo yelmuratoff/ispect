@@ -1,5 +1,111 @@
 # Changelog
 
+## 5.0.0
+
+### Breaking Changes
+
+- All logging now flows through a unified `trace()` pipeline. The pipeline produces structured data with consistent tracking across every layer of the app.
+- Log data was flattened. The old inheritance-based types are gone, replaced by a metadata-driven `ISpectLogData` structure. Field accessors like `isNetwork` and `httpStatusCode` moved into extensions.
+- Typed subclasses such as `NetworkRequestLog`, `DioResponseLog`, and `BlocLifecycleLog` have been removed. Use the new trace system instead.
+- `ISpectLogType` is no longer an enum. It is now a `final class`, so `ISpectLogType.values` is gone in favour of `ISpectLogType.builtIn`, and exhaustive switch on its values is no longer possible. The upside is that custom types are first-class. You can write `const ISpectLogType('my-key', category: 'firebase')` directly.
+- `ISpectLogData.id` is now a 26-character ULID string instead of a per-isolate auto-incrementing int. IDs are lexicographically sortable, globally unique across processes, isolates, and reloaded log files, and they survive JSON round-trips through the new optional `id` constructor parameter. Equality and `hashCode` use the id alone, so two entries with identical content are no longer considered equal. That fixes set and list deduplication on persisted history.
+
+### Added
+
+- A new `ispect_layout` package, a standalone visual layout inspector for Flutter. Tap any widget to read its size, constraints, padding, decoration, text styles, transform matrix, and clip shape. Compare two widgets to see the pixel gap between them. It is forked from [`inspector`](https://github.com/kekland/inspector) 4.1.0 and maintained inside the ISpect monorepo. On top of the upstream feature set it adds expanded render-object coverage (`RenderTransform` matrix decomposition, `RenderBackdropFilter`, every `RenderClip*`, `RenderEditable`), a wrapper-ancestors section for same-size proxies, gradient, shadow, and border-radius breakdowns, image-source introspection, a RichText preview, and a refactored `BoxInfoPanelWidget` split into testable extractor and widget modules.
+- An extensible plugin architecture for the ISpect panel, with lifecycle hooks, custom screens, and action items. `SafePluginScreen` and a global `ErrorWidget` override keep third-party plugin failures from taking down the host UI.
+- You can now define your own `ISpectLogType` instances with category, configurable title, color, and icon. Theme validation safely merges custom and built-in entries.
+- A database interceptor cookbook with drop-in interceptors and runnable examples for Hive, Isar, Drift, Sembast, ObjectBox, Realm, Firestore, Sqflite, SharedPreferences, GetStorage, and FlutterSecureStorage in `packages/ispectify_db/example`.
+
+### Improvements
+
+- The new trace API adds `trace()`, `traceAsync()`, `traceSync()`, and `traceTransaction()` for flexible logging with correlation support.
+- New domain extensions cover common operations, including `authTrace()`, `storageTrace()`, `push()`, `analyticsEvent()`, `paymentTrace()`, and `grpcTrace()`.
+- The new log exporter writes JSON Lines, plain text, Markdown, and CSV, with redaction and security protection built in.
+- The desktop layout was redesigned with a resizable split view, keyboard navigation, and persistent layout ratios.
+- Search and filter were reworked. Field matching gets inline navigation, filters use chip-based selection and category grouping, and correlation IDs and transaction IDs are filterable directly from log details.
+- Correlated network logs now appear as expandable transaction cards with status and duration indicators, plus dedicated transaction badges and detailed request and response views.
+- Live tail picked up new-log indicators, scroll-to-edge support, and relative time formatting.
+- 21 new icons and colors landed for various log types, and the JSON viewer gained array support and async search.
+- Inspector controls now support multi-key `ShortcutActivator` shortcuts through Flutter `Shortcuts` and `Actions`, an `initialPanelExpanded` flag for default panel state, configurable `decimalPlaces`, smart panel positioning, shape-border and border-radius extraction for clipping and physical widgets, and globally-transformed hit testing for accurate overlap detection.
+- The picker and zoom action bar swapped the tap-to-commit gesture for a floating Cancel and Confirm bar at the bottom of the screen. The bar includes zoom minus and plus controls, a live colour preview chip (hex value, tap to copy), and an adaptive compact layout that collapses labels on narrow screens.
+- The colour picker's hex chip now picks the first side of the disc that fits fully on-screen, trying above, then right, then left, then below, instead of the previous binary above-or-right fallback. The readout no longer disappears when the picker hugs a corner.
+- The picker and zoom snapshot is re-taken automatically when the surface size changes (desktop window resize, web layout shift, orientation change), so the loupe stays in sync with the live UI instead of showing stale pixels.
+- The picker disc visual is back to the legacy strokeAlignOutside look. The image fills the full disc and three concentric strokes are painted outside the canvas with a soft drop shadow.
+- Pluggable log formatters cover human-readable and JSON Lines output with ISO-8601 timestamps for console and exports.
+- A new `consoleMessage` parameter on trace, network, WebSocket, and BLoC logs lets you tailor IDE console output without touching structured metadata.
+- `ISpect.logger` is now constructed lazily and emits a developer warning when used before `ISpect.run`.
+- Redaction reaches further. cURL commands go through `RedactionService`, `copyClipboard` supports opt-in clipboard redaction, and redaction statistics for data and header operations are available optionally.
+- A new log correlation index gives O(1) request, response, and error lookup in the log screen, which removes scan-time matching on large histories.
+- Database tracing picked up `DbSqlDigest` for normalized SQL grouping, `DbMessageFormatter` for consistent log construction, and new `sizeBytes` and `cacheHit` fields for performance insight.
+- Accessibility improvements include semantic labels on log cards and transaction widgets, larger touch targets (36dp minimum), and tooltips on app bar navigation, search, and filter actions.
+- Expanded log cards now show a single-line metadata strip under the title with id, trace source, operation or target, duration, and exception type. That removes a hop into the detail view for the most common triage info.
+- The log action sheet displays the log type's description in its header, so you can confirm the type before opening the details.
+- Action buttons on log cards shrank to 28dp with tighter context-menu tile spacing for higher density on phones.
+
+### Behavioral Changes
+
+- All network interceptors now have PII redaction enabled by default, using an expanded list of sensitive keys.
+- `ISpectBlocObserver` automatically correlates events, transitions, and changes for easier debugging.
+- The tips dialog moved from an automatic popup to a dedicated app bar icon.
+- The navigator observer is auto-wired. `ISpectNavigatorObserver.observers()` now publishes the installed observer in `ISpectNavigatorObserver.current`, and `ISpectBuilder.wrap` falls back to it when `ISpectOptions.observer` is not provided. The quick-start no longer requires sharing the same observer instance between `MaterialApp.navigatorObservers` and `ISpectOptions.observer`. The navigation drill-down screen wires up automatically, and an explicit `ISpectOptions.observer` still wins.
+- The developer warning previously emitted by `debugPrint` when `ISpect.logger` was accessed before `ISpect.run` or `ISpect.initialize` has been removed. The lazy fallback continues to return a default `ISpectLogger`. UI integration still requires explicit initialization.
+
+### Deprecations
+
+- `ISpectScopeController.of(context)` is deprecated in favour of the canonical `ISpect.read(context)`. The two were duplicate entry points to the same `InheritedNotifier` lookup. The old method remains as a forwarder and will be removed in 6.0.0.
+- Per-callback network filters (`requestFilter`, `responseFilter`, `errorFilter`) on `ispectify_dio`, `ispectify_http`, and `ispectify_ws` are deprecated in favour of the new composable filter chain. Existing callbacks keep working as forwarders and will be removed in 6.0.0.
+- The `ISpectBuilder(...)` constructor is deprecated in favour of `ISpectBuilder.wrap(...)`. The factory short-circuits before constructing the widget when `kISpectEnabled` is false, which preserves tree-shaking. The constructor defers the disabled-build short-circuit to `build()`, which keeps the state class reachable. The constructor will be made private in a stable 5.x release.
+- `ISpectLocalizations.delegates(...)` is deprecated in favour of the new `ISpectLocalizations.delegate(...)`. The old method injects `GlobalMaterialLocalizations`, `Cupertino`, and `Widgets` alongside ISpect's delegate, which mutates the host app's localization stack even in release builds. The new method returns only ISpect's delegate concatenated with the host's list and leaves the Globals to the host. To migrate, list the three `Global*Localizations.delegate` entries yourself and spread `...ISpectLocalizations.delegate()` after them. The legacy method continues to work as a forwarder during 5.x and will be removed in 6.0.0.
+
+### Bug Fixes
+
+- Fixed critical "deactivated widget's ancestor" errors in `ISpectToaster` and clipboard operations by handling `BuildContext` correctly across async gaps.
+- Resolved memory leaks in UI components and made JSON parsing more robust on large datasets.
+- Added protection against CSV injection in exports and capped clipboard size to prevent memory issues.
+- Inspector overlay rects and pointer coordinates are now clamped to screen bounds, which fixes off-screen tracking and out-of-viewport selection.
+- The inspector uses Flutter's native hit-test pipeline, so taps no longer surface widgets from routes beneath the active one (non-opaque pages, dialogs, modal sheets) or from `Offstage` and `IgnorePointer` subtrees.
+- When the selected `RenderParagraph` is actually rendering an icon (a single Private-Use-Area code point in `MaterialIcons`, `CupertinoIcons`, or a similar icon font), the info panel now shows the glyph itself plus its `U+XXXX` code point under an `ICON` section, instead of unreadable tofu under `TEXT`.
+- `describeIdentity` and other diagnostic-only formatters were replaced with release-safe equivalents, so the layout inspector no longer throws or leaks debug data in profile and release builds.
+- `JsonScreen.didUpdateWidget` now compares the data's `id` instead of object identity, so the viewer no longer rebuilds its node tree and discards expansion state when the parent supplies a fresh map with the same content.
+
+### CI/Tests
+
+- The test suite was refactored for the new trace-based architecture, with better validation for JSON and multipart redaction.
+- Added widget tests for `ISpectAppBar`, `EmptyLogsWidget`, `LogCard`, and `ISpectBuilder`. Added integration tests for the BLoC, Dio, and HTTP logging pipelines, plus a comprehensive `ISpectBlocObserver` lifecycle and correlation suite.
+- Integrated Codecov coverage reporting with a Flutter version matrix in CI and added a coverage badge to the README.
+- Unified the testing and analysis workflows on GitHub Actions.
+
+### Migration Guide
+
+```dart
+// BEFORE (v4.x): Pattern matching on typed subclasses
+if (log is NetworkRequestLog) {
+  print(log.method);
+  print(log.url);
+}
+
+// AFTER (v5.0): Use ISpectLogDataX convenience getters
+import 'package:ispectify/ispectify.dart';
+if (log.isNetwork) {
+  print(log.traceOperation);  // HTTP method
+  print(log.traceTarget);     // URL
+  print(log.httpStatusCode);  // from traceMeta
+}
+
+// NEW: Trace API for custom operations
+logger.traceAsync(
+  category: authCategory,
+  source: 'firebase',
+  operation: 'signIn',
+  run: () => auth.signIn(email, password),
+);
+
+// NEW: Domain extensions
+logger.push(source: 'fcm', operation: 'received', messageId: id);
+logger.analyticsEvent(source: 'firebase', event: 'purchase');
+```
+
 ## 4.7.4
 
 ### Changes

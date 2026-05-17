@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ispect/ispect.dart';
 
 import 'main.gr.dart';
@@ -34,9 +35,14 @@ class DeclarativeNavigationExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      localizationsDelegates: ISpectLocalizations.delegates(),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        ...ISpectLocalizations.delegate(),
+      ],
       routerConfig: _router.config(),
-      builder: (context, child) => ISpectBuilder(
+      builder: (context, child) => ISpectBuilder.wrap(
         options: ISpectOptions(
           observer: observer,
         ),

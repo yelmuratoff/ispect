@@ -53,7 +53,7 @@ jobs:
          - name: Build web app
            run: |
               cd web_logs_viewer
-              flutter build web --release
+              flutter build web --release --no-tree-shake-icons --dart-define=ISPECT_ENABLED=true
 
          - name: Setup Pages
            uses: actions/configure-pages@v5

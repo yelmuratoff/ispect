@@ -24,10 +24,10 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'مرحبًا! كيف يمكنني مساعدتك؟';
 
   @override
-  String get allLogsCopied => 'تم نسخ جميع السجلات في المخزن المؤقت';
+  String get allLogsCopied => 'تم نسخ جميع السجلات إلى الحافظة';
 
   @override
-  String get analyticsLogDesc => 'سجل إرسال الأحداث إلى خدمة التحليلات';
+  String get analyticsLogDesc => 'تم تتبع الحدث وإرساله إلى التحليلات';
 
   @override
   String get apiToken => 'رمز API';
@@ -131,15 +131,13 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get creatingIssue => 'جارٍ إنشاء المشكلة';
 
   @override
-  String get criticalLogDesc =>
-      'علامة تُستخدم لتسجيل الأخطاء الحرجة أو الأحداث التي تتطلب اهتمامًا فوريًا';
+  String get criticalLogDesc => 'خطأ حرج يحتاج إلى اهتمام فوري';
 
   @override
   String get data => 'بيانات';
 
   @override
-  String get debugLogDesc =>
-      'علامة تُستخدم لتسجيل معلومات التصحيح لتحليل سلوك التطبيق';
+  String get debugLogDesc => 'تفاصيل تقنية للمطورين لتحليل السلوك';
 
   @override
   String get description => 'الوصف';
@@ -159,8 +157,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'خطأ أثناء مسح الذاكرة المؤقتة';
 
   @override
-  String get errorLogDesc =>
-      'علامة تُستخدم لتسجيل الأخطاء التي تحدث في التطبيق';
+  String get errorLogDesc => 'حدث خطأ ما في التطبيق';
 
   @override
   String get errorMessage => 'رسالة الخطأ';
@@ -169,8 +166,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get errorType => 'نوع الخطأ';
 
   @override
-  String get exceptionLogDesc =>
-      'علامة تُستخدم لتسجيل الاستثناءات التي تحدث في التطبيق';
+  String get exceptionLogDesc => 'حدث خطأ غير متوقع';
 
   @override
   String get expandLogs => 'توسيع السجلات';
@@ -197,8 +193,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get goToLogger => 'الذهاب إلى المسجل';
 
   @override
-  String get goodLogDesc =>
-      'علامة تُستخدم لتسجيل العمليات الناجحة أو الأحداث الإيجابية في التطبيق';
+  String get goodLogDesc => 'اكتملت العملية بنجاح';
 
   @override
   String get headers => 'الرؤوس';
@@ -216,8 +211,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'سجل استجابة الخادم';
 
   @override
-  String get infoLogDesc =>
-      'علامة تُستخدم لتسجيل رسائل معلوماتية حول تشغيل التطبيق';
+  String get infoLogDesc => 'معلومات عامة حول ما يحدث';
 
   @override
   String get initializationFailed => 'فشل التهيئة';
@@ -230,7 +224,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
       '1. اذهب إلى موقع Jira الخاص بك.\n2. انقر على صورة ملفك الشخصي في الزاوية السفلية اليسرى.\n3. انقر على الملف الشخصي.\n4. انقر على إدارة حسابك.\n5. اختر الأمان.\n6. قم بالتمرير لأسفل إلى إنشاء وإدارة رموز API وانقر عليه.\n7. أنشئ رمزًا، ثم انسخه والصقه.';
 
   @override
-  String get logItemCopied => 'تم نسخ عنصر السجل في الحافظة';
+  String get logItemCopied => 'تم نسخ عنصر السجل إلى الحافظة';
 
   @override
   String get login => 'تسجيل الدخول';
@@ -249,6 +243,9 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get notFound => 'غير موجود';
+
+  @override
+  String get noResultsHint => 'جرّب بحثًا مختلفًا أو عدّل الفلاتر';
 
   @override
   String get otherLogsForDevelopers =>
@@ -276,7 +273,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get pleaseSelectYourProject => 'الآن، يرجى اختيار مشروع';
 
   @override
-  String get printLogDesc => 'سجل طريقة الطباعة القياسية في Flutter';
+  String get printLogDesc => 'تم طباعة رسالة في وحدة التحكم';
 
   @override
   String get projectDomain => 'نطاق المشروع';
@@ -327,7 +324,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get selectPriority => 'اختر الأولوية';
 
   @override
-  String get selectSprint => 'اختر السباق';
+  String get selectSprint => 'اختر السبرنت';
 
   @override
   String get selectStatus => 'اختر الحالة';
@@ -531,15 +528,13 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get userEmail => 'البريد الإلكتروني للمستخدم';
 
   @override
-  String get verboseLogDesc =>
-      'علامة تُستخدم لتسجيل معلومات مفصلة لتحليل التطبيق بعمق';
+  String get verboseLogDesc => 'معلومات تقنية مفصلة لتصحيح الأخطاء';
 
   @override
   String get viewAndManageData => 'عرض وإدارة بيانات التطبيق';
 
   @override
-  String get warningLogDesc =>
-      'علامة تُستخدم لتسجيل رسائل تحذير حول مشكلات محتملة في التطبيق';
+  String get warningLogDesc => 'مشكلة محتملة قد تسبب أعطال';
 
   @override
   String get you => 'أنت';
@@ -551,10 +546,10 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get noData => 'لا توجد بيانات';
 
   @override
-  String get shareLogFull => 'مشاركة السجل (كامل)';
+  String get shareLogFull => 'مشاركة السجل الكامل';
 
   @override
-  String get copyToClipboardTruncated => 'نسخ إلى الحافظة (مختصر)';
+  String get copyToClipboardTruncated => 'نسخ الملخص إلى الحافظة';
 
   @override
   String get viewThemeScheme => 'عرض شاشة مخطط الموضوع';
@@ -692,4 +687,319 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => 'سجل أخطاء قاعدة البيانات';
+
+  @override
+  String get reverseLogsDesc =>
+      'تغيير ترتيب عرض السجلات من الأحدث أولاً إلى الأقدم أولاً أو العكس';
+
+  @override
+  String get copyAllLogsDesc => 'نسخ جميع إدخالات السجل إلى الحافظة كنص';
+
+  @override
+  String get expandLogsDesc => 'عرض التفاصيل الكاملة لجميع إدخالات السجل';
+
+  @override
+  String get collapseLogsDesc => 'طي جميع إدخالات السجل في عرض مضغوط';
+
+  @override
+  String get clearHistoryDesc => 'حذف جميع إدخالات السجل المحفوظة من الذاكرة';
+
+  @override
+  String get shareLogsFileDesc =>
+      'تصدير السجلات كملف ومشاركتها عبر قائمة المشاركة';
+
+  @override
+  String get navigationFlowDesc => 'عرض تسلسل انتقالات الشاشات في تطبيقك';
+
+  @override
+  String get dailySessionsDesc =>
+      'تصفح ملفات السجل المحفوظة من الجلسات السابقة';
+
+  @override
+  String get logViewerDesc => 'فتح عارض خارجي لفحص ملفات السجل';
+
+  @override
+  String get selectAll => 'تحديد الكل';
+
+  @override
+  String get deselectAll => 'إلغاء تحديد الكل';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => 'قاعدة البيانات';
+
+  @override
+  String get groupNavigation => 'التنقل';
+
+  @override
+  String get groupGeneral => 'عام';
+
+  @override
+  String get categoryAuth => 'Auth';
+
+  @override
+  String get categoryStorage => 'Storage';
+
+  @override
+  String get categoryPush => 'Push';
+
+  @override
+  String get categoryPayment => 'Payment';
+
+  @override
+  String get categoryAnalytics => 'Analytics';
+
+  @override
+  String get categorySse => 'SSE';
+
+  @override
+  String get categoryGrpc => 'gRPC';
+
+  @override
+  String get categoryGraphql => 'GraphQL';
+
+  @override
+  String get wsErrorLogDesc => 'WebSocket connection error';
+
+  @override
+  String get authSuccessLogDesc => 'Authentication successful';
+
+  @override
+  String get authErrorLogDesc => 'Authentication failed';
+
+  @override
+  String get storageResultLogDesc => 'Storage operation completed';
+
+  @override
+  String get storageQueryLogDesc => 'Storage query executed';
+
+  @override
+  String get storageErrorLogDesc => 'Storage operation failed';
+
+  @override
+  String get pushReceivedLogDesc => 'Push notification received';
+
+  @override
+  String get pushSentLogDesc => 'Push notification sent';
+
+  @override
+  String get pushErrorLogDesc => 'Push notification error';
+
+  @override
+  String get paymentSuccessLogDesc => 'Payment completed';
+
+  @override
+  String get paymentErrorLogDesc => 'Payment failed';
+
+  @override
+  String get stateChangeLogDesc => 'State changed';
+
+  @override
+  String get stateErrorLogDesc => 'State management error';
+
+  @override
+  String get sseReceivedLogDesc => 'Server-Sent Event received';
+
+  @override
+  String get sseErrorLogDesc => 'SSE connection error';
+
+  @override
+  String get grpcRequestLogDesc => 'gRPC request sent';
+
+  @override
+  String get grpcResponseLogDesc => 'gRPC response received';
+
+  @override
+  String get grpcErrorLogDesc => 'gRPC call failed';
+
+  @override
+  String get graphqlRequestLogDesc => 'GraphQL query sent';
+
+  @override
+  String get graphqlResponseLogDesc => 'GraphQL response received';
+
+  @override
+  String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
+  String get transitionPush => 'دفع';
+
+  @override
+  String get transitionPop => 'إخراج';
+
+  @override
+  String get transitionReplace => 'استبدال';
+
+  @override
+  String get transitionRemove => 'إزالة';
+
+  @override
+  String get transitionStartUserGesture => 'بدء إيماءة المستخدم';
+
+  @override
+  String get transitionStopUserGesture => 'إيقاف إيماءة المستخدم';
+
+  @override
+  String get copyAsCurl => 'نسخ كـ cURL';
+
+  @override
+  String get relativeJustNow => 'الآن';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return 'منذ $count ث';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return 'منذ $count د';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return 'منذ $count س';
+  }
+
+  @override
+  String get showOnlyThisType => 'إظهار هذا النوع فقط';
+
+  @override
+  String get hideThisType => 'إخفاء هذا النوع';
+
+  @override
+  String get clearAllFilters => 'مسح جميع الفلاتر';
+
+  @override
+  String get httpRequest => 'طلب';
+
+  @override
+  String get httpResponse => 'استجابة';
+
+  @override
+  String get pending => 'قيد الانتظار';
+
+  @override
+  String get groupHttpLogs => 'تجميع HTTP';
+
+  @override
+  String get groupHttpLogsDesc => 'تجميع طلبات واستجابات HTTP المرتبطة معًا';
+
+  @override
+  String get duration => 'المدة';
+
+  @override
+  String get ungroupHttpLogs => 'إلغاء تجميع HTTP';
+
+  @override
+  String get ungroupHttpLogsDesc => 'عرض طلبات واستجابات HTTP كإدخالات منفصلة';
+
+  @override
+  String get tips => 'نصائح';
+
+  @override
+  String get tipSearchLogs =>
+      'البحث في السجلات بالنص — يبحث أيضاً في محتوى JSON الكامل';
+
+  @override
+  String get tipLongPress => 'اضغط مطولاً على بطاقة السجل للإجراءات السريعة';
+
+  @override
+  String get tipFilter => 'تصفية حسب نوع السجل باستخدام الشرائح أو الإعدادات';
+
+  @override
+  String get tipExpand => 'انقر على توسيع لعرض JSON الكامل مع البحث';
+
+  @override
+  String get tipKeyboard => 'مفاتيح الأسهم للتنقل، Enter للفتح، / للبحث';
+
+  @override
+  String get tipNavigationFlow =>
+      'افتح تدفق التنقل من الإعدادات لرؤية سجل المسارات بصريًا';
+
+  @override
+  String get tipShareSession =>
+      'شارك ملف السجلات لتقارير الأخطاء — يتم إخفاء البيانات تلقائيًا';
+
+  @override
+  String get tipReverseLogs => 'اضغط على الأسهم في الشريط لعكس ترتيب السجلات';
+
+  @override
+  String get gotIt => 'فهمت';
+
+  @override
+  String get filters => 'تصفية';
+
+  @override
+  String get compare => 'مقارنة';
+
+  @override
+  String get cancelCompare => 'إلغاء';
+
+  @override
+  String get tapWidgetToCompare => 'انقر على عنصر للمقارنة';
+
+  @override
+  String get comparedWith => 'مقارنة مع';
+
+  @override
+  String get distanceLeft => 'يسار';
+
+  @override
+  String get distanceTop => 'أعلى';
+
+  @override
+  String get distanceRight => 'يمين';
+
+  @override
+  String get distanceBottom => 'أسفل';
+
+  @override
+  String get searchMode => 'وضع البحث';
+
+  @override
+  String get logTypes => 'أنواع السجلات';
+
+  @override
+  String get includeSensitiveData => 'تضمين البيانات الحساسة';
+
+  @override
+  String get correlationIdCopied =>
+      'تم نسخ المعرف. الصقه في البحث لتصفية السجلات المرتبطة.';
+
+  @override
+  String get downloadLogsFile => 'تحميل ملف السجلات';
+
+  @override
+  String logsFileSaved(String path) {
+    return 'تم حفظ الملف: $path';
+  }
+
+  @override
+  String get back => 'رجوع';
+
+  @override
+  String get close => 'إغلاق';
+
+  @override
+  String get clearSearch => 'مسح البحث';
+
+  @override
+  String get previousMatch => 'التطابق السابق';
+
+  @override
+  String get nextMatch => 'التطابق التالي';
+
+  @override
+  String get moreOptions => 'المزيد';
 }

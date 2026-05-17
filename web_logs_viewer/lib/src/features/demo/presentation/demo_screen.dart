@@ -209,15 +209,25 @@ class DemoScreenState extends State<DemoScreen> {
       (
         label: 'Get last log',
         onPressed: () async {
-          final lastLog = ISpect.logger.history.last;
+          final history = ISpect.logger.history;
+          if (history.isEmpty) {
+            ISpect.logger.info('No logs in history');
+            return;
+          }
+          final lastLog = history.last;
           ISpect.logger.info('Last log: ${lastLog.toJson()}');
         },
       ),
       (
         label: 'Get first log',
         onPressed: () async {
-          final firstLog = ISpect.logger.history.first;
-          ISpect.logger.info('Last log: ${firstLog.toJson()}');
+          final history = ISpect.logger.history;
+          if (history.isEmpty) {
+            ISpect.logger.info('No logs in history');
+            return;
+          }
+          final firstLog = history.first;
+          ISpect.logger.info('First log: ${firstLog.toJson()}');
         },
       ),
       (
@@ -270,6 +280,7 @@ class DemoScreenState extends State<DemoScreen> {
         label: 'Send HTTP request with Token',
         onPressed: () {
           dio.options.headers.addAll({
+            // Demo-only dummy token for testing header redaction.
             'Authorization': '27349dnkwdjwidj4u49280dkdfjwdjw',
           });
           dio.get<dynamic>('/posts/1');
@@ -281,6 +292,7 @@ class DemoScreenState extends State<DemoScreen> {
         onPressed: () async {
           await client.get(
             Uri.parse('https://jsonplaceholder.typicode.com/posts/1'),
+            // Demo-only dummy token for testing header redaction.
             headers: {'Authorization': '27349dnkwdjwidj4u49280dkdfjwdjw'},
           );
         },
@@ -358,7 +370,9 @@ class DemoScreenState extends State<DemoScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(ExampleGeneratedLocalization.of(context)!.app_title),
+        title: Text(
+          ExampleGeneratedLocalization.of(context)?.app_title ?? 'ISpect Demo',
+        ),
         leading: IconButton(
           icon: const Icon(IconsaxPlusLinear.arrow_left),
           onPressed: () {

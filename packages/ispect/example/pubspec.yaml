@@ -9,6 +9,8 @@ environment:
 dependency_overrides:
   ispect:
     path: ../../ispect
+  ispect_layout:
+    path: ../../ispect_layout
   ispectify:
     path: ../../ispectify
   ispectify_http:
@@ -41,12 +43,12 @@ dependencies:
   auto_route:
 
   # Use local paths through dependency_overrides
-  ispect: ^4.7.4
-  ispectify_dio: ^4.7.4
-  ispectify_http: ^4.7.4
-  ispectify_bloc: ^4.7.4
-  ispectify_ws: ^4.7.4
-  ispectify_db: ^4.7.4
+  ispect: ^5.0.0
+  ispectify_dio: ^5.0.0
+  ispectify_http: ^5.0.0
+  ispectify_bloc: ^5.0.0
+  ispectify_ws: ^5.0.0
+  ispectify_db: ^5.0.0
 
 dev_dependencies:
   flutter_test:

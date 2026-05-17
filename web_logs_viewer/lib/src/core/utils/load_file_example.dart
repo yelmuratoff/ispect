@@ -45,7 +45,7 @@ Web: $kIsWeb
 
         // Trigger automatic download for web users
         if (kIsWeb && handler.runtimeType.toString() == 'WebLogsFile') {
-          (handler as dynamic).downloadFile(logFile);
+          (handler as dynamic).shareFile(logFile);
           debugPrint('⬇️  Download triggered for user');
         }
       } else {

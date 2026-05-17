@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ispectify/ispectify.dart';
 
 /// Provides reusable sanitization helpers for network payloads.
@@ -51,7 +53,16 @@ class NetworkPayloadSanitizer {
   }
 
   /// Converts a map with arbitrary key types into a string-keyed map.
-  Map<String, dynamic> stringKeyMap(Map<dynamic, dynamic>? input) {
+  ///
+  /// Also available as [toStringKeyMap] for call sites without a sanitizer
+  /// instance (e.g. data serialization classes).
+  Map<String, dynamic> stringKeyMap(Map<dynamic, dynamic>? input) =>
+      toStringKeyMap(input);
+
+  /// Converts a map with arbitrary key types into a `Map<String, dynamic>`.
+  ///
+  /// Static version of [stringKeyMap] for use without a sanitizer instance.
+  static Map<String, dynamic> toStringKeyMap(Map<dynamic, dynamic>? input) {
     if (input == null || input.isEmpty) return <String, dynamic>{};
     return input.map((key, value) => MapEntry(key.toString(), value));
   }
@@ -59,4 +70,18 @@ class NetworkPayloadSanitizer {
   /// Returns null when the provided map is null or empty; otherwise returns the map.
   Map<K, V>? nullIfEmpty<K, V>(Map<K, V>? map) =>
       map == null || map.isEmpty ? null : map;
+
+  /// Attempts to decode [value] as JSON; returns the original on failure.
+  ///
+  /// Returns `null` for empty strings. Non-string values pass through unchanged.
+  /// Useful as a [body] normalizer for HTTP string responses that may be JSON.
+  static Object? decodeJsonGracefully(Object? value) {
+    if (value is! String) return value;
+    if (value.isEmpty) return null;
+    try {
+      return jsonDecode(value);
+    } catch (_) {
+      return value;
+    }
+  }
 }

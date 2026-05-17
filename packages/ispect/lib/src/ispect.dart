@@ -2,35 +2,39 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
+import 'package:ispect/src/common/errors/ispect_scope_not_found_error.dart';
 import 'package:ispect/src/common/extensions/init.dart';
+import 'package:ispect/src/common/observers/route_observer.dart';
+import 'package:ispect/src/common/services/error_handler_options.dart';
 import 'package:ispect/src/common/services/error_handler_service.dart';
-import 'package:ispect/src/features/ispect/options.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// The main entry point for initializing and managing logging/error handling.
 final class ISpect {
   const ISpect._();
 
-  static late ISpectLogger _logger;
+  static ISpectLogger? _logger;
   static bool _isInitialized = false;
   static ErrorHandlerService? _errorHandler;
 
   /// Returns the global logger instance.
   ///
-  /// When `kISpectEnabled` is `false`, returns a default logger.
-  /// All logging methods are no-ops due to internal checks in `_processLog()`.
+  /// Lazily creates a default [ISpectLogger] on first access so call-sites
+  /// built before [run]/[initialize] (early DI wiring, hot-restart, tests)
+  /// don't crash. The returned instance is fully functional but unconfigured —
+  /// it has no access to the options or error handler that [run] would set
+  /// up. UI integration (panel, observers) requires [run]/[initialize] to be
+  /// called explicitly; the lazy fallback only keeps logging usable.
+  ///
+  /// When `kISpectEnabled` is `false` (default in release builds), the lazy
+  /// instance is effectively unreachable from the rest of ISpect and gets
+  /// tree-shaken.
   static ISpectLogger get logger {
     if (!_isInitialized) {
-      if (!kISpectEnabled) {
-        _logger = ISpectLogger();
-        _isInitialized = true;
-      } else {
-        throw StateError(
-          'ISpect is not initialized. Call ISpect.initialize() first.',
-        );
-      }
+      _logger = ISpectLogger();
+      _isInitialized = true;
     }
-    return _logger;
+    return _logger!;
   }
 
   /// Initializes the logger instance once.
@@ -48,14 +52,29 @@ final class ISpect {
   }
 
   /// Disposes current ISpect state (useful for testing or hot restart).
-  static void dispose() {
+  static Future<void> dispose() async {
+    await _logger?.dispose();
     _isInitialized = false;
+    _logger = null;
     _errorHandler = null;
+    ISpectNavigatorObserver.resetCurrent();
   }
 
-  /// Reads the `ISpectScopeModel` from the widget tree.
-  static ISpectScopeModel read(BuildContext context) =>
-      ISpectScopeController.of(context);
+  /// Reads the nearest [ISpectScopeModel] from the widget tree.
+  ///
+  /// This is the canonical way to access the scope model; prefer it over
+  /// `ISpectScopeController.of(context)`, which is deprecated.
+  ///
+  /// Throws an [ISpectScopeNotFoundError] if no `ISpectScopeController` is an
+  /// ancestor — ensure `ISpectBuilder` wraps the widget that uses this context.
+  static ISpectScopeModel read(BuildContext context) {
+    final inherited =
+        context.dependOnInheritedWidgetOfExactType<ISpectScopeController>();
+    if (inherited == null || inherited.notifier == null) {
+      throw ISpectScopeNotFoundError();
+    }
+    return inherited.notifier!;
+  }
 
   /// Runs the app with centralized logging and error capture.
   ///
@@ -99,7 +118,7 @@ final class ISpect {
     void Function(FlutterErrorDetails, StackTrace?)? onFlutterError,
     void Function(FlutterErrorDetails, StackTrace?)? onPresentError,
     void Function(List<dynamic>)? onUncaughtErrors,
-    ISpectLogOptions options = const ISpectLogOptions(),
+    ISpectErrorHandlerOptions options = const ISpectErrorHandlerOptions(),
     List<String> filters = const [],
   }) {
     if (!kISpectEnabled) {
@@ -108,7 +127,7 @@ final class ISpect {
     }
 
     final effectiveLogger = logger ?? ISpectFlutter.init();
-    initialize(effectiveLogger);
+    initialize(effectiveLogger, force: true);
     _errorHandler =
         ErrorHandlerService(logger: effectiveLogger, filters: filters);
 
@@ -139,7 +158,6 @@ final class ISpect {
     onInitialized?.call();
   }
 
-  /// Runs code inside a guarded zone for error capturing and logging.
   static void _runInZone<T>(
     T Function() callback, {
     required bool isPrintLoggingEnabled,

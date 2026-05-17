@@ -13,7 +13,7 @@ void main() {
 
       logger
         ..configure(
-          filter: ISpectFilter(titles: const ['never-match']),
+          filter: ISpectFilter(logTypeKeys: const ['never-match']),
         )
         ..info('blocked');
       expect(logger.history.length, 1);

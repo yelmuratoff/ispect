@@ -15,16 +15,11 @@ void main() {
       expect(history.history.length, 0);
     });
 
-    test('maxHistoryItems = -1 should disable history instead of crashing', () {
-      final options = ISpectLoggerOptions(maxHistoryItems: -1);
-      final history = DefaultISpectLoggerHistory(options);
-
-      // This should not crash
-      final testData = ISpectLogData('Test log', key: 'test');
-      history.add(testData);
-
-      // History should remain empty
-      expect(history.history.length, 0);
+    test('maxHistoryItems = -1 should throw assertion error', () {
+      expect(
+        () => ISpectLoggerOptions(maxHistoryItems: -1),
+        throwsA(isA<AssertionError>()),
+      );
     });
 
     test('maxHistoryItems > 0 should work normally', () {

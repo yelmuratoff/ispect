@@ -22,28 +22,10 @@ class LogsFileFactory {
   /// **Parameters:**
   /// - [logs]: The log content to write
   /// - [fileName]: Base name for the file (default: 'ispect_all_logs')
-  ///   /// **Returns:** Platform-specific file representation:
+  ///
+  /// **Returns:** Platform-specific file representation:
   /// - [File] for native platforms
   /// - [Blob] for web platform
-  ///
-  /// **Example:**
-  /// ```dart
-  /// // Works on all platforms
-  /// final logFile = await LogsFileFactory.createLogsFile('My logs content');
-  ///
-  /// // Get file path/URL
-  /// final handler = LogsFileFactory.create();
-  /// final path = handler.getFilePath(logFile);
-  /// print('Log file available at: $path');
-  ///
-  /// // For web, trigger download - check platform before casting
-  /// if (kIsWeb) {
-  ///   final webHandler = handler as dynamic;
-  ///   if (webHandler.runtimeType.toString() == 'WebLogsFile') {
-  ///     webHandler.downloadFile(logFile);
-  ///   }
-  /// }
-  /// ```
   static Future<Object> createLogsFile(
     String logs, {
     String fileName = 'ispect_all_logs',
@@ -52,29 +34,44 @@ class LogsFileFactory {
     return handler.createFile(logs, fileName: fileName);
   }
 
-  /// Convenience method to directly download/share a log file.
+  /// Saves logs to device without requiring a share callback.
   ///
   /// **Platform-specific behavior:**
-  /// - **Web**: Triggers browser download
-  /// - **Native**: Opens share dialog
+  /// - **Web**: triggers browser download
+  /// - **Native**: saves to the app's logs directory
+  ///
+  /// **Returns:** File path (native) or filename (web).
+  static Future<String> saveToDevice(
+    String logs, {
+    String fileName = 'ispect_all_logs',
+    String fileType = 'json',
+  }) async {
+    final handler = create();
+    return handler.saveToDevice(
+      logs,
+      fileName: fileName,
+      fileType: fileType,
+    );
+  }
+
+  /// Creates a log file and hands it to the platform's share mechanism.
+  ///
+  /// **Platform-specific behavior:**
+  /// - **Native**: opens the system share sheet via [onShare]
+  /// - **Web**: triggers a browser download (web has no native share sheet)
   ///
   /// **Parameters:**
-  /// - [logs]: The log content to download/share
+  /// - [logs]: The log content to share
   /// - [fileName]: Base name for the file (default: 'ispect_all_logs')
-  ///
-  /// **Example:**
-  /// ```dart
-  /// // Works on all platforms
-  /// await LogsFileFactory.downloadFile('My logs content', fileName: 'my_logs');
-  /// ```
-  static Future<void> downloadFile(
+  /// - [onShare]: Required on native, ignored on web
+  static Future<void> shareFile(
     String logs, {
     String fileName = 'ispect_all_logs',
     String fileType = 'json',
     ISpectShareCallback? onShare,
   }) async {
     final handler = create();
-    await handler.createAndDownloadFile(
+    await handler.createAndShareFile(
       logs,
       fileName: fileName,
       fileType: fileType,

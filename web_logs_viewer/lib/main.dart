@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:ispectify_http/ispectify_http.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:web_logs_viewer/src/core/localization/generated/app_localizations.dart';
 import 'package:web_logs_viewer/src/core/services/theme_manager.dart';
 import 'package:web_logs_viewer/src/features/demo/presentation/demo_screen.dart';
@@ -11,17 +14,19 @@ import 'package:web_logs_viewer/src/features/demo/presentation/demo_screen.dart'
 import 'src/features/file_viewer/presentation/pages/file_viewer_page.dart';
 
 void main() {
+  final logger = ISpectFlutter.init();
+
   ISpect.run(
+    logger: logger,
     () {
       WidgetsFlutterBinding.ensureInitialized();
       runApp(const MyApp());
     },
     onInit: () {
-      // Access logger via ISpect.logger after initialization
-      Bloc.observer = ISpectBlocObserver(logger: ISpect.logger);
-      client.interceptors.add(ISpectHttpInterceptor(logger: ISpect.logger));
-      dio.interceptors.add(ISpectDioInterceptor(logger: ISpect.logger));
-      dummyDio.interceptors.add(ISpectDioInterceptor(logger: ISpect.logger));
+      Bloc.observer = ISpectBlocObserver(logger: logger);
+      client.interceptors.add(ISpectHttpInterceptor(logger: logger));
+      dio.interceptors.add(ISpectDioInterceptor(logger: logger));
+      dummyDio.interceptors.add(ISpectDioInterceptor(logger: logger));
     },
   );
 }
@@ -34,23 +39,23 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final draggablePanelController = DraggablePanelController();
-  final observer = ISpectNavigatorObserver();
-
-  @override
-  void dispose() {
-    draggablePanelController.dispose();
-    super.dispose();
-  }
+  final _observer = ISpectNavigatorObserver();
 
   @override
   Widget build(BuildContext context) {
     return ThemeProvider(
       child: MaterialApp(
-        navigatorObservers: [observer],
-        localizationsDelegates: ISpectLocalizations.delegates(
-          delegates: [ExampleGeneratedLocalization.delegate],
+        navigatorObservers: ISpectNavigatorObserver.observers(
+          additional: [_observer],
         ),
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          ...ISpectLocalizations.delegate(
+            delegates: [ExampleGeneratedLocalization.delegate],
+          ),
+        ],
         supportedLocales: ExampleGeneratedLocalization.supportedLocales,
         themeMode: ThemeMode.light,
         theme: ThemeData(
@@ -64,27 +69,31 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
         home: const FileViewerPage(title: 'ISpect File Viewer'),
-        builder: (context, child) => ISpectBuilder(
-          isISpectEnabled: true,
-          controller: draggablePanelController,
+        builder: (context, child) => ISpectBuilder.wrap(
+          child: child!,
           options: ISpectOptions(
-            observer: observer,
+            observer: _observer,
+            onOpenFile: (path) async => OpenFilex.open(path),
+            onShare: (req) async => SharePlus.instance.share(
+              ShareParams(
+                text: req.text,
+                subject: req.subject,
+                files: req.filePaths.map(XFile.new).toList(),
+              ),
+            ),
             panelButtons: [
               DraggablePanelButtonItem(
                 icon: Icons.bug_report_outlined,
                 label: 'Demo Screen',
                 description: 'Open Demo Screen',
                 onTap: (_) {
-                  draggablePanelController.toggle(context);
-                  observer.navigator?.push(
+                  _observer.navigator?.push(
                     MaterialPageRoute(builder: (context) => DemoScreen()),
                   );
                 },
               ),
             ],
           ),
-
-          child: child!,
         ),
       ),
     );

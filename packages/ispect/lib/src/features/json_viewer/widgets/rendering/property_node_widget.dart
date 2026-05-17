@@ -46,11 +46,16 @@ class PropertyNodeWidget extends StatelessWidget {
         JsonColorsUtils.valueColorByKey(context, node.key, node.value);
     final valueStyle = style.copyWith(color: valueColor);
 
+    final isMultiLine = text.contains('\n');
+
+    Widget wrap(Widget child) =>
+        isMultiLine ? Expanded(child: child) : Flexible(child: child);
+
     return switch (hasSearchResults) {
       false => Row(
           children: [
-            Flexible(
-              child: JsonCard(
+            wrap(
+              JsonCard(
                 backgroundColor: valueColor,
                 child: Text(text, style: valueStyle),
               ),
@@ -59,8 +64,8 @@ class PropertyNodeWidget extends StatelessWidget {
         ),
       true => Row(
           children: [
-            Flexible(
-              child: JsonCard(
+            wrap(
+              JsonCard(
                 backgroundColor: valueColor,
                 child: HighlightedText(
                   key: ValueKey('highlight-value-$text'),

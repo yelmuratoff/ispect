@@ -7,10 +7,6 @@ Future<void> main() async {
         ISpectLogType.info.key: AnsiPen()..magenta(),
         CustomLog.logKey: AnsiPen()..green(),
       },
-      customTitles: {
-        ISpectLogType.info.key: 'i',
-        CustomLog.logKey: 'Custom',
-      },
     ),
   )
     ..error('The restaurant is closed ❌')
@@ -36,7 +32,7 @@ Future<void> main() async {
   logger.logData(CustomLog('Something like your own service message'));
 }
 
-class CustomLog extends ISpectLogData {
+base class CustomLog extends ISpectLogData {
   CustomLog(super.message);
 
   static const logKey = 'custom_log_key';

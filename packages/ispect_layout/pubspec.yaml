@@ -1,0 +1,34 @@
+name: ispect_layout
+description: Visual layout inspector for Flutter — inspect sizes, paddings, decorations, transforms, text styles, and compare widgets side-by-side at runtime.
+version: 5.0.0
+homepage: https://github.com/yelmuratoff/ispect
+repository: https://github.com/yelmuratoff/ispect
+issue_tracker: https://github.com/yelmuratoff/ispect/issues
+
+topics:
+  - inspector
+  - ispect
+  - debug
+  - layout
+  - widget-inspector
+
+platforms:
+  android:
+  ios:
+  web:
+  macos:
+  windows:
+  linux:
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0

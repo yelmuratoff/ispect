@@ -11,6 +11,8 @@ class DefaultPlatformDirectoryProvider implements PlatformDirectoryProvider {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
         return getApplicationDocumentsDirectory();
+      case TargetPlatform.android:
+        return getApplicationCacheDirectory();
       default:
         return getTemporaryDirectory();
     }

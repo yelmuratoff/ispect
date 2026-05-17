@@ -24,11 +24,10 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => '¡Hola! ¿Cómo puedo ayudarte?';
 
   @override
-  String get allLogsCopied => 'Todos los registros copiados en el búfer';
+  String get allLogsCopied => 'Todos los registros copiados al portapapeles';
 
   @override
-  String get analyticsLogDesc =>
-      'El registro de envío de eventos al servicio de análisis';
+  String get analyticsLogDesc => 'Evento rastreado y enviado a análisis';
 
   @override
   String get apiToken => 'Token de API';
@@ -135,15 +134,14 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get creatingIssue => 'Creando problema';
 
   @override
-  String get criticalLogDesc =>
-      'Etiqueta usada para registrar errores críticos o eventos que requieren atención inmediata';
+  String get criticalLogDesc => 'Error crítico que necesita atención inmediata';
 
   @override
   String get data => 'Datos';
 
   @override
   String get debugLogDesc =>
-      'Etiqueta usada para registrar información de depuración para analizar el comportamiento de la aplicación';
+      'Detalles técnicos para que los desarrolladores analicen el comportamiento';
 
   @override
   String get description => 'Descripción';
@@ -163,8 +161,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Error al borrar el caché';
 
   @override
-  String get errorLogDesc =>
-      'Etiqueta usada para registrar errores que ocurren en la aplicación';
+  String get errorLogDesc => 'Algo salió mal en la aplicación';
 
   @override
   String get errorMessage => 'Mensaje de error';
@@ -173,8 +170,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get errorType => 'Tipo de error';
 
   @override
-  String get exceptionLogDesc =>
-      'Etiqueta usada para registrar excepciones que ocurren en la aplicación';
+  String get exceptionLogDesc => 'Error inesperado ocurrido';
 
   @override
   String get expandLogs => 'Expandir registros';
@@ -201,8 +197,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get goToLogger => 'Ir al registrador';
 
   @override
-  String get goodLogDesc =>
-      'Etiqueta usada para registrar operaciones exitosas o eventos positivos en la aplicación';
+  String get goodLogDesc => 'Operación completada con éxito';
 
   @override
   String get headers => 'Encabezados';
@@ -220,8 +215,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'Registro de respuesta del servidor';
 
   @override
-  String get infoLogDesc =>
-      'Etiqueta usada para registrar mensajes informativos sobre el funcionamiento de la aplicación';
+  String get infoLogDesc => 'Información general sobre lo que está sucediendo';
 
   @override
   String get initializationFailed => 'Falló la inicialización';
@@ -255,6 +249,9 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get notFound => 'No encontrado';
 
   @override
+  String get noResultsHint => 'Prueba otra búsqueda o ajusta los filtros';
+
+  @override
   String get otherLogsForDevelopers =>
       'Otros registros ya están siendo usados por desarrolladores';
 
@@ -282,8 +279,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
       'Ahora, por favor, selecciona un proyecto';
 
   @override
-  String get printLogDesc =>
-      'Registro del método de impresión estándar en Flutter';
+  String get printLogDesc => 'Mensaje impreso en la consola';
 
   @override
   String get projectDomain => 'Dominio del proyecto';
@@ -539,16 +535,14 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get userEmail => 'Correo del usuario';
 
   @override
-  String get verboseLogDesc =>
-      'Etiqueta usada para registrar información detallada para un análisis profundo de la aplicación';
+  String get verboseLogDesc => 'Información técnica detallada para depuración';
 
   @override
   String get viewAndManageData =>
       'Visualización y gestión de datos de la aplicación';
 
   @override
-  String get warningLogDesc =>
-      'Etiqueta usada para registrar mensajes de advertencia sobre posibles problemas en la aplicación';
+  String get warningLogDesc => 'Problema potencial que podría causar fallos';
 
   @override
   String get you => 'Tú';
@@ -560,10 +554,10 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get noData => 'Sin datos';
 
   @override
-  String get shareLogFull => 'Compartir registro (completo)';
+  String get shareLogFull => 'Compartir registro completo';
 
   @override
-  String get copyToClipboardTruncated => 'Copiar al portapapeles (truncado)';
+  String get copyToClipboardTruncated => 'Copiar resumen al portapapeles';
 
   @override
   String get viewThemeScheme => 'Ver pantalla de esquema de tema';
@@ -707,4 +701,330 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => 'Registro de errores de la base de datos';
+
+  @override
+  String get reverseLogsDesc =>
+      'Cambiar el orden de visualización de los logs de más reciente a más antiguo o viceversa';
+
+  @override
+  String get copyAllLogsDesc =>
+      'Copiar todas las entradas de log al portapapeles como texto';
+
+  @override
+  String get expandLogsDesc =>
+      'Mostrar todos los detalles de todas las entradas de log';
+
+  @override
+  String get collapseLogsDesc =>
+      'Contraer todas las entradas de log en vista compacta';
+
+  @override
+  String get clearHistoryDesc =>
+      'Eliminar todas las entradas de log guardadas de la memoria';
+
+  @override
+  String get shareLogsFileDesc =>
+      'Exportar logs como archivo y compartir mediante el menú del sistema';
+
+  @override
+  String get navigationFlowDesc =>
+      'Ver la secuencia de transiciones de pantalla en tu aplicación';
+
+  @override
+  String get dailySessionsDesc =>
+      'Explorar archivos de log de sesiones anteriores de la aplicación';
+
+  @override
+  String get logViewerDesc =>
+      'Abrir un visor externo para inspeccionar archivos de log';
+
+  @override
+  String get selectAll => 'Seleccionar todo';
+
+  @override
+  String get deselectAll => 'Deseleccionar todo';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => 'Base de datos';
+
+  @override
+  String get groupNavigation => 'Navegación';
+
+  @override
+  String get groupGeneral => 'General';
+
+  @override
+  String get categoryAuth => 'Auth';
+
+  @override
+  String get categoryStorage => 'Storage';
+
+  @override
+  String get categoryPush => 'Push';
+
+  @override
+  String get categoryPayment => 'Payment';
+
+  @override
+  String get categoryAnalytics => 'Analytics';
+
+  @override
+  String get categorySse => 'SSE';
+
+  @override
+  String get categoryGrpc => 'gRPC';
+
+  @override
+  String get categoryGraphql => 'GraphQL';
+
+  @override
+  String get wsErrorLogDesc => 'WebSocket connection error';
+
+  @override
+  String get authSuccessLogDesc => 'Authentication successful';
+
+  @override
+  String get authErrorLogDesc => 'Authentication failed';
+
+  @override
+  String get storageResultLogDesc => 'Storage operation completed';
+
+  @override
+  String get storageQueryLogDesc => 'Storage query executed';
+
+  @override
+  String get storageErrorLogDesc => 'Storage operation failed';
+
+  @override
+  String get pushReceivedLogDesc => 'Push notification received';
+
+  @override
+  String get pushSentLogDesc => 'Push notification sent';
+
+  @override
+  String get pushErrorLogDesc => 'Push notification error';
+
+  @override
+  String get paymentSuccessLogDesc => 'Payment completed';
+
+  @override
+  String get paymentErrorLogDesc => 'Payment failed';
+
+  @override
+  String get stateChangeLogDesc => 'State changed';
+
+  @override
+  String get stateErrorLogDesc => 'State management error';
+
+  @override
+  String get sseReceivedLogDesc => 'Server-Sent Event received';
+
+  @override
+  String get sseErrorLogDesc => 'SSE connection error';
+
+  @override
+  String get grpcRequestLogDesc => 'gRPC request sent';
+
+  @override
+  String get grpcResponseLogDesc => 'gRPC response received';
+
+  @override
+  String get grpcErrorLogDesc => 'gRPC call failed';
+
+  @override
+  String get graphqlRequestLogDesc => 'GraphQL query sent';
+
+  @override
+  String get graphqlResponseLogDesc => 'GraphQL response received';
+
+  @override
+  String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
+  String get transitionPush => 'Push';
+
+  @override
+  String get transitionPop => 'Pop';
+
+  @override
+  String get transitionReplace => 'Reemplazar';
+
+  @override
+  String get transitionRemove => 'Eliminar';
+
+  @override
+  String get transitionStartUserGesture => 'Inicio de gesto';
+
+  @override
+  String get transitionStopUserGesture => 'Fin de gesto';
+
+  @override
+  String get copyAsCurl => 'Copiar como cURL';
+
+  @override
+  String get relativeJustNow => 'ahora mismo';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return 'hace $count s';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return 'hace $count min';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return 'hace $count h';
+  }
+
+  @override
+  String get showOnlyThisType => 'Mostrar solo este tipo';
+
+  @override
+  String get hideThisType => 'Ocultar este tipo';
+
+  @override
+  String get clearAllFilters => 'Borrar todos los filtros';
+
+  @override
+  String get httpRequest => 'Solicitud';
+
+  @override
+  String get httpResponse => 'Respuesta';
+
+  @override
+  String get pending => 'Pendiente';
+
+  @override
+  String get groupHttpLogs => 'Agrupar HTTP';
+
+  @override
+  String get groupHttpLogsDesc =>
+      'Agrupar solicitudes y respuestas HTTP relacionadas';
+
+  @override
+  String get duration => 'Duración';
+
+  @override
+  String get ungroupHttpLogs => 'Desagrupar HTTP';
+
+  @override
+  String get ungroupHttpLogsDesc =>
+      'Mostrar solicitudes y respuestas HTTP como entradas separadas';
+
+  @override
+  String get tips => 'Consejos';
+
+  @override
+  String get tipSearchLogs =>
+      'Buscar logs por texto — también busca en el JSON completo';
+
+  @override
+  String get tipLongPress =>
+      'Mantén presionada una tarjeta de log para acciones rápidas';
+
+  @override
+  String get tipFilter => 'Filtra por tipo de log usando chips o ajustes';
+
+  @override
+  String get tipExpand => 'Toca expandir para ver JSON completo con búsqueda';
+
+  @override
+  String get tipKeyboard =>
+      'Flechas para navegar, Enter para abrir, / para buscar';
+
+  @override
+  String get tipNavigationFlow =>
+      'Abre Flujo de navegación en ajustes para ver el historial de rutas';
+
+  @override
+  String get tipShareSession =>
+      'Comparte el archivo de logs para reportes de errores — los datos se redactan automáticamente';
+
+  @override
+  String get tipReverseLogs =>
+      'Pulsa las flechas en la barra para invertir el orden de los logs';
+
+  @override
+  String get gotIt => 'Entendido';
+
+  @override
+  String get filters => 'Filtros';
+
+  @override
+  String get compare => 'Comparar';
+
+  @override
+  String get cancelCompare => 'Cancelar';
+
+  @override
+  String get tapWidgetToCompare => 'Toca un widget para comparar';
+
+  @override
+  String get comparedWith => 'Comparado con';
+
+  @override
+  String get distanceLeft => 'izquierda';
+
+  @override
+  String get distanceTop => 'arriba';
+
+  @override
+  String get distanceRight => 'derecha';
+
+  @override
+  String get distanceBottom => 'abajo';
+
+  @override
+  String get searchMode => 'Modo de búsqueda';
+
+  @override
+  String get logTypes => 'Tipos de registro';
+
+  @override
+  String get includeSensitiveData => 'Incluir datos sensibles';
+
+  @override
+  String get correlationIdCopied =>
+      'ID copiado. Pégalo en la búsqueda para filtrar logs relacionados.';
+
+  @override
+  String get downloadLogsFile => 'Descargar archivo de logs';
+
+  @override
+  String logsFileSaved(String path) {
+    return 'Archivo guardado: $path';
+  }
+
+  @override
+  String get back => 'Volver';
+
+  @override
+  String get close => 'Cerrar';
+
+  @override
+  String get clearSearch => 'Borrar búsqueda';
+
+  @override
+  String get previousMatch => 'Coincidencia anterior';
+
+  @override
+  String get nextMatch => 'Siguiente coincidencia';
+
+  @override
+  String get moreOptions => 'Más opciones';
 }

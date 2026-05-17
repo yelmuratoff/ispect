@@ -12,72 +12,86 @@ class DioResponseData {
 
   final DioRequestData requestData;
 
-  Map<String, dynamic> toJson({
-    RedactionService? redactor,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeys,
-  }) {
+  /// Returns a raw JSON-compatible map of the response.
+  ///
+  /// No redaction is applied. Call [redact] on the result when redaction
+  /// is required.
+  Map<String, dynamic> toJson() {
     final headers = response?.headers;
-    final map = <String, dynamic>{
-      'request-options': redactor == null
-          ? requestData.toJson()
-          : requestData.toJson(
-              redactor: redactor,
-              ignoredValues: ignoredValues,
-              ignoredKeys: ignoredKeys,
-            ),
-      'url': response?.realUri.toString(),
-      'method': response?.requestOptions.method,
-      'data': response?.data,
-      'status-code': response?.statusCode,
-      'status-message': response?.statusMessage,
-      'extra': response?.extra,
-      'is-redirect': response?.isRedirect,
-      'redirects': response?.redirects == null
+    return <String, dynamic>{
+      // --- Status: first thing you check ---
+      NetworkJsonKeys.statusCode: response?.statusCode,
+      NetworkJsonKeys.statusMessage: response?.statusMessage,
+
+      // --- Identity ---
+      NetworkJsonKeys.method: response?.requestOptions.method,
+      NetworkJsonKeys.url: response?.realUri.toString(),
+
+      // --- Payload ---
+      NetworkJsonKeys.headers: headers?.map,
+      NetworkJsonKeys.data: response?.data,
+
+      // --- Redirects ---
+      NetworkJsonKeys.isRedirect: response?.isRedirect,
+      NetworkJsonKeys.redirects: response?.redirects == null
           ? null
           : response!.redirects
               .map(
                 (e) => {
-                  'location': e.location,
-                  'status-code': e.statusCode,
-                  'method': e.method,
+                  NetworkJsonKeys.location: e.location,
+                  NetworkJsonKeys.statusCode: e.statusCode,
+                  NetworkJsonKeys.method: e.method,
                 },
               )
               .toList(),
-      'headers': headers?.map,
+
+      // --- Meta ---
+      NetworkJsonKeys.extra: response?.extra,
+
+      // --- Original request (reference) ---
+      NetworkJsonKeys.request: requestData.toJson(),
     };
+  }
 
-    if (redactor == null) {
-      return map;
-    }
-
-    // Redact response-level fields
-
-    map['data'] = redactor.redact(
-      map['data'],
+  /// Applies in-place redaction to a map produced by [toJson].
+  ///
+  /// Also redacts the embedded [NetworkJsonKeys.request] sub-map.
+  static void redact(
+    Map<String, dynamic> map,
+    RedactionService redactor, {
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  }) {
+    NetworkMapRedactor.redactUrl(map, redactor);
+    NetworkMapRedactor.redactData(
+      map,
+      redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
     );
+    NetworkMapRedactor.redactHeaders(
+      map,
+      redactor,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    NetworkMapRedactor.redactMapField(
+      map,
+      redactor,
+      key: NetworkJsonKeys.extra,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    NetworkMapRedactor.redactRedirects(map, redactor);
 
-    final hdrs = (map['headers'] as Map?)?.cast<String, dynamic>();
-    if (hdrs != null) {
-      map['headers'] = redactor.redactHeaders(
-        hdrs,
+    if (map[NetworkJsonKeys.request]
+        case final Map<String, dynamic> requestMap) {
+      DioRequestData.redact(
+        requestMap,
+        redactor,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
     }
-
-    // Extra may contain sensitive data depending on adapters
-    final extra = (map['extra'] as Map?)?.cast<String, dynamic>();
-    if (extra != null) {
-      map['extra'] = redactor.redact(
-        extra,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-    }
-
-    return map;
   }
 }

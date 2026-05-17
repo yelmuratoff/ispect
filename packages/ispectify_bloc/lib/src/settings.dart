@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:ispectify/ispectify.dart';
 import 'package:meta/meta.dart';
 
 typedef ISpectBlocTransitionFilter = bool Function(
@@ -34,6 +35,8 @@ class ISpectBlocSettings {
     this.transitionFilter,
     this.eventFilter,
     this.changeFilter,
+    this.enableRedaction = true,
+    this.redactor,
   });
 
   /// Turns off all logging.
@@ -98,6 +101,54 @@ class ISpectBlocSettings {
   /// the change is logged; otherwise, it is skipped.
   final ISpectBlocChangeFilter? changeFilter;
 
+  /// Whether to apply redaction to sensitive data in log payloads.
+  ///
+  /// Redaction is only applied when this is `true` AND [redactor] is not null.
+  final bool enableRedaction;
+
+  /// Optional redaction service for masking sensitive data in bloc state/event
+  /// payloads before they are logged.
+  ///
+  /// When provided together with [enableRedaction] set to `true`, all
+  /// `additionalData` maps in log entries will have their values redacted.
+  final RedactionService? redactor;
+
+  /// Whether redaction is active for this configuration.
+  ///
+  /// Returns `true` only when [enableRedaction] is `true` and a [redactor]
+  /// instance is provided.
+  bool get isRedactionActive => enableRedaction && redactor != null;
+
+  /// Applies redaction to an additionalData map if redaction is active.
+  ///
+  /// Returns the original map unchanged when redaction is not active.
+  Map<String, dynamic>? redactAdditionalData(
+    Map<String, dynamic>? data,
+  ) {
+    final redactorInstance = redactor;
+    if (data == null || !isRedactionActive || redactorInstance == null) {
+      return data;
+    }
+    return data.map(
+      (key, value) => MapEntry(
+        key,
+        redactorInstance.redact(value, keyName: key),
+      ),
+    );
+  }
+
+  /// Formats an event payload for display based on [printEventFullData].
+  ///
+  /// Returns the full object when verbose, otherwise its runtime type.
+  Object formatEvent(Object? event) =>
+      printEventFullData ? (event ?? 'null') : (event?.runtimeType ?? 'null');
+
+  /// Formats a state payload for display based on [printStateFullData].
+  ///
+  /// Returns the full object when verbose, otherwise its runtime type.
+  Object formatState(Object? state) =>
+      printStateFullData ? (state ?? 'null') : (state?.runtimeType ?? 'null');
+
   /// Returns a copy with the provided overrides.
   ISpectBlocSettings copyWith({
     bool? enabled,
@@ -113,6 +164,8 @@ class ISpectBlocSettings {
     ISpectBlocTransitionFilter? transitionFilter,
     ISpectBlocEventFilter? eventFilter,
     ISpectBlocChangeFilter? changeFilter,
+    bool? enableRedaction,
+    RedactionService? redactor,
   }) =>
       ISpectBlocSettings(
         enabled: enabled ?? this.enabled,
@@ -128,5 +181,7 @@ class ISpectBlocSettings {
         transitionFilter: transitionFilter ?? this.transitionFilter,
         eventFilter: eventFilter ?? this.eventFilter,
         changeFilter: changeFilter ?? this.changeFilter,
+        enableRedaction: enableRedaction ?? this.enableRedaction,
+        redactor: redactor ?? this.redactor,
       );
 }

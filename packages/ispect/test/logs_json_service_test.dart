@@ -19,24 +19,21 @@ void main() {
           'Test log message 1',
           time: DateTime(2025, 1, 1, 12),
           logLevel: LogLevel.info,
-          title: 'Test',
           key: 'test_key_1',
-          additionalData: {'testData': 'value1'},
+          additionalData: const {'testData': 'value1'},
         ),
         ISpectLogData(
           'Test log message 2',
           time: DateTime(2025, 1, 1, 12, 1),
           logLevel: LogLevel.error,
-          title: 'Error',
           key: 'test_key_2',
           exception: Exception('Test exception'),
-          additionalData: {'errorCode': 500},
+          additionalData: const {'errorCode': 500},
         ),
         ISpectLogData(
           'Test log message 3',
           time: DateTime(2025, 1, 1, 12, 2),
           logLevel: LogLevel.debug,
-          title: 'Debug',
           key: 'test_key_3',
         ),
       ];
@@ -89,7 +86,6 @@ void main() {
       final firstLog = importedLogs[0];
       expect(firstLog.message, equals('Test log message 1'));
       expect(firstLog.logLevel, equals(LogLevel.info));
-      expect(firstLog.title, equals('Test'));
       expect(firstLog.key, equals('test_key_1'));
     });
 
@@ -200,9 +196,8 @@ void main() {
         'Complex log with various data',
         time: DateTime(2025, 1, 1, 15, 30, 45),
         logLevel: LogLevel.warning,
-        title: 'Complex',
         key: 'complex_key',
-        additionalData: {
+        additionalData: const {
           'string': 'test string',
           'number': 42,
           'boolean': true,
@@ -297,6 +292,54 @@ void main() {
         ),
         completes,
       );
+    });
+
+    test(
+        'exportToJson applies redactionService when provided alongside '
+        'enableRedaction', () async {
+      final sensitiveLog = ISpectLogData(
+        'Sensitive payload',
+        time: DateTime(2025, 1, 1, 12),
+        logLevel: LogLevel.info,
+        additionalData: const {
+          'authorization': 'Bearer super-secret-token',
+          'safe': 'visible',
+        },
+      );
+
+      final jsonString = await service.exportToJson(
+        [sensitiveLog],
+        redactionService: RedactionService(),
+      );
+      final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
+      final logs = jsonData['logs'] as List<dynamic>;
+      final additional = (logs.first as Map<String, dynamic>)['additional-data']
+          as Map<String, dynamic>;
+
+      expect(
+        additional['authorization'],
+        isNot(contains('super-secret-token')),
+      );
+      expect(additional['safe'], equals('visible'));
+    });
+
+    test(
+        'exportToJson skips export-time redaction when redactionService '
+        'is null', () async {
+      final sensitiveLog = ISpectLogData(
+        'Sensitive payload',
+        time: DateTime(2025, 1, 1, 12),
+        logLevel: LogLevel.info,
+        additionalData: const {'authorization': 'Bearer raw'},
+      );
+
+      final jsonString = await service.exportToJson([sensitiveLog]);
+      final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
+      final logs = jsonData['logs'] as List<dynamic>;
+      final additional = (logs.first as Map<String, dynamic>)['additional-data']
+          as Map<String, dynamic>;
+
+      expect(additional['authorization'], equals('Bearer raw'));
     });
 
     test(

@@ -1,12 +1,18 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/utils/log_message_formatter.dart';
+import 'package:ispectify/src/logger/log_parts.dart';
 
-class ISpectLogException extends ISpectLogData {
+/// Log entry produced when a Dart [Exception] is captured by the logger.
+///
+/// Serialized with `key: ISpectLogType.exception.key` and [LogLevel.error].
+/// The original [Exception] is stored on [ISpectLogData.exception] and the
+/// optional stack trace on [ISpectLogData.stackTrace].
+base class ISpectLogException extends ISpectLogData {
+  /// Creates an exception log entry wrapping [exception] with an optional
+  /// human-readable [message] and [stackTrace].
   ISpectLogException(
     Exception exception, {
     String? message,
     super.stackTrace,
-    super.title,
   }) : super(
           message,
           exception: exception,

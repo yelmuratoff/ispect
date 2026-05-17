@@ -4,7 +4,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/observers/route_extension.dart';
 
 enum TransitionType {
   push,
@@ -24,6 +23,35 @@ enum TransitionType {
       };
 }
 
+/// Lightweight metadata extracted from a [Route] to avoid retaining
+/// the entire Route object (and its associated widget/render tree).
+@immutable
+class RouteMetadata {
+  const RouteMetadata({
+    required this.name,
+    required this.routeType,
+  });
+
+  /// The resolved display name (from settings or fallback).
+  final String name;
+
+  /// A human-readable label for the route type (e.g. 'Page', 'Modal').
+  final String routeType;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RouteMetadata &&
+          name == other.name &&
+          routeType == other.routeType;
+
+  @override
+  int get hashCode => Object.hash(name, routeType);
+
+  @override
+  String toString() => 'RouteMetadata(name: $name, routeType: $routeType)';
+}
+
 @immutable
 class RouteTransition {
   const RouteTransition({
@@ -36,8 +64,8 @@ class RouteTransition {
   });
 
   final String id;
-  final Route<dynamic>? from;
-  final Route<dynamic>? to;
+  final RouteMetadata? from;
+  final RouteMetadata? to;
   // enum
   final TransitionType type;
   final DateTime timestamp;
@@ -46,8 +74,8 @@ class RouteTransition {
   static const _equality = DeepCollectionEquality();
 
   String get transitionText {
-    final fromName = from?.routeName;
-    final toName = to?.routeName;
+    final fromName = from?.name ?? 'Unknown';
+    final toName = to?.name ?? 'Unknown';
     return '$fromName → $toName';
   }
 
@@ -55,7 +83,7 @@ class RouteTransition {
     final args = arguments;
     return switch (args) {
       null => null,
-      final Map<String, dynamic> map => JsonTruncatorService.pretty(map),
+      final Map<String, dynamic> map => JsonTruncator.pretty(map),
       _ => args.toString(),
     };
   }
@@ -98,8 +126,8 @@ class RouteTransition {
 
   RouteTransition copyWith({
     String? id,
-    Route<dynamic>? from,
-    Route<dynamic>? to,
+    RouteMetadata? from,
+    RouteMetadata? to,
     TransitionType? type,
     DateTime? timestamp,
     Object? arguments,

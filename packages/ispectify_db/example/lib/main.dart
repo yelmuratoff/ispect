@@ -1,78 +1,137 @@
-import 'dart:async';
-import 'dart:developer';
+import 'package:flutter/material.dart';
+import 'package:ispectify_db_example/examples/drift_codegen_example.dart';
+import 'package:ispectify_db_example/examples/drift_example.dart';
+import 'package:ispectify_db_example/examples/firebase_firestore_example.dart';
+import 'package:ispectify_db_example/examples/flutter_secure_storage_example.dart';
+import 'package:ispectify_db_example/examples/get_storage_example.dart';
+import 'package:ispectify_db_example/examples/hive_example.dart';
+import 'package:ispectify_db_example/examples/isar_example.dart';
+import 'package:ispectify_db_example/examples/sembast_example.dart';
+import 'package:ispectify_db_example/examples/shared_preferences_example.dart';
+import 'package:ispectify_db_example/examples/objectbox_example.dart';
+import 'package:ispectify_db_example/examples/realm_example.dart';
+import 'package:ispectify_db_example/examples/sqflite_example.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_db/ispectify_db.dart';
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Provide mock for shared_preferences if running tests/desktop without plugin
+  // ignore: invalid_use_of_visible_for_testing_member
+  SharedPreferences.setMockInitialValues({});
+  runApp(const MyApp());
+}
 
-void main() async {
-  final logger = ISpectLogger();
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  ISpectDbCore.config = const ISpectDbConfig(
-    sampleRate: 1.0,
-    redact: true,
-    attachStackOnError: true,
-    enableTransactionMarkers: true,
-    slowQueryThreshold: Duration(milliseconds: 250),
-  );
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'ISpect DB Examples',
+      theme: ThemeData.dark(useMaterial3: true),
+      home: const ExamplesPage(),
+    );
+  }
+}
 
-  // Drift-like usage (raw SQL or generated queries)
-  await logger.dbTrace<List<Map<String, Object?>>>(
-    source: 'drift',
-    operation: 'query',
-    table: 'users',
-    statement: 'SELECT * FROM users WHERE id = ? LIMIT 1',
-    args: [123],
-    run: () async {
-      await Future<void>.delayed(const Duration(milliseconds: 10));
-      return [
-        {'id': 123, 'name': 'Alice'},
-      ];
-    },
-    projectResult: (rows) => {'rows': rows.length},
-  );
+class ExamplesPage extends StatefulWidget {
+  const ExamplesPage({super.key});
 
-  // Hive-like (key-value) usage
-  await logger.dbTrace<String?>(
-    source: 'hive',
-    operation: 'get',
-    key: 'session_token',
-    run: () async {
-      await Future<void>.delayed(const Duration(milliseconds: 5));
-      return null;
-    },
-  );
+  @override
+  State<ExamplesPage> createState() => _ExamplesPageState();
+}
 
-  // shared_preferences-like (key-value) usage
-  await logger.dbTrace<bool>(
-    source: 'shared_prefs',
-    operation: 'write',
-    key: 'onboarding_done',
-    run: () async {
-      await Future<void>.delayed(const Duration(milliseconds: 3));
-      return true;
-    },
-  );
+class _ExamplesPageState extends State<ExamplesPage> {
+  final Map<String, Future<void> Function()> _examples = {
+    'Drift': driftExample,
+    'Drift (Codegen)': driftCodegenExample,
+    'Firebase Firestore (Fake)': firestoreExample,
+    'Flutter Secure Storage': secureStorageExample,
+    'GetStorage': getStorageExample,
+    'Hive': hiveExample,
+    'Isar': isarExample,
+    'Sembast': sembastExample,
+    'Shared Preferences': sharedPreferencesExample,
+    'ObjectBox': objectboxExample,
+    'Realm': realmExample,
+    'Sqflite': sqfliteExample,
+  };
 
-  // Transaction markers example
-  await logger.dbTransaction(
-    source: 'drift',
-    logMarkers: true,
-    run: () async {
-      await logger.dbTrace<int>(
-        source: 'drift',
-        operation: 'update',
-        statement: 'UPDATE users SET name=? WHERE id=?',
-        args: ['Bob', 123],
-        run: () async {
-          await Future<void>.delayed(const Duration(milliseconds: 7));
-          return 1; // affected rows
-        },
-      );
-    },
-  );
+  String _status = 'Ready';
+  bool _isRunning = false;
 
-  // Listen to logs
-  logger.stream.listen((e) {
-    log('[${e.key}] ${e.message}');
-  });
+  Future<void> _runExample(String name, Future<void> Function() runner) async {
+    setState(() {
+      _isRunning = true;
+      _status = 'Running $name...';
+    });
+    try {
+      await runner();
+      setState(() {
+        _status = 'Success: $name';
+      });
+    } catch (e, st) {
+      setState(() {
+        _status = 'Error in $name: $e';
+      });
+      debugPrint('Error: $e\n$st');
+    } finally {
+      setState(() {
+        _isRunning = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('ISpect DB Interceptors')),
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.blueGrey.shade900,
+            width: double.infinity,
+            child: Text(
+              _status,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          if (_isRunning) const LinearProgressIndicator(),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _examples.length,
+              itemBuilder: (context, index) {
+                final entry = _examples.entries.elementAt(index);
+                return ListTile(
+                  title: Text(entry.key),
+                  trailing: const Icon(Icons.play_arrow),
+                  onTap: _isRunning
+                      ? null
+                      : () => _runExample(entry.key, entry.value),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: _isRunning
+                  ? null
+                  : () async {
+                      for (final entry in _examples.entries) {
+                        await _runExample(entry.key, entry.value);
+                      }
+                      setState(() {
+                        _status = 'All examples completed!';
+                      });
+                    },
+              child: const Text('Run All Examples'),
+            ),
+          )
+        ],
+      ),
+    );
+  }
 }

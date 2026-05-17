@@ -1,124 +1,162 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_ws/ispectify_ws.dart';
 
-/// `ISpectWSInterceptorSettings` settings and customization
-class ISpectWSInterceptorSettings implements NetworkLogPrintOptions {
+/// WebSocket interceptor settings.
+///
+/// Extends [BaseNetworkInterceptorSettings] to reuse shared fields
+/// (`enabled`, `enableRedaction`, pens, print toggles) while providing
+/// WS-specific convenience aliases (`printSentData`, `sentPen`, etc.).
+///
+/// **v5.0 breaking change:** Filter function signatures changed from
+/// typed log subclasses to `ISpectLogData`. Filters now receive the
+/// actual log data instead of `null`.
+class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectWSInterceptorSettings({
-    this.enabled = true,
-    this.enableRedaction = false,
-    this.printReceivedData = true,
-    this.printReceivedMessage = true,
-    this.printErrorData = true,
-    this.printErrorMessage = true,
-    this.printSentData = true,
-    this.printReceivedHeaders = false,
-    this.printSentHeaders = false,
+    super.enabled,
+    super.enableRedaction,
+    bool printReceivedData = true,
+    bool printReceivedMessage = true,
+    super.printErrorData,
+    super.printErrorMessage,
+    bool printSentData = true,
+    bool printReceivedHeaders = false,
+    bool printSentHeaders = false,
+    AnsiPen? sentPen,
+    AnsiPen? receivedPen,
+    super.errorPen,
+    @Deprecated('Use sentChain instead') this.sentFilter,
+    @Deprecated('Use receivedChain instead') this.receivedFilter,
+    @Deprecated('Use errorChain instead') this.errorFilter,
+    this.sentChain,
+    this.receivedChain,
+    this.errorChain,
+  }) : super(
+          printRequestData: printSentData,
+          printRequestHeaders: printSentHeaders,
+          printResponseData: printReceivedData,
+          printResponseHeaders: printReceivedHeaders,
+          printResponseMessage: printReceivedMessage,
+          printErrorHeaders: false,
+          requestPen: sentPen,
+          responsePen: receivedPen,
+        );
+
+  /// Filter for sent messages. Return `false` to suppress logging.
+  @Deprecated('Use sentChain instead')
+  final bool Function(ISpectLogData data)? sentFilter;
+
+  /// Filter for received messages. Return `false` to suppress logging.
+  @Deprecated('Use receivedChain instead')
+  final bool Function(ISpectLogData data)? receivedFilter;
+
+  /// Filter for error events. Return `false` to suppress logging.
+  @Deprecated('Use errorChain instead')
+  final bool Function(ISpectLogData data)? errorFilter;
+
+  /// Filter chain for sent messages. Takes priority over [sentFilter].
+  final NetworkFilterChain<ISpectLogData>? sentChain;
+
+  /// Filter chain for received messages. Takes priority over [receivedFilter].
+  final NetworkFilterChain<ISpectLogData>? receivedChain;
+
+  /// Filter chain for errors. Takes priority over [errorFilter].
+  final NetworkFilterChain<ISpectLogData>? errorChain;
+
+  /// Returns `true` when the sent message should be logged.
+  bool shouldProcessSent(ISpectLogData value) {
+    if (sentChain != null) return sentChain!.apply(value);
+    return sentFilter?.call(value) ?? true;
+  }
+
+  /// Returns `true` when the received message should be logged.
+  bool shouldProcessReceived(ISpectLogData value) {
+    if (receivedChain != null) return receivedChain!.apply(value);
+    return receivedFilter?.call(value) ?? true;
+  }
+
+  /// Returns `true` when the error should be logged.
+  bool shouldProcessError(ISpectLogData value) {
+    if (errorChain != null) return errorChain!.apply(value);
+    return errorFilter?.call(value) ?? true;
+  }
+
+  bool get printSentData => printRequestData;
+  bool get printSentHeaders => printRequestHeaders;
+  bool get printReceivedData => printResponseData;
+  bool get printReceivedHeaders => printResponseHeaders;
+  bool get printReceivedMessage => printResponseMessage;
+  AnsiPen? get sentPen => requestPen;
+  AnsiPen? get receivedPen => responsePen;
+
+  /// Creates a copy with updated values.
+  ///
+  /// Accepts both WS-specific names (`printSentData`, `printReceivedData`,
+  /// `sentPen`, `receivedPen`, etc.) and the base-interface aliases
+  /// (`printRequestData`, `printResponseData`, `requestPen`, `responsePen`).
+  /// WS-specific names take precedence when both are provided.
+  ///
+  /// `printErrorHeaders` is accepted for interface compatibility but has no
+  /// effect — WebSocket logging never prints error headers.
+  @override
+  ISpectWSInterceptorSettings copyWith({
+    bool? enabled,
+    bool? enableRedaction,
+    // WS-specific names (preferred)
+    bool? printSentData,
+    bool? printSentHeaders,
+    bool? printReceivedData,
+    bool? printReceivedHeaders,
+    bool? printReceivedMessage,
+    bool? printErrorData,
+    bool? printErrorMessage,
     AnsiPen? sentPen,
     AnsiPen? receivedPen,
     AnsiPen? errorPen,
-    this.sentFilter,
-    this.receivedFilter,
-    this.errorFilter,
-  })  : _sentPen = sentPen,
-        _receivedPen = receivedPen,
-        _errorPen = errorPen;
-
-  /// Print WS logger if true
-  final bool enabled;
-
-  /// Enable sensitive data redaction if true (default: true)
-  final bool enableRedaction;
-
-  /// Print response data if true
-  final bool printReceivedData;
-
-  /// Print response status message if true
-  final bool printReceivedMessage;
-
-  /// Print error data if true
-  @override
-  final bool printErrorData;
-
-  /// Print error message if true
-  @override
-  final bool printErrorMessage;
-
-  /// Print request data if true
-  final bool printSentData;
-
-  /// Print response headers if true
-  final bool printReceivedHeaders;
-
-  /// Print request headers if true
-  final bool printSentHeaders;
-
-  /// Field to set custom ws sent console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  final AnsiPen? _sentPen;
-
-  /// Field to set custom ws received console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  final AnsiPen? _receivedPen;
-
-  /// Field to set custom ws error console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  final AnsiPen? _errorPen;
-
-  final bool Function(WSSentLog request)? sentFilter;
-
-  final bool Function(WSReceivedLog response)? receivedFilter;
-
-  final bool Function(WSErrorLog response)? errorFilter;
-
-  AnsiPen? get sentPen => _sentPen;
-
-  AnsiPen? get receivedPen => _receivedPen;
-
-  @override
-  bool get printRequestData => printSentData;
-
-  @override
-  bool get printRequestHeaders => printSentHeaders;
-
-  @override
-  bool get printResponseData => printReceivedData;
-
-  @override
-  bool get printResponseHeaders => printReceivedHeaders;
-
-  @override
-  bool get printResponseMessage => printReceivedMessage;
-
-  @override
-  bool get printErrorHeaders => false;
-
-  @override
-  AnsiPen? get errorPen => _errorPen;
-
-  @override
-  AnsiPen? get requestPen => _sentPen;
-
-  @override
-  AnsiPen? get responsePen => _receivedPen;
+    // Base-interface aliases (used by BaseNetworkInterceptor.configure)
+    bool? printRequestData,
+    bool? printRequestHeaders,
+    bool? printResponseData,
+    bool? printResponseHeaders,
+    bool? printResponseMessage,
+    AnsiPen? requestPen,
+    AnsiPen? responsePen,
+    // Accepted for interface compatibility; has no effect on WS.
+    // ignore: avoid_unused_constructor_parameters
+    bool? printErrorHeaders,
+    @Deprecated('Use sentChain instead')
+    bool Function(ISpectLogData data)? sentFilter,
+    @Deprecated('Use receivedChain instead')
+    bool Function(ISpectLogData data)? receivedFilter,
+    @Deprecated('Use errorChain instead')
+    bool Function(ISpectLogData data)? errorFilter,
+    NetworkFilterChain<ISpectLogData>? sentChain,
+    NetworkFilterChain<ISpectLogData>? receivedChain,
+    NetworkFilterChain<ISpectLogData>? errorChain,
+  }) =>
+      ISpectWSInterceptorSettings(
+        enabled: enabled ?? this.enabled,
+        enableRedaction: enableRedaction ?? this.enableRedaction,
+        printSentData: printSentData ?? printRequestData ?? this.printSentData,
+        printSentHeaders:
+            printSentHeaders ?? printRequestHeaders ?? this.printSentHeaders,
+        printReceivedData:
+            printReceivedData ?? printResponseData ?? this.printReceivedData,
+        printReceivedHeaders: printReceivedHeaders ??
+            printResponseHeaders ??
+            this.printReceivedHeaders,
+        printReceivedMessage: printReceivedMessage ??
+            printResponseMessage ??
+            this.printReceivedMessage,
+        printErrorData: printErrorData ?? this.printErrorData,
+        printErrorMessage: printErrorMessage ?? this.printErrorMessage,
+        sentPen: sentPen ?? requestPen ?? this.sentPen,
+        receivedPen: receivedPen ?? responsePen ?? this.receivedPen,
+        errorPen: errorPen ?? this.errorPen,
+        sentFilter: sentFilter ?? this.sentFilter,
+        receivedFilter: receivedFilter ?? this.receivedFilter,
+        errorFilter: errorFilter ?? this.errorFilter,
+        sentChain: sentChain ?? this.sentChain,
+        receivedChain: receivedChain ?? this.receivedChain,
+        errorChain: errorChain ?? this.errorChain,
+      );
 }

@@ -1,0 +1,63 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        informational: true
+    patch:
+      default:
+        target: auto
+        threshold: 1%
+        informational: true
+
+  precision: 2
+  round: down
+  range: "60...90"
+
+flags:
+  ispect:
+    paths:
+      - packages/ispect/lib/
+    carryforward: true
+  ispect_layout:
+    paths:
+      - packages/ispect_layout/lib/
+    carryforward: true
+  ispectify:
+    paths:
+      - packages/ispectify/lib/
+    carryforward: true
+  ispectify_db:
+    paths:
+      - packages/ispectify_db/lib/
+    carryforward: true
+  ispectify_dio:
+    paths:
+      - packages/ispectify_dio/lib/
+    carryforward: true
+  ispectify_http:
+    paths:
+      - packages/ispectify_http/lib/
+    carryforward: true
+  ispectify_ws:
+    paths:
+      - packages/ispectify_ws/lib/
+    carryforward: true
+  ispectify_bloc:
+    paths:
+      - packages/ispectify_bloc/lib/
+    carryforward: true
+
+ignore:
+  - "**/example/**"
+  - "**/test/**"
+  - "**/*.g.dart"
+  - "**/*.freezed.dart"
+  - "**/generated/**"
+  - "web_logs_viewer/**"
+
+comment:
+  layout: "header, diff, flags, components"
+  behavior: default
+  require_changes: false

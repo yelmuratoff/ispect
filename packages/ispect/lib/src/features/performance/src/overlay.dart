@@ -172,6 +172,9 @@ class _ISpectPerformanceOverlayState extends State<_ISpectPerformanceOverlay> {
     super.dispose();
   }
 
+  /// Pending samples accumulated while waiting for post-frame callback.
+  List<FrameTiming> _pendingSamples = const [];
+
   /// Callback that collects frame timing samples from the engine.
   ///
   /// This is invoked by [SchedulerBinding.addTimingsCallback] whenever new frame
@@ -190,21 +193,19 @@ class _ISpectPerformanceOverlayState extends State<_ISpectPerformanceOverlay> {
 
     if (newSamples.isEmpty) return;
 
-    final combined = <FrameTiming>[
-      ..._samples,
-      ...newSamples,
-    ];
-    final dropCount = math.max(0, combined.length - widget.sampleSize);
-    final updated = combined.sublist(dropCount);
+    // Accumulate samples so nothing is lost between post-frame callbacks.
+    _pendingSamples = <FrameTiming>[..._pendingSamples, ...newSamples];
 
-    // Prevent multiple setState calls in one frame.
     if (_pendingSetState) return;
     _pendingSetState = true;
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      final combined = <FrameTiming>[..._samples, ..._pendingSamples];
+      final dropCount = math.max(0, combined.length - widget.sampleSize);
       setState(() {
-        _samples = updated;
+        _samples = combined.sublist(dropCount);
+        _pendingSamples = const [];
         _pendingSetState = false;
       });
     });

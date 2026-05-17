@@ -14,7 +14,10 @@ void main() {
 
     var json = <String, dynamic>{};
     expect(
-      () => json = data.toJson(redactor: RedactionService()),
+      () {
+        json = data.toJson();
+        DioResponseData.redact(json, RedactionService());
+      },
       returnsNormally,
     );
 
@@ -34,7 +37,10 @@ void main() {
 
     late Map<String, dynamic> json;
     expect(
-      () => json = data.toJson(redactor: RedactionService()),
+      () {
+        json = data.toJson();
+        DioResponseData.redact(json, RedactionService());
+      },
       returnsNormally,
     );
 

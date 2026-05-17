@@ -6,14 +6,45 @@
       "cwd": "packages/ispect/example",
       "request": "launch",
       "type": "dart",
-      "args": ["-t", "lib/main.dart", "--dart-define=ISPECT_ENABLED=true"]
+      "args": ["-t", "lib/complex_example.dart", "--dart-define=ISPECT_ENABLED=true"]
     },
     {
       "name": "Release ISpect example",
       "cwd": "packages/ispect/example",
       "request": "launch",
       "type": "dart",
-      "args": ["-t", "lib/main.dart", "--release"]
+      "args": [
+        "-t",
+        "lib/complex_example.dart",
+        "--dart-define=ISPECT_ENABLED=true",
+        "--release"
+      ]
+    },
+    {
+      "name": "Debug Web Logs Viewer",
+      "cwd": "web_logs_viewer",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "-t",
+        "lib/main.dart",
+        "--dart-define=ISPECT_ENABLED=true",
+        "-d",
+        "chrome"
+      ]
+    },
+    {
+      "name": "Debug Web Logs Viewer (macOS)",
+      "cwd": "web_logs_viewer",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "-t",
+        "lib/main.dart",
+        "--dart-define=ISPECT_ENABLED=true",
+        "-d",
+        "macos"
+      ]
     }
   ]
 }

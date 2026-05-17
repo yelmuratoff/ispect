@@ -94,8 +94,8 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
 
     for (var i = length - 1; i >= 0; i--) {
       final transition = this[i];
-      final fromName = transition.from.routeName;
-      final toName = transition.to.routeName;
+      final fromName = transition.from?.name ?? 'Unknown';
+      final toName = transition.to?.name ?? 'Unknown';
 
       if (routeNames.isEmpty) {
         routeNames.add(fromName);

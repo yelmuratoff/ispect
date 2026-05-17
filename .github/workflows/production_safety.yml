@@ -1,0 +1,96 @@
+name: Production Safety
+
+on:
+    pull_request:
+        branches: [ main, develop ]
+        paths:
+            - "packages/**"
+            - "docs/**"
+            - "README.md"
+            - "SECURITY.md"
+            - ".github/workflows/production_safety.yml"
+    push:
+        branches: [ main, develop ]
+        paths:
+            - "packages/**"
+            - "docs/**"
+            - "README.md"
+            - "SECURITY.md"
+            - ".github/workflows/production_safety.yml"
+
+jobs:
+    release-footprint:
+        name: "Release footprint without ISPECT_ENABLED"
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  flutter-version: "3.32.6"
+                  channel: stable
+                  cache: true
+
+            - name: Scaffold Android platform code
+              working-directory: packages/ispect/example
+              run: |
+                  # The example's `android/` and `ios/` directories are gitignored
+                  # to keep platform code out of the package source. CI rebuilds the
+                  # Android scaffolding so `flutter build apk` has a project to compile.
+                  flutter create --platforms=android --org com.example .
+
+            - name: Install dependencies
+              working-directory: packages/ispect/example
+              run: flutter pub get
+
+            - name: Build release APK without ISPECT_ENABLED
+              working-directory: packages/ispect/example
+              run: |
+                  flutter build apk \
+                    --release \
+                    --obfuscate \
+                    --split-debug-info=build/symbols \
+                    --no-tree-shake-icons
+
+            - name: Check residual ISpect strings
+              id: footprint
+              working-directory: packages/ispect/example
+              run: |
+                  set -euo pipefail
+
+                  apk="build/app/outputs/flutter-apk/app-release.apk"
+                  if [[ ! -f "$apk" ]]; then
+                    echo "Release APK not found at $apk" >&2
+                    exit 1
+                  fi
+
+                  count="$(strings "$apk" | grep -i -c "ispect" || true)"
+                  max_allowed=20
+
+                  {
+                    echo "## Production safety"
+                    echo ""
+                    echo "- Build: release APK"
+                    echo "- ISPECT_ENABLED: omitted"
+                    echo "- Residual case-insensitive \`ispect\` strings: \`$count\`"
+                    echo "- Maximum allowed: \`$max_allowed\`"
+                  } >> "$GITHUB_STEP_SUMMARY"
+
+                  echo "residual_strings=$count" >> "$GITHUB_OUTPUT"
+
+                  if (( count > max_allowed )); then
+                    echo "Residual ISpect string count ($count) exceeded max allowed ($max_allowed)." >&2
+                    exit 1
+                  fi
+
+            - name: Upload APK and symbols
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: production-safety-release-artifacts
+                  path: |
+                      packages/ispect/example/build/app/outputs/flutter-apk/app-release.apk
+                      packages/ispect/example/build/symbols/

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
 
 export 'generated/ispect_localizations.dart';
 
@@ -42,12 +43,22 @@ final class ISpectLocalization {
   }
 
   /// Obtain `ISpectAppLocalizations` instance from `BuildContext`.
+  ///
+  /// Returns the nearest [ISpectGeneratedLocalization] ancestor, falling back
+  /// to the default English localization when the delegate is missing.
   static ISpectGeneratedLocalization of(BuildContext context) {
-    debugCheckHasISpectAppLocalizations(context);
-    return Localizations.of<ISpectGeneratedLocalization>(
+    final localization = Localizations.of<ISpectGeneratedLocalization>(
       context,
       ISpectGeneratedLocalization,
-    )!;
+    );
+    if (localization != null) return localization;
+
+    assert(() {
+      debugCheckHasISpectAppLocalizations(context);
+      return true;
+    }());
+
+    return ISpectGeneratedLocalizationEn();
   }
 }
 

@@ -6,15 +6,10 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/chunking.dart';
 
 Object? _toEncodable(dynamic object) {
-  if (object is Uri) {
-    return object.toString();
-  }
-  try {
-    // ignore: avoid_dynamic_calls
-    return object.toJson();
-  } catch (_) {
-    return object.toString();
-  }
+  if (object is Uri) return object.toString();
+  if (object is DateTime) return object.toIso8601String();
+  if (object is Enum) return object.name;
+  return object.toString();
 }
 
 /// Service for managing JSON export/import operations for logs.
@@ -27,24 +22,34 @@ class LogsJsonService {
   /// Creates a new instance of logs JSON service.
   const LogsJsonService();
 
-  /// Maximum allowed JSON string size (590MB)
-  static const int maxJsonSize = 500 * 1024 * 1024;
+  /// Maximum allowed JSON string size (100MB)
+  static const int maxJsonSize = 100 * 1024 * 1024;
 
   /// Maximum allowed JSON nesting depth
-  static const int maxJsonDepth = 1000;
+  static const int maxJsonDepth = 500;
 
   /// Maximum number of log entries allowed in import
   static const int maxLogEntries = 100000;
 
-  /// Exports logs to JSON format with metadata
+  /// Exports logs to JSON format with metadata.
   ///
-  /// - Parameters: logs (list of entries), includeMetadata (flag for metadata)
+  /// The export-time redaction is an **opt-in defense-in-depth pass**.
+  /// Captured payloads (network bodies, DB args, etc.) are already redacted
+  /// at interceptor capture time, so the export pass only runs when the
+  /// caller passes [redactionService]. Pass `enableRedaction: false` to skip
+  /// the pass even when a service is provided.
+  ///
+  /// - Parameters: logs (list of entries), includeMetadata (flag for metadata),
+  ///   redactionService (optional; when null the export pass is skipped),
+  ///   enableRedaction (default: true; combined with non-null [redactionService])
   /// - Return: JSON string ready for file export
   /// - Usage example: `final jsonString = await service.exportToJson(logs);`
   /// - Edge case notes: Processes in chunks to prevent memory issues, handles large datasets
   Future<String> exportToJson(
     List<ISpectLogData> logs, {
     bool includeMetadata = true,
+    RedactionService? redactionService,
+    bool enableRedaction = true,
   }) async {
     final exportData = <String, dynamic>{};
 
@@ -52,7 +57,12 @@ class LogsJsonService {
       exportData['metadata'] = _createExportMetadata(logs.length);
     }
 
-    exportData['logs'] = await _processLogsInChunks(logs);
+    final logsJson = await _processLogsInChunks(logs);
+    if (enableRedaction && redactionService != null) {
+      exportData['logs'] = _redactLogsList(logsJson, redactionService);
+    } else {
+      exportData['logs'] = logsJson;
+    }
 
     const encoder = JsonEncoder.withIndent('  ', _toEncodable);
     return encoder.convert(exportData);
@@ -92,8 +102,8 @@ class LogsJsonService {
   /// - Edge case notes: Supports legacy format, skips invalid entries, processes in chunks
   ///
   /// **Validation:**
-  /// - Size: Max 10MB
-  /// - Depth: Max 50 levels
+  /// - Size: Max 100MB
+  /// - Depth: Max 1000 levels
   /// - Count: Max 100,000 entries
   ///
   /// **Security:** Prevents DoS attacks via malformed JSON
@@ -119,35 +129,41 @@ class LogsJsonService {
     }
   }
 
-  /// Validates JSON string size to prevent memory exhaustion
+  /// Validates JSON string size to prevent memory exhaustion.
+  ///
+  /// Uses [String.length] (UTF-16 code units) as a fast, conservative proxy
+  /// for size. For JSON content this closely approximates the actual byte count.
   void _validateJsonSize(String jsonString) {
     if (jsonString.length > maxJsonSize) {
       throw FormatException(
-        'JSON size (${jsonString.length} bytes) exceeds maximum allowed '
-        'size ($maxJsonSize bytes). Please import a smaller dataset.',
+        'JSON size (${jsonString.length} characters) exceeds maximum allowed '
+        'size ($maxJsonSize characters). Please import a smaller dataset.',
       );
     }
   }
 
-  /// Validates JSON nesting depth to prevent stack overflow
-  void _validateJsonDepth(dynamic data, [int currentDepth = 0]) {
-    if (currentDepth > maxJsonDepth) {
-      throw FormatException(
-        'JSON nesting depth ($currentDepth) exceeds maximum allowed '
-        'depth ($maxJsonDepth). This may indicate malformed or malicious JSON.',
-      );
-    }
+  /// Validates JSON nesting depth to prevent stack overflow.
+  ///
 
-    if (data is Map) {
-      for (final value in data.values) {
-        _validateJsonDepth(value, currentDepth + 1);
+  void _validateJsonDepth(dynamic data) {
+    // Each entry is (node, depth).
+    final queue = <(dynamic, int)>[(data, 0)];
+
+    while (queue.isNotEmpty) {
+      final (node, depth) = queue.removeLast();
+      if (depth >= maxJsonDepth) {
+        throw FormatException(
+          'JSON nesting depth ($depth) exceeds maximum allowed '
+          'depth ($maxJsonDepth). This may indicate malformed or malicious JSON.',
+        );
       }
-    } else if (data is List) {
-      // Only check first and last items to avoid O(n*depth) complexity
-      if (data.isNotEmpty) {
-        _validateJsonDepth(data.first, currentDepth + 1);
-        if (data.length > 1) {
-          _validateJsonDepth(data.last, currentDepth + 1);
+      if (node is Map) {
+        for (final value in node.values) {
+          queue.add((value, depth + 1));
+        }
+      } else if (node is List) {
+        for (final item in node) {
+          queue.add((item, depth + 1));
         }
       }
     }
@@ -166,7 +182,13 @@ class LogsJsonService {
   /// Extracts logs array from JSON data supporting both formats
   List<dynamic> _extractLogsFromJsonData(dynamic jsonData) {
     if (jsonData is Map<String, dynamic> && jsonData.containsKey('logs')) {
-      return jsonData['logs'] as List<dynamic>;
+      final logs = jsonData['logs'];
+      if (logs is! List<dynamic>) {
+        throw FormatException(
+          'Expected "logs" to be a List, got ${logs.runtimeType}',
+        );
+      }
+      return logs;
     }
 
     if (jsonData is List<dynamic>) {
@@ -187,9 +209,8 @@ class LogsJsonService {
     for (final chunk in Chunking.chunks(logsJson, chunkSize)) {
       for (final logJson in chunk) {
         try {
-          final log = ISpectLogDataJsonUtils.fromJson(
-            logJson as Map<String, dynamic>,
-          );
+          if (logJson is! Map<String, dynamic>) continue;
+          final log = ISpectLogDataJsonUtils.fromJson(logJson);
           logs.add(log);
         } catch (_) {
           continue;
@@ -212,15 +233,21 @@ class LogsJsonService {
     required ISpectShareCallback onShare,
     String fileName = 'ispect_logs',
     bool includeMetadata = true,
+    RedactionService? redactionService,
+    bool enableRedaction = true,
   }) async {
     if (logs.isEmpty) {
       ISpect.logger.info('No logs to export. Skipping file creation.');
       return;
     }
 
-    final jsonContent =
-        await exportToJson(logs, includeMetadata: includeMetadata);
-    await LogsFileFactory.downloadFile(
+    final jsonContent = await exportToJson(
+      logs,
+      includeMetadata: includeMetadata,
+      redactionService: redactionService,
+      enableRedaction: enableRedaction,
+    );
+    await LogsFileFactory.shareFile(
       jsonContent,
       fileName: fileName,
       onShare: onShare,
@@ -240,22 +267,111 @@ class LogsJsonService {
     required ISpectShareCallback onShare,
     String fileName = 'ispect_filtered_logs',
     String fileType = 'json',
+    RedactionService? redactionService,
+    bool enableRedaction = true,
+    Set<String>? redactKeys,
   }) async {
     if (filteredLogs.isEmpty) {
       ISpect.logger.info('No filtered logs to export. Skipping file creation.');
       return;
     }
 
-    final exportData = _createFilteredExportData(logs, filteredLogs, filter);
-    const encoder = JsonEncoder.withIndent('  ', _toEncodable);
-    final jsonContent = encoder.convert(exportData);
+    final content = _formatFilteredContent(
+      logs: logs,
+      filteredLogs: filteredLogs,
+      filter: filter,
+      fileType: fileType,
+      redactionService: redactionService,
+      enableRedaction: enableRedaction,
+      redactKeys: redactKeys,
+    );
 
-    await LogsFileFactory.downloadFile(
-      jsonContent,
+    await LogsFileFactory.shareFile(
+      content,
       fileName: fileName,
       fileType: fileType,
       onShare: onShare,
     );
+  }
+
+  /// Saves filtered logs to device without requiring a share callback.
+  ///
+  /// Returns the file path (native) or filename (web).
+  Future<String> saveFilteredLogsToDevice(
+    List<ISpectLogData> logs,
+    List<ISpectLogData> filteredLogs,
+    ISpectFilter filter, {
+    String fileName = 'ispect_filtered_logs',
+    String fileType = 'json',
+    RedactionService? redactionService,
+    bool enableRedaction = true,
+    Set<String>? redactKeys,
+  }) async {
+    if (filteredLogs.isEmpty) {
+      ISpect.logger.info('No filtered logs to export. Skipping file creation.');
+      return '';
+    }
+
+    final content = _formatFilteredContent(
+      logs: logs,
+      filteredLogs: filteredLogs,
+      filter: filter,
+      fileType: fileType,
+      redactionService: redactionService,
+      enableRedaction: enableRedaction,
+      redactKeys: redactKeys,
+    );
+
+    return LogsFileFactory.saveToDevice(
+      content,
+      fileName: fileName,
+      fileType: fileType,
+    );
+  }
+
+  String _formatFilteredContent({
+    required List<ISpectLogData> logs,
+    required List<ISpectLogData> filteredLogs,
+    required ISpectFilter filter,
+    required String fileType,
+    RedactionService? redactionService,
+    bool enableRedaction = true,
+    Set<String>? redactKeys,
+  }) {
+    final effectiveRedactKeys =
+        redactKeys ?? (enableRedaction ? defaultSensitiveKeys : null);
+
+    switch (fileType) {
+      case 'txt':
+        return LogExporter.toText(
+          filteredLogs,
+          redactKeys: effectiveRedactKeys,
+        );
+      case 'md':
+        return LogExporter.toMarkdown(
+          filteredLogs,
+          redactKeys: effectiveRedactKeys,
+        );
+      case 'csv':
+        return LogExporter.toCsv(
+          filteredLogs,
+          redactKeys: effectiveRedactKeys,
+        );
+      default:
+        final exportData = _createFilteredExportData(
+          logs,
+          filteredLogs,
+          filter,
+        );
+        if (enableRedaction && redactionService != null) {
+          final logsData = exportData['logs'];
+          if (logsData is List<Map<String, dynamic>>) {
+            exportData['logs'] = _redactLogsList(logsData, redactionService);
+          }
+        }
+        const encoder = JsonEncoder.withIndent('  ', _toEncodable);
+        return encoder.convert(exportData);
+    }
   }
 
   /// Creates export data structure for filtered logs
@@ -287,9 +403,22 @@ class LogsJsonService {
   Map<String, dynamic> _createFilterSummary(ISpectFilter filter) => {
         'hasSearchQuery':
             filter.filters.any((f) => f is SearchFilter && f.query.isNotEmpty),
-        'titleFiltersCount': filter.filters.whereType<TitleFilter>().length,
+        'logTypeKeyFiltersCount':
+            filter.filters.whereType<LogTypeKeyFilter>().length,
         'typeFiltersCount': filter.filters.whereType<TypeFilter>().length,
       };
+
+  /// Applies redaction to a list of serialized log entries.
+  List<Map<String, dynamic>> _redactLogsList(
+    List<Map<String, dynamic>> logsJson,
+    RedactionService redactionService,
+  ) =>
+      logsJson.map((log) {
+        final redacted = redactionService.redact(log);
+        return redacted is Map<String, dynamic>
+            ? redacted
+            : log; // fallback if redaction returns unexpected type
+      }).toList(growable: false);
 
   /// Validates JSON structure for logs import
   ///
@@ -332,7 +461,8 @@ class LogsJsonService {
   /// Extracts metadata from JSON data if available
   Map<String, dynamic>? _extractMetadata(dynamic jsonData) {
     if (jsonData is Map<String, dynamic> && jsonData.containsKey('metadata')) {
-      return jsonData['metadata'] as Map<String, dynamic>;
+      final metadata = jsonData['metadata'];
+      if (metadata is Map<String, dynamic>) return metadata;
     }
     return null;
   }

@@ -7,12 +7,12 @@ void main() {
   group('KeyBasedRedaction', () {
     const strategy = KeyBasedRedaction();
 
-    RedactionRuntime runtime({
+    RedactionContext context({
       Set<String> sensitive = const {'token'},
       Set<String> fullyMasked = const {},
       bool redactBinary = true,
     }) =>
-        RedactionRuntime(
+        RedactionContext(
           placeholder: '[REDACTED]',
           redactBinary: redactBinary,
           redactBase64: true,
@@ -33,16 +33,27 @@ void main() {
     test('masks strings under sensitive keys', () {
       final out = strategy.tryRedact(
         'super-secret',
-        runtime: runtime(),
+        context: context(),
         keyName: 'token',
       );
       expect(out, 'MASKED(12)');
     });
 
-    test('fully masks configured keys', () {
+    test('fully masks configured keys even when not sensitive', () {
+      final out = strategy.tryRedact(
+        'report.pdf',
+        context: context(
+          fullyMasked: const {'filename'},
+        ),
+        keyName: 'filename',
+      );
+      expect(out, '[REDACTED]');
+    });
+
+    test('fully masks configured keys that are also sensitive', () {
       final out = strategy.tryRedact(
         'apivalue',
-        runtime: runtime(
+        context: context(
           fullyMasked: const {'apikey'},
           sensitive: const {'apikey'},
         ),
@@ -55,7 +66,7 @@ void main() {
       final data = Uint8List.fromList([1, 2, 3]);
       final out = strategy.tryRedact(
         data,
-        runtime: runtime(),
+        context: context(),
         keyName: 'token',
       );
       expect(out, isA<Uint8List>());
@@ -66,17 +77,25 @@ void main() {
         () {
       final out = strategy.tryRedact(
         12345,
-        runtime: runtime(),
+        context: context(),
         keyName: 'token',
       );
       expect(out, '[REDACTED]');
     });
 
-    test('returns null when key is not sensitive', () {
+    test('returns null when key is not sensitive and not fully masked', () {
       final out = strategy.tryRedact(
         'value',
-        runtime: runtime(),
+        context: context(),
         keyName: 'notSensitive',
+      );
+      expect(out, isNull);
+    });
+
+    test('returns null when keyName is null', () {
+      final out = strategy.tryRedact(
+        'value',
+        context: context(),
       );
       expect(out, isNull);
     });

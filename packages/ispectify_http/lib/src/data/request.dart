@@ -6,37 +6,53 @@ class HttpRequestData {
 
   final BaseRequest? requestOptions;
 
-  Map<String, dynamic> toJson({
-    RedactionService? redactor,
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        // --- Identity: what & where ---
+        NetworkJsonKeys.method: requestOptions?.method,
+        NetworkJsonKeys.url: requestOptions?.url.toString(),
+
+        // --- Payload ---
+        NetworkJsonKeys.headers: requestOptions?.headers,
+        NetworkJsonKeys.encoding: (requestOptions is Request)
+            ? (requestOptions! as Request).encoding.name
+            : null,
+        NetworkJsonKeys.data: (requestOptions is Request)
+            ? (requestOptions! as Request).body
+            : null,
+        NetworkJsonKeys.contentLength: requestOptions?.contentLength,
+
+        // --- Behaviour ---
+        NetworkJsonKeys.followRedirects: requestOptions?.followRedirects,
+        NetworkJsonKeys.maxRedirects: requestOptions?.maxRedirects,
+        NetworkJsonKeys.persistentConnection:
+            requestOptions?.persistentConnection,
+
+        // --- State ---
+        NetworkJsonKeys.finalized: requestOptions?.finalized,
+      };
+
+  static void redact(
+    Map<String, dynamic> map,
+    RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) {
-    final map = <String, dynamic>{
-      'url': requestOptions?.url.toString(),
-      'method': requestOptions?.method,
-      'data': (requestOptions is Request)
-          ? (requestOptions! as Request).body
-          : null,
-      'content-length': requestOptions?.contentLength,
-      'persistent-connection': requestOptions?.persistentConnection,
-      'follow-redirects': requestOptions?.followRedirects,
-      'max-redirects': requestOptions?.maxRedirects,
-      'headers': requestOptions?.headers,
-      'finalized': requestOptions?.finalized,
-    };
-
-    if (redactor == null) return map;
-
-    final hdrs = requestOptions?.headers;
-    if (hdrs != null) {
-      final red = redactor.redactHeaders(
-        hdrs,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-      map['headers'] = red.map((k, v) => MapEntry(k, v?.toString() ?? ''));
+    NetworkMapRedactor.redactUrl(map, redactor);
+    final redactedHeaders = NetworkMapRedactor.redactHeaders(
+      map,
+      redactor,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    if (redactedHeaders != null) {
+      map[NetworkJsonKeys.headers] =
+          redactedHeaders.map((k, v) => MapEntry(k, v?.toString() ?? ''));
     }
-
-    return map;
+    NetworkMapRedactor.redactData(
+      map,
+      redactor,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
   }
 }

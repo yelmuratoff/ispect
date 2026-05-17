@@ -8,7 +8,7 @@ class _ReturningStrategy implements RedactionStrategy {
   @override
   Object? tryRedact(
     Object? node, {
-    required RedactionRuntime runtime,
+    required RedactionContext context,
     String? keyName,
   }) =>
       _value;
@@ -19,7 +19,7 @@ class _CountingStrategy implements RedactionStrategy {
   @override
   Object? tryRedact(
     Object? node, {
-    required RedactionRuntime runtime,
+    required RedactionContext context,
     String? keyName,
   }) {
     calls++;
@@ -27,7 +27,7 @@ class _CountingStrategy implements RedactionStrategy {
   }
 }
 
-RedactionRuntime _runtime() => RedactionRuntime(
+RedactionContext _context() => RedactionContext(
       placeholder: '[REDACTED]',
       redactBinary: true,
       redactBase64: true,
@@ -52,7 +52,7 @@ void main() {
         _ReturningStrategy(null),
         _ReturningStrategy('HIT'),
       ]);
-      final out = composite.tryRedact('value', runtime: _runtime());
+      final out = composite.tryRedact('value', context: _context());
       expect(out, 'HIT');
     });
 
@@ -62,7 +62,7 @@ void main() {
         _ReturningStrategy('FIRST'),
         counter,
       ]);
-      final out = composite.tryRedact('value', runtime: _runtime());
+      final out = composite.tryRedact('value', context: _context());
       expect(out, 'FIRST');
       expect(counter.calls, 0);
     });

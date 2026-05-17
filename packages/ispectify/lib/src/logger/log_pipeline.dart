@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:ispectify/src/filter/filter.dart';
 import 'package:ispectify/src/history/history.dart';
+import 'package:ispectify/src/logger/entry_formatter.dart';
 import 'package:ispectify/src/logger/logger.dart';
 import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/log_level.dart';
-import 'package:ispectify/src/theme/options.dart';
+import 'package:ispectify/src/options.dart';
 import 'package:ispectify/src/utils/string_extension.dart';
 
 /// Coordinates the flow of `ISpectLogData` through the logger pipeline.
@@ -49,29 +51,66 @@ class LogPipeline {
     _filter = filter ?? _filter;
   }
 
+  /// Removes the current filter so that all logs are accepted.
+  void clearFilter() {
+    _filter = null;
+  }
+
   bool shouldProcess(ISpectLogData data) {
     if (!_options.enabled) return false;
     return _filter?.apply(data) ?? true;
   }
 
+  /// Guards against re-entrant dispatch (e.g. a listener that logs).
+  ///
+  /// Safe in Dart's single-threaded event loop: only one synchronous call
+  /// chain can execute at a time, so no atomic/lock is needed.
+  bool _isDispatching = false;
+
   void dispatch(ISpectLogData data) {
-    _streamController.add(data);
-    _history.add(data);
+    if (_isDispatching) return;
+    _isDispatching = true;
+    try {
+      // Add to history BEFORE emitting to stream so that listeners
+      // (e.g. StreamBuilder) see the new entry when they read history.
+      _history.add(data);
+      if (!_streamController.isClosed) {
+        _streamController.add(data);
+      }
+    } catch (e) {
+      // Prevent dispatch errors from crashing the logger.
+      log('[ISpect] Log dispatch failed: $e');
+    } finally {
+      _isDispatching = false;
+    }
 
     if (!_options.useConsoleLogs) return;
 
-    final level = data.logLevel ?? (data.isError ? LogLevel.error : null);
-    final pen = data.pen ?? _options.penByKey(data.key);
+    try {
+      final level = data.logLevel ?? (data.isError ? LogLevel.error : null);
+      final pen = data.pen ?? _options.penByKey(data.key);
+      final settings = _consoleLogger.settings;
 
-    _consoleLogger.log(
-      '${data.header}${data.textMessage}'.truncate(
+      final rendered = truncateString(
+        const HumanLogEntryFormatter().format(data, settings),
         maxLength: _options.logTruncateLength,
-      ),
-      level: level,
-      pen: pen,
-      error: data.error ?? data.exception,
-      stackTrace: data.stackTrace,
-      time: data.time,
-    );
+      );
+
+      _consoleLogger.log(
+        rendered,
+        level: level,
+        pen: pen,
+        time: data.time,
+        error: _options.forwardErrorToConsole
+            ? data.error ?? data.exception
+            : null,
+        stackTrace: _options.forwardErrorToConsole
+            ? truncateStackTrace(data.stackTrace)
+            : null,
+      );
+    } catch (e) {
+      // Prevent console logging errors from propagating.
+      log('[ISpect] Console logging failed: $e');
+    }
   }
 }

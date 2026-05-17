@@ -1,7 +1,8 @@
 name: ispectify_db
-description: Database logging utilities for ISpect toolkit (passive DB observability)
-version: 4.7.4
-homepage: https://github.com/yelmuratoff/ispect.git
+description: Passive database observability for ISpect with operation tracing, timings, slow-query logs, result projection, and redaction.
+version: 5.0.0
+homepage: https://github.com/yelmuratoff/ispect
+repository: https://github.com/yelmuratoff/ispect
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
 
 environment:
@@ -12,7 +13,7 @@ dependency_overrides:
     path: ../ispectify
 
 dependencies:
-  ispectify: ^4.7.4
+  ispectify: ^5.0.0
 
 dev_dependencies:
   lints: ^5.1.1

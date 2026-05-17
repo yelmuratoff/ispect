@@ -2,6 +2,8 @@ import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 
 /// Service responsible for building JSON view model nodes
 class JsonNodeBuilder {
+  static const _maxBuildDepth = 1000;
+
   /// Builds view model nodes from raw JSON object
   static Map<String, NodeViewModelState> buildViewModelNodes(Object? object) {
     if (object is Map<String, dynamic>) {
@@ -21,6 +23,18 @@ class JsonNodeBuilder {
     for (final entry in object.entries) {
       final key = entry.key;
       final value = entry.value;
+
+      if (treeDepth >= _maxBuildDepth) {
+        // At max depth, render any nested structure as a leaf string value
+        map[key] = NodeViewModelState.fromProperty(
+          key: key,
+          value: value?.toString() ?? 'null',
+          treeDepth: treeDepth,
+          parent: parent,
+          rawValue: value,
+        );
+        continue;
+      }
 
       if (value is Map) {
         final classNode = NodeViewModelState.fromClass(
@@ -79,6 +93,19 @@ class JsonNodeBuilder {
     for (var i = 0; i < object.length; i++) {
       final dynamic arrayValue = object[i];
 
+      if (treeDepth >= _maxBuildDepth) {
+        array.add(
+          NodeViewModelState.fromProperty(
+            key: i.toString(),
+            value: arrayValue?.toString() ?? 'null',
+            treeDepth: treeDepth + 1,
+            parent: parent,
+            rawValue: arrayValue,
+          ),
+        );
+        continue;
+      }
+
       if (arrayValue is Map<String, dynamic>) {
         final classNode = NodeViewModelState.fromClass(
           key: i.toString(),
@@ -95,6 +122,22 @@ class JsonNodeBuilder {
 
         classNode.value = children;
         array.add(classNode);
+      } else if (arrayValue is List) {
+        final arrayNode = NodeViewModelState.fromArray(
+          key: i.toString(),
+          treeDepth: treeDepth + 1,
+          parent: parent,
+          rawValue: arrayValue,
+        );
+
+        final children = _buildArrayNodes(
+          object: arrayValue,
+          treeDepth: treeDepth + 1,
+          parent: arrayNode,
+        );
+
+        arrayNode.value = children;
+        array.add(arrayNode);
       } else {
         array.add(
           NodeViewModelState.fromProperty(

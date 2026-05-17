@@ -1,113 +1,80 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// `ISpectDioInterceptor` settings and customization
-class ISpectDioInterceptorSettings implements NetworkLogPrintOptions {
+/// `ISpectDioInterceptor` settings and customization.
+class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectDioInterceptorSettings({
-    this.enabled = true,
-    this.enableRedaction = false,
-    this.printResponseData = true,
-    this.printResponseHeaders = false,
-    this.printResponseMessage = true,
-    this.printErrorData = true,
-    this.printErrorHeaders = true,
-    this.printErrorMessage = true,
-    this.printRequestData = true,
-    this.printRequestHeaders = false,
-    this.requestPen,
-    this.responsePen,
-    this.errorPen,
-    this.requestFilter,
-    this.responseFilter,
-    this.errorFilter,
+    super.enabled,
+    super.enableRedaction,
+    super.printResponseData,
+    super.printResponseHeaders,
+    super.printResponseMessage,
+    super.printErrorData,
+    super.printErrorHeaders,
+    super.printErrorMessage,
+    super.printRequestData,
+    super.printRequestHeaders,
+    super.requestPen,
+    super.responsePen,
+    super.errorPen,
+    @Deprecated('Use requestChain instead') this.requestFilter,
+    @Deprecated('Use responseChain instead') this.responseFilter,
+    @Deprecated('Use errorChain instead') this.errorFilter,
+    this.requestChain,
+    this.responseChain,
+    this.errorChain,
   });
 
-  // Print Dio logger if true
-  final bool enabled;
-
-  /// Enable sensitive data redaction if true (default: true)
-  final bool enableRedaction;
-
-  /// Print `response.data` if true
-  @override
-  final bool printResponseData;
-
-  /// Print `response.headers` if true
-  @override
-  final bool printResponseHeaders;
-
-  /// Print `response.statusMessage` if true
-  @override
-  final bool printResponseMessage;
-
-  /// Print `error.response.data` if true
-  @override
-  final bool printErrorData;
-
-  /// Print `error.response.headers` if true
-  @override
-  final bool printErrorHeaders;
-
-  /// Print `error.message` if true
-  @override
-  final bool printErrorMessage;
-
-  /// Print `request.data` if true
-  @override
-  final bool printRequestData;
-
-  /// Print `request.headers` if true
-  @override
-  final bool printRequestHeaders;
-
-  /// Field to set custom http request console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  @override
-  final AnsiPen? requestPen;
-
-  /// Field to set custom http response console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  @override
-  final AnsiPen? responsePen;
-
-  /// Field to set custom http error console logs color
-  ///```
-  ///// Red color
-  ///final redPen = AnsiPen()..red();
-  ///
-  ///// Blue color
-  ///final redPen = AnsiPen()..blue();
-  ///```
-  /// More details in `AnsiPen` docs
-  @override
-  final AnsiPen? errorPen;
-
   /// For request filtering.
-  /// You can add your custom logic to log only specific HTTP requests `RequestOptions`.
+  /// You can add your custom logic to log only specific HTTP requests.
+  @Deprecated('Use requestChain instead')
   final bool Function(RequestOptions requestOptions)? requestFilter;
 
   /// For response filtering.
-  /// You can add your custom logic to log only specific HTTP responses `Response`.
+  /// You can add your custom logic to log only specific HTTP responses.
+  @Deprecated('Use responseChain instead')
   final bool Function(Response<dynamic> response)? responseFilter;
 
   /// For error filtering.
-  /// You can add your custom logic to log only specific Dio error `DioException`.
+  /// You can add your custom logic to log only specific Dio errors.
+  @Deprecated('Use errorChain instead')
   final bool Function(DioException response)? errorFilter;
 
+  /// Filter chain for requests. Takes priority over [requestFilter].
+  final NetworkFilterChain<RequestOptions>? requestChain;
+
+  /// Filter chain for responses. Takes priority over [responseFilter].
+  final NetworkFilterChain<Response<dynamic>>? responseChain;
+
+  /// Filter chain for errors. Takes priority over [errorFilter].
+  final NetworkFilterChain<DioException>? errorChain;
+
+  /// Returns `true` when the request should be logged.
+  ///
+  /// [requestChain] takes priority over the legacy [requestFilter].
+  bool shouldProcessRequest(RequestOptions value) {
+    if (requestChain != null) return requestChain!.apply(value);
+    return requestFilter?.call(value) ?? true;
+  }
+
+  /// Returns `true` when the response should be logged.
+  ///
+  /// [responseChain] takes priority over the legacy [responseFilter].
+  bool shouldProcessResponse(Response<dynamic> value) {
+    if (responseChain != null) return responseChain!.apply(value);
+    return responseFilter?.call(value) ?? true;
+  }
+
+  /// Returns `true` when the error should be logged.
+  ///
+  /// [errorChain] takes priority over the legacy [errorFilter].
+  bool shouldProcessError(DioException value) {
+    if (errorChain != null) return errorChain!.apply(value);
+    return errorFilter?.call(value) ?? true;
+  }
+
+  @override
   ISpectDioInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,
@@ -122,9 +89,15 @@ class ISpectDioInterceptorSettings implements NetworkLogPrintOptions {
     AnsiPen? requestPen,
     AnsiPen? responsePen,
     AnsiPen? errorPen,
+    @Deprecated('Use requestChain instead')
     bool Function(RequestOptions requestOptions)? requestFilter,
+    @Deprecated('Use responseChain instead')
     bool Function(Response<dynamic> response)? responseFilter,
+    @Deprecated('Use errorChain instead')
     bool Function(DioException response)? errorFilter,
+    NetworkFilterChain<RequestOptions>? requestChain,
+    NetworkFilterChain<Response<dynamic>>? responseChain,
+    NetworkFilterChain<DioException>? errorChain,
   }) =>
       ISpectDioInterceptorSettings(
         enabled: enabled ?? this.enabled,
@@ -143,5 +116,8 @@ class ISpectDioInterceptorSettings implements NetworkLogPrintOptions {
         requestFilter: requestFilter ?? this.requestFilter,
         responseFilter: responseFilter ?? this.responseFilter,
         errorFilter: errorFilter ?? this.errorFilter,
+        requestChain: requestChain ?? this.requestChain,
+        responseChain: responseChain ?? this.responseChain,
+        errorChain: errorChain ?? this.errorChain,
       );
 }

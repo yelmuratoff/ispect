@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use, deprecated_member_use_from_same_package
 import 'package:dio/dio.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
@@ -9,7 +10,7 @@ void main() {
       final settings = ISpectDioInterceptorSettingsBuilder().build();
 
       expect(settings.enabled, true);
-      expect(settings.enableRedaction, false);
+      expect(settings.enableRedaction, true);
       expect(settings.printResponseData, true);
       expect(settings.printResponseHeaders, false);
       expect(settings.printRequestData, true);
@@ -17,12 +18,12 @@ void main() {
       expect(settings.printErrorData, true);
     });
 
-    test('development() creates verbose settings without redaction', () {
+    test('development() creates verbose settings with redaction', () {
       final settings =
           ISpectDioInterceptorSettingsBuilder.development().build();
 
       expect(settings.enabled, true);
-      expect(settings.enableRedaction, false);
+      expect(settings.enableRedaction, true);
       expect(settings.printResponseHeaders, true);
       expect(settings.printRequestHeaders, true);
       expect(settings.printErrorHeaders, true);

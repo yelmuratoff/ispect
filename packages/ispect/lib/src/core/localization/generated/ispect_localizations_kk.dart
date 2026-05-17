@@ -25,7 +25,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       'Сәлеметсіз бе! Мен сізге қалай көмектесе аламын?';
 
   @override
-  String get allLogsCopied => 'Барлық жазбалар алмасу буферіне көшірілді';
+  String get allLogsCopied => 'Барлық логтар алмасу буферіне көшірілді';
 
   @override
   String get analyticsLogDesc => 'Оқиға қадағаланды және аналитикаға жіберілді';
@@ -62,7 +62,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       'Компонент инициализацияланды және жұмысты бастады';
 
   @override
-  String get blocEventLogDesc => 'Бірдеңе істеу командасы алынды';
+  String get blocEventLogDesc => 'Оқиға командасы алынды';
 
   @override
   String get blocTransitionLogDesc => 'Командаға жауап ретінде күй өзгерді';
@@ -116,32 +116,30 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get copy => 'Көшіру';
 
   @override
-  String get copyAllLogs => 'Барлық жазбаларды көшіру';
+  String get copyAllLogs => 'Барлық логтарды көшіру';
 
   @override
   String counterTimesText(Object number) {
-    return 'Сіз түймені сонша рет басқансыз: $number';
+    return 'Сіз түймені $number рет бастыңыз';
   }
 
   @override
   String get createIssue => 'Мәселені құру';
 
   @override
-  String get createJiraIssue => 'Jira Issue істеу';
+  String get createJiraIssue => 'Jira мәселесін құру';
 
   @override
   String get creatingIssue => 'Мәселе құрылуда';
 
   @override
-  String get criticalLogDesc =>
-      'Шұғыл назар аударуды қажет ететін сыни қателер мен оқиғаларды логтау үшін қолданылатын тег';
+  String get criticalLogDesc => 'Шұғыл назар аударуды қажет ететін сыни қате';
 
   @override
   String get data => 'Деректер';
 
   @override
-  String get debugLogDesc =>
-      'Қолданбаның жұмысын талдау үшін отладка ақпаратын логтау үшін қолданылатын тег';
+  String get debugLogDesc => 'Әрекетті талдау үшін техникалық мәліметтер';
 
   @override
   String get description => 'Сипаттама';
@@ -161,8 +159,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'Кэш тазарту қатесі';
 
   @override
-  String get errorLogDesc =>
-      'Қолданбада туындаған қателерді логтау үшін қолданылатын тег';
+  String get errorLogDesc => 'Қолданбада бірдеңе дұрыс болмады';
 
   @override
   String get errorMessage => 'Қате туралы хабар';
@@ -171,8 +168,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get errorType => 'Қате түрі';
 
   @override
-  String get exceptionLogDesc =>
-      'Қолданбада пайда болатын ерекшеліктерді логтау үшін қолданылатын тег';
+  String get exceptionLogDesc => 'Күтпеген қате орын алды';
 
   @override
   String get expandLogs => 'Журналды ашу';
@@ -187,20 +183,19 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get finished => 'Бітті';
 
   @override
-  String get fix => 'Хабарлау';
+  String get fix => 'Түзету';
 
   @override
   String get fullURL => 'Толық сілтеме';
 
   @override
-  String get generateReport => 'AI eсеп жасау';
+  String get generateReport => 'Есеп жасау';
 
   @override
   String get goToLogger => 'Журналға өту';
 
   @override
-  String get goodLogDesc =>
-      'Қолданбадағы сәтті әрекеттер мен оң оқиғаларды логтау үшін қолданылатын тег';
+  String get goodLogDesc => 'Операция сәтті аяқталды';
 
   @override
   String get headers => 'Headers';
@@ -219,8 +214,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       'Жіберілген сұранысқа серверден жауап журналы';
 
   @override
-  String get infoLogDesc =>
-      'Қолданбаның жұмысын сипаттайтын ақпараттық хабарламаларды логтау үшін қолданылатын тег';
+  String get infoLogDesc => 'Не болып жатқаны туралы жалпы ақпарат';
 
   @override
   String get initializationFailed => 'Бастапқы жүктеу қатесі';
@@ -233,7 +227,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       '1. JIRA веб-сайтына өтіңіз.\n2. Төменгі сол жақтағы профиль Аватарын түртіңіз.\n3. Профильді басыңыз.\n4. Тіркелгіні басқару түймесін басыңыз.\n5. Қауіпсіздікті Таңдаңыз.\n6. API таңбалауыштарын жасау және басқару бөліміне төмен жылжып, оны басыңыз.\n7. Токен жасаңыз, содан кейін оны көшіріп, қойыңыз.';
 
   @override
-  String get logItemCopied => 'Жазба алмасу буферіне көшірілді';
+  String get logItemCopied => 'Лог алмасу буферіне көшірілді';
 
   @override
   String get login => 'Кіру';
@@ -254,6 +248,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get notFound => 'табылған жоқ';
 
   @override
+  String get noResultsHint => 'Басқа сұрау жазыңыз немесе сүзгілерді реттеңіз';
+
+  @override
   String get otherLogsForDevelopers =>
       'Басқа жазбалар әзірлеушілер үшін қолданылуда';
 
@@ -270,7 +267,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get pickedImages => 'Таңдалған суреттер';
 
   @override
-  String get pleaseAuthToJira => 'Jira-ға кіруіңізді беруіңізді өтінемін';
+  String get pleaseAuthToJira => 'Jira-да авторизациядан өтіңіз';
 
   @override
   String get pleaseCheckAuthCred =>
@@ -280,7 +277,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get pleaseSelectYourProject => 'Енді жобаны таңдаңыз';
 
   @override
-  String get printLogDesc => 'Flutter стандартты print методоның журналы';
+  String get printLogDesc => 'Хабарлама консольге шығарылды';
 
   @override
   String get projectDomain => 'Жоба домені';
@@ -346,13 +343,13 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get share => 'Бөлісу';
 
   @override
-  String get shareLogsFile => 'Журнал файлын бөлісу';
+  String get shareLogsFile => 'Лог файлын бөлісу';
 
   @override
   String get statusCode => 'Статус коды';
 
   @override
-  String get statusMessage => 'Cтатус';
+  String get statusMessage => 'Статус';
 
   @override
   String get submitButtonText => 'Жіберу';
@@ -521,30 +518,28 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get turnOnInspector => 'Инспекторды қосу';
 
   @override
-  String get typeMessage => 'Сұрауды теріңіз';
+  String get typeMessage => 'Хабарлама теріңіз';
 
   @override
   String get uploadImages => 'Суреттерді жүктеу';
 
   @override
-  String get useConsoleLogs => 'Консоль жазбаларын пайдалану';
+  String get useConsoleLogs => 'Консоль жазбаларын қолдану';
 
   @override
-  String get useHistory => 'Тарихты пайдалану';
+  String get useHistory => 'Тарихты қолдану';
 
   @override
   String get userEmail => 'Электрондық пошта';
 
   @override
-  String get verboseLogDesc =>
-      'Қолданбаны терең талдау үшін егжей-тегжейлі ақпаратты логтау үшін қолданылатын тег';
+  String get verboseLogDesc => 'Жөндеу үшін егжей-тегжейлі техникалық ақпарат';
 
   @override
   String get viewAndManageData => 'Қолданба мәліметтерін қарау және басқару';
 
   @override
-  String get warningLogDesc =>
-      'Қолданбадағы ықтимал мәселелер туралы ескерту хабарламаларын логтау үшін қолданылатын тег';
+  String get warningLogDesc => 'Мәселелер тудыруы мүмкін ықтимал проблема';
 
   @override
   String get you => 'Сіз';
@@ -556,14 +551,13 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get noData => 'Деректер жоқ';
 
   @override
-  String get shareLogFull => 'Логты бөлісу (толық)';
+  String get shareLogFull => 'Толық логты бөлісу';
 
   @override
-  String get copyToClipboardTruncated =>
-      'Алмасу буферіне көшіру (қысқартылған)';
+  String get copyToClipboardTruncated => 'Қысқашаны алмасу буферіне көшіру';
 
   @override
-  String get viewThemeScheme => 'Тема схемасы экранын көру';
+  String get viewThemeScheme => 'Тақырып схемасы экранын көру';
 
   @override
   String get takeScreenshotFeedback => 'Скриншот түсіру және пікір жіберу';
@@ -642,14 +636,14 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get onlyTxtAndJsonSupported =>
-      'Тек .txt және .json файлдары қолдау табады (ең көп 10 МБ)';
+      'Тек .txt және .json файлдарына қолдау көрсетіледі (ең көп 10 МБ)';
 
   @override
   String get and => 'және';
 
   @override
   String onlyExtensionsSupported(Object extensions, Object max) {
-    return 'Тек $extensions файлдары қолдау табады (ең көп $max)';
+    return 'Тек $extensions файлдарына қолдау көрсетіледі (ең көп $max)';
   }
 
   @override
@@ -701,4 +695,327 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => 'Дерекқор қателері журналы';
+
+  @override
+  String get reverseLogsDesc =>
+      'Логтардың көрсету ретін жаңадан ескіге немесе керісінше өзгерту';
+
+  @override
+  String get copyAllLogsDesc => 'Барлық лог жазбаларын алмасу буферіне көшіру';
+
+  @override
+  String get expandLogsDesc =>
+      'Барлық лог жазбаларының толық мәліметтерін көрсету';
+
+  @override
+  String get collapseLogsDesc => 'Барлық лог жазбаларын ықшам көрініске жию';
+
+  @override
+  String get clearHistoryDesc => 'Жадтан барлық сақталған лог жазбаларын жою';
+
+  @override
+  String get shareLogsFileDesc =>
+      'Логтарды файлға экспорттап, жүйелік бөлісу мәзірі арқылы жіберу';
+
+  @override
+  String get navigationFlowDesc =>
+      'Қосымшадағы экрандар арасындағы ауысулар тізбегін қарау';
+
+  @override
+  String get dailySessionsDesc =>
+      'Алдыңғы қосымша сессияларынан сақталған лог файлдарын шолу';
+
+  @override
+  String get logViewerDesc =>
+      'Лог файлдарын талдау үшін сыртқы көрсеткішті ашу';
+
+  @override
+  String get selectAll => 'Барлығын таңдау';
+
+  @override
+  String get deselectAll => 'Барлығын алу';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => 'Деректер қоры';
+
+  @override
+  String get groupNavigation => 'Навигация';
+
+  @override
+  String get groupGeneral => 'Жалпы';
+
+  @override
+  String get categoryAuth => 'Auth';
+
+  @override
+  String get categoryStorage => 'Storage';
+
+  @override
+  String get categoryPush => 'Push';
+
+  @override
+  String get categoryPayment => 'Payment';
+
+  @override
+  String get categoryAnalytics => 'Analytics';
+
+  @override
+  String get categorySse => 'SSE';
+
+  @override
+  String get categoryGrpc => 'gRPC';
+
+  @override
+  String get categoryGraphql => 'GraphQL';
+
+  @override
+  String get wsErrorLogDesc => 'WebSocket connection error';
+
+  @override
+  String get authSuccessLogDesc => 'Authentication successful';
+
+  @override
+  String get authErrorLogDesc => 'Authentication failed';
+
+  @override
+  String get storageResultLogDesc => 'Storage operation completed';
+
+  @override
+  String get storageQueryLogDesc => 'Storage query executed';
+
+  @override
+  String get storageErrorLogDesc => 'Storage operation failed';
+
+  @override
+  String get pushReceivedLogDesc => 'Push notification received';
+
+  @override
+  String get pushSentLogDesc => 'Push notification sent';
+
+  @override
+  String get pushErrorLogDesc => 'Push notification error';
+
+  @override
+  String get paymentSuccessLogDesc => 'Payment completed';
+
+  @override
+  String get paymentErrorLogDesc => 'Payment failed';
+
+  @override
+  String get stateChangeLogDesc => 'State changed';
+
+  @override
+  String get stateErrorLogDesc => 'State management error';
+
+  @override
+  String get sseReceivedLogDesc => 'Server-Sent Event received';
+
+  @override
+  String get sseErrorLogDesc => 'SSE connection error';
+
+  @override
+  String get grpcRequestLogDesc => 'gRPC request sent';
+
+  @override
+  String get grpcResponseLogDesc => 'gRPC response received';
+
+  @override
+  String get grpcErrorLogDesc => 'gRPC call failed';
+
+  @override
+  String get graphqlRequestLogDesc => 'GraphQL query sent';
+
+  @override
+  String get graphqlResponseLogDesc => 'GraphQL response received';
+
+  @override
+  String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
+  String get transitionPush => 'Push';
+
+  @override
+  String get transitionPop => 'Pop';
+
+  @override
+  String get transitionReplace => 'Ауыстыру';
+
+  @override
+  String get transitionRemove => 'Жою';
+
+  @override
+  String get transitionStartUserGesture => 'Қолданушы қимылын бастау';
+
+  @override
+  String get transitionStopUserGesture => 'Қолданушы қимылын аяқтау';
+
+  @override
+  String get copyAsCurl => 'cURL ретінде көшіру';
+
+  @override
+  String get relativeJustNow => 'жаңа ғана';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '$count сек бұрын';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count мин бұрын';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count сағ бұрын';
+  }
+
+  @override
+  String get showOnlyThisType => 'Тек осы түрді көрсету';
+
+  @override
+  String get hideThisType => 'Осы түрді жасыру';
+
+  @override
+  String get clearAllFilters => 'Барлық сүзгілерді тазалау';
+
+  @override
+  String get httpRequest => 'Сұраныс';
+
+  @override
+  String get httpResponse => 'Жауап';
+
+  @override
+  String get pending => 'Күтуде';
+
+  @override
+  String get groupHttpLogs => 'HTTP топтау';
+
+  @override
+  String get groupHttpLogsDesc =>
+      'Байланысты HTTP сұраныстар мен жауаптарды топтау';
+
+  @override
+  String get duration => 'Ұзақтығы';
+
+  @override
+  String get ungroupHttpLogs => 'HTTP топтан шығару';
+
+  @override
+  String get ungroupHttpLogsDesc =>
+      'HTTP сұраныстар мен жауаптарды бөлек жазбалар ретінде көрсету';
+
+  @override
+  String get tips => 'Кеңестер';
+
+  @override
+  String get tipSearchLogs => 'Мәтін бойынша іздеу — JSON денесінен де іздейді';
+
+  @override
+  String get tipLongPress =>
+      'Жылдам әрекеттер үшін лог карточкасын ұзақ басыңыз';
+
+  @override
+  String get tipFilter =>
+      'Чиптер немесе параметрлер арқылы лог түрі бойынша сүзу';
+
+  @override
+  String get tipExpand => 'Іздеумен толық JSON көру үшін кеңейтуді басыңыз';
+
+  @override
+  String get tipKeyboard =>
+      'Навигация үшін көрсеткілер, ашу үшін Enter, іздеу үшін /';
+
+  @override
+  String get tipNavigationFlow =>
+      'Маршруттар тарихын көру үшін баптаулардан Навигация ағынын ашыңыз';
+
+  @override
+  String get tipShareSession =>
+      'Бағ-есептер үшін лог файлымен бөлісіңіз — деректер автоматты түрде жасырылады';
+
+  @override
+  String get tipReverseLogs =>
+      'Логтар ретін аудару үшін тақырыптағы көрсеткілерді басыңыз';
+
+  @override
+  String get gotIt => 'Түсінікті';
+
+  @override
+  String get filters => 'Сүзгі';
+
+  @override
+  String get compare => 'Салыстыру';
+
+  @override
+  String get cancelCompare => 'Болдырмау';
+
+  @override
+  String get tapWidgetToCompare => 'Салыстыру үшін виджетті басыңыз';
+
+  @override
+  String get comparedWith => 'Салыстыру нысаны';
+
+  @override
+  String get distanceLeft => 'сол';
+
+  @override
+  String get distanceTop => 'жоғары';
+
+  @override
+  String get distanceRight => 'оң';
+
+  @override
+  String get distanceBottom => 'төмен';
+
+  @override
+  String get searchMode => 'Іздеу режимі';
+
+  @override
+  String get logTypes => 'Лог түрлері';
+
+  @override
+  String get includeSensitiveData => 'Құпия деректерді қосу';
+
+  @override
+  String get correlationIdCopied =>
+      'ID көшірілді. Байланысты логтарды сүзу үшін іздеуге қойыңыз.';
+
+  @override
+  String get downloadLogsFile => 'Лог файлын жүктеу';
+
+  @override
+  String logsFileSaved(String path) {
+    return 'Файл сақталды: $path';
+  }
+
+  @override
+  String get back => 'Артқа';
+
+  @override
+  String get close => 'Жабу';
+
+  @override
+  String get clearSearch => 'Іздеуді тазалау';
+
+  @override
+  String get previousMatch => 'Алдыңғы сәйкестік';
+
+  @override
+  String get nextMatch => 'Келесі сәйкестік';
+
+  @override
+  String get moreOptions => 'Қосымша';
 }

@@ -24,10 +24,10 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get aiWelcomeMessage => 'こんにちは！どのようにお手伝いしましょうか？';
 
   @override
-  String get allLogsCopied => 'すべてのログがバッファにコピーされました';
+  String get allLogsCopied => 'すべてのログがクリップボードにコピーされました';
 
   @override
-  String get analyticsLogDesc => '分析サービスにイベントを送信するログ';
+  String get analyticsLogDesc => 'イベントが追跡され、アナリティクスに送信されました';
 
   @override
   String get apiToken => 'APIトークン';
@@ -117,7 +117,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String counterTimesText(Object number) {
-    return 'このボタンを$number回押しました:';
+    return 'このボタンを$number回押しました';
   }
 
   @override
@@ -130,13 +130,13 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get creatingIssue => '問題を作成中';
 
   @override
-  String get criticalLogDesc => '即時対応が必要な重大なエラーやイベントを記録するために使用されるタグ';
+  String get criticalLogDesc => '即時対応が必要な重大なエラー';
 
   @override
   String get data => 'データ';
 
   @override
-  String get debugLogDesc => 'アプリの動作を分析するためのデバッグ情報を記録するタグ';
+  String get debugLogDesc => '動作分析のための技術的な詳細情報';
 
   @override
   String get description => '説明';
@@ -156,7 +156,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get errorCacheClearing => 'キャッシュクリア時のエラー';
 
   @override
-  String get errorLogDesc => 'アプリで発生するエラーを記録するために使用されるタグ';
+  String get errorLogDesc => 'アプリで問題が発生しました';
 
   @override
   String get errorMessage => 'エラーメッセージ';
@@ -165,7 +165,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get errorType => 'エラータイプ';
 
   @override
-  String get exceptionLogDesc => 'アプリで発生する例外を記録するために使用されるタグ';
+  String get exceptionLogDesc => '予期しないエラーが発生しました';
 
   @override
   String get expandLogs => 'ログを展開';
@@ -192,7 +192,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get goToLogger => 'ロガーへ移動';
 
   @override
-  String get goodLogDesc => 'アプリでの成功した操作や肯定的なイベントを記録するために使用されるタグ';
+  String get goodLogDesc => '操作が正常に完了しました';
 
   @override
   String get headers => 'ヘッダー';
@@ -210,7 +210,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get httpResponseLogDesc => 'サーバーレスポンスログ';
 
   @override
-  String get infoLogDesc => 'アプリの動作に関する情報メッセージを記録するために使用されるタグ';
+  String get infoLogDesc => '現在の動作に関する一般的な情報';
 
   @override
   String get initializationFailed => '初期化に失敗しました';
@@ -244,6 +244,9 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get notFound => '見つかりません';
 
   @override
+  String get noResultsHint => '別のキーワードを試すか、フィルターを調整してください';
+
+  @override
   String get otherLogsForDevelopers => '他のログはすでに開発者によって使用されています';
 
   @override
@@ -268,7 +271,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get pleaseSelectYourProject => 'プロジェクトを選択してください';
 
   @override
-  String get printLogDesc => 'Flutterの標準印刷メソッドのログ';
+  String get printLogDesc => 'コンソールにメッセージが出力されました';
 
   @override
   String get projectDomain => 'プロジェクトドメイン';
@@ -464,7 +467,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   }
 
   @override
-  String get iSpectifyTypePrint => '印刷メソッド';
+  String get iSpectifyTypePrint => 'プリントメソッド';
 
   @override
   String iSpectifyTypePrintCount(Object text) {
@@ -523,13 +526,13 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get userEmail => 'ユーザーメール';
 
   @override
-  String get verboseLogDesc => 'アプリの詳細な分析のために詳細情報を記録するタグ';
+  String get verboseLogDesc => 'デバッグのための詳細な技術情報';
 
   @override
   String get viewAndManageData => 'アプリデータの表示と管理';
 
   @override
-  String get warningLogDesc => 'アプリでの潜在的な問題に関する警告メッセージを記録するタグ';
+  String get warningLogDesc => '問題を引き起こす可能性のある潜在的な問題';
 
   @override
   String get you => 'あなた';
@@ -541,10 +544,10 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get noData => 'データなし';
 
   @override
-  String get shareLogFull => 'ログを共有（完全）';
+  String get shareLogFull => '完全なログを共有';
 
   @override
-  String get copyToClipboardTruncated => 'クリップボードにコピー（省略）';
+  String get copyToClipboardTruncated => '要約をクリップボードにコピー';
 
   @override
   String get viewThemeScheme => 'テーマスキーマ画面を表示';
@@ -680,4 +683,312 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get dbErrorLogDesc => 'データベースエラーのログ';
+
+  @override
+  String get reverseLogsDesc => 'ログの表示順序を新しい順から古い順、またはその逆に変更';
+
+  @override
+  String get copyAllLogsDesc => 'すべてのログエントリをテキストとしてクリップボードにコピー';
+
+  @override
+  String get expandLogsDesc => 'すべてのログエントリの詳細を表示';
+
+  @override
+  String get collapseLogsDesc => 'すべてのログエントリをコンパクトビューに折りたたむ';
+
+  @override
+  String get clearHistoryDesc => 'メモリからすべての保存済みログエントリを削除';
+
+  @override
+  String get shareLogsFileDesc => 'ログをファイルとしてエクスポートし、システム共有メニューで共有';
+
+  @override
+  String get navigationFlowDesc => 'アプリの画面遷移の順序を表示';
+
+  @override
+  String get dailySessionsDesc => '以前のアプリセッションから保存されたログファイルを閲覧';
+
+  @override
+  String get logViewerDesc => 'ログファイルを検査するための外部ビューアを開く';
+
+  @override
+  String get selectAll => 'すべて選択';
+
+  @override
+  String get deselectAll => 'すべて解除';
+
+  @override
+  String get groupHttp => 'HTTP';
+
+  @override
+  String get groupBloc => 'Bloc';
+
+  @override
+  String get groupRiverpod => 'Riverpod';
+
+  @override
+  String get groupWebSocket => 'WebSocket';
+
+  @override
+  String get groupDatabase => 'データベース';
+
+  @override
+  String get groupNavigation => 'ナビゲーション';
+
+  @override
+  String get groupGeneral => '一般';
+
+  @override
+  String get categoryAuth => 'Auth';
+
+  @override
+  String get categoryStorage => 'Storage';
+
+  @override
+  String get categoryPush => 'Push';
+
+  @override
+  String get categoryPayment => 'Payment';
+
+  @override
+  String get categoryAnalytics => 'Analytics';
+
+  @override
+  String get categorySse => 'SSE';
+
+  @override
+  String get categoryGrpc => 'gRPC';
+
+  @override
+  String get categoryGraphql => 'GraphQL';
+
+  @override
+  String get wsErrorLogDesc => 'WebSocket connection error';
+
+  @override
+  String get authSuccessLogDesc => 'Authentication successful';
+
+  @override
+  String get authErrorLogDesc => 'Authentication failed';
+
+  @override
+  String get storageResultLogDesc => 'Storage operation completed';
+
+  @override
+  String get storageQueryLogDesc => 'Storage query executed';
+
+  @override
+  String get storageErrorLogDesc => 'Storage operation failed';
+
+  @override
+  String get pushReceivedLogDesc => 'Push notification received';
+
+  @override
+  String get pushSentLogDesc => 'Push notification sent';
+
+  @override
+  String get pushErrorLogDesc => 'Push notification error';
+
+  @override
+  String get paymentSuccessLogDesc => 'Payment completed';
+
+  @override
+  String get paymentErrorLogDesc => 'Payment failed';
+
+  @override
+  String get stateChangeLogDesc => 'State changed';
+
+  @override
+  String get stateErrorLogDesc => 'State management error';
+
+  @override
+  String get sseReceivedLogDesc => 'Server-Sent Event received';
+
+  @override
+  String get sseErrorLogDesc => 'SSE connection error';
+
+  @override
+  String get grpcRequestLogDesc => 'gRPC request sent';
+
+  @override
+  String get grpcResponseLogDesc => 'gRPC response received';
+
+  @override
+  String get grpcErrorLogDesc => 'gRPC call failed';
+
+  @override
+  String get graphqlRequestLogDesc => 'GraphQL query sent';
+
+  @override
+  String get graphqlResponseLogDesc => 'GraphQL response received';
+
+  @override
+  String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
+  String get transitionPush => 'プッシュ';
+
+  @override
+  String get transitionPop => 'ポップ';
+
+  @override
+  String get transitionReplace => '置換';
+
+  @override
+  String get transitionRemove => '削除';
+
+  @override
+  String get transitionStartUserGesture => 'ジェスチャー開始';
+
+  @override
+  String get transitionStopUserGesture => 'ジェスチャー終了';
+
+  @override
+  String get copyAsCurl => 'cURLとしてコピー';
+
+  @override
+  String get relativeJustNow => 'たった今';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '$count秒前';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count分前';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count時間前';
+  }
+
+  @override
+  String get showOnlyThisType => 'このタイプのみ表示';
+
+  @override
+  String get hideThisType => 'このタイプを非表示';
+
+  @override
+  String get clearAllFilters => 'すべてのフィルターをクリア';
+
+  @override
+  String get httpRequest => 'リクエスト';
+
+  @override
+  String get httpResponse => 'レスポンス';
+
+  @override
+  String get pending => '保留中';
+
+  @override
+  String get groupHttpLogs => 'HTTPグループ化';
+
+  @override
+  String get groupHttpLogsDesc => '関連するHTTPリクエストとレスポンスをグループ化';
+
+  @override
+  String get duration => '所要時間';
+
+  @override
+  String get ungroupHttpLogs => 'HTTPグループ化解除';
+
+  @override
+  String get ungroupHttpLogsDesc => 'HTTPリクエストとレスポンスを個別のエントリとして表示';
+
+  @override
+  String get tips => 'ヒント';
+
+  @override
+  String get tipSearchLogs => 'テキストでログを検索 — JSON本文全体も検索します';
+
+  @override
+  String get tipLongPress => 'ログカードを長押しでクイックアクション';
+
+  @override
+  String get tipFilter => 'チップや設定でログタイプ別にフィルタリング';
+
+  @override
+  String get tipExpand => '展開をタップして検索付きの完全なJSONを表示';
+
+  @override
+  String get tipKeyboard => '矢印キーで移動、Enterで開く、/で検索';
+
+  @override
+  String get tipNavigationFlow => '設定からナビゲーションフローを開いてルート履歴を可視化';
+
+  @override
+  String get tipShareSession => 'バグ報告用にログファイルを共有 — データは自動的にマスクされます';
+
+  @override
+  String get tipReverseLogs => 'アプリバーの矢印をタップしてログの順序を反転';
+
+  @override
+  String get gotIt => '了解';
+
+  @override
+  String get filters => 'フィルター';
+
+  @override
+  String get compare => '比較';
+
+  @override
+  String get cancelCompare => 'キャンセル';
+
+  @override
+  String get tapWidgetToCompare => '比較するウィジェットをタップ';
+
+  @override
+  String get comparedWith => '比較対象';
+
+  @override
+  String get distanceLeft => '左';
+
+  @override
+  String get distanceTop => '上';
+
+  @override
+  String get distanceRight => '右';
+
+  @override
+  String get distanceBottom => '下';
+
+  @override
+  String get searchMode => '検索モード';
+
+  @override
+  String get logTypes => 'ログタイプ';
+
+  @override
+  String get includeSensitiveData => '機密データを含める';
+
+  @override
+  String get correlationIdCopied => 'IDをコピーしました。検索に貼り付けて関連ログをフィルタリングできます。';
+
+  @override
+  String get downloadLogsFile => 'ログファイルをダウンロード';
+
+  @override
+  String logsFileSaved(String path) {
+    return 'ファイル保存先: $path';
+  }
+
+  @override
+  String get back => '戻る';
+
+  @override
+  String get close => '閉じる';
+
+  @override
+  String get clearSearch => '検索をクリア';
+
+  @override
+  String get previousMatch => '前の一致';
+
+  @override
+  String get nextMatch => '次の一致';
+
+  @override
+  String get moreOptions => 'その他';
 }

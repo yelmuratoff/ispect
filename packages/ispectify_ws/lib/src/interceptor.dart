@@ -1,39 +1,46 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_ws/ispectify_ws.dart';
+import 'package:ispectify_ws/src/constants.dart';
+import 'package:ispectify_ws/src/settings.dart';
 import 'package:ws/ws.dart';
 
+/// WebSocket interceptor that logs events via the trace API.
 final class ISpectWSInterceptor
-    with BaseNetworkInterceptor
+    with NetworkLoggerMixin, NetworkRedactionMixin
     implements WSInterceptor {
   ISpectWSInterceptor({
     required ISpectLogger logger,
     this.settings = const ISpectWSInterceptorSettings(),
     this.onClientReady,
     RedactionService? redactor,
-  }) {
-    initializeInterceptor(logger: logger, redactor: redactor);
-  }
+  })  : _logger = logger,
+        _redactor = redactor ?? RedactionService();
 
+  final ISpectLogger _logger;
+  final RedactionService _redactor;
   final ISpectWSInterceptorSettings settings;
   final void Function(WebSocketClient)? onClientReady;
   WebSocketClient? _client;
+
+  /// Auto-generated connection ID for correlating all events of one WS session.
+  String? _connectionId;
+
+  @override
+  ISpectLogger get logger => _logger;
+
+  @override
+  RedactionService get redactor => _redactor;
 
   @override
   bool get enableRedaction => settings.enableRedaction;
 
   void setClient(WebSocketClient client) {
     _client = client;
+    _connectionId = generateTraceId();
     onClientReady?.call(client);
   }
 
-  Object _safeRedact(Object data, bool useRedaction) {
-    try {
-      final sanitized = maybeRedact(data, useRedaction: useRedaction);
-      return sanitized ?? data;
-    } catch (_) {
-      return data;
-    }
-  }
+  Object _safeRedact(Object data, bool useRedaction) =>
+      safeRedact(data, useRedaction: useRedaction);
 
   void _log({
     required Object data,
@@ -45,143 +52,148 @@ final class ISpectWSInterceptor
       return;
     }
 
-    final uri = Uri.tryParse(_client?.metrics.lastUrl ?? '');
+    if (_client == null) {
+      logger.logData(
+        ISpectLogData(
+          'WS interceptor: _client is null during $type logging. '
+          'Call setClient() before sending or receiving messages.',
+          logLevel: LogLevel.warning,
+        ),
+      );
+    }
+
+    final rawUrl = _client?.metrics.lastUrl ?? '';
     final useRedaction = settings.enableRedaction;
+    final redactedUrl = redactUrl(rawUrl, useRedaction: useRedaction);
+    final uri = Uri.tryParse(redactedUrl);
+    final url = uri?.toString() ?? '';
+    final path = uri?.path ?? '';
 
     try {
+      final operation = type == wsTypeRequest ? 'send' : 'receive';
+      const isError = false;
+      final logKey = wsCategory.pickLogKey(
+        isError: isError,
+        operation: operation,
+      );
+
+      // Lightweight preview for filter check — no expensive redaction/metrics.
+      final previewLog = ISpectLogData(
+        '$operation $url',
+        key: logKey,
+        additionalData: {
+          TraceKeys.category: wsCategory.id,
+          TraceKeys.source: 'ws',
+          TraceKeys.operation: operation,
+          TraceKeys.target: url,
+          TraceKeys.success: true,
+          if (_connectionId != null) TraceKeys.correlationId: _connectionId,
+        },
+      );
+
+      if (!_shouldLog(previewLog)) {
+        next(data);
+        return;
+      }
+
+      // Expensive operations only after filter passes.
       final safeData = _safeRedact(data, useRedaction);
-      final log = _createLog(type, safeData, uri, useRedaction);
-      if (log != null && _shouldLog(log)) {
-        logger.logData(log);
+      final metricsMap = _processMetrics(useRedaction);
+      final includeData = type == wsTypeRequest
+          ? settings.printSentData
+          : settings.printReceivedData;
+
+      final traceMeta = <String, Object?>{
+        if (includeData) 'data': safeData,
+        if (metricsMap != null) 'metrics': metricsMap,
+        'url': url,
+        'path': path,
+        NetworkLogRenderer.renderHintsKey: {
+          NetworkLogRenderer.hintPrintBody: includeData,
+        },
+      };
+
+      if (type == wsTypeRequest) {
+        _logger.wsSend(
+          source: 'ws',
+          operation: operation,
+          target: url,
+          correlationId: _connectionId,
+          config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
+          meta: traceMeta,
+        );
+      } else {
+        _logger.wsReceive(
+          source: 'ws',
+          operation: operation,
+          target: url,
+          correlationId: _connectionId,
+          config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
+          meta: traceMeta,
+        );
       }
     } catch (e, s) {
-      final errorLog = _createErrorLog(type, data, uri, e, s, useRedaction);
-      if (_shouldLog(errorLog)) {
-        logger.logData(errorLog);
+      final errMeta = <String, Object?>{'url': url, 'path': path};
+      if (type == wsTypeRequest) {
+        _logger.wsSend(
+          source: 'ws',
+          operation: 'send',
+          target: url,
+          error: e,
+          errorStackTrace: s,
+          correlationId: _connectionId,
+          config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
+          meta: errMeta,
+        );
+      } else {
+        _logger.wsReceive(
+          source: 'ws',
+          operation: 'receive',
+          target: url,
+          error: e,
+          errorStackTrace: s,
+          correlationId: _connectionId,
+          config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
+          meta: errMeta,
+        );
       }
     }
 
     next(data);
   }
 
-  ISpectLogData? _createLog(
-    String type,
-    Object safeData,
-    Uri? uri,
-    bool useRedaction,
-  ) {
+  Map<String, dynamic>? _processMetrics(bool useRedaction) {
     final metrics = _client?.metrics.toJson();
-    final url = uri.toString();
-    final path = uri?.path ?? '';
-    final metricsMap = switch (metrics) {
-      final Map<dynamic, dynamic> map => payload.stringKeyMap(map),
-      _ => null,
-    };
-
-    return switch (type) {
-      'REQUEST' => WSSentLog(
-          settings.printSentData ? '$safeData' : '',
-          type: type,
-          url: url,
-          path: path,
-          payload: _createBodyPayload(
-            safeData,
-            metrics,
-            settings.printSentData,
-            useRedaction,
-          ),
-          settings: settings,
-          metrics: metricsMap,
-        ),
-      'RESPONSE' => WSReceivedLog(
-          settings.printReceivedData ? '$safeData' : '',
-          type: type,
-          url: url,
-          path: path,
-          payload: _createBodyPayload(
-            safeData,
-            metrics,
-            settings.printReceivedData,
-            useRedaction,
-          ),
-          settings: settings,
-          metrics: metricsMap,
+    return switch (metrics) {
+      final Map<dynamic, dynamic> map => processMapData(
+          map,
+          useRedaction: useRedaction,
         ),
       _ => null,
     };
   }
 
-  WSErrorLog _createErrorLog(
-    String type,
-    Object data,
-    Uri? uri,
-    Object e,
-    StackTrace s,
-    bool useRedaction,
-  ) {
-    final safeData = _safeRedact(data, useRedaction);
-    final metrics = _client?.metrics.toJson();
-    final metricsMap = switch (metrics) {
-      final Map<dynamic, dynamic> map => payload.stringKeyMap(map),
-      _ => null,
-    };
-
-    return WSErrorLog(
-      settings.printErrorMessage
-          ? 'Failed to log $type: $e'
-          : 'Failed to log $type',
-      type: type,
-      url: uri.toString(),
-      path: uri?.path ?? '',
-      payload: _createBodyPayload(
-        safeData,
-        metrics,
-        settings.printErrorData,
-        useRedaction,
-      ),
-      exception: e,
-      stackTrace: s,
-      settings: settings,
-      metrics: metricsMap,
-    );
-  }
-
-  Map<String, dynamic> _createBodyPayload(
-    Object data,
-    Object? metrics,
-    bool includeData,
-    bool useRedaction,
-  ) {
-    final basePayload = <String, dynamic>{'metrics': metrics};
-    if (includeData) {
-      basePayload['data'] = data;
+  bool _shouldLog(ISpectLogData log) {
+    final logKey = log.key;
+    if (logKey == ISpectLogType.wsSent.key) {
+      return settings.shouldProcessSent(log);
     }
-
-    final sanitized = payload.body(
-      basePayload,
-      enableRedaction: useRedaction,
-      normalizer: (value) => value,
-    );
-
-    final map = payload.ensureMap(sanitized)
-      ..removeWhere((_, value) => value == null);
-    return map;
+    if (logKey == ISpectLogType.wsReceived.key) {
+      return settings.shouldProcessReceived(log);
+    }
+    if (logKey == ISpectLogType.wsError.key) {
+      return settings.shouldProcessError(log);
+    }
+    return true;
   }
-
-  bool _shouldLog(ISpectLogData log) => switch (log) {
-        WSSentLog() => settings.sentFilter?.call(log) ?? true,
-        WSReceivedLog() => settings.receivedFilter?.call(log) ?? true,
-        WSErrorLog() => settings.errorFilter?.call(log) ?? true,
-        _ => true,
-      };
 
   @override
   void onMessage(Object data, void Function(Object data) next) {
-    _log(data: data, type: 'RESPONSE', next: next);
+    _log(data: data, type: wsTypeResponse, next: next);
   }
 
   @override
   void onSend(Object data, void Function(Object data) next) {
-    _log(data: data, type: 'REQUEST', next: next);
+    _log(data: data, type: wsTypeRequest, next: next);
   }
 }

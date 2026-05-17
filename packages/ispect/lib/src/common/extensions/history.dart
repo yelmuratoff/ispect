@@ -29,7 +29,7 @@ extension HistoryListFlutterText on List<ISpectLogData> {
     for (final data in this) {
       sb
         ..writeln(
-          '\n${JsonTruncatorService.pretty(
+          '\n${JsonTruncator.pretty(
             data.toJson(truncated: true),
           ).truncate()}',
         ) // Ensures newline after text.

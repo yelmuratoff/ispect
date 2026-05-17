@@ -44,15 +44,34 @@ USAGE
 
 semver_bump() { # $1=version $2=kind
   local v=$1 kind=$2
+  local core pre=""
+  if [[ $v == *-* ]]; then
+    core="${v%%-*}"
+    pre="${v#*-}"
+  else
+    core="$v"
+  fi
   local major minor patch
-  IFS='.' read -r major minor patch <<<"$v"
+  IFS='.' read -r major minor patch <<<"$core"
   case $kind in
-    patch) patch=$((patch+1)) ;;
-    minor) minor=$((minor+1)); patch=0 ;;
-    major) major=$((major+1)); minor=0; patch=0 ;;
+    patch)
+      if [[ -n $pre && $pre =~ ^([A-Za-z]+)([0-9]+)$ ]]; then
+        local label="${BASH_REMATCH[1]}" num="${BASH_REMATCH[2]}"
+        num=$((num+1))
+        echo "${major}.${minor}.${patch}-${label}${num}"
+        return 0
+      fi
+      patch=$((patch+1))
+      ;;
+    minor) minor=$((minor+1)); patch=0; pre="" ;;
+    major) major=$((major+1)); minor=0; patch=0; pre="" ;;
     *) echo "[ERR] Unknown bump kind: $kind" >&2; return 1 ;;
   esac
-  echo "${major}.${minor}.${patch}"
+  if [[ -n $pre ]]; then
+    echo "${major}.${minor}.${patch}-${pre}"
+  else
+    echo "${major}.${minor}.${patch}"
+  fi
 }
 
 while [[ ${1:-} != "" ]]; do
@@ -114,7 +133,7 @@ update_internal_refs() { # $1=file
   for pkg in "${PACKAGE_NAMES[@]}"; do
     # Only adjust lines inside dependencies or dev_dependencies
     if grep -q "^  $pkg: \^" "$file"; then
-      if ! grep -q "^  $pkg: \^$VERSION" "$file"; then
+      if ! grep -q "^  $pkg: \^${VERSION}$" "$file"; then
         echo "[CHG] $file -> $pkg ^$VERSION"
         if [[ $DRY_RUN -eq 0 ]]; then
           # Use awk to scope modifications

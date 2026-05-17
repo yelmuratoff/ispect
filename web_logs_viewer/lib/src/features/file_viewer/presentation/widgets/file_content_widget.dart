@@ -61,7 +61,16 @@ class FileContentWidget extends StatelessWidget {
             onPressed: () {
               dynamic data;
               if (mimeType == 'application/json') {
-                data = jsonDecode(content);
+                try {
+                  data = jsonDecode(content);
+                } on FormatException catch (e) {
+                  ISpectToaster.showErrorToast(
+                    context,
+                    title: 'Invalid JSON',
+                    message: e.message,
+                  );
+                  return;
+                }
               } else {
                 data = content;
               }

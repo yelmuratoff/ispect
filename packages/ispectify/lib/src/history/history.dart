@@ -3,28 +3,26 @@ import 'dart:collection';
 import 'package:ispectify/ispectify.dart';
 import 'package:meta/meta.dart';
 
-/// An abstract class representing a log history storage.
+/// Contract for log history storage.
 ///
-/// This defines a common interface for managing logged data.
+/// Implementations may persist entries in-memory, on disk, or remotely.
 abstract interface class ILogHistory {
-  /// A list of stored log entries.
   List<ISpectLogData> get history;
 
-  /// Clears the log history.
   void clear();
 
-  /// Adds a new log entry to the history.
   void add(ISpectLogData data);
+
+  /// Releases resources (e.g. auto-save timers in [FileLogHistory]).
+  void dispose();
 }
 
-/// The default implementation of `ILogHistory` for managing log history.
+/// In-memory [ILogHistory] backed by a [ListQueue].
 ///
-/// This class stores log entries in-memory and follows the configuration
-/// defined in `ISpectLoggerOptions`.
+/// Respects [ISpectLoggerOptions.useHistory], [ISpectLoggerOptions.enabled],
+/// and [ISpectLoggerOptions.maxHistoryItems]. Exposes an unmodifiable view
+/// via [history] that is lazily cached and invalidated on mutation.
 class DefaultISpectLoggerHistory implements ILogHistory {
-  /// Creates a log history manager with the given `settings`.
-  ///
-  /// Optionally, an initial `history` list can be provided.
   DefaultISpectLoggerHistory(
     this.settings, {
     List<ISpectLogData>? history,
@@ -34,51 +32,48 @@ class DefaultISpectLoggerHistory implements ILogHistory {
     }
   }
 
-  /// Configuration options for logging behavior.
   final ISpectLoggerOptions settings;
 
-  /// Internal list to store log history.
   final ListQueue<ISpectLogData> _history = ListQueue<ISpectLogData>();
 
+  /// Cached unmodifiable view, invalidated on mutation.
+  List<ISpectLogData>? _cachedHistory;
+
   @override
-  List<ISpectLogData> get history => List<ISpectLogData>.unmodifiable(_history);
+  List<ISpectLogData> get history =>
+      _cachedHistory ??= List<ISpectLogData>.unmodifiable(_history);
 
   @override
   void clear() {
     _history.clear();
+    _cachedHistory = null;
+  }
+
+  @override
+  void dispose() {
+    // No-op for in-memory history.
   }
 
   @override
   void add(ISpectLogData data) {
     if (!settings.useHistory || !settings.enabled) return;
-
-    // If maxHistoryItems is 0 or negative, disable history
-    if (settings.maxHistoryItems <= 0) return;
-
-    // Enforce max history size
-    _trimIfNeeded();
-    _history.addLast(data);
+    _addEntry(data);
   }
 
-  /// Adds data to history bypassing the useHistory check.
-  /// This method is intended for testing purposes only.
+  /// Adds data bypassing the [ISpectLoggerOptions.useHistory] guard.
   @visibleForTesting
-  void addForTesting(ISpectLogData data) {
-    // If maxHistoryItems is 0 or negative, disable history
-    if (settings.maxHistoryItems <= 0) return;
+  void addForTesting(ISpectLogData data) => _addEntry(data);
 
-    _trimIfNeeded();
-    _history.addLast(data);
-  }
-
-  void _trimIfNeeded() {
+  void _addEntry(ISpectLogData data) {
     final maxItems = settings.maxHistoryItems;
-    if (maxItems <= 0) {
-      _history.clear();
-      return;
-    }
-    while (_history.length >= maxItems) {
+    if (maxItems <= 0) return;
+
+    if (_history.length >= maxItems) {
       _history.removeFirst();
+      _cachedHistory = null;
     }
+
+    _history.addLast(data);
+    _cachedHistory = null;
   }
 }

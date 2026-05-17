@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/request.dart';
+import 'package:ispectify_http/src/utils/multipart_serializer.dart';
 
 class HttpResponseData {
   HttpResponseData({
@@ -10,6 +9,7 @@ class HttpResponseData {
     required this.baseResponse,
     required this.requestData,
     required this.multipartRequest,
+    this.preDecodedBody,
   });
 
   final BaseResponse baseResponse;
@@ -17,126 +17,93 @@ class HttpResponseData {
   final MultipartRequest? multipartRequest;
   final HttpRequestData requestData;
 
-  Map<String, dynamic> toJson({
-    RedactionService? redactor,
+  /// Optional pre-decoded body to avoid redundant JSON parsing.
+  /// When provided, [toJson] will use this value instead of re-decoding
+  /// [response.body].
+  final Object? preDecodedBody;
+
+  Map<String, dynamic> toJson() {
+    final resp = response;
+    final preDecoded = preDecodedBody;
+    final multipart = multipartRequest;
+    return <String, dynamic>{
+      // --- Status: first thing you check ---
+      NetworkJsonKeys.statusCode: baseResponse.statusCode,
+      NetworkJsonKeys.statusMessage: baseResponse.reasonPhrase,
+
+      // --- Identity ---
+      NetworkJsonKeys.method: baseResponse.request?.method,
+      NetworkJsonKeys.url: baseResponse.request?.url.toString(),
+
+      // --- Payload ---
+      NetworkJsonKeys.headers: baseResponse.headers,
+      if (resp != null)
+        NetworkJsonKeys.body: preDecoded ?? _tryDecodeJson(resp.body),
+      if (resp != null)
+        NetworkJsonKeys.bodyBytes: resp.bodyBytes.length.toString(),
+      NetworkJsonKeys.contentLength: baseResponse.contentLength,
+
+      // --- Redirects ---
+      NetworkJsonKeys.isRedirect: baseResponse.isRedirect,
+
+      // --- Behaviour ---
+      NetworkJsonKeys.persistentConnection: baseResponse.persistentConnection,
+
+      // --- Multipart (if applicable) ---
+      if (multipart != null)
+        NetworkJsonKeys.multipartRequest:
+            HttpMultipartSerializer.serialize(multipart),
+
+      // --- Original request (reference) ---
+      NetworkJsonKeys.request: requestData.toJson(),
+    };
+  }
+
+  static void redact(
+    Map<String, dynamic> map,
+    RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) {
-    final map = <String, dynamic>{
-      'url': baseResponse.request?.url.toString(),
-      'method': baseResponse.request?.method,
-      'status-code': baseResponse.statusCode,
-      'status-message': baseResponse.reasonPhrase,
-      'request-data': redactor == null
-          ? requestData.toJson()
-          : requestData.toJson(
-              redactor: redactor,
-              ignoredValues: ignoredValues,
-              ignoredKeys: ignoredKeys,
-            ),
-      'is-redirect': baseResponse.isRedirect,
-      'content-length': baseResponse.contentLength,
-      'persistent-connection': baseResponse.persistentConnection,
-      if (response != null)
-        'body': redactor != null
-            ? _getRedactedBody(
-                response!.body,
-                redactor,
-                ignoredValues,
-                ignoredKeys,
-              )
-            : response!.body,
-      if (response != null && redactor == null)
-        'body-bytes': response!.bodyBytes.toString(),
-      if (multipartRequest != null)
-        'multipart-request': {
-          'fields': multipartRequest!.fields,
-          'files': multipartRequest!.files
-              .map(
-                (file) => {
-                  'filename': file.filename,
-                  'length': file.length,
-                  'contentType': file.contentType.toString(),
-                  'field': file.field,
-                },
-              )
-              .toList(),
-        },
-      'headers': baseResponse.headers,
-    };
+    NetworkMapRedactor.redactUrl(map, redactor);
+    final redactedHeaders = NetworkMapRedactor.redactHeaders(
+      map,
+      redactor,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    if (redactedHeaders != null) {
+      map[NetworkJsonKeys.headers] =
+          redactedHeaders.map((k, v) => MapEntry(k, v?.toString() ?? ''));
+    }
+    NetworkMapRedactor.redactMultipart(
+      map,
+      redactor,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
 
-    if (redactor == null) return map;
-
-    // Redact headers (Map<String, String>) while preserving shape
-
-    map['headers'] = redactor
-        .redactHeaders(
-          baseResponse.headers,
-          ignoredValues: ignoredValues,
-          ignoredKeys: ignoredKeys,
-        )
-        .map((k, v) => MapEntry(k, v?.toString() ?? ''));
-
-    // Redact multipart request fields/files and mask filenames
-    if (multipartRequest != null && map['multipart-request'] is Map) {
-      final mp = Map<String, dynamic>.from(
-        map['multipart-request'] as Map,
-      );
-
-      // Fields
-      final fields = mp['fields'];
-      if (fields is Map) {
-        final red = redactor.redact(
-          fields,
-          ignoredValues: ignoredValues,
-          ignoredKeys: ignoredKeys,
-        )! as Map;
-        mp['fields'] = red.map((k, v) => MapEntry(k.toString(), v));
-      }
-
-      // Files
-      final files = mp['files'];
-      if (files is List) {
-        final red = redactor.redact(
-          files,
-          ignoredValues: ignoredValues,
-          ignoredKeys: ignoredKeys,
-        )! as List;
-        mp['files'] =
-            red.map((e) => Map<String, Object?>.from(e as Map)).toList();
-      }
-
-      map['multipart-request'] = mp;
+    final body = map[NetworkJsonKeys.body];
+    if (body != null) {
+      map[NetworkJsonKeys.body] = redactor.redact(
+            body,
+            ignoredValues: ignoredValues,
+            ignoredKeys: ignoredKeys,
+          ) ??
+          body;
     }
 
-    return map;
-  }
-
-  /// Helper method to get redacted body content
-  static String _getRedactedBody(
-    String body,
-    RedactionService redactor,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeys,
-  ) {
-    try {
-      // Try to parse as JSON and redact the parsed object
-      final parsed = jsonDecode(body);
-      final redacted = redactor.redact(
-        parsed,
+    final requestMap = map[NetworkJsonKeys.request];
+    if (requestMap is Map<String, dynamic>) {
+      HttpRequestData.redact(
+        requestMap,
+        redactor,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
-      // Return the redacted object as JSON string
-      return jsonEncode(redacted);
-    } catch (_) {
-      // If not valid JSON, redact as string
-      final redacted = redactor.redact(
-        body,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-      return redacted?.toString() ?? body;
     }
   }
+
+  static Object _tryDecodeJson(String body) =>
+      NetworkPayloadSanitizer.decodeJsonGracefully(body) ?? body;
 }

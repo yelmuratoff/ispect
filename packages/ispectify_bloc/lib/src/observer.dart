@@ -1,6 +1,7 @@
+import 'dart:collection';
+
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/src/models/_models.dart';
 import 'package:ispectify_bloc/src/settings.dart';
 
 typedef BlocEventCallback = void Function(
@@ -28,11 +29,7 @@ typedef BlocLifecycleCallback = void Function(BlocBase<dynamic> bloc);
 
 typedef BlocFilterPredicate = bool Function(Object? candidate);
 
-/// `BLoC` logger on `ISpectLogger` base
-///
-/// `logger` field is the current `ISpectLogger` instance.
-/// Provide your instance if your application uses `ISpectLogger` as the default logger
-/// Common ISpectLogger instance will be used by default
+/// BLoC observer that logs lifecycle events via the unified trace API.
 class ISpectBlocObserver extends BlocObserver {
   ISpectBlocObserver({
     ISpectLogger? logger,
@@ -59,6 +56,11 @@ class ISpectBlocObserver extends BlocObserver {
   final ISpectBlocSettings settings;
   final List<Pattern> filters;
   final BlocFilterPredicate? filterPredicate;
+
+  /// Event correlation: stores pending eventIds per bloc instance.
+  /// Queue (FIFO) handles concurrent events correctly.
+  /// Expando is GC-safe — cleaned when Bloc is destroyed.
+  static final _pendingEventIds = Expando<Queue<String>>('bloc_event_ids');
 
   bool _isFiltered(Object? candidate) {
     if (filterPredicate?.call(candidate) ?? false) {
@@ -94,38 +96,54 @@ class ISpectBlocObserver extends BlocObserver {
     return !_isFiltered(candidate);
   }
 
-  void _logUnhandledError(
-    BlocBase<dynamic> bloc,
-    Object error,
-    StackTrace stackTrace,
-  ) {
-    onBlocError?.call(bloc, error, stackTrace);
-    _logger.logData(
-      BlocErrorLog(
-        bloc: bloc,
-        thrown: error,
-        stackTrace: stackTrace,
-      ),
-    );
+  void _logCallbackError(String callbackName, Object error) {
+    try {
+      _logger.warning(
+        'ISpectBlocObserver: $callbackName callback threw: $error',
+      );
+    } catch (_) {}
   }
+
+  Map<String, Object?>? _applyMeta(Map<String, Object?>? meta) =>
+      settings.isRedactionActive
+          ? settings.redactAdditionalData(meta ?? {})
+          : meta;
 
   @override
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     super.onEvent(bloc, event);
-    if (!_shouldLog(toggle: settings.printEvents, candidate: event)) {
+    if (!_shouldLog(toggle: settings.printEvents, candidate: bloc)) {
       return;
     }
     final accepted = settings.eventFilter?.call(bloc, event) ?? true;
     if (!accepted) {
       return;
     }
-    onBlocEvent?.call(bloc, event);
-    _logger.logData(
-      BlocEventLog(
-        bloc: bloc,
-        event: event,
-        settings: settings,
-      ),
+    try {
+      onBlocEvent?.call(bloc, event);
+    } catch (callbackError) {
+      _logCallbackError('onBlocEvent', callbackError);
+    }
+
+    final eventId = generateTraceId();
+    (_pendingEventIds[bloc] ??= Queue<String>()).add(eventId);
+
+    final blocType = bloc.runtimeType.toString();
+    final eventTypeName = event.runtimeType.toString();
+    _logger.stateChange(
+      source: 'bloc',
+      operation: 'event',
+      stateName: blocType,
+      success: true,
+      correlationId: eventId,
+      consoleMessage: settings.printEventFullData && event != null
+          ? '[bloc] event → $blocType\nEvent($eventTypeName): $event'
+          : '[bloc] event → $blocType ($eventTypeName)',
+      meta: _applyMeta({
+        'blocType': blocType,
+        'eventType': eventTypeName,
+        if (settings.printEventFullData && event != null) 'event': event,
+      }),
     );
   }
 
@@ -135,40 +153,85 @@ class ISpectBlocObserver extends BlocObserver {
     Transition<dynamic, dynamic> transition,
   ) {
     super.onTransition(bloc, transition);
-    if (!_shouldLog(toggle: settings.printTransitions, candidate: transition)) {
+    if (!_shouldLog(toggle: settings.printTransitions, candidate: bloc)) {
       return;
     }
     final accepted = settings.transitionFilter?.call(bloc, transition) ?? true;
     if (!accepted) {
       return;
     }
-    onBlocTransition?.call(bloc, transition);
-    _logger.logData(
-      BlocTransitionLog(
-        bloc: bloc,
-        transition: transition,
-        settings: settings,
+    try {
+      onBlocTransition?.call(bloc, transition);
+    } catch (callbackError) {
+      _logCallbackError('onBlocTransition', callbackError);
+    }
+
+    final eventId = _pendingEventIds[bloc]?.firstOrNull;
+    final blocType = bloc.runtimeType.toString();
+    final currentStateFormatted = settings.formatState(transition.currentState);
+    final nextStateFormatted = settings.formatState(transition.nextState);
+    final eventTypeName = transition.event.runtimeType.toString();
+    _logger.stateChange(
+      source: 'bloc',
+      operation: 'transition',
+      stateName: blocType,
+      success: true,
+      correlationId: eventId,
+      consoleMessage: _buildBlocTransitionMessage(
+        blocType: blocType,
+        eventTypeName: eventTypeName,
+        currentState: currentStateFormatted,
+        nextState: nextStateFormatted,
+        printEventFullData: settings.printEventFullData,
+        event: transition.event,
       ),
+      meta: _applyMeta({
+        'blocType': blocType,
+        'eventType': eventTypeName,
+        'currentState': currentStateFormatted,
+        'nextState': nextStateFormatted,
+        if (settings.printEventFullData) 'event': transition.event,
+      }),
     );
   }
 
   @override
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
-    if (!_shouldLog(toggle: settings.printChanges, candidate: change)) {
+    if (!_shouldLog(toggle: settings.printChanges, candidate: bloc)) {
       return;
     }
     final accepted = settings.changeFilter?.call(bloc, change) ?? true;
     if (!accepted) {
       return;
     }
-    onBlocChange?.call(bloc, change);
-    _logger.logData(
-      BlocStateLog(
-        bloc: bloc,
-        change: change,
-        settings: settings,
+    try {
+      onBlocChange?.call(bloc, change);
+    } catch (callbackError) {
+      _logCallbackError('onBlocChange', callbackError);
+    }
+
+    // Peek eventId (no pop — pop happens only in onDone)
+    final eventId = _pendingEventIds[bloc]?.firstOrNull;
+    final blocType = bloc.runtimeType.toString();
+    final currentStateFormatted = settings.formatState(change.currentState);
+    final nextStateFormatted = settings.formatState(change.nextState);
+    _logger.stateChange(
+      source: 'bloc',
+      operation: 'state',
+      stateName: blocType,
+      success: true,
+      correlationId: eventId,
+      consoleMessage: _buildBlocChangeMessage(
+        blocType: blocType,
+        currentState: currentStateFormatted,
+        nextState: nextStateFormatted,
       ),
+      meta: _applyMeta({
+        'blocType': blocType,
+        'currentState': currentStateFormatted,
+        'nextState': nextStateFormatted,
+      }),
     );
   }
 
@@ -178,7 +241,21 @@ class ISpectBlocObserver extends BlocObserver {
     if (!_shouldLog(toggle: settings.printErrors, candidate: error)) {
       return;
     }
-    _logUnhandledError(bloc, error, stackTrace);
+    try {
+      onBlocError?.call(bloc, error, stackTrace);
+    } catch (callbackError) {
+      _logCallbackError('onBlocError', callbackError);
+    }
+
+    final blocType = bloc.runtimeType.toString();
+    _logger.stateChange(
+      source: 'bloc',
+      operation: 'error',
+      stateName: blocType,
+      error: error,
+      errorStackTrace: stackTrace,
+      meta: _applyMeta({'blocType': blocType}),
+    );
   }
 
   @override
@@ -187,8 +264,20 @@ class ISpectBlocObserver extends BlocObserver {
     if (!_shouldLog(toggle: settings.printCreations, candidate: bloc)) {
       return;
     }
-    onBlocCreate?.call(bloc);
-    _logger.logData(BlocCreateLog(bloc: bloc));
+    try {
+      onBlocCreate?.call(bloc);
+    } catch (callbackError) {
+      _logCallbackError('onBlocCreate', callbackError);
+    }
+
+    final blocType = bloc.runtimeType.toString();
+    _logger.stateChange(
+      source: 'bloc',
+      operation: 'create',
+      stateName: blocType,
+      success: true,
+      meta: _applyMeta({'blocType': blocType}),
+    );
   }
 
   @override
@@ -197,8 +286,23 @@ class ISpectBlocObserver extends BlocObserver {
     if (!_shouldLog(toggle: settings.printClosings, candidate: bloc)) {
       return;
     }
-    onBlocClose?.call(bloc);
-    _logger.logData(BlocCloseLog(bloc: bloc));
+    try {
+      onBlocClose?.call(bloc);
+    } catch (callbackError) {
+      _logCallbackError('onBlocClose', callbackError);
+    }
+
+    final blocType = bloc.runtimeType.toString();
+    _logger.stateChange(
+      source: 'bloc',
+      operation: 'close',
+      stateName: blocType,
+      success: true,
+      meta: _applyMeta({'blocType': blocType}),
+    );
+
+    // Clear any pending event IDs for this bloc to prevent memory leaks.
+    _pendingEventIds[bloc] = null;
   }
 
   @override
@@ -209,24 +313,63 @@ class ISpectBlocObserver extends BlocObserver {
     StackTrace? stackTrace,
   ]) {
     super.onDone(bloc, event, error, stackTrace);
+
+    // Pop eventId BEFORE any early returns to prevent memory leaks.
+    final queue = _pendingEventIds[bloc];
+    final eventId = queue?.firstOrNull;
+    if (queue != null && queue.isNotEmpty) queue.removeFirst();
+
     final isEnabled = settings.enabled && !_isFiltered(bloc);
-    if (!isEnabled) {
-      return;
-    }
-    final shouldLogCompletion =
-        (settings.printCompletions && error == null) || error != null;
-    if (!shouldLogCompletion) {
-      return;
-    }
-    _logger.logData(
-      BlocDoneLog(
-        bloc: bloc,
-        settings: settings,
-        event: event,
-        hasError: error != null,
-        error: error,
-        stackTrace: stackTrace,
-      ),
+    if (!isEnabled) return;
+
+    final shouldLogCompletion = (settings.printCompletions && error == null) ||
+        (settings.printErrors && error != null);
+    if (!shouldLogCompletion) return;
+
+    final blocType = bloc.runtimeType.toString();
+    final eventTypeName = event?.runtimeType.toString();
+    _logger.stateChange(
+      source: 'bloc',
+      operation: 'done',
+      stateName: blocType,
+      success: error == null,
+      error: error,
+      errorStackTrace: stackTrace,
+      correlationId: eventId,
+      consoleMessage: settings.printEventFullData && event != null
+          ? '[bloc] done → $blocType\nEvent($eventTypeName): $event'
+          : '[bloc] done → $blocType${eventTypeName != null ? ' ($eventTypeName)' : ''}',
+      meta: _applyMeta({
+        'blocType': blocType,
+        if (event != null) 'eventType': eventTypeName,
+        if (settings.printEventFullData && event != null) 'event': event,
+        'hasError': error != null,
+      }),
     );
   }
+
+  static String _buildBlocTransitionMessage({
+    required String blocType,
+    required String eventTypeName,
+    required Object currentState,
+    required Object nextState,
+    required bool printEventFullData,
+    required Object? event,
+  }) {
+    final buf = StringBuffer('[bloc] transition → $blocType')
+      ..write('\n$currentState → $nextState');
+    if (printEventFullData && event != null) {
+      buf.write('\nEvent($eventTypeName): $event');
+    } else {
+      buf.write(' ($eventTypeName)');
+    }
+    return buf.toString();
+  }
+
+  static String _buildBlocChangeMessage({
+    required String blocType,
+    required Object currentState,
+    required Object nextState,
+  }) =>
+      '[bloc] state → $blocType\n$currentState → $nextState';
 }

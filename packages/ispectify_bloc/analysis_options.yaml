@@ -121,7 +121,6 @@ linter:
     - prefer_constructors_over_static_methods
     - prefer_contains
     - prefer_expression_function_bodies
-    - prefer_equal_for_default_values
     - prefer_adjacent_string_concatenation
     - prefer_final_fields
     - prefer_final_in_for_each

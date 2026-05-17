@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ispect/src/features/ispect/domain/models/file_format.dart';
-import 'package:ispect/src/features/ispect/services/file_processing_service.dart';
+import 'package:ispect/src/features/log_viewer/domain/models/file_format.dart';
+import 'package:ispect/src/features/log_viewer/services/file_processing_service.dart';
 
 void main() {
   late FileProcessingService service;

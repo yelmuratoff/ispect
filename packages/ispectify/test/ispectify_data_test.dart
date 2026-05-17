@@ -21,9 +21,8 @@ void main() {
       final originalData = ISpectLogData(
         'Test message',
         logLevel: LogLevel.info,
-        title: 'Test Title',
         key: 'test-key',
-        additionalData: {
+        additionalData: const {
           'key1': 'value1',
           'key2': {'nested': 'value2'},
         },
@@ -33,7 +32,6 @@ void main() {
 
       expect(copiedData.message, equals(originalData.message));
       expect(copiedData.logLevel, equals(originalData.logLevel));
-      expect(copiedData.title, equals(originalData.title));
       expect(copiedData.key, equals(originalData.key));
       expect(copiedData.additionalData, equals(originalData.additionalData));
       expect(copiedData.time, equals(originalData.time));
@@ -46,7 +44,7 @@ void main() {
     test('copyWith() preserves additionalData when no parameters provided', () {
       final originalData = ISpectLogData(
         'Test message',
-        additionalData: {
+        additionalData: const {
           'key1': 'value1',
           'key2': {'nested': 'value2'},
         },
@@ -60,7 +58,7 @@ void main() {
     test('copyWith() allows overriding additionalData', () {
       final originalData = ISpectLogData(
         'Test message',
-        additionalData: {'original': 'data'},
+        additionalData: const {'original': 'data'},
       );
 
       final newAdditionalData = {'new': 'data'};
@@ -79,17 +77,17 @@ void main() {
         () {
       final originalData = ISpectLogData(
         'Original message',
-        title: 'Original Title',
-        additionalData: {'important': 'metadata'},
+        key: 'original-key',
+        additionalData: const {'important': 'metadata'},
       );
 
       final copiedData = originalData.copyWith(
         message: 'New message',
-        title: 'New Title',
+        key: 'new-key',
       );
 
       expect(copiedData.message, equals('New message'));
-      expect(copiedData.title, equals('New Title'));
+      expect(copiedData.key, equals('new-key'));
       expect(copiedData.additionalData, equals(originalData.additionalData));
     });
 
@@ -102,7 +100,7 @@ void main() {
       final data = ISpectLogData(
         'Test request',
         key: 'http-request',
-        additionalData: {
+        additionalData: const {
           'method': 'POST',
           'uri': 'https://example.com/api',
           'headers': {'Content-Type': 'application/json'},
@@ -112,16 +110,16 @@ void main() {
 
       final curl = data.curlCommand;
       expect(curl, isNotNull);
-      expect(curl, contains('curl -X POST "https://example.com/api"'));
-      expect(curl, contains('-H "Content-Type: application/json"'));
-      expect(curl, contains("-d '{\"key\": \"value\"}'"));
+      expect(curl, contains("curl -X 'POST' 'https://example.com/api'"));
+      expect(curl, contains("-H 'Content-Type: application/json'"));
+      expect(curl, contains("""-d '{"key": "value"}'"""));
     });
 
     test('curlCommand generates cURL for HTTP response logs', () {
       final data = ISpectLogData(
         'Response received',
         key: 'http-response',
-        additionalData: {
+        additionalData: const {
           'request-options': {
             'method': 'POST',
             'uri': 'https://example.com/api',
@@ -133,16 +131,16 @@ void main() {
 
       final curl = data.curlCommand;
       expect(curl, isNotNull);
-      expect(curl, contains('curl -X POST "https://example.com/api"'));
-      expect(curl, contains('-H "Content-Type: application/json"'));
-      expect(curl, contains("-d '{\"key\": \"value\"}'"));
+      expect(curl, contains("curl -X 'POST' 'https://example.com/api'"));
+      expect(curl, contains("-H 'Content-Type: application/json'"));
+      expect(curl, contains("""-d '{"key": "value"}'"""));
     });
 
     test('curlCommand generates cURL for HTTP error logs', () {
       final data = ISpectLogData(
         'Request failed',
         key: 'http-error',
-        additionalData: {
+        additionalData: const {
           'request-options': {
             'method': 'GET',
             'uri': 'https://example.com/fail',
@@ -155,7 +153,7 @@ void main() {
       expect(
         curl,
         equals(
-          'curl -X GET "https://example.com/fail" -H "Authorization: Bearer token"',
+          "curl -X 'GET' 'https://example.com/fail' -H 'Authorization: Bearer token'",
         ),
       );
     });

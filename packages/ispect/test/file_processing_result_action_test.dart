@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/features/ispect/domain/models/file_format.dart';
-import 'package:ispect/src/features/ispect/domain/models/file_processing_result.dart';
+import 'package:ispect/src/features/log_viewer/domain/models/file_format.dart';
+import 'package:ispect/src/features/log_viewer/domain/models/file_processing_result.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

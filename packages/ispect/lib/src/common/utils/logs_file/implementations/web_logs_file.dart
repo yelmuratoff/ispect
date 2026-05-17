@@ -42,9 +42,15 @@ class WebLogsFile extends BaseLogsFile {
     return '${safeFileName}_$timestamp.$fileType';
   }
 
-  /// Sanitizes filename for web compatibility
-  String _sanitizeFileName(String fileName) =>
-      fileName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
+  /// Sanitizes filename for web compatibility.
+  ///
+  /// Strips directory separators to prevent path traversal, then removes
+  /// any remaining non-alphanumeric characters except dashes, underscores,
+  /// and dots.
+  String _sanitizeFileName(String fileName) {
+    final baseName = fileName.split(RegExp(r'[/\\]')).last;
+    return baseName.replaceAll(RegExp(r'[^\w\-_.]'), '_');
+  }
 
   /// Creates Blob from log string using web API
   Blob _createBlobFromLogs(String logs) {
@@ -52,9 +58,28 @@ class WebLogsFile extends BaseLogsFile {
     return Blob(jsArray, BlobPropertyBag(type: 'text/plain'));
   }
 
-  /// Stores filename metadata for later retrieval
+  /// Stores filename metadata for later retrieval.
+  ///
+  /// Evicts the oldest entry when the cache exceeds [_maxCacheSize]
+  /// to prevent unbounded memory growth in long-running sessions.
   void _storeFileNameMetadata(Blob blob, String fileName) {
+    if (_fileNames.length >= _maxCacheSize) {
+      _evictOldest();
+    }
     _fileNames[blob] = fileName;
+  }
+
+  static const int _maxCacheSize = 50;
+
+  /// Evicts the oldest cached blob entry, revoking its object URL.
+  static void _evictOldest() {
+    if (_fileNames.isEmpty) return;
+    final oldest = _fileNames.keys.first;
+    final url = _objectUrls.remove(oldest);
+    if (url != null) {
+      URL.revokeObjectURL(url);
+    }
+    _fileNames.remove(oldest);
   }
 
   @override
@@ -108,7 +133,19 @@ class WebLogsFile extends BaseLogsFile {
   }
 
   @override
-  Future<void> downloadFile(
+  Future<String> saveToDevice(
+    String logs, {
+    String fileName = 'ispect_all_logs',
+    String fileType = 'json',
+  }) async {
+    final blob = await createFile(logs, fileName: fileName, fileType: fileType);
+    final savedName = _fileNames[blob] ?? '$fileName.$fileType';
+    await shareFile(blob, fileType: fileType);
+    return savedName;
+  }
+
+  @override
+  Future<void> shareFile(
     Object file, {
     String? fileName,
     String fileType = 'json',
@@ -125,6 +162,9 @@ class WebLogsFile extends BaseLogsFile {
 
     _triggerBrowserDownload(url, finalFileName);
     URL.revokeObjectURL(url);
+
+    _objectUrls.remove(file);
+    _fileNames.remove(file);
   }
 
   /// Determines final filename for download
@@ -156,9 +196,14 @@ class WebLogsFile extends BaseLogsFile {
       ..download = fileName
       ..style.display = 'none';
 
-    document.body!.appendChild(anchor);
-    anchor.click();
-    document.body!.removeChild(anchor);
+    final body = document.body;
+    if (body != null) {
+      body.appendChild(anchor);
+      anchor.click();
+      body.removeChild(anchor);
+    } else {
+      anchor.click();
+    }
   }
 
   /// Creates and immediately downloads a log file
@@ -186,14 +231,18 @@ class WebLogsFile extends BaseLogsFile {
   }
 
   /// Creates timestamped filename for direct download
-  static String _createTimestampedFileName(String fileName) {
-    final now = DateTime.now();
-    final timestamp = '${now.year}-${now.month.toString().padLeft(2, '0')}-'
-        '${now.day.toString().padLeft(2, '0')}_'
-        '${now.hour.toString().padLeft(2, '0')}-'
-        '${now.minute.toString().padLeft(2, '0')}-'
-        '${now.second.toString().padLeft(2, '0')}';
-    return '${fileName}_$timestamp.json';
+  static String _createTimestampedFileName(String fileName) =>
+      '${fileName}_${DateFormatter.nowAsFileTimestamp()}.json';
+
+  /// Revokes all cached object URLs and clears metadata.
+  ///
+  /// Call this when the log session ends to prevent memory leaks.
+  static void disposeAll() {
+    for (final url in _objectUrls.values) {
+      URL.revokeObjectURL(url);
+    }
+    _objectUrls.clear();
+    _fileNames.clear();
   }
 
   /// Executes direct download without DOM manipulation overhead

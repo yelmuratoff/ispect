@@ -7,82 +7,93 @@ class DioRequestData {
 
   final RequestOptions requestOptions;
 
-  Map<String, dynamic> toJson({
-    RedactionService? redactor,
+  /// Returns a raw JSON-compatible map of the request.
+  ///
+  /// No redaction is applied. Call [redact] on the result when redaction
+  /// is required.
+  Map<String, dynamic> toJson() {
+    final normalizedHeaders =
+        NetworkPayloadSanitizer.toStringKeyMap(requestOptions.headers);
+    final normalizedQuery =
+        NetworkPayloadSanitizer.toStringKeyMap(requestOptions.queryParameters);
+    final normalizedExtra =
+        NetworkPayloadSanitizer.toStringKeyMap(requestOptions.extra);
+    final normalizedData = _normalizeBody(requestOptions.data);
+
+    final url = requestOptions.uri.toString();
+    final baseUrl = requestOptions.baseUrl;
+    final path = requestOptions.path;
+
+    return <String, dynamic>{
+      // --- Identity: what & where ---
+      NetworkJsonKeys.method: requestOptions.method,
+      NetworkJsonKeys.url: url,
+
+      if (baseUrl.isNotEmpty) NetworkJsonKeys.baseUrl: baseUrl,
+      if (path != url) NetworkJsonKeys.path: path,
+      NetworkJsonKeys.queryParameters: normalizedQuery,
+
+      // --- Payload ---
+      NetworkJsonKeys.contentType: requestOptions.contentType,
+      NetworkJsonKeys.headers: normalizedHeaders,
+      NetworkJsonKeys.data: normalizedData,
+
+      // --- Timing ---
+      NetworkJsonKeys.connectTimeout: requestOptions.connectTimeout,
+      NetworkJsonKeys.sendTimeout: requestOptions.sendTimeout,
+      NetworkJsonKeys.receiveTimeout: requestOptions.receiveTimeout,
+
+      // --- Behaviour ---
+      NetworkJsonKeys.followRedirects: requestOptions.followRedirects,
+      NetworkJsonKeys.maxRedirects: requestOptions.maxRedirects,
+      NetworkJsonKeys.responseType: requestOptions.responseType,
+      NetworkJsonKeys.receiveDataWhenStatusError:
+          requestOptions.receiveDataWhenStatusError,
+      NetworkJsonKeys.persistentConnection: requestOptions.persistentConnection,
+      NetworkJsonKeys.preserveHeaderCase: requestOptions.preserveHeaderCase,
+      NetworkJsonKeys.listFormat: requestOptions.listFormat,
+      NetworkJsonKeys.cancelToken: requestOptions.cancelToken,
+
+      // --- Meta ---
+      NetworkJsonKeys.extra: normalizedExtra,
+    };
+  }
+
+  /// Applies in-place redaction to a map produced by [toJson].
+  static void redact(
+    Map<String, dynamic> map,
+    RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) {
-    final normalizedHeaders = _stringKeyedMap(requestOptions.headers);
-    final normalizedQuery = _stringKeyedMap(requestOptions.queryParameters);
-    final normalizedExtra = _stringKeyedMap(requestOptions.extra);
-    final normalizedData = _normalizeBody(requestOptions.data);
-
-    final map = <String, dynamic>{
-      'path': requestOptions.path,
-      'base-url': requestOptions.baseUrl,
-      'url': requestOptions.uri.toString(),
-      'method': requestOptions.method,
-      'data': normalizedData,
-      'headers': normalizedHeaders,
-      'query-parameters': normalizedQuery,
-      'extra': normalizedExtra,
-      'preserve-header-case': requestOptions.preserveHeaderCase,
-      'response-type': requestOptions.responseType,
-      'content-type': requestOptions.contentType,
-      'receive-data-when-status-error':
-          requestOptions.receiveDataWhenStatusError,
-      'follow-redirects': requestOptions.followRedirects,
-      'max-redirects': requestOptions.maxRedirects,
-      'persistent-connection': requestOptions.persistentConnection,
-      'list-format': requestOptions.listFormat,
-      'cancel-token': requestOptions.cancelToken,
-      'send-timeout': requestOptions.sendTimeout,
-      'receive-timeout': requestOptions.receiveTimeout,
-      'connect-timeout': requestOptions.connectTimeout,
-    };
-
-    if (redactor == null) {
-      return map;
-    }
-
-    // Apply redaction to known sensitive sections when a redactor is provided.
-    final hasDataKey = map.containsKey('data');
-    final Object? rawData = hasDataKey ? map['data'] : null;
-
-    map['data'] = hasDataKey
-        ? redactor.redact(
-              rawData,
-              ignoredValues: ignoredValues,
-              ignoredKeys: ignoredKeys,
-            ) ??
-            rawData
-        : null;
-
-    map['headers'] = redactor.redactHeaders(
-      normalizedHeaders,
+    NetworkMapRedactor.redactPathFields(map, redactor);
+    NetworkMapRedactor.redactUrl(map, redactor);
+    NetworkMapRedactor.redactData(
+      map,
+      redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
     );
-
-    map['query-parameters'] = redactor.redact(
-          normalizedQuery,
-          ignoredValues: ignoredValues,
-          ignoredKeys: ignoredKeys,
-        ) ??
-        normalizedQuery;
-    map['extra'] = redactor.redact(
-          normalizedExtra,
-          ignoredValues: ignoredValues,
-          ignoredKeys: ignoredKeys,
-        ) ??
-        normalizedExtra;
-
-    return map;
-  }
-
-  Map<String, dynamic> _stringKeyedMap(Map<dynamic, dynamic>? source) {
-    if (source == null || source.isEmpty) return <String, dynamic>{};
-    return source.map((key, value) => MapEntry(key.toString(), value));
+    NetworkMapRedactor.redactHeaders(
+      map,
+      redactor,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    NetworkMapRedactor.redactMapField(
+      map,
+      redactor,
+      key: NetworkJsonKeys.queryParameters,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
+    NetworkMapRedactor.redactMapField(
+      map,
+      redactor,
+      key: NetworkJsonKeys.extra,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+    );
   }
 
   Object? _normalizeBody(Object? data) {

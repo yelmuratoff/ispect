@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:ispect/src/features/ispect/options.dart';
+import 'package:ispect/src/common/services/error_handler_options.dart';
 import 'package:ispectify/ispectify.dart';
 
 class ErrorHandlerService {
@@ -15,10 +15,9 @@ class ErrorHandlerService {
   final List<String> filters;
 
   bool _isHandlingPrint = false;
-  static final RegExp _ansiPattern = RegExp(r'\x1B\[[0-9;]*[mGKH]');
 
   void setupErrorHandling({
-    required ISpectLogOptions options,
+    required ISpectErrorHandlerOptions options,
     void Function(Object, StackTrace)? onPlatformDispatcherError,
     void Function(FlutterErrorDetails, StackTrace?)? onFlutterError,
     void Function(FlutterErrorDetails, StackTrace?)? onPresentError,
@@ -212,11 +211,11 @@ class ErrorHandlerService {
     }
   }
 
-  bool _containsAnsi(String line) => line.contains(_ansiPattern);
+  bool _containsAnsi(String line) => containsAnsi(line);
 
   _ErrorSnapshot _captureStrings(Object? exception, StackTrace? stack) {
-    final message = exception?.toString() ?? '';
-    final stackStr = stack?.toString() ?? '';
+    final message = exception?.toString() ?? '<null exception>';
+    final stackStr = stack?.toString() ?? '<no stack trace>';
     return _ErrorSnapshot(message, stackStr);
   }
 }

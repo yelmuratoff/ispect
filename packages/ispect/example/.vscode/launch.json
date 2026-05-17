@@ -10,7 +10,7 @@
             "type": "dart",
             "args": [
                 "-t",
-                "lib/main.dart",
+                "lib/complex_example.dart",
             ],
         },
         {
@@ -20,7 +20,7 @@
             "flutterMode": "release",
             "args": [
                 "-t",
-                "lib/main.dart",
+                "lib/complex_example.dart",
             ]
         },
            {
@@ -30,7 +30,7 @@
             "flutterMode": "profile",
             "args": [
                 "-t",
-                "lib/main.dart",
+                "lib/complex_example.dart",
             ]
         },
     ]
