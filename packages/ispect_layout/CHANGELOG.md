@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.0.1
+
+### Fixed
+
+- `ISpectSettingsState.toJson()` no longer throws when `disabled_log_types` is non-empty. `toMap()` now returns a `List<String>` for that field instead of an unmodifiable `Set`, which `jsonEncode` could not serialize.
+
 ## 5.0.0
 
 ### Breaking Changes
