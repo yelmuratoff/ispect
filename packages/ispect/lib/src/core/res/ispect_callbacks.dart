@@ -150,7 +150,7 @@ final class ISpectSettingsState {
       'forward_error_to_console': forwardErrorToConsole,
       'max_history_items': maxHistoryItems,
       'log_truncate_length': logTruncateLength,
-      'disabled_log_types': Set.unmodifiable(disabledLogTypes.toList()),
+      'disabled_log_types': disabledLogTypes.toList(growable: false),
       'expanded_logs': expandedLogs,
       'is_log_order_reversed': isLogOrderReversed,
       'group_http_logs': groupHttpLogs,
