@@ -37,6 +37,8 @@ class ISpectFlatAppBar extends StatelessWidget implements PreferredSizeWidget {
         context.ispectThemeBackground ??
         context.appTheme.scaffoldBackgroundColor;
 
+    final leadingWidth = (toolbarHeight ?? kToolbarHeight) - 4;
+
     return AppBar(
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -44,7 +46,13 @@ class ISpectFlatAppBar extends StatelessWidget implements PreferredSizeWidget {
       shadowColor: Colors.transparent,
       backgroundColor: resolvedBg,
       toolbarHeight: toolbarHeight ?? kToolbarHeight,
-      leading: leading,
+      leading: leading == null
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Center(child: leading),
+            ),
+      leadingWidth: leading == null ? null : leadingWidth,
       title: title,
       actions: actions,
       actionsPadding: actionsPadding,
