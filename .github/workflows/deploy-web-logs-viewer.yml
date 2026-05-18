@@ -56,10 +56,10 @@ jobs:
               flutter build web --release --no-tree-shake-icons --dart-define=ISPECT_ENABLED=true
 
          - name: Setup Pages
-           uses: actions/configure-pages@v5
+           uses: actions/configure-pages@v6
 
          - name: Upload artifact
-           uses: actions/upload-pages-artifact@v3
+           uses: actions/upload-pages-artifact@v5
            with:
               path: "web_logs_viewer/build/web"
 
