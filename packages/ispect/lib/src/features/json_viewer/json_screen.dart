@@ -636,7 +636,7 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
   }
 }
 
-class _BreadcrumbBar extends StatelessWidget {
+class _BreadcrumbBar extends StatefulWidget {
   const _BreadcrumbBar({
     required this.node,
     required this.onSegmentTap,
@@ -644,6 +644,44 @@ class _BreadcrumbBar extends StatelessWidget {
 
   final NodeViewModelState node;
   final ValueChanged<NodeViewModelState> onSegmentTap;
+
+  @override
+  State<_BreadcrumbBar> createState() => _BreadcrumbBarState();
+}
+
+class _BreadcrumbBarState extends State<_BreadcrumbBar> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleScrollToEnd();
+  }
+
+  @override
+  void didUpdateWidget(_BreadcrumbBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.node != widget.node) {
+      _scheduleScrollToEnd();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scheduleScrollToEnd() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
 
   List<NodeViewModelState> _buildPath(NodeViewModelState node) {
     final path = <NodeViewModelState>[];
@@ -657,7 +695,7 @@ class _BreadcrumbBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final path = _buildPath(node);
+    final path = _buildPath(widget.node);
     final onSurface = context.appTheme.colorScheme.onSurface;
     final mutedColor = onSurface.withValues(alpha: 0.45);
     final activeColor = onSurface.withValues(alpha: 0.85);
@@ -685,6 +723,7 @@ class _BreadcrumbBar extends StatelessWidget {
                 const Gap(8),
                 Expanded(
                   child: ListView.separated(
+                    controller: _scrollController,
                     scrollDirection: Axis.horizontal,
                     itemCount: path.length,
                     separatorBuilder: (_, __) => Padding(
@@ -699,7 +738,7 @@ class _BreadcrumbBar extends StatelessWidget {
                       final segment = path[index];
                       final isLast = index == path.length - 1;
                       return GestureDetector(
-                        onTap: () => onSegmentTap(segment),
+                        onTap: () => widget.onSegmentTap(segment),
                         child: Center(
                           child: Text(
                             segment.key,
