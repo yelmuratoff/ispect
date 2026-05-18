@@ -697,8 +697,8 @@ class _BreadcrumbBarState extends State<_BreadcrumbBar> {
   Widget build(BuildContext context) {
     final path = _buildPath(widget.node);
     final onSurface = context.appTheme.colorScheme.onSurface;
-    final mutedColor = onSurface.withValues(alpha: 0.45);
-    final activeColor = onSurface.withValues(alpha: 0.85);
+    final mutedColor = onSurface.withValues(alpha: 0.25);
+    final activeColor = onSurface.withValues(alpha: 0.95);
 
     final chipColor = context.ispectCardColor;
 
@@ -724,10 +724,11 @@ class _BreadcrumbBarState extends State<_BreadcrumbBar> {
                 Expanded(
                   child: ListView.separated(
                     controller: _scrollController,
+                    physics: const ClampingScrollPhysics(),
                     scrollDirection: Axis.horizontal,
                     itemCount: path.length,
                     separatorBuilder: (_, __) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
                       child: Icon(
                         Icons.chevron_right_rounded,
                         size: 13,
@@ -737,16 +738,27 @@ class _BreadcrumbBarState extends State<_BreadcrumbBar> {
                     itemBuilder: (context, index) {
                       final segment = path[index];
                       final isLast = index == path.length - 1;
-                      return GestureDetector(
-                        onTap: () => widget.onSegmentTap(segment),
-                        child: Center(
-                          child: Text(
-                            segment.key,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight:
-                                  isLast ? FontWeight.w600 : FontWeight.w400,
-                              color: isLast ? activeColor : mutedColor,
+                      return Material(
+                        type: MaterialType.transparency,
+                        child: InkWell(
+                          onTap: () => widget.onSegmentTap(segment),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(4)),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsetsGeometry.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: Text(
+                                segment.key,
+                                style: TextStyle(
+                                  fontSize: isLast ? 11 : 10,
+                                  fontWeight: isLast
+                                      ? FontWeight.w700
+                                      : FontWeight.w300,
+                                  color: isLast ? activeColor : mutedColor,
+                                ),
+                              ),
                             ),
                           ),
                         ),
