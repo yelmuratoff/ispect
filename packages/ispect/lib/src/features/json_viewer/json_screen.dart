@@ -59,8 +59,6 @@ class _JsonScreenState extends State<JsonScreen> {
   final _scrollController = ScrollController();
   final _listController = ListController();
 
-  late JsonExplorerTheme _jsonTheme;
-
   Timer? _searchDebounceTimer;
 
   @override
@@ -76,12 +74,6 @@ class _JsonScreenState extends State<JsonScreen> {
     if (oldWidget.data['id'] != widget.data['id']) {
       _store.buildNodes(widget.data);
     }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _jsonTheme = JsonExplorerTheme.defaultThemeByContext(context);
   }
 
   @override
@@ -118,6 +110,7 @@ class _JsonScreenState extends State<JsonScreen> {
     final logKey = widget.data['key']?.toString();
     final logColor = iSpect.theme.getTypeColor(context, key: logKey);
     final logIcon = iSpect.theme.getTypeIcon(context, key: logKey);
+    final jsonTheme = JsonExplorerTheme.defaultThemeByContext(context);
     return Scaffold(
       backgroundColor: bgColor,
       appBar: ISpectFlatAppBar(
@@ -295,7 +288,7 @@ class _JsonScreenState extends State<JsonScreen> {
                         nodes: _store.displayNodes,
                         listController: _listController,
                         scrollController: _scrollController,
-                        theme: _jsonTheme,
+                        theme: jsonTheme,
                         onNodeTap: _store.selectNode,
                       ),
                     ),

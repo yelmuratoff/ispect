@@ -186,8 +186,9 @@ class JsonExplorerTheme {
         backgroundColor: focusedBg,
         fontWeight: FontWeight.bold,
       ),
-      indentationLineColor:
-          context.ispectTheme.divider?.resolve(context) ?? Colors.grey,
+      indentationLineColor: isDark
+          ? Colors.white.withValues(alpha: 0.18)
+          : Colors.black.withValues(alpha: 0.22),
     );
   }
 
