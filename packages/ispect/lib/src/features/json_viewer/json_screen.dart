@@ -6,7 +6,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
-import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
+import 'package:ispect/src/features/json_viewer/breadcrumb_bar.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
@@ -260,7 +260,7 @@ class _JsonScreenState extends State<JsonScreen> {
               if (selectedNode == null || selectedNode.parent == null) {
                 return const SizedBox.shrink();
               }
-              return _BreadcrumbBar(
+              return BreadcrumbBar(
                 node: selectedNode,
                 onSegmentTap: (node) {
                   _store.selectNode(node);
@@ -569,8 +569,6 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
                   MaterialPageRoute<void>(
                     builder: (_) => JsonScreen(
                       data: correlatedLogData,
-                      // Swap: the current data becomes the correlated data
-                      // so user can navigate back.
                       correlatedLogData: data,
                       correlatedLogLabel: _reverseLabel(correlatedLogLabel),
                       correlationDuration: correlationDuration,
@@ -624,153 +622,11 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
   /// should point to the opposite direction.
   String? _reverseLabel(String? label) {
     if (label == null) return null;
-    // Simple heuristic: labels come from l10n (httpRequest/httpResponse).
-    // We can't access l10n here, but we swap them by checking the data key.
+
     final currentKey = data['key']?.toString();
     final correlatedKey = correlatedLogData['key']?.toString();
     if (currentKey == correlatedKey) return label;
-    // The label passed is for the correlated log. After navigation,
-    // the "correlated" becomes the current data's label.
-    // Since we swap data ↔ correlatedLogData, just return the current label.
-    return label; // The caller already sets the correct label.
-  }
-}
 
-class _BreadcrumbBar extends StatefulWidget {
-  const _BreadcrumbBar({
-    required this.node,
-    required this.onSegmentTap,
-  });
-
-  final NodeViewModelState node;
-  final ValueChanged<NodeViewModelState> onSegmentTap;
-
-  @override
-  State<_BreadcrumbBar> createState() => _BreadcrumbBarState();
-}
-
-class _BreadcrumbBarState extends State<_BreadcrumbBar> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scheduleScrollToEnd();
-  }
-
-  @override
-  void didUpdateWidget(_BreadcrumbBar oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.node != widget.node) {
-      _scheduleScrollToEnd();
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _scheduleScrollToEnd() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scrollController.hasClients) return;
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-      );
-    });
-  }
-
-  List<NodeViewModelState> _buildPath(NodeViewModelState node) {
-    final path = <NodeViewModelState>[];
-    NodeViewModelState? current = node;
-    while (current != null) {
-      path.add(current);
-      current = current.parent;
-    }
-    return path.reversed.toList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final path = _buildPath(widget.node);
-    final onSurface = context.appTheme.colorScheme.onSurface;
-    final mutedColor = onSurface.withValues(alpha: 0.25);
-    final activeColor = onSurface.withValues(alpha: 0.95);
-
-    final chipColor = context.ispectCardColor;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: chipColor,
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: SizedBox(
-            height: 22,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.account_tree_outlined,
-                  size: 13,
-                  color: mutedColor,
-                ),
-                const Gap(8),
-                Expanded(
-                  child: ListView.separated(
-                    controller: _scrollController,
-                    physics: const ClampingScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: path.length,
-                    separatorBuilder: (_, __) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: Icon(
-                        Icons.chevron_right_rounded,
-                        size: 13,
-                        color: mutedColor,
-                      ),
-                    ),
-                    itemBuilder: (context, index) {
-                      final segment = path[index];
-                      final isLast = index == path.length - 1;
-                      return Material(
-                        type: MaterialType.transparency,
-                        child: InkWell(
-                          onTap: () => widget.onSegmentTap(segment),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(4)),
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsetsGeometry.symmetric(
-                                horizontal: 4,
-                              ),
-                              child: Text(
-                                segment.key,
-                                style: TextStyle(
-                                  fontSize: isLast ? 11 : 10,
-                                  fontWeight: isLast
-                                      ? FontWeight.w700
-                                      : FontWeight.w300,
-                                  color: isLast ? activeColor : mutedColor,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    return label;
   }
 }
