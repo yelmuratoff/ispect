@@ -2,9 +2,19 @@
 
 ## 5.0.3
 
+### Added
+
+- The log viewer app bar now surfaces aggregate log statistics and a filter count badge, so active filters and totals are visible without opening the filter sheet.
+- The JSON viewer breadcrumb bar auto-scrolls to the end as you drill in, keeping the current path segment in view on deep structures.
+
+### Improvements
+
+- The JSON viewer's path navigation got a visual refresh: updated segment colors, tighter spacing, and tap-to-jump segments. The breadcrumb bar moved to its own file for easier reuse.
+- App bar leading icons gained consistent padding and dynamic width so action targets stay tappable across varied layouts.
+
 ### Fixed
 
-- `ISpectSettingsState.toJson()` no longer throws when `disabled_log_types` is non-empty. `toMap()` now returns a `List<String>` for that field instead of an unmodifiable `Set`, which `jsonEncode` could not serialize.
+- `ISpectSettingsState.toJson()` no longer throws when `disabled_log_types` is non-empty. `toMap()` now returns a `List<String>` for that field instead of an unmodifiable `Set`.
 
 ## 5.0.0
 
