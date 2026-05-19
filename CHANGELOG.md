@@ -1,5 +1,20 @@
 # Changelog
 
+## 5.0.4
+
+### Added
+
+- **Layout inspector breadcrumb:** The selected widget's hit-test ancestor chain (Row, Column, Stack, Padding, SizedBox, Align, and other meaningful render objects) is now surfaced as horizontally scrollable chips under the panel title. Tap any chip to re-target the inspector without re-tapping the screen.
+
+### Improvements
+
+- **Breadcrumb navigation:** Auto-scrolls the selected chip into view on every selection change, and uses clamping scroll physics so the list never overscrolls or bounces.
+
+### Bug Fixes
+
+- **Layout inspector — icon selection inside chips:** Material `ActionChip`, `Chip`, `FilterChip`, and `InputChip` previously routed every tap to the label slot, hiding the avatar `Icon` from the inspector path. Tapping the avatar now correctly selects it.
+
+
 ## 5.0.3
 
 ### Added

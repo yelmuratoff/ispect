@@ -20,7 +20,6 @@ class InspectorUtils {
       return const <RenderBox>[];
     }
 
-
     final hitResult = BoxHitTestResult();
     root.hitTest(hitResult, position: localPosition);
 
@@ -41,14 +40,12 @@ class InspectorUtils {
       _enrichWithDescendants(parent, pointerOffset, boxes);
     }
 
-    
     final filtered = <RenderBox>[];
     for (final box in boxes) {
       if (_boundsContain(box, pointerOffset)) filtered.add(box);
     }
     if (filtered.isEmpty) return const <RenderBox>[];
 
-    
     filtered.sort(
         (a, b) => _depthFromRoot(a, root).compareTo(_depthFromRoot(b, root)));
     return List<RenderBox>.unmodifiable(filtered);
