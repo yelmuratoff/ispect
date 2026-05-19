@@ -143,23 +143,6 @@ class ISpectTheme {
       return result;
     }
 
-    Map<String, IconData> parseIcons(Map<String, dynamic>? raw) {
-      if (raw == null) return const {};
-      final result = <String, IconData>{};
-      for (final e in raw.entries) {
-        if (e.value == null) continue;
-        if (e.value is! num) {
-          throw ArgumentError.value(
-            e.value,
-            'log_icons[${e.key}]',
-            'Expected int codePoint value, got ${e.value.runtimeType}',
-          );
-        }
-        result[e.key] = IconData((e.value as num).toInt());
-      }
-      return result;
-    }
-
     return ISpectTheme(
       pageTitle: cast<String?>('page_title'),
       background: map['background'] != null
@@ -188,7 +171,6 @@ class ISpectTheme {
             )
           : null,
       logColors: parseColors(cast<Map<String, dynamic>?>('log_colors')),
-      logIcons: parseIcons(cast<Map<String, dynamic>?>('log_icons')),
       logDescriptions: cast<Map<String, dynamic>?>('log_descriptions')
               ?.map((k, v) => MapEntry(k, v.toString())) ??
           const <String, String>{},
@@ -445,7 +427,6 @@ class ISpectTheme {
         'primary': primary?.toMap(),
         'card': card?.toMap(),
         'log_colors': logColors.map((k, v) => MapEntry(k, v.toARGB32())),
-        'log_icons': logIcons.map((k, v) => MapEntry(k, v.codePoint)),
         'log_descriptions': logDescriptions,
         'category_labels': categoryLabels,
         'log_categories': logCategories,

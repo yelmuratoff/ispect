@@ -31,17 +31,28 @@ void main() {
       expect(restored.logCategories, equals(theme.logCategories));
     });
 
-    test('toMap / fromMap roundtrip preserves icons', () {
+    test('toMap / fromMap does not serialize icons (icons are code-only)', () {
       const theme = ISpectTheme(
         logIcons: {'http-request': Icons.cloud_upload},
       );
 
-      final restored = ISpectTheme.fromMap(theme.toMap());
+      final map = theme.toMap();
+      expect(map.containsKey('log_icons'), isFalse);
 
-      expect(
-        restored.logIcons['http-request']?.codePoint,
-        equals(Icons.cloud_upload.codePoint),
-      );
+      final restored = ISpectTheme.fromMap(map);
+      expect(restored.logIcons, isEmpty);
+    });
+
+    test('fromMap ignores legacy log_icons key without throwing', () {
+      final map = <String, dynamic>{
+        'page_title': 'Legacy',
+        'log_icons': {'http-request': 0xe2c3},
+      };
+
+      final theme = ISpectTheme.fromMap(map);
+
+      expect(theme.pageTitle, equals('Legacy'));
+      expect(theme.logIcons, isEmpty);
     });
 
     test('toMap / fromMap roundtrip preserves customLogTypes with all fields',

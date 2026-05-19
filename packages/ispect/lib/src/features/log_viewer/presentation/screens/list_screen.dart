@@ -260,6 +260,7 @@ class _MainLogsView extends StatelessWidget {
     return RepaintBoundary(
       child: CustomScrollView(
         controller: logsScrollController,
+        // ignore: deprecated_member_use
         cacheExtent: 1000,
         slivers: [
           ISpectAppBar(

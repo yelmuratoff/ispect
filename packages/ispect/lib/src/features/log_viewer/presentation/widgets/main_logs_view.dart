@@ -196,6 +196,7 @@ class _MainLogsViewState extends State<MainLogsView> {
         RepaintBoundary(
           child: CustomScrollView(
             controller: widget.logsScrollController,
+            // ignore: deprecated_member_use
             cacheExtent: 1000,
             slivers: [
               ISpectAppBar(

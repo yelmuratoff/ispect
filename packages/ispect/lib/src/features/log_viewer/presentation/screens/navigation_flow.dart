@@ -155,6 +155,7 @@ class _NavigationFlowGrid extends StatelessWidget {
         builder: (context, constraints) => GridView.builder(
           padding: const EdgeInsets.all(12),
           itemCount: items.length,
+          // ignore: deprecated_member_use
           cacheExtent: 400,
           gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
             maxCrossAxisExtent: maxItemWidth,
