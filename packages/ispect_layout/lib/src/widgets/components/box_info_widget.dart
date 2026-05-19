@@ -18,6 +18,7 @@ class BoxInfoWidget extends StatelessWidget {
     this.comparedBoxInfo,
     this.onCompare,
     this.isCompareActive = false,
+    this.onSelectFromPath,
   });
 
   final BoxInfo? boxInfo;
@@ -27,6 +28,7 @@ class BoxInfoWidget extends StatelessWidget {
   final BoxInfo? comparedBoxInfo;
   final VoidCallback? onCompare;
   final bool isCompareActive;
+  final void Function(RenderBox box)? onSelectFromPath;
 
   Widget _buildTargetBoxSizeWidget(BuildContext context) {
     return Positioned(
@@ -54,6 +56,7 @@ class BoxInfoWidget extends StatelessWidget {
       comparedBoxInfo: comparedBoxInfo,
       onCompare: onCompare,
       isCompareActive: isCompareActive,
+      onSelectFromPath: onSelectFromPath,
     );
   }
 

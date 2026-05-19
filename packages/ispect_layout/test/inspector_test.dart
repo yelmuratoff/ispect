@@ -35,6 +35,9 @@ const _roundedMaterialChildKey = ValueKey('rounded-material-child');
 const _page1ContainerKey = ValueKey('page1-container');
 const _page2ContainerKey = ValueKey('page2-container');
 const _pushButtonKey = ValueKey('push-page2');
+const _rowTextKey = ValueKey('row-text');
+const _chipIconKey = ValueKey('chip-icon');
+const _chipLabelKey = ValueKey('chip-label');
 
 Widget _buildBody() {
   return MaterialApp(
@@ -163,6 +166,60 @@ Widget _buildNavigationStackBody() {
               ),
             ),
           ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildBreadcrumbBody() {
+  return MaterialApp(
+    builder: (context, child) => Inspector(child: child!),
+    home: Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            SizedBox(
+              width: 80.0,
+              height: 40.0,
+              child: ColoredBox(
+                color: Colors.red,
+                child: Center(
+                  child: Text(
+                    'hello',
+                    key: _rowTextKey,
+                    textDirection: TextDirection.ltr,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildChipIconBody() {
+  return MaterialApp(
+    builder: (context, child) => Inspector(child: child!),
+    home: Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: ActionChip(
+          avatar: const SizedBox(
+            key: _chipIconKey,
+            width: 18.0,
+            height: 18.0,
+            child: ColoredBox(color: Colors.red),
+          ),
+          label: const Text(
+            'Error',
+            key: _chipLabelKey,
+          ),
+          onPressed: () {},
         ),
       ),
     ),
@@ -461,6 +518,50 @@ void main() {
       expect(find.text('RoundedRectangleBorder'), findsOneWidget);
       expect(find.text('border radius'), findsOneWidget);
       expect(find.text('18.0'), findsOneWidget);
+    });
+
+    testWidgets(
+        'breadcrumb lets the user reselect an ancestor Row from a Text tap',
+        (tester) async {
+      await tester.pumpWidget(_buildBreadcrumbBody());
+
+      await tester.tap(find.byIcon(Icons.format_shapes));
+      await tester.pump();
+      await tester.tapAt(tester.getCenter(find.byKey(_rowTextKey)));
+      await tester.pump();
+
+      expect(find.textContaining('RenderParagraph'), findsOneWidget);
+
+      final flexChip = find.text('Flex');
+      expect(flexChip, findsOneWidget);
+
+      await tester.tap(flexChip);
+      await tester.pump();
+
+      // Active target now matches the Row, not the Text.
+      expect(find.textContaining('RenderFlex'), findsOneWidget);
+      expect(find.text('80.0 × 40.0'), findsWidgets);
+    });
+
+    testWidgets(
+        "selects a chip's avatar icon instead of routing every tap to the label",
+        (tester) async {
+      // Material's _RenderChip hit-tests its children at their own centre
+      // rather than the actual pointer, which sends every chip tap into the
+      // label slot. The enrichment in InspectorUtils.findRenderObjectsAt
+      // detects that centre-routing (label entry whose bounds don't contain
+      // the pointer) and re-hit-tests the avatar so it ends up on the path.
+      await tester.pumpWidget(_buildChipIconBody());
+      await tester.tap(find.byIcon(Icons.format_shapes));
+      await tester.pump();
+
+      final avatar = tester.renderObject(find.byKey(_chipIconKey)) as RenderBox;
+      await tester
+          .tapAt((avatar.localToGlobal(Offset.zero) & avatar.size).center);
+      await tester.pump();
+
+      expect(find.text('18.0 × 18.0'), findsWidgets);
+      expect(find.textContaining('RenderParagraph'), findsNothing);
     });
 
     testWidgets(

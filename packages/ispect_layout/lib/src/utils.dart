@@ -6,18 +6,6 @@ class InspectorUtils {
   /// ordered outermost → innermost, as Flutter's pointer-routing pipeline
   /// would visit them.
   ///
-  /// Built on [RenderBox.hitTest] rather than a manual `visitChildren`
-  /// walk so that routes beneath the active one in the Navigator stack,
-  /// modal barriers, [Offstage], [IgnorePointer]/[AbsorbPointer], and
-  /// hit-test opacity are honoured automatically. A naive descend-and
-  /// rect-contains traversal would expose render boxes from inactive
-  /// routes, since they remain attached and laid out (Overlay's
-  /// `_RenderTheatre` only skips them in `paint` and `hitTestChildren`).
-  ///
-  /// Returns an empty list when [context]'s render object is not an
-  /// attached, sized [RenderBox]; when [pointerOffset] cannot be
-  /// transformed into the root's local space (non-invertible ancestor
-  /// transform); or when nothing at that point is hit-testable.
   static List<RenderBox> findRenderObjectsAt(
     BuildContext context,
     Offset pointerOffset,
@@ -32,19 +20,78 @@ class InspectorUtils {
       return const <RenderBox>[];
     }
 
-    final result = BoxHitTestResult();
-    root.hitTest(result, position: localPosition);
 
-    // BoxInfo.fromHitTestResults expects outer→inner order — innermost
-    // wins the tie-break on equal sizes via "later iteration wins". hitTest
-    // gives innermost first, so the result is reversed.
-    final boxes = <RenderBox>[];
-    for (final entry in result.path) {
+    final hitResult = BoxHitTestResult();
+    root.hitTest(hitResult, position: localPosition);
+
+    final boxes = <RenderBox>{};
+    for (final entry in hitResult.path) {
       final target = entry.target;
-      if (target is RenderBox) {
-        boxes.add(target);
-      }
+      if (target is RenderBox) boxes.add(target);
     }
-    return boxes.reversed.toList(growable: false);
+    if (boxes.isEmpty) return const <RenderBox>[];
+
+    final centerRoutingParents = <RenderBox>{};
+    for (final box in boxes) {
+      if (_boundsContain(box, pointerOffset)) continue;
+      final parent = box.parent;
+      if (parent is RenderBox) centerRoutingParents.add(parent);
+    }
+    for (final parent in centerRoutingParents) {
+      _enrichWithDescendants(parent, pointerOffset, boxes);
+    }
+
+    
+    final filtered = <RenderBox>[];
+    for (final box in boxes) {
+      if (_boundsContain(box, pointerOffset)) filtered.add(box);
+    }
+    if (filtered.isEmpty) return const <RenderBox>[];
+
+    
+    filtered.sort(
+        (a, b) => _depthFromRoot(a, root).compareTo(_depthFromRoot(b, root)));
+    return List<RenderBox>.unmodifiable(filtered);
+  }
+
+  /// True when [box] is attached, sized, and its local bounds — after
+  /// inverse-mapping [globalPosition] through every ancestor transform —
+  /// contain that pointer. Conservatively false for non-invertible
+  /// transforms (which would yield NaN/Infinity locals).
+  static bool _boundsContain(RenderBox box, Offset globalPosition) {
+    if (!box.attached || !box.hasSize) return false;
+    final localPos = box.globalToLocal(globalPosition);
+    if (!localPos.dx.isFinite || !localPos.dy.isFinite) return false;
+    return box.size.contains(localPos);
+  }
+
+  static void _enrichWithDescendants(
+    RenderBox parent,
+    Offset globalPosition,
+    Set<RenderBox> accumulator,
+  ) {
+    parent.visitChildren((child) {
+      if (child is! RenderBox) return;
+      if (!_boundsContain(child, globalPosition)) return;
+
+      final localPos = child.globalToLocal(globalPosition);
+      final childResult = BoxHitTestResult();
+      if (child.hitTest(childResult, position: localPos)) {
+        for (final entry in childResult.path) {
+          final t = entry.target;
+          if (t is RenderBox) accumulator.add(t);
+        }
+      }
+    });
+  }
+
+  static int _depthFromRoot(RenderObject node, RenderObject root) {
+    var depth = 0;
+    RenderObject? current = node;
+    while (current != null && !identical(current, root)) {
+      depth++;
+      current = current.parent;
+    }
+    return depth;
   }
 }

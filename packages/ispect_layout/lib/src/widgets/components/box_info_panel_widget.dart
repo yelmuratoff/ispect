@@ -17,6 +17,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
     this.comparedBoxInfo,
     this.onCompare,
     this.isCompareActive = false,
+    this.onSelectFromPath,
   });
 
   final BoxInfo boxInfo;
@@ -24,6 +25,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
   final BoxInfo? comparedBoxInfo;
   final VoidCallback? onCompare;
   final bool isCompareActive;
+  final void Function(RenderBox box)? onSelectFromPath;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,7 @@ class BoxInfoPanelWidget extends StatelessWidget {
               onCompare: onCompare,
               isCompareActive: isCompareActive,
             ),
+            subtitle: _buildBreadcrumb(),
             childrenPadding: const EdgeInsets.only(
               left: 12.0,
               right: 12.0,
@@ -58,6 +61,20 @@ class BoxInfoPanelWidget extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// The breadcrumb only earns space when there is somewhere to navigate to —
+  /// a single meaningful entry means the chips would just echo the title.
+  Widget? _buildBreadcrumb() {
+    final onSelect = onSelectFromPath;
+    if (onSelect == null) return null;
+    final path = boxInfo.meaningfulPath;
+    if (path.length < 2) return null;
+    return _HitTestBreadcrumb(
+      path: path,
+      currentTarget: boxInfo.targetRenderBox,
+      onSelect: onSelect,
     );
   }
 
@@ -478,5 +495,161 @@ class _SectionHeader extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Horizontal hit-test breadcrumb. Outer→inner chain of meaningful render
+/// boxes under the pointer, with the currently selected one highlighted.
+/// Tapping a chip swaps the active selection without re-running hit-test.
+class _HitTestBreadcrumb extends StatefulWidget {
+  const _HitTestBreadcrumb({
+    required this.path,
+    required this.currentTarget,
+    required this.onSelect,
+  });
+
+  final List<RenderBox> path;
+  final RenderBox currentTarget;
+  final void Function(RenderBox box) onSelect;
+
+  @override
+  State<_HitTestBreadcrumb> createState() => _HitTestBreadcrumbState();
+}
+
+class _HitTestBreadcrumbState extends State<_HitTestBreadcrumb> {
+  final ScrollController _scrollController = ScrollController();
+  final Map<RenderBox, GlobalKey> _chipKeys = <RenderBox, GlobalKey>{};
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleScrollToSelected();
+  }
+
+  @override
+  void didUpdateWidget(covariant _HitTestBreadcrumb oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _scheduleScrollToSelected();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  GlobalKey _keyFor(RenderBox box) => _chipKeys.putIfAbsent(box, GlobalKey.new);
+
+  void _scheduleScrollToSelected() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final context = _chipKeys[widget.currentTarget]?.currentContext;
+      if (context == null) return;
+      Scrollable.ensureVisible(
+        context,
+        alignment: 0.5,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Drop keys for boxes no longer in the path so the map can't grow without
+    // bound across selections.
+    final inPath = Set<RenderBox>.identity()..addAll(widget.path);
+    _chipKeys.removeWhere((box, _) => !inPath.contains(box));
+
+    final theme = Theme.of(context);
+    final separatorColor =
+        theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6);
+
+    final children = <Widget>[];
+    for (var i = 0; i < widget.path.length; i++) {
+      if (i > 0) {
+        children.add(Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+          child: Icon(
+            Icons.chevron_right,
+            size: 14.0,
+            color: separatorColor,
+          ),
+        ));
+      }
+      final box = widget.path[i];
+      children.add(_BreadcrumbChip(
+        key: _keyFor(box),
+        box: box,
+        isSelected: identical(box, widget.currentTarget),
+        onTap: () => widget.onSelect(box),
+      ));
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 6.0),
+      child: SizedBox(
+        height: 26.0,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          physics: const ClampingScrollPhysics(),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: children,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BreadcrumbChip extends StatelessWidget {
+  const _BreadcrumbChip({
+    super.key,
+    required this.box,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final RenderBox box;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final background = isSelected
+        ? theme.colorScheme.primary.withValues(alpha: 0.16)
+        : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6);
+    final foreground = isSelected
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurfaceVariant;
+    return Material(
+      color: background,
+      borderRadius: BorderRadius.circular(6.0),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(6.0),
+        onTap: isSelected ? null : onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+          child: Text(
+            _shortTypeLabel(box),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: foreground,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Renders `RenderFlex` as `Flex`, `RenderDecoratedBox` as `DecoratedBox`,
+  /// and so on. Saves horizontal space in a deeply nested chain.
+  static String _shortTypeLabel(RenderBox box) {
+    final name = box.runtimeType.toString();
+    return name.startsWith('Render') ? name.substring(6) : name;
   }
 }

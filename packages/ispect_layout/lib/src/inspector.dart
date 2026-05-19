@@ -327,6 +327,7 @@ class InspectorState extends State<Inspector> {
                 isCompareActive: isCompareActive,
                 decimalPlaces: _controller.decimalPlaces,
                 theme: _controller.theme,
+                onSelectFromPath: _controller.selectFromPath,
               ),
             );
           },

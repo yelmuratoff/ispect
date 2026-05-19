@@ -593,6 +593,20 @@ class InspectorController {
     hoveredRenderBoxNotifier.value = null;
   }
 
+  /// Replaces the current selection with [newTarget], which must be present
+  /// in the active hit-test path. No-op when no selection is active, when
+  /// the target is not on the path, or when the render box has detached
+  /// (e.g. after navigation). Powers the breadcrumb in the inspector panel.
+  void selectFromPath(RenderBox newTarget) {
+    final current = currentRenderBoxNotifier.value;
+    if (current == null) return;
+    if (!newTarget.attached) return;
+    if (!current.hitTestPath.contains(newTarget)) return;
+    if (identical(current.targetRenderBox, newTarget)) return;
+    hoveredRenderBoxNotifier.value = null;
+    currentRenderBoxNotifier.value = current.withTarget(newTarget);
+  }
+
   void onPointerScroll(PointerScrollEvent scrollEvent) {
     if (modeNotifier.value == InspectorMode.zoom) {
       _setZoomScale(

@@ -16,6 +16,7 @@ class InspectorOverlay extends StatefulWidget {
     this.comparedBoxInfo,
     this.onCompare,
     this.isCompareActive = false,
+    this.onSelectFromPath,
   });
 
   final Size size;
@@ -26,6 +27,7 @@ class InspectorOverlay extends StatefulWidget {
   final BoxInfo? comparedBoxInfo;
   final VoidCallback? onCompare;
   final bool isCompareActive;
+  final void Function(RenderBox box)? onSelectFromPath;
 
   @override
   State<InspectorOverlay> createState() => _InspectorOverlayState();
@@ -124,6 +126,7 @@ class _InspectorOverlayState extends State<InspectorOverlay>
         comparedBoxInfo: widget.comparedBoxInfo,
         onCompare: widget.onCompare,
         isCompareActive: widget.isCompareActive,
+        onSelectFromPath: widget.onSelectFromPath,
       ),
     );
   }

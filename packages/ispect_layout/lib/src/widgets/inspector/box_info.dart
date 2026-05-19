@@ -22,77 +22,35 @@ class BoxInfo {
     final hitTestPath = List<RenderBox>.unmodifiable(boxes);
 
     RenderBox targetRenderBox = boxes.first;
-    RenderBox? containerRenderBox;
-
-    // Returns true for render objects that carry meaningful visual/layout
-    // information. Used to break ties when two boxes share the same size:
-    // a meaningful type beats a plain proxy wrapper.
-    bool isMeaningful(RenderBox box) =>
-        box is RenderDecoratedBox ||
-        box is RenderPhysicalShape ||
-        box is RenderPhysicalModel ||
-        box is RenderStack ||
-        box is RenderFlex ||
-        box is RenderWrap ||
-        box is RenderParagraph ||
-        box is RenderImage ||
-        box is RenderEditable ||
-        box is RenderOpacity ||
-        box is RenderAnimatedOpacity ||
-        box is RenderClipRect ||
-        box is RenderClipRRect ||
-        box is RenderClipRSuperellipse ||
-        box is RenderClipOval ||
-        box is RenderClipPath ||
-        box is RenderCustomPaint ||
-        box is RenderTransform ||
-        box is RenderFittedBox ||
-        box is RenderAspectRatio ||
-        box is RenderBackdropFilter;
-
     for (final box in boxes) {
       if (box.size.isSmallerThan(targetRenderBox.size)) {
         targetRenderBox = box;
       } else if (box.size == targetRenderBox.size) {
-        // On a tie, only update when the new box is meaningful:
-        // non→non keeps the first hit (e.g. _RenderColoredBox before RenderPadding),
-        // meaningful→non is skipped, and meaningful→meaningful prefers the innermost.
-        if (isMeaningful(box)) targetRenderBox = box;
-      }
-    }
-
-    if (findContainer) {
-      // Precompute target's ancestor set once, so the descendant check is
-      // O(1) per candidate instead of walking the parent chain each time
-      // (previously O(n*depth), visible on deep trees).
-      final ancestors = <RenderObject>{};
-      for (RenderObject? node = targetRenderBox.parent;
-          node != null;
-          node = node.parent) {
-        ancestors.add(node);
-      }
-
-      // The >= is used to check whether the item is fully contained by the other box.
-      // The isGreaterThan is used to avoid selecting the same box as the target box.
-      for (final box in boxes) {
-        if (box.size >= targetRenderBox.size &&
-            box.size.isGreaterThan(targetRenderBox.size)) {
-          if ((containerRenderBox == null ||
-                  box.size.isSmallerThan(containerRenderBox.size)) &&
-              ancestors.contains(box)) {
-            containerRenderBox = box;
-          }
-        }
+        if (_isStronglyMeaningfulRenderBox(box)) targetRenderBox = box;
       }
     }
 
     return BoxInfo(
       targetRenderBox: targetRenderBox,
-      containerRenderBox: containerRenderBox,
+      containerRenderBox: findContainer
+          ? _findContainerFor(hitTestPath, targetRenderBox)
+          : null,
       overlayOffset: overlayOffset,
       hitTestPath: hitTestPath,
     );
   }
+
+  /// Returns a new [BoxInfo] with [newTarget] as the selected render box,
+  /// preserving the original hit-test path and overlay offset. The container
+  /// is recomputed against the new target. Used by the breadcrumb to let the
+  /// user pick any ancestor from the hit-test path (Row/Column/Stack/Padding)
+  /// without re-running pointer detection.
+  BoxInfo withTarget(RenderBox newTarget) => BoxInfo(
+        targetRenderBox: newTarget,
+        containerRenderBox: _findContainerFor(hitTestPath, newTarget),
+        overlayOffset: overlayOffset,
+        hitTestPath: hitTestPath,
+      );
 
   final RenderBox targetRenderBox;
   final RenderBox? containerRenderBox;
@@ -108,6 +66,33 @@ class BoxInfo {
   Rect get targetRect => getRectFromRenderBox(targetRenderBox)!;
 
   Rect get targetRectShifted => targetRect.shift(-overlayOffset);
+
+  /// Hit-test path filtered to render boxes worth surfacing as breadcrumb
+  /// entries (visual/layout-shaping types only — proxy wrappers like
+  /// [RenderRepaintBoundary] or `_RenderInkFeatures` are dropped).
+  ///
+  /// Consecutive entries that share a [Size] are collapsed to a single chip;
+  /// the innermost wins, with a tie-break that prefers strongly meaningful
+  /// boxes (e.g. [RenderDecoratedBox]) over layout helpers (e.g.
+  /// [RenderPadding]). Returned in outer→inner order.
+  List<RenderBox> get meaningfulPath {
+    final result = <RenderBox>[];
+    for (final box in hitTestPath) {
+      final isStrong = _isStronglyMeaningfulRenderBox(box);
+      final isHelper = _isLayoutHelperRenderBox(box);
+      if (!isStrong && !isHelper) continue;
+
+      if (result.isNotEmpty && result.last.size == box.size) {
+        final prevStrong = _isStronglyMeaningfulRenderBox(result.last);
+        if (isStrong || !prevStrong) {
+          result[result.length - 1] = box;
+        }
+      } else {
+        result.add(box);
+      }
+    }
+    return result;
+  }
 
   Rect? get containerRect => containerRenderBox != null
       ? getRectFromRenderBox(containerRenderBox!)
@@ -268,6 +253,63 @@ class BoxInfo {
       return null;
     }
   }
+}
+
+/// Render objects that carry meaningful visual/layout information. Used to
+/// break selection ties when two boxes share the same size: a meaningful type
+/// beats a plain proxy wrapper. Also drives the breadcrumb path filter.
+bool _isStronglyMeaningfulRenderBox(RenderBox box) =>
+    box is RenderDecoratedBox ||
+    box is RenderPhysicalShape ||
+    box is RenderPhysicalModel ||
+    box is RenderStack ||
+    box is RenderFlex ||
+    box is RenderWrap ||
+    box is RenderParagraph ||
+    box is RenderImage ||
+    box is RenderEditable ||
+    box is RenderOpacity ||
+    box is RenderAnimatedOpacity ||
+    box is RenderClipRect ||
+    box is RenderClipRRect ||
+    box is RenderClipRSuperellipse ||
+    box is RenderClipOval ||
+    box is RenderClipPath ||
+    box is RenderCustomPaint ||
+    box is RenderTransform ||
+    box is RenderFittedBox ||
+    box is RenderAspectRatio ||
+    box is RenderBackdropFilter;
+
+/// Layout-only wrappers that don't paint anything but shape the layout. They
+/// are the answer to "why is my widget positioned/sized like this?" and so
+/// belong in the breadcrumb even though they are not strongly meaningful.
+bool _isLayoutHelperRenderBox(RenderBox box) =>
+    box is RenderPadding ||
+    box is RenderConstrainedBox ||
+    box is RenderPositionedBox;
+
+/// Walks the parent chain of [target] to build an ancestor set, then picks
+/// the smallest box in [hitTestPath] that strictly contains the target and
+/// is one of its ancestors. Mirrors the original inline logic from
+/// [BoxInfo.fromHitTestResults] so [BoxInfo.withTarget] can recompute the
+/// container on demand.
+RenderBox? _findContainerFor(List<RenderBox> hitTestPath, RenderBox target) {
+  final ancestors = <RenderObject>{};
+  for (RenderObject? node = target.parent; node != null; node = node.parent) {
+    ancestors.add(node);
+  }
+
+  RenderBox? container;
+  for (final box in hitTestPath) {
+    if (box.size >= target.size && box.size.isGreaterThan(target.size)) {
+      if ((container == null || box.size.isSmallerThan(container.size)) &&
+          ancestors.contains(box)) {
+        container = box;
+      }
+    }
+  }
+  return container;
 }
 
 /// Captures `_RenderColoredBox`'s runtime [Type] without referencing its
