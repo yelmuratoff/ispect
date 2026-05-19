@@ -277,6 +277,34 @@ class ISpectViewController implements Listenable {
   LogTypeKeysResult getLogTypeKeys(List<ISpectLogData> logsData) =>
       _filterManager.getLogTypeKeys(logsData);
 
+  /// Returns counts of `error`/`critical` and `warning` entries in [logsData].
+  ({int errors, int warnings}) getLevelStats(List<ISpectLogData> logsData) {
+    if (_cachedLevelStats != null &&
+        identical(_cachedLevelStatsInput, logsData) &&
+        _cachedLevelStatsLength == logsData.length) {
+      return _cachedLevelStats!;
+    }
+    var errors = 0;
+    var warnings = 0;
+    for (final log in logsData) {
+      final level = log.logLevel;
+      if (level == LogLevel.error || level == LogLevel.critical) {
+        errors++;
+      } else if (level == LogLevel.warning) {
+        warnings++;
+      }
+    }
+    final result = (errors: errors, warnings: warnings);
+    _cachedLevelStats = result;
+    _cachedLevelStatsInput = logsData;
+    _cachedLevelStatsLength = logsData.length;
+    return result;
+  }
+
+  ({int errors, int warnings})? _cachedLevelStats;
+  List<ISpectLogData>? _cachedLevelStatsInput;
+  int _cachedLevelStatsLength = -1;
+
   void handleLogTypeKeyFilterToggle(String key, {required bool isSelected}) =>
       _filterManager.handleLogTypeKeyFilterToggle(key, isSelected: isSelected);
 

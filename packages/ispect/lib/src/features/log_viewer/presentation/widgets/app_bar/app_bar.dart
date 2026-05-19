@@ -33,6 +33,8 @@ class ISpectAppBar extends StatefulWidget {
     this.backgroundColor,
     this.filteredCount,
     this.totalCount,
+    this.errorCount,
+    this.warningCount,
     this.onScrollToFocusedMatch,
     super.key,
   });
@@ -55,6 +57,13 @@ class ISpectAppBar extends StatefulWidget {
 
   final int? filteredCount;
   final int? totalCount;
+
+  /// Combined count of `error` and `critical` log levels for the live header
+  /// counter. Pass `0` (not `null`) to indicate "computed, none found".
+  final int? errorCount;
+
+  /// Count of `warning` log level entries for the live header counter.
+  final int? warningCount;
 
   /// Called when the user taps ↑/↓ arrows to navigate search matches.
   final VoidCallback? onScrollToFocusedMatch;
@@ -151,7 +160,14 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
             ),
           const Gap(6),
         ],
-        title: ISpectAppBarTitle(child: _AppBarTitle(title: widget.title)),
+        title: ISpectAppBarTitle(
+          child: _AppBarTitle(
+            title: widget.title,
+            totalCount: widget.totalCount,
+            errorCount: widget.errorCount,
+            warningCount: widget.warningCount,
+          ),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Padding(
@@ -188,6 +204,8 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                 const Gap(8),
                 ISpectFilterButton(
                   hasActiveState: _hasAnyActiveState,
+                  activeFilterCount:
+                      widget.titlesController.selectedIndexes.length,
                   onPressed: () => _showFilterSheet(context),
                 ),
               ],
@@ -239,43 +257,123 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
 }
 
 class _AppBarTitle extends StatelessWidget {
-  const _AppBarTitle({required this.title});
+  const _AppBarTitle({
+    required this.title,
+    this.totalCount,
+    this.errorCount,
+    this.warningCount,
+  });
 
   final String? title;
+  final int? totalCount;
+  final int? errorCount;
+  final int? warningCount;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-        button: true,
-        label: title ?? 'ISpect',
-        hint: 'Open session history',
-        child: GestureDetector(
-          excludeFromSemantics: true,
-          onTap: () {
-            if (kReleaseMode) return;
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => DailySessionsScreen(
-                  history: ISpect.logger.fileLogHistory,
-                ),
-                settings: const RouteSettings(name: 'ISpect Info Screen'),
+  Widget build(BuildContext context) {
+    final hasCounter = (totalCount ?? 0) > 0 ||
+        (errorCount ?? 0) > 0 ||
+        (warningCount ?? 0) > 0;
+    return Semantics(
+      button: true,
+      label: title ?? 'ISpect',
+      hint: 'Open session history',
+      child: GestureDetector(
+        excludeFromSemantics: true,
+        onTap: () {
+          if (kReleaseMode) return;
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => DailySessionsScreen(
+                history: ISpect.logger.fileLogHistory,
               ),
-            );
-          },
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Text(
-                  title ?? '',
-                  style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.5,
-                  ),
+              settings: const RouteSettings(name: 'ISpect Info Screen'),
+            ),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                title ?? '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: hasCounter ? 20 : 26,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                  height: 1.1,
                 ),
               ),
-            ],
-          ),
+            ),
+            if (hasCounter)
+              _AppBarCounter(
+                total: totalCount,
+                errors: errorCount,
+                warnings: warningCount,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AppBarCounter extends StatelessWidget {
+  const _AppBarCounter({this.total, this.errors, this.warnings});
+
+  final int? total;
+  final int? errors;
+  final int? warnings;
+
+  @override
+  Widget build(BuildContext context) {
+    final neutral = context.appTheme.textColor.withValues(alpha: 0.55);
+    final errorColor = context.appTheme.colorScheme.error;
+    const warningColor = Color(0xFFFFA000);
+
+    const accent = TextStyle(fontWeight: FontWeight.w700);
+    final spans = <InlineSpan>[];
+
+    final totalValue = total ?? 0;
+    if (totalValue > 0) {
+      spans.add(TextSpan(text: '$totalValue logs'));
+    }
+    final warningValue = warnings ?? 0;
+    if (warningValue > 0) {
+      if (spans.isNotEmpty) spans.add(const TextSpan(text: ' · '));
+      spans.add(
+        TextSpan(
+          text: warningValue == 1 ? '1 warning' : '$warningValue warnings',
+          style: accent.copyWith(color: warningColor),
         ),
       );
+    }
+    final errorValue = errors ?? 0;
+    if (errorValue > 0) {
+      if (spans.isNotEmpty) spans.add(const TextSpan(text: ' · '));
+      spans.add(
+        TextSpan(
+          text: errorValue == 1 ? '1 error' : '$errorValue errors',
+          style: accent.copyWith(color: errorColor),
+        ),
+      );
+    }
+
+    return Text.rich(
+      TextSpan(
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: neutral,
+          height: 1.2,
+        ),
+        children: spans,
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
 }

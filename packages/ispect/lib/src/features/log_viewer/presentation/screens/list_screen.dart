@@ -238,77 +238,98 @@ class _MainLogsView extends StatelessWidget {
         ? logsViewController.applyFiltersWithoutSearch(logsData)
         : logsViewController.applyCurrentFilters(logsData);
 
-    // Compute search matches for highlight mode using log IDs.
+    final levelStats = logsViewController.getLevelStats(logsData);
+
+    List<ISpectLogData>? matchesToCommit;
     if (isHighlightMode) {
       var matches = logsViewController.findSearchMatches(filteredLogEntries);
       if (logsViewController.isLogOrderReversed && matches.isNotEmpty) {
         matches = matches.reversed.toList();
       }
-      logsViewController.updateSearchMatches(matches);
+      matchesToCommit = matches;
     }
 
     final logTypeKeys = logsViewController.getLogTypeKeys(logsData);
 
-    return CustomScrollView(
-      controller: logsScrollController,
-      cacheExtent: 1000,
-      slivers: [
-        ISpectAppBar(
-          focusNode: searchFocusNode,
-          title: appBarTitle,
-          titlesController: titleFiltersController,
-          titles: logTypeKeys.all,
-          uniqTitles: logTypeKeys.unique,
-          controller: logsViewController,
-          onToggleTitle: (key, selected) => logsViewController
-              .handleLogTypeKeyFilterToggle(key, isSelected: selected),
-          backgroundColor: iSpectTheme.theme.background?.resolve(context),
-          filteredCount: isHighlightMode
-              ? logsViewController.searchMatchCount
-              : filteredLogEntries.length,
-          totalCount:
-              isHighlightMode ? filteredLogEntries.length : logsData.length,
-        ),
-        if (context.screenSize.isDesktop)
-          const SliverToBoxAdapter(
-            child: DesktopLogTableHeader(),
-          ),
-        if (filteredLogEntries.isEmpty)
-          const SliverToBoxAdapter(
-            child: EmptyLogsWidget(),
-          ),
-        SliverList.builder(
-          itemCount: filteredLogEntries.length,
-          itemBuilder: (context, index) {
-            final result = logsViewController.getLogEntryAtIndex(
-              filteredLogEntries,
-              index,
-            );
-            if (result == null) return const SizedBox.shrink();
-            final (entry: logEntry, actualIndex: _) = result;
+    if (matchesToCommit != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        logsViewController.updateSearchMatches(matchesToCommit!);
+      });
+    }
 
-            return _LogListItem(
-              key: ValueKey(logEntry.id),
-              logData: logEntry,
-              itemIndex: index,
-              statusIcon:
-                  iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
-              statusColor:
-                  iSpectTheme.theme.getTypeColor(context, key: logEntry.key) ??
-                      Colors.grey,
-              isExpanded: logsViewController.activeData == logEntry ||
-                  logsViewController.expandedLogs,
-              searchMatchState: logsViewController.matchStateFor(logEntry),
-              onSharePressed: () => ISpectShareLogBottomSheet(
-                data: logEntry.toJson(),
-                truncatedData: logEntry.toJson(truncated: true),
-              ).show(context),
-              onItemTapped: () => logsViewController.handleLogItemTap(logEntry),
-            );
-          },
-        ),
-        const SliverGap(8),
-      ],
+    return RepaintBoundary(
+      child: CustomScrollView(
+        controller: logsScrollController,
+        cacheExtent: 1000,
+        slivers: [
+          ISpectAppBar(
+            focusNode: searchFocusNode,
+            title: appBarTitle,
+            titlesController: titleFiltersController,
+            titles: logTypeKeys.all,
+            uniqTitles: logTypeKeys.unique,
+            controller: logsViewController,
+            onToggleTitle: (key, selected) => logsViewController
+                .handleLogTypeKeyFilterToggle(key, isSelected: selected),
+            backgroundColor: iSpectTheme.theme.background?.resolve(context),
+            filteredCount: isHighlightMode
+                ? logsViewController.searchMatchCount
+                : filteredLogEntries.length,
+            totalCount:
+                isHighlightMode ? filteredLogEntries.length : logsData.length,
+            errorCount: levelStats.errors,
+            warningCount: levelStats.warnings,
+          ),
+          if (context.screenSize.isDesktop)
+            const SliverToBoxAdapter(
+              child: DesktopLogTableHeader(),
+            ),
+          if (filteredLogEntries.isEmpty)
+            const SliverToBoxAdapter(
+              child: EmptyLogsWidget(),
+            ),
+          SliverList.builder(
+            itemCount: filteredLogEntries.length,
+            findChildIndexCallback: (key) {
+              if (key is! ValueKey<String>) return null;
+              final id = key.value;
+              for (var i = 0; i < filteredLogEntries.length; i++) {
+                if (filteredLogEntries[i].id == id) return i;
+              }
+              return null;
+            },
+            itemBuilder: (context, index) {
+              final result = logsViewController.getLogEntryAtIndex(
+                filteredLogEntries,
+                index,
+              );
+              if (result == null) return const SizedBox.shrink();
+              final (entry: logEntry, actualIndex: _) = result;
+
+              return _LogListItem(
+                key: ValueKey(logEntry.id),
+                logData: logEntry,
+                itemIndex: index,
+                statusIcon:
+                    iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
+                statusColor: iSpectTheme.theme
+                        .getTypeColor(context, key: logEntry.key) ??
+                    Colors.grey,
+                isExpanded: logsViewController.activeData == logEntry ||
+                    logsViewController.expandedLogs,
+                searchMatchState: logsViewController.matchStateFor(logEntry),
+                onSharePressed: () => ISpectShareLogBottomSheet(
+                  data: logEntry.toJson(),
+                  truncatedData: logEntry.toJson(truncated: true),
+                ).show(context),
+                onItemTapped: () =>
+                    logsViewController.handleLogItemTap(logEntry),
+              );
+            },
+          ),
+          const SliverGap(8),
+        ],
+      ),
     );
   }
 }

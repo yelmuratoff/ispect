@@ -6,10 +6,15 @@ class ISpectFilterButton extends StatelessWidget {
   const ISpectFilterButton({
     required this.hasActiveState,
     required this.onPressed,
+    this.activeFilterCount = 0,
     super.key,
   });
 
   final bool hasActiveState;
+
+  /// Number of explicitly-selected filters (e.g. log type chips).
+  final int activeFilterCount;
+
   final VoidCallback onPressed;
 
   @override
@@ -17,6 +22,9 @@ class ISpectFilterButton extends StatelessWidget {
     final primaryColor = context.ispectPrimaryColor;
     final cardColor = context.ispectCardColor;
     final size = context.ispectSquareControlSize;
+    final hasCount = activeFilterCount > 0;
+    final badgeLabel =
+        activeFilterCount > 9 ? '9+' : activeFilterCount.toString();
 
     return Tooltip(
       message: context.ispectL10n.filters,
@@ -36,6 +44,7 @@ class ISpectFilterButton extends StatelessWidget {
               borderRadius: const BorderRadius.all(Radius.circular(10)),
               onTap: onPressed,
               child: Stack(
+                clipBehavior: Clip.none,
                 alignment: Alignment.center,
                 children: [
                   Icon(
@@ -46,7 +55,16 @@ class ISpectFilterButton extends StatelessWidget {
                         : context.appTheme.colorScheme.onSurface
                             .withValues(alpha: 0.6),
                   ),
-                  if (hasActiveState)
+                  if (hasCount)
+                    Positioned(
+                      top: -2,
+                      right: -2,
+                      child: _FilterCountBadge(
+                        label: badgeLabel,
+                        color: primaryColor,
+                      ),
+                    )
+                  else if (hasActiveState)
                     Positioned(
                       top: 6,
                       right: 6,
@@ -62,6 +80,44 @@ class ISpectFilterButton extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterCountBadge extends StatelessWidget {
+  const _FilterCountBadge({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final onColor =
+        ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+            ? Colors.white
+            : Colors.black;
+    return Container(
+      constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: const BorderRadius.all(Radius.circular(7)),
+        border: Border.all(
+          color: context.appTheme.scaffoldBackgroundColor,
+          width: 1.5,
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: onColor,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          height: 1.1,
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/services/network_transaction_service.dart';
@@ -59,6 +60,12 @@ class _MainLogsViewState extends State<MainLogsView> {
   List<ISpectLogData>? _lastRawMatches;
   List<ISpectLogData> _reversedMatchesCache = const [];
 
+  void _focusSearchField() {
+    if (!mounted) return;
+    final node = widget.searchFocusNode;
+    if (node.canRequestFocus) node.requestFocus();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -71,12 +78,23 @@ class _MainLogsViewState extends State<MainLogsView> {
         if (mounted) setState(() {});
       },
     );
+    HardwareKeyboard.instance.addHandler(_globalKeyHandler);
   }
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_globalKeyHandler);
     _controller.dispose();
     super.dispose();
+  }
+
+  bool _globalKeyHandler(KeyEvent event) {
+    if (event is! KeyDownEvent) return false;
+    if (event.logicalKey != LogicalKeyboardKey.keyK) return false;
+    final hk = HardwareKeyboard.instance;
+    if (!hk.isMetaPressed && !hk.isControlPressed) return false;
+    _focusSearchField();
+    return true;
   }
 
   void _scrollToFocusedMatch() {
@@ -111,6 +129,8 @@ class _MainLogsViewState extends State<MainLogsView> {
         ? widget.logsViewController.applyFiltersWithoutSearch(widget.logsData)
         : widget.logsViewController.applyCurrentFilters(widget.logsData);
 
+    final levelStats = widget.logsViewController.getLevelStats(widget.logsData);
+
     final sortedEntries = _controller.applySortingIfNeeded(filteredLogEntries);
 
     _cachedIsReversed =
@@ -118,6 +138,7 @@ class _MainLogsViewState extends State<MainLogsView> {
             widget.logsViewController.isLogOrderReversed;
     _cachedSortedLength = sortedEntries.length;
 
+    List<ISpectLogData>? matchesToCommit;
     if (isHighlightMode) {
       var matches = widget.logsViewController.findSearchMatches(sortedEntries);
       if (_cachedIsReversed && matches.isNotEmpty) {
@@ -127,7 +148,7 @@ class _MainLogsViewState extends State<MainLogsView> {
         }
         matches = _reversedMatchesCache;
       }
-      widget.logsViewController.updateSearchMatches(matches);
+      matchesToCommit = matches;
 
       if (!identical(sortedEntries, _lastIdToDataIndexInput)) {
         final map = <String, int>{};
@@ -148,14 +169,20 @@ class _MainLogsViewState extends State<MainLogsView> {
     final isDesktop = context.screenSize.isDesktop;
     final isFiltered = filteredLogEntries.length != widget.logsData.length;
 
-    // Live tail: auto-scroll when new REAL logs arrive
-    _controller.checkForNewLogs(
-      widget.logsData.length,
-      isDesktop: isDesktop,
-      onMount: () {
-        if (mounted) _controller.scrollToNewest();
-      },
-    );
+    final liveLogsLength = widget.logsData.length;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (matchesToCommit != null) {
+        widget.logsViewController.updateSearchMatches(matchesToCommit);
+      }
+      _controller.checkForNewLogs(
+        liveLogsLength,
+        isDesktop: isDesktop,
+        onMount: () {
+          if (mounted) _controller.scrollToNewest();
+        },
+      );
+    });
 
     // Sort column/direction as ints for the header
     final sortColumnIdx = widget.logsViewController.sortColumn.index;
@@ -166,71 +193,75 @@ class _MainLogsViewState extends State<MainLogsView> {
 
     Widget body = Stack(
       children: [
-        CustomScrollView(
-          controller: widget.logsScrollController,
-          cacheExtent: 1000,
-          slivers: [
-            ISpectAppBar(
-              focusNode: widget.searchFocusNode,
-              title: widget.appBarTitle,
-              titlesController: widget.titleFiltersController,
-              titles: logTypeKeys.all,
-              uniqTitles: logTypeKeys.unique,
-              controller: widget.logsViewController,
-              onSettingsTap: widget.onSettingsTap,
-              onToggleTitle: (key, selected) => widget.logsViewController
-                  .handleLogTypeKeyFilterToggle(key, isSelected: selected),
-              backgroundColor:
-                  widget.iSpectTheme.theme.background?.resolve(context),
-              filteredCount: isHighlightMode
-                  ? widget.logsViewController.searchMatchCount
-                  : filteredLogEntries.length,
-              totalCount: isHighlightMode
-                  ? filteredLogEntries.length
-                  : widget.logsData.length,
-              onScrollToFocusedMatch: _scrollToFocusedMatch,
-            ),
-            if (isDesktop)
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _StickyHeaderDelegate(
-                  child: DesktopLogTableHeader(
-                    backgroundColor:
-                        widget.iSpectTheme.theme.background?.resolve(context) ??
-                            context.appTheme.scaffoldBackgroundColor,
-                    sortColumn: sortColumnIdx,
-                    sortDirection: sortDirIdx,
-                    onSortTap: (colIdx) {
-                      final col = LogSortColumn.values[colIdx];
-                      if (col == LogSortColumn.time) {
-                        widget.logsViewController.toggleLogOrder();
-                        if (widget.logsViewController.sortColumn !=
-                            LogSortColumn.time) {
+        RepaintBoundary(
+          child: CustomScrollView(
+            controller: widget.logsScrollController,
+            cacheExtent: 1000,
+            slivers: [
+              ISpectAppBar(
+                focusNode: widget.searchFocusNode,
+                title: widget.appBarTitle,
+                titlesController: widget.titleFiltersController,
+                titles: logTypeKeys.all,
+                uniqTitles: logTypeKeys.unique,
+                controller: widget.logsViewController,
+                onSettingsTap: widget.onSettingsTap,
+                onToggleTitle: (key, selected) => widget.logsViewController
+                    .handleLogTypeKeyFilterToggle(key, isSelected: selected),
+                backgroundColor:
+                    widget.iSpectTheme.theme.background?.resolve(context),
+                filteredCount: isHighlightMode
+                    ? widget.logsViewController.searchMatchCount
+                    : filteredLogEntries.length,
+                totalCount: isHighlightMode
+                    ? filteredLogEntries.length
+                    : widget.logsData.length,
+                errorCount: levelStats.errors,
+                warningCount: levelStats.warnings,
+                onScrollToFocusedMatch: _scrollToFocusedMatch,
+              ),
+              if (isDesktop)
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _StickyHeaderDelegate(
+                    child: DesktopLogTableHeader(
+                      backgroundColor: widget.iSpectTheme.theme.background
+                              ?.resolve(context) ??
+                          context.appTheme.scaffoldBackgroundColor,
+                      sortColumn: sortColumnIdx,
+                      sortDirection: sortDirIdx,
+                      onSortTap: (colIdx) {
+                        final col = LogSortColumn.values[colIdx];
+                        if (col == LogSortColumn.time) {
+                          widget.logsViewController.toggleLogOrder();
+                          if (widget.logsViewController.sortColumn !=
+                              LogSortColumn.time) {
+                            widget.logsViewController.toggleSort(col);
+                          }
+                        } else {
                           widget.logsViewController.toggleSort(col);
                         }
-                      } else {
-                        widget.logsViewController.toggleSort(col);
-                      }
-                    },
-                    typeColumnWidth: _controller.typeColumnWidth,
-                    timeColumnWidth: _controller.timeColumnWidth,
-                    onColumnResize: _controller.handleColumnResize,
+                      },
+                      typeColumnWidth: _controller.typeColumnWidth,
+                      timeColumnWidth: _controller.timeColumnWidth,
+                      onColumnResize: _controller.handleColumnResize,
+                    ),
                   ),
                 ),
-              ),
-            if (!isDesktop) const SliverGap(4),
-            if (sortedEntries.isEmpty)
-              const SliverToBoxAdapter(
-                child: EmptyLogsWidget(),
-              ),
-            if (widget.logsViewController.groupHttpLogs &&
-                widget.logsViewController.filter.logTypeKeys.isEmpty)
-              _buildGroupedList(sortedEntries, isDesktop, options)
-            else
-              _buildFlatList(sortedEntries, isDesktop, options),
-            // Extra space for status bar on desktop
-            SliverGap(isDesktop ? 36 : 8),
-          ],
+              if (!isDesktop) const SliverGap(4),
+              if (sortedEntries.isEmpty)
+                const SliverToBoxAdapter(
+                  child: EmptyLogsWidget(),
+                ),
+              if (widget.logsViewController.groupHttpLogs &&
+                  widget.logsViewController.filter.logTypeKeys.isEmpty)
+                _buildGroupedList(sortedEntries, isDesktop, options)
+              else
+                _buildFlatList(sortedEntries, isDesktop, options),
+              // Extra space for status bar on desktop
+              SliverGap(isDesktop ? 36 : 8),
+            ],
+          ),
         ),
         // New logs indicator — near the newest-logs edge
         if (isDesktop)
@@ -360,6 +391,14 @@ class _MainLogsViewState extends State<MainLogsView> {
       SuperSliverList.builder(
         listController: _controller.listController,
         itemCount: sortedEntries.length,
+        findChildIndexCallback: (key) {
+          if (key is! ValueKey<String>) return null;
+          final id = key.value;
+          for (var i = 0; i < sortedEntries.length; i++) {
+            if (sortedEntries[i].id == id) return i;
+          }
+          return null;
+        },
         itemBuilder: (context, index) {
           final logEntry =
               _controller.getEntryAtVisualIndex(sortedEntries, index);
