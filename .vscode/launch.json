@@ -21,6 +21,13 @@
       ]
     },
     {
+      "name": "Debug ISpect Layout showcase",
+      "cwd": "packages/ispect_layout/example",
+      "request": "launch",
+      "type": "dart",
+      "args": ["-t", "lib/showcase_example.dart", "--dart-define=ISPECT_ENABLED=true"]
+    },
+    {
       "name": "Debug Web Logs Viewer",
       "cwd": "web_logs_viewer",
       "request": "launch",
