@@ -18,7 +18,7 @@ abstract interface class ILoggerFormatter {
 ///   Second line
 ///   Third line
 /// ```
-final class ExtendedLoggerFormatter implements ILoggerFormatter {
+base class ExtendedLoggerFormatter implements ILoggerFormatter {
   const ExtendedLoggerFormatter();
 
   @override

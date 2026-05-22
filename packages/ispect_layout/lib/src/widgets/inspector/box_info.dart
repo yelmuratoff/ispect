@@ -163,6 +163,9 @@ class BoxInfo {
         )
       : null;
 
+  /// The original (logical) padding between the container and target render boxes.
+  EdgeInsets get originalPadding => _calculateOriginalPadding();
+
   /// Describes the original (logical) padding without zoom transformation.
   String describeOriginalPadding({int decimalPlaces = 1}) {
     final padding = _calculateOriginalPadding();

@@ -4,27 +4,29 @@ import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/color_picker/utils.dart';
 import 'package:ispect_layout/src/widgets/components/property_extractors.dart'
     show describeAlignment;
+import 'package:ispect_layout/src/widgets/components/value_descriptors.dart'
+    show formatRadius;
 
 /// Declarative spec for a single info chip; rendered by [PropSection].
 typedef PropSpec = ({IconData icon, String subtitle, Widget child});
 
 // ─── Primitives ──────────────────────────────────────────────────────────────
 
-/// Small color square used inline in info chips.
+/// Circular color swatch used inline in info chips.
 class ColorDot extends StatelessWidget {
   const ColorDot(this.color, {super.key});
   final Color color;
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 12,
-        height: 12,
+        width: 14,
+        height: 14,
         decoration: BoxDecoration(
+          shape: BoxShape.circle,
           color: color,
-          borderRadius: BorderRadius.circular(2),
           border: Border.all(
-            color: Colors.black.withValues(alpha: 0.15),
-            width: 0.5,
+            color: Colors.black.withValues(alpha: 0.18),
+            width: 1.0,
           ),
         ),
       );
@@ -56,8 +58,17 @@ class ColorHexChip extends StatelessWidget {
       },
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        spacing: 4.0,
-        children: [ColorDot(color), Text(hex)],
+        spacing: 6.0,
+        children: [
+          ColorDot(color),
+          Text(
+            hex,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontFeatures: const [FontFeature.tabularFigures()],
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -116,17 +127,24 @@ class PropChip extends StatelessWidget {
         child,
         Text(
           subtitle,
-          style: theme.textTheme.bodySmall?.copyWith(fontSize: 10.0),
+          style: theme.textTheme.bodySmall?.copyWith(
+            fontSize: 10.0,
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.65),
+          ),
         ),
       ],
     );
     Widget content = Row(
       mainAxisSize: expandChild ? MainAxisSize.max : MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          size: 20.0,
-          color: iconColor ?? theme.textTheme.bodySmall?.color,
+        Padding(
+          padding: const EdgeInsets.only(top: 2.0),
+          child: Icon(
+            icon,
+            size: 20.0,
+            color: iconColor ?? theme.textTheme.bodySmall?.color,
+          ),
         ),
         const SizedBox(width: 12.0),
         if (expandChild)
@@ -163,7 +181,7 @@ class PropSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (props.isEmpty) return const SizedBox.shrink();
-    final bg = Theme.of(context).chipTheme.backgroundColor;
+    final bg = Theme.of(context).colorScheme.surfaceContainerLow;
     return Wrap(
       spacing: 12.0,
       runSpacing: 8.0,
@@ -185,7 +203,82 @@ class PropSection extends StatelessWidget {
 
 // ─── Composite chip contents ─────────────────────────────────────────────────
 
-/// Visual list of [BoxShadow]s: color swatch + blur/spread/offset line.
+/// Muted `x:` / `y:` labels with tabular values for an offset or translation.
+class OffsetValue extends StatelessWidget {
+  const OffsetValue({super.key, required this.dx, required this.dy});
+
+  final String dx;
+  final String dy;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final valueStyle = theme.textTheme.bodySmall?.copyWith(
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    final labelStyle = valueStyle?.copyWith(
+      fontSize: 10.0,
+      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+    );
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 8,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 2,
+          children: [Text('x:', style: labelStyle), Text(dx, style: valueStyle)],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 2,
+          children: [Text('y:', style: labelStyle), Text(dy, style: valueStyle)],
+        ),
+      ],
+    );
+  }
+}
+
+/// Color swatch + muted `width:` label + value for a single border side.
+class BorderSideValue extends StatelessWidget {
+  const BorderSideValue({
+    super.key,
+    required this.color,
+    required this.width,
+  });
+
+  final Color color;
+  final String width;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final valueStyle = theme.textTheme.bodySmall?.copyWith(
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    final labelStyle = valueStyle?.copyWith(
+      fontSize: 10.0,
+      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+    );
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 6,
+      children: [
+        ColorHexChip(color),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 2,
+          children: [
+            Text('width:', style: labelStyle),
+            Text(width, style: valueStyle),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Visual list of [BoxShadow]s: color swatch + blur/spread/offset/blurStyle.
 class ShadowsView extends StatelessWidget {
   const ShadowsView(this.shadows, {super.key, this.decimalPlaces = 1});
   final List<BoxShadow> shadows;
@@ -193,26 +286,69 @@ class ShadowsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final separatorColor =
+        theme.colorScheme.outlineVariant.withValues(alpha: 0.35);
+    final valueStyle = theme.textTheme.bodySmall?.copyWith(
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    final labelStyle = valueStyle?.copyWith(
+      fontSize: 10.0,
+      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+    );
+
     String f(double v) =>
         formatInspectorDouble(v, decimalPlaces: decimalPlaces);
-    String line(BoxShadow s) => [
-          'blur:${f(s.blurRadius)}',
-          if (s.spreadRadius != 0) 'spread:${f(s.spreadRadius)}',
-          '(${f(s.offset.dx)},${f(s.offset.dy)})',
-        ].join(' ');
+
+    Widget kv(String label, String value) => Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 2,
+          children: [
+            Text(label, style: labelStyle),
+            Text(value, style: valueStyle),
+          ],
+        );
+
+    final items = <Widget>[];
+    for (var i = 0; i < shadows.length; i++) {
+      if (i > 0) {
+        items.add(Divider(height: 6, thickness: 0.5, color: separatorColor));
+      }
+      final s = shadows[i];
+      items.add(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          spacing: 2,
+          children: [
+            ColorHexChip(s.color),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 8,
+              children: [
+                kv('blur:', f(s.blurRadius)),
+                if (s.spreadRadius != 0) kv('spread:', f(s.spreadRadius)),
+                if (s.blurStyle != BlurStyle.normal)
+                  kv('style:', s.blurStyle.name),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 8,
+              children: [
+                kv('x:', f(s.offset.dx)),
+                kv('y:', f(s.offset.dy)),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final s in shadows)
-          Wrap(
-            spacing: 4,
-            runSpacing: 2,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [ColorHexChip(s.color), Text(line(s))],
-          ),
-      ],
+      children: items,
     );
   }
 }
@@ -281,6 +417,31 @@ class GradientView extends StatelessWidget {
       _ => <String>[],
     };
 
+    final theme = Theme.of(context);
+    final valueStyle = theme.textTheme.bodySmall?.copyWith(
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    final labelStyle = valueStyle?.copyWith(
+      fontSize: 10.0,
+      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+    );
+
+    Widget kv(String label, String value) => Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 2,
+          children: [
+            Text(label, style: labelStyle),
+            Text(value, style: valueStyle),
+          ],
+        );
+
+    // Split 'key:value' detail strings into muted label + normal value.
+    Widget detailRow(String entry) {
+      final idx = entry.indexOf(':');
+      if (idx < 0) return Text(entry, style: valueStyle);
+      return kv('${entry.substring(0, idx)}:', entry.substring(idx + 1));
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -298,12 +459,95 @@ class GradientView extends StatelessWidget {
             children: [
               ColorHexChip(g.colors[i]),
               if (stops != null && i < stops.length)
-                Text(
-                  '@${formatInspectorDouble(stops[i], decimalPlaces: decimalPlaces)}',
+                kv(
+                  '@',
+                  formatInspectorDouble(
+                    stops[i],
+                    decimalPlaces: decimalPlaces,
+                  ),
                 ),
             ],
           ),
-        for (final d in detail) Text(d, style: const TextStyle(fontSize: 10)),
+        for (final d in detail) detailRow(d),
+      ],
+    );
+  }
+}
+
+// ─── Border radius ────────────────────────────────────────────────────────────
+
+/// Returns a [Text] for uniform radii or a [BorderRadiusGrid] for asymmetric.
+Widget buildBorderRadiusChild(
+  BorderRadiusGeometry geometry, {
+  int decimalPlaces = 1,
+}) {
+  final r = geometry.resolve(TextDirection.ltr);
+  final corners = [r.topLeft, r.topRight, r.bottomRight, r.bottomLeft];
+  if (corners.every((c) => c == corners.first)) {
+    return Text(formatRadius(corners.first, decimalPlaces: decimalPlaces));
+  }
+  return BorderRadiusGrid(
+    topLeft: r.topLeft,
+    topRight: r.topRight,
+    bottomRight: r.bottomRight,
+    bottomLeft: r.bottomLeft,
+    decimalPlaces: decimalPlaces,
+  );
+}
+
+/// Compact 2×2 grid showing TL/TR/BR/BL corner radii.
+class BorderRadiusGrid extends StatelessWidget {
+  const BorderRadiusGrid({
+    super.key,
+    required this.topLeft,
+    required this.topRight,
+    required this.bottomRight,
+    required this.bottomLeft,
+    this.decimalPlaces = 1,
+  });
+
+  final Radius topLeft;
+  final Radius topRight;
+  final Radius bottomRight;
+  final Radius bottomLeft;
+  final int decimalPlaces;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final valueStyle = theme.textTheme.bodySmall?.copyWith(
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    final labelStyle = valueStyle?.copyWith(
+      fontSize: 10.0,
+      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+    );
+    String f(Radius r) => formatRadius(r, decimalPlaces: decimalPlaces);
+
+    Widget cell(String label, Radius r) => Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 2,
+          children: [
+            Text(label, style: labelStyle),
+            Text(f(r), style: valueStyle),
+          ],
+        );
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 2,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 8,
+          children: [cell('TL', topLeft), cell('TR', topRight)],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 8,
+          children: [cell('BL', bottomLeft), cell('BR', bottomRight)],
+        ),
       ],
     );
   }

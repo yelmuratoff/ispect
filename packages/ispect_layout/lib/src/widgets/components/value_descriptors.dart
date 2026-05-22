@@ -31,7 +31,7 @@ String formatRadius(Radius r, {int decimalPlaces = 1}) => r.x == r.y
     );
   }
   return (
-    label: 'radius TL/TR/BR/BL',
+    label: 'radius',
     value: corners
         .map((corner) => formatRadius(corner, decimalPlaces: decimalPlaces))
         .join(', '),

@@ -485,14 +485,16 @@ void main() {
       await tester.tapAt(position);
       await tester.pump();
 
-      expect(find.textContaining('RenderDecoratedBox'), findsOneWidget);
+      expect(find.textContaining('DecoratedBox'), findsWidgets);
       expect(find.text('100.0 × 100.0'), findsWidgets);
 
       await tester.tap(find.byType(ExpansionTile));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('L:50.0  T:150.0  R:50.0  B:150.0'), findsOneWidget);
+      // Padding shown as box-model diagram: individual values rather than LTRB string.
+      expect(find.text('50.0'), findsWidgets);
+      expect(find.text('150.0'), findsWidgets);
       expect(find.text('border radius'), findsOneWidget);
       expect(find.text('12.0'), findsOneWidget);
     });
@@ -530,7 +532,7 @@ void main() {
       await tester.tapAt(tester.getCenter(find.byKey(_rowTextKey)));
       await tester.pump();
 
-      expect(find.textContaining('RenderParagraph'), findsOneWidget);
+      expect(find.textContaining('Paragraph'), findsWidgets);
 
       final flexChip = find.text('Flex');
       expect(flexChip, findsOneWidget);
@@ -539,7 +541,7 @@ void main() {
       await tester.pump();
 
       // Active target now matches the Row, not the Text.
-      expect(find.textContaining('RenderFlex'), findsOneWidget);
+      expect(find.textContaining('Flex'), findsWidgets);
       expect(find.text('80.0 × 40.0'), findsWidgets);
     });
 

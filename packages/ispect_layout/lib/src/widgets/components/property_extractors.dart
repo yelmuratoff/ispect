@@ -19,9 +19,6 @@ const _kRotationEpsilon = 0.01;
 String _fmt(double v, int decimalPlaces) =>
     formatInspectorDouble(v, decimalPlaces: decimalPlaces);
 
-String _fmtOffset(Offset o, int decimalPlaces) =>
-    formatInspectorOffset(o, decimalPlaces: decimalPlaces);
-
 /// Recovers the [ImageProvider] that produced a [RenderImage] via its
 /// [RenderObject.debugCreator]. Only debug builds populate it; returns
 /// `null` in release/profile.
@@ -207,7 +204,10 @@ List<PropSpec> shapeBorderProps(
           (
             icon: Icons.rounded_corner,
             subtitle: br.label,
-            child: Text(br.value),
+            child: buildBorderRadiusChild(
+              borderRadius,
+              decimalPlaces: decimalPlaces,
+            ),
           ),
     ];
 
@@ -226,7 +226,10 @@ List<PropSpec> decorationProps(BoxDecoration d, {int decimalPlaces = 1}) => [
         (
           icon: Icons.rounded_corner,
           subtitle: br.label,
-          child: Text(br.value),
+          child: buildBorderRadiusChild(
+            d.borderRadius ?? BorderRadius.zero,
+            decimalPlaces: decimalPlaces,
+          ),
         ),
       if (d.shape != BoxShape.rectangle)
         (
@@ -295,20 +298,14 @@ List<PropSpec> _borderProps(BoxBorder border, {int decimalPlaces = 1}) {
     ];
   }
 
-  Widget sideChild(Color color, String wStr) => Row(
-        mainAxisSize: MainAxisSize.min,
-        spacing: 4,
-        children: [ColorHexChip(color), Text(wStr)],
-      );
-
   if (_uniformActiveBorderColor(border) case final color?) {
     return [
       (
         icon: Icons.border_all,
         subtitle: 'border',
-        child: sideChild(
-          color,
-          'w:${_formatBorderWidths(border, decimalPlaces)}',
+        child: BorderSideValue(
+          color: color,
+          width: _formatBorderWidths(border, decimalPlaces),
         ),
       ),
     ];
@@ -319,8 +316,10 @@ List<PropSpec> _borderProps(BoxBorder border, {int decimalPlaces = 1}) {
       (
         icon: Icons.border_all,
         subtitle: 'border ${side.label}',
-        child: sideChild(
-            side.side.color, 'w:${_fmt(side.side.width, decimalPlaces)}'),
+        child: BorderSideValue(
+          color: side.side.color,
+          width: _fmt(side.side.width, decimalPlaces),
+        ),
       ),
   ];
 }
@@ -410,7 +409,10 @@ List<PropSpec> clipRRectProps(
         (
           icon: Icons.rounded_corner,
           subtitle: br.label,
-          child: Text(br.value),
+          child: buildBorderRadiusChild(
+            target.borderRadius,
+            decimalPlaces: decimalPlaces,
+          ),
         ),
       if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
     ];
@@ -425,7 +427,10 @@ List<PropSpec> clipRSuperellipseProps(
         (
           icon: Icons.rounded_corner,
           subtitle: br.label,
-          child: Text(br.value),
+          child: buildBorderRadiusChild(
+            target.borderRadius,
+            decimalPlaces: decimalPlaces,
+          ),
         ),
       if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
     ];
@@ -627,7 +632,10 @@ List<PropSpec> physicalModelProps(
         (
           icon: Icons.rounded_corner,
           subtitle: br.label,
-          child: Text(br.value),
+          child: buildBorderRadiusChild(
+            target.borderRadius ?? BorderRadius.zero,
+            decimalPlaces: decimalPlaces,
+          ),
         ),
     ];
 
@@ -677,7 +685,7 @@ List<PropSpec> transformProps(
       (
         icon: Icons.open_with,
         subtitle: 'translate',
-        child: Text('(${f(tx)}, ${f(ty)})'),
+        child: OffsetValue(dx: f(tx), dy: f(ty)),
       ),
     if ((scaleX - 1).abs() > _kTransformEpsilon ||
         (scaleY - 1).abs() > _kTransformEpsilon)
@@ -698,7 +706,10 @@ List<PropSpec> transformProps(
       (
         icon: Icons.place,
         subtitle: 'origin',
-        child: EllipsizedText(_fmtOffset(target.origin!, decimalPlaces)),
+        child: OffsetValue(
+          dx: _fmt(target.origin!.dx, decimalPlaces),
+          dy: _fmt(target.origin!.dy, decimalPlaces),
+        ),
       ),
     if (target.alignment != null)
       (

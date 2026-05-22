@@ -4,24 +4,10 @@
 
 ### Improvements
 
-- **Sealed utility classes:** Marked the following exported utility / data classes as `final` (or `abstract final` for static-only helpers) so they cannot be subclassed: `CurlUtils`, `JsonTruncator`, `ConsoleSettings`, `NetworkPayloadSanitizer`, `ISpectDateTimeFormatter`, `RedactionStats`, `RedactionResult`, `HeaderRedactionResult`, `RedactionContext`, `LogDetails`, `HumanLogEntryFormatter`, `ExtendedLoggerFormatter`. These classes were never intended as extension points; locking them down prevents accidental coupling. If you were extending them (rare), file an issue describing the use case.
-- **Service-style classes left open:** `RedactionService`, `ISpectErrorHandler`, `NetworkTransaction`, and similar classes that consumers may legitimately subclass for behavior overrides are NOT sealed.
-
-## 5.1.0
-
-### Improvements
-
-- **Inspector controller decomposed:** `packages/ispect_layout/lib/src/inspector_controller.dart` split into 5 focused files using `part of` + extension methods. The orchestrator (constructor, fields, state recompute, dispose) stays in `inspector_controller.dart`; mode management, keyboard-shortcut forwarding, pointer handlers, and pixel-capture math each live in their own sibling file. Public API of `InspectorController` is unchanged.
-- **Constants restructured:** `packages/ispect/lib/src/core/res/constants/ispect_constants.dart` split into themed `part of` files (`ispect_log_icons.dart`, `ispect_log_palette.dart`, `ispect_log_descriptions.dart`). The `ISpectConstants` facade re-exposes the moved tables, so all 20+ call sites remain unchanged.
-
-## 5.0.5
-
-### Improvements
-
-- **Documentation hygiene:** Stripped narrating dartdoc that duplicated method names across `ispectify` core (`ISpectLogger`, `LogPipeline`, `ISpectLoggerOptions`). Kept dartdoc that documents real contracts (throws, side effects, invariants).
-- **Reentrancy contract:** `ISpectLogger.stream` and `addObserver` now explicitly document that a synchronous re-entrant `log(...)` call from inside a listener or observer is dropped to prevent recursion.
-- **Internal class hygiene:** Marked non-exported internal utilities (`LogPipeline`, `ObserverManager`, `ObserverRegistry`, `RequestIdGenerator`, `LogFactory`, `RedactionRequest`, `RedactionConfig`, `RedactionWalker`, `TraceStreamTransformer`) as `final` / `abstract final` to lock down inheritance for code that was never intended to be a public extension point.
-- **Rules:** Carved out an explicit exception in code-style guidance for `dart:developer` `log` calls in ISpect's own internal error-fallback paths, where routing through `ISpect.logger` would cause reentrancy.
+- **Sealed exported data and utility classes:** `LogDetails`, `ConsoleSettings`, `RedactionResult`, `HeaderRedactionResult`, `RedactionContext`, `RedactionStats`, `CurlUtils`, `JsonTruncator`, `NetworkPayloadSanitizer`, and `ISpectDateTimeFormatter` are now `final` / `abstract final`. These value and static-utility types can no longer be subclassed or faked via `implements`.
+- **Formatters stay extendable:** `ExtendedLoggerFormatter` and `HumanLogEntryFormatter` are `base class` — `extends` is still supported for custom formatter subclasses, only `implements` is blocked. `RedactionService`, `ISpectErrorHandler`, and `NetworkTransaction` remain fully open.
+- **Inspector controller decomposed:** `InspectorController` body split across four sibling `part` files for modes, shortcuts, pointer handlers, and pixel capture. Public API unchanged.
+- **Log constants restructured:** `ISpectConstants` tables split into themed `part` files for icons, palette, and descriptions. The facade re-exposes every existing constant.
 
 ## 5.0.4
 
@@ -894,11 +880,10 @@ ISpectTheme(
 ### BREAKING CHANGES
 
 - Forked the `Talker` package (where I'm actively contributing) and added it to `ISpect` as `ISpectLogger`
-
   - This was done to ease usage and reduce external dependencies
   - You can now use `ISpectLogger` to log all application actions
-- Separated main functions into different packages:
 
+- Separated main functions into different packages:
   - `ispect_ai` - For using `AI` as a log reporter and log description generator (useful for managers and testers)
   - `ispect_jira` - For using `Jira` to create tickets directly in the application
   - `ispect_device` - For getting device data and related information
@@ -1004,6 +989,7 @@ ISpectTheme(
       },
     ),
   ```
+
 - Google AI integration for generating log descriptions and reports
 
 ### Changed
