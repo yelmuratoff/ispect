@@ -63,7 +63,8 @@ class BoxInfoWidget extends StatelessWidget {
   /// Places the info panel on the side of the screen opposite to the target,
   /// so selection details never cover the widget being inspected. Respects
   /// safe-area insets so the panel doesn't collide with the status bar or
-  /// the bottom gesture area.
+  /// the bottom gesture area. Bounds the panel height so a long property
+  /// list scrolls inside the card instead of overflowing off-screen.
   Widget _buildPanelSlot(BuildContext context) {
     final mq = MediaQuery.of(context);
     final screenHeight = mq.size.height;
@@ -71,12 +72,17 @@ class BoxInfoWidget extends StatelessWidget {
     final panelOnTop = targetCenterY > screenHeight / 2;
 
     const gap = 12.0;
+    final maxPanelHeight =
+        screenHeight - mq.padding.top - mq.padding.bottom - gap * 2;
     return Positioned(
       left: gap,
       right: gap,
       top: panelOnTop ? mq.padding.top + gap : null,
       bottom: panelOnTop ? null : mq.padding.bottom + gap,
-      child: _buildTargetBoxInfoPanel(context),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxPanelHeight),
+        child: _buildTargetBoxInfoPanel(context),
+      ),
     );
   }
 

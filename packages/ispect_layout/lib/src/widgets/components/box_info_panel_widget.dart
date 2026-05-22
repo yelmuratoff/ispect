@@ -42,10 +42,12 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
         theme.colorScheme.outlineVariant.withValues(alpha: 0.4);
     final hasCompare = target.attached &&
         widget.comparedBoxInfo?.targetRenderBox.attached == true;
+    final breadcrumb = _buildBreadcrumb();
 
     return Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,
+      color: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
@@ -53,33 +55,52 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
           width: 1,
         ),
       ),
-      child: SizedBox(
-        width: double.infinity,
-        child: Theme(
-          data: theme.copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            initiallyExpanded: false,
-            backgroundColor: theme.colorScheme.surface,
-            collapsedBackgroundColor: theme.colorScheme.surface,
-            onExpansionChanged: (v) => setState(() => _isExpanded = v),
-            trailing: _buildTrailing(theme),
-            title: _PanelTitleBar(
-              target: target,
-              decimalPlaces: widget.decimalPlaces,
-              onCompare: widget.onCompare,
-              isCompareActive: widget.isCompareActive,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _PanelTitleBar(
+                          target: target,
+                          decimalPlaces: widget.decimalPlaces,
+                          onCompare: widget.onCompare,
+                          isCompareActive: widget.isCompareActive,
+                        ),
+                        if (breadcrumb != null) breadcrumb,
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildTrailing(theme),
+                ],
+              ),
             ),
-            subtitle: _buildBreadcrumb(),
-            childrenPadding: const EdgeInsets.only(
-              left: 12.0,
-              right: 12.0,
-              bottom: 16.0,
-            ),
-            expandedAlignment: Alignment.centerLeft,
-            expandedCrossAxisAlignment: CrossAxisAlignment.start,
-            children: _buildSections(context, target, dividerColor, hasCompare),
           ),
-        ),
+          if (_isExpanded) ...[
+            Divider(height: 1, thickness: 1, color: dividerColor),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children:
+                      _buildSections(context, target, dividerColor, hasCompare),
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -125,10 +146,6 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
   ) {
     final out = <Widget>[];
     void divider() => out.add(Divider(height: 20.0, color: dividerColor));
-
-    // Thin separator between the ExpansionTile header and section content.
-    out.add(Divider(height: 1, thickness: 1, color: dividerColor));
-    out.add(const SizedBox(height: 12));
 
     // LAYOUT: size, padding, constraints.
     out

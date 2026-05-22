@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/ispect_layout.dart';
+import 'package:ispect_layout/src/widgets/components/box_info_panel_widget.dart';
 
 // class _ColorPickerTestPainter extends CustomPainter {
 //   static Color localPositionToColor({
@@ -488,7 +489,7 @@ void main() {
       expect(find.textContaining('DecoratedBox'), findsWidgets);
       expect(find.text('100.0 × 100.0'), findsWidgets);
 
-      await tester.tap(find.byType(ExpansionTile));
+      await tester.tap(find.byType(BoxInfoPanelWidget));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
@@ -513,7 +514,7 @@ void main() {
       await tester.tapAt(position);
       await tester.pump();
 
-      await tester.tap(find.byType(ExpansionTile));
+      await tester.tap(find.byType(BoxInfoPanelWidget));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 

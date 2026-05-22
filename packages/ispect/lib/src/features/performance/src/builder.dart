@@ -45,14 +45,18 @@ class ISpectPerformanceOverlayBuilder extends StatelessWidget {
   final bool isPerformanceTrackingEnabled;
 
   @override
-  Widget build(BuildContext context) => Directionality(
-        textDirection: TextDirection.ltr,
-        child: ISpectPerformanceOverlay(
-          enabled: isPerformanceTrackingEnabled,
-          alignment: Alignment.topCenter,
-          backgroundColor: context.appTheme.colorScheme.surface.withAlpha(100),
-          textColor: context.appTheme.colorScheme.onSurface,
-          child: child,
-        ),
-      );
+  Widget build(BuildContext context) {
+    final colorScheme = context.appTheme.colorScheme;
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: ISpectPerformanceOverlay(
+        enabled: isPerformanceTrackingEnabled,
+        alignment: Alignment.topCenter,
+        backgroundColor: colorScheme.surface.withValues(alpha: 0.4),
+        textColor: colorScheme.onSurface,
+        overTargetColor: colorScheme.error,
+        child: child,
+      ),
+    );
+  }
 }
