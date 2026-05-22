@@ -82,11 +82,14 @@ class BoxInfo {
     for (final box in hitTestPath) {
       final isStrong = _isStronglyMeaningfulRenderBox(box);
       final isHelper = _isLayoutHelperRenderBox(box);
-      if (!isStrong && !isHelper) continue;
+      final isTarget = identical(box, targetRenderBox);
+      if (!isStrong && !isHelper && !isTarget) continue;
 
       if (result.isNotEmpty && result.last.size == box.size) {
-        final prevStrong = _isStronglyMeaningfulRenderBox(result.last);
-        if (isStrong || !prevStrong) {
+        final prev = result.last;
+        if (identical(prev, targetRenderBox)) continue;
+        final prevStrong = _isStronglyMeaningfulRenderBox(prev);
+        if (isTarget || isStrong || !prevStrong) {
           result[result.length - 1] = box;
         }
       } else {
