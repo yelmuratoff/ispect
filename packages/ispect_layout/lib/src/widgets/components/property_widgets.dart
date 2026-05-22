@@ -227,12 +227,18 @@ class OffsetValue extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           spacing: 2,
-          children: [Text('x:', style: labelStyle), Text(dx, style: valueStyle)],
+          children: [
+            Text('x:', style: labelStyle),
+            Text(dx, style: valueStyle)
+          ],
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
           spacing: 2,
-          children: [Text('y:', style: labelStyle), Text(dy, style: valueStyle)],
+          children: [
+            Text('y:', style: labelStyle),
+            Text(dy, style: valueStyle)
+          ],
         ),
       ],
     );

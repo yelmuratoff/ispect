@@ -4,6 +4,13 @@
 
 ### Improvements
 
+- **Inspector property chips:** Composite values (offset, border side, gradient, shadow) now show muted inline labels (`x:`, `y:`, `width:`, `blur:`, etc.) so each number is self-labelled at a glance.
+- **Asymmetric border radius:** Asymmetric corner radii are displayed in a 2×2 TL/TR · BL/BR grid instead of a comma-separated string.
+- **Shadow breakdown:** Multi-shadow chips show each shadow in its own row with a divider between entries and surface `blurStyle` when non-default.
+- **Typography span grouping:** When a `RichText` contains multiple styled spans, the TYPOGRAPHY section groups each span's chips under a muted preview of that span's text.
+- **Selection box on transformed widgets:** The highlight rect now correctly encloses rotated and skewed widgets by computing the AABB from all four local corners.
+- **Size label placement:** The widget size label is now placed above the selection box instead of inside it, preventing overlap with the widget's content.
+- **`ImageFilter` description:** Strips the `ImageFilter.` prefix and default tile-mode suffix — a blur filter now shows as `blur(6.0, 6.0)` instead of `ImageFilter.blur(6.0, 6.0, unspecified)`.
 - **Sealed exported data and utility classes:** `LogDetails`, `ConsoleSettings`, `RedactionResult`, `HeaderRedactionResult`, `RedactionContext`, `RedactionStats`, `CurlUtils`, `JsonTruncator`, `NetworkPayloadSanitizer`, and `ISpectDateTimeFormatter` are now `final` / `abstract final`. These value and static-utility types can no longer be subclassed or faked via `implements`.
 - **Formatters stay extendable:** `ExtendedLoggerFormatter` and `HumanLogEntryFormatter` are `base class` — `extends` is still supported for custom formatter subclasses, only `implements` is blocked. `RedactionService`, `ISpectErrorHandler`, and `NetworkTransaction` remain fully open.
 - **Inspector controller decomposed:** `InspectorController` body split across four sibling `part` files for modes, shortcuts, pointer handlers, and pixel capture. Public API unchanged.

@@ -2,25 +2,19 @@
 
 ## 5.2.0-dev.1
 
-### Code Quality
+### Improvements
 
+- **Inspector property chips:** Composite values (offset, border side, gradient, shadow) now show muted inline labels (`x:`, `y:`, `width:`, `blur:`, etc.) so each number is self-labelled at a glance.
+- **Asymmetric border radius:** Asymmetric corner radii are displayed in a 2×2 TL/TR · BL/BR grid instead of a comma-separated string.
+- **Shadow breakdown:** Multi-shadow chips show each shadow in its own row with a divider between entries and surface `blurStyle` when non-default.
+- **Typography span grouping:** When a `RichText` contains multiple styled spans, the TYPOGRAPHY section groups each span's chips under a muted preview of that span's text.
+- **Selection box on transformed widgets:** The highlight rect now correctly encloses rotated and skewed widgets by computing the AABB from all four local corners.
+- **Size label placement:** The widget size label is now placed above the selection box instead of inside it, preventing overlap with the widget's content.
+- **`ImageFilter` description:** Strips the `ImageFilter.` prefix and default tile-mode suffix — a blur filter now shows as `blur(6.0, 6.0)` instead of `ImageFilter.blur(6.0, 6.0, unspecified)`.
 - **Sealed exported data and utility classes:** `LogDetails`, `ConsoleSettings`, `RedactionResult`, `HeaderRedactionResult`, `RedactionContext`, `RedactionStats`, `CurlUtils`, `JsonTruncator`, `NetworkPayloadSanitizer`, and `ISpectDateTimeFormatter` are now `final` / `abstract final`. These value and static-utility types can no longer be subclassed or faked via `implements`.
 - **Formatters stay extendable:** `ExtendedLoggerFormatter` and `HumanLogEntryFormatter` are `base class` — `extends` is still supported for custom formatter subclasses, only `implements` is blocked. `RedactionService`, `ISpectErrorHandler`, and `NetworkTransaction` remain fully open.
-
-## 5.1.0
-
-### Code Quality
-
 - **Inspector controller decomposed:** `InspectorController` body split across four sibling `part` files for modes, shortcuts, pointer handlers, and pixel capture. Public API unchanged.
 - **Log constants restructured:** `ISpectConstants` tables split into themed `part` files for icons, palette, and descriptions. The facade re-exposes every existing constant.
-
-## 5.0.5
-
-### Code Quality
-
-- **Documentation hygiene:** Trimmed narrating dartdoc on `ISpectLogger`, `LogPipeline`, and `ISpectLoggerOptions`. Kept contract-bearing docs (throws, side effects, invariants).
-- **Reentrancy contract documented:** `ISpectLogger.stream` and `addObserver` now state that a synchronous re-entrant `log(...)` call from inside a listener or observer is dropped.
-- **Internal class hygiene:** Sealed non-exported internals (`LogPipeline`, `ObserverManager`, `ObserverRegistry`, `RequestIdGenerator`, `LogFactory`, `RedactionRequest`, `RedactionConfig`, `RedactionWalker`, `TraceStreamTransformer`) as `final` / `abstract final`.
 
 ## 5.0.4
 
@@ -893,11 +887,10 @@ ISpectTheme(
 ### BREAKING CHANGES
 
 - Forked the `Talker` package (where I'm actively contributing) and added it to `ISpect` as `ISpectLogger`
-
   - This was done to ease usage and reduce external dependencies
   - You can now use `ISpectLogger` to log all application actions
-- Separated main functions into different packages:
 
+- Separated main functions into different packages:
   - `ispect_ai` - For using `AI` as a log reporter and log description generator (useful for managers and testers)
   - `ispect_jira` - For using `Jira` to create tickets directly in the application
   - `ispect_device` - For getting device data and related information
@@ -1003,6 +996,7 @@ ISpectTheme(
       },
     ),
   ```
+
 - Google AI integration for generating log descriptions and reports
 
 ### Changed
