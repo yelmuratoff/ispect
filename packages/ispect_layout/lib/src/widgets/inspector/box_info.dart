@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ispect_layout/src/number_format.dart';
@@ -339,12 +341,19 @@ class _NoopBuildContext implements BuildContext {
 Rect? getRectFromRenderBox(RenderBox renderBox) {
   if (!renderBox.attached) return null;
 
-  final topLeft = renderBox.localToGlobal(Offset.zero);
-  final bottomRight = renderBox.localToGlobal(
-    Offset(renderBox.size.width, renderBox.size.height),
-  );
+  final w = renderBox.size.width;
+  final h = renderBox.size.height;
+  final tl = renderBox.localToGlobal(Offset.zero);
+  final tr = renderBox.localToGlobal(Offset(w, 0));
+  final bl = renderBox.localToGlobal(Offset(0, h));
+  final br = renderBox.localToGlobal(Offset(w, h));
 
-  return Rect.fromPoints(topLeft, bottomRight);
+  final minX = math.min(math.min(tl.dx, tr.dx), math.min(bl.dx, br.dx));
+  final maxX = math.max(math.max(tl.dx, tr.dx), math.max(bl.dx, br.dx));
+  final minY = math.min(math.min(tl.dy, tr.dy), math.min(bl.dy, br.dy));
+  final maxY = math.max(math.max(tl.dy, tr.dy), math.max(bl.dy, br.dy));
+
+  return Rect.fromLTRB(minX, minY, maxX, maxY);
 }
 
 double calculateBoxPosition({
