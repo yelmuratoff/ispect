@@ -150,8 +150,7 @@ class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
   @override
   void initState() {
     super.initState();
-    // Cannot live in the const constructor: `Duration.inMicroseconds` is not
-    // const-evaluable, so we trap zero/negative ranges here instead.
+
     assert(
       widget.barRangeMax.inMicroseconds > 0,
       'barRangeMax must be greater than zero',
