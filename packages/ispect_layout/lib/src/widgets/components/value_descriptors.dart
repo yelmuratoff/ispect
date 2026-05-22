@@ -126,7 +126,12 @@ String describeTextScaler(TextScaler scaler) {
 String describeImageFilter(ImageFilter filter) {
   assert(_assertReleaseSafeContracts());
   final raw = filter.toString();
-  if (!raw.startsWith(_kStrippedToStringPrefix)) return raw;
+  if (!raw.startsWith(_kStrippedToStringPrefix)) {
+    return raw.replaceFirst('ImageFilter.', '').replaceAllMapped(
+          RegExp(r',\s*(TileMode\.\w+|unspecified)\)$'),
+          (_) => ')',
+        );
+  }
   final kind = _ImageFilterKind.lookup(filter.runtimeType);
   if (kind == null) return 'ImageFilter';
   try {

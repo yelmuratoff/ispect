@@ -361,25 +361,11 @@ double calculateBoxPosition({
   required double height,
   double padding = 8.0,
 }) {
-  final preferredHeight = height;
-
-  // Position when the overlay is placed inside the container
+  final aboveTopEdge = rect.top - padding - height;
   final insideTopEdge = rect.top + padding;
-  final insideBottomEdge = rect.bottom - padding - preferredHeight;
 
-  // Position when the overlay is placed above the container
-  final aboveTopEdge = rect.top - padding - preferredHeight;
-
-  // Position when the overlay is placed below the container
-  final belowTopEdge = rect.bottom + padding;
-
-  final minHeightToBeInsideContainer = (height + padding) * 2;
-
-  final isInsideContainer = rect.height > minHeightToBeInsideContainer;
-
-  if (isInsideContainer) {
-    return (insideTopEdge > padding) ? insideTopEdge : insideBottomEdge;
-  } else {
-    return (aboveTopEdge > padding) ? aboveTopEdge : belowTopEdge;
-  }
+  // Prefer above the widget so the label never overlaps the content.
+  if (aboveTopEdge >= padding) return aboveTopEdge;
+  // Fall back to inside-at-top when there's no room above.
+  return insideTopEdge;
 }
