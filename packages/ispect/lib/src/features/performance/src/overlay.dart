@@ -5,66 +5,40 @@ import 'package:flutter/scheduler.dart';
 import 'package:ispect/src/features/performance/src/stats.dart';
 import 'package:ispect/src/ispect.dart';
 
-/// Default fallback display refresh rate (Hz) when [View.display.refreshRate]
-/// is unavailable. 60Hz ⇒ ~16.67ms target frame time.
+/// Fallback when [View.display.refreshRate] is unavailable.
 const double _kFallbackRefreshRate = 60;
 
-/// Horizontal gap reserved between bars, in logical pixels.
 const double _kBarGap = 1;
-
-/// Height of the header row (refresh-rate + delivered FPS + freeze button).
 const double _kHeaderHeight = 16;
-
-/// Width/height of the freeze toggle button.
 const double _kPauseButtonSize = 18;
-
-/// Font sizes.
 const double _kStatsFontSize = 10;
 const double _kHeaderFontSize = 9;
 const double _kStatsLineHeight = 1.15;
 
-/// Color palettes that consumers can copy into the overlay's individual color
-/// parameters.
-///
-/// The default overlay uses Material teal/blue/purple plus a saturated red
-/// for over-target frames; that combination is not safe under all color
-/// vision deficiencies. To opt into the Wong/Okabe color-blind safe palette,
-/// pass each `colorBlind*` constant into the matching overlay parameter —
-/// including [colorBlindOverTarget], which the default `overTargetColor`
-/// does not pick up automatically.
+/// The default overlay is not color-blind safe. Opt in by passing each
+/// `colorBlind*` value into the matching overlay parameter — including
+/// [colorBlindOverTarget], which the default `overTargetColor` does not pick
+/// up automatically.
 abstract final class ISpectPerformanceOverlayPalettes {
-  /// Default palette (Material teal/blue/purple).
   static const ui = Colors.teal;
   static const raster = Colors.blue;
   static const total = Colors.purple;
 
-  /// Color-blind safe palette using the Wong/Okabe set (distinguishable across
-  /// deuteranopia, protanopia, and tritanopia).
+  /// Wong/Okabe palette, distinguishable under deuteranopia, protanopia, and
+  /// tritanopia.
   static const colorBlindUi = Color(0xFF009E73);
   static const colorBlindRaster = Color(0xFFE69F00);
   static const colorBlindTotal = Color(0xFFCC79A7);
   static const colorBlindOverTarget = Color(0xFFD55E00);
 }
 
-/// A widget that displays a custom performance overlay showing frame timing
-/// stats (UI build, raster, and total) based on [FrameTiming].
+/// Cross-platform performance overlay built on [FrameTiming] — works on web
+/// and desktop where Flutter's native [PerformanceOverlay] does not.
 ///
-/// Unlike Flutter's native [PerformanceOverlay], this works across all
-/// platforms including web and desktop, and surfaces the metrics recommended
-/// by the Flutter performance docs: delivered FPS, average, 90th/99th
-/// percentile, and the number of janky frames per metric.
-///
-/// Per the Flutter docs, UI build and raster each get the full frame budget
-/// (`1s / refreshRate`) because they pipeline across frames: while the UI
-/// thread builds frame N+1, the raster thread renders frame N. A thread
-/// exceeding the full target is jank in that graph; the "8ms + 8ms" split in
-/// the docs is about input-to-display latency, not jank.
-///
-/// Each bar represents a recent frame. Bars whose duration exceeds the
-/// resolved target are drawn in [overTargetColor]; bars that would exceed
-/// [barRangeMax] get a small "off-chart" notch.
+/// UI build and raster are each checked against the full frame target (not
+/// half) because the two threads pipeline across frames. The "8ms + 8ms"
+/// split in the Flutter docs is about input-to-display latency, not jank.
 class ISpectPerformanceOverlay extends StatefulWidget {
-  /// Creates a performance overlay widget.
   const ISpectPerformanceOverlay({
     required this.child,
     super.key,
@@ -95,92 +69,69 @@ class ISpectPerformanceOverlay extends StatefulWidget {
           'barRangeMax must be greater than zero',
         );
 
-  /// Whether the overlay is visible.
   final bool enabled;
 
-  /// Where to align the overlay within the screen.
-  ///
-  /// Horizontal alignment only takes effect when [width] is finite; otherwise
-  /// the overlay fills the available width.
+  /// Horizontal alignment only takes effect when [width] is finite; with a
+  /// `null` width the overlay fills the available width regardless.
   final Alignment alignment;
 
-  /// How much to scale the overlay.
   final double scale;
 
-  /// Fixed overlay width. When `null`, the overlay expands to fill the
-  /// available horizontal space.
+  /// `null` fills the available horizontal space.
   final double? width;
 
-  /// Overlay height. When `null`, a layout-appropriate default is used based
-  /// on [compact] and [showP90].
+  /// `null` picks a default sized for [compact] / [showP90].
   final double? height;
 
-  /// Number of recent frames retained for stats and rendering.
   final int sampleSize;
 
-  /// Target total frame time. When `null` the overlay derives it from the
-  /// active display's refresh rate (`1s / refreshRate`). The same target is
-  /// applied to all three metrics — the UI build and raster threads each get
-  /// the full frame budget because they pipeline across frames.
+  /// Total frame budget; applied identically to UI, raster, and total. When
+  /// `null`, derived from the active display's refresh rate. All three
+  /// metrics share the same target because UI and raster pipeline across
+  /// frames — both threads independently get the full per-frame budget.
   final Duration? targetFrameTime;
 
-  /// Maximum bar duration; durations beyond this are capped and marked.
+  /// Bars beyond this are visually capped and marked with a notch.
   final Duration barRangeMax;
 
-  /// Background color of the chart container.
   final Color backgroundColor;
 
-  /// Foreground color for the text labels, target line, and freeze button.
+  /// Drives text labels, the target line, and the freeze button glyph.
   final Color textColor;
 
-  /// Bar color for UI build durations.
   final Color uiColor;
-
-  /// Bar color for raster durations.
   final Color rasterColor;
-
-  /// Bar color for total frame durations.
   final Color totalColor;
 
-  /// Color applied to bars and labels that exceed the per-metric target.
+  /// Applied to bars **and** labels that exceed the per-metric target.
   final Color overTargetColor;
 
-  /// When `true`, renders a single-line summary instead of three charts.
+  /// Render a single-line summary instead of three charts.
   final bool compact;
 
-  /// When `true`, displays the 90th-percentile alongside the 99th-percentile
-  /// in the detailed layout. Ignored when [compact] is `true` (the compact
-  /// summary stays a single line and only surfaces avg + p99).
+  /// Show p90 alongside p99 in the detailed layout. No effect in [compact].
   final bool showP90;
 
-  /// When `true`, shows a small pause/resume button so the user can freeze
-  /// the chart for inspection.
+  /// Show the small freeze button for pausing the chart in place.
   final bool allowFreeze;
 
-  /// Optional callback invoked for every collected [FrameTiming].
+  /// Fires for every collected [FrameTiming], including while the chart is
+  /// frozen so a downstream pipeline does not lose data.
   ///
-  /// Useful for shipping frame timings to a downstream collector while the
-  /// overlay is visible. Keeps firing even when the chart is paused via the
-  /// freeze button so the downstream pipeline does not lose data.
-  ///
-  /// Invoked synchronously from `SchedulerBinding.addTimingsCallback` —
-  /// keep the callback fast (microseconds), or defer heavy work to a
-  /// post-frame callback or isolate. Exceptions thrown from this callback
-  /// are caught and logged via [ISpect.logger] so they do not poison the
-  /// engine's timings dispatch.
+  /// Invoked synchronously from `SchedulerBinding.addTimingsCallback` — keep
+  /// the body in microseconds or defer work to a post-frame callback /
+  /// isolate. Exceptions are caught and routed through [ISpect.logger] so
+  /// they do not poison the engine's timings dispatch.
   final void Function(FrameTiming timing)? onFrameTiming;
 
-  /// When `true`, frames whose total duration exceeds
-  /// `targetFrameTime × [severeJankFactor]` are logged to [ISpect.logger] as
-  /// warnings. Defaults to `false` to avoid log spam.
+  /// Log frames where `totalSpan > targetFrameTime × severeJankFactor` via
+  /// [ISpect.logger]. Off by default to avoid log spam.
   final bool enableJankLogging;
 
-  /// Multiplier over the total target above which a frame is considered
-  /// "severe jank" worth logging. Defaults to `2.0` — frames that visibly
-  /// hitch on a 60Hz display.
+  /// `2.0` matches "visible hitch" on 60Hz; below `1.0` would log every
+  /// frame above target.
   final double severeJankFactor;
 
-  /// The widget to display behind the overlay.
   final Widget child;
 
   @override
@@ -263,8 +214,6 @@ class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
   }
 }
 
-/// Internal stateful widget that collects frame timings and lays out the
-/// header, charts, and the freeze button.
 class _OverlayBody extends StatefulWidget {
   const _OverlayBody({
     required this.sampleSize,
@@ -329,13 +278,8 @@ class _OverlayBodyState extends State<_OverlayBody> {
     super.dispose();
   }
 
-  /// Skips the first reported frame to avoid warm-up noise, fans the timings
-  /// out to side-effect consumers ([widget.onFrameTiming], jank logging), and
-  /// accumulates the batch for visualization unless the chart is frozen.
-  ///
-  /// Pause only freezes the visual update path: the downstream observer
-  /// callback and jank logging keep flowing so the user can pause the chart
-  /// to inspect a spike without dropping data on the floor.
+  /// Side-effect fan-out (observer + jank log) runs regardless of pause; only
+  /// the visual sample buffer freezes when `widget.paused` is true.
   void _timingsCallback(List<FrameTiming> frameTimings) {
     if (!mounted) return;
 
@@ -643,9 +587,8 @@ class _CompactBody extends StatelessWidget {
           ],
         );
 
-    // Use the Total chart's jank count as the user-visible "frames missed"
-    // figure — a single janky frame typically trips multiple per-thread
-    // counters, and summing them would triple-count the same dropped frame.
+    // Summing per-thread counts would triple-count a single dropped frame;
+    // totalSpan is the user-visible "frame missed" signal.
     final jankTotal = total.jankCount;
 
     return Padding(
@@ -797,7 +740,6 @@ class _ChartColumn extends StatelessWidget {
       );
 }
 
-/// A chart that renders frame timings as vertical bars plus a stats overlay.
 class _PerformanceChart extends StatelessWidget {
   const _PerformanceChart({
     required this.type,
@@ -876,9 +818,6 @@ class _PerformanceChart extends StatelessWidget {
   }
 }
 
-/// Custom painter that draws the per-frame bars, a per-metric target line,
-/// multiples of the target as faint reference lines, and a small marker on
-/// bars whose duration exceeded [barRangeMax].
 class _OverlayPainter extends CustomPainter {
   const _OverlayPainter({
     required this.samples,
@@ -941,10 +880,8 @@ class _OverlayPainter extends CustomPainter {
       }
     }
 
-    // Grid lines are drawn last so the per-metric target (1×) and its
-    // multiples stay visible even when bars exceed them — mirroring how
-    // Flutter's native performance overlay keeps the 16ms reference lines on
-    // top of the graph.
+    // Grid lines drawn last so the target stays visible over tall bars,
+    // matching Flutter's native overlay convention.
     final linePaint = Paint()..strokeWidth = 1;
     for (var multiple = 1; multiple <= 4; multiple++) {
       final yUs = target.inMicroseconds * multiple;
@@ -969,12 +906,8 @@ class _OverlayPainter extends CustomPainter {
       oldDelegate.capMarkerColor != capMarkerColor;
 }
 
-/// Small interactive button that toggles between the recording and frozen
-/// states of the overlay.
-///
-/// Sits as a sibling of the `IgnorePointer`-wrapped chart body inside the
-/// overlay stack, so taps anywhere except this button fall through to the
-/// app behind the overlay.
+/// Must sit outside the overlay's `IgnorePointer` so taps land here while the
+/// rest of the chart area stays transparent to gestures.
 class _FreezeButton extends StatelessWidget {
   const _FreezeButton({
     required this.paused,
