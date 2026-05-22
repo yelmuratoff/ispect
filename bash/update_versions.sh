@@ -55,10 +55,10 @@ semver_bump() { # $1=version $2=kind
   IFS='.' read -r major minor patch <<<"$core"
   case $kind in
     patch)
-      if [[ -n $pre && $pre =~ ^([A-Za-z]+)([0-9]+)$ ]]; then
-        local label="${BASH_REMATCH[1]}" num="${BASH_REMATCH[2]}"
+      if [[ -n $pre && $pre =~ ^([A-Za-z]+)(\.?)([0-9]+)$ ]]; then
+        local label="${BASH_REMATCH[1]}" sep="${BASH_REMATCH[2]}" num="${BASH_REMATCH[3]}"
         num=$((num+1))
-        echo "${major}.${minor}.${patch}-${label}${num}"
+        echo "${major}.${minor}.${patch}-${label}${sep}${num}"
         return 0
       fi
       patch=$((patch+1))
