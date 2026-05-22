@@ -14,14 +14,16 @@
 #       bump patch + stub + propagate + README + format
 #   ... edit CHANGELOG.md, fill in the stub with real entries ...
 #   ./bash/release_prep.sh --skip-bump
-#       re-propagate CHANGELOG + rebuild READMEs + format
+#       sync current version across packages/README + re-propagate
+#       CHANGELOG + rebuild READMEs + format (no version bump)
 #   ./bash/release_prep.sh --carry-changelog
 #       bump version and rename current CHANGELOG section
 #       to the new version instead of inserting a fresh stub
 #
 # Options:
 #   patch|minor|major     Bump kind (default: patch). Ignored with --skip-bump.
-#   --skip-bump           Keep current version, just sync docs.
+#   --skip-bump           Keep current version, just sync it across
+#                         pubspecs/README and refresh docs.
 #   --carry-changelog     After bump, rename the previous version section in
 #                         CHANGELOG.md to the new version (useful for devXX -> devYY).
 #   --edit                Open $EDITOR on CHANGELOG.md between stub-insert and propagate.
@@ -72,12 +74,13 @@ if [[ $SKIP_BUMP -eq 1 && $CARRY_CHANGELOG -eq 1 ]]; then
   exit 2
 fi
 
-# 1. Bump version
+# 1. Bump version (or just sync the current one across packages/README)
 if [[ $SKIP_BUMP -eq 0 ]]; then
   echo "==> Bumping version ($BUMP_KIND)"
   ./bash/update_versions.sh --bump "$BUMP_KIND"
 else
-  echo "==> Skipping version bump"
+  echo "==> Skipping version bump; syncing current version across packages"
+  ./bash/update_versions.sh
 fi
 
 # Read current version (post-bump or unchanged)

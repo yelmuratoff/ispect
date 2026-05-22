@@ -6,7 +6,7 @@ import 'package:ispectify/ispectify.dart';
 ///
 /// Keeps insertion order, prevents duplicates, and isolates notification
 /// error handling from the main logger.
-class ObserverRegistry {
+final class ObserverRegistry {
   final LinkedHashSet<ISpectObserver> _observers =
       LinkedHashSet<ISpectObserver>();
 

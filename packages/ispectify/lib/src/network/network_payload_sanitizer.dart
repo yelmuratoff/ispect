@@ -6,7 +6,7 @@ import 'package:ispectify/ispectify.dart';
 ///
 /// Handles string-key normalization, optional redaction, and conversion of
 /// arbitrary values into map representations consumable by log models.
-class NetworkPayloadSanitizer {
+final class NetworkPayloadSanitizer {
   NetworkPayloadSanitizer(this._redactor);
 
   final RedactionService _redactor;

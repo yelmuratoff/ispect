@@ -15,7 +15,7 @@ import 'package:ispectify/src/redaction/strategies/redaction_strategy.dart';
 /// than a reference to the [RedactionService]. This ensures that in-flight
 /// walkers are unaffected by concurrent config mutations (e.g. calls to
 /// `ignoreValue()` or `ignoreKey()` on the service).
-class RedactionWalker {
+final class RedactionWalker {
   RedactionWalker(this.config, this.request, this.strategy)
       : _cachedContext = null,
         stats = RedactionStats();

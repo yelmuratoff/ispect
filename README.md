@@ -164,13 +164,13 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 
 ## Release channel
 
-`5.0.0-dev` is the active pre-release line for the 5.x architecture. If your dependency policy disallows pre-release versions, pin the latest stable 4.x release from pub.dev. `5.0.0` stable will follow once the dev line settles.
+The `5.x` line is the current stable channel and is the recommended pin for new integrations. If your dependency policy still requires the older API surface, the latest 4.x release remains available on pub.dev.
 
 ## Project state
 
 What you can verify from the repository today:
 
-- The current line is `5.0.0-dev`. 4.x stable is still available on pub.dev for teams that need it.
+- The current line is `5.x` stable. 4.x stable is still available on pub.dev for teams that need it.
 - SDK baseline is Dart `>=3.6.0 <4.0.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
 - A `production_safety` CI job builds a release APK without `ISPECT_ENABLED` and counts residual `"ispect"` strings in the binary.
 - Network capture, export, clipboard, cURL generation, and observer boundaries share the same `RedactionService`.
@@ -194,7 +194,7 @@ Disabled builds are inactive at compile time, so there is nothing to benchmark w
 
 ```yaml
 dependencies:
-  ispect: ^5.0.4
+  ispect: ^5.2.0-dev.01
 ```
 
 ```dart

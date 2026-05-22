@@ -6,7 +6,7 @@ import 'dart:async';
 /// - [onCancel] is called exactly once — either on subscription cancel or stream done
 /// - All trace callbacks are wrapped in try/catch — exceptions never break the data stream
 /// - [StreamController] is closed on done or cancel — no leaks
-class TraceStreamTransformer<T> extends StreamTransformerBase<T, T> {
+final class TraceStreamTransformer<T> extends StreamTransformerBase<T, T> {
   TraceStreamTransformer({
     required this.onListen,
     required this.onData,

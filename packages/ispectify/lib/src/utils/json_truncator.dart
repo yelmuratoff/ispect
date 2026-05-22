@@ -5,7 +5,7 @@ import 'package:ispectify/src/utils/string_extension.dart';
 /// Pretty-prints JSON objects with depth and size limits.
 ///
 /// Deeper nested values are replaced with `...`.
-class JsonTruncator {
+abstract final class JsonTruncator {
   /// Default maximum depth for JSON structure traversal.
   static const int _defaultMaxDepth = 20;
 

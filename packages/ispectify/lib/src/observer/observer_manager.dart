@@ -5,7 +5,7 @@ import 'package:ispectify/src/observer/observer_registry.dart';
 ///
 /// Encapsulates the registry and delegates error logging to the provided
 /// console logger getter to avoid tight coupling with the logger internals.
-class ObserverManager {
+final class ObserverManager {
   ObserverManager(ISpectBaseLogger Function() consoleLogger)
       : _getConsoleLogger = consoleLogger;
 

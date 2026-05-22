@@ -1,6 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 
-class LogDetails {
+final class LogDetails {
   const LogDetails({
     required this.message,
     required this.level,

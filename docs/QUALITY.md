@@ -44,7 +44,7 @@ Package versions and internal dependencies must stay synchronized:
 
 ## Coverage policy
 
-Coverage is reported to Codecov. Before the stable `5.0.0` release, coverage gates land package by package, starting with the business-critical core packages:
+Coverage is reported to Codecov. Coverage gates land package by package, starting with the business-critical core packages:
 
 - `ispectify`
 - `ispectify_dio`

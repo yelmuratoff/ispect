@@ -26,7 +26,7 @@ CI runs against a pinned Flutter SDK as the required signal, and against the lat
 
 ## Release channels
 
-`5.0.0-dev` is a pre-release channel. Teams that need stable-only dependencies should stay on the latest stable 4.x release until `5.0.0` ships.
+The `5.x` line is the current stable channel. `5.0.0-dev` was the pre-release line during the 5.x architecture rollout and is no longer published. Teams that need an older API surface can pin the latest 4.x release from pub.dev, but new work targets `5.x`.
 
 ## Compatibility changes
 

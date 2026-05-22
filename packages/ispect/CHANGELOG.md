@@ -1,5 +1,28 @@
 # Changelog
 
+## 5.2.0-dev.01
+
+### Improvements
+
+- **Sealed utility classes:** Marked the following exported utility / data classes as `final` (or `abstract final` for static-only helpers) so they cannot be subclassed: `CurlUtils`, `JsonTruncator`, `ConsoleSettings`, `NetworkPayloadSanitizer`, `ISpectDateTimeFormatter`, `RedactionStats`, `RedactionResult`, `HeaderRedactionResult`, `RedactionContext`, `LogDetails`, `HumanLogEntryFormatter`, `ExtendedLoggerFormatter`. These classes were never intended as extension points; locking them down prevents accidental coupling. If you were extending them (rare), file an issue describing the use case.
+- **Service-style classes left open:** `RedactionService`, `ISpectErrorHandler`, `NetworkTransaction`, and similar classes that consumers may legitimately subclass for behavior overrides are NOT sealed.
+
+## 5.1.0
+
+### Improvements
+
+- **Inspector controller decomposed:** `packages/ispect_layout/lib/src/inspector_controller.dart` split into 5 focused files using `part of` + extension methods. The orchestrator (constructor, fields, state recompute, dispose) stays in `inspector_controller.dart`; mode management, keyboard-shortcut forwarding, pointer handlers, and pixel-capture math each live in their own sibling file. Public API of `InspectorController` is unchanged.
+- **Constants restructured:** `packages/ispect/lib/src/core/res/constants/ispect_constants.dart` split into themed `part of` files (`ispect_log_icons.dart`, `ispect_log_palette.dart`, `ispect_log_descriptions.dart`). The `ISpectConstants` facade re-exposes the moved tables, so all 20+ call sites remain unchanged.
+
+## 5.0.5
+
+### Improvements
+
+- **Documentation hygiene:** Stripped narrating dartdoc that duplicated method names across `ispectify` core (`ISpectLogger`, `LogPipeline`, `ISpectLoggerOptions`). Kept dartdoc that documents real contracts (throws, side effects, invariants).
+- **Reentrancy contract:** `ISpectLogger.stream` and `addObserver` now explicitly document that a synchronous re-entrant `log(...)` call from inside a listener or observer is dropped to prevent recursion.
+- **Internal class hygiene:** Marked non-exported internal utilities (`LogPipeline`, `ObserverManager`, `ObserverRegistry`, `RequestIdGenerator`, `LogFactory`, `RedactionRequest`, `RedactionConfig`, `RedactionWalker`, `TraceStreamTransformer`) as `final` / `abstract final` to lock down inheritance for code that was never intended to be a public extension point.
+- **Rules:** Carved out an explicit exception in code-style guidance for `dart:developer` `log` calls in ISpect's own internal error-fallback paths, where routing through `ISpect.logger` would cause reentrancy.
+
 ## 5.0.4
 
 ### Added
@@ -13,7 +36,6 @@
 ### Bug Fixes
 
 - **Layout inspector — icon selection inside chips:** Material `ActionChip`, `Chip`, `FilterChip`, and `InputChip` previously routed every tap to the label slot, hiding the avatar `Icon` from the inspector path. Tapping the avatar now correctly selects it.
-
 
 ## 5.0.3
 
@@ -872,9 +894,11 @@ ISpectTheme(
 ### BREAKING CHANGES
 
 - Forked the `Talker` package (where I'm actively contributing) and added it to `ISpect` as `ISpectLogger`
+
   - This was done to ease usage and reduce external dependencies
   - You can now use `ISpectLogger` to log all application actions
 - Separated main functions into different packages:
+
   - `ispect_ai` - For using `AI` as a log reporter and log description generator (useful for managers and testers)
   - `ispect_jira` - For using `Jira` to create tickets directly in the application
   - `ispect_device` - For getting device data and related information
@@ -897,9 +921,8 @@ ISpectTheme(
 ### Breaking Changes
 
 - Jira and AI tools are now separate packages:
-  - Jira: [ispect_jira](https://pub.dev/packages/ispect_jira)  
-    See usage examples in [ispect_ai/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai/example)
-  - ISpect AI: [ispect_ai](https://pub.dev/packages/ispect_ai)  
+  - Jira: [ispect_jira](https://pub.dev/packages/ispect_jira)See usage examples in [ispect_ai/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_ai/example)
+  - ISpect AI: [ispect_ai](https://pub.dev/packages/ispect_ai)
     See usage examples in [ispect_jira/example](https://github.com/yelmuratoff/ispect/tree/main/packages/ispect_jira/example)
 
 ## 2.0.5
@@ -981,7 +1004,6 @@ ISpectTheme(
       },
     ),
   ```
-
 - Google AI integration for generating log descriptions and reports
 
 ### Changed
