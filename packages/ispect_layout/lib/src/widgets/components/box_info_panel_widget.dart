@@ -194,9 +194,14 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
     final chipBg = theme.colorScheme.surfaceContainerLow;
     final iconGlyphs = describeAsIconGlyphs(target.text);
     final pProps = paragraphProps(target, decimalPlaces: widget.decimalPlaces);
-    final spanSections = extractTextStyles(target.text)
-        .map((style) => spanProps(style, decimalPlaces: widget.decimalPlaces))
-        .where((p) => p.isNotEmpty)
+    final spanSections = extractSpanStyleGroups(target.text)
+        .map(
+          (g) => (
+            props: spanProps(g.style, decimalPlaces: widget.decimalPlaces),
+            preview: g.textPreview,
+          ),
+        )
+        .where((e) => e.props.isNotEmpty)
         .toList();
 
     final out = <Widget>[];
@@ -245,9 +250,32 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
       out
         ..add(Divider(height: 20.0, color: dividerColor))
         ..add(const _SectionHeader('typography'));
+
+      final multiSpan = spanSections.length > 1;
       for (var i = 0; i < spanSections.length; i++) {
-        if (i > 0) out.add(const SizedBox(height: 6));
-        out.add(PropSection(props: spanSections[i]));
+        final entry = spanSections[i];
+        if (i > 0) {
+          out.add(Divider(height: 12, thickness: 0.5, color: dividerColor));
+        }
+        if (multiSpan && entry.preview != null) {
+          out.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(
+                '"${entry.preview}"',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontStyle: FontStyle.italic,
+                  fontSize: 10,
+                  color: theme.colorScheme.onSurfaceVariant
+                      .withValues(alpha: 0.55),
+                ),
+              ),
+            ),
+          );
+        }
+        out.add(PropSection(props: entry.props));
       }
     }
     return out;
