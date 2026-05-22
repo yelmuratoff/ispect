@@ -4,6 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:ispect/src/features/performance/src/stats.dart';
 import 'package:ispect/src/ispect.dart';
+import 'package:ispectify/ispectify.dart';
+
+/// Lets consumers filter jank events in the log viewer by the dedicated
+/// `performance-jank` log key instead of grepping `warning`-level strings.
+const ISpectTraceCategory kPerformanceTraceCategory = ISpectTraceCategory(
+  id: 'performance',
+  successKey: 'performance-jank',
+  errorKey: 'performance-error',
+);
 
 /// Fallback when [View.display.refreshRate] is unavailable.
 const double _kFallbackRefreshRate = 60;
@@ -63,11 +72,7 @@ class ISpectPerformanceOverlay extends StatefulWidget {
     this.enableJankLogging = false,
     this.severeJankFactor = 2.0,
   })  : assert(severeJankFactor >= 1.0, 'severeJankFactor must be >= 1'),
-        assert(sampleSize > 0, 'sampleSize must be > 0'),
-        assert(
-          barRangeMax > Duration.zero,
-          'barRangeMax must be greater than zero',
-        );
+        assert(sampleSize > 0, 'sampleSize must be > 0');
 
   final bool enabled;
 
@@ -141,6 +146,17 @@ class ISpectPerformanceOverlay extends StatefulWidget {
 
 class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
   bool _paused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Cannot live in the const constructor: `Duration.inMicroseconds` is not
+    // const-evaluable, so we trap zero/negative ranges here instead.
+    assert(
+      widget.barRangeMax.inMicroseconds > 0,
+      'barRangeMax must be greater than zero',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -336,20 +352,32 @@ class _OverlayBodyState extends State<_OverlayBody> {
     final thresholdUs =
         (widget.target.inMicroseconds * widget.severeJankFactor).round();
     final threshold = Duration(microseconds: thresholdUs);
+    final targetMs = _formatMs(widget.target);
     for (final t in samples) {
       if (t.totalSpan <= threshold) continue;
-      ISpect.logger.warning(
-        'Performance jank: total ${_formatMs(t.totalSpan)}ms '
-        '(UI ${_formatMs(t.buildDuration)}ms · '
-        'raster ${_formatMs(t.rasterDuration)}ms · '
-        'target ${_formatMs(widget.target)}ms)',
+      ISpect.logger.traceCategory(
+        category: kPerformanceTraceCategory,
+        source: 'overlay',
+        operation: 'jank',
+        duration: t.totalSpan,
+        meta: <String, Object?>{
+          'ui_ms': _formatMs(t.buildDuration),
+          'raster_ms': _formatMs(t.rasterDuration),
+          'total_ms': _formatMs(t.totalSpan),
+          'target_ms': targetMs,
+        },
+        consoleMessage: 'Performance jank: total ${_formatMs(t.totalSpan)}ms '
+            '(UI ${_formatMs(t.buildDuration)}ms · '
+            'raster ${_formatMs(t.rasterDuration)}ms · '
+            'target ${targetMs}ms)',
       );
     }
   }
 
   double? _computeDeliveredFps() => computeDeliveredFpsFromVsyncs(
         <int>[
-          for (final t in _samples) t.timestampInMicroseconds(FramePhase.vsyncStart),
+          for (final t in _samples)
+            t.timestampInMicroseconds(FramePhase.vsyncStart),
         ],
         widget.refreshRate,
       );
