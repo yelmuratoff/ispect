@@ -2,16 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/features/performance/src/stats.dart';
 
 void main() {
-  Duration ms(num value) =>
-      Duration(microseconds: (value * 1000).round());
-
-  /// Microseconds since some monotonic epoch — values don't matter, only
-  /// their deltas do.
+  Duration ms(num value) => Duration(microseconds: (value * 1000).round());
   int us(num millis) => (millis * 1000).round();
 
-  group('PerformanceChartStats.from', () {
+  group('PerformanceChartStats.fromMicroseconds', () {
     test('returns zeros when the sample window is empty', () {
-      final stats = PerformanceChartStats.from(const [], ms(16));
+      final stats = PerformanceChartStats.fromMicroseconds(const [], us(16));
 
       expect(stats.avg, Duration.zero);
       expect(stats.p90, Duration.zero);
@@ -20,9 +16,9 @@ void main() {
     });
 
     test('counts samples strictly greater than the target as jank', () {
-      final samples = [ms(8), ms(16), ms(17), ms(50)];
+      final samples = [us(8), us(16), us(17), us(50)];
 
-      final stats = PerformanceChartStats.from(samples, ms(16));
+      final stats = PerformanceChartStats.fromMicroseconds(samples, us(16));
 
       expect(
         stats.jankCount,
@@ -32,57 +28,59 @@ void main() {
     });
 
     test('computes a stable average across the window', () {
-      final samples = [ms(2), ms(4), ms(6), ms(8)];
+      final samples = [us(2), us(4), us(6), us(8)];
 
-      final stats = PerformanceChartStats.from(samples, ms(16));
+      final stats = PerformanceChartStats.fromMicroseconds(samples, us(16));
 
       expect(stats.avg, ms(5));
     });
 
     test('reports the nearest-rank p90 for a small window', () {
-      final samples = [for (var i = 1; i <= 10; i++) ms(i)];
+      final samples = [for (var i = 1; i <= 10; i++) us(i)];
 
-      final stats = PerformanceChartStats.from(samples, ms(16));
+      final stats = PerformanceChartStats.fromMicroseconds(samples, us(16));
 
-      // ceil(10 * 0.90) − 1 = 8 → sorted[8] == ms(9).
       expect(stats.p90, ms(9));
     });
 
     test('reports the nearest-rank p99 for a small window', () {
-      final samples = [for (var i = 1; i <= 10; i++) ms(i)];
+      final samples = [for (var i = 1; i <= 10; i++) us(i)];
 
-      final stats = PerformanceChartStats.from(samples, ms(16));
+      final stats = PerformanceChartStats.fromMicroseconds(samples, us(16));
 
-      // ceil(10 * 0.99) − 1 = 9 → sorted[9] == ms(10).
       expect(stats.p99, ms(10));
     });
 
     test('p99 collapses to the worst frame in a 2-sample window', () {
-      final stats = PerformanceChartStats.from([ms(4), ms(40)], ms(16));
+      final stats = PerformanceChartStats.fromMicroseconds(
+        [us(4), us(40)],
+        us(16),
+      );
 
       expect(stats.p99, ms(40));
       expect(stats.p90, ms(40));
     });
 
     test('does not mutate the input list', () {
-      final samples = [ms(40), ms(4), ms(10)];
+      final samples = [us(40), us(4), us(10)];
 
-      PerformanceChartStats.from(samples, ms(16));
+      PerformanceChartStats.fromMicroseconds(samples, us(16));
 
-      expect(samples, [ms(40), ms(4), ms(10)]);
+      expect(samples, [us(40), us(4), us(10)]);
     });
 
     test('counts every jank sample even when none are below target', () {
-      final samples = [ms(20), ms(30), ms(40)];
+      final samples = [us(20), us(30), us(40)];
 
-      final stats = PerformanceChartStats.from(samples, ms(16));
+      final stats = PerformanceChartStats.fromMicroseconds(samples, us(16));
 
       expect(stats.jankCount, 3);
       expect(stats.p99, ms(40));
     });
 
     test('handles a single-sample window', () {
-      final stats = PerformanceChartStats.from([ms(5)], ms(16));
+      final stats =
+          PerformanceChartStats.fromMicroseconds([us(5)], us(16));
 
       expect(stats.avg, ms(5));
       expect(stats.p90, ms(5));
@@ -91,60 +89,84 @@ void main() {
     });
   });
 
-  group('computeEffectiveFps', () {
+  group('computeSmoothFps', () {
     test('returns null when there are no samples', () {
-      expect(computeEffectiveFps(const [], const [], 60), isNull);
+      expect(computeSmoothFps(const [], 60), isNull);
     });
 
-    test('returns null when build/raster lists disagree on length', () {
-      expect(computeEffectiveFps([us(1)], const [], 60), isNull);
+    test('reports the refresh rate when totalSpan matches one vsync', () {
+      // 120Hz vsync ≈ 8333us; smooth steady state should read at the cap.
+      final totalSpans = [for (var i = 0; i < 10; i++) us(8.333)];
+
+      expect(computeSmoothFps(totalSpans, 120), closeTo(120, 0.1));
     });
 
-    test('reports the refresh rate when both threads fit the frame budget',
-        () {
-      final builds = [for (var i = 0; i < 10; i++) us(1)];
-      final rasters = [for (var i = 0; i < 10; i++) us(1)];
+    test('drops below the refresh rate when avg totalSpan grows', () {
+      // Half-and-half mix on 120Hz: five frames at vsync, five at 2× vsync.
+      // avg = (5*8.333 + 5*16.666) / 10 = 12.5ms → 80 FPS.
+      final totalSpans = [
+        for (var i = 0; i < 5; i++) us(8.333),
+        for (var i = 0; i < 5; i++) us(16.666),
+      ];
 
-      final fps = computeEffectiveFps(builds, rasters, 120);
-
-      expect(fps, 120);
+      expect(computeSmoothFps(totalSpans, 120), closeTo(80, 0.5));
     });
 
-    test('drops below the refresh rate when one thread is the bottleneck',
-        () {
-      // avg build 20ms ⇒ engine cannot sustain more than 50 FPS even though
-      // raster is fast.
-      final builds = [for (var i = 0; i < 5; i++) us(20)];
-      final rasters = [for (var i = 0; i < 5; i++) us(2)];
+    test('a single 30 ms hitch is visible in a 10-frame window on 120Hz', () {
+      // Previous formula stayed pinned at 120; the new one drops it.
+      final totalSpans = [
+        for (var i = 0; i < 9; i++) us(8.333),
+        us(30),
+      ];
 
-      final fps = computeEffectiveFps(builds, rasters, 60);
+      final fps = computeSmoothFps(totalSpans, 120);
 
-      expect(fps, closeTo(50, 0.1));
+      expect(fps, lessThan(120));
+      expect(fps, closeTo(95.2, 0.5));
     });
 
-    test('uses raster as the bottleneck when raster is slower than build',
-        () {
-      final builds = [for (var i = 0; i < 5; i++) us(2)];
-      final rasters = [for (var i = 0; i < 5; i++) us(25)];
+    test('honors a 120Hz refresh ceiling on faster-than-vsync work', () {
+      // Engine renders faster than vsync; we still cap at the display rate.
+      final totalSpans = [for (var i = 0; i < 5; i++) us(2)];
 
-      final fps = computeEffectiveFps(builds, rasters, 60);
-
-      expect(fps, closeTo(40, 0.1));
+      expect(computeSmoothFps(totalSpans, 120), 120);
     });
 
-    test('returns refreshRate when bottleneck duration is zero', () {
-      final fps = computeEffectiveFps([us(0)], [us(0)], 60);
-
-      expect(fps, 60);
+    test('returns refreshRate when total is zero', () {
+      expect(computeSmoothFps([us(0)], 60), 60);
     });
 
-    test('honors a 120Hz refresh ceiling', () {
-      final builds = [for (var i = 0; i < 5; i++) us(0.5)];
-      final rasters = [for (var i = 0; i < 5; i++) us(0.5)];
+    test('uses only the trailing window when more samples are present', () {
+      // 20 frames provided, window is 10. The first ten (slow) are ignored,
+      // the last ten (fast) drive the reading.
+      final totalSpans = [
+        for (var i = 0; i < 10; i++) us(40),
+        for (var i = 0; i < 10; i++) us(8.333),
+      ];
 
-      final fps = computeEffectiveFps(builds, rasters, 120);
+      expect(computeSmoothFps(totalSpans, 120), closeTo(120, 0.5));
+    });
+  });
 
-      expect(fps, 120);
+  group('missedVsyncs', () {
+    test('returns 0 when totalSpan fits the budget', () {
+      expect(missedVsyncs(us(8), us(16)), 0);
+      expect(missedVsyncs(us(16), us(16)), 0);
+    });
+
+    test('reports at least one drop when totalSpan exceeds the budget', () {
+      // 16.7 ms barely-over still counts: the next vsync was missed.
+      expect(missedVsyncs(us(16.7), us(16.667)), 1);
+    });
+
+    test('scales linearly with how many vsyncs were skipped', () {
+      expect(missedVsyncs(us(33.3), us(16.667)), 1);
+      expect(missedVsyncs(us(50), us(16.667)), 2);
+      expect(missedVsyncs(us(100), us(16.667)), 5);
+    });
+
+    test('guards against a zero target', () {
+      expect(missedVsyncs(us(50), 0), 0);
     });
   });
 }
