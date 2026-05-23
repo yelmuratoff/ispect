@@ -1,35 +1,33 @@
 import 'package:meta/meta.dart';
 
-/// Delivered FPS over a 1-second window anchored to the latest vsync.
+/// Window size for the capacity-based FPS estimate.
+const int _kFpsWindow = 10;
+
+/// Capacity-based FPS estimate: the maximum frame rate the engine *could*
+/// sustain given recent per-frame work.
 ///
-/// Anchoring to the latest sample (instead of averaging over the whole
-/// buffer) prevents idle vsync gaps from dragging the metric down — when the
-/// engine has no visual work it skips vsyncs and the buffer-average would
-/// understate the real rate during active rendering.
-///
-/// Returns `null` when fewer than two samples land in the window — caller
-/// renders that as "idle / not enough data" rather than a spurious 1-frame
-/// rate. Clamped to `[0, refreshRate]` to discard floating-point noise that
-/// would push the value above what vsync allows.
 @internal
-double? computeDeliveredFpsFromVsyncs(
-  List<int> vsyncTimestampsUs,
+double? computeEffectiveFps(
+  List<int> buildDurationsUs,
+  List<int> rasterDurationsUs,
   double refreshRate,
 ) {
-  if (vsyncTimestampsUs.length < 2) return null;
-  final lastUs = vsyncTimestampsUs.last;
-  const windowUs = 1000000;
-  var firstIdx = vsyncTimestampsUs.length;
-  for (var i = vsyncTimestampsUs.length - 1; i >= 0; i--) {
-    if (lastUs - vsyncTimestampsUs[i] > windowUs) break;
-    firstIdx = i;
+  final n = buildDurationsUs.length;
+  if (n == 0 || rasterDurationsUs.length != n) return null;
+  final from = n > _kFpsWindow ? n - _kFpsWindow : 0;
+  final count = n - from;
+  var totalBuildUs = 0;
+  var totalRasterUs = 0;
+  for (var i = from; i < n; i++) {
+    totalBuildUs += buildDurationsUs[i];
+    totalRasterUs += rasterDurationsUs[i];
   }
-  final count = vsyncTimestampsUs.length - firstIdx;
-  if (count < 2) return null;
-  final spanUs = lastUs - vsyncTimestampsUs[firstIdx];
-  if (spanUs <= 0) return null;
-  final fps = ((count - 1) * 1e6) / spanUs;
-  return fps.clamp(0, refreshRate);
+  final avgBuildUs = totalBuildUs / count;
+  final avgRasterUs = totalRasterUs / count;
+  final bottleneckUs = avgBuildUs > avgRasterUs ? avgBuildUs : avgRasterUs;
+  if (bottleneckUs <= 0) return refreshRate;
+  final capacity = 1e6 / bottleneckUs;
+  return capacity < refreshRate ? capacity : refreshRate;
 }
 
 /// Top-level (not nested) so the aggregation logic is unit-testable without

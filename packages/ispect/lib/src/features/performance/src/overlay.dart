@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'dart:ui' show FramePhase, VertexMode, Vertices;
+import 'dart:ui' show VertexMode, Vertices;
 
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
@@ -90,8 +90,13 @@ class ISpectPerformanceOverlay extends StatefulWidget {
     this.onFrameTiming,
     this.enableJankLogging = false,
     this.severeJankFactor = 2.0,
+    this.showAllTimeStats = false,
+    this.onJankBurst,
+    this.jankBurstWindow = 3,
+    this.jankBurstCooldown = const Duration(seconds: 1),
   })  : assert(severeJankFactor >= 1.0, 'severeJankFactor must be >= 1'),
-        assert(sampleSize > 0, 'sampleSize must be > 0');
+        assert(sampleSize > 0, 'sampleSize must be > 0'),
+        assert(jankBurstWindow > 0, 'jankBurstWindow must be > 0');
 
   final bool enabled;
 
@@ -158,6 +163,18 @@ class ISpectPerformanceOverlay extends StatefulWidget {
   /// frame above target.
   final double severeJankFactor;
 
+  /// Append session-wide `min · max · drop` figures next to the FPS reading.
+  final bool showAllTimeStats;
+
+  /// Fires after [jankBurstWindow] consecutive over-target frames, throttled
+  /// by [jankBurstCooldown]. Runs on the engine's timings dispatch — keep
+  /// the body fast.
+  final void Function(double currentFps)? onJankBurst;
+
+  final int jankBurstWindow;
+
+  final Duration jankBurstCooldown;
+
   final Widget child;
 
   @override
@@ -219,6 +236,10 @@ class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
         onFrameTiming: widget.onFrameTiming,
         enableJankLogging: widget.enableJankLogging,
         severeJankFactor: widget.severeJankFactor,
+        showAllTimeStats: widget.showAllTimeStats,
+        onJankBurst: widget.onJankBurst,
+        jankBurstWindow: widget.jankBurstWindow,
+        jankBurstCooldown: widget.jankBurstCooldown,
       ),
     );
     // Skip the Transform layer in the common (default) case so the engine
@@ -271,33 +292,23 @@ class _OverlaySnapshot {
   const _OverlaySnapshot({
     required this.samples,
     required this.fps,
-    required this.uiJankCount,
-    required this.rasterJankCount,
-    required this.totalJankCount,
+    required this.allTimeMinFps,
+    required this.allTimeMaxFps,
+    required this.droppedFramesTotal,
   });
 
   final List<FrameTiming> samples;
   final double? fps;
-
-  /// Number of frames where [FrameTiming.buildDuration] exceeded the target.
-  final int uiJankCount;
-
-  /// Number of frames where [FrameTiming.rasterDuration] exceeded the target.
-  final int rasterJankCount;
-
-  /// Number of frames where [FrameTiming.totalSpan] exceeded the target.
-  ///
-  /// On a healthy idle screen this can still be non-zero due to scheduling
-  /// gaps between buildFinish and rasterStart, so the "Idle" heuristic
-  /// ignores it in favor of [uiJankCount] / [rasterJankCount].
-  final int totalJankCount;
+  final double? allTimeMinFps;
+  final double? allTimeMaxFps;
+  final int droppedFramesTotal;
 
   static const empty = _OverlaySnapshot(
     samples: <FrameTiming>[],
     fps: null,
-    uiJankCount: 0,
-    rasterJankCount: 0,
-    totalJankCount: 0,
+    allTimeMinFps: null,
+    allTimeMaxFps: null,
+    droppedFramesTotal: 0,
   );
 }
 
@@ -321,6 +332,10 @@ class _OverlayBody extends StatefulWidget {
     required this.onFrameTiming,
     required this.enableJankLogging,
     required this.severeJankFactor,
+    required this.showAllTimeStats,
+    required this.onJankBurst,
+    required this.jankBurstWindow,
+    required this.jankBurstCooldown,
   });
 
   final int sampleSize;
@@ -341,6 +356,10 @@ class _OverlayBody extends StatefulWidget {
   final void Function(FrameTiming timing)? onFrameTiming;
   final bool enableJankLogging;
   final double severeJankFactor;
+  final bool showAllTimeStats;
+  final void Function(double currentFps)? onJankBurst;
+  final int jankBurstWindow;
+  final Duration jankBurstCooldown;
 
   @override
   State<_OverlayBody> createState() => _OverlayBodyState();
@@ -351,6 +370,12 @@ class _OverlayBodyState extends State<_OverlayBody> {
       ValueNotifier<_OverlaySnapshot>(_OverlaySnapshot.empty);
 
   bool _skippedFirstSample = false;
+
+  double _allTimeMinFps = double.infinity;
+  double _allTimeMaxFps = 0;
+  int _droppedFramesTotal = 0;
+  int _consecutiveJankCount = 0;
+  final Stopwatch _jankBurstCooldown = Stopwatch();
 
   @override
   void initState() {
@@ -396,6 +421,7 @@ class _OverlayBodyState extends State<_OverlayBody> {
     if (widget.enableJankLogging) {
       _logSevereJank(newSamples);
     }
+    _trackJankBurst(newSamples);
 
     if (widget.paused) return;
 
@@ -403,27 +429,56 @@ class _OverlayBodyState extends State<_OverlayBody> {
     final merged = <FrameTiming>[...current, ...newSamples];
     final dropCount = merged.length - widget.sampleSize;
     final retained = dropCount > 0 ? merged.sublist(dropCount) : merged;
-    final vsyncs = <int>[
-      for (final t in retained)
-        t.timestampInMicroseconds(FramePhase.vsyncStart),
-    ];
-    final fps = computeDeliveredFpsFromVsyncs(vsyncs, widget.refreshRate);
-    final target = widget.target;
-    var uiJank = 0;
-    var rasterJank = 0;
-    var totalJank = 0;
+    final buildsUs = <int>[];
+    final rastersUs = <int>[];
     for (final t in retained) {
-      if (t.buildDuration > target) uiJank++;
-      if (t.rasterDuration > target) rasterJank++;
-      if (t.totalSpan > target) totalJank++;
+      buildsUs.add(t.buildDuration.inMicroseconds);
+      rastersUs.add(t.rasterDuration.inMicroseconds);
+    }
+    final fps = computeEffectiveFps(buildsUs, rastersUs, widget.refreshRate);
+    if (fps != null && fps > 0) {
+      if (fps < _allTimeMinFps) _allTimeMinFps = fps;
+      if (fps > _allTimeMaxFps) _allTimeMaxFps = fps;
     }
     _snapshot.value = _OverlaySnapshot(
       samples: retained,
       fps: fps,
-      uiJankCount: uiJank,
-      rasterJankCount: rasterJank,
-      totalJankCount: totalJank,
+      allTimeMinFps: _allTimeMinFps == double.infinity ? null : _allTimeMinFps,
+      allTimeMaxFps: _allTimeMaxFps > 0 ? _allTimeMaxFps : null,
+      droppedFramesTotal: _droppedFramesTotal,
     );
+  }
+
+  void _trackJankBurst(Iterable<FrameTiming> samples) {
+    final target = widget.target;
+    final onBurst = widget.onJankBurst;
+    final cooldownMs = widget.jankBurstCooldown.inMilliseconds;
+    for (final t in samples) {
+      if (t.totalSpan > target) {
+        _droppedFramesTotal++;
+        _consecutiveJankCount++;
+        if (onBurst != null &&
+            _consecutiveJankCount >= widget.jankBurstWindow &&
+            (!_jankBurstCooldown.isRunning ||
+                _jankBurstCooldown.elapsedMilliseconds >= cooldownMs)) {
+          _jankBurstCooldown
+            ..reset()
+            ..start();
+          final fps = _snapshot.value.fps ?? widget.refreshRate;
+          try {
+            onBurst(fps);
+          } catch (e, st) {
+            ISpect.logger.handle(
+              exception: e,
+              stackTrace: st,
+              message: 'ISpectPerformanceOverlay.onJankBurst threw',
+            );
+          }
+        }
+      } else {
+        _consecutiveJankCount = 0;
+      }
+    }
   }
 
   void _logSevereJank(Iterable<FrameTiming> samples) {
@@ -477,6 +532,7 @@ class _OverlayBodyState extends State<_OverlayBody> {
                       overTargetColor: widget.overTargetColor,
                       compact: widget.compact,
                       showP90: widget.showP90,
+                      showAllTimeStats: widget.showAllTimeStats,
                       paused: widget.paused,
                     ),
                   ),
@@ -517,6 +573,7 @@ class _ChartPainter extends CustomPainter {
     required this.overTargetColor,
     required this.compact,
     required this.showP90,
+    required this.showAllTimeStats,
     required this.paused,
   }) : super(repaint: snapshot);
 
@@ -533,6 +590,7 @@ class _ChartPainter extends CustomPainter {
   final Color overTargetColor;
   final bool compact;
   final bool showP90;
+  final bool showAllTimeStats;
   final bool paused;
 
   // Paints are mutated in place each frame; the loop never allocates one.
@@ -586,10 +644,6 @@ class _ChartPainter extends CustomPainter {
   late final TextStyle _compactPausedStyle = TextStyle(
     color: textColor.withValues(alpha: 0.7),
     fontWeight: FontWeight.w700,
-  );
-  late final TextStyle _idleStyle = TextStyle(
-    color: textColor.withValues(alpha: 0.6),
-    fontStyle: FontStyle.italic,
   );
 
   late final Color _gridColor = textColor.withValues(alpha: 0.4);
@@ -680,34 +734,16 @@ class _ChartPainter extends CustomPainter {
     );
   }
 
-  /// "Idle" replaces the raw FPS number when the engine isn't producing many
-  /// frames AND both threads stayed inside their per-frame budget. Testers
-  /// would otherwise misread a low standby FPS as a perf regression.
-  ///
-  /// We deliberately ignore [_OverlaySnapshot.totalJankCount] here — in debug
-  /// mode the scheduling gap between buildFinish and rasterStart often pushes
-  /// totalSpan past the per-frame target even though both threads finished
-  /// quickly. UI/Raster jank are the load-bearing "thread missed its
-  /// deadline" signals; if either fires we surface the real FPS instead.
-  bool _isIdleSnapshot(_OverlaySnapshot s) =>
-      s.fps != null &&
-      s.fps! < refreshRate * 0.5 &&
-      s.uiJankCount == 0 &&
-      s.rasterJankCount == 0;
-
   void _paintHeader(Canvas canvas, Rect rect, _OverlaySnapshot s) {
-    final idle = _isIdleSnapshot(s);
     _headerPainter.text = TextSpan(
       style: _headerStyle,
       children: [
         TextSpan(text: '${refreshRate.toStringAsFixed(0)}Hz · '),
-        if (idle)
-          TextSpan(text: 'Idle', style: _idleStyle)
-        else
-          TextSpan(
-            text: '${s.fps?.toStringAsFixed(1) ?? '--'} FPS',
-            style: _headerBoldStyle,
-          ),
+        TextSpan(
+          text: '${s.fps?.toStringAsFixed(1) ?? '--'} FPS',
+          style: _headerBoldStyle,
+        ),
+        if (showAllTimeStats) ..._allTimeStatsSpans(s),
         if (paused) TextSpan(text: '  · PAUSED', style: _headerPausedStyle),
       ],
     );
@@ -716,6 +752,19 @@ class _ChartPainter extends CustomPainter {
     _headerPainter.layout(maxWidth: maxWidth);
     final y = rect.top + (rect.height - _headerPainter.height) / 2;
     _headerPainter.paint(canvas, Offset(rect.left + _kHeaderPadding.left, y));
+  }
+
+  Iterable<TextSpan> _allTimeStatsSpans(_OverlaySnapshot s) sync* {
+    final min = s.allTimeMinFps;
+    final max = s.allTimeMaxFps;
+    if (min != null) yield TextSpan(text: ' · min ${min.toStringAsFixed(0)}');
+    if (max != null) yield TextSpan(text: ' · max ${max.toStringAsFixed(0)}');
+    if (s.droppedFramesTotal > 0) {
+      yield TextSpan(
+        text: ' · drop ${s.droppedFramesTotal}',
+        style: _overTargetStyle,
+      );
+    }
   }
 
   void _paintCompact(Canvas canvas, Size size, _OverlaySnapshot s) {
@@ -748,15 +797,13 @@ class _ChartPainter extends CustomPainter {
           ],
         );
 
-    final idle = _isIdleSnapshot(s);
     _compactPainter.text = TextSpan(
       style: _statsStyle,
       children: [
-        TextSpan(text: '${refreshRate.toStringAsFixed(0)}Hz · '),
-        if (idle)
-          TextSpan(text: 'Idle · ', style: _idleStyle)
-        else
-          TextSpan(text: '${s.fps?.toStringAsFixed(1) ?? '--'} FPS · '),
+        TextSpan(
+          text: '${refreshRate.toStringAsFixed(0)}Hz · '
+              '${s.fps?.toStringAsFixed(1) ?? '--'} FPS · ',
+        ),
         metric('UI', _uiLabelStyle, uiStats),
         metric('R', _rasterLabelStyle, rasterStats),
         metric('T', _totalLabelStyle, totalStats),
@@ -764,6 +811,7 @@ class _ChartPainter extends CustomPainter {
           text: '$jankTotal jank',
           style: jankTotal > 0 ? _overTargetStyle : null,
         ),
+        if (showAllTimeStats) ..._allTimeStatsSpans(s),
         if (paused) TextSpan(text: '  · PAUSED', style: _compactPausedStyle),
       ],
     );
@@ -951,6 +999,7 @@ class _ChartPainter extends CustomPainter {
       old.overTargetColor != overTargetColor ||
       old.compact != compact ||
       old.showP90 != showP90 ||
+      old.showAllTimeStats != showAllTimeStats ||
       old.paused != paused ||
       old.sampleSize != sampleSize;
 }

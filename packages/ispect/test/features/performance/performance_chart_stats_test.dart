@@ -91,68 +91,60 @@ void main() {
     });
   });
 
-  group('computeDeliveredFpsFromVsyncs', () {
-    test('returns null when there are fewer than two timestamps', () {
-      expect(computeDeliveredFpsFromVsyncs(const [], 60), isNull);
-      expect(computeDeliveredFpsFromVsyncs([us(0)], 60), isNull);
+  group('computeEffectiveFps', () {
+    test('returns null when there are no samples', () {
+      expect(computeEffectiveFps(const [], const [], 60), isNull);
     });
 
-    test('reports the expected rate when vsyncs are evenly spaced', () {
-      final vsyncs = [for (var i = 0; i < 60; i++) us(i * 16.67)];
-
-      final fps = computeDeliveredFpsFromVsyncs(vsyncs, 60);
-
-      expect(fps, isNotNull);
-      expect(fps, closeTo(60, 0.5));
+    test('returns null when build/raster lists disagree on length', () {
+      expect(computeEffectiveFps([us(1)], const [], 60), isNull);
     });
 
-    test('clamps to the refresh rate when math nudges above it', () {
-      // 5 frames over 60ms = 4 intervals × 15ms ⇒ ~66.7 FPS — physically
-      // impossible on a 60Hz display.
-      final vsyncs = [for (var i = 0; i < 5; i++) us(i * 15)];
+    test('reports the refresh rate when both threads fit the frame budget',
+        () {
+      final builds = [for (var i = 0; i < 10; i++) us(1)];
+      final rasters = [for (var i = 0; i < 10; i++) us(1)];
 
-      final fps = computeDeliveredFpsFromVsyncs(vsyncs, 60);
+      final fps = computeEffectiveFps(builds, rasters, 120);
+
+      expect(fps, 120);
+    });
+
+    test('drops below the refresh rate when one thread is the bottleneck',
+        () {
+      // avg build 20ms ⇒ engine cannot sustain more than 50 FPS even though
+      // raster is fast.
+      final builds = [for (var i = 0; i < 5; i++) us(20)];
+      final rasters = [for (var i = 0; i < 5; i++) us(2)];
+
+      final fps = computeEffectiveFps(builds, rasters, 60);
+
+      expect(fps, closeTo(50, 0.1));
+    });
+
+    test('uses raster as the bottleneck when raster is slower than build',
+        () {
+      final builds = [for (var i = 0; i < 5; i++) us(2)];
+      final rasters = [for (var i = 0; i < 5; i++) us(25)];
+
+      final fps = computeEffectiveFps(builds, rasters, 60);
+
+      expect(fps, closeTo(40, 0.1));
+    });
+
+    test('returns refreshRate when bottleneck duration is zero', () {
+      final fps = computeEffectiveFps([us(0)], [us(0)], 60);
 
       expect(fps, 60);
     });
 
-    test('ignores samples older than the 1-second window', () {
-      // Three "old" frames 5 seconds before the recent burst, plus a tight
-      // recent burst at 60 FPS — only the recent ones should count.
-      final vsyncs = <int>[
-        us(0),
-        us(100),
-        us(200),
-        for (var i = 0; i < 30; i++) us(5000000 + i * 16.67),
-      ];
+    test('honors a 120Hz refresh ceiling', () {
+      final builds = [for (var i = 0; i < 5; i++) us(0.5)];
+      final rasters = [for (var i = 0; i < 5; i++) us(0.5)];
 
-      final fps = computeDeliveredFpsFromVsyncs(vsyncs, 60);
+      final fps = computeEffectiveFps(builds, rasters, 120);
 
-      expect(fps, isNotNull);
-      expect(fps, closeTo(60, 1));
-    });
-
-    test('returns null when only a single sample lands in the window', () {
-      // One recent frame far away from older ones — count in window = 1.
-      final vsyncs = [us(0), us(10000000)];
-
-      expect(computeDeliveredFpsFromVsyncs(vsyncs, 60), isNull);
-    });
-
-    test('honors a 120Hz refresh ceiling for tight bursts', () {
-      final vsyncs = [for (var i = 0; i < 60; i++) us(i * 8.33)];
-
-      final fps = computeDeliveredFpsFromVsyncs(vsyncs, 120);
-
-      expect(fps, isNotNull);
-      expect(fps, closeTo(120, 1));
-    });
-
-    test('returns null when the window collapses to zero span', () {
-      // All vsync timestamps identical — engine clock didn't advance.
-      final vsyncs = [for (var i = 0; i < 5; i++) us(100)];
-
-      expect(computeDeliveredFpsFromVsyncs(vsyncs, 60), isNull);
+      expect(fps, 120);
     });
   });
 }
