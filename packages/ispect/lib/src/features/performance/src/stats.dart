@@ -25,14 +25,35 @@ double? computeSmoothFps(List<int> totalSpansUs, double refreshRate) {
   return fps < refreshRate ? fps : refreshRate;
 }
 
-/// Number of vsync intervals dropped to deliver a frame whose work spanned
-/// [totalSpanUs] against a budget of [targetUs]. Above-target frames always
-/// count as at least 1 drop — the next vsync was missed by definition.
+/// Raw count of vsync intervals the previous frame stayed on screen beyond
+/// its scheduled slot — `ceil(totalSpan/target) − 1`. Any over-target frame
+/// counts as at least 1. Used to drive the sustained-jank burst detector
+/// (where any over-target streak should alert the developer); the
+/// user-facing "drops" UI metric uses [perceptibleDrops] instead.
 @internal
 int missedVsyncs(int totalSpanUs, int targetUs) {
-  if (totalSpanUs <= targetUs || targetUs <= 0) return 0;
-  final missed = (totalSpanUs / targetUs).round() - 1;
-  return missed < 1 ? 1 : missed;
+  if (targetUs <= 0 || totalSpanUs <= targetUs) return 0;
+  return (totalSpanUs - 1) ~/ targetUs;
+}
+
+/// One 60Hz vsync — the floor of human perception for display stutter.
+/// Apple's MetricKit hitch definition uses the same boundary.
+const int _kPerceptibleStutterUs = 16667;
+
+/// User-facing drop count — counts only frames where the display gap is long
+/// enough for a person to actually notice. On a 120Hz panel a single missed
+/// vsync = 8.33 ms of display lag, which is below the ~16.67 ms perception
+/// threshold; counting every one of those inflates the metric with events
+/// the user never sees and erodes trust in the overlay. The "drops" header
+/// reading therefore uses this function while [missedVsyncs] feeds the raw
+/// developer-facing burst detector.
+@internal
+int perceptibleDrops(int totalSpanUs, int targetUs) {
+  if (targetUs <= 0 || totalSpanUs <= targetUs) return 0;
+  final missed = (totalSpanUs - 1) ~/ targetUs;
+  final excessDisplayUs = missed * targetUs;
+  if (excessDisplayUs < _kPerceptibleStutterUs) return 0;
+  return excessDisplayUs ~/ _kPerceptibleStutterUs;
 }
 
 @internal

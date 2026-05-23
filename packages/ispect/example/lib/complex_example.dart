@@ -120,6 +120,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       locale: _locale,
+      showPerformanceOverlay: false,
       supportedLocales: _localeOptions.map((o) => o.locale),
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,

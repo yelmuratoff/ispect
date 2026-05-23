@@ -149,24 +149,86 @@ void main() {
   });
 
   group('missedVsyncs', () {
+    const target120Hz = 8333;
+
     test('returns 0 when totalSpan fits the budget', () {
       expect(missedVsyncs(us(8), us(16)), 0);
       expect(missedVsyncs(us(16), us(16)), 0);
     });
 
-    test('reports at least one drop when totalSpan exceeds the budget', () {
-      // 16.7 ms barely-over still counts: the next vsync was missed.
-      expect(missedVsyncs(us(16.7), us(16.667)), 1);
+    test('counts any over-target frame as at least one missed vsync', () {
+      // A 9 ms frame on 120Hz held the previous buffer for 16.67 ms — one
+      // vsync was demonstrably skipped. The raw counter does not filter for
+      // perceptibility; that is what `perceptibleDrops` is for.
+      expect(missedVsyncs(9000, target120Hz), 1);
+      expect(missedVsyncs(12000, target120Hz), 1);
+      expect(missedVsyncs(16000, target120Hz), 1);
     });
 
-    test('scales linearly with how many vsyncs were skipped', () {
-      expect(missedVsyncs(us(33.3), us(16.667)), 1);
-      expect(missedVsyncs(us(50), us(16.667)), 2);
-      expect(missedVsyncs(us(100), us(16.667)), 5);
+    test('uses the ceiling formula across vsync boundaries', () {
+      // 17 ms on 120Hz: previous buffer held until vsync 3 = 25 ms total =
+      // 2 vsyncs missed.
+      expect(missedVsyncs(17000, target120Hz), 2);
+    });
+
+    test('scales linearly with how many vsync windows were consumed', () {
+      // Clean 10 ms target keeps the arithmetic exact and the intent legible.
+      const cleanTarget = 10000;
+      expect(missedVsyncs(20000, cleanTarget), 1);
+      expect(missedVsyncs(30000, cleanTarget), 2);
+      expect(missedVsyncs(50000, cleanTarget), 4);
+      expect(missedVsyncs(100000, cleanTarget), 9);
     });
 
     test('guards against a zero target', () {
       expect(missedVsyncs(us(50), 0), 0);
+    });
+  });
+
+  group('perceptibleDrops', () {
+    const target120Hz = 8333;
+    const target60Hz = 16667;
+
+    test('returns 0 for an on-target frame', () {
+      expect(perceptibleDrops(8000, target120Hz), 0);
+      expect(perceptibleDrops(target120Hz, target120Hz), 0);
+    });
+
+    test('does not count single-vsync skips on a 120Hz panel', () {
+      // Scroll-noise frames (9–17 ms) skip one 120Hz vsync but the resulting
+      // display lag is below the perception threshold. The drop counter must
+      // stay quiet here — that is the entire point of the metric.
+      expect(perceptibleDrops(9000, target120Hz), 0);
+      expect(perceptibleDrops(12000, target120Hz), 0);
+      expect(perceptibleDrops(17000, target120Hz), 0);
+      expect(perceptibleDrops(24000, target120Hz), 0);
+    });
+
+    test('counts a 120Hz frame as a drop once display gap reaches 60Hz', () {
+      // ~33 ms on 120Hz: three vsyncs skipped, previous buffer held 25 ms
+      // beyond schedule — one 60Hz frame of visible stutter.
+      expect(perceptibleDrops(33000, target120Hz), 1);
+    });
+
+    test('scales with how many 60Hz frames worth of stutter accumulated', () {
+      // 50 ms on 120Hz: excess display ≈ 50 ms → ≈ 3 × 60Hz frames of
+      // stutter, but integer arithmetic against the 16667-µs threshold
+      // resolves to 2 (49998 / 16667 = 2). The hitch metric is a heuristic;
+      // the off-by-one near boundaries is acceptable. 100 ms → 5 drops.
+      expect(perceptibleDrops(50000, target120Hz), 2);
+      expect(perceptibleDrops(100000, target120Hz), 5);
+    });
+
+    test('counts the first missed vsync on a 60Hz panel', () {
+      // On 60Hz the target itself is the perception threshold, so any
+      // over-target frame already produces ≥ 16.67 ms of display lag.
+      expect(perceptibleDrops(20000, target60Hz), 1);
+      expect(perceptibleDrops(33333, target60Hz), 1);
+      expect(perceptibleDrops(50000, target60Hz), 2);
+    });
+
+    test('guards against a zero target', () {
+      expect(perceptibleDrops(us(50), 0), 0);
     });
   });
 }

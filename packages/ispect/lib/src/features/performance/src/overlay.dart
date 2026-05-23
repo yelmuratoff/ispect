@@ -515,12 +515,14 @@ class _OverlayBodyState extends State<_OverlayBody> {
     final onBurst = widget.onJankBurst;
     final cooldownMs = widget.jankBurstCooldown.inMilliseconds;
     final warmedUp = _warmupCompleted;
-    var lastMissed = 0;
+    var lastPerceptible = 0;
     for (final t in samples) {
-      final missed = missedVsyncs(t.totalSpan.inMicroseconds, targetUs);
+      final totalUs = t.totalSpan.inMicroseconds;
+      final missed = missedVsyncs(totalUs, targetUs);
+      final perceptible = perceptibleDrops(totalUs, targetUs);
+      lastPerceptible = perceptible;
       if (missed > 0) {
-        lastMissed = missed;
-        if (warmedUp) _droppedFramesTotal += missed;
+        if (warmedUp) _droppedFramesTotal += perceptible;
         _consecutiveJankCount++;
         if (warmedUp &&
             onBurst != null &&
@@ -542,11 +544,10 @@ class _OverlayBodyState extends State<_OverlayBody> {
           }
         }
       } else {
-        lastMissed = 0;
         _consecutiveJankCount = 0;
       }
     }
-    _lastFrameMissedVsyncs = lastMissed;
+    _lastFrameMissedVsyncs = lastPerceptible;
   }
 
   void _logSevereJank(Iterable<FrameTiming> samples) {
@@ -856,7 +857,7 @@ class _ChartPainter extends CustomPainter {
             text: ' · +${s.lastFrameMissedVsyncs} missed',
             style: _overTargetStyle,
           )
-        else if (s.droppedFramesTotal > 0)
+        else if (!showAllTimeStats && s.droppedFramesTotal > 0)
           TextSpan(
             text: ' · ${s.droppedFramesTotal} drops',
             style: _overTargetStyle,
