@@ -79,8 +79,7 @@ void main() {
     });
 
     test('handles a single-sample window', () {
-      final stats =
-          PerformanceChartStats.fromMicroseconds([us(5)], us(16));
+      final stats = PerformanceChartStats.fromMicroseconds([us(5)], us(16));
 
       expect(stats.avg, ms(5));
       expect(stats.p90, ms(5));

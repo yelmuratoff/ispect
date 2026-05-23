@@ -1,6 +1,6 @@
 name: ispectify
 description: Pure-Dart structured logging, tracing, filtering, history, observers, export, and redaction core for the ISpect toolkit.
-version: 5.2.0-dev.5
+version: 5.2.0-dev.6
 homepage: https://github.com/yelmuratoff/ispect
 repository: https://github.com/yelmuratoff/ispect
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
