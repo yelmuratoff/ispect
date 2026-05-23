@@ -4,6 +4,8 @@ import 'dart:ui' show VertexMode, Vertices;
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:ispect/src/features/performance/src/memory_stats.dart'
+    as memory;
 import 'package:ispect/src/features/performance/src/stats.dart';
 import 'package:ispect/src/ispect.dart';
 import 'package:ispectify/ispectify.dart';
@@ -32,8 +34,22 @@ const String _kOverlaySemanticsLabel = 'Performance overlay';
 /// min FPS and drop counter.
 const Duration _kWarmupDuration = Duration(milliseconds: 800);
 
+/// RSS rarely changes within one frame; sampling at 1 Hz keeps the readout
+/// useful without burning syscalls every tick.
+const Duration _kMemoryPollInterval = Duration(seconds: 1);
+
 const double _kFpsHealthyRatio = 0.95;
 const double _kFpsWarningRatio = 0.80;
+
+/// How long after warmup to collect baseline samples before locking in their
+/// median. Lets the app navigate past the lightweight splash/first screen so
+/// the reference point reflects "normal" steady-state usage, not boot.
+const Duration _kMemoryBaselineSettleWindow = Duration(seconds: 5);
+
+/// EWMA smoothing factor for the displayed RSS value — α≈0.3 gives roughly
+/// a 3-sample effective window, enough to swallow GC/allocator jiggle
+/// without lagging real growth by more than ~3 seconds.
+const double _kMemoryEwmaAlpha = 0.3;
 
 /// The default overlay is not color-blind safe. Opt in by passing each
 /// `colorBlind*` value into the matching overlay parameter — including
@@ -87,13 +103,21 @@ class ISpectPerformanceOverlay extends StatefulWidget {
     this.enableJankLogging = false,
     this.severeJankFactor = 2.0,
     this.jankLogCooldown = const Duration(seconds: 1),
+    this.showMemory = true,
+    this.memoryWarnRatio = 1.3,
+    this.memoryDangerRatio = 2.0,
     this.showAllTimeStats = false,
     this.onJankBurst,
     this.jankBurstWindow = 3,
     this.jankBurstCooldown = const Duration(seconds: 1),
   })  : assert(severeJankFactor >= 1.0, 'severeJankFactor must be >= 1'),
         assert(sampleSize > 0, 'sampleSize must be > 0'),
-        assert(jankBurstWindow > 0, 'jankBurstWindow must be > 0');
+        assert(jankBurstWindow > 0, 'jankBurstWindow must be > 0'),
+        assert(memoryWarnRatio >= 1.0, 'memoryWarnRatio must be >= 1'),
+        assert(
+          memoryDangerRatio > memoryWarnRatio,
+          'memoryDangerRatio must exceed memoryWarnRatio',
+        );
 
   final bool enabled;
 
@@ -170,6 +194,20 @@ class ISpectPerformanceOverlay extends StatefulWidget {
   /// work. Defaults to one second.
   final Duration jankLogCooldown;
 
+  /// Show current process RSS in the header and `peak MB` under
+  /// [showAllTimeStats]. Falls back to no-op on web where `dart:io` is
+  /// unavailable.
+  final bool showMemory;
+
+  /// RSS within `[1.0, memoryWarnRatio]` of the post-warmup baseline keeps
+  /// the readout neutral; beyond it the colour switches to warn.
+  final double memoryWarnRatio;
+
+  /// RSS above `memoryDangerRatio × baseline` is rendered in
+  /// [overTargetColor]. Defaults to `2.0` — RSS doubling since the baseline
+  /// usually signals a leak or unbounded cache.
+  final double memoryDangerRatio;
+
   /// Append session-wide `min · drop` figures next to the FPS reading.
   final bool showAllTimeStats;
 
@@ -244,6 +282,9 @@ class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
         enableJankLogging: widget.enableJankLogging,
         severeJankFactor: widget.severeJankFactor,
         jankLogCooldown: widget.jankLogCooldown,
+        showMemory: widget.showMemory,
+        memoryWarnRatio: widget.memoryWarnRatio,
+        memoryDangerRatio: widget.memoryDangerRatio,
         showAllTimeStats: widget.showAllTimeStats,
         onJankBurst: widget.onJankBurst,
         jankBurstWindow: widget.jankBurstWindow,
@@ -308,6 +349,9 @@ class _OverlaySnapshot {
     required this.lastFrameMissedVsyncs,
     required this.allTimeMinFps,
     required this.droppedFramesTotal,
+    required this.rssBytes,
+    required this.peakRssBytes,
+    required this.baselineRssBytes,
   });
 
   final List<int> uiUs;
@@ -328,6 +372,18 @@ class _OverlaySnapshot {
 
   final int droppedFramesTotal;
 
+  /// Most recent process RSS in bytes, `null` on web or before the first
+  /// memory poll.
+  final int? rssBytes;
+
+  /// Session-wide peak RSS in bytes, reset together with the other session
+  /// counters via long-press on the freeze button.
+  final int? peakRssBytes;
+
+  /// First stable RSS sample captured after warmup; used as the reference
+  /// point for growth-tier coloring. Reset alongside [peakRssBytes].
+  final int? baselineRssBytes;
+
   static const _OverlaySnapshot empty = _OverlaySnapshot(
     uiUs: <int>[],
     rasterUs: <int>[],
@@ -339,6 +395,9 @@ class _OverlaySnapshot {
     lastFrameMissedVsyncs: 0,
     allTimeMinFps: null,
     droppedFramesTotal: 0,
+    rssBytes: null,
+    peakRssBytes: null,
+    baselineRssBytes: null,
   );
 }
 
@@ -363,6 +422,9 @@ class _OverlayBody extends StatefulWidget {
     required this.enableJankLogging,
     required this.severeJankFactor,
     required this.jankLogCooldown,
+    required this.showMemory,
+    required this.memoryWarnRatio,
+    required this.memoryDangerRatio,
     required this.showAllTimeStats,
     required this.onJankBurst,
     required this.jankBurstWindow,
@@ -388,6 +450,9 @@ class _OverlayBody extends StatefulWidget {
   final bool enableJankLogging;
   final double severeJankFactor;
   final Duration jankLogCooldown;
+  final bool showMemory;
+  final double memoryWarnRatio;
+  final double memoryDangerRatio;
   final bool showAllTimeStats;
   final void Function(double currentFps)? onJankBurst;
   final int jankBurstWindow;
@@ -414,6 +479,13 @@ class _OverlayBodyState extends State<_OverlayBody> {
   int _consecutiveJankCount = 0;
   final Stopwatch _jankBurstCooldown = Stopwatch();
   final Stopwatch _jankLogCooldown = Stopwatch();
+
+  int? _currentRssBytes;
+  int? _smoothedRssBytes;
+  int? _peakRssBytes;
+  int? _baselineRssBytes;
+  List<int> _baselineSamples = <int>[];
+  final Stopwatch _memoryPollTimer = Stopwatch();
 
   @override
   void initState() {
@@ -480,6 +552,8 @@ class _OverlayBodyState extends State<_OverlayBody> {
       _allTimeMinFps = fps;
     }
 
+    if (widget.showMemory) _pollMemoryIfDue();
+
     // Painter reads these inside the same frame this callback runs in,
     // before the next engine dispatch can mutate them — defensive copies
     // would just churn the GC.
@@ -494,7 +568,55 @@ class _OverlayBodyState extends State<_OverlayBody> {
       lastFrameMissedVsyncs: _lastFrameMissedVsyncs,
       allTimeMinFps: _allTimeMinFps == double.infinity ? null : _allTimeMinFps,
       droppedFramesTotal: _droppedFramesTotal,
+      rssBytes: _smoothedRssBytes,
+      peakRssBytes: _peakRssBytes,
+      baselineRssBytes: _baselineRssBytes,
     );
+  }
+
+  void _pollMemoryIfDue() {
+    if (_memoryPollTimer.isRunning &&
+        _memoryPollTimer.elapsed < _kMemoryPollInterval) {
+      return;
+    }
+    _memoryPollTimer
+      ..reset()
+      ..start();
+    final rss = memory.readCurrentRssBytes();
+    if (rss == null) return;
+    _currentRssBytes = rss;
+    // Smooth the *displayed* value with an EWMA so GC/allocator jiggle does
+    // not flicker the colour tier. Peak and baseline observe this smoothed
+    // signal too — a brief allocation spike that GC immediately collects
+    // should not pin peak.
+    final previousSmoothed = _smoothedRssBytes;
+    _smoothedRssBytes = previousSmoothed == null
+        ? rss
+        : (_kMemoryEwmaAlpha * rss + (1 - _kMemoryEwmaAlpha) * previousSmoothed)
+            .round();
+    // Baseline: collect samples for `_kMemoryBaselineSettleWindow` after
+    // warmup, then lock in the median. Median is robust to a single big
+    // navigation that lands during the window.
+    if (_warmupCompleted && _baselineRssBytes == null) {
+      _baselineSamples.add(rss);
+      if (_warmupTimer.elapsed >=
+          _kWarmupDuration + _kMemoryBaselineSettleWindow) {
+        _baselineRssBytes = _medianInt(_baselineSamples);
+        _baselineSamples = const <int>[];
+      }
+    }
+    final smoothed = _smoothedRssBytes!;
+    final previousPeak = _peakRssBytes;
+    if (previousPeak == null || smoothed > previousPeak) {
+      _peakRssBytes = smoothed;
+    }
+  }
+
+  static int _medianInt(List<int> samples) {
+    final sorted = List<int>.of(samples)..sort();
+    final n = sorted.length;
+    if (n.isOdd) return sorted[n ~/ 2];
+    return ((sorted[n ~/ 2 - 1] + sorted[n ~/ 2]) / 2).round();
   }
 
   void _trimToWindow(List<int> buffer) {
@@ -586,6 +708,12 @@ class _OverlayBodyState extends State<_OverlayBody> {
     _jankLogCooldown
       ..stop()
       ..reset();
+    // Snap baseline and peak to the last smoothed reading so colouring
+    // restarts from "now" without the 5s settle gap.
+    final snapped = _smoothedRssBytes ?? _currentRssBytes;
+    _peakRssBytes = snapped;
+    _baselineRssBytes = snapped;
+    _baselineSamples = const <int>[];
     final current = _snapshot.value;
     _snapshot.value = _OverlaySnapshot(
       uiUs: current.uiUs,
@@ -598,6 +726,9 @@ class _OverlayBodyState extends State<_OverlayBody> {
       lastFrameMissedVsyncs: 0,
       allTimeMinFps: null,
       droppedFramesTotal: 0,
+      rssBytes: _smoothedRssBytes,
+      peakRssBytes: _peakRssBytes,
+      baselineRssBytes: _baselineRssBytes,
     );
   }
 
@@ -626,6 +757,9 @@ class _OverlayBodyState extends State<_OverlayBody> {
                       overTargetColor: widget.overTargetColor,
                       compact: widget.compact,
                       showP90: widget.showP90,
+                      showMemory: widget.showMemory,
+                      memoryWarnRatio: widget.memoryWarnRatio,
+                      memoryDangerRatio: widget.memoryDangerRatio,
                       showAllTimeStats: widget.showAllTimeStats,
                       paused: widget.paused,
                     ),
@@ -668,6 +802,9 @@ class _ChartPainter extends CustomPainter {
     required this.overTargetColor,
     required this.compact,
     required this.showP90,
+    required this.showMemory,
+    required this.memoryWarnRatio,
+    required this.memoryDangerRatio,
     required this.showAllTimeStats,
     required this.paused,
   })  : _underBuffer = Float32List(sampleSize * 12),
@@ -688,6 +825,9 @@ class _ChartPainter extends CustomPainter {
   final Color overTargetColor;
   final bool compact;
   final bool showP90;
+  final bool showMemory;
+  final double memoryWarnRatio;
+  final double memoryDangerRatio;
   final bool showAllTimeStats;
   final bool paused;
 
@@ -758,6 +898,7 @@ class _ChartPainter extends CustomPainter {
       _headerBoldStyle.copyWith(color: _warnFpsColor);
   late final TextStyle _headerBoldDangerStyle =
       _headerBoldStyle.copyWith(color: overTargetColor);
+  late final TextStyle _warnStyle = TextStyle(color: _warnFpsColor);
 
   late final Color _gridColor = textColor.withValues(alpha: 0.4);
   late final Color _gridColorSecondary =
@@ -854,6 +995,17 @@ class _ChartPainter extends CustomPainter {
     return _headerBoldDangerStyle;
   }
 
+  /// Returns `null` when RSS is at or below `memoryWarnRatio × baseline`,
+  /// so the default header/compact text style applies. Above warn → amber,
+  /// above danger → overTargetColor.
+  TextStyle? _memoryHealthStyle(int? rss, int? baseline) {
+    if (rss == null || baseline == null || baseline <= 0) return null;
+    final ratio = rss / baseline;
+    if (ratio <= memoryWarnRatio) return null;
+    if (ratio <= memoryDangerRatio) return _warnStyle;
+    return _overTargetStyle;
+  }
+
   void _paintHeader(Canvas canvas, Rect rect, _OverlaySnapshot s) {
     _headerPainter.text = TextSpan(
       style: _headerStyle,
@@ -863,6 +1015,11 @@ class _ChartPainter extends CustomPainter {
           text: '${s.fps?.toStringAsFixed(1) ?? '--'} FPS',
           style: _fpsHealthStyle(s.fps),
         ),
+        if (showMemory && s.rssBytes != null)
+          TextSpan(
+            text: ' · ${_formatMb(s.rssBytes!)} MB',
+            style: _memoryHealthStyle(s.rssBytes, s.baselineRssBytes),
+          ),
         if (s.lastFrameMissedVsyncs > 0)
           TextSpan(
             text: ' · +${s.lastFrameMissedVsyncs} missed',
@@ -892,6 +1049,12 @@ class _ChartPainter extends CustomPainter {
         text: ' · drop ${s.droppedFramesTotal}',
         style: _overTargetStyle,
       );
+    }
+    if (showMemory && s.baselineRssBytes != null) {
+      yield TextSpan(text: ' · base ${_formatMb(s.baselineRssBytes!)}MB');
+    }
+    if (showMemory && s.peakRssBytes != null) {
+      yield TextSpan(text: ' · peak ${_formatMb(s.peakRssBytes!)}MB');
     }
   }
 
@@ -935,6 +1098,11 @@ class _ChartPainter extends CustomPainter {
           text: '$jankTotal jank',
           style: jankTotal > 0 ? _overTargetStyle : null,
         ),
+        if (showMemory && s.rssBytes != null)
+          TextSpan(
+            text: ' · ${_formatMb(s.rssBytes!)}MB',
+            style: _memoryHealthStyle(s.rssBytes, s.baselineRssBytes),
+          ),
         if (showAllTimeStats) ..._allTimeStatsSpans(s),
         if (paused) TextSpan(text: '  · PAUSED', style: _compactPausedStyle),
       ],
@@ -1162,6 +1330,9 @@ class _ChartPainter extends CustomPainter {
       old.overTargetColor != overTargetColor ||
       old.compact != compact ||
       old.showP90 != showP90 ||
+      old.showMemory != showMemory ||
+      old.memoryWarnRatio != memoryWarnRatio ||
+      old.memoryDangerRatio != memoryDangerRatio ||
       old.showAllTimeStats != showAllTimeStats ||
       old.paused != paused ||
       old.sampleSize != sampleSize;
@@ -1212,3 +1383,8 @@ class _FreezeButton extends StatelessWidget {
 }
 
 String _formatMs(Duration d) => (d.inMicroseconds / 1e3).toStringAsFixed(1);
+
+String _formatMb(int bytes) {
+  final mb = bytes / (1024 * 1024);
+  return mb >= 100 ? mb.toStringAsFixed(0) : mb.toStringAsFixed(1);
+}
