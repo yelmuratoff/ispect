@@ -34,19 +34,12 @@ const EdgeInsets _kHeaderPadding =
 const EdgeInsets _kCompactPadding =
     EdgeInsets.symmetric(horizontal: 6, vertical: 4);
 
-/// Static semantics label exposing the overlay to screen readers and tests.
-/// The dynamic content (Hz / FPS / per-metric stats) lives on canvas, so
-/// individual values are not reachable via the semantics tree.
 const String _kOverlaySemanticsLabel = 'Performance overlay';
 
-/// Time-based gate before session-wide min FPS and drop counter start
-/// recording. Startup spikes (JIT warmup, asset decode, shader cache miss)
-/// would otherwise pin the session minimum forever.
+/// Discards startup spikes (JIT, asset decode, shader cache) from session
+/// min FPS and drop counter.
 const Duration _kWarmupDuration = Duration(milliseconds: 800);
 
-/// FPS-vs-refresh-rate thresholds for the colour-coded reading. Tuned to
-/// the perception ladder a non-technical user sees: smooth → occasional
-/// hitch → laggy.
 const double _kFpsHealthyRatio = 0.95;
 const double _kFpsWarningRatio = 0.80;
 
@@ -315,23 +308,18 @@ class _OverlaySnapshot {
     required this.droppedFramesTotal,
   });
 
-  /// Per-frame microseconds in display order. The painter reads these
-  /// directly so chart bars cost zero allocations per repaint — no
-  /// `Duration` boxing from `FrameTiming` getters.
   final List<int> uiUs;
   final List<int> rasterUs;
   final List<int> totalUs;
 
-  /// Sample-window stats precomputed once per timings batch. Keeps sorting
-  /// and aggregation off the paint hot path.
   final PerformanceChartStats uiStats;
   final PerformanceChartStats rasterStats;
   final PerformanceChartStats totalStats;
 
   final double? fps;
 
-  /// vsyncs missed by the *latest* frame — surfaces a transient hitch in
-  /// the header immediately, before it ages into the smoothed FPS window.
+  /// Surfaces the latest hitch in the header before it ages out of the FPS
+  /// window.
   final int lastFrameMissedVsyncs;
 
   final double? allTimeMinFps;
@@ -409,8 +397,6 @@ class _OverlayBodyState extends State<_OverlayBody> {
   final ValueNotifier<_OverlaySnapshot> _snapshot =
       ValueNotifier<_OverlaySnapshot>(_OverlaySnapshot.empty);
 
-  /// Rolling per-frame microsecond buffers kept on the state. Cloned into
-  /// the snapshot each batch so the painter operates on immutable data.
   final List<int> _uiUs = <int>[];
   final List<int> _rasterUs = <int>[];
   final List<int> _totalUs = <int>[];
@@ -440,8 +426,6 @@ class _OverlayBodyState extends State<_OverlayBody> {
   bool get _warmupCompleted =>
       _warmupTimer.elapsedMilliseconds >= _kWarmupDuration.inMilliseconds;
 
-  /// Side-effect fan-out (observer + jank log) runs regardless of pause;
-  /// only the visual sample buffer freezes when `widget.paused` is true.
   void _timingsCallback(List<FrameTiming> frameTimings) {
     if (!mounted) return;
 
@@ -833,8 +817,6 @@ class _ChartPainter extends CustomPainter {
     );
   }
 
-  /// Maps the FPS reading onto the perception ladder so a non-technical
-  /// user can read the overlay at a glance.
   TextStyle _fpsHealthStyle(double? fps) {
     if (fps == null || refreshRate <= 0) return _headerBoldStyle;
     final ratio = fps / refreshRate;
@@ -876,9 +858,6 @@ class _ChartPainter extends CustomPainter {
   Iterable<TextSpan> _allTimeStatsSpans(_OverlaySnapshot s) sync* {
     final min = s.allTimeMinFps;
     if (min != null) yield TextSpan(text: ' · min ${min.toStringAsFixed(0)}');
-    // Surface the cumulative drop total when the most recent frame did not
-    // contribute, so the header reflects the whole session, not just the
-    // latest blip already shown as "+N missed".
     if (s.droppedFramesTotal > 0 && s.lastFrameMissedVsyncs == 0) {
       yield TextSpan(
         text: ' · drop ${s.droppedFramesTotal}',
@@ -1123,8 +1102,7 @@ class _ChartPainter extends CustomPainter {
 }
 
 /// Sits outside the overlay's `IgnorePointer` so taps land here while the
-/// rest of the chart area stays transparent to gestures. Long-press resets
-/// session counters (all-time min FPS and dropped-frame total).
+/// rest of the chart stays transparent to gestures.
 class _FreezeButton extends StatelessWidget {
   const _FreezeButton({
     required this.paused,
