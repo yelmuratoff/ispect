@@ -13,8 +13,20 @@ void main() {
 
   const childKey = Key('child');
   const childText = 'app-content';
+  const overlayLabel = 'Performance overlay';
 
   group('ISpectPerformanceOverlay', () {
+    late SemanticsHandle semanticsHandle;
+
+    setUp(() {
+      semanticsHandle =
+          TestWidgetsFlutterBinding.ensureInitialized().ensureSemantics();
+    });
+
+    tearDown(() {
+      semanticsHandle.dispose();
+    });
+
     testWidgets('returns the child unchanged when disabled', (tester) async {
       await tester.pumpWidget(
         wrap(
@@ -28,9 +40,11 @@ void main() {
       expect(find.byKey(childKey), findsOneWidget);
       expect(find.byIcon(Icons.pause_rounded), findsNothing);
       expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
+      expect(find.bySemanticsLabel(overlayLabel), findsNothing);
     });
 
-    testWidgets('renders header + freeze button when enabled', (tester) async {
+    testWidgets('renders the overlay surface + freeze button when enabled',
+        (tester) async {
       await tester.pumpWidget(
         wrap(
           const ISpectPerformanceOverlay(
@@ -41,8 +55,7 @@ void main() {
 
       expect(find.byKey(childKey), findsOneWidget);
       expect(find.byIcon(Icons.pause_rounded), findsOneWidget);
-      expect(find.textContaining('Hz'), findsOneWidget);
-      expect(find.textContaining('FPS'), findsOneWidget);
+      expect(find.bySemanticsLabel(overlayLabel), findsOneWidget);
     });
 
     testWidgets(
@@ -59,11 +72,12 @@ void main() {
 
         expect(find.byIcon(Icons.pause_rounded), findsNothing);
         expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
+        expect(find.bySemanticsLabel(overlayLabel), findsOneWidget);
       },
     );
 
     testWidgets(
-      'freeze button swaps to play icon after a tap and shows PAUSED',
+      'freeze button swaps to play icon after a tap',
       (tester) async {
         await tester.pumpWidget(
           wrap(
@@ -81,42 +95,36 @@ void main() {
 
         expect(find.byIcon(Icons.pause_rounded), findsNothing);
         expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
-        expect(find.textContaining('PAUSED'), findsOneWidget);
       },
     );
 
     testWidgets(
       'exposes accessible button semantics for the freeze toggle',
       (tester) async {
-        final handle = tester.ensureSemantics();
-        try {
-          await tester.pumpWidget(
-            wrap(
-              const ISpectPerformanceOverlay(
-                child: Text(childText, key: childKey),
-              ),
+        await tester.pumpWidget(
+          wrap(
+            const ISpectPerformanceOverlay(
+              child: Text(childText, key: childKey),
             ),
-          );
+          ),
+        );
 
-          expect(
-            find.bySemanticsLabel('Pause performance overlay'),
-            findsOneWidget,
-          );
+        expect(
+          find.bySemanticsLabel('Pause performance overlay'),
+          findsOneWidget,
+        );
 
-          await tester.tap(find.byIcon(Icons.pause_rounded));
-          await tester.pump();
+        await tester.tap(find.byIcon(Icons.pause_rounded));
+        await tester.pump();
 
-          expect(
-            find.bySemanticsLabel('Resume performance overlay'),
-            findsOneWidget,
-          );
-        } finally {
-          handle.dispose();
-        }
+        expect(
+          find.bySemanticsLabel('Resume performance overlay'),
+          findsOneWidget,
+        );
       },
     );
 
-    testWidgets('compact mode renders a single-line summary', (tester) async {
+    testWidgets('compact mode uses the compact default height', (tester) async {
       await tester.pumpWidget(
         wrap(
           const ISpectPerformanceOverlay(
@@ -127,7 +135,11 @@ void main() {
       );
 
       expect(find.byIcon(Icons.pause_rounded), findsOneWidget);
-      expect(find.textContaining('jank'), findsOneWidget);
+      expect(find.bySemanticsLabel(overlayLabel), findsOneWidget);
+      // Compact picks a tighter default height than the detailed layout.
+      final detailedDefault = (16.0 + 10.0 * 1.15 * 3 + 18.0).round();
+      final overlaySize = tester.getSize(find.bySemanticsLabel(overlayLabel));
+      expect(overlaySize.height, lessThan(detailedDefault));
     });
 
     testWidgets('lets taps fall through to the underlying child',
