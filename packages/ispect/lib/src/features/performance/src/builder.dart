@@ -10,10 +10,14 @@ class ISpectPerformanceOverlayBuilder extends StatelessWidget {
     required this.child,
     required this.isPerformanceTrackingEnabled,
     super.key,
+    this.enableJankLogging = false,
+    this.severeJankFactor = 2.0,
   });
 
   final Widget child;
   final bool isPerformanceTrackingEnabled;
+  final bool enableJankLogging;
+  final double severeJankFactor;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +30,8 @@ class ISpectPerformanceOverlayBuilder extends StatelessWidget {
         backgroundColor: colorScheme.surface.withValues(alpha: 0.4),
         textColor: colorScheme.onSurface,
         overTargetColor: colorScheme.error,
+        enableJankLogging: enableJankLogging,
+        severeJankFactor: severeJankFactor,
         child: child,
       ),
     );

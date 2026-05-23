@@ -54,6 +54,7 @@ export 'src/trace/extensions/grpc.dart';
 export 'src/trace/extensions/navigation.dart';
 export 'src/trace/extensions/network.dart';
 export 'src/trace/extensions/payment.dart';
+export 'src/trace/extensions/performance.dart';
 export 'src/trace/extensions/push.dart';
 export 'src/trace/extensions/sse.dart';
 export 'src/trace/extensions/state.dart';

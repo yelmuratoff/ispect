@@ -8,14 +8,6 @@ import 'package:ispect/src/features/performance/src/stats.dart';
 import 'package:ispect/src/ispect.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// Lets consumers filter jank events in the log viewer by the dedicated
-/// `performance-jank` log key instead of grepping `warning`-level strings.
-const ISpectTraceCategory kPerformanceTraceCategory = ISpectTraceCategory(
-  id: 'performance',
-  successKey: 'performance-jank',
-  errorKey: 'performance-error',
-);
-
 /// Fallback when [View.display.refreshRate] is unavailable.
 const double _kFallbackRefreshRate = 60;
 
@@ -94,6 +86,7 @@ class ISpectPerformanceOverlay extends StatefulWidget {
     this.onFrameTiming,
     this.enableJankLogging = false,
     this.severeJankFactor = 2.0,
+    this.jankLogCooldown = const Duration(seconds: 1),
     this.showAllTimeStats = false,
     this.onJankBurst,
     this.jankBurstWindow = 3,
@@ -161,13 +154,21 @@ class ISpectPerformanceOverlay extends StatefulWidget {
   /// they do not poison the engine's timings dispatch.
   final void Function(FrameTiming timing)? onFrameTiming;
 
-  /// Log frames where `totalSpan > targetFrameTime × severeJankFactor` via
-  /// [ISpect.logger]. Off by default to avoid log spam.
+  /// Log frames where `max(buildDuration, rasterDuration) > targetFrameTime ×
+  /// severeJankFactor` via [ISpect.logger]. Off by default to avoid log spam.
+  /// Numbers are misleading in debug mode (JIT, asserts, scheduling delays);
+  /// turn it on for profile/release builds.
   final bool enableJankLogging;
 
   /// `2.0` matches "visible hitch" on 60Hz; below `1.0` would log every
   /// frame above target.
   final double severeJankFactor;
+
+  /// Minimum gap between two consecutive jank log entries. A sustained jank
+  /// session (e.g. log viewer rebuilding itself on every new entry) can
+  /// otherwise create a feedback loop where each log triggers more frame
+  /// work. Defaults to one second.
+  final Duration jankLogCooldown;
 
   /// Append session-wide `min · drop` figures next to the FPS reading.
   final bool showAllTimeStats;
@@ -242,6 +243,7 @@ class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
         onFrameTiming: widget.onFrameTiming,
         enableJankLogging: widget.enableJankLogging,
         severeJankFactor: widget.severeJankFactor,
+        jankLogCooldown: widget.jankLogCooldown,
         showAllTimeStats: widget.showAllTimeStats,
         onJankBurst: widget.onJankBurst,
         jankBurstWindow: widget.jankBurstWindow,
@@ -360,6 +362,7 @@ class _OverlayBody extends StatefulWidget {
     required this.onFrameTiming,
     required this.enableJankLogging,
     required this.severeJankFactor,
+    required this.jankLogCooldown,
     required this.showAllTimeStats,
     required this.onJankBurst,
     required this.jankBurstWindow,
@@ -384,6 +387,7 @@ class _OverlayBody extends StatefulWidget {
   final void Function(FrameTiming timing)? onFrameTiming;
   final bool enableJankLogging;
   final double severeJankFactor;
+  final Duration jankLogCooldown;
   final bool showAllTimeStats;
   final void Function(double currentFps)? onJankBurst;
   final int jankBurstWindow;
@@ -409,6 +413,7 @@ class _OverlayBodyState extends State<_OverlayBody> {
   int _lastFrameMissedVsyncs = 0;
   int _consecutiveJankCount = 0;
   final Stopwatch _jankBurstCooldown = Stopwatch();
+  final Stopwatch _jankLogCooldown = Stopwatch();
 
   @override
   void initState() {
@@ -540,25 +545,32 @@ class _OverlayBodyState extends State<_OverlayBody> {
   void _logSevereJank(Iterable<FrameTiming> samples) {
     final thresholdUs =
         (widget.target.inMicroseconds * widget.severeJankFactor).round();
-    final threshold = Duration(microseconds: thresholdUs);
-    final targetMs = _formatMs(widget.target);
+    final cooldownMs = widget.jankLogCooldown.inMilliseconds;
     for (final t in samples) {
-      if (t.totalSpan <= threshold) continue;
-      ISpect.logger.traceCategory(
-        category: kPerformanceTraceCategory,
+      // Use the heaviest thread's work — `totalSpan` includes scheduling
+      // wait time, which inflates in debug mode and idle UIs to false jank.
+      final buildUs = t.buildDuration.inMicroseconds;
+      final rasterUs = t.rasterDuration.inMicroseconds;
+      final workUs = buildUs > rasterUs ? buildUs : rasterUs;
+      if (workUs <= thresholdUs) continue;
+      // Throttle: one entry per cooldown window. Without this a sustained
+      // jank session (e.g. log viewer rebuilding itself on every new entry)
+      // creates a feedback loop where each log triggers more frame work.
+      if (_jankLogCooldown.isRunning &&
+          _jankLogCooldown.elapsedMilliseconds < cooldownMs) {
+        continue;
+      }
+      _jankLogCooldown
+        ..reset()
+        ..start();
+      // No `stackTrace`: by the time `addTimingsCallback` fires the offending
+      // frame is done — the current stack is engine code, not the cause.
+      ISpect.logger.performanceJank(
         source: 'overlay',
-        operation: 'jank',
-        duration: t.totalSpan,
-        meta: <String, Object?>{
-          'ui_ms': _formatMs(t.buildDuration),
-          'raster_ms': _formatMs(t.rasterDuration),
-          'total_ms': _formatMs(t.totalSpan),
-          'target_ms': targetMs,
-        },
-        consoleMessage: 'Performance jank: total ${_formatMs(t.totalSpan)}ms '
-            '(UI ${_formatMs(t.buildDuration)}ms · '
-            'raster ${_formatMs(t.rasterDuration)}ms · '
-            'target ${targetMs}ms)',
+        buildDuration: t.buildDuration,
+        rasterDuration: t.rasterDuration,
+        totalSpan: t.totalSpan,
+        targetFrameTime: widget.target,
       );
     }
   }
@@ -569,6 +581,9 @@ class _OverlayBodyState extends State<_OverlayBody> {
     _lastFrameMissedVsyncs = 0;
     _consecutiveJankCount = 0;
     _jankBurstCooldown
+      ..stop()
+      ..reset();
+    _jankLogCooldown
       ..stop()
       ..reset();
     final current = _snapshot.value;

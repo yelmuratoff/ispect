@@ -1649,6 +1649,18 @@ abstract class ISpectGeneratedLocalization {
   /// **'GraphQL operation failed'**
   String get graphqlErrorLogDesc;
 
+  /// No description provided for @performanceJankLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Frame exceeded the target budget'**
+  String get performanceJankLogDesc;
+
+  /// No description provided for @performanceErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance instrumentation error'**
+  String get performanceErrorLogDesc;
+
   /// No description provided for @transitionPush.
   ///
   /// In en, this message translates to:

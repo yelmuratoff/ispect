@@ -235,5 +235,15 @@ List<LogDescription> _buildDefaultLogDescriptions(BuildContext context) {
       title: 'GraphQL Error',
       description: l10n.graphqlErrorLogDesc,
     ),
+    LogDescription(
+      key: 'performance-jank',
+      title: 'Performance Jank',
+      description: l10n.performanceJankLogDesc,
+    ),
+    LogDescription(
+      key: 'performance-error',
+      title: 'Performance Error',
+      description: l10n.performanceErrorLogDesc,
+    ),
   ];
 }

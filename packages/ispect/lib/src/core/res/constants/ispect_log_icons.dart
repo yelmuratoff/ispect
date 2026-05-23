@@ -80,4 +80,8 @@ const Map<String, IconData> _kTypeIcons = {
   'graphql-request': Icons.hub_rounded,
   'graphql-response': Icons.hub_rounded,
   'graphql-error': Icons.error_outline_rounded,
+
+  /// Performance
+  'performance-jank': Icons.speed_rounded,
+  'performance-error': Icons.error_outline_rounded,
 };

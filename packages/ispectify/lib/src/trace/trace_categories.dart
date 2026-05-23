@@ -114,3 +114,9 @@ final graphqlCategory = ISpectTraceCategory(
   secondaryKey: ISpectLogType.graphqlRequest.key,
   secondaryOperations: const {'query', 'subscription'},
 );
+
+final performanceCategory = ISpectTraceCategory(
+  id: TraceCategoryIds.performance,
+  successKey: ISpectLogType.performanceJank.key,
+  errorKey: ISpectLogType.performanceError.key,
+);

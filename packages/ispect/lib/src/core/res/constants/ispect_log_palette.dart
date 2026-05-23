@@ -81,6 +81,10 @@ const Map<String, Color> _kLightTypeColors = {
   'graphql-request': Color.fromARGB(255, 106, 27, 154),
   'graphql-response': Color(0xFF00C853),
   'graphql-error': Color.fromARGB(255, 192, 38, 38),
+
+  /// Performance
+  'performance-jank': Color.fromARGB(255, 255, 160, 0),
+  'performance-error': Color.fromARGB(255, 192, 38, 38),
 };
 
 const Map<String, Color> _kDarkTypeColors = {
@@ -164,4 +168,8 @@ const Map<String, Color> _kDarkTypeColors = {
   'graphql-request': Color.fromARGB(255, 186, 104, 255),
   'graphql-response': Color(0xFF26FF3C),
   'graphql-error': Color.fromARGB(255, 239, 83, 80),
+
+  /// Performance
+  'performance-jank': Color.fromARGB(255, 255, 167, 38),
+  'performance-error': Color.fromARGB(255, 239, 83, 80),
 };

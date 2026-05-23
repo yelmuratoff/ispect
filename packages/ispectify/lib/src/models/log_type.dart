@@ -291,6 +291,19 @@ final class ISpectLogType {
     category: TraceCategoryIds.navigation,
   );
 
+  // ── Performance ────────────────────────────────────────────────────────────
+  static const performanceJank = ISpectLogType(
+    'performance-jank',
+    category: TraceCategoryIds.performance,
+    level: LogLevel.warning,
+  );
+  static const performanceError = ISpectLogType(
+    'performance-error',
+    category: TraceCategoryIds.performance,
+    isError: true,
+    level: LogLevel.error,
+  );
+
   // ── Discovery ──────────────────────────────────────────────────────────────
 
   /// All built-in log types. Used for filter UI and key discovery.
@@ -347,6 +360,8 @@ final class ISpectLogType {
     graphqlResponse,
     graphqlError,
     route,
+    performanceJank,
+    performanceError,
   ];
 
   static final Map<String, ISpectLogType> _byKey = {

@@ -847,6 +847,12 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get graphqlErrorLogDesc => 'Ошибка GraphQL операции';
 
   @override
+  String get performanceJankLogDesc => 'Кадр превысил бюджет рендера';
+
+  @override
+  String get performanceErrorLogDesc => 'Ошибка телеметрии производительности';
+
+  @override
   String get transitionPush => 'Push';
 
   @override

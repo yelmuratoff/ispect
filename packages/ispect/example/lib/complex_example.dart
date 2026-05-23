@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispect/ispect.dart';
@@ -147,6 +148,7 @@ class _MyAppState extends State<MyApp> {
         child: child!,
         options: ISpectOptions(
           observer: _observer,
+          enableJankLogging: true,
           onSettingsChanged: (settings) {
             ISpect.logger.log('Settings changed: ${settings.toString()}',
                 additionalData: settings.toMap());
@@ -366,6 +368,15 @@ class _HomePageState extends State<_HomePage> {
             subtitle: 'Log deeply nested JSON',
             trailing: const Icon(Icons.chevron_right),
             onTap: _logComplexPayload,
+          ),
+          const SizedBox(height: 8),
+          _ScenarioCard(
+            icon: Icons.speed,
+            title: 'Performance Jank',
+            subtitle: 'Block UI thread ~250 ms — overlay spikes, '
+                'performance-jank log entry appears in viewer',
+            trailing: const Icon(Icons.chevron_right),
+            onTap: _triggerSevereJank,
           ),
           const SizedBox(height: 20),
 
@@ -1106,6 +1117,28 @@ class _HomePageState extends State<_HomePage> {
     Future<void>.delayed(const Duration(milliseconds: 100), () {
       throw StateError('Simulated crash for ISpect testing');
     });
+  }
+
+  void _triggerSevereJank() {
+    // Run heavy work after the current frame so the tap response paints
+    // before the freeze — otherwise the snackbar would also be stuck.
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      final sw = Stopwatch()..start();
+      var acc = 0.0;
+      while (sw.elapsedMilliseconds < 250) {
+        for (var i = 0; i < 20000; i++) {
+          acc += i * 1.000001;
+        }
+      }
+      // Touch `acc` so the loop is not optimized away in release builds.
+      if (acc < 0) ISpect.logger.debug('unreachable $acc');
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Blocking UI thread ~250 ms — watch the overlay'),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   void _logComplexPayload() {

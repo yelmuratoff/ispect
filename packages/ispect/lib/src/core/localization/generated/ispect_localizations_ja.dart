@@ -826,6 +826,12 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get graphqlErrorLogDesc => 'GraphQL operation failed';
 
   @override
+  String get performanceJankLogDesc => 'Frame exceeded the target budget';
+
+  @override
+  String get performanceErrorLogDesc => 'Performance instrumentation error';
+
+  @override
   String get transitionPush => 'プッシュ';
 
   @override

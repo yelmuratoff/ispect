@@ -57,6 +57,8 @@ final class ISpectOptions {
     this.observer,
     this.isLogPageEnabled = true,
     this.isPerformanceEnabled = true,
+    this.enableJankLogging = false,
+    this.severeJankFactor = 2.0,
     this.isInspectorEnabled = true,
     this.isColorPickerEnabled = true,
     this.actionItems = const [],
@@ -90,6 +92,17 @@ final class ISpectOptions {
   /// When `true`, performance monitoring features will be available.
   /// Defaults to `true`.
   final bool isPerformanceEnabled;
+
+  /// Routes frames where `totalSpan > target × severeJankFactor` through
+  /// [`ISpect.logger`](ISpect.logger) under [`performanceCategory`]. Off by
+  /// default to avoid log spam; enable when you want jank entries in the log
+  /// viewer.
+  final bool enableJankLogging;
+
+  /// Multiplier applied to the frame-time budget when deciding whether a
+  /// frame counts as severe jank. `2.0` matches "visible hitch" on 60Hz.
+  /// Ignored unless [enableJankLogging] is `true`.
+  final double severeJankFactor;
 
   /// Controls visibility of the widget inspector.
   ///
@@ -223,6 +236,8 @@ final class ISpectOptions {
     NavigatorObserver? observer,
     bool? isLogPageEnabled,
     bool? isPerformanceEnabled,
+    bool? enableJankLogging,
+    double? severeJankFactor,
     bool? isInspectorEnabled,
     bool? isColorPickerEnabled,
     List<ISpectActionItem>? actionItems,
@@ -241,6 +256,8 @@ final class ISpectOptions {
       observer: observer ?? this.observer,
       isLogPageEnabled: isLogPageEnabled ?? this.isLogPageEnabled,
       isPerformanceEnabled: isPerformanceEnabled ?? this.isPerformanceEnabled,
+      enableJankLogging: enableJankLogging ?? this.enableJankLogging,
+      severeJankFactor: severeJankFactor ?? this.severeJankFactor,
       isInspectorEnabled: isInspectorEnabled ?? this.isInspectorEnabled,
       isColorPickerEnabled: isColorPickerEnabled ?? this.isColorPickerEnabled,
       actionItems: actionItems ?? this.actionItems,
@@ -266,6 +283,8 @@ final class ISpectOptions {
         other.observer == observer &&
         other.isLogPageEnabled == isLogPageEnabled &&
         other.isPerformanceEnabled == isPerformanceEnabled &&
+        other.enableJankLogging == enableJankLogging &&
+        other.severeJankFactor == severeJankFactor &&
         other.isInspectorEnabled == isInspectorEnabled &&
         other.isColorPickerEnabled == isColorPickerEnabled &&
         listEquals(other.actionItems, actionItems) &&
@@ -289,6 +308,8 @@ final class ISpectOptions {
       observer,
       isLogPageEnabled,
       isPerformanceEnabled,
+      enableJankLogging,
+      severeJankFactor,
       isInspectorEnabled,
       isColorPickerEnabled,
       _deepEquality.hash(actionItems),
@@ -311,6 +332,8 @@ final class ISpectOptions {
       observer: $observer,
       isLogPageEnabled: $isLogPageEnabled,
       isPerformanceEnabled: $isPerformanceEnabled,
+      enableJankLogging: $enableJankLogging,
+      severeJankFactor: $severeJankFactor,
       isInspectorEnabled: $isInspectorEnabled,
       isColorPickerEnabled: $isColorPickerEnabled,
       actionItems: $actionItems,

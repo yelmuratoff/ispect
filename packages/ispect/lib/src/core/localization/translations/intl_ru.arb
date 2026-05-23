@@ -255,6 +255,8 @@
    "graphqlRequestLogDesc": "GraphQL запрос отправлен",
    "graphqlResponseLogDesc": "GraphQL ответ получен",
    "graphqlErrorLogDesc": "Ошибка GraphQL операции",
+   "performanceJankLogDesc": "Кадр превысил бюджет рендера",
+   "performanceErrorLogDesc": "Ошибка телеметрии производительности",
    "transitionPush": "Push",
    "transitionPop": "Pop",
    "transitionReplace": "Замена",

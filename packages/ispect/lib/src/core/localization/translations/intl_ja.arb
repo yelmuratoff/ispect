@@ -255,6 +255,8 @@
    "graphqlRequestLogDesc": "GraphQL query sent",
    "graphqlResponseLogDesc": "GraphQL response received",
    "graphqlErrorLogDesc": "GraphQL operation failed",
+   "performanceJankLogDesc": "Frame exceeded the target budget",
+   "performanceErrorLogDesc": "Performance instrumentation error",
    "transitionPush": "プッシュ",
    "transitionPop": "ポップ",
    "transitionReplace": "置換",

@@ -15,6 +15,13 @@
 - **Formatters stay extendable:** `ExtendedLoggerFormatter` and `HumanLogEntryFormatter` are `base class` — `extends` is still supported for custom formatter subclasses, only `implements` is blocked. `RedactionService`, `ISpectErrorHandler`, and `NetworkTransaction` remain fully open.
 - **Inspector controller decomposed:** `InspectorController` body split across four sibling `part` files for modes, shortcuts, pointer handlers, and pixel capture. Public API unchanged.
 - **Log constants restructured:** `ISpectConstants` tables split into themed `part` files for icons, palette, and descriptions. The facade re-exposes every existing constant.
+- **`ISpectPerformanceOverlay` rebuilt:** Cross-platform overlay on `FrameTiming` (works on web and desktop where Flutter's native overlay does not) with UI/raster/total bars, avg/p99/jank stats, current FPS, target line, and a freeze button. Long-press the freeze button to reset session counters.
+- **Bottleneck-based FPS:** The FPS readout uses capacity-based bottleneck analysis instead of vsync-derived smoothing, so a single 30 ms hitch is visible in the reading rather than averaged away.
+- **Jank burst callback:** New `onJankBurst` fires after `jankBurstWindow` consecutive over-target frames, throttled by `jankBurstCooldown` — suitable for triggering app-level diagnostics or telemetry.
+- **Severe-jank logging:** Opt-in `enableJankLogging` routes frames where `totalSpan > target × severeJankFactor` through `ISpect.logger` under the new `performanceCategory` (`performance-jank` / `performance-error` log keys, full icon, palette, and description entries in the log viewer).
+- **Perceptible drop counter:** The session dropped-frame total now applies a 16.67 ms perception threshold so single-vsync skips on 120 Hz panels stop polluting the counter during normal scrolling.
+- **Cold-start warmup:** The first `FrameTiming` sample is dropped and session counters (min FPS, dropped-frame total) wait out an 800 ms warmup window to filter JIT, asset-decode, and shader-cache spikes.
+- **Compact layout & color-blind palette:** `compact: true` renders a single-line summary, `showP90: true` adds p90 to the detailed layout, and `ISpectPerformanceOverlayPalettes` exposes a Wong/Okabe palette readable under deuteranopia, protanopia, and tritanopia.
 
 ## 5.0.4
 
