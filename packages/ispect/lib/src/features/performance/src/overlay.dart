@@ -197,6 +197,40 @@ class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
     final refreshRate = _resolveRefreshRate(context);
     final resolvedHeight = widget.height ?? _defaultHeight();
 
+    Widget overlay = SizedBox(
+      width: widget.width,
+      height: resolvedHeight,
+      child: _OverlayBody(
+        sampleSize: widget.sampleSize,
+        target: target,
+        refreshRate: refreshRate,
+        barRangeMax: widget.barRangeMax,
+        backgroundColor: widget.backgroundColor,
+        textColor: widget.textColor,
+        uiColor: widget.uiColor,
+        rasterColor: widget.rasterColor,
+        totalColor: widget.totalColor,
+        overTargetColor: widget.overTargetColor,
+        compact: widget.compact,
+        showP90: widget.showP90,
+        allowFreeze: widget.allowFreeze,
+        paused: _paused,
+        onTogglePause: _togglePause,
+        onFrameTiming: widget.onFrameTiming,
+        enableJankLogging: widget.enableJankLogging,
+        severeJankFactor: widget.severeJankFactor,
+      ),
+    );
+    // Skip the Transform layer in the common (default) case so the engine
+    // does not allocate one just to apply an identity matrix.
+    if (widget.scale != 1) {
+      overlay = Transform.scale(
+        alignment: widget.alignment,
+        scale: widget.scale,
+        child: overlay,
+      );
+    }
+
     return Stack(
       children: [
         widget.child,
@@ -205,36 +239,7 @@ class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
             alignment: widget.alignment,
             child: Directionality(
               textDirection: TextDirection.ltr,
-              child: RepaintBoundary(
-                child: Transform.scale(
-                  alignment: widget.alignment,
-                  scale: widget.scale,
-                  child: SizedBox(
-                    width: widget.width,
-                    height: resolvedHeight,
-                    child: _OverlayBody(
-                      sampleSize: widget.sampleSize,
-                      target: target,
-                      refreshRate: refreshRate,
-                      barRangeMax: widget.barRangeMax,
-                      backgroundColor: widget.backgroundColor,
-                      textColor: widget.textColor,
-                      uiColor: widget.uiColor,
-                      rasterColor: widget.rasterColor,
-                      totalColor: widget.totalColor,
-                      overTargetColor: widget.overTargetColor,
-                      compact: widget.compact,
-                      showP90: widget.showP90,
-                      allowFreeze: widget.allowFreeze,
-                      paused: _paused,
-                      onTogglePause: _togglePause,
-                      onFrameTiming: widget.onFrameTiming,
-                      enableJankLogging: widget.enableJankLogging,
-                      severeJankFactor: widget.severeJankFactor,
-                    ),
-                  ),
-                ),
-              ),
+              child: RepaintBoundary(child: overlay),
             ),
           ),
         ),
