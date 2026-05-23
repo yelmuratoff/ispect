@@ -27,7 +27,8 @@ class ISpectPerformanceOverlayBuilder extends StatelessWidget {
       child: ISpectPerformanceOverlay(
         enabled: isPerformanceTrackingEnabled,
         alignment: Alignment.topCenter,
-        backgroundColor: colorScheme.surface.withValues(alpha: 0.4),
+        backgroundColor:
+            colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
         textColor: colorScheme.onSurface,
         overTargetColor: colorScheme.error,
         enableJankLogging: enableJankLogging,
