@@ -475,10 +475,13 @@ class _OverlayBodyState extends State<_OverlayBody> {
       _allTimeMinFps = fps;
     }
 
+    // Painter reads these inside the same frame this callback runs in,
+    // before the next engine dispatch can mutate them — defensive copies
+    // would just churn the GC.
     _snapshot.value = _OverlaySnapshot(
-      uiUs: List<int>.of(_uiUs),
-      rasterUs: List<int>.of(_rasterUs),
-      totalUs: List<int>.of(_totalUs),
+      uiUs: _uiUs,
+      rasterUs: _rasterUs,
+      totalUs: _totalUs,
       uiStats: PerformanceChartStats.fromMicroseconds(_uiUs, targetUs),
       rasterStats: PerformanceChartStats.fromMicroseconds(_rasterUs, targetUs),
       totalStats: PerformanceChartStats.fromMicroseconds(_totalUs, targetUs),
@@ -652,7 +655,10 @@ class _ChartPainter extends CustomPainter {
     required this.showP90,
     required this.showAllTimeStats,
     required this.paused,
-  }) : super(repaint: snapshot);
+  })  : _underBuffer = Float32List(sampleSize * 12),
+        _overBuffer = Float32List(sampleSize * 12),
+        _capBuffer = Float32List(sampleSize * 6),
+        super(repaint: snapshot);
 
   final ValueListenable<_OverlaySnapshot> snapshot;
   final int sampleSize;
@@ -676,6 +682,14 @@ class _ChartPainter extends CustomPainter {
   final Paint _gridPaint = Paint()..strokeWidth = 1;
   final Paint _capMarkerPaint = Paint();
   final Paint _dividerPaint = Paint();
+
+  // Pre-allocated triangle buffers — one bar contributes 6 vertices
+  // (12 floats), a capped notch adds 3 vertices. Reused across paints so
+  // the per-frame draw call never grows a List<double> or copies into a
+  // fresh Float32List.
+  final Float32List _underBuffer;
+  final Float32List _overBuffer;
+  final Float32List _capBuffer;
 
   final TextPainter _headerPainter = TextPainter(
     textDirection: TextDirection.ltr,
@@ -959,9 +973,9 @@ class _ChartPainter extends CustomPainter {
     // Two vertex batches per column (under-target colour + over-target colour)
     // collapse up to `sampleSize` drawRect calls into 2 drawVertices calls,
     // plus a third batch for the small "off-chart" notches on capped bars.
-    final under = <double>[];
-    final over = <double>[];
-    final caps = <double>[];
+    var underLen = 0;
+    var overLen = 0;
+    var capLen = 0;
 
     for (var i = sampleSize - 1; i >= 0; i--) {
       final index = i - sampleSize + samplesUs.length;
@@ -974,56 +988,93 @@ class _ChartPainter extends CustomPainter {
       final top = rect.bottom - rect.height * heightFactor;
       final bottom = rect.bottom;
 
-      (us <= targetUs ? under : over)
-        ..add(left)
-        ..add(top)
-        ..add(right)
-        ..add(top)
-        ..add(left)
-        ..add(bottom)
-        ..add(right)
-        ..add(top)
-        ..add(right)
-        ..add(bottom)
-        ..add(left)
-        ..add(bottom);
+      if (us <= targetUs) {
+        underLen =
+            _writeBarQuad(_underBuffer, underLen, left, top, right, bottom);
+      } else {
+        overLen = _writeBarQuad(_overBuffer, overLen, left, top, right, bottom);
+      }
 
       if (isCapped) {
         final centerX = left + barWidth / 2;
         final notchBase = rect.top + _kCapMarkerHeight;
-        caps
-          ..add(centerX)
-          ..add(rect.top)
-          ..add(left)
-          ..add(notchBase)
-          ..add(right)
-          ..add(notchBase);
+        capLen = _writeCapTri(
+          _capBuffer,
+          capLen,
+          centerX,
+          rect.top,
+          left,
+          right,
+          notchBase,
+        );
       }
     }
 
-    if (under.isNotEmpty) {
+    if (underLen > 0) {
       _barPaint.color = barColor;
-      _drawTriangleBatch(canvas, under, _barPaint);
+      _drawTriangleBatch(canvas, _underBuffer, underLen, _barPaint);
     }
-    if (over.isNotEmpty) {
+    if (overLen > 0) {
       _barPaint.color = overTargetColor;
-      _drawTriangleBatch(canvas, over, _barPaint);
+      _drawTriangleBatch(canvas, _overBuffer, overLen, _barPaint);
     }
-    if (caps.isNotEmpty) {
+    if (capLen > 0) {
       _capMarkerPaint.color = _capMarkerColor;
-      _drawTriangleBatch(canvas, caps, _capMarkerPaint);
+      _drawTriangleBatch(canvas, _capBuffer, capLen, _capMarkerPaint);
     }
+  }
+
+  static int _writeBarQuad(
+    Float32List buf,
+    int i,
+    double left,
+    double top,
+    double right,
+    double bottom,
+  ) {
+    buf[i] = left;
+    buf[i + 1] = top;
+    buf[i + 2] = right;
+    buf[i + 3] = top;
+    buf[i + 4] = left;
+    buf[i + 5] = bottom;
+    buf[i + 6] = right;
+    buf[i + 7] = top;
+    buf[i + 8] = right;
+    buf[i + 9] = bottom;
+    buf[i + 10] = left;
+    buf[i + 11] = bottom;
+    return i + 12;
+  }
+
+  static int _writeCapTri(
+    Float32List buf,
+    int i,
+    double cx,
+    double yTop,
+    double left,
+    double right,
+    double notchBase,
+  ) {
+    buf[i] = cx;
+    buf[i + 1] = yTop;
+    buf[i + 2] = left;
+    buf[i + 3] = notchBase;
+    buf[i + 4] = right;
+    buf[i + 5] = notchBase;
+    return i + 6;
   }
 
   static void _drawTriangleBatch(
     Canvas canvas,
-    List<double> positions,
+    Float32List buffer,
+    int length,
     Paint paint,
   ) {
-    final vertices = Vertices.raw(
-      VertexMode.triangles,
-      Float32List.fromList(positions),
-    );
+    final positions = length == buffer.length
+        ? buffer
+        : Float32List.sublistView(buffer, 0, length);
+    final vertices = Vertices.raw(VertexMode.triangles, positions);
     canvas.drawVertices(vertices, BlendMode.srcOver, paint);
     vertices.dispose();
   }
