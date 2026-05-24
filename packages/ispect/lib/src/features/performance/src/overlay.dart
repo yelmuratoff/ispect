@@ -301,6 +301,13 @@ class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
       );
     }
 
+    final viewPadding = MediaQuery.viewPaddingOf(context);
+    final alignY = widget.alignment.y;
+    final insetPadding = EdgeInsets.only(
+      top: alignY < 0 ? viewPadding.top : 0,
+      bottom: alignY > 0 ? viewPadding.bottom : 0,
+    );
+
     return Stack(
       children: [
         widget.child,
@@ -309,7 +316,12 @@ class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
             alignment: widget.alignment,
             child: Directionality(
               textDirection: TextDirection.ltr,
-              child: RepaintBoundary(child: overlay),
+              child: RepaintBoundary(
+                child: ColoredBox(
+                  color: widget.backgroundColor,
+                  child: Padding(padding: insetPadding, child: overlay),
+                ),
+              ),
             ),
           ),
         ),
@@ -837,6 +849,9 @@ class _ChartPainter extends CustomPainter {
   final Paint _gridPaint = Paint()..strokeWidth = 1;
   final Paint _capMarkerPaint = Paint();
   final Paint _dividerPaint = Paint();
+  late final Paint _backplatePaint = Paint()
+    ..color = backgroundColor.withValues(alpha: 0.7)
+    ..style = PaintingStyle.fill;
 
   // Pre-allocated triangle buffers — one bar contributes 6 vertices
   // (12 floats), a capped notch adds 3 vertices. Reused across paints so
@@ -1038,7 +1053,30 @@ class _ChartPainter extends CustomPainter {
         (rect.width - _kHeaderPadding.horizontal).clamp(0.0, double.infinity);
     _headerPainter.layout(maxWidth: maxWidth);
     final y = rect.top + (rect.height - _headerPainter.height) / 2;
-    _headerPainter.paint(canvas, Offset(rect.left + _kHeaderPadding.left, y));
+    final origin = Offset(rect.left + _kHeaderPadding.left, y);
+    _paintTextBackplate(canvas, _headerPainter, origin);
+    _headerPainter.paint(canvas, origin);
+  }
+
+  static const double _kBackplateInflateX = 3;
+  static const double _kBackplateInflateY = 1;
+  static const Radius _kBackplateRadius = Radius.circular(3);
+
+  void _paintTextBackplate(
+    Canvas canvas,
+    TextPainter painter,
+    Offset offset,
+  ) {
+    final rect = Rect.fromLTWH(
+      offset.dx - _kBackplateInflateX,
+      offset.dy - _kBackplateInflateY,
+      painter.width + _kBackplateInflateX * 2,
+      painter.height + _kBackplateInflateY * 2,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, _kBackplateRadius),
+      _backplatePaint,
+    );
   }
 
   Iterable<TextSpan> _allTimeStatsSpans(_OverlaySnapshot s) sync* {
@@ -1109,12 +1147,10 @@ class _ChartPainter extends CustomPainter {
     );
     final maxWidth =
         (size.width - _kCompactPadding.horizontal).clamp(0.0, double.infinity);
-    _compactPainter
-      ..layout(maxWidth: maxWidth)
-      ..paint(
-        canvas,
-        Offset(_kCompactPadding.left, _kCompactPadding.top),
-      );
+    _compactPainter.layout(maxWidth: maxWidth);
+    final origin = Offset(_kCompactPadding.left, _kCompactPadding.top);
+    _paintTextBackplate(canvas, _compactPainter, origin);
+    _compactPainter.paint(canvas, origin);
   }
 
   void _paintColumn({
@@ -1308,12 +1344,13 @@ class _ChartPainter extends CustomPainter {
     );
     final maxWidth =
         (rect.width - _kStatsPadding.horizontal).clamp(0.0, double.infinity);
-    statsPainter
-      ..layout(maxWidth: maxWidth)
-      ..paint(
-        canvas,
-        Offset(rect.left + _kStatsPadding.left, rect.top + _kStatsPadding.top),
-      );
+    statsPainter.layout(maxWidth: maxWidth);
+    final origin = Offset(
+      rect.left + _kStatsPadding.left,
+      rect.top + _kStatsPadding.top,
+    );
+    _paintTextBackplate(canvas, statsPainter, origin);
+    statsPainter.paint(canvas, origin);
   }
 
   @override
