@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:draggable_panel/draggable_panel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ispect_layout/ispect_layout.dart';
 
 void main() {
@@ -14,10 +16,67 @@ void main() {
       themeMode: ThemeMode.system,
       builder: (context, child) => Inspector(
         isEnabled: true,
+        panelBuilder: (context, controller, content) => _CustomShowcasePanel(
+          controller: controller,
+          child: content,
+        ),
         child: child!,
       ),
     ),
   );
+}
+
+class _CustomShowcasePanel extends StatelessWidget {
+  const _CustomShowcasePanel({
+    required this.controller,
+    required this.child,
+  });
+
+  final InspectorController controller;
+  final Widget child;
+
+  void _toggleMode(
+    InspectorMode target, {
+    BuildContext? pickerContext,
+  }) {
+    final next =
+        controller.modeNotifier.value == target ? InspectorMode.none : target;
+    controller.setMode(next, context: pickerContext);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: controller.modeNotifier,
+      builder: (context, _) {
+        final mode = controller.modeNotifier.value;
+        return DraggablePanel(
+          items: [
+            DraggablePanelItem(
+              icon: Icons.format_shapes,
+              description: 'Inspect widgets',
+              enableBadge: mode == InspectorMode.inspector,
+              onTap: (_) => _toggleMode(InspectorMode.inspector),
+            ),
+            DraggablePanelItem(
+              icon: Icons.colorize,
+              description: 'Pick a colour from the canvas',
+              enableBadge: mode == InspectorMode.colorPicker,
+              onTap: (ctx) =>
+                  _toggleMode(InspectorMode.colorPicker, pickerContext: ctx),
+            ),
+            DraggablePanelItem(
+              icon: Icons.zoom_in,
+              description: 'Magnify a region',
+              enableBadge: mode == InspectorMode.zoom,
+              onTap: (_) => _toggleMode(InspectorMode.zoom),
+            ),
+          ],
+          child: child,
+        );
+      },
+    );
+  }
 }
 
 class ShowcaseApp extends StatelessWidget {
