@@ -122,6 +122,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       locale: _locale,
       showPerformanceOverlay: false,
+      debugShowCheckedModeBanner: false,
       supportedLocales: _localeOptions.map((o) => o.locale),
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
