@@ -39,22 +39,44 @@ ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside
   </tr>
 </table>
 
-<details>
-  <summary><strong>Mobile screenshots</strong></summary>
-  <br />
-  <div align="center">
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/1.jpg" width="180" alt="Typography inspector on mobile" />
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/2.jpg" width="180" alt="Layout inspector on mobile" />
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/3.jpg" width="180" alt="Spacing inspector on mobile" />
-  </div>
-  <br />
-  <div align="center">
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/4.jpg" width="180" alt="Decoration inspector on mobile" />
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/5.jpg" width="180" alt="Transform inspector on mobile" />
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/6.jpg" width="180" alt="Effects inspector on mobile" />
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/7.jpg" width="180" alt="Alignment and margin inspector on mobile" />
-  </div>
-</details>
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/text.png?raw=true" width="180" alt="Typography inspector" /><br />
+      <sub><strong>Typography</strong><br />Style, scaler, and overflow.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/rich_text.png?raw=true" width="180" alt="Rich text inspector" /><br />
+      <sub><strong>Rich text</strong><br />Span-by-span style breakdown.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/borders.png?raw=true" width="180" alt="Borders and radii inspector" /><br />
+      <sub><strong>Borders &amp; radii</strong><br />Per-side borders and corner formatting.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/gradient.png?raw=true" width="180" alt="Gradient inspector" /><br />
+      <sub><strong>Gradients</strong><br />Stops, <code>begin</code>/<code>end</code>, tile mode.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/dark_gradient.png?raw=true" width="180" alt="Dark theme gradient inspector" /><br />
+      <sub><strong>Dark themes</strong><br />Decoration against dark backgrounds.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/shadow_blur.png?raw=true" width="180" alt="Shadow and blur inspector" /><br />
+      <sub><strong>Shadows &amp; blur</strong><br />Box shadows and backdrop filters.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/rotated_box.png?raw=true" width="180" alt="Transform and clip inspector" /><br />
+      <sub><strong>Transform &amp; clip</strong><br />Matrix decomposition and clip shape.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/compare.png?raw=true" width="180" alt="Compare two widgets" /><br />
+      <sub><strong>Compare</strong><br />Pixel gaps between two widgets.</sub>
+    </td>
+  </tr>
+</table>
 
 ## What it covers
 

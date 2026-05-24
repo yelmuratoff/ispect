@@ -1,6 +1,6 @@
 name: ispectify_bloc
 description: BLoC and Cubit observer for ISpect with event, transition, change, error, completion, and redacted metadata logging.
-version: 5.2.0-dev.6
+version: 5.2.0-dev.7
 homepage: https://github.com/yelmuratoff/ispect
 repository: https://github.com/yelmuratoff/ispect
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
@@ -13,7 +13,7 @@ dependency_overrides:
     path: ../ispectify
 
 dependencies:
-  ispectify: ^5.2.0-dev.6
+  ispectify: ^5.2.0-dev.7
   bloc: ^9.1.0
   meta: ^1.16.0
 

@@ -48,7 +48,7 @@
 
 ```yaml
 dependencies:
-  ispectify: ^5.2.0-dev.6
+  ispectify: ^5.2.0-dev.7
 ```
 
 ## Quick start
