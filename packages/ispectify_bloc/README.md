@@ -60,14 +60,58 @@ import 'package:ispectify_bloc/ispectify_bloc.dart';
 
 ISpect.run(
   () => runApp(const MyApp()),
-  logger: logger,
   onInit: () {
-    Bloc.observer = ISpectBlocObserver(logger: logger);
+    Bloc.observer = ISpectBlocObserver(logger: ISpect.logger);
   },
 );
 ```
 
-The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-change`, `bloc-error`, `bloc-create`, and `bloc-close` log-type keys. Filter them in the debug panel or through `ISpectSettingsState.disabledLogTypes`.
+The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, and `bloc-error` log-type keys, each with a dedicated icon, palette entry, and localized description in the log viewer. Filter them in the debug panel or through `ISpectSettingsState.disabledLogTypes`.
+
+## Settings
+
+`ISpectBlocSettings` controls which lifecycle events are captured and whether raw event/state payloads are written to trace meta. Payload capture is off by default — runtime types are emitted instead, so it is safe to leave the observer enabled in shared environments.
+
+```dart
+const settings = ISpectBlocSettings(
+  printEvents: true,
+  printTransitions: true,
+  printChanges: true,
+  printCreations: true,
+  printClosings: true,
+  printCompletions: true,
+  printErrors: true,
+  printEventFullData: false, // raw event payloads off by default
+  printStateFullData: false, // raw state payloads off by default
+  enableRedaction: true,     // route meta values through RedactionService when set
+);
+```
+
+### Presets
+
+```dart
+// Logs disabled entirely.
+ISpectBlocObserver(settings: ISpectBlocSettings.silent);
+
+// Skip per-change / per-completion noise — keeps creations, transitions, errors.
+ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
+
+// Full state payloads on transitions and changes.
+ISpectBlocObserver(settings: ISpectBlocSettings.verbose);
+```
+
+### Filtering noisy blocs
+
+```dart
+ISpectBlocObserver(
+  // Drop everything for blocs whose runtime type matches one of these patterns.
+  filters: [RegExp(r'AnalyticsBloc'), 'MetricsCubit'],
+  settings: ISpectBlocSettings(
+    // Or skip individual events / transitions / changes by inspecting them.
+    eventFilter: (bloc, event) => event is! HeartbeatEvent,
+  ),
+);
+```
 
 ## The ISpect toolkit
 

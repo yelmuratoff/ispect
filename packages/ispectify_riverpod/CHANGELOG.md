@@ -1,12 +1,7 @@
+# Changelog
+
 ## 5.2.0-dev.7
 
-* Initial release of `ispectify_riverpod`.
-* `ISpectRiverpodObserver` logs `didAddProvider`, `didUpdateProvider`,
-  `didDisposeProvider`, and `providerDidFail` under the `riverpod-add`,
-  `riverpod-update`, `riverpod-dispose`, and `riverpod-fail` log keys.
-* `ISpectRiverpodSettings` toggles per-event logging, full-value logging,
-  provider/update filtering, and metadata redaction.
-* `ISpectRiverpodSettings.printValues` defaults to `true` — raw `value` /
-  `previous-value` / `new-value` are written to trace meta on every lifecycle
-  event. Switch to `ISpectRiverpodSettings.compact` (or `printValues: false`)
-  when provider state may carry PII and only runtime types are wanted.
+- Initial release. `ISpectRiverpodObserver` routes `didAddProvider`, `didUpdateProvider`, `didDisposeProvider`, and `providerDidFail` to the `riverpod-add`, `riverpod-update`, `riverpod-dispose`, and `riverpod-fail` log keys.
+- `ISpectRiverpodSettings` toggles per-event logging, value capture, provider/update filters, and redaction. `silent`, `minimal`, and `compact` presets.
+- `printValues: true` by default — raw values land in trace meta. Use `ISpectRiverpodSettings.compact` when provider state may carry PII.

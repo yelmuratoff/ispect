@@ -52,5 +52,6 @@ Coverage is reported to Codecov. Coverage gates land package by package, startin
 - `ispectify_db`
 - `ispectify_ws`
 - `ispectify_bloc`
+- `ispectify_riverpod`
 
 A repository-wide threshold will not land until generated code, examples, and UI-heavy packages are either excluded or measured separately.

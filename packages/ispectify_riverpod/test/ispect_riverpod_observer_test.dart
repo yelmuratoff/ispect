@@ -212,8 +212,7 @@ void main() {
         expect(logger.byOperation('add'), hasLength(1));
         expect(
           logger.records.any(
-            (r) =>
-                r.message?.contains('onProviderAdd callback threw') ?? false,
+            (r) => r.message?.contains('onProviderAdd callback threw') ?? false,
           ),
           isTrue,
         );

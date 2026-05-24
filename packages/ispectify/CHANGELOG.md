@@ -2,6 +2,10 @@
 
 ## 5.2.0-dev.7
 
+### Added
+
+- **`ISpectLoggerBloc` / `ISpectLoggerRiverpod` extensions:** One method per lifecycle event for BLoC and Riverpod, each with the matching `bloc-*` / `riverpod-*` log key baked in.
+
 ### Improvements
 
 - **Inspector property chips:** Composite values (offset, border side, gradient, shadow) now show muted inline labels (`x:`, `y:`, `width:`, `blur:`, etc.) so each number is self-labelled at a glance.

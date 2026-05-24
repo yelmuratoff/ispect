@@ -2,6 +2,15 @@
 
 ## 5.2.0-dev.7
 
+### Added
+
+- **Data models and `BlocJsonKeys`:** `BlocEventData`, `BlocTransitionData`, `BlocChangeData`, `BlocLifecycleData`, `BlocErrorData`, `BlocDoneData` with `toJson()` + static `redact()`; centralized kebab-case JSON keys.
+
+### Changed
+
+- **Granular log keys:** observer now emits `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, `bloc-error` instead of `state-change` / `state-error`.
+- **`meta` is kebab-case:** `bloc-type`, `event-type`, `current-state`, `next-state`, `event`, `has-error`. Use `BlocJsonKeys.*` when reading meta directly.
+
 ### Improvements
 
 - **Inspector property chips:** Composite values (offset, border side, gradient, shadow) now show muted inline labels (`x:`, `y:`, `width:`, `blur:`, etc.) so each number is self-labelled at a glance.

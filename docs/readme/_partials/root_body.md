@@ -91,6 +91,7 @@ The toolkit handles the diagnostics most projects rebuild by hand for every new 
 | Network capture | Request/response/error capture for Dio, the `http` package, and WebSocket clients. Requests and responses are paired by correlation ID. |
 | Database tracing | One `dbTrace` extension wraps any storage call with timing, redaction, optional sampling, and a slow-query threshold. |
 | BLoC observer | Events, transitions, state changes, errors, and create/close hooks routed through the log pipeline. |
+| Riverpod observer | Provider add, update, dispose, and failure events routed through the log pipeline with the same redaction surface. |
 | Redaction | Auth headers, tokens, passwords, PII, and financial data masked before they reach logs, exports, observers, or the cURL helper. |
 | Observer hooks | Forward selected log categories to your own sink through an `ISpectObserver` adapter. |
 | Localization | 12 UI languages: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi. |
@@ -128,7 +129,7 @@ Start with the UI shell and metadata-only diagnostics. Turn deeper capture on fo
 1. Add `ispect` and wrap the app with `ISpect.run(...)` and `ISpectBuilder.wrap(...)`.
 2. Run internal builds with `--dart-define=ISPECT_ENABLED=true`.
 3. Keep production jobs free of that flag.
-4. Add network, database, and BLoC modules one at a time as you need them.
+4. Add network, database, BLoC, and Riverpod modules one at a time as you need them.
 5. Leave body and header capture off until a payload-level investigation needs it.
 6. Add your project's redaction keys before sharing exported sessions with anyone outside the team.
 
@@ -206,7 +207,7 @@ flutter run --dart-define=ISPECT_ENABLED=true
 flutter build apk
 ```
 
-Per-client guides (Dio, `http`, WebSocket, DB, BLoC, layout inspector) live in the individual package READMEs linked in the table above.
+Per-client guides (Dio, `http`, WebSocket, DB, BLoC, Riverpod, layout inspector) live in the individual package READMEs linked in the table above.
 
 <!-- partial:production_safety -->
 

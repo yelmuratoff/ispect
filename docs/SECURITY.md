@@ -1,6 +1,6 @@
 # Security and Data Handling
 
-ISpect is a pre-release diagnostics toolkit. On an internal build, it captures whatever streams you enable: logs, network metadata, optional request and response payloads, database trace arguments, BLoC events and states, navigation events, exported sessions, and observer events.
+ISpect is a pre-release diagnostics toolkit. On an internal build, it captures whatever streams you enable: logs, network metadata, optional request and response payloads, database trace arguments, BLoC events and states, Riverpod provider lifecycle events, navigation events, exported sessions, and observer events.
 
 The default posture is conservative. Compile-time gating, network redaction on by default, and per-interceptor settings let you keep payload and header capture narrow. The toolkit gives you safer defaults. The team using it still has to handle the output according to the data class it contains.
 

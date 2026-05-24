@@ -4,7 +4,7 @@ ISpect runs inside internal builds where attaching a debugger is inconvenient or
 
 ## QA reproduction
 
-A tester reproduces a bug in a QA build with `ISPECT_ENABLED=true`, opens the in-app panel, filters the logs around the failing flow, and exports a diagnostic session. Network, BLoC, navigation, and database entries appear together in one viewer instead of having to be reconstructed from separate console logs.
+A tester reproduces a bug in a QA build with `ISPECT_ENABLED=true`, opens the in-app panel, filters the logs around the failing flow, and exports a diagnostic session. Network, BLoC, Riverpod, navigation, and database entries appear together in one viewer instead of having to be reconstructed from separate console logs.
 
 ## Staging verification
 

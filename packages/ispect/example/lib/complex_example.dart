@@ -1506,8 +1506,7 @@ class _RiverpodScenariosState extends ConsumerState<_RiverpodScenarios> {
                 FilledButton.tonalIcon(
                   icon: const Icon(Icons.add),
                   label: const Text('Increment'),
-                  onPressed: () =>
-                      ref.read(_counterProvider.notifier).state++,
+                  onPressed: () => ref.read(_counterProvider.notifier).state++,
                 ),
                 FilledButton.tonalIcon(
                   icon: const Icon(Icons.refresh),
@@ -1517,8 +1516,7 @@ class _RiverpodScenariosState extends ConsumerState<_RiverpodScenarios> {
                 FilledButton.tonalIcon(
                   icon: const Icon(Icons.person_add),
                   label: Text('user-${_familyUserId + 1}'),
-                  onPressed: () =>
-                      setState(() => _familyUserId += 1),
+                  onPressed: () => setState(() => _familyUserId += 1),
                 ),
                 FilledButton.tonalIcon(
                   icon: const Icon(Icons.replay),
