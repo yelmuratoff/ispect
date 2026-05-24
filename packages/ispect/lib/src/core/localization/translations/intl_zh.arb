@@ -220,7 +220,7 @@
    "selectAll": "全选",
    "deselectAll": "取消全选",
    "groupHttp": "HTTP",
-   "groupBloc": "Bloc",
+   "groupBloc": "状态",
    "groupRiverpod": "Riverpod",
    "groupWebSocket": "WebSocket",
    "groupDatabase": "数据库",

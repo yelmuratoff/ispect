@@ -721,7 +721,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get groupHttp => 'HTTP';
 
   @override
-  String get groupBloc => 'Bloc';
+  String get groupBloc => '状态';
 
   @override
   String get groupRiverpod => 'Riverpod';

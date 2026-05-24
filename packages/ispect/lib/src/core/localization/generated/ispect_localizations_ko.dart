@@ -721,7 +721,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get groupHttp => 'HTTP';
 
   @override
-  String get groupBloc => 'Bloc';
+  String get groupBloc => '상태';
 
   @override
   String get groupRiverpod => 'Riverpod';

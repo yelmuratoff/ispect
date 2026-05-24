@@ -742,7 +742,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get groupHttp => 'HTTP';
 
   @override
-  String get groupBloc => 'Bloc';
+  String get groupBloc => 'Состояние';
 
   @override
   String get groupRiverpod => 'Riverpod';

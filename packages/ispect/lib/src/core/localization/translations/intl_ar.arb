@@ -220,7 +220,7 @@
    "selectAll": "تحديد الكل",
    "deselectAll": "إلغاء تحديد الكل",
    "groupHttp": "HTTP",
-   "groupBloc": "Bloc",
+   "groupBloc": "الحالة",
    "groupRiverpod": "Riverpod",
    "groupWebSocket": "WebSocket",
    "groupDatabase": "قاعدة البيانات",

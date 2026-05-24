@@ -1442,7 +1442,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @groupBloc.
   ///
   /// In en, this message translates to:
-  /// **'Bloc'**
+  /// **'State'**
   String get groupBloc;
 
   /// No description provided for @groupRiverpod.

@@ -741,7 +741,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get groupHttp => 'HTTP';
 
   @override
-  String get groupBloc => 'Bloc';
+  String get groupBloc => 'स्थिति';
 
   @override
   String get groupRiverpod => 'Riverpod';

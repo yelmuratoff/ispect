@@ -220,7 +220,7 @@
    "selectAll": "모두 선택",
    "deselectAll": "모두 해제",
    "groupHttp": "HTTP",
-   "groupBloc": "Bloc",
+   "groupBloc": "상태",
    "groupRiverpod": "Riverpod",
    "groupWebSocket": "WebSocket",
    "groupDatabase": "데이터베이스",

@@ -220,7 +220,7 @@
    "selectAll": "Выбрать все",
    "deselectAll": "Снять все",
    "groupHttp": "HTTP",
-   "groupBloc": "Bloc",
+   "groupBloc": "Состояние",
    "groupRiverpod": "Riverpod",
    "groupWebSocket": "WebSocket",
    "groupDatabase": "База данных",

@@ -220,7 +220,7 @@
    "selectAll": "सभी चुनें",
    "deselectAll": "सभी हटाएं",
    "groupHttp": "HTTP",
-   "groupBloc": "Bloc",
+   "groupBloc": "स्थिति",
    "groupRiverpod": "Riverpod",
    "groupWebSocket": "WebSocket",
    "groupDatabase": "डेटाबेस",

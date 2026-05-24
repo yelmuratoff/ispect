@@ -220,7 +220,7 @@
    "selectAll": "Selecionar tudo",
    "deselectAll": "Desmarcar tudo",
    "groupHttp": "HTTP",
-   "groupBloc": "Bloc",
+   "groupBloc": "Estado",
    "groupRiverpod": "Riverpod",
    "groupWebSocket": "WebSocket",
    "groupDatabase": "Banco de dados",

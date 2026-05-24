@@ -220,7 +220,7 @@
    "selectAll": "すべて選択",
    "deselectAll": "すべて解除",
    "groupHttp": "HTTP",
-   "groupBloc": "Bloc",
+   "groupBloc": "状態",
    "groupRiverpod": "Riverpod",
    "groupWebSocket": "WebSocket",
    "groupDatabase": "データベース",
