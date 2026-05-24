@@ -1,6 +1,6 @@
 name: ispectify_ws
 description: WebSocket diagnostics for ISpect with connection lifecycle, sent and received frame logging, grouping, and redaction.
-version: 5.2.0-dev.8
+version: 5.2.0-dev.9
 homepage: https://github.com/yelmuratoff/ispect
 repository: https://github.com/yelmuratoff/ispect
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
@@ -14,7 +14,7 @@ dependency_overrides:
 
 dependencies:
   ws: ^1.0.0
-  ispectify: ^5.2.0-dev.8
+  ispectify: ^5.2.0-dev.9
 
 dev_dependencies:
   lints: ">=5.1.1 <7.0.0"
