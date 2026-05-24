@@ -99,18 +99,22 @@ List<LogDescription> _buildDefaultLogDescriptions(BuildContext context) {
     ),
     LogDescription(
       key: 'riverpod-add',
+      title: 'Riverpod Add',
       description: l10n.riverpodAddLogDesc,
     ),
     LogDescription(
       key: 'riverpod-update',
+      title: 'Riverpod Update',
       description: l10n.riverpodUpdateLogDesc,
     ),
     LogDescription(
       key: 'riverpod-dispose',
+      title: 'Riverpod Dispose',
       description: l10n.riverpodDisposeLogDesc,
     ),
     LogDescription(
       key: 'riverpod-fail',
+      title: 'Riverpod Fail',
       description: l10n.riverpodFailLogDesc,
     ),
     LogDescription(

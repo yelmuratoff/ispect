@@ -5,11 +5,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:ispectify_http/ispectify_http.dart';
+import 'package:ispectify_riverpod/ispectify_riverpod.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -93,11 +95,49 @@ const _localeOptions = <_LocaleOption>[
 ];
 
 // ---------------------------------------------------------------------------
+// Riverpod providers (real, no codegen) — wired through ISpectRiverpodObserver
+// ---------------------------------------------------------------------------
+
+/// Simple counter — exercises didAddProvider + didUpdateProvider + didDispose.
+final _counterProvider = StateProvider<int>((ref) => 0, name: 'counter');
+
+/// Throws on init — exercises providerDidFail (and didAddProvider with
+/// `value: null`, per Riverpod's contract).
+final _failingProvider = Provider<int>(
+  (ref) => throw StateError('demo: provider init failed'),
+  name: 'failing',
+);
+
+/// Family parameter shows up as `argument` in the trace meta, useful for
+/// verifying redaction and multi-instance handling.
+final _userNameProvider = Provider.family<String, int>(
+  (ref, userId) => 'user-$userId',
+  name: 'user-name',
+);
+
+/// Async provider whose future throws — exercises providerDidFail after the
+/// initial didAddProvider with `AsyncValue.loading`.
+final _flakyFutureProvider = FutureProvider<String>(
+  (ref) async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    throw const FormatException('demo: malformed payload');
+  },
+  name: 'flaky-future',
+);
+
+// ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
 
 void main() {
-  ISpect.run(() => runApp(const MyApp()));
+  ISpect.run(
+    () => runApp(
+      ProviderScope(
+        observers: [ISpectRiverpodObserver(logger: ISpect.logger)],
+        child: const MyApp(),
+      ),
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -379,6 +419,12 @@ class _HomePageState extends State<_HomePage> {
             trailing: const Icon(Icons.chevron_right),
             onTap: _triggerSevereJank,
           ),
+          const SizedBox(height: 20),
+
+          // Riverpod
+          _SectionHeader(title: 'Riverpod'),
+          const SizedBox(height: 8),
+          const _RiverpodScenarios(),
           const SizedBox(height: 20),
 
           // Network & DB
@@ -1408,6 +1454,96 @@ class _SectionHeader extends StatelessWidget {
             color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.w600,
           ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Riverpod scenarios — real providers wired through ISpectRiverpodObserver
+// ---------------------------------------------------------------------------
+
+class _RiverpodScenarios extends ConsumerStatefulWidget {
+  const _RiverpodScenarios();
+
+  @override
+  ConsumerState<_RiverpodScenarios> createState() => _RiverpodScenariosState();
+}
+
+class _RiverpodScenariosState extends ConsumerState<_RiverpodScenarios> {
+  int _familyUserId = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final counter = ref.watch(_counterProvider);
+    final userName = ref.watch(_userNameProvider(_familyUserId));
+    final flaky = ref.watch(_flakyFutureProvider);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'counter: $counter   ·   ${_familyUserId == 0 ? 'no user' : userName}',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'flaky-future: ${flaky.when(
+                data: (v) => v,
+                loading: () => 'loading…',
+                error: (e, _) => 'error: $e',
+              )}',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.tonalIcon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('Increment'),
+                  onPressed: () =>
+                      ref.read(_counterProvider.notifier).state++,
+                ),
+                FilledButton.tonalIcon(
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Invalidate counter'),
+                  onPressed: () => ref.invalidate(_counterProvider),
+                ),
+                FilledButton.tonalIcon(
+                  icon: const Icon(Icons.person_add),
+                  label: Text('user-${_familyUserId + 1}'),
+                  onPressed: () =>
+                      setState(() => _familyUserId += 1),
+                ),
+                FilledButton.tonalIcon(
+                  icon: const Icon(Icons.replay),
+                  label: const Text('Retry flaky future'),
+                  onPressed: () => ref.invalidate(_flakyFutureProvider),
+                ),
+                FilledButton.tonalIcon(
+                  icon: const Icon(Icons.error_outline),
+                  label: const Text('Read failing provider'),
+                  style: FilledButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                  ),
+                  onPressed: () {
+                    try {
+                      ref.read(_failingProvider);
+                    } on StateError catch (_) {
+                      // Swallow — `providerDidFail` already routed it to ISpect.
+                    }
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

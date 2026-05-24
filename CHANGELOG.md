@@ -2,6 +2,10 @@
 
 ## 5.2.0-dev.7
 
+### Added
+
+- **`ispectify_riverpod`:** New package that ships `ISpectRiverpodObserver`, a `ProviderObserver` that forwards `didAddProvider`, `didUpdateProvider`, `didDisposeProvider`, and `providerDidFail` through the trace pipeline under the existing `riverpod-add`, `riverpod-update`, `riverpod-dispose`, and `riverpod-fail` log keys. `ISpectRiverpodSettings` toggles per-event logging, full-value capture, provider/update filtering, and metadata redaction (closes [#80](https://github.com/yelmuratoff/ispect/issues/80)).
+
 ### Improvements
 
 - **Inspector property chips:** Composite values (offset, border side, gradient, shadow) now show muted inline labels (`x:`, `y:`, `width:`, `blur:`, etc.) so each number is self-labelled at a glance.

@@ -1,6 +1,6 @@
 <!--
   GENERATED FILE — do not edit by hand.
-  Source:     docs/readme/ispectify_bloc.md
+  Source:     docs/readme/ispectify_riverpod.md
   Regenerate: ./bash/build_readme.sh
 -->
 
@@ -8,8 +8,8 @@
   <img src="https://github.com/yelmuratoff/packages_assets/blob/main/assets/ispect/ispect.png?raw=true" width="400">
 
   <p>
-    <a href="https://pub.dev/packages/ispectify_bloc">
-      <img src="https://img.shields.io/pub/v/ispectify_bloc?include_prereleases&style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="pub version">
+    <a href="https://pub.dev/packages/ispectify_riverpod">
+      <img src="https://img.shields.io/pub/v/ispectify_riverpod?include_prereleases&style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="pub version">
     </a>
     <a href="https://github.com/yelmuratoff/ispect/blob/main/LICENSE">
       <img src="https://img.shields.io/badge/license-mit-blue?style=for-the-badge&labelColor=0360a9&color=2ab7f6" alt="License">
@@ -23,51 +23,53 @@
   </p>
 
   <p>
-    <a href="https://pub.dev/packages/ispectify_bloc/score">
-      <img src="https://img.shields.io/pub/likes/ispectify_bloc?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub likes">
+    <a href="https://pub.dev/packages/ispectify_riverpod/score">
+      <img src="https://img.shields.io/pub/likes/ispectify_riverpod?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub likes">
     </a>
-    <a href="https://pub.dev/packages/ispectify_bloc/score">
-      <img src="https://img.shields.io/pub/points/ispectify_bloc?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub points">
+    <a href="https://pub.dev/packages/ispectify_riverpod/score">
+      <img src="https://img.shields.io/pub/points/ispectify_riverpod?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub points">
     </a>
-    <a href="https://pub.dev/packages/ispectify_bloc">
-      <img src="https://img.shields.io/pub/dm/ispectify_bloc?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub downloads">
+    <a href="https://pub.dev/packages/ispectify_riverpod">
+      <img src="https://img.shields.io/pub/dm/ispectify_riverpod?style=for-the-badge&logo=flutter&labelColor=0360a9&color=2ab7f6" alt="Pub downloads">
     </a>
   </p>
 </div>
 
 
-`ispectify_bloc` plugs the [`bloc`](https://pub.dev/packages/bloc) and [`flutter_bloc`](https://pub.dev/packages/flutter_bloc) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `BlocObserver` forwards every event, state change, transition, and error through the log pipeline, so the whole state-management timeline shows up in the log viewer.
+`ispectify_riverpod` plugs the [`riverpod`](https://pub.dev/packages/riverpod) and [`flutter_riverpod`](https://pub.dev/packages/flutter_riverpod) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `ProviderObserver` forwards every provider add, update, dispose, and failure through the log pipeline, so the whole provider lifecycle shows up in the log viewer.
 
-- Events, transitions, errors, and create/close lifecycle hooks.
-- Per-type filtering. Mute specific `Bloc` or `Cubit` classes without touching their code.
-- Zero configuration. Set `Bloc.observer` and the rest is done.
+- Adds, updates, disposes, and failures with values redacted by default.
+- Per-provider filtering. Mute noisy providers without touching their code.
+- Zero configuration. Hand the observer to `ProviderScope` (or `ProviderContainer`) and you are done.
 
 ## Install
 
 ```yaml
 dependencies:
-  flutter_bloc: ^8.0.0
+  flutter_riverpod: ^2.5.0
   ispectify: ^5.2.0-dev.7
-  ispectify_bloc: ^5.2.0-dev.7
+  ispectify_riverpod: ^5.2.0-dev.7
 ```
 
 ## Quick start
 
 ```dart
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispectify_bloc/ispectify_bloc.dart';
+import 'package:ispectify_riverpod/ispectify_riverpod.dart';
 
 ISpect.run(
-  () => runApp(const MyApp()),
+  () => runApp(
+    ProviderScope(
+      observers: [ISpectRiverpodObserver(logger: logger)],
+      child: const MyApp(),
+    ),
+  ),
   logger: logger,
-  onInit: () {
-    Bloc.observer = ISpectBlocObserver(logger: logger);
-  },
 );
 ```
 
-The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-change`, `bloc-error`, `bloc-create`, and `bloc-close` log-type keys. Filter them in the debug panel or through `ISpectSettingsState.disabledLogTypes`.
+The observer emits logs under the `riverpod-add`, `riverpod-update`, `riverpod-dispose`, and `riverpod-fail` log-type keys. Filter them in the debug panel or through `ISpectSettingsState.disabledLogTypes`.
 
 ## The ISpect toolkit
 
