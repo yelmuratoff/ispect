@@ -1037,10 +1037,10 @@ class _ChartPainter extends CustomPainter {
           ),
         if (s.lastFrameMissedVsyncs > 0)
           TextSpan(
-            text: ' · +${s.lastFrameMissedVsyncs} missed',
+            text: ' · +${s.lastFrameMissedVsyncs}',
             style: _overTargetStyle,
-          )
-        else if (!showAllTimeStats && s.droppedFramesTotal > 0)
+          ),
+        if (!showAllTimeStats && s.droppedFramesTotal > 0)
           TextSpan(
             text: ' · ${s.droppedFramesTotal} drops',
             style: _overTargetStyle,
