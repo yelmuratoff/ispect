@@ -1,6 +1,17 @@
 # Changelog
 
-## 5.2.0-dev.7
+## 5.2.0-dev.8
+
+### Added
+
+- **`ispectify_riverpod`:** New package — `ISpectRiverpodObserver` routes `didAddProvider`, `didUpdateProvider`, `didDisposeProvider`, and `providerDidFail` to the `riverpod-*` log keys (closes [#80](https://github.com/yelmuratoff/ispect/issues/80)).
+- **BLoC and Riverpod trace extensions:** `ISpectLoggerBloc` and `ISpectLoggerRiverpod` expose one method per lifecycle event with the matching log key baked in.
+
+### Changed
+
+- **BLoC observer emits granular keys:** `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, `bloc-error` instead of `state-change` / `state-error`. Filters keyed on the old generic keys must move to the new ones.
+- **BLoC `meta` is kebab-case:** `bloc-type`, `event-type`, `current-state`, `next-state`, `event`, `has-error`. Use `BlocJsonKeys.*` when reading meta directly.
+- **Riverpod `printValues` defaults to `true`:** raw values land in trace meta on every update. Switch to `ISpectRiverpodSettings.compact` when provider state may carry PII.
 
 ### Improvements
 
