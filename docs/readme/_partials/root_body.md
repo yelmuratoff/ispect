@@ -35,14 +35,12 @@ ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="240" alt="Share sheet" /><br />
       <sub><strong>Export and share</strong><br />Send sessions and logs for debugging or QA.</sub>
     </td>
-    <td align="center" width="34%"></td>
+    <td align="center" width="34%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/performance.png?raw=true" width="240" alt="Performance overlay" /><br />
+      <sub><strong>Performance overlay</strong><br />Live frame misses and dropped-frame counts.</sub>
+    </td>
   </tr>
 </table>
-
-<div align="center">
-  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/performance.png?raw=true" width="760" alt="Performance overlay" />
-  <p><em>Performance overlay with live frame misses and cumulative dropped frames.</em></p>
-</div>
 
 <table>
   <tr>
