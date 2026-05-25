@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.2.0-dev.9
+## 5.2.0-dev.10
 
 ### Added
 
@@ -12,6 +12,10 @@
 - **BLoC observer emits granular keys:** `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, `bloc-error` instead of `state-change` / `state-error`. Filters keyed on the old generic keys must move to the new ones.
 - **BLoC `meta` is kebab-case:** `bloc-type`, `event-type`, `current-state`, `next-state`, `event`, `has-error`. Use `BlocJsonKeys.*` when reading meta directly.
 - **Riverpod `printValues` defaults to `true`:** raw values land in trace meta on every update. Switch to `ISpectRiverpodSettings.compact` when provider state may carry PII.
+
+### Fixed
+
+- **`ispectify_dio`:** Responses no longer stay stuck on "Pending" when a downstream interceptor rewrites the request through `copyWith` (auth or locale header injection). The correlation id now rides in `RequestOptions.extra`, so request and response group together regardless of interceptor order.
 
 ### Improvements
 
