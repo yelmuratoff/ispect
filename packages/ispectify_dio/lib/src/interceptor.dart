@@ -32,9 +32,6 @@ class ISpectDioInterceptor extends Interceptor
   ISpectDioInterceptorSettings get settings => _settings;
   ISpectDioInterceptorSettings _settings;
 
-  final Expando<String> _requestIds = Expando<String>('ispect_rid');
-  final Expando<Stopwatch> _stopwatches = Expando<Stopwatch>('ispect_sw');
-
   final String? addonId;
 
   @override
@@ -53,14 +50,18 @@ class ISpectDioInterceptor extends Interceptor
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) {
-    super.onRequest(options, handler);
     if (!settings.enabled || !settings.shouldProcessRequest(options)) {
+      super.onRequest(options, handler);
       return;
     }
 
     final requestId = generateTraceId();
-    _requestIds[options] = requestId;
-    _stopwatches[options] = Stopwatch()..start();
+    // Park trace state in extra (not an Expando) so it survives the fresh
+    // RequestOptions a downstream copyWith allocates; write it before forwarding
+    // so that copy carries it.
+    options.extra[NetworkJsonKeys.ispectRequestId] = requestId;
+    options.extra[NetworkJsonKeys.ispectRequestStartedAt] =
+        DateTime.now().microsecondsSinceEpoch;
 
     final useRedaction = settings.enableRedaction;
     final (:url, path: _) = redactUrlAndPath(
@@ -86,6 +87,8 @@ class ISpectDioInterceptor extends Interceptor
         },
       },
     );
+
+    super.onRequest(options, handler);
   }
 
   @override
@@ -99,9 +102,8 @@ class ISpectDioInterceptor extends Interceptor
     }
 
     final requestOptions = response.requestOptions;
-    final requestId = _requestIds[requestOptions];
-    final sw = _stopwatches[requestOptions];
-    sw?.stop();
+    final requestId = _requestIdOf(requestOptions);
+    final duration = _elapsedSince(requestOptions);
 
     final useRedaction = settings.enableRedaction;
     final (:url, path: _) = redactUrlAndPath(
@@ -120,7 +122,7 @@ class ISpectDioInterceptor extends Interceptor
       operation: requestOptions.method,
       target: url,
       correlationId: requestId,
-      duration: sw?.elapsed,
+      duration: duration,
       config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
       meta: {
         if (requestId != null) 'request-id': requestId,
@@ -143,9 +145,8 @@ class ISpectDioInterceptor extends Interceptor
     }
 
     final requestOptions = err.requestOptions;
-    final requestId = _requestIds[requestOptions];
-    final sw = _stopwatches[requestOptions];
-    sw?.stop();
+    final requestId = _requestIdOf(requestOptions);
+    final duration = _elapsedSince(requestOptions);
 
     final useRedaction = settings.enableRedaction;
     final (:url, path: _) = redactUrlAndPath(
@@ -170,7 +171,7 @@ class ISpectDioInterceptor extends Interceptor
       error: err,
       errorStackTrace: err.stackTrace,
       correlationId: requestId,
-      duration: sw?.elapsed,
+      duration: duration,
       config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
       meta: {
         if (requestId != null) 'request-id': requestId,
@@ -183,5 +184,18 @@ class ISpectDioInterceptor extends Interceptor
         },
       },
     );
+  }
+
+  String? _requestIdOf(RequestOptions options) {
+    final id = options.extra[NetworkJsonKeys.ispectRequestId];
+    return id is String ? id : null;
+  }
+
+  Duration? _elapsedSince(RequestOptions options) {
+    final startedAt = options.extra[NetworkJsonKeys.ispectRequestStartedAt];
+    if (startedAt is! int) return null;
+    final elapsedUs = DateTime.now().microsecondsSinceEpoch - startedAt;
+    // Negative if the wall clock stepped back between start and completion.
+    return elapsedUs >= 0 ? Duration(microseconds: elapsedUs) : null;
   }
 }

@@ -13,6 +13,10 @@
 - **BLoC `meta` is kebab-case:** `bloc-type`, `event-type`, `current-state`, `next-state`, `event`, `has-error`. Use `BlocJsonKeys.*` when reading meta directly.
 - **Riverpod `printValues` defaults to `true`:** raw values land in trace meta on every update. Switch to `ISpectRiverpodSettings.compact` when provider state may carry PII.
 
+### Fixed
+
+- **`ispectify_dio`:** Responses no longer stay stuck on "Pending" when a downstream interceptor rewrites the request through `copyWith` (auth or locale header injection). The correlation id now rides in `RequestOptions.extra`, so request and response group together regardless of interceptor order.
+
 ### Improvements
 
 - **Inspector property chips:** Composite values (offset, border side, gradient, shadow) now show muted inline labels (`x:`, `y:`, `width:`, `blur:`, etc.) so each number is self-labelled at a glance.

@@ -131,4 +131,8 @@ abstract final class NetworkJsonKeys {
 
   /// Request ID stored in Dio's `extra` map; preserved during redaction.
   static const String ispectRequestId = '_ispect_rid';
+
+  /// Request start time (microseconds since epoch) stored in Dio's `extra` map
+  /// to measure duration; stripped from serialized output.
+  static const String ispectRequestStartedAt = '_ispect_started_at';
 }
