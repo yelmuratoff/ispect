@@ -25,9 +25,8 @@ base class ExtendedLoggerFormatter implements ILoggerFormatter {
     ConsoleSettings settings,
   ) {
     final message = details.message?.toString();
-    final text = (message == null || message.isEmpty)
-        ? '(empty log message)'
-        : message;
+    final text =
+        (message == null || message.isEmpty) ? '(empty log message)' : message;
 
     if (!settings.enableColors) return text;
 
