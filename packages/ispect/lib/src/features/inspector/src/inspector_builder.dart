@@ -247,68 +247,82 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         _logPageController,
       ]),
       child: child,
-      builder: (context, child) => DraggablePanel(
-        theme: theme.panelTheme ?? _buildDefaultPanelTheme(context),
-        controller: _panelController,
-        items: [
-          if (settings.isLogPageEnabled)
-            DraggablePanelItem(
-              icon: _logPageController.inLoggerPage
-                  ? Icons.undo_rounded
-                  : Icons.reorder_rounded,
-              enableBadge: _logPageController.inLoggerPage,
-              onTap: (_) => _launchInfospect(context, options),
-              description: _logPageController.inLoggerPage
-                  ? context.ispectL10n.backToMainScreen
-                  : context.ispectL10n.openLogViewer,
-            ),
-          if (settings.isPerformanceEnabled)
-            DraggablePanelItem(
-              icon: Icons.monitor_heart_outlined,
-              enableBadge: iSpect.isPerformanceTrackingEnabled,
-              onTap: (_) => iSpect.togglePerformanceTracking(),
-              description: context.ispectL10n.togglePerformanceTracking,
-            ),
-          if (settings.isInspectorEnabled)
-            DraggablePanelItem(
-              icon: Icons.format_shapes_rounded,
-              enableBadge: controller.modeNotifier.value ==
-                  pkg_inspector.InspectorMode.inspector,
-              onTap: (_) => controller.setMode(
-                controller.modeNotifier.value ==
-                        pkg_inspector.InspectorMode.inspector
-                    ? pkg_inspector.InspectorMode.none
-                    : pkg_inspector.InspectorMode.inspector,
+      builder: (context, child) {
+        final data = ISpectPanelData(
+          controller: _panelController,
+          theme: theme.panelTheme ?? _buildDefaultPanelTheme(context),
+          buttons: options.panelButtons,
+          child: child,
+          items: [
+            if (settings.isLogPageEnabled)
+              DraggablePanelItem(
+                icon: _logPageController.inLoggerPage
+                    ? Icons.undo_rounded
+                    : Icons.reorder_rounded,
+                enableBadge: _logPageController.inLoggerPage,
+                onTap: (_) => _launchInfospect(context, options),
+                description: _logPageController.inLoggerPage
+                    ? context.ispectL10n.backToMainScreen
+                    : context.ispectL10n.openLogViewer,
               ),
-              description: context.ispectL10n.inspectWidgets,
-            ),
-          if (settings.isColorPickerEnabled)
-            DraggablePanelItem(
-              icon: Icons.colorize_rounded,
-              enableBadge: controller.modeNotifier.value ==
-                  pkg_inspector.InspectorMode.colorPicker,
-              onTap: (ctx) => controller.setMode(
-                controller.modeNotifier.value ==
-                        pkg_inspector.InspectorMode.colorPicker
-                    ? pkg_inspector.InspectorMode.none
-                    : pkg_inspector.InspectorMode.colorPicker,
-                context: ctx,
+            if (settings.isPerformanceEnabled)
+              DraggablePanelItem(
+                icon: Icons.monitor_heart_outlined,
+                enableBadge: iSpect.isPerformanceTrackingEnabled,
+                onTap: (_) => iSpect.togglePerformanceTracking(),
+                description: context.ispectL10n.togglePerformanceTracking,
               ),
-              description: context.ispectL10n.zoomPickColor,
-            ),
-          ...options.panelItems,
-          // Plugin-generated panel items
-          for (final plugin in options.plugins)
-            DraggablePanelItem(
-              icon: plugin.icon,
-              enableBadge: plugin.enableBadge,
-              description: plugin.description ?? plugin.title,
-              onTap: (context) => _launchPluginScreen(context, plugin, options),
-            ),
-        ],
-        buttons: options.panelButtons,
-        child: child,
-      ),
+            if (settings.isInspectorEnabled)
+              DraggablePanelItem(
+                icon: Icons.format_shapes_rounded,
+                enableBadge: controller.modeNotifier.value ==
+                    pkg_inspector.InspectorMode.inspector,
+                onTap: (_) => controller.setMode(
+                  controller.modeNotifier.value ==
+                          pkg_inspector.InspectorMode.inspector
+                      ? pkg_inspector.InspectorMode.none
+                      : pkg_inspector.InspectorMode.inspector,
+                ),
+                description: context.ispectL10n.inspectWidgets,
+              ),
+            if (settings.isColorPickerEnabled)
+              DraggablePanelItem(
+                icon: Icons.colorize_rounded,
+                enableBadge: controller.modeNotifier.value ==
+                    pkg_inspector.InspectorMode.colorPicker,
+                onTap: (ctx) => controller.setMode(
+                  controller.modeNotifier.value ==
+                          pkg_inspector.InspectorMode.colorPicker
+                      ? pkg_inspector.InspectorMode.none
+                      : pkg_inspector.InspectorMode.colorPicker,
+                  context: ctx,
+                ),
+                description: context.ispectL10n.zoomPickColor,
+              ),
+            ...options.panelItems,
+            // Plugin-generated panel items
+            for (final plugin in options.plugins)
+              DraggablePanelItem(
+                icon: plugin.icon,
+                enableBadge: plugin.enableBadge,
+                description: plugin.description ?? plugin.title,
+                onTap: (context) =>
+                    _launchPluginScreen(context, plugin, options),
+              ),
+          ],
+        );
+
+        final panelBuilder = options.panelBuilder;
+        if (panelBuilder != null) return panelBuilder(context, data);
+
+        return DraggablePanel(
+          theme: data.theme,
+          controller: data.controller,
+          items: data.items,
+          buttons: data.buttons,
+          child: data.child,
+        );
+      },
     );
   }
 

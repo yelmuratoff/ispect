@@ -9,6 +9,7 @@ import 'package:ispect/src/common/models/action_item.dart';
 import 'package:ispect/src/common/plugins/inspector_plugin.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
+import 'package:ispect/src/core/res/ispect_panel.dart';
 
 /// A configuration class for `ISpect`, defining various options including locale settings,
 /// feature toggles, action items, and panel configurations.
@@ -64,6 +65,7 @@ final class ISpectOptions {
     this.actionItems = const [],
     this.panelItems = const [],
     this.panelButtons = const [],
+    this.panelBuilder,
     this.plugins = const [],
     this.logBuilder,
     this.onShare,
@@ -141,6 +143,31 @@ final class ISpectOptions {
   /// - `label`: The text label displayed for the button
   /// - `onTap`: A callback function triggered when the button is tapped
   final List<DraggablePanelButtonItem> panelButtons;
+
+  /// Builds the entire draggable diagnostics panel, replacing ISpect's default
+  /// `DraggablePanel`.
+  ///
+  /// ISpect still assembles the items (built-in tools + [panelItems] + plugins),
+  /// [panelButtons], the controller, and the default theme, and hands them to
+  /// the builder via [ISpectPanelData]. Return a `DraggablePanel` configured
+  /// however you like — every `draggable_panel` parameter (content/shell
+  /// builders, motion, behavior flags, tooltips, sizing) is available here,
+  /// including ones added in future `draggable_panel` releases, without ISpect
+  /// forwarding each one.
+  ///
+  /// ```dart
+  /// ISpectOptions(
+  ///   panelBuilder: (context, data) => DraggablePanel(
+  ///     controller: data.controller,
+  ///     items: data.items,
+  ///     buttons: data.buttons,
+  ///     theme: data.theme.copyWith(panelWidth: 240),
+  ///     panelHeight: 320,
+  ///     child: data.child,
+  ///   ),
+  /// )
+  /// ```
+  final ISpectPanelBuilder? panelBuilder;
 
   /// A list of plugins that extend the inspector panel with custom screens.
   ///
@@ -243,6 +270,7 @@ final class ISpectOptions {
     List<ISpectActionItem>? actionItems,
     List<DraggablePanelItem>? panelItems,
     List<DraggablePanelButtonItem>? panelButtons,
+    ISpectPanelBuilder? panelBuilder,
     List<InspectorPlugin>? plugins,
     ISpectLogDataBuilder? logBuilder,
     ISpectShareCallback? onShare,
@@ -263,6 +291,7 @@ final class ISpectOptions {
       actionItems: actionItems ?? this.actionItems,
       panelItems: panelItems ?? this.panelItems,
       panelButtons: panelButtons ?? this.panelButtons,
+      panelBuilder: panelBuilder ?? this.panelBuilder,
       plugins: plugins ?? this.plugins,
       logBuilder: logBuilder ?? this.logBuilder,
       onShare: onShare ?? this.onShare,
@@ -290,6 +319,7 @@ final class ISpectOptions {
         listEquals(other.actionItems, actionItems) &&
         listEquals(other.panelItems, panelItems) &&
         listEquals(other.panelButtons, panelButtons) &&
+        other.panelBuilder == panelBuilder &&
         listEquals(other.plugins, plugins) &&
         other.logBuilder == logBuilder &&
         other.onShare == onShare &&
@@ -315,6 +345,7 @@ final class ISpectOptions {
       _deepEquality.hash(actionItems),
       _deepEquality.hash(panelItems),
       _deepEquality.hash(panelButtons),
+      panelBuilder,
       _deepEquality.hash(plugins),
       logBuilder,
       onShare,
@@ -339,6 +370,7 @@ final class ISpectOptions {
       actionItems: $actionItems,
       panelItems: $panelItems,
       panelButtons: $panelButtons,
+      panelBuilder: $panelBuilder,
       plugins: $plugins,
       logBuilder: $logBuilder,
       onShare: $onShare,
