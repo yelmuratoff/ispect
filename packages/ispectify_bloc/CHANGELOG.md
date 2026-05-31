@@ -1,44 +1,34 @@
 # Changelog
 
-## 5.2.0-dev.12
+## 5.2.0-dev.13
 
 ### Added
 
-- **`ispectify_riverpod`:** New package — `ISpectRiverpodObserver` routes `didAddProvider`, `didUpdateProvider`, `didDisposeProvider`, and `providerDidFail` to the `riverpod-*` log keys (closes [#80](https://github.com/yelmuratoff/ispect/issues/80)).
-- **BLoC and Riverpod trace extensions:** `ISpectLoggerBloc` and `ISpectLoggerRiverpod` expose one method per lifecycle event with the matching log key baked in.
+- **`ispectify_riverpod`:** New package — `ISpectRiverpodObserver` logs provider add/update/dispose/fail under `riverpod-*` keys (closes [#80](https://github.com/yelmuratoff/ispect/issues/80)).
+- **Trace extensions:** `ISpectLoggerBloc` and `ISpectLoggerRiverpod` add one method per lifecycle event.
 
 ### Changed
 
-- **BLoC observer emits granular keys:** `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, `bloc-error` instead of `state-change` / `state-error`. Filters keyed on the old generic keys must move to the new ones.
-- **BLoC `meta` is kebab-case:** `bloc-type`, `event-type`, `current-state`, `next-state`, `event`, `has-error`. Use `BlocJsonKeys.*` when reading meta directly.
-- **Riverpod `printValues` defaults to `true`:** raw values land in trace meta on every update. Switch to `ISpectRiverpodSettings.compact` when provider state may carry PII.
+- **BLoC observer keys:** Granular `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, `bloc-error` replace `state-change` / `state-error` — update filters keyed on the old names.
+- **BLoC `meta` keys:** Now kebab-case; read them via `BlocJsonKeys.*`.
+- **Riverpod `printValues` defaults to `true`:** Use `ISpectRiverpodSettings.compact` when provider state may carry PII.
 
 ### Fixed
 
-- **`ispectify_dio`:** Responses no longer stay stuck on "Pending" when a downstream interceptor rewrites the request through `copyWith` (auth or locale header injection). The correlation id now rides in `RequestOptions.extra`, so request and response group together regardless of interceptor order.
+- **`ispectify_dio`:** Responses no longer stay stuck on "Pending" when a downstream interceptor rewrites the request via `copyWith`.
 
 ### Improvements
 
-- **Draggable panel upgraded to 3.0.0:** reliable button hide/reveal and a content-sized adaptive layout that anchors flush to the button.
-- **Full draggable panel customization via `ISpectOptions.panelBuilder`:** ISpect assembles the panel items (built-in tools + `panelItems` + plugins), buttons, controller, and default theme, and hands them to your builder as `ISpectPanelData`. Return a `DraggablePanel` with any `draggable_panel` parameter — content/shell builders, motion, behavior flags, tooltips, sizing — including options added in future `draggable_panel` releases, without ISpect having to forward each one.
-- **Inspector property chips:** Composite values (offset, border side, gradient, shadow) now show muted inline labels (`x:`, `y:`, `width:`, `blur:`, etc.) so each number is self-labelled at a glance.
-- **Asymmetric border radius:** Asymmetric corner radii are displayed in a 2×2 TL/TR · BL/BR grid instead of a comma-separated string.
-- **Shadow breakdown:** Multi-shadow chips show each shadow in its own row with a divider between entries and surface `blurStyle` when non-default.
-- **Typography span grouping:** When a `RichText` contains multiple styled spans, the TYPOGRAPHY section groups each span's chips under a muted preview of that span's text.
-- **Selection box on transformed widgets:** The highlight rect now correctly encloses rotated and skewed widgets by computing the AABB from all four local corners.
-- **Size label placement:** The widget size label is now placed above the selection box instead of inside it, preventing overlap with the widget's content.
-- **`ImageFilter` description:** Strips the `ImageFilter.` prefix and default tile-mode suffix — a blur filter now shows as `blur(6.0, 6.0)` instead of `ImageFilter.blur(6.0, 6.0, unspecified)`.
-- **Sealed exported data and utility classes:** `LogDetails`, `ConsoleSettings`, `RedactionResult`, `HeaderRedactionResult`, `RedactionContext`, `RedactionStats`, `CurlUtils`, `JsonTruncator`, `NetworkPayloadSanitizer`, and `ISpectDateTimeFormatter` are now `final` / `abstract final`. These value and static-utility types can no longer be subclassed or faked via `implements`.
-- **Formatters stay extendable:** `ExtendedLoggerFormatter` and `HumanLogEntryFormatter` are `base class` — `extends` is still supported for custom formatter subclasses, only `implements` is blocked. `RedactionService`, `ISpectErrorHandler`, and `NetworkTransaction` remain fully open.
-- **Inspector controller decomposed:** `InspectorController` body split across four sibling `part` files for modes, shortcuts, pointer handlers, and pixel capture. Public API unchanged.
-- **Log constants restructured:** `ISpectConstants` tables split into themed `part` files for icons, palette, and descriptions. The facade re-exposes every existing constant.
-- **`ISpectPerformanceOverlay` rebuilt:** Cross-platform overlay on `FrameTiming` (works on web and desktop where Flutter's native overlay does not) with UI/raster/total bars, avg/p99/jank stats, current FPS, target line, and a freeze button. Long-press the freeze button to reset session counters.
-- **Bottleneck-based FPS:** The FPS readout uses capacity-based bottleneck analysis instead of vsync-derived smoothing, so a single 30 ms hitch is visible in the reading rather than averaged away.
-- **Jank burst callback:** New `onJankBurst` fires after `jankBurstWindow` consecutive over-target frames, throttled by `jankBurstCooldown` — suitable for triggering app-level diagnostics or telemetry.
-- **Severe-jank logging:** Opt-in `enableJankLogging` routes frames where `totalSpan > target × severeJankFactor` through `ISpect.logger` under the new `performanceCategory` (`performance-jank` / `performance-error` log keys, full icon, palette, and description entries in the log viewer).
-- **Perceptible drop counter:** The session dropped-frame total now applies a 16.67 ms perception threshold so single-vsync skips on 120 Hz panels stop polluting the counter during normal scrolling.
-- **Cold-start warmup:** The first `FrameTiming` sample is dropped and session counters (min FPS, dropped-frame total) wait out an 800 ms warmup window to filter JIT, asset-decode, and shader-cache spikes.
-- **Compact layout & color-blind palette:** `compact: true` renders a single-line summary, `showP90: true` adds p90 to the detailed layout, and `ISpectPerformanceOverlayPalettes` exposes a Wong/Okabe palette readable under deuteranopia, protanopia, and tritanopia.
+- **Draggable panel upgraded to 3.0.0:** Reliable button hide/reveal and a content-sized adaptive layout that anchors to the button.
+- **Customizable panel via `ISpectOptions.panelBuilder`:** Receive a prepared `ISpectPanelData` and return a `DraggablePanel` configured with any `draggable_panel` parameter.
+- **Inspector property chips:** Composite values (offset, border, gradient, shadow) get inline labels, asymmetric radii render in a 2×2 grid, multi-shadows split per row, and `ImageFilter` descriptions are cleaned up.
+- **Inspector selection box:** Correctly encloses rotated and skewed widgets, with the size label moved above the box.
+- **Typography span grouping:** Multi-span `RichText` groups each span's chips under a preview of its text.
+- **Sealed data and utility classes:** `LogDetails`, `ConsoleSettings`, `RedactionResult`, `HeaderRedactionResult`, `RedactionContext`, `RedactionStats`, `CurlUtils`, `JsonTruncator`, `NetworkPayloadSanitizer`, and `ISpectDateTimeFormatter` are now `final` / `abstract final` and can no longer be subclassed.
+- **Formatters stay extendable:** `ExtendedLoggerFormatter` and `HumanLogEntryFormatter` are `base class` (`extends` still works); `RedactionService`, `ISpectErrorHandler`, and `NetworkTransaction` remain open.
+- **`ISpectPerformanceOverlay` rebuilt:** Cross-platform overlay (web + desktop) with UI/raster/total bars, avg/p99/jank stats, current FPS, target line, and a freeze button; bottleneck-based FPS surfaces single hitches instead of averaging them away.
+- **Jank diagnostics:** New `onJankBurst` callback and opt-in `enableJankLogging` (severe frames logged under `performance-jank` / `performance-error`); a perception threshold and 800 ms cold-start warmup keep false positives off the dropped-frame counter.
+- **Overlay display options:** `compact: true` single-line summary, `showP90: true`, and a color-blind-safe palette via `ISpectPerformanceOverlayPalettes`.
 
 ## 5.0.4
 
