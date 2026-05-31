@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.2.0-dev.11
+## 5.2.0-dev.12
 
 ### Added
 
@@ -19,6 +19,8 @@
 
 ### Improvements
 
+- **Draggable panel upgraded to 3.0.0:** reliable button hide/reveal and a content-sized adaptive layout that anchors flush to the button.
+- **Full draggable panel customization via `ISpectOptions.panelBuilder`:** ISpect assembles the panel items (built-in tools + `panelItems` + plugins), buttons, controller, and default theme, and hands them to your builder as `ISpectPanelData`. Return a `DraggablePanel` with any `draggable_panel` parameter — content/shell builders, motion, behavior flags, tooltips, sizing — including options added in future `draggable_panel` releases, without ISpect having to forward each one.
 - **Inspector property chips:** Composite values (offset, border side, gradient, shadow) now show muted inline labels (`x:`, `y:`, `width:`, `blur:`, etc.) so each number is self-labelled at a glance.
 - **Asymmetric border radius:** Asymmetric corner radii are displayed in a 2×2 TL/TR · BL/BR grid instead of a comma-separated string.
 - **Shadow breakdown:** Multi-shadow chips show each shadow in its own row with a divider between entries and surface `blurStyle` when non-default.
