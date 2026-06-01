@@ -47,7 +47,7 @@ dependencies:
 
   # UI
   ispect_layout: ^5.0.4
-  draggable_panel: ^2.0.2
+  draggable_panel: ">=2.0.2 <4.0.0"
   super_sliver_list: ^0.4.1
 
 dev_dependencies:
