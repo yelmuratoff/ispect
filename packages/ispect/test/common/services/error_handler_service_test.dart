@@ -195,6 +195,9 @@ void main() {
       FlutterError.presentError(
         const FlutterErrorDetails(exception: exception),
       );
+      // The handler defers logging to a post-frame callback; a settled tree
+      // won't schedule a frame on its own, so request one explicitly to flush.
+      tester.binding.scheduleFrame();
       await tester.pump();
 
       final entry = logger.history
