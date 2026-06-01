@@ -84,6 +84,11 @@ final class ISpect {
   /// When `kISpectEnabled` is `false` (default), this method simply calls
   /// the callback without any ISpect initialization, enabling tree-shaking.
   ///
+  /// Perform binding setup (`WidgetsFlutterBinding.ensureInitialized()`) inside
+  /// [callback] or [onInit] rather than before calling [run]: both run in the
+  /// guarded zone, so initializing the binding outside it causes a Flutter
+  /// "Zone mismatch" warning and can drop errors from the installed handlers.
+  ///
   /// ### Example (Simple):
   /// ```dart
   /// ISpect.run(() => runApp(MyApp()));
@@ -117,7 +122,7 @@ final class ISpect {
     void Function(Object, StackTrace)? onPlatformDispatcherError,
     void Function(FlutterErrorDetails, StackTrace?)? onFlutterError,
     void Function(FlutterErrorDetails, StackTrace?)? onPresentError,
-    void Function(List<dynamic>)? onUncaughtErrors,
+    void Function(Object error, StackTrace? stack)? onUncaughtError,
     ISpectErrorHandlerOptions options = const ISpectErrorHandlerOptions(),
     List<String> filters = const [],
   }) {
@@ -136,26 +141,32 @@ final class ISpect {
       onPlatformDispatcherError: onPlatformDispatcherError,
       onFlutterError: onFlutterError,
       onPresentError: onPresentError,
-      onUncaughtErrors: onUncaughtErrors,
+      onUncaughtError: onUncaughtError,
     );
 
-    onInit?.call();
+    // Run init/app/post-init inside the guarded zone so that binding setup
+    // (e.g. `WidgetsFlutterBinding.ensureInitialized()`) and `runApp` share the
+    // same zone — mixing zones triggers Flutter's "Zone mismatch" warning and
+    // can drop errors from the handlers installed above.
+    void bootstrap() {
+      onInit?.call();
+      callback();
+      onInitialized?.call();
+    }
 
     if (isZoneErrorHandlingEnabled) {
       _runInZone(
-        callback,
+        bootstrap,
         onZonedError: onZonedError,
         isPrintLoggingEnabled: isPrintLoggingEnabled,
         isFlutterPrintEnabled: isFlutterPrintEnabled,
-        onUncaughtErrors: onUncaughtErrors,
+        onUncaughtError: onUncaughtError,
         isUncaughtErrorsHandlingEnabled:
             options.isUncaughtErrorsHandlingEnabled,
       );
     } else {
-      callback();
+      bootstrap();
     }
-
-    onInitialized?.call();
   }
 
   static void _runInZone<T>(
@@ -164,7 +175,7 @@ final class ISpect {
     required bool isFlutterPrintEnabled,
     required bool isUncaughtErrorsHandlingEnabled,
     void Function(Object, StackTrace)? onZonedError,
-    void Function(List<dynamic>)? onUncaughtErrors,
+    void Function(Object error, StackTrace? stack)? onUncaughtError,
   }) {
     runZonedGuarded(
       callback,
@@ -173,7 +184,7 @@ final class ISpect {
           error,
           stackTrace,
           onZonedError: onZonedError,
-          onUncaughtErrors: onUncaughtErrors,
+          onUncaughtError: onUncaughtError,
           isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
         );
       },

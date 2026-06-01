@@ -12,10 +12,13 @@
 - **BLoC observer keys:** Granular `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, `bloc-error` replace `state-change` / `state-error` — update filters keyed on the old names.
 - **BLoC `meta` keys:** Now kebab-case; read them via `BlocJsonKeys.*`.
 - **Riverpod `printValues` defaults to `true`:** Use `ISpectRiverpodSettings.compact` when provider state may carry PII.
+- **`ISpect.run` uncaught-error hook:** `onUncaughtErrors` (`void Function(List<dynamic>)`) is replaced by typed `onUncaughtError` (`void Function(Object error, StackTrace? stack)`).
 
 ### Fixed
 
 - **`ispectify_dio`:** Responses no longer stay stuck on "Pending" when a downstream interceptor rewrites the request via `copyWith`.
+- **`ISpect.run` zone consistency:** `onInit` and `onInitialized` now run inside the guarded zone, so binding setup shares a zone with `runApp` and stops dropping errors via a "Zone mismatch".
+- **Error capture shape:** Flutter, present, platform, and zoned errors all report the original thrown object and its stack trace; Flutter errors previously logged a stringified message.
 
 ### Improvements
 
