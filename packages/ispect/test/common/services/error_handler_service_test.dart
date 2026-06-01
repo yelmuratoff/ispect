@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/common/services/error_handler_options.dart';
 import 'package:ispect/src/common/services/error_handler_service.dart';
@@ -177,6 +178,28 @@ void main() {
       FlutterError.onError!(details);
 
       expect(received, same(details));
+    });
+
+    testWidgets('presentError logs details.exception after the frame',
+        (tester) async {
+      ErrorHandlerService(logger: logger, filters: const []).setupErrorHandling(
+        options: const ISpectErrorHandlerOptions(
+          isFlutterErrorHandlingEnabled: false,
+          isPlatformDispatcherHandlingEnabled: false,
+        ),
+      );
+
+      await tester.pumpWidget(const SizedBox());
+
+      const exception = _TestException('present');
+      FlutterError.presentError(
+        const FlutterErrorDetails(exception: exception),
+      );
+      await tester.pump();
+
+      final entry = logger.history
+          .singleWhere((e) => e.message == 'Flutter error presented');
+      expect(entry.exception, same(exception));
     });
 
     test('PlatformDispatcher.onError logs the error and returns true', () {
