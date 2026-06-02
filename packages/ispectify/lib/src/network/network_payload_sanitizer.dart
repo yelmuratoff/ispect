@@ -84,4 +84,26 @@ final class NetworkPayloadSanitizer {
       return value;
     }
   }
+
+  /// Renders a typed body via its `toJson()`; returns the original on failure.
+  ///
+  /// Values already representable as JSON (null, maps, collections, strings,
+  /// numbers, booleans) pass through unchanged. Useful as a [body] normalizer
+  /// for clients that pass DTOs (freezed/json_serializable) to the request as-is
+  /// and serialize them only later, so logs would otherwise show `toString()`.
+  static Object? encodeJsonGracefully(Object? value) {
+    if (value == null ||
+        value is Map ||
+        value is Iterable ||
+        value is String ||
+        value is num ||
+        value is bool) {
+      return value;
+    }
+    try {
+      return (value as dynamic).toJson();
+    } on Object {
+      return value;
+    }
+  }
 }

@@ -61,7 +61,12 @@ mixin NetworkRedactionMixin {
   /// a placeholder on failure instead of propagating the exception.
   Object safeRedact(Object data, {required bool useRedaction}) {
     try {
-      return _payload.body(data, enableRedaction: useRedaction) ?? data;
+      return _payload.body(
+            data,
+            enableRedaction: useRedaction,
+            normalizer: NetworkPayloadSanitizer.encodeJsonGracefully,
+          ) ??
+          data;
     } catch (e, s) {
       logger.logData(
         ISpectLogData(

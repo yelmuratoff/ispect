@@ -15,6 +15,17 @@ class _ThrowingRedactor extends RedactionService {
   }
 }
 
+class _TypedMessage {
+  const _TypedMessage(this.code);
+
+  final String code;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{'referralCode': code};
+
+  @override
+  String toString() => '_TypedMessage($code)';
+}
+
 void main() {
   group('ISpectWSInterceptor', () {
     late ISpectLogger logger;
@@ -33,6 +44,18 @@ void main() {
         logger.history.any((e) => e.key == ISpectLogType.wsSent.key),
         isTrue,
       );
+    });
+
+    test('renders a typed message via toJson', () {
+      interceptor = ISpectWSInterceptor(
+        logger: logger,
+        settings: const ISpectWSInterceptorSettings(enableRedaction: false),
+      )..onSend(const _TypedMessage('ABC123'), (obj) {});
+
+      final sent =
+          logger.history.firstWhere((e) => e.key == ISpectLogType.wsSent.key);
+      final meta = sent.additionalData?[TraceKeys.meta] as Map?;
+      expect(meta?['data'], <String, dynamic>{'referralCode': 'ABC123'});
     });
 
     test('logs sent without payload when printSentData=false', () async {

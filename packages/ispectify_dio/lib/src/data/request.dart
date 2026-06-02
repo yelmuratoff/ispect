@@ -103,6 +103,6 @@ class DioRequestData {
     if (data is FormData) {
       return DioFormDataSerializer.serialize(data);
     }
-    return data;
+    return NetworkPayloadSanitizer.encodeJsonGracefully(data);
   }
 }
