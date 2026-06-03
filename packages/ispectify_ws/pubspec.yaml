@@ -1,5 +1,5 @@
 name: ispectify_ws
-description: WebSocket diagnostics for ISpect with connection lifecycle, sent and received frame logging, grouping, and redaction.
+description: Provider-agnostic WebSocket diagnostics for ISpect — connection lifecycle, sent and received frame logging, session grouping, and redaction for any WebSocket client.
 version: 5.2.0-dev.15
 homepage: https://github.com/yelmuratoff/ispect
 repository: https://github.com/yelmuratoff/ispect
