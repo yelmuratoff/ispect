@@ -46,6 +46,7 @@ dependencies:
 
   # Use local paths through dependency_overrides
   ispect: ^5.2.0-dev.15
+  ispectify: ^5.2.0-dev.15
   ispectify_dio: ^5.2.0-dev.15
   ispectify_http: ^5.2.0-dev.15
   ispectify_bloc: ^5.2.0-dev.15

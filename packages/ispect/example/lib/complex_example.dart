@@ -8,12 +8,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect_example/interceptors/ws_interceptor.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:ispectify_http/ispectify_http.dart';
 import 'package:ispectify_riverpod/ispectify_riverpod.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:ws/ws.dart';
 
 // ---------------------------------------------------------------------------
 // Observer example
@@ -519,6 +521,32 @@ class _HomePageState extends State<_HomePage> {
     }
   }
 
+  /// Connects to a public echo server through the local `ws` adapter so the
+  /// WebSocket logs (`ws-sent` / `ws-received` / `ws-state`) are real, not
+  /// simulated. Bounded by a timeout so the demo never hangs offline.
+  Future<void> _runWebSocketDemo(ISpectLogger logger) async {
+    const url = 'wss://echo.plugfox.dev/connect';
+    final interceptor = ISpectWSInterceptor(logger: logger);
+    final client = WebSocketClient(
+      WebSocketOptions.common(interceptors: [interceptor]),
+    );
+    interceptor.setClient(client);
+    try {
+      await client.connect(url).timeout(const Duration(seconds: 3));
+      await client.add('{"type":"subscribe","channel":"prices"}');
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+    } on Object catch (e, st) {
+      logger.handle(
+        exception: e,
+        stackTrace: st,
+        message: 'WebSocket demo failed',
+      );
+    } finally {
+      await client.close();
+      await interceptor.dispose();
+    }
+  }
+
   Future<void> _runAllLogTypes() async {
     final logger = ISpect.logger;
 
@@ -594,25 +622,8 @@ class _HomePageState extends State<_HomePage> {
       additionalData: {TraceKeys.correlationId: httpErrId, 'status': 404},
     );
 
-    // \u2500\u2500 WebSocket \u2014 correlationId links frames of the same session \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-    final wsId = generateTraceId();
-    logger.log(
-      '{"type":"subscribe","channel":"prices"}',
-      type: ISpectLogType.wsSent,
-      additionalData: {TraceKeys.correlationId: wsId, 'channel': 'prices'},
-    );
-    logger.log(
-      '{"type":"snapshot","data":[...]}',
-      type: ISpectLogType.wsReceived,
-      additionalData: {TraceKeys.correlationId: wsId},
-    );
-    logger.log(
-      'WS connection dropped',
-      type: ISpectLogType.wsError,
-      exception: Exception('WebSocket: 1006 Abnormal Closure'),
-      stackTrace: StackTrace.current,
-      additionalData: {TraceKeys.correlationId: wsId},
-    );
+    // \u2500\u2500 WebSocket \u2014 real connection through WsDiagnostics \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    await _runWebSocketDemo(logger);
 
     // \u2500\u2500 BLoC \u2014 correlationId = bloc instance ID, links full lifecycle \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     final blocId = generateTraceId();
