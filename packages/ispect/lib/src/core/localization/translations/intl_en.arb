@@ -205,6 +205,7 @@
    "loading": "Loading",
    "wsSentLogDesc": "Message sent through WebSocket connection",
    "wsReceivedLogDesc": "Message received through WebSocket connection",
+   "wsStateLogDesc": "WebSocket connection state changed",
    "dbQueryLogDesc": "Database request executed",
    "dbResultLogDesc": "Database returned results",
    "dbErrorLogDesc": "Database operation failed",

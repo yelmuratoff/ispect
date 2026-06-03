@@ -1349,6 +1349,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'Message received through WebSocket connection'**
   String get wsReceivedLogDesc;
 
+  /// No description provided for @wsStateLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'WebSocket connection state changed'**
+  String get wsStateLogDesc;
+
   /// No description provided for @dbQueryLogDesc.
   ///
   /// In en, this message translates to:

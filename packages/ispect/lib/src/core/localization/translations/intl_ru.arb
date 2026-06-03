@@ -205,6 +205,7 @@
    "loading": "Загрузка",
    "wsSentLogDesc": "Сообщение отправлено через WebSocket соединение",
    "wsReceivedLogDesc": "Сообщение получено через WebSocket соединение",
+   "wsStateLogDesc": "Изменение состояния WebSocket соединения",
    "dbQueryLogDesc": "Запрос к базе данных выполнен",
    "dbResultLogDesc": "База данных вернула результаты",
    "dbErrorLogDesc": "Операция с базой данных завершилась ошибкой",

@@ -691,6 +691,9 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
       'Сообщение получено через WebSocket соединение';
 
   @override
+  String get wsStateLogDesc => 'Изменение состояния WebSocket соединения';
+
+  @override
   String get dbQueryLogDesc => 'Запрос к базе данных выполнен';
 
   @override

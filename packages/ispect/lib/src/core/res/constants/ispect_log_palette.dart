@@ -40,6 +40,7 @@ const Map<String, Color> _kLightTypeColors = {
   'ws-sent': Color.fromARGB(255, 162, 0, 190),
   'ws-received': Color.fromARGB(255, 0, 158, 66),
   'ws-error': Color.fromARGB(255, 192, 38, 38),
+  'ws-state': Color.fromARGB(255, 0, 131, 143),
 
   /// Database
   'db-query': Color.fromARGB(255, 25, 118, 210),
@@ -127,6 +128,7 @@ const Map<String, Color> _kDarkTypeColors = {
   'ws-sent': Color(0xFFF602C1),
   'ws-received': Color(0xFF26FF3C),
   'ws-error': Color.fromARGB(255, 239, 83, 80),
+  'ws-state': Color(0xFF4DD0E1),
 
   /// Database
   'db-query': Color.fromARGB(255, 66, 165, 245),

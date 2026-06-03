@@ -39,6 +39,7 @@ const Map<String, IconData> _kTypeIcons = {
   'ws-sent': Icons.call_made_rounded,
   'ws-received': Icons.call_received_rounded,
   'ws-error': Icons.error_outline_rounded,
+  'ws-state': Icons.sync_alt_rounded,
 
   /// Database
   'db-query': Icons.storage_rounded,

@@ -132,6 +132,11 @@ List<LogDescription> _buildDefaultLogDescriptions(BuildContext context) {
       description: l10n.wsReceivedLogDesc,
     ),
     LogDescription(
+      key: 'ws-state',
+      title: 'WebSocket State',
+      description: l10n.wsStateLogDesc,
+    ),
+    LogDescription(
       key: 'db-query',
       title: 'Database Query',
       description: l10n.dbQueryLogDesc,

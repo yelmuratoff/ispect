@@ -687,6 +687,9 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
       'Message received through WebSocket connection';
 
   @override
+  String get wsStateLogDesc => 'WebSocket connection state changed';
+
+  @override
   String get dbQueryLogDesc => 'Database request executed';
 
   @override
