@@ -1,11 +1,13 @@
 # Changelog
 
-## 5.2.0-dev.15
+## 5.2.0-dev.16
 
 ### Added
 
 - **`ispectify_riverpod`:** New package — `ISpectRiverpodObserver` logs provider add/update/dispose/fail under `riverpod-*` keys (closes [#80](https://github.com/yelmuratoff/ispect/issues/80)).
 - **Trace extensions:** `ISpectLoggerBloc` and `ISpectLoggerRiverpod` add one method per lifecycle event.
+- **`ispectify_ws` is now provider-agnostic:** `WsDiagnostics` and the `WsDiagnosticsSink` port log any WebSocket client; ready-to-copy `ws`, `socket_io_client`, and `web_socket_channel` adapters ship in the package example.
+- **WebSocket connection state:** New `ws-state` log type and `wsState` emitter capture connection-lifecycle transitions.
 
 ### Changed
 
@@ -13,6 +15,7 @@
 - **BLoC `meta` keys:** Now kebab-case; read them via `BlocJsonKeys.*`.
 - **Riverpod `printValues` defaults to `true`:** Use `ISpectRiverpodSettings.compact` when provider state may carry PII.
 - **`ISpect.run` uncaught-error hook:** `onUncaughtErrors` (`void Function(List<dynamic>)`) is replaced by typed `onUncaughtError` (`void Function(Object error, StackTrace? stack)`).
+- **`ispectify_ws` drops the `ws` dependency:** `ISpectWSInterceptor` is no longer exported — copy the adapter from `ispectify_ws/example/lib/interceptors/ws_interceptor.dart` and add `ws` to your app. `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged.
 
 ### Fixed
 
