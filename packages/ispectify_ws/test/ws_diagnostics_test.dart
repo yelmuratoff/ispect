@@ -265,8 +265,10 @@ void main() {
       const url = 'wss://host/chat?token=secret123';
 
       void expectUrlRedacted(ISpectLogData log) {
-        expect(log.additionalData?[TraceKeys.target],
-            isNot(contains('secret123')));
+        expect(
+          log.additionalData?[TraceKeys.target],
+          isNot(contains('secret123')),
+        );
         expect(_meta(log)['url'], isNot(contains('secret123')));
       }
 
