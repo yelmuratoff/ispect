@@ -446,7 +446,7 @@ final class ISpectLogType {
     // websocket
     'ws-sent': AnsiPen()..xterm(207),
     'ws-received': AnsiPen()..xterm(35),
-    'ws-state': AnsiPen()..xterm(244),
+    'ws-state': AnsiPen()..xterm(44),
     // navigation / misc
     'route': AnsiPen()..xterm(135),
     'good': AnsiPen()..green(),
