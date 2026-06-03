@@ -1,6 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/claude-code-settings.json",
-    "includeCoAuthoredBy": true,
+    "includeCoAuthoredBy": false,
     "permissions": {
         "defaultMode": "default",
         "allow": [
