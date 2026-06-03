@@ -13,7 +13,6 @@ dependency_overrides:
     path: ../ispectify
 
 dependencies:
-  ws: ^1.0.0
   ispectify: ^5.2.0-dev.15
 
 dev_dependencies:
