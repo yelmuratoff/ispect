@@ -108,6 +108,10 @@ final class ISpectLogType {
     isError: true,
     level: LogLevel.error,
   );
+  static const wsState = ISpectLogType(
+    'ws-state',
+    category: TraceCategoryIds.ws,
+  );
 
   // ── State (BLoC / Riverpod) ────────────────────────────────────────────────
   static const blocEvent = ISpectLogType(
@@ -325,6 +329,7 @@ final class ISpectLogType {
     wsSent,
     wsReceived,
     wsError,
+    wsState,
     blocEvent,
     blocTransition,
     blocState,
@@ -441,6 +446,7 @@ final class ISpectLogType {
     // websocket
     'ws-sent': AnsiPen()..xterm(207),
     'ws-received': AnsiPen()..xterm(35),
+    'ws-state': AnsiPen()..xterm(244),
     // navigation / misc
     'route': AnsiPen()..xterm(135),
     'good': AnsiPen()..green(),
