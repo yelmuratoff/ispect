@@ -521,32 +521,6 @@ class _HomePageState extends State<_HomePage> {
     }
   }
 
-  /// Connects to a public echo server through the local `ws` adapter so the
-  /// WebSocket logs (`ws-sent` / `ws-received` / `ws-state`) are real, not
-  /// simulated. Bounded by a timeout so the demo never hangs offline.
-  Future<void> _runWebSocketDemo(ISpectLogger logger) async {
-    const url = 'wss://echo.plugfox.dev/connect';
-    final interceptor = ISpectWSInterceptor(logger: logger);
-    final client = WebSocketClient(
-      WebSocketOptions.common(interceptors: [interceptor]),
-    );
-    interceptor.setClient(client);
-    try {
-      await client.connect(url).timeout(const Duration(seconds: 3));
-      await client.add('{"type":"subscribe","channel":"prices"}');
-      await Future<void>.delayed(const Duration(milliseconds: 600));
-    } on Object catch (e, st) {
-      logger.handle(
-        exception: e,
-        stackTrace: st,
-        message: 'WebSocket demo failed',
-      );
-    } finally {
-      await client.close();
-      await interceptor.dispose();
-    }
-  }
-
   Future<void> _runAllLogTypes() async {
     final logger = ISpect.logger;
 
@@ -1329,6 +1303,32 @@ class _HomePageState extends State<_HomePage> {
 // ---------------------------------------------------------------------------
 // Quick log buttons grid
 // ---------------------------------------------------------------------------
+
+/// Connects to a public echo server through the local `ws` adapter so the
+/// WebSocket logs (`ws-sent` / `ws-received` / `ws-state`) are real, not
+/// simulated. Bounded by a timeout so the demo never hangs offline.
+Future<void> _runWebSocketDemo(ISpectLogger logger) async {
+  const url = 'wss://echo.plugfox.dev/connect';
+  final interceptor = ISpectWSInterceptor(logger: logger);
+  final client = WebSocketClient(
+    WebSocketOptions.common(interceptors: [interceptor]),
+  );
+  interceptor.setClient(client);
+  try {
+    await client.connect(url).timeout(const Duration(seconds: 3));
+    await client.add('{"type":"subscribe","channel":"prices"}');
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+  } on Object catch (e, st) {
+    logger.handle(
+      exception: e,
+      stackTrace: st,
+      message: 'WebSocket demo failed',
+    );
+  } finally {
+    await client.close();
+    await interceptor.dispose();
+  }
+}
 
 class _QuickLogsGrid extends StatelessWidget {
   @override
@@ -2307,11 +2307,28 @@ class _DomainTracesSectionState extends State<_DomainTracesSection> {
                 _chip('Error', Icons.error, Colors.red, _sseError),
               ],
             ),
+            const SizedBox(height: 16),
+
+            // WebSocket
+            Text('WebSocket', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('Connect & subscribe', Icons.cable, Colors.teal,
+                    _wsSubscribe),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
+
+  // ── WebSocket ───────────────────────────────────────────────────────────
+
+  Future<void> _wsSubscribe() => _runWebSocketDemo(ISpect.logger);
 
   // ── Auth ──────────────────────────────────────────────────────────────
 
