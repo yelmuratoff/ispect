@@ -1308,16 +1308,16 @@ class _HomePageState extends State<_HomePage> {
 /// WebSocket logs (`ws-sent` / `ws-received` / `ws-state`) are real, not
 /// simulated. Bounded by a timeout so the demo never hangs offline.
 Future<void> _runWebSocketDemo(ISpectLogger logger) async {
-  const url = 'wss://echo.plugfox.dev/connect';
+  const url = 'wss://echo.websocket.events';
   final interceptor = ISpectWSInterceptor(logger: logger);
   final client = WebSocketClient(
     WebSocketOptions.common(interceptors: [interceptor]),
   );
   interceptor.setClient(client);
   try {
-    await client.connect(url).timeout(const Duration(seconds: 3));
+    await client.connect(url).timeout(const Duration(seconds: 5));
     await client.add('{"type":"subscribe","channel":"prices"}');
-    await Future<void>.delayed(const Duration(milliseconds: 600));
+    await Future<void>.delayed(const Duration(seconds: 1));
   } on Object catch (e, st) {
     logger.handle(
       exception: e,

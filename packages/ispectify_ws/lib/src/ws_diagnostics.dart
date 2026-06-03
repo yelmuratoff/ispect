@@ -71,6 +71,7 @@ final class WsDiagnostics
       target: normalizedUrl,
       correlationId: _connectionId,
       config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
+      consoleMessage: '→ state:${state.name} $normalizedUrl',
       meta: {
         'url': normalizedUrl,
         if (raw != null) 'raw': '$raw',
