@@ -1308,7 +1308,7 @@ class _HomePageState extends State<_HomePage> {
 /// WebSocket logs (`ws-sent` / `ws-received` / `ws-state`) are real, not
 /// simulated. Bounded by a timeout so the demo never hangs offline.
 Future<void> _runWebSocketDemo(ISpectLogger logger) async {
-  const url = 'wss://echo.websocket.events';
+  const url = 'wss://echo.websocket.org';
   final interceptor = ISpectWSInterceptor(logger: logger);
   final client = WebSocketClient(
     WebSocketOptions.common(interceptors: [interceptor]),

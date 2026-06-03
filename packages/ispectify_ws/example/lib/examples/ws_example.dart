@@ -6,7 +6,7 @@ import 'package:ws/ws.dart';
 
 /// Connects with the `ws` client and logs frames, metrics, and state changes.
 Future<void> wsExample(ISpectLogger logger) async {
-  const url = 'wss://echo.websocket.events';
+  const url = 'wss://echo.websocket.org';
 
   final interceptor = ISpectWSInterceptor(logger: logger);
   final client = WebSocketClient(
