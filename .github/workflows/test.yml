@@ -75,7 +75,7 @@ jobs:
 
       - name: Upload to Codecov
         if: always()
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           files: packages/${{ matrix.package }}/coverage/lcov.info
           flags: ${{ matrix.package }}
@@ -146,7 +146,7 @@ jobs:
 
       - name: Upload to Codecov
         if: always() && matrix.flutter.version == '3.32.6'
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           files: packages/${{ matrix.package }}/coverage/lcov.info
           flags: ${{ matrix.package }}
