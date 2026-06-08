@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.2.0-dev.17
+## 5.2.0-dev.18
 
 ### Added
 
@@ -23,6 +23,7 @@
 - **`ispectify_dio`:** Responses no longer stay stuck on "Pending" when a downstream interceptor rewrites the request via `copyWith`.
 - **`ISpect.run` zone consistency:** `onInit` and `onInitialized` now run inside the guarded zone, so binding setup shares a zone with `runApp` and stops dropping errors via a "Zone mismatch".
 - **Error capture shape:** Flutter, present, platform, and zoned errors all report the original thrown object and its stack trace; Flutter errors previously logged a stringified message.
+- **Navigation logging:** A page opened from under a modal (e.g. a profile pushed from a bottom sheet) is now logged as a page transition governed by `isLogPages`, instead of being silently dropped as a "modal" transition.
 
 ### Improvements
 
