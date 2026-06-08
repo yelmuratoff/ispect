@@ -190,7 +190,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     Route<dynamic>? previousRoute,
   ) {
     if (!kISpectEnabled) return;
-    if (!_shouldLog(route, previousRoute)) return;
+    if (!shouldLog(route)) return;
 
     final correlationId = _resolveCorrelationId(type, route, previousRoute);
 
@@ -303,32 +303,28 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     return buffer.toString().trim();
   }
 
-  /// Determines whether a route transition should be logged based on route types and configuration.
+  /// Determines whether arriving at [route] should be logged.
   ///
-  /// This method evaluates the combination of route types in the transition against
-  /// logging configuration flags to determine whether logging should occur.
+  /// The decision is driven by the *destination* route's kind, not by the
+  /// (route, previousRoute) pair:
+  /// - [PageRoute] (a full-screen page) → [isLogPages]
+  /// - any other [ModalRoute] (dialog, bottom sheet, popup) → [isLogModals]
+  /// - everything else → [isLogOtherTypes]
   ///
-  /// The logic follows these rules:
-  /// 1. If both routes are PageRoutes, log only if `isLogPages` is true
-  /// 2. If both routes are ModalRoutes (excluding PageRoutes), log only if `isLogModals` is true
-  /// 3. If routes are of mixed types (e.g., one PageRoute and one ModalRoute), do not log
-  /// 4. For any other route type combinations, log only if `isLogOtherTypes` is true
+  /// [PageRoute] is itself a [ModalRoute], so the page case is matched first.
+  /// Classifying by destination keeps a page pushed from under a modal (for
+  /// example a profile opened from a bottom sheet) a page transition governed
+  /// by [isLogPages], instead of being dropped as "modal" — while a dialog or
+  /// sheet opened over a page stays governed by [isLogModals].
   ///
-  /// - `route`: The new/current route being navigated to
-  /// - `previousRoute`: The previous route being navigated from
-  ///
-  /// Returns true if the route transition should be logged based on current settings.
-  bool _shouldLog(Route<dynamic>? route, Route<dynamic>? previousRoute) {
+  /// Internal ISpect inspector routes are excluded unless [isLogInternalRoutes].
+  @visibleForTesting
+  bool shouldLog(Route<dynamic>? route) {
     if (!isLogInternalRoutes && _isInternalRoute(route)) return false;
 
-    return switch ((route, previousRoute)) {
-      // Both pages
-      (PageRoute(), PageRoute()) => isLogPages,
-      // Both modals (PageRoute is ModalRoute; Page/Page is handled above)
-      (ModalRoute(), ModalRoute()) => isLogModals,
-      // Mixed modal/non-modal
-      (ModalRoute(), _) || (_, ModalRoute()) => false,
-      // Other types
+    return switch (route) {
+      PageRoute() => isLogPages,
+      ModalRoute() => isLogModals,
       _ => isLogOtherTypes,
     };
   }
