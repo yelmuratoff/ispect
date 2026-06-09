@@ -194,6 +194,7 @@ class _MobileHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     MethodBadge(
                       method: tx.method ?? 'HTTP',
@@ -203,7 +204,7 @@ class _MobileHeader extends StatelessWidget {
                     Expanded(
                       child: Text(
                         tx.url ?? '',
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: color,
