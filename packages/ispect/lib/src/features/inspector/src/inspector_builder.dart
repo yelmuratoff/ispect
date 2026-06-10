@@ -364,7 +364,8 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
   void _exitOverlay() {
     if (_overlayDepth > 0) _overlayDepth--;
-    _hasOverlayRoute.value = _overlayDepth > 0;
+
+    if (mounted) _hasOverlayRoute.value = _overlayDepth > 0;
   }
 
   Future<void> _launchPluginScreen(
@@ -496,6 +497,7 @@ class _ISpectNavigationHost extends StatelessWidget {
     }
 
     return Stack(
+      fit: StackFit.expand,
       children: [
         child,
         Positioned.fill(child: overlay),
