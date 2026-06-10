@@ -79,19 +79,12 @@ abstract final class ISpectMotion {
 }
 
 extension OptionsExtension on ISpectOptions {
-  Future<void> push(BuildContext context, Route<dynamic> route) async {
-    if (observer != null) {
-      await observer?.navigator?.push(route);
-    } else {
-      await Navigator.of(context).push(route);
-    }
-  }
+  /// Pushes [route] onto the navigator that owns [context].
+  Future<void> push(BuildContext context, Route<dynamic> route) =>
+      Navigator.of(context).push(route);
 
+  /// Pops the current route via the navigator that owns [context].
   void pop(BuildContext context) {
-    if (observer != null) {
-      observer?.navigator?.pop();
-    } else {
-      Navigator.of(context).pop();
-    }
+    Navigator.of(context).maybePop();
   }
 }

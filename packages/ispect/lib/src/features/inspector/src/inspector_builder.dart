@@ -111,6 +111,14 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   late final ISpectLogPageController _logPageController;
   late final DraggablePanelController _panelController;
 
+  /// Navigator that hosts ISpect's own screens, decoupled from the host router.
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+  /// Drives pointer passthrough: `false` keeps the navigator transparent and
+  /// non-interactive so the app below stays usable while no ISpect route is open.
+  final ValueNotifier<bool> _hasOverlayRoute = ValueNotifier<bool>(false);
+  int _overlayDepth = 0;
+
   ErrorWidgetBuilder? _originalErrorWidgetBuilder;
 
   @override
@@ -187,6 +195,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     if (widget.controller == null) {
       _panelController.dispose();
     }
+    _hasOverlayRoute.dispose();
     model.dispose();
     super.dispose();
   }
@@ -206,6 +215,13 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       builder: (context, _) {
         // Build the widget tree with the necessary layers.
         var currentChild = widget.child;
+
+        // Host ISpect's own screens so its navigation never touches the host router.
+        currentChild = _ISpectNavigationHost(
+          navigatorKey: _navigatorKey,
+          hasOverlayRoute: _hasOverlayRoute,
+          child: currentChild,
+        );
 
         // Add inspector from the inspector package.
         currentChild = pkg_inspector.Inspector(
@@ -341,11 +357,24 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     );
   }
 
+  void _enterOverlay() {
+    _overlayDepth++;
+    _hasOverlayRoute.value = true;
+  }
+
+  void _exitOverlay() {
+    if (_overlayDepth > 0) _overlayDepth--;
+    _hasOverlayRoute.value = _overlayDepth > 0;
+  }
+
   Future<void> _launchPluginScreen(
     BuildContext context,
     InspectorPlugin plugin,
     ISpectOptions options,
   ) async {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
     final route = MaterialPageRoute<void>(
       builder: (_) => ISpectScopeController(
         model: model,
@@ -361,13 +390,27 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       ),
       settings: RouteSettings(name: 'ISpect Plugin: ${plugin.id}'),
     );
-    await options.push(context, route);
+
+    _enterOverlay();
+    try {
+      await navigator.push(route);
+    } finally {
+      _exitOverlay();
+    }
   }
 
   Future<void> _launchInfospect(
     BuildContext context,
     ISpectOptions options,
   ) async {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
+    if (_logPageController.inLoggerPage) {
+      await navigator.maybePop();
+      return;
+    }
+
     final iSpect = ISpect.read(context);
     final iSpectScreen = MaterialPageRoute<dynamic>(
       builder: (_) => LogsScreen(
@@ -376,15 +419,88 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       ),
       settings: const RouteSettings(name: 'ISpect Screen'),
     );
-    if (_logPageController.inLoggerPage) {
-      options.pop(context);
-    } else {
-      _logPageController.setInLoggerPage(isLoggerPage: true);
-      await options.push(context, iSpectScreen);
-      if (context.mounted) {
+
+    _logPageController.setInLoggerPage(isLoggerPage: true);
+    _enterOverlay();
+    try {
+      await navigator.push(iSpectScreen);
+    } finally {
+      _exitOverlay();
+      if (mounted) {
         _logPageController.setInLoggerPage(isLoggerPage: false);
       }
     }
+  }
+}
+
+/// Hosts ISpect's screens in a dedicated [Navigator] layered over the app.
+///
+/// ISpect renders its own screens (log viewer, plugins, JSON drill-downs) on
+/// this navigator instead of the host app's, so its imperative push/pop never
+/// depends on the host router's navigation contract. Declarative routers such
+/// as `yx_navigation` override [NavigatorState.pop] in a way that rejects
+/// imperatively pushed routes; isolating ISpect on its own navigator keeps it
+/// working regardless of the host router and leaves the host untouched.
+///
+/// While no ISpect route is open the navigator holds only a transparent
+/// placeholder and ignores pointers, so the app below stays fully interactive.
+class _ISpectNavigationHost extends StatelessWidget {
+  const _ISpectNavigationHost({
+    required this.navigatorKey,
+    required this.hasOverlayRoute,
+    required this.child,
+  });
+
+  final GlobalKey<NavigatorState> navigatorKey;
+  final ValueListenable<bool> hasOverlayRoute;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    // A fresh hero scope avoids sharing the host navigator's HeroController,
+    // which Flutter forbids across two navigators.
+    Widget overlay = HeroControllerScope.none(
+      child: ValueListenableBuilder<bool>(
+        valueListenable: hasOverlayRoute,
+        builder: (context, hasRoute, navigator) => IgnorePointer(
+          ignoring: !hasRoute,
+          child: navigator,
+        ),
+        child: Navigator(
+          key: navigatorKey,
+          onGenerateInitialRoutes: (_, __) => [
+            PageRouteBuilder<void>(
+              opaque: false,
+              pageBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Route the system back button to the ISpect navigator, but only when a
+    // Router owns it: BackButtonListener resolves Router.of and throws under a
+    // plain (non-router) MaterialApp.
+    if (Router.maybeOf(context) != null) {
+      overlay = BackButtonListener(
+        onBackButtonPressed: () async {
+          final navigator = navigatorKey.currentState;
+          if (navigator != null && navigator.canPop()) {
+            await navigator.maybePop();
+            return true;
+          }
+          return false;
+        },
+        child: overlay,
+      );
+    }
+
+    return Stack(
+      children: [
+        child,
+        Positioned.fill(child: overlay),
+      ],
+    );
   }
 }
 
