@@ -106,22 +106,26 @@ final class NetworkPayloadSanitizer {
       return false;
     }
     if (depth >= _maxEncodeDepth) return false;
-    if (value is TypedData) return false;
     if (value is Map) {
       return value.values.any((v) => _containsEncodableObject(v, depth + 1));
     }
     if (value is Iterable) {
+      if (_isPrimitiveCollection(value)) return false;
       return value.any((v) => _containsEncodableObject(v, depth + 1));
     }
-    return true;
+    return value is! TypedData;
   }
+
+  static bool _isPrimitiveCollection(Iterable<dynamic> value) =>
+      value is Iterable<num> ||
+      value is Iterable<String> ||
+      value is Iterable<bool>;
 
   static Object? _deepEncode(Object? value, Set<Object> visiting, int depth) {
     if (value == null || value is String || value is num || value is bool) {
       return value;
     }
     if (depth >= _maxEncodeDepth) return value;
-    if (value is TypedData) return value;
     if (value is Map) {
       if (!visiting.add(value)) return value;
       try {
@@ -136,6 +140,7 @@ final class NetworkPayloadSanitizer {
       }
     }
     if (value is Iterable) {
+      if (_isPrimitiveCollection(value)) return value;
       if (!visiting.add(value)) return value;
       try {
         return value
@@ -145,6 +150,7 @@ final class NetworkPayloadSanitizer {
         visiting.remove(value);
       }
     }
+    if (value is TypedData) return value;
     if (!visiting.add(value)) return value;
     try {
       final encoded = (value as dynamic).toJson();
