@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:ispectify/ispectify.dart';
 
@@ -85,25 +86,74 @@ final class NetworkPayloadSanitizer {
     }
   }
 
-  /// Renders a typed body via its `toJson()`; returns the original on failure.
+  /// Renders typed bodies via their `toJson()`, recursing into maps and
+  /// iterables; values that fail to encode are returned as-is.
   ///
-  /// Values already representable as JSON (null, maps, collections, strings,
-  /// numbers, booleans) pass through unchanged. Useful as a [body] normalizer
-  /// for clients that pass DTOs (freezed/json_serializable) to the request as-is
-  /// and serialize them only later, so logs would otherwise show `toString()`.
+  /// Covers DTOs nested inside a `toJson()` map generated without
+  /// `explicitToJson` (freezed/json_serializable), which would otherwise log
+  /// as `toString()`. Pure JSON structures pass through unchanged without
+  /// copying; the original input is never mutated.
   static Object? encodeJsonGracefully(Object? value) {
-    if (value == null ||
-        value is Map ||
-        value is Iterable ||
-        value is String ||
-        value is num ||
-        value is bool) {
+    if (!_containsEncodableObject(value, 0)) return value;
+    return _deepEncode(value, Set<Object>.identity(), 0);
+  }
+
+  /// Guards against stack overflow on pathological nesting or cycles.
+  static const int _maxEncodeDepth = 64;
+
+  static bool _containsEncodableObject(Object? value, int depth) {
+    if (value == null || value is String || value is num || value is bool) {
+      return false;
+    }
+    if (depth >= _maxEncodeDepth) return false;
+    if (value is TypedData) return false;
+    if (value is Map) {
+      return value.values.any((v) => _containsEncodableObject(v, depth + 1));
+    }
+    if (value is Iterable) {
+      return value.any((v) => _containsEncodableObject(v, depth + 1));
+    }
+    return true;
+  }
+
+  static Object? _deepEncode(Object? value, Set<Object> visiting, int depth) {
+    if (value == null || value is String || value is num || value is bool) {
       return value;
     }
+    if (depth >= _maxEncodeDepth) return value;
+    if (value is TypedData) return value;
+    if (value is Map) {
+      if (!visiting.add(value)) return value;
+      try {
+        final result = <String, dynamic>{};
+        value.forEach((key, entry) {
+          result[key.toString()] =
+              _deepEncode(entry as Object?, visiting, depth + 1);
+        });
+        return result;
+      } finally {
+        visiting.remove(value);
+      }
+    }
+    if (value is Iterable) {
+      if (!visiting.add(value)) return value;
+      try {
+        return value
+            .map((entry) => _deepEncode(entry as Object?, visiting, depth + 1))
+            .toList();
+      } finally {
+        visiting.remove(value);
+      }
+    }
+    if (!visiting.add(value)) return value;
     try {
-      return (value as dynamic).toJson();
+      final encoded = (value as dynamic).toJson();
+      if (identical(encoded, value)) return value;
+      return _deepEncode(encoded as Object?, visiting, depth + 1);
     } on Object {
       return value;
+    } finally {
+      visiting.remove(value);
     }
   }
 }

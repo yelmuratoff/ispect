@@ -21,6 +21,18 @@ class _OpaqueBody {
   String toString() => 'opaque-body';
 }
 
+class _AuthBody {
+  const _AuthBody(this.provider, this.profile);
+
+  final String provider;
+  final _TypedBody profile;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'provider': provider,
+        'profile': profile,
+      };
+}
+
 void main() {
   ISpectDioInterceptor buildInterceptor(ISpectLogger logger) =>
       ISpectDioInterceptor(
@@ -64,6 +76,45 @@ void main() {
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
     final requestData = meta?['request-data'] as Map?;
     expect(requestData?['data'], same(body));
+  });
+
+  test('DTO nested inside a map body is logged as its JSON map', () {
+    final logger = ISpectLogger(
+      options: ISpectLoggerOptions(useConsoleLogs: false),
+    );
+    final interceptor = buildInterceptor(logger);
+
+    final options = RequestOptions(path: 'https://api.example.com/signin')
+      ..data = const _AuthBody('APPLE', _TypedBody('ABC123'));
+
+    interceptor.onRequest(options, RequestInterceptorHandler());
+
+    final log = logger.history.last;
+    final meta = log.additionalData?[TraceKeys.meta] as Map?;
+    final requestData = meta?['request-data'] as Map?;
+    expect(requestData?['data'], <String, dynamic>{
+      'provider': 'APPLE',
+      'profile': <String, dynamic>{'referralCode': 'ABC123'},
+    });
+  });
+
+  test('nested DTO is rendered when redaction is enabled', () {
+    final logger = ISpectLogger(
+      options: ISpectLoggerOptions(useConsoleLogs: false),
+    );
+    final interceptor = ISpectDioInterceptor(logger: logger);
+
+    final options = RequestOptions(path: 'https://api.example.com/signin')
+      ..data = const _AuthBody('APPLE', _TypedBody('ABC123'));
+
+    interceptor.onRequest(options, RequestInterceptorHandler());
+
+    final log = logger.history.last;
+    final meta = log.additionalData?[TraceKeys.meta] as Map?;
+    final requestData = meta?['request-data'] as Map?;
+    final data = requestData?['data'] as Map?;
+    expect(data?['provider'], 'APPLE');
+    expect(data?['profile'], isA<Map<String, dynamic>>());
   });
 
   test('map, string and list bodies are passed through untouched', () {

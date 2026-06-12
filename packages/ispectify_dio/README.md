@@ -48,8 +48,8 @@
 ```yaml
 dependencies:
   dio: ^5.0.0
-  ispectify: ^5.2.0-dev.20
-  ispectify_dio: ^5.2.0-dev.20
+  ispectify: ^5.2.0-dev.21
+  ispectify_dio: ^5.2.0-dev.21
 ```
 
 ## Quick start
