@@ -27,6 +27,7 @@ class ISpectLogsBuilder extends StatefulWidget {
 
 class _ISpectLogsBuilderState extends State<ISpectLogsBuilder> {
   int _lastDataLength = 0;
+  List<ISpectLogData>? _lastSnapshot;
   ISpectObserverDisposer? _disposeObserver;
   bool _rebuildScheduled = false;
 
@@ -34,6 +35,7 @@ class _ISpectLogsBuilderState extends State<ISpectLogsBuilder> {
   void initState() {
     super.initState();
     _attach();
+    widget.controller?.addListener(_onControllerChanged);
   }
 
   @override
@@ -43,16 +45,21 @@ class _ISpectLogsBuilderState extends State<ISpectLogsBuilder> {
       _detach();
       _attach();
     }
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller?.removeListener(_onControllerChanged);
+      widget.controller?.addListener(_onControllerChanged);
+    }
   }
 
   @override
   void dispose() {
+    widget.controller?.removeListener(_onControllerChanged);
     _detach();
     super.dispose();
   }
 
   void _attach() {
-    _disposeObserver = widget.logger.observe(_LogsObserver(_onNewLog));
+    _disposeObserver = widget.logger.observe(_LogsObserver(_scheduleRebuild));
   }
 
   void _detach() {
@@ -60,7 +67,16 @@ class _ISpectLogsBuilderState extends State<ISpectLogsBuilder> {
     _disposeObserver = null;
   }
 
-  void _onNewLog() {
+  // Logger observers fire only on new log emissions; history mutations such
+  // as clearHistory surface via controller notifications. The default history
+  // getter returns a snapshot whose identity changes only on mutation, so the
+  // identical() guard skips rebuilds for purely UI-state notifications.
+  void _onControllerChanged() {
+    if (identical(widget.logger.history, _lastSnapshot)) return;
+    _scheduleRebuild();
+  }
+
+  void _scheduleRebuild() {
     if (!mounted || _rebuildScheduled) return;
     _rebuildScheduled = true;
     // Schedule rebuild after the current frame to avoid setState during
@@ -75,6 +91,7 @@ class _ISpectLogsBuilderState extends State<ISpectLogsBuilder> {
   @override
   Widget build(BuildContext context) {
     final currentData = widget.logger.history;
+    _lastSnapshot = currentData;
 
     // Invalidate filter cache when data length changes
     if (currentData.length != _lastDataLength) {

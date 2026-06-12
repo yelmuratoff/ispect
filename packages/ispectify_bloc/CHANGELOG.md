@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.2.0-dev.19
+## 5.2.0-dev.20
 
 ### Added
 
@@ -24,6 +24,7 @@
 - **`ISpect.run` zone consistency:** `onInit` and `onInitialized` now run inside the guarded zone, so binding setup shares a zone with `runApp` and stops dropping errors via a "Zone mismatch".
 - **Error capture shape:** Flutter, present, platform, and zoned errors all report the original thrown object and its stack trace; Flutter errors previously logged a stringified message.
 - **Navigation logging:** A page opened from under a modal (e.g. a profile pushed from a bottom sheet) is now logged as a page transition governed by `isLogPages`, instead of being silently dropped as a "modal" transition.
+- **Logs screen reactivity:** "Clear history" now empties the visible list immediately instead of after re-entering the screen; history mutations driven by the view controller refresh the UI without a new log emission.
 
 ### Improvements
 

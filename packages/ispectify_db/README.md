@@ -48,8 +48,8 @@
 
 ```yaml
 dependencies:
-  ispectify: ^5.2.0-dev.19
-  ispectify_db: ^5.2.0-dev.19
+  ispectify: ^5.2.0-dev.20
+  ispectify_db: ^5.2.0-dev.20
 ```
 
 ## Quick start

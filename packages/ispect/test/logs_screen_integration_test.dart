@@ -10,6 +10,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_builder.dart';
 
 void main() {
@@ -101,6 +102,78 @@ void main() {
 
       expect(find.text('count=2'), findsOneWidget);
       expect(builderInvocations, greaterThan(initialInvocations));
+    },
+  );
+
+  testWidgets(
+    'clearing history through the view controller empties the rendered list',
+    (tester) async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final controller = ISpectViewController();
+      addTearDown(controller.dispose);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ISpectLogsBuilder(
+              logger: logger,
+              controller: controller,
+              builder: (context, data) => data.isEmpty
+                  ? const Text('no-logs', key: Key('empty-marker'))
+                  : Text('count=${data.length}'),
+            ),
+          ),
+        ),
+      );
+
+      logger.httpRequest(source: 'dio', operation: 'GET', target: '/a');
+      await tester.pumpAndSettle();
+      expect(find.text('count=1'), findsOneWidget);
+
+      // Mirrors the "Clear history" settings action in LogsScreen.
+      controller.clearLogsHistory(logger.clearHistory);
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('empty-marker')), findsOneWidget);
+      expect(logger.history, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'controller notifications without history mutation do not rebuild the builder',
+    (tester) async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final controller = ISpectViewController();
+      addTearDown(controller.dispose);
+      var builderInvocations = 0;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ISpectLogsBuilder(
+              logger: logger,
+              controller: controller,
+              builder: (context, data) {
+                builderInvocations++;
+                return Text('count=${data.length}');
+              },
+            ),
+          ),
+        ),
+      );
+      logger.httpRequest(source: 'dio', operation: 'GET', target: '/a');
+      await tester.pumpAndSettle();
+      final settledInvocations = builderInvocations;
+
+      // UI-state change: notifies the controller but leaves history intact.
+      controller.toggleLogOrder();
+      await tester.pumpAndSettle();
+
+      expect(builderInvocations, settledInvocations);
     },
   );
 }
