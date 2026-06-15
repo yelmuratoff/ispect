@@ -28,6 +28,7 @@
 
 ### Improvements
 
+- **Compact network URLs:** Grouped HTTP transactions show only the path and query in the collapsed list (full URL stays in the expanded view). Toggle via the Settings sheet or `ISpectSettingsState.compactNetworkUrls`; on by default.
 - **Draggable panel upgraded to 3.0.0:** Reliable button hide/reveal and a content-sized adaptive layout that anchors to the button.
 - **Customizable panel via `ISpectOptions.panelBuilder`:** Receive a prepared `ISpectPanelData` and return a `DraggablePanel` configured with any `draggable_panel` parameter.
 - **Inspector property chips:** Composite values (offset, border, gradient, shadow) get inline labels, asymmetric radii render in a 2×2 grid, multi-shadows split per row, and `ImageFilter` descriptions are cleaned up.

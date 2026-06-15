@@ -25,6 +25,7 @@ class NetworkTransactionCard extends StatelessWidget {
     this.typeColumnWidth = 100,
     this.timeColumnWidth = 140,
     this.searchMatchState = SearchMatchState.none,
+    this.compactUrl = true,
     super.key,
   });
 
@@ -35,6 +36,10 @@ class NetworkTransactionCard extends StatelessWidget {
   final double typeColumnWidth;
   final double timeColumnWidth;
   final SearchMatchState searchMatchState;
+
+  /// Strips the scheme and host from the collapsed-row URL, leaving the path
+  /// and query. The expanded details keep the full URL.
+  final bool compactUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +52,7 @@ class NetworkTransactionCard extends StatelessWidget {
         typeColumnWidth: typeColumnWidth,
         timeColumnWidth: timeColumnWidth,
         searchMatchState: searchMatchState,
+        compactUrl: compactUrl,
       );
     }
     return Padding(
@@ -57,6 +63,7 @@ class NetworkTransactionCard extends StatelessWidget {
         onOpenRequestDetail: onOpenRequestDetail,
         onOpenResponseDetail: onOpenResponseDetail,
         searchMatchState: searchMatchState,
+        compactUrl: compactUrl,
       ),
     );
   }
@@ -73,6 +80,7 @@ class _MobileTransactionCard extends StatefulWidget {
     this.onOpenRequestDetail,
     this.onOpenResponseDetail,
     this.searchMatchState = SearchMatchState.none,
+    this.compactUrl = true,
   });
 
   final NetworkTransaction transaction;
@@ -80,6 +88,7 @@ class _MobileTransactionCard extends StatefulWidget {
   final VoidCallback? onOpenRequestDetail;
   final VoidCallback? onOpenResponseDetail;
   final SearchMatchState searchMatchState;
+  final bool compactUrl;
 
   @override
   State<_MobileTransactionCard> createState() => _MobileTransactionCardState();
@@ -131,6 +140,7 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
                     tx: tx,
                     color: color,
                     expanded: _expanded,
+                    compactUrl: widget.compactUrl,
                   ),
                 ),
               ),
@@ -175,11 +185,13 @@ class _MobileHeader extends StatelessWidget {
     required this.tx,
     required this.color,
     required this.expanded,
+    required this.compactUrl,
   });
 
   final NetworkTransaction tx;
   final Color color;
   final bool expanded;
+  final bool compactUrl;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -203,7 +215,7 @@ class _MobileHeader extends StatelessWidget {
                     const Gap(6),
                     Expanded(
                       child: Text(
-                        tx.url ?? '',
+                        transactionListUrl(tx.url, compact: compactUrl),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

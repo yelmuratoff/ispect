@@ -24,6 +24,20 @@ String formatTransactionDuration(Duration duration) {
   return '${(duration.inMilliseconds / 1000).toStringAsFixed(1)}s';
 }
 
+/// URL to render in a collapsed transaction row.
+///
+/// With [compact] true, strips the scheme and authority (host:port) so a
+/// shared base like `https://api.example.com` drops out, leaving the path and
+/// query that identify the endpoint. Returns [url] unchanged when it is empty,
+/// relative (no authority), unparseable, or has no path.
+String transactionListUrl(String? url, {required bool compact}) {
+  if (url == null || url.isEmpty) return '';
+  if (!compact) return url;
+  final uri = Uri.tryParse(url);
+  if (uri == null || !uri.hasAuthority || uri.path.isEmpty) return url;
+  return uri.hasQuery ? '${uri.path}?${uri.query}' : uri.path;
+}
+
 void shareTransaction(BuildContext context, NetworkTransaction tx) {
   final responseLog = tx.response ?? tx.error;
 

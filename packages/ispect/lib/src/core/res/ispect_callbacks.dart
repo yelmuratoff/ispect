@@ -65,6 +65,7 @@ final class ISpectSettingsState {
     this.isLogOrderReversed = true,
     this.groupHttpLogs = true,
     this.useRelativeTime = false,
+    this.compactNetworkUrls = true,
     this.isLogPageEnabled = true,
     this.isPerformanceEnabled = true,
     this.isInspectorEnabled = true,
@@ -95,6 +96,10 @@ final class ISpectSettingsState {
   final bool groupHttpLogs;
   final bool useRelativeTime;
 
+  /// Renders network transaction rows with only the path and query, dropping
+  /// the shared scheme and host so the endpoint is visible without expanding.
+  final bool compactNetworkUrls;
+
   final bool isLogPageEnabled;
   final bool isPerformanceEnabled;
   final bool isInspectorEnabled;
@@ -117,6 +122,7 @@ final class ISpectSettingsState {
     bool? isLogOrderReversed,
     bool? groupHttpLogs,
     bool? useRelativeTime,
+    bool? compactNetworkUrls,
     bool? isLogPageEnabled,
     bool? isPerformanceEnabled,
     bool? isInspectorEnabled,
@@ -135,6 +141,7 @@ final class ISpectSettingsState {
       isLogOrderReversed: isLogOrderReversed ?? this.isLogOrderReversed,
       groupHttpLogs: groupHttpLogs ?? this.groupHttpLogs,
       useRelativeTime: useRelativeTime ?? this.useRelativeTime,
+      compactNetworkUrls: compactNetworkUrls ?? this.compactNetworkUrls,
       isLogPageEnabled: isLogPageEnabled ?? this.isLogPageEnabled,
       isPerformanceEnabled: isPerformanceEnabled ?? this.isPerformanceEnabled,
       isInspectorEnabled: isInspectorEnabled ?? this.isInspectorEnabled,
@@ -155,6 +162,7 @@ final class ISpectSettingsState {
       'is_log_order_reversed': isLogOrderReversed,
       'group_http_logs': groupHttpLogs,
       'use_relative_time': useRelativeTime,
+      'compact_network_urls': compactNetworkUrls,
       'is_log_page_enabled': isLogPageEnabled,
       'is_performance_enabled': isPerformanceEnabled,
       'is_inspector_enabled': isInspectorEnabled,
@@ -179,6 +187,7 @@ final class ISpectSettingsState {
       isLogOrderReversed: cast<bool?>('is_log_order_reversed') ?? false,
       groupHttpLogs: cast<bool?>('group_http_logs') ?? false,
       useRelativeTime: cast<bool?>('use_relative_time') ?? false,
+      compactNetworkUrls: cast<bool?>('compact_network_urls') ?? true,
       isLogPageEnabled: cast<bool?>('is_log_page_enabled') ?? false,
       isPerformanceEnabled: cast<bool?>('is_performance_enabled') ?? false,
       isInspectorEnabled: cast<bool?>('is_inspector_enabled') ?? false,
@@ -205,6 +214,7 @@ final class ISpectSettingsState {
       isLogOrderReversed: $isLogOrderReversed,
       groupHttpLogs: $groupHttpLogs,
       useRelativeTime: $useRelativeTime,
+      compactNetworkUrls: $compactNetworkUrls,
       isLogPageEnabled: $isLogPageEnabled,
       isPerformanceEnabled: $isPerformanceEnabled,
       isInspectorEnabled: $isInspectorEnabled,
@@ -229,6 +239,7 @@ final class ISpectSettingsState {
         other.isLogOrderReversed == isLogOrderReversed &&
         other.groupHttpLogs == groupHttpLogs &&
         other.useRelativeTime == useRelativeTime &&
+        other.compactNetworkUrls == compactNetworkUrls &&
         other.isLogPageEnabled == isLogPageEnabled &&
         other.isPerformanceEnabled == isPerformanceEnabled &&
         other.isInspectorEnabled == isInspectorEnabled &&
@@ -249,6 +260,7 @@ final class ISpectSettingsState {
         isLogOrderReversed,
         groupHttpLogs,
         useRelativeTime,
+        compactNetworkUrls,
         isLogPageEnabled,
         isPerformanceEnabled,
         isInspectorEnabled,

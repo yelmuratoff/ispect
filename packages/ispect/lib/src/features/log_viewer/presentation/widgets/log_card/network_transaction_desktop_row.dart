@@ -19,6 +19,7 @@ class NetworkTransactionDesktopRow extends StatefulWidget {
     this.onOpenRequestDetail,
     this.onOpenResponseDetail,
     this.searchMatchState = SearchMatchState.none,
+    this.compactUrl = true,
     super.key,
   });
 
@@ -29,6 +30,7 @@ class NetworkTransactionDesktopRow extends StatefulWidget {
   final double typeColumnWidth;
   final double timeColumnWidth;
   final SearchMatchState searchMatchState;
+  final bool compactUrl;
 
   @override
   State<NetworkTransactionDesktopRow> createState() =>
@@ -166,7 +168,10 @@ class _NetworkTransactionDesktopRowState
                           const Gap(6),
                           Expanded(
                             child: Text(
-                              tx.url ?? '',
+                              transactionListUrl(
+                                tx.url,
+                                compact: widget.compactUrl,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
