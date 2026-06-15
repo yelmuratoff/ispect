@@ -1,44 +1,44 @@
 # Changelog
 
-## 5.2.0-dev.22
-
-### Added
-
-- **`ispectify_riverpod`:** New package — `ISpectRiverpodObserver` logs provider add/update/dispose/fail under `riverpod-*` keys (closes [#80](https://github.com/yelmuratoff/ispect/issues/80)).
-- **Trace extensions:** `ISpectLoggerBloc` and `ISpectLoggerRiverpod` add one method per lifecycle event.
-- **`ispectify_ws` is now provider-agnostic:** `WsDiagnostics` and the `WsDiagnosticsSink` port log any WebSocket client; ready-to-copy `ws`, `socket_io_client`, and `web_socket_channel` adapters ship in the package example.
-- **WebSocket connection state:** New `ws-state` log type and `wsState` emitter capture connection-lifecycle transitions.
-
-### Changed
-
-- **BLoC observer keys:** Granular `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, `bloc-error` replace `state-change` / `state-error` — update filters keyed on the old names.
-- **BLoC `meta` keys:** Now kebab-case; read them via `BlocJsonKeys.*`.
-- **Riverpod `printValues` defaults to `true`:** Use `ISpectRiverpodSettings.compact` when provider state may carry PII.
-- **`ISpect.run` uncaught-error hook:** `onUncaughtErrors` (`void Function(List<dynamic>)`) is replaced by typed `onUncaughtError` (`void Function(Object error, StackTrace? stack)`).
-- **`ispectify_ws` drops the `ws` dependency:** `ISpectWSInterceptor` is no longer exported — copy the adapter from `ispectify_ws/example/lib/interceptors/ws_interceptor.dart` and add `ws` to your app. `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged.
-
-### Fixed
-
-- **Typed request bodies:** DTOs passed as-is (e.g. Retrofit freezed/`json_serializable` models) now render as their JSON shape instead of `Instance of ...` in `ispectify_dio` and `ispectify_ws` logs; redaction now reaches their fields too. Rendering is recursive, so DTOs nested inside maps and lists (`json_serializable` without `explicitToJson`) are covered as well.
-- **`ispectify_dio`:** Responses no longer stay stuck on "Pending" when a downstream interceptor rewrites the request via `copyWith`.
-- **`ISpect.run` zone consistency:** `onInit` and `onInitialized` now run inside the guarded zone, so binding setup shares a zone with `runApp` and stops dropping errors via a "Zone mismatch".
-- **Error capture shape:** Flutter, present, platform, and zoned errors all report the original thrown object and its stack trace; Flutter errors previously logged a stringified message.
-- **Navigation logging:** A page opened from under a modal (e.g. a profile pushed from a bottom sheet) is now logged as a page transition governed by `isLogPages`, instead of being silently dropped as a "modal" transition.
-- **Logs screen reactivity:** "Clear history" now empties the visible list immediately instead of after re-entering the screen; history mutations driven by the view controller refresh the UI without a new log emission.
+## 5.2.0-dev.23
 
 ### Improvements
 
-- **Compact network URLs:** Grouped HTTP transactions show only the path and query in the collapsed list (full URL stays in the expanded view). Toggle via the Settings sheet or `ISpectSettingsState.compactNetworkUrls`; on by default.
-- **Draggable panel upgraded to 3.0.0:** Reliable button hide/reveal and a content-sized adaptive layout that anchors to the button.
-- **Customizable panel via `ISpectOptions.panelBuilder`:** Receive a prepared `ISpectPanelData` and return a `DraggablePanel` configured with any `draggable_panel` parameter.
-- **Inspector property chips:** Composite values (offset, border, gradient, shadow) get inline labels, asymmetric radii render in a 2×2 grid, multi-shadows split per row, and `ImageFilter` descriptions are cleaned up.
+- **`ispectify_riverpod`:** New package — `ISpectRiverpodObserver` logs provider add/update/dispose/fail under `riverpod-*` keys (closes [#80](https://github.com/yelmuratoff/ispect/issues/80)).
+- **Trace extensions:** `ISpectLoggerBloc` and `ISpectLoggerRiverpod` add one method per lifecycle event.
+- **Provider-agnostic `ispectify_ws`:** `WsDiagnostics` and the `WsDiagnosticsSink` port log any WebSocket client; `ws`, `socket_io_client`, and `web_socket_channel` adapters ship in the example.
+- **WebSocket connection state:** New `ws-state` log type and `wsState` emitter capture connection-lifecycle transitions.
+- **Compact network URLs:** Grouped HTTP transactions show only the path and query when collapsed; the full URL stays in the expanded view. Toggle via Settings or `ISpectSettingsState.compactNetworkUrls`; on by default.
+- **Draggable panel 3.0.0:** Reliable button hide/reveal and a content-sized adaptive layout that anchors to the button.
+- **Custom panel via `ISpectOptions.panelBuilder`:** Receive a prepared `ISpectPanelData` and return a `DraggablePanel` configured with any `draggable_panel` parameter.
+- **Inspector property chips:** Inline labels for composite values (offset, border, gradient, shadow), asymmetric radii in a 2×2 grid, per-row multi-shadows, and cleaner `ImageFilter` descriptions.
 - **Inspector selection box:** Correctly encloses rotated and skewed widgets, with the size label moved above the box.
 - **Typography span grouping:** Multi-span `RichText` groups each span's chips under a preview of its text.
+- **`ISpectPerformanceOverlay` rebuilt:** Cross-platform overlay (web + desktop) with UI/raster/total bars, avg/p99/jank stats, current FPS, target line, and a freeze button.
+- **Jank diagnostics:** New `onJankBurst` callback and opt-in `enableJankLogging` log severe frames under `performance-jank` / `performance-error`.
+- **Overlay display options:** `compact: true` single-line summary, `showP90: true`, and a color-blind-safe palette via `ISpectPerformanceOverlayPalettes`.
+
+### Behavioral Changes
+
+- **BLoC observer keys:** Granular `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, `bloc-error` replace `state-change` / `state-error` — update filters keyed on the old names.
+- **BLoC `meta` keys:** Now kebab-case; read them via `BlocJsonKeys.*`.
+- **Riverpod `printValues` now defaults to `true`:** Use `ISpectRiverpodSettings.compact` when provider state may carry PII.
+- **`ISpect.run` uncaught-error hook:** Typed `onUncaughtError(Object error, StackTrace? stack)` replaces `onUncaughtErrors(List<dynamic>)`.
+- **`ispectify_ws` drops the `ws` dependency:** `ISpectWSInterceptor` is no longer exported — copy the adapter from the package example and add `ws` to your app. `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged.
+
+### Bug Fixes
+
+- **Typed request bodies:** DTOs (e.g. Retrofit / `json_serializable` models) now render as their JSON shape instead of `Instance of ...` in `ispectify_dio` and `ispectify_ws` logs, and redaction reaches their nested fields.
+- **`ispectify_dio`:** Responses no longer stay stuck on "Pending" when a downstream interceptor rewrites the request via `copyWith`.
+- **`ISpect.run` zone consistency:** `onInit` and `onInitialized` now run inside the guarded zone, so binding setup no longer drops errors via a "Zone mismatch".
+- **Error capture shape:** Flutter, present, platform, and zoned errors now report the original thrown object and its stack trace instead of a stringified message.
+- **Navigation logging:** A page opened from under a modal (e.g. a profile pushed from a bottom sheet) is now logged as a page transition governed by `isLogPages` instead of being dropped as a "modal" transition.
+- **Logs screen reactivity:** "Clear history" empties the visible list immediately, and view-controller-driven history mutations refresh the UI without a new log emission.
+
+### Code Quality
+
 - **Sealed data and utility classes:** `LogDetails`, `ConsoleSettings`, `RedactionResult`, `HeaderRedactionResult`, `RedactionContext`, `RedactionStats`, `CurlUtils`, `JsonTruncator`, `NetworkPayloadSanitizer`, and `ISpectDateTimeFormatter` are now `final` / `abstract final` and can no longer be subclassed.
 - **Formatters stay extendable:** `ExtendedLoggerFormatter` and `HumanLogEntryFormatter` are `base class` (`extends` still works); `RedactionService`, `ISpectErrorHandler`, and `NetworkTransaction` remain open.
-- **`ISpectPerformanceOverlay` rebuilt:** Cross-platform overlay (web + desktop) with UI/raster/total bars, avg/p99/jank stats, current FPS, target line, and a freeze button; bottleneck-based FPS surfaces single hitches instead of averaging them away.
-- **Jank diagnostics:** New `onJankBurst` callback and opt-in `enableJankLogging` (severe frames logged under `performance-jank` / `performance-error`); a perception threshold and 800 ms cold-start warmup keep false positives off the dropped-frame counter.
-- **Overlay display options:** `compact: true` single-line summary, `showP90: true`, and a color-blind-safe palette via `ISpectPerformanceOverlayPalettes`.
 
 ## 5.0.4
 
