@@ -1000,4 +1000,67 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => '더보기';
+
+  @override
+  String get composerTitle => 'HTTP 컴포저';
+
+  @override
+  String get composerSend => '보내기';
+
+  @override
+  String get composerMethod => '방법';
+
+  @override
+  String get composerClient => '클라이언트';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => '헤더';
+
+  @override
+  String get composerQueryParameters => '쿼리 매개변수';
+
+  @override
+  String get composerBody => '본문';
+
+  @override
+  String get composerAddField => '추가';
+
+  @override
+  String get composerAddHeader => '헤더 추가';
+
+  @override
+  String get composerAddParameter => '매개변수 추가';
+
+  @override
+  String get composerKeyHint => '키';
+
+  @override
+  String get composerValueHint => '값';
+
+  @override
+  String get composerAttachFile => '파일 첨부';
+
+  @override
+  String get composerResponse => '응답';
+
+  @override
+  String get composerNoClients => '요청을 보내려면 Dio 또는 http 클라이언트를 등록하세요';
+
+  @override
+  String get composerErrorUrlRequired => 'URL을 입력하세요';
+
+  @override
+  String get composerErrorUrlInvalid => '유효한 절대 URL을 입력하세요';
+
+  @override
+  String get composerErrorInvalidJson => '본문이 유효한 JSON이 아닙니다';
+
+  @override
+  String get composerErrorNoClient => '등록된 클라이언트가 없습니다';
+
+  @override
+  String get composerEditAndResend => '편집 후 다시 보내기';
 }

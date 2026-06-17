@@ -1984,6 +1984,132 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'More options'**
   String get moreOptions;
+
+  /// No description provided for @composerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HTTP Composer'**
+  String get composerTitle;
+
+  /// No description provided for @composerSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get composerSend;
+
+  /// No description provided for @composerMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Method'**
+  String get composerMethod;
+
+  /// No description provided for @composerClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Client'**
+  String get composerClient;
+
+  /// No description provided for @composerUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://api.example.com/path'**
+  String get composerUrlHint;
+
+  /// No description provided for @composerHeaders.
+  ///
+  /// In en, this message translates to:
+  /// **'Headers'**
+  String get composerHeaders;
+
+  /// No description provided for @composerQueryParameters.
+  ///
+  /// In en, this message translates to:
+  /// **'Query parameters'**
+  String get composerQueryParameters;
+
+  /// No description provided for @composerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Body'**
+  String get composerBody;
+
+  /// No description provided for @composerAddField.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get composerAddField;
+
+  /// No description provided for @composerAddHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Add header'**
+  String get composerAddHeader;
+
+  /// No description provided for @composerAddParameter.
+  ///
+  /// In en, this message translates to:
+  /// **'Add parameter'**
+  String get composerAddParameter;
+
+  /// No description provided for @composerKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Key'**
+  String get composerKeyHint;
+
+  /// No description provided for @composerValueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get composerValueHint;
+
+  /// No description provided for @composerAttachFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach file'**
+  String get composerAttachFile;
+
+  /// No description provided for @composerResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Response'**
+  String get composerResponse;
+
+  /// No description provided for @composerNoClients.
+  ///
+  /// In en, this message translates to:
+  /// **'Register a Dio or http client to send requests'**
+  String get composerNoClients;
+
+  /// No description provided for @composerErrorUrlRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a URL'**
+  String get composerErrorUrlRequired;
+
+  /// No description provided for @composerErrorUrlInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid absolute URL'**
+  String get composerErrorUrlInvalid;
+
+  /// No description provided for @composerErrorInvalidJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Body is not valid JSON'**
+  String get composerErrorInvalidJson;
+
+  /// No description provided for @composerErrorNoClient.
+  ///
+  /// In en, this message translates to:
+  /// **'No client registered'**
+  String get composerErrorNoClient;
+
+  /// No description provided for @composerEditAndResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit & resend'**
+  String get composerEditAndResend;
 }
 
 class _ISpectGeneratedLocalizationDelegate

@@ -128,6 +128,7 @@ The toolkit handles the diagnostics most projects rebuild by hand for every new 
 | Widget inspector | Tap a widget to read its render box, decoration, constraints, padding, transforms, and text style. |
 | Structured logs | Typed entries with severity, log-type keys, filters, bounded history, and JSON export/import. |
 | Network capture | Request/response/error capture for Dio, the `http` package, and WebSocket clients. Requests and responses are paired by correlation ID. |
+| HTTP composer | Replay a captured request or build one from scratch and send it through your registered `Dio`/`http` client, reusing its base URL, auth interceptors, and retries. Opt in with `ISpect.registerSender`; redacted values are re-added by the client at send time, not resent. |
 | Database tracing | One `dbTrace` extension wraps any storage call with timing, redaction, optional sampling, and a slow-query threshold. |
 | BLoC observer | Events, transitions, state changes, errors, and create/close hooks routed through the log pipeline. |
 | Riverpod observer | Provider add, update, dispose, and failure events routed through the log pipeline with the same redaction surface. |

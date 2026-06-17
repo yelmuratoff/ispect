@@ -16,6 +16,7 @@ final class ISpect {
   static ISpectLogger? _logger;
   static bool _isInitialized = false;
   static ErrorHandlerService? _errorHandler;
+  static final NetworkSenderRegistry _senders = NetworkSenderRegistry();
 
   /// Returns the global logger instance.
   ///
@@ -51,12 +52,33 @@ final class ISpect {
     return true;
   }
 
+  /// Clients registered for request replay/compose (the in-app HTTP composer).
+  ///
+  /// Empty unless the app opts in via [registerSender]; the composer UI hides
+  /// itself when this is empty.
+  static List<NetworkRequestSender> get senders => _senders.senders;
+
+  /// Registers a client so the composer can send through it, reusing its base
+  /// URL, auth interceptors, and retries.
+  ///
+  /// A sender with the same id replaces the previous one. No-op when
+  /// `kISpectEnabled` is `false`, so production builds neither retain the
+  /// client nor expose request sending.
+  static void registerSender(NetworkRequestSender sender) {
+    if (!kISpectEnabled) return;
+    _senders.register(sender);
+  }
+
+  /// Removes a client previously passed to [registerSender] by its id.
+  static void unregisterSender(String id) => _senders.unregister(id);
+
   /// Disposes current ISpect state (useful for testing or hot restart).
   static Future<void> dispose() async {
     await _logger?.dispose();
     _isInitialized = false;
     _logger = null;
     _errorHandler = null;
+    _senders.clear();
     ISpectNavigatorObserver.resetCurrent();
   }
 

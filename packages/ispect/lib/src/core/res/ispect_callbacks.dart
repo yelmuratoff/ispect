@@ -61,6 +61,14 @@ typedef ISpectSettingsChangedCallback = void Function(
   ISpectSettingsState settings,
 );
 
+/// Supplies a file for a composed multipart request in the HTTP composer.
+///
+/// ISpect never touches the filesystem itself; the host app wires its own
+/// picker (`file_picker`, `image_picker`, …) and returns the bytes, keeping
+/// those plugins out of ISpect's dependencies. Returns `null` when the user
+/// cancels. The composer's "attach file" control is hidden when this is unset.
+typedef ISpectComposerFilePicker = Future<ComposerPickedFile?> Function();
+
 /// Mirrors `ISpectLoggerOptions.maxHistoryItems` default.
 const int kDefaultMaxHistoryItems = 10000;
 

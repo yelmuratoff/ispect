@@ -74,6 +74,7 @@ final class ISpectOptions {
     this.onSettingsChanged,
     this.initialSettings,
     this.metadataProvider,
+    this.onPickComposerFile,
   });
 
   /// The locale setting for `ISpect`, defining the language and region preferences.
@@ -254,6 +255,12 @@ final class ISpectOptions {
   /// `package_info_plus`/`device_info_plus` out of ISpect's dependencies.
   final ISpectMetadataProvider? metadataProvider;
 
+  /// Supplies files for multipart bodies in the HTTP composer.
+  ///
+  /// When omitted, the composer still supports multipart text fields but hides
+  /// the "attach file" control, so no file-picker dependency is required.
+  final ISpectComposerFilePicker? onPickComposerFile;
+
   /// Creates a new `ISpectOptions` instance with updated values while retaining
   /// existing ones where not specified.
   ///
@@ -288,6 +295,7 @@ final class ISpectOptions {
     ISpectSettingsChangedCallback? onSettingsChanged,
     ISpectSettingsState? initialSettings,
     ISpectMetadataProvider? metadataProvider,
+    ISpectComposerFilePicker? onPickComposerFile,
   }) {
     return ISpectOptions(
       locale: locale ?? this.locale,
@@ -310,6 +318,7 @@ final class ISpectOptions {
       onSettingsChanged: onSettingsChanged ?? this.onSettingsChanged,
       initialSettings: initialSettings ?? this.initialSettings,
       metadataProvider: metadataProvider ?? this.metadataProvider,
+      onPickComposerFile: onPickComposerFile ?? this.onPickComposerFile,
     );
   }
 
@@ -338,14 +347,15 @@ final class ISpectOptions {
         other.onLoadLogContent == onLoadLogContent &&
         other.onSettingsChanged == onSettingsChanged &&
         other.initialSettings == initialSettings &&
-        other.metadataProvider == metadataProvider;
+        other.metadataProvider == metadataProvider &&
+        other.onPickComposerFile == onPickComposerFile;
   }
 
   static const _deepEquality = DeepCollectionEquality();
 
   @override
   int get hashCode {
-    return Object.hash(
+    return Object.hashAll([
       locale,
       observer,
       isLogPageEnabled,
@@ -366,7 +376,8 @@ final class ISpectOptions {
       onSettingsChanged,
       initialSettings,
       metadataProvider,
-    );
+      onPickComposerFile,
+    ]);
   }
 
   @override
@@ -392,6 +403,7 @@ final class ISpectOptions {
       onSettingsChanged: $onSettingsChanged,
       initialSettings: $initialSettings,
       metadataProvider: $metadataProvider,
+      onPickComposerFile: $onPickComposerFile,
       )''';
   }
 }

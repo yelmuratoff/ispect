@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
@@ -202,6 +203,14 @@ class _MyAppState extends State<MyApp> {
             subject: req.subject,
             files: req.filePaths.map(XFile.new).toList(),
           )),
+          // Demo stub for the HTTP composer's multipart "attach file". A real
+          // app wires file_picker / image_picker here; this returns a canned
+          // in-memory file so the flow is testable without a native picker.
+          onPickComposerFile: () async => ComposerPickedFile(
+            filename: 'sample.txt',
+            bytes: utf8.encode('Hello from the ISpect HTTP composer'),
+            contentType: 'text/plain',
+          ),
         ),
         theme: ISpectTheme(
           primary: _preset.primary,
@@ -1611,10 +1620,17 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
         ),
       ],
     );
+
+    // Expose both clients to the in-app HTTP composer ("mini-Postman"). Replays
+    // and composed requests then travel through these same instrumented clients.
+    ISpect.registerSender(DioRequestSender(_dio, label: 'Dio'));
+    ISpect.registerSender(HttpClientRequestSender(_httpClient, label: 'HTTP'));
   }
 
   @override
   void dispose() {
+    ISpect.unregisterSender('dio');
+    ISpect.unregisterSender('http');
     _dio.close();
     _httpClient.close();
     super.dispose();
@@ -1630,6 +1646,14 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
           children: [
             if (_isLoading) const LinearProgressIndicator(),
             if (_isLoading) const SizedBox(height: 12),
+
+            Text(
+              'HTTP composer: open the panel → api icon to compose a request, '
+              'or fire any call below then long-press its network log → '
+              'Edit & resend.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
 
             // Dio
             Text(

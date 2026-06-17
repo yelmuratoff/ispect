@@ -1011,4 +1011,67 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => 'المزيد';
+
+  @override
+  String get composerTitle => 'منشئ طلبات HTTP';
+
+  @override
+  String get composerSend => 'إرسال';
+
+  @override
+  String get composerMethod => 'الطريقة';
+
+  @override
+  String get composerClient => 'العميل';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => 'الرؤوس';
+
+  @override
+  String get composerQueryParameters => 'مَعلَمات الاستعلام';
+
+  @override
+  String get composerBody => 'المحتوى';
+
+  @override
+  String get composerAddField => 'إضافة';
+
+  @override
+  String get composerAddHeader => 'إضافة رأس';
+
+  @override
+  String get composerAddParameter => 'إضافة مَعلَمة';
+
+  @override
+  String get composerKeyHint => 'المفتاح';
+
+  @override
+  String get composerValueHint => 'القيمة';
+
+  @override
+  String get composerAttachFile => 'إرفاق ملف';
+
+  @override
+  String get composerResponse => 'استجابة';
+
+  @override
+  String get composerNoClients => 'سجّل عميل Dio أو http لإرسال الطلبات';
+
+  @override
+  String get composerErrorUrlRequired => 'أدخل عنوان URL';
+
+  @override
+  String get composerErrorUrlInvalid => 'أدخل عنوان URL مطلقًا صالحًا';
+
+  @override
+  String get composerErrorInvalidJson => 'المحتوى ليس JSON صالحًا';
+
+  @override
+  String get composerErrorNoClient => 'لا يوجد عميل مُسجَّل';
+
+  @override
+  String get composerEditAndResend => 'تعديل وإعادة الإرسال';
 }

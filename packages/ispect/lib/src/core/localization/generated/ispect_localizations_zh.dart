@@ -1000,4 +1000,67 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => '更多选项';
+
+  @override
+  String get composerTitle => 'HTTP 构造器';
+
+  @override
+  String get composerSend => '发送';
+
+  @override
+  String get composerMethod => '方法';
+
+  @override
+  String get composerClient => '客户端';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => '请求头';
+
+  @override
+  String get composerQueryParameters => '查询参数';
+
+  @override
+  String get composerBody => '请求体';
+
+  @override
+  String get composerAddField => '添加';
+
+  @override
+  String get composerAddHeader => '添加请求头';
+
+  @override
+  String get composerAddParameter => '添加参数';
+
+  @override
+  String get composerKeyHint => '键';
+
+  @override
+  String get composerValueHint => '值';
+
+  @override
+  String get composerAttachFile => '附加文件';
+
+  @override
+  String get composerResponse => '响应';
+
+  @override
+  String get composerNoClients => '注册 Dio 或 http 客户端以发送请求';
+
+  @override
+  String get composerErrorUrlRequired => '请输入 URL';
+
+  @override
+  String get composerErrorUrlInvalid => '请输入有效的绝对 URL';
+
+  @override
+  String get composerErrorInvalidJson => '请求体不是有效的 JSON';
+
+  @override
+  String get composerErrorNoClient => '未注册客户端';
+
+  @override
+  String get composerEditAndResend => '编辑并重新发送';
 }

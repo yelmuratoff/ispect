@@ -1045,4 +1045,68 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => 'Mehr Optionen';
+
+  @override
+  String get composerTitle => 'HTTP-Composer';
+
+  @override
+  String get composerSend => 'Senden';
+
+  @override
+  String get composerMethod => 'Methode';
+
+  @override
+  String get composerClient => 'Client';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => 'Header';
+
+  @override
+  String get composerQueryParameters => 'Query-Parameter';
+
+  @override
+  String get composerBody => 'Body';
+
+  @override
+  String get composerAddField => 'Hinzufügen';
+
+  @override
+  String get composerAddHeader => 'Header hinzufügen';
+
+  @override
+  String get composerAddParameter => 'Parameter hinzufügen';
+
+  @override
+  String get composerKeyHint => 'Schlüssel';
+
+  @override
+  String get composerValueHint => 'Wert';
+
+  @override
+  String get composerAttachFile => 'Datei anhängen';
+
+  @override
+  String get composerResponse => 'Antwort';
+
+  @override
+  String get composerNoClients =>
+      'Einen Dio- oder http-Client registrieren, um Anfragen zu senden';
+
+  @override
+  String get composerErrorUrlRequired => 'URL eingeben';
+
+  @override
+  String get composerErrorUrlInvalid => 'Gültige absolute URL eingeben';
+
+  @override
+  String get composerErrorInvalidJson => 'Body ist kein gültiges JSON';
+
+  @override
+  String get composerErrorNoClient => 'Kein Client registriert';
+
+  @override
+  String get composerEditAndResend => 'Bearbeiten & erneut senden';
 }

@@ -5,6 +5,8 @@ import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/share_sheet.dart';
+import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
+import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
@@ -153,6 +155,29 @@ List<Widget> buildActionWidgets({
         ),
       ]);
     }
+  }
+
+  final canEditResend = ISpect.senders.isNotEmpty &&
+      HttpComposerController.seedFromLog(tx.request) != null;
+  if (canEditResend) {
+    void openComposer() => HttpComposerScreen.openFromLog(context, tx.request);
+    widgets.addAll([
+      const Gap(4),
+      if (useDesktopStyle)
+        SmallActionIcon(
+          icon: Icons.api_rounded,
+          color: color,
+          tooltip: l10n.composerEditAndResend,
+          onPressed: openComposer,
+        )
+      else
+        SquareIconButton(
+          icon: Icons.api_rounded,
+          color: color,
+          tooltip: l10n.composerEditAndResend,
+          onPressed: openComposer,
+        ),
+    ]);
   }
 
   if (onOpenRequestDetail != null) {

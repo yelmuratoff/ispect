@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/error_boundary.dart';
+import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/features/log_viewer/controllers/log_page_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
 import 'package:ispect/src/features/performance/src/builder.dart';
@@ -213,7 +214,6 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     return ListenableBuilder(
       listenable: model,
       builder: (context, _) {
-        // Build the widget tree with the necessary layers.
         var currentChild = widget.child;
 
         // Host ISpect's own screens so its navigation never touches the host router.
@@ -315,6 +315,13 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
                 ),
                 description: context.ispectL10n.zoomPickColor,
               ),
+            if (ISpect.senders.isNotEmpty)
+              DraggablePanelItem(
+                icon: Icons.api_rounded,
+                enableBadge: false,
+                onTap: (ctx) => _launchComposer(ctx, options),
+                description: context.ispectL10n.composerTitle,
+              ),
             ...options.panelItems,
             // Plugin-generated panel items
             for (final plugin in options.plugins)
@@ -366,6 +373,32 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     if (_overlayDepth > 0) _overlayDepth--;
 
     if (mounted) _hasOverlayRoute.value = _overlayDepth > 0;
+  }
+
+  Future<void> _launchComposer(
+    BuildContext context,
+    ISpectOptions options,
+  ) async {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
+    final route = MaterialPageRoute<void>(
+      builder: (_) => ISpectScopeController(
+        model: model,
+        child: HttpComposerScreen(
+          senders: ISpect.senders,
+          onPickComposerFile: options.onPickComposerFile,
+        ),
+      ),
+      settings: const RouteSettings(name: 'ISpect HTTP Composer'),
+    );
+
+    _enterOverlay();
+    try {
+      await navigator.push(route);
+    } finally {
+      _exitOverlay();
+    }
   }
 
   Future<void> _launchPluginScreen(

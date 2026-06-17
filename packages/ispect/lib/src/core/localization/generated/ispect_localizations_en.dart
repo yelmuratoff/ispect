@@ -1024,4 +1024,68 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => 'More options';
+
+  @override
+  String get composerTitle => 'HTTP Composer';
+
+  @override
+  String get composerSend => 'Send';
+
+  @override
+  String get composerMethod => 'Method';
+
+  @override
+  String get composerClient => 'Client';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => 'Headers';
+
+  @override
+  String get composerQueryParameters => 'Query parameters';
+
+  @override
+  String get composerBody => 'Body';
+
+  @override
+  String get composerAddField => 'Add';
+
+  @override
+  String get composerAddHeader => 'Add header';
+
+  @override
+  String get composerAddParameter => 'Add parameter';
+
+  @override
+  String get composerKeyHint => 'Key';
+
+  @override
+  String get composerValueHint => 'Value';
+
+  @override
+  String get composerAttachFile => 'Attach file';
+
+  @override
+  String get composerResponse => 'Response';
+
+  @override
+  String get composerNoClients =>
+      'Register a Dio or http client to send requests';
+
+  @override
+  String get composerErrorUrlRequired => 'Enter a URL';
+
+  @override
+  String get composerErrorUrlInvalid => 'Enter a valid absolute URL';
+
+  @override
+  String get composerErrorInvalidJson => 'Body is not valid JSON';
+
+  @override
+  String get composerErrorNoClient => 'No client registered';
+
+  @override
+  String get composerEditAndResend => 'Edit & resend';
 }

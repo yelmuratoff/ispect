@@ -1029,4 +1029,68 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => 'Ещё';
+
+  @override
+  String get composerTitle => 'HTTP-композер';
+
+  @override
+  String get composerSend => 'Отправить';
+
+  @override
+  String get composerMethod => 'Метод';
+
+  @override
+  String get composerClient => 'Клиент';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => 'Заголовки';
+
+  @override
+  String get composerQueryParameters => 'Параметры запроса';
+
+  @override
+  String get composerBody => 'Тело';
+
+  @override
+  String get composerAddField => 'Добавить';
+
+  @override
+  String get composerAddHeader => 'Добавить заголовок';
+
+  @override
+  String get composerAddParameter => 'Добавить параметр';
+
+  @override
+  String get composerKeyHint => 'Ключ';
+
+  @override
+  String get composerValueHint => 'Значение';
+
+  @override
+  String get composerAttachFile => 'Прикрепить файл';
+
+  @override
+  String get composerResponse => 'Ответ';
+
+  @override
+  String get composerNoClients =>
+      'Зарегистрируйте клиент Dio или http для отправки запросов';
+
+  @override
+  String get composerErrorUrlRequired => 'Введите URL';
+
+  @override
+  String get composerErrorUrlInvalid => 'Введите корректный абсолютный URL';
+
+  @override
+  String get composerErrorInvalidJson => 'Тело не является корректным JSON';
+
+  @override
+  String get composerErrorNoClient => 'Клиент не зарегистрирован';
+
+  @override
+  String get composerEditAndResend => 'Изменить и отправить';
 }
