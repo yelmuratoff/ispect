@@ -12,6 +12,7 @@ Scripts:
 - `update_changelog.sh` — append / propagate a specific changelog section or overwrite all.
 - `build_readme.sh` — assemble every package README from `docs/readme/` sources (primary doc builder).
 - `update_readme.sh` — thin wrapper over `build_readme.sh` for symmetry with `update_versions.sh`.
+- `build_llms.sh` — generate the repo-root `llms.txt` AI navigation index from repository metadata.
 - `check_version_sync.sh` — ensure every package version matches `version.config`.
 - `check_dependencies.sh` — verify internal dependency constraints reference the current version.
 - `bump_version.sh` — legacy bump helper (kept for backward compatibility; prefer `update_versions.sh --bump`).
@@ -127,6 +128,29 @@ Commands:
 ```
 
 Editing workflow: change the relevant `docs/readme/<package>.md` (or a partial), run `./bash/build_readme.sh`, review the generated file, commit both the source and the output.
+
+## llms.txt generation
+
+The repo-root `llms.txt` is an AI navigation index (see [llmstxt.org](https://llmstxt.org)). It is **generated**, not hand-written — every entry is derived from repository metadata, so adding a package, interceptor, or doc and rerunning keeps it current with no manual edits:
+
+- Title — fixed brand name; summary, repository, version — `packages/ispect/pubspec.yaml` + `version.config`.
+- Package list — `name` / `description` from each `packages/*/pubspec.yaml`.
+- Setup examples — each package's `example/` entrypoint.
+- DB / WS adapters — `packages/ispectify_{db,ws}/example/lib/interceptors/*.dart`.
+- Docs — H1 title of each `docs/*.md`.
+
+```bash
+# Regenerate llms.txt.
+./bash/build_llms.sh
+
+# Verify it is up to date (CI / pre-commit); exits 1 on drift.
+./bash/build_llms.sh --check
+
+# Preview without writing.
+./bash/build_llms.sh --dry-run
+```
+
+Do not edit `llms.txt` by hand — edits are overwritten on the next build.
 
 ## Publish workflow
 

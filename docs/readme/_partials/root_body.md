@@ -155,6 +155,7 @@ What you can verify from the repository today:
 
 Linked policies:
 
+- [AI integration prompt](https://github.com/yelmuratoff/ispect/blob/main/docs/prompt.md) — paste into any AI assistant to add ISpect for you
 - [Security and data handling](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md)
 - [Compatibility policy](https://github.com/yelmuratoff/ispect/blob/main/docs/COMPATIBILITY.md)
 - [Deprecations and migration notes](https://github.com/yelmuratoff/ispect/blob/main/docs/DEPRECATIONS.md)
@@ -168,6 +169,8 @@ Linked policies:
 Disabled builds are inactive at compile time, so there is nothing to benchmark when the flag is omitted. When the toolkit is on, cost depends on what you turn on. Metadata logging is the lightest mode. Body capture and database tracing add per-call work proportional to payload size. High-volume BLoC or event streams may need filters or sampling. There are no published benchmark numbers yet, and there will not be any until they are reproducible against the SDK baseline.
 
 ## Quick start
+
+> **Prefer to let an AI wire it up?** If you are unsure how to integrate ISpect, copy the ready-made prompt at [`docs/prompt.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/prompt.md) and paste it into any AI coding assistant (Claude Code, Cursor, Copilot, etc.). It instructs the agent to read the current sources and add ISpect correctly and efficiently — initialization, route observer, network/database/state-management tracing, settings, and the share/open-file callbacks — scoped to what your project actually uses.
 
 ```yaml
 dependencies:
