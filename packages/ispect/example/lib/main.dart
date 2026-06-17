@@ -6,8 +6,16 @@
 // Without that flag every entry point is a const no-op and tree-shakes away
 // from release builds.
 //
-// For a full feature tour (custom themes, locales, log generators, Dio/HTTP/DB
-// interceptors, observers, etc.) run `lib/complex_example.dart`.
+// What this file shows:
+//   • Guarded startup via ISpect.run (FlutterError + zone error handlers).
+//   • Every ISpect.logger level (info/good/warning/error/debug/critical/…).
+//   • The standalone JSON viewer screen.
+//   • The HTTP composer ("mini-Postman") — wired through onPickComposerFile.
+//   • Environment metadata in exported logs — wired through metadataProvider.
+//
+// For a deeper tour (custom themes, locales, Dio/HTTP/WS/DB interceptors,
+// Riverpod/Bloc observers, stress tests, compact network URLs, jank logging)
+// run `lib/complex_example.dart`.
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
@@ -99,6 +107,12 @@ class _MyAppState extends State<MyApp> {
           isPerformanceEnabled: true,
           isInspectorEnabled: true,
           isColorPickerEnabled: true,
+          // Route severe-jank frames into the log viewer. Off by default to
+          // avoid spam; severeJankFactor (default 2.0) sets the threshold.
+          enableJankLogging: false,
+          // severeJankFactor: 2.0,
+          metadataProvider: _buildMetadata,
+          onPickComposerFile: _pickComposerFile,
           onOpenFile: (path) async {
             // Open exported log files (e.g. via package:open_filex).
           },
@@ -106,8 +120,9 @@ class _MyAppState extends State<MyApp> {
             // Send sessions/logs out (e.g. via package:share_plus).
             // request.text / request.subject / request.filePaths
           },
-          onLoadLogContent: (path) async {
-            // Return raw text from a file when the user imports a session.
+          onLoadLogContent: (context) async {
+            // Return raw text from a file/clipboard when importing a session.
+            // Returning null cancels without an error.
             return null;
           },
           onSettingsChanged: (settings) {
@@ -133,6 +148,15 @@ class _MyAppState extends State<MyApp> {
           panelItems: const [
             // DraggablePanelItem(icon: Icons.cookie, onTap: ...),
           ],
+          // Replace the whole draggable panel (see ISpectPanelData / panelBuilder).
+          // panelBuilder: (context, data) => DraggablePanel(
+          //   controller: data.controller,
+          //   items: data.items,
+          //   buttons: data.buttons,
+          //   theme: data.theme,
+          //   child: data.child,
+          // ),
+          //
           // Plug in custom inspector pages (see InspectorPlugin).
           plugins: const [],
           // Replace the default log card rendering completely.
@@ -142,6 +166,27 @@ class _MyAppState extends State<MyApp> {
       home: const _HomePage(),
     );
   }
+
+  // Environment metadata embedded into the header of exported/shared logs.
+  // ISpect never collects these itself — supply values you already own
+  // (package_info_plus / device_info_plus / --dart-define). Resolution may be
+  // async; keep tokens and PII out, the block is written verbatim.
+  ISpectMetadata _buildMetadata() => const ISpectMetadata(
+        appName: 'ISpect Quick Start',
+        appVersion: '1.0.0',
+        buildNumber: '1',
+        environment: 'dev',
+      );
+
+  // Supplies a file for multipart bodies in the HTTP composer. A real app wires
+  // file_picker / image_picker here; the stub returns in-memory bytes so the
+  // "attach file" control works without a native picker. Omit this callback to
+  // hide that control entirely.
+  Future<ComposerPickedFile?> _pickComposerFile() async => ComposerPickedFile(
+        filename: 'sample.txt',
+        bytes: 'Hello from the ISpect HTTP composer'.codeUnits,
+        contentType: 'text/plain',
+      );
 }
 
 class _HomePage extends StatelessWidget {
@@ -162,57 +207,133 @@ class _HomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('ISpect Quick Start')),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FilledButton(
-              onPressed: () => logger.info('Hello from ISpect!'),
-              child: const Text('info'),
-            ),
-            const SizedBox(height: 8),
-            FilledButton.tonal(
-              onPressed: () => logger.good('Order placed successfully'),
-              child: const Text('good'),
-            ),
-            const SizedBox(height: 8),
-            FilledButton.tonal(
-              onPressed: () => logger.warning('Cache nearly full'),
-              child: const Text('warning'),
-            ),
-            const SizedBox(height: 8),
-            FilledButton.tonal(
-              onPressed: () => logger.error(
-                'Something went wrong',
-                exception: StateError('Demo error'),
-                stackTrace: StackTrace.current,
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        children: [
+          const _SectionTitle('Log levels'),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              FilledButton(
+                onPressed: () => logger.info('Hello from ISpect!'),
+                child: const Text('info'),
               ),
-              child: const Text('error'),
-            ),
-            const SizedBox(height: 8),
-            FilledButton.tonal(
-              onPressed: () => logger.track(
-                'sign_in_tapped',
-                event: 'ui',
-                analytics: 'amplitude',
-                parameters: const {'screen': 'home'},
+              FilledButton.tonal(
+                onPressed: () => logger.good('Order placed successfully'),
+                child: const Text('good'),
               ),
-              child: const Text('track (analytics)'),
-            ),
-            const SizedBox(height: 24),
-            const Text('Tap the floating ISpect button to open the panel.'),
-            // Other available methods:
-            //   logger.debug / verbose / critical / print
-            //   logger.route('/home → /details')
-            //   logger.provider('AuthProvider rebuilt')
-            //   logger.handle(exception: e, stackTrace: st, message: '...')
-            //
-            // Access the scope model from any widget under ISpectBuilder:
-            //   final scope = ISpect.read(context);
-            //   scope.toggleISpect(); // show / hide the panel
-            //   scope.options = scope.options.copyWith(locale: Locale('ru'));
-          ],
-        ),
+              FilledButton.tonal(
+                onPressed: () => logger.warning('Cache nearly full'),
+                child: const Text('warning'),
+              ),
+              FilledButton.tonal(
+                onPressed: () => logger.debug('Reached checkout step 2'),
+                child: const Text('debug'),
+              ),
+              FilledButton.tonal(
+                onPressed: () => logger.error(
+                  'Something went wrong',
+                  exception: StateError('Demo error'),
+                  stackTrace: StackTrace.current,
+                ),
+                child: const Text('error'),
+              ),
+              FilledButton.tonal(
+                onPressed: () => logger.critical('Payment gateway unreachable'),
+                child: const Text('critical'),
+              ),
+              FilledButton.tonal(
+                onPressed: () => logger.route('/home → /details'),
+                child: const Text('route'),
+              ),
+              FilledButton.tonal(
+                onPressed: () => logger.track(
+                  'sign_in_tapped',
+                  event: 'ui',
+                  analytics: 'amplitude',
+                  parameters: const {'screen': 'home'},
+                ),
+                child: const Text('track'),
+              ),
+              FilledButton.tonal(
+                onPressed: () => _demoHandledException(logger),
+                child: const Text('handle'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const _SectionTitle('Tools'),
+          OutlinedButton.icon(
+            onPressed: () => _openJsonViewer(context),
+            icon: const Icon(Icons.data_object),
+            label: const Text('Open JSON viewer'),
+          ),
+          const SizedBox(height: 24),
+          const _SectionTitle('Inside the panel'),
+          const Text(
+            'Tap the floating ISpect button to open the panel:\n'
+            '• Logs — filter, search, export, import, share.\n'
+            '• HTTP composer (api icon) — replay or craft a request; the '
+            '"attach file" control appears because onPickComposerFile is set.\n'
+            '• Performance, widget inspector, color picker.',
+          ),
+          // Other available methods:
+          //   logger.verbose / provider / print / log / logData
+          //
+          // Drive the panel from any widget under ISpectBuilder:
+          //   final scope = ISpect.read(context);
+          //   scope.toggleISpect();              // show / hide the panel
+          //   scope.togglePerformanceTracking(); // FPS overlay
+          //   scope.options = scope.options.copyWith(locale: Locale('ru'));
+        ],
+      ),
+    );
+  }
+
+  void _demoHandledException(ISpectLogger logger) {
+    try {
+      throw const FormatException('Malformed payload');
+    } catch (e, st) {
+      logger.handle(exception: e, stackTrace: st, message: 'Parse failed');
+    }
+  }
+
+  void _openJsonViewer(BuildContext context) {
+    const sample = <String, dynamic>{
+      'user': {
+        'id': 42,
+        'name': 'Ada Lovelace',
+        'roles': ['admin', 'editor'],
+        'active': true,
+      },
+      'orders': [
+        {'id': 'A-1', 'total': 19.99},
+        {'id': 'A-2', 'total': 4.50},
+      ],
+      'meta': {
+        'version': '5.2.0',
+        'nested': {
+          'deep': {'value': null}
+        }
+      },
+    };
+    const JsonScreen(data: sample).push(context);
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.titleMedium,
       ),
     );
   }
