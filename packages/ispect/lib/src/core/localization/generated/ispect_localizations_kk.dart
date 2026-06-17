@@ -1062,6 +1062,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get composerAddParameter => 'Параметр қосу';
 
   @override
+  String get composerViewJson => 'JSON көрушіде ашу';
+
+  @override
   String get composerKeyHint => 'Кілт';
 
   @override

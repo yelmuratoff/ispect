@@ -350,6 +350,7 @@
    "composerAddField": "Add",
    "composerAddHeader": "Add header",
    "composerAddParameter": "Add parameter",
+   "composerViewJson": "Open in JSON viewer",
    "composerKeyHint": "Key",
    "composerValueHint": "Value",
    "composerAttachFile": "Attach file",

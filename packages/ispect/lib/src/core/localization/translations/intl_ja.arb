@@ -321,6 +321,7 @@
    "composerAddField": "追加",
    "composerAddHeader": "ヘッダーを追加",
    "composerAddParameter": "パラメータを追加",
+   "composerViewJson": "JSONビューアで開く",
    "composerKeyHint": "キー",
    "composerValueHint": "値",
    "composerAttachFile": "ファイルを添付",

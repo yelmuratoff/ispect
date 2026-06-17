@@ -321,6 +321,7 @@
    "composerAddField": "إضافة",
    "composerAddHeader": "إضافة رأس",
    "composerAddParameter": "إضافة مَعلَمة",
+   "composerViewJson": "فتح في عارض JSON",
    "composerKeyHint": "المفتاح",
    "composerValueHint": "القيمة",
    "composerAttachFile": "إرفاق ملف",

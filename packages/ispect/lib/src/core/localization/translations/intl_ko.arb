@@ -321,6 +321,7 @@
    "composerAddField": "추가",
    "composerAddHeader": "헤더 추가",
    "composerAddParameter": "매개변수 추가",
+   "composerViewJson": "JSON 뷰어에서 열기",
    "composerKeyHint": "키",
    "composerValueHint": "값",
    "composerAttachFile": "파일 첨부",

@@ -321,6 +321,7 @@
    "composerAddField": "Agregar",
    "composerAddHeader": "Agregar encabezado",
    "composerAddParameter": "Agregar parámetro",
+   "composerViewJson": "Abrir en el visor JSON",
    "composerKeyHint": "Clave",
    "composerValueHint": "Valor",
    "composerAttachFile": "Adjuntar archivo",

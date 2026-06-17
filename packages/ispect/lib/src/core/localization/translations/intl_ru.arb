@@ -322,6 +322,7 @@
    "composerAddField": "Добавить",
    "composerAddHeader": "Добавить заголовок",
    "composerAddParameter": "Добавить параметр",
+   "composerViewJson": "Открыть в просмотре JSON",
    "composerKeyHint": "Ключ",
    "composerValueHint": "Значение",
    "composerAttachFile": "Прикрепить файл",

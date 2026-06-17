@@ -6,6 +6,9 @@ import 'package:ispect/src/features/http_composer/presentation/screens/http_comp
 import '../../helpers/pump_ispect.dart';
 
 class _FakeSender implements NetworkRequestSender {
+  _FakeSender({this.result = const NetworkReplayResult(statusCode: 200)});
+
+  final NetworkReplayResult result;
   NetworkReplayRequest? received;
 
   @override
@@ -17,7 +20,7 @@ class _FakeSender implements NetworkRequestSender {
   @override
   Future<NetworkReplayResult> send(NetworkReplayRequest request) async {
     received = request;
-    return const NetworkReplayResult(statusCode: 200);
+    return result;
   }
 }
 
@@ -40,6 +43,36 @@ void main() {
       expect(sender.received, isNotNull);
       expect(sender.received!.uri.toString(), 'https://api.test/ping');
       expect(find.text('200'), findsOneWidget);
+    });
+
+    testWidgets('opens the JSON viewer for a JSON response body',
+        (tester) async {
+      final sender = _FakeSender(
+        result: const NetworkReplayResult(
+          statusCode: 200,
+          body: {'name': 'Ada'},
+        ),
+      );
+      await tester.pumpWidget(
+        appShell(HttpComposerScreen(senders: [sender])),
+      );
+
+      await tester.enterText(
+        find.byType(TextField).first,
+        'https://api.test/users',
+      );
+      await tester.tap(find.byIcon(Icons.send_rounded));
+      await tester.pumpAndSettle();
+
+      final viewerAction = find.byIcon(Icons.data_object_rounded);
+      expect(viewerAction, findsOneWidget);
+
+      await tester.ensureVisible(viewerAction);
+      await tester.pumpAndSettle();
+      await tester.tap(viewerAction);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(JsonScreen), findsOneWidget);
     });
 
     testWidgets('hides the send button when no client is registered',

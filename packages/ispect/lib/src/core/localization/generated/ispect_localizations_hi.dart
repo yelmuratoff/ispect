@@ -1064,6 +1064,9 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get composerAddParameter => 'पैरामीटर जोड़ें';
 
   @override
+  String get composerViewJson => 'JSON व्यूअर में खोलें';
+
+  @override
   String get composerKeyHint => 'कुंजी';
 
   @override

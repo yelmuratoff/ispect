@@ -2051,6 +2051,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'Add parameter'**
   String get composerAddParameter;
 
+  /// No description provided for @composerViewJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in JSON viewer'**
+  String get composerViewJson;
+
   /// No description provided for @composerKeyHint.
   ///
   /// In en, this message translates to:

@@ -1035,6 +1035,9 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get composerAddParameter => '添加参数';
 
   @override
+  String get composerViewJson => '在 JSON 查看器中打开';
+
+  @override
   String get composerKeyHint => '键';
 
   @override

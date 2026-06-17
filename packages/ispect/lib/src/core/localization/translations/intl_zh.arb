@@ -321,6 +321,7 @@
    "composerAddField": "添加",
    "composerAddHeader": "添加请求头",
    "composerAddParameter": "添加参数",
+   "composerViewJson": "在 JSON 查看器中打开",
    "composerKeyHint": "键",
    "composerValueHint": "值",
    "composerAttachFile": "附加文件",

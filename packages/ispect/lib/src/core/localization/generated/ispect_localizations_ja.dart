@@ -1035,6 +1035,9 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get composerAddParameter => 'パラメータを追加';
 
   @override
+  String get composerViewJson => 'JSONビューアで開く';
+
+  @override
   String get composerKeyHint => 'キー';
 
   @override

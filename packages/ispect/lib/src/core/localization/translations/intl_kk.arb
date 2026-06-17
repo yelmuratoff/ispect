@@ -321,6 +321,7 @@
     "composerAddField": "Қосу",
     "composerAddHeader": "Тақырып қосу",
     "composerAddParameter": "Параметр қосу",
+    "composerViewJson": "JSON көрушіде ашу",
     "composerKeyHint": "Кілт",
     "composerValueHint": "Мән",
     "composerAttachFile": "Файл тіркеу",

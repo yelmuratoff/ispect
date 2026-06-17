@@ -1046,6 +1046,9 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get composerAddParameter => 'إضافة مَعلَمة';
 
   @override
+  String get composerViewJson => 'فتح في عارض JSON';
+
+  @override
   String get composerKeyHint => 'المفتاح';
 
   @override

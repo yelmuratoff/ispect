@@ -1082,6 +1082,9 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get composerAddParameter => 'Ajouter un paramètre';
 
   @override
+  String get composerViewJson => 'Ouvrir dans le visualiseur JSON';
+
+  @override
   String get composerKeyHint => 'Clé';
 
   @override

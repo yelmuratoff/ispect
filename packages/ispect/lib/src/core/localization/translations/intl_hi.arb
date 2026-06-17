@@ -321,6 +321,7 @@
    "composerAddField": "जोड़ें",
    "composerAddHeader": "हेडर जोड़ें",
    "composerAddParameter": "पैरामीटर जोड़ें",
+   "composerViewJson": "JSON व्यूअर में खोलें",
    "composerKeyHint": "कुंजी",
    "composerValueHint": "मान",
    "composerAttachFile": "फ़ाइल संलग्न करें",

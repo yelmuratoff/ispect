@@ -1035,6 +1035,9 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get composerAddParameter => '매개변수 추가';
 
   @override
+  String get composerViewJson => 'JSON 뷰어에서 열기';
+
+  @override
   String get composerKeyHint => '키';
 
   @override

@@ -835,6 +835,7 @@ class _ResultView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.ispectL10n;
     final status = result.statusCode;
+    final jsonData = _jsonViewerData(result);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -860,18 +861,29 @@ class _ResultView extends StatelessWidget {
             ],
           ),
         ),
-        ISpectBorderedSurface(
-          backgroundColor: context.ispectCardColor,
-          padding: const EdgeInsets.all(12),
-          child: SelectableText(
-            result.isError && status == null
-                ? result.error.toString()
-                : _pretty(result.body),
-            style: ISpectInputStyle.textStyle(context),
+        if (jsonData != null)
+          _JsonResultCard(data: jsonData, preview: _pretty(result.body))
+        else
+          ISpectBorderedSurface(
+            backgroundColor: context.ispectCardColor,
+            padding: const EdgeInsets.all(12),
+            child: SelectableText(
+              result.isError && status == null
+                  ? result.error.toString()
+                  : _pretty(result.body),
+              style: ISpectInputStyle.textStyle(context),
+            ),
           ),
-        ),
       ],
     );
+  }
+
+  static Map<String, dynamic>? _jsonViewerData(NetworkReplayResult result) {
+    if (result.isError && result.statusCode == null) return null;
+    final body = result.body;
+    if (body is Map) return Map<String, dynamic>.from(body);
+    if (body is List) return {'content': body};
+    return null;
   }
 
   static String _pretty(Object? body) {
@@ -880,6 +892,51 @@ class _ResultView extends StatelessWidget {
       return const JsonEncoder.withIndent('  ').convert(body);
     }
     return body.toString();
+  }
+}
+
+class _JsonResultCard extends StatelessWidget {
+  const _JsonResultCard({required this.data, required this.preview});
+
+  final Map<String, dynamic> data;
+  final String preview;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = context.ispectPrimaryColor;
+    return ISpectBorderedSurface(
+      onTap: () => JsonScreen(data: data).push(context),
+      backgroundColor: context.ispectCardColor,
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            preview,
+            maxLines: 12,
+            overflow: TextOverflow.ellipsis,
+            style: ISpectInputStyle.textStyle(context),
+          ),
+          const Gap(10),
+          Row(
+            children: [
+              Icon(Icons.data_object_rounded, size: 16, color: primary),
+              const Gap(6),
+              Text(
+                context.ispectL10n.composerViewJson,
+                style: TextStyle(
+                  color: primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+              const Spacer(),
+              Icon(Icons.chevron_right_rounded, size: 18, color: primary),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 
