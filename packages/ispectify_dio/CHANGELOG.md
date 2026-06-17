@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.2.0-dev.24
+## 5.2.0-dev.25
 
 ### Improvements
 
@@ -18,6 +18,7 @@
 - **Jank diagnostics:** New `onJankBurst` callback and opt-in `enableJankLogging` log severe frames under `performance-jank` / `performance-error`.
 - **Overlay display options:** `compact: true` single-line summary, `showP90: true`, and a color-blind-safe palette via `ISpectPerformanceOverlayPalettes`.
 - **Export metadata:** New `ISpectOptions.metadataProvider` embeds app/device details (version, build, OS, device, environment, plus free-form `extra`) into the header of exported and shared log files via the typed `ISpectMetadata`. ISpect collects nothing itself — the host app supplies the values, so no new dependencies are added. Keep secrets and PII out of it; the metadata block is not redacted.
+- **HTTP composer (mini-Postman):** Replay a captured request or compose one from scratch and send it through your own client. Register it with `ISpect.registerSender(DioRequestSender(dio))` (or `HttpClientRequestSender(client)` from `ispectify_http`); a panel entry and a per-log "Edit & resend" action then appear, and the call reuses the client's base URL, auth interceptors, and retries — landing back in the network logs. Attach multipart files through `ISpectOptions.onPickComposerFile`, so no file-picker dependency is added. Redacted header/body values are never resent; the client's interceptors re-add them at send time.
 
 ### Behavioral Changes
 

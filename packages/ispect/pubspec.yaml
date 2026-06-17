@@ -1,6 +1,6 @@
 name: ispect
 description: In-app observability and QA diagnostics toolkit for Flutter, with logs, network tracing, layout inspection, exports, and redaction.
-version: 5.2.0-dev.24
+version: 5.2.0-dev.25
 homepage: https://github.com/yelmuratoff/ispect
 repository: https://github.com/yelmuratoff/ispect
 issue_tracker: https://github.com/yelmuratoff/ispect/issues
@@ -39,14 +39,14 @@ dependencies:
   collection: ^1.19.1
 
   # Logging
-  ispectify: ^5.2.0-dev.24
+  ispectify: ^5.2.0-dev.25
 
   # Utils
   path_provider: ^2.1.5
   web: ^1.1.1
 
   # UI
-  ispect_layout: ^5.2.0-dev.24
+  ispect_layout: ^5.2.0-dev.25
   draggable_panel: ^3.0.0
   super_sliver_list: ^0.4.1
 

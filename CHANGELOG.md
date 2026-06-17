@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.2.0-dev.24
+## 5.2.0-dev.25
 
 ### Improvements
 
