@@ -146,6 +146,27 @@ void main() {
       expect(controller.bodyKind, ComposerBodyKind.json);
       expect(controller.bodyText, contains('"a": 1'));
     });
+
+    test('splits seeded query parameters into editable rows and a clean url',
+        () {
+      final controller = _controller(
+        seed: NetworkReplayRequest(
+          method: 'GET',
+          uri: Uri.parse('https://api.test/search?q=phone&page=2'),
+        ),
+      );
+
+      expect(controller.url, 'https://api.test/search');
+      expect(
+        {
+          for (final row in controller.queryParams) row.key: row.value,
+        },
+        {'q': 'phone', 'page': '2'},
+      );
+
+      final request = controller.buildReplayRequest();
+      expect(request!.uri.queryParameters, {'q': 'phone', 'page': '2'});
+    });
   });
 
   group('HttpComposerController.seedFromLog', () {

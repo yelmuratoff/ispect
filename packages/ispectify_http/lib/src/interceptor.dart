@@ -91,8 +91,8 @@ class ISpectHttpInterceptor
       correlationId: requestId,
       config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
       meta: {
-        'request-id': requestId,
-        'request-data': requestDataJson,
+        NetworkJsonKeys.requestId: requestId,
+        NetworkJsonKeys.requestData: requestDataJson,
         NetworkLogRenderer.renderHintsKey: {
           NetworkLogRenderer.hintPrintBody: settings.printRequestData,
           NetworkLogRenderer.hintPrintHeaders: settings.printRequestHeaders,
@@ -145,9 +145,9 @@ class ISpectHttpInterceptor
     final responseDataJson = responseData.toJson();
     if (useRedaction) HttpResponseData.redact(responseDataJson, redactor);
     final baseMeta = <String, Object?>{
-      if (requestId != null) 'request-id': requestId,
-      'status-code': response.statusCode,
-      'response-data': responseDataJson,
+      if (requestId != null) NetworkJsonKeys.requestId: requestId,
+      NetworkJsonKeys.statusCode: response.statusCode,
+      NetworkJsonKeys.responseData: responseDataJson,
     };
 
     final method = request?.method ?? 'UNKNOWN';

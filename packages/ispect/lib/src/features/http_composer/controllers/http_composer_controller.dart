@@ -227,6 +227,15 @@ final class HttpComposerController extends ChangeNotifier {
     return uri.replace(queryParameters: merged);
   }
 
+  Uri _withoutQuery(Uri uri) => Uri(
+        scheme: uri.scheme,
+        userInfo: uri.userInfo.isEmpty ? null : uri.userInfo,
+        host: uri.host.isEmpty ? null : uri.host,
+        port: uri.hasPort ? uri.port : null,
+        path: uri.path,
+        fragment: uri.hasFragment ? uri.fragment : null,
+      );
+
   Map<String, String> _toMap(List<ComposerKeyValue> rows) {
     final map = <String, String>{};
     for (final row in rows) {
@@ -259,9 +268,9 @@ final class HttpComposerController extends ChangeNotifier {
   static Map<String, dynamic>? _requestMapFromLog(ISpectLogData log) {
     final meta = log.additionalData?[TraceKeys.meta];
     if (meta is! Map) return null;
-    final requestData = meta['request-data'];
+    final requestData = meta[NetworkJsonKeys.requestData];
     if (requestData is Map) return Map<String, dynamic>.from(requestData);
-    final responseData = meta['response-data'];
+    final responseData = meta[NetworkJsonKeys.responseData];
     if (responseData is Map) {
       final nested = responseData[NetworkJsonKeys.request];
       if (nested is Map) return Map<String, dynamic>.from(nested);
@@ -271,7 +280,15 @@ final class HttpComposerController extends ChangeNotifier {
 
   void _applySeed(NetworkReplayRequest seed) {
     _method = seed.method;
-    _url = seed.uri.toString();
+    final uri = seed.uri;
+    if (uri.hasQuery) {
+      for (final entry in uri.queryParameters.entries) {
+        _queryParams.add(ComposerKeyValue(key: entry.key, value: entry.value));
+      }
+      _url = _withoutQuery(uri).toString();
+    } else {
+      _url = uri.toString();
+    }
     for (final entry in seed.headers.entries) {
       _headers.add(ComposerKeyValue(key: entry.key, value: entry.value));
     }

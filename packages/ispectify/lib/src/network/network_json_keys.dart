@@ -83,6 +83,22 @@ abstract final class NetworkJsonKeys {
   static const String finalized = 'finalized';
 
   // ---------------------------------------------------------------------------
+  // Meta envelope (top-level keys written inside `meta` by interceptors)
+  // ---------------------------------------------------------------------------
+
+  /// Correlation id shared across a request/response/error trio.
+  static const String requestId = 'request-id';
+
+  /// Serialized outgoing-request blob.
+  static const String requestData = 'request-data';
+
+  /// Serialized response blob.
+  static const String responseData = 'response-data';
+
+  /// Serialized error blob.
+  static const String errorData = 'error-data';
+
+  // ---------------------------------------------------------------------------
   // Nested references
   // ---------------------------------------------------------------------------
 

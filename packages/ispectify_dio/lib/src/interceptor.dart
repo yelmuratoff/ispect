@@ -79,8 +79,8 @@ class ISpectDioInterceptor extends Interceptor
       correlationId: requestId,
       config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
       meta: {
-        'request-id': requestId,
-        'request-data': requestDataJson,
+        NetworkJsonKeys.requestId: requestId,
+        NetworkJsonKeys.requestData: requestDataJson,
         NetworkLogRenderer.renderHintsKey: {
           NetworkLogRenderer.hintPrintBody: settings.printRequestData,
           NetworkLogRenderer.hintPrintHeaders: settings.printRequestHeaders,
@@ -125,9 +125,9 @@ class ISpectDioInterceptor extends Interceptor
       duration: duration,
       config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
       meta: {
-        if (requestId != null) 'request-id': requestId,
-        'status-code': response.statusCode,
-        'response-data': responseDataJson,
+        if (requestId != null) NetworkJsonKeys.requestId: requestId,
+        NetworkJsonKeys.statusCode: response.statusCode,
+        NetworkJsonKeys.responseData: responseDataJson,
         NetworkLogRenderer.renderHintsKey: {
           NetworkLogRenderer.hintPrintBody: settings.printResponseData,
           NetworkLogRenderer.hintPrintHeaders: settings.printResponseHeaders,
@@ -174,9 +174,9 @@ class ISpectDioInterceptor extends Interceptor
       duration: duration,
       config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
       meta: {
-        if (requestId != null) 'request-id': requestId,
-        'status-code': err.response?.statusCode,
-        'error-data': errorDataJson,
+        if (requestId != null) NetworkJsonKeys.requestId: requestId,
+        NetworkJsonKeys.statusCode: err.response?.statusCode,
+        NetworkJsonKeys.errorData: errorDataJson,
         NetworkLogRenderer.renderHintsKey: {
           NetworkLogRenderer.hintPrintBody: settings.printErrorData,
           NetworkLogRenderer.hintPrintHeaders: settings.printErrorHeaders,

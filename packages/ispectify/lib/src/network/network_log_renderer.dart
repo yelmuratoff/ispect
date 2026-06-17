@@ -55,15 +55,15 @@ abstract final class NetworkLogRenderer {
     final h = _hintsFrom(payload);
 
     if (category == TraceCategoryIds.network) {
-      final errData = payload['error-data'];
+      final errData = payload[NetworkJsonKeys.errorData];
       if (errData is Map<String, dynamic>) {
         return _renderHttpError(errData, h);
       }
-      final respData = payload['response-data'];
+      final respData = payload[NetworkJsonKeys.responseData];
       if (respData is Map<String, dynamic>) {
         return _renderHttpResponse(respData, h);
       }
-      final reqData = payload['request-data'];
+      final reqData = payload[NetworkJsonKeys.requestData];
       if (reqData is Map<String, dynamic>) {
         return _renderHttpRequest(reqData, h);
       }

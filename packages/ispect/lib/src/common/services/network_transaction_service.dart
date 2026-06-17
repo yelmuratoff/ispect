@@ -37,7 +37,7 @@ class TransactionMatcher {
     }
     final corrId = log.additionalData?[TraceKeys.correlationId];
     if (corrId is String) return corrId;
-    final legacyId = log.additionalData?['request-id'];
+    final legacyId = log.additionalData?[NetworkJsonKeys.requestId];
     if (legacyId is String) return legacyId;
     return null;
   }
