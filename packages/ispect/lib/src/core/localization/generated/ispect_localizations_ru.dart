@@ -1079,6 +1079,10 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get composerResponse => 'Ответ';
 
   @override
+  String get composerResponsePlaceholder =>
+      'Отправьте запрос, чтобы увидеть ответ';
+
+  @override
   String get composerNoClients =>
       'Зарегистрируйте клиент Dio или http для отправки запросов';
 

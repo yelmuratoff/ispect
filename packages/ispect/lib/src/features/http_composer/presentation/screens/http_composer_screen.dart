@@ -3,11 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/common/widgets/ispect_input.dart';
+import 'package:ispect/src/common/widgets/resizable_split_view.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
 
@@ -20,6 +22,9 @@ const List<String> _httpMethods = [
   'HEAD',
   'OPTIONS',
 ];
+
+const double _kTabletFormMaxWidth = 720;
+const int _kInlinePreviewMaxLines = 12;
 
 /// In-app HTTP composer ("mini-Postman"): edit/replay a captured request or
 /// build one from scratch and send it through a registered client.
@@ -76,6 +81,8 @@ class _HttpComposerScreenState extends State<HttpComposerScreen> {
   late final TextEditingController _bodyController =
       TextEditingController(text: _controller.bodyText);
 
+  double _splitRatio = 0.5;
+
   @override
   void dispose() {
     _controller.dispose();
@@ -100,6 +107,8 @@ class _HttpComposerScreenState extends State<HttpComposerScreen> {
               controller: _controller,
               urlController: _urlController,
               bodyController: _bodyController,
+              initialSplitRatio: _splitRatio,
+              onSplitRatioChanged: (ratio) => _splitRatio = ratio,
             ),
           ),
         ),
@@ -111,19 +120,77 @@ class _ComposerBody extends StatelessWidget {
     required this.controller,
     required this.urlController,
     required this.bodyController,
+    required this.initialSplitRatio,
+    required this.onSplitRatioChanged,
   });
 
   final HttpComposerController controller;
   final TextEditingController urlController;
   final TextEditingController bodyController;
+  final double initialSplitRatio;
+  final ValueChanged<double> onSplitRatioChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    if (controller.senders.isEmpty) {
+      return _CenteredMessage(
+        icon: Icons.cloud_off_rounded,
+        message: context.ispectL10n.composerNoClients,
+      );
+    }
+
+    return context.screenSizeWhen(
+      phone: () => _RequestPane(
+        controller: controller,
+        urlController: urlController,
+        bodyController: bodyController,
+        showInlineResult: true,
+      ),
+      tablet: () => Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: _kTabletFormMaxWidth),
+          child: _RequestPane(
+            controller: controller,
+            urlController: urlController,
+            bodyController: bodyController,
+            showInlineResult: true,
+          ),
+        ),
+      ),
+      desktop: () => ResizableSplitView(
+        initialRatio: initialSplitRatio,
+        minRatio: 0.3,
+        maxRatio: 0.7,
+        onRatioChanged: onSplitRatioChanged,
+        left: _RequestPane(
+          controller: controller,
+          urlController: urlController,
+          bodyController: bodyController,
+          showInlineResult: false,
+        ),
+        right: _ResponsePane(controller: controller),
+      ),
+    );
+  }
+}
+
+class _RequestPane extends StatelessWidget {
+  const _RequestPane({
+    required this.controller,
+    required this.urlController,
+    required this.bodyController,
+    required this.showInlineResult,
+  });
+
+  final HttpComposerController controller;
+  final TextEditingController urlController;
+  final TextEditingController bodyController;
+  final bool showInlineResult;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.ispectL10n;
-    if (controller.senders.isEmpty) {
-      return _EmptyClientsState(message: l10n.composerNoClients);
-    }
-
+    final result = controller.result;
     return Column(
       children: [
         Expanded(
@@ -158,9 +225,9 @@ class _ComposerBody extends StatelessWidget {
                   bodyController: bodyController,
                 ),
               ),
-              if (controller.result != null) ...[
+              if (showInlineResult && result != null) ...[
                 const Gap(20),
-                _ResultView(result: controller.result!),
+                _ResultView(result: result),
               ],
             ],
           ),
@@ -168,6 +235,43 @@ class _ComposerBody extends StatelessWidget {
         _ComposerFooter(controller: controller),
       ],
     );
+  }
+}
+
+class _ResponsePane extends StatelessWidget {
+  const _ResponsePane({required this.controller});
+
+  final HttpComposerController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final result = controller.result;
+    if (result == null) {
+      return _CenteredMessage(
+        icon: Icons.inbox_rounded,
+        message: context.ispectL10n.composerResponsePlaceholder,
+      );
+    }
+    return LayoutBuilder(
+      builder: (context, constraints) => ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _ResultView(
+            result: result,
+            previewMaxLines: _previewLinesFor(constraints.maxHeight),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static int _previewLinesFor(double paneHeight) {
+    const lineHeight = ISpectInputStyle.fontSize * 1.4;
+    const chromeHeight = 140.0;
+    return ((paneHeight - chromeHeight) / lineHeight).floor().clamp(
+          _kInlinePreviewMaxLines,
+          400,
+        );
   }
 }
 
@@ -827,9 +931,13 @@ class _ValidationText extends StatelessWidget {
 }
 
 class _ResultView extends StatelessWidget {
-  const _ResultView({required this.result});
+  const _ResultView({
+    required this.result,
+    this.previewMaxLines = _kInlinePreviewMaxLines,
+  });
 
   final NetworkReplayResult result;
+  final int previewMaxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -862,7 +970,11 @@ class _ResultView extends StatelessWidget {
           ),
         ),
         if (jsonData != null)
-          _JsonResultCard(data: jsonData, preview: _pretty(result.body))
+          _JsonResultCard(
+            data: jsonData,
+            preview: _pretty(result.body),
+            maxLines: previewMaxLines,
+          )
         else
           ISpectBorderedSurface(
             backgroundColor: context.ispectCardColor,
@@ -896,10 +1008,15 @@ class _ResultView extends StatelessWidget {
 }
 
 class _JsonResultCard extends StatelessWidget {
-  const _JsonResultCard({required this.data, required this.preview});
+  const _JsonResultCard({
+    required this.data,
+    required this.preview,
+    required this.maxLines,
+  });
 
   final Map<String, dynamic> data;
   final String preview;
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -913,7 +1030,7 @@ class _JsonResultCard extends StatelessWidget {
         children: [
           Text(
             preview,
-            maxLines: 12,
+            maxLines: maxLines,
             overflow: TextOverflow.ellipsis,
             style: ISpectInputStyle.textStyle(context),
           ),
@@ -984,9 +1101,10 @@ class _SectionTitle extends StatelessWidget {
       );
 }
 
-class _EmptyClientsState extends StatelessWidget {
-  const _EmptyClientsState({required this.message});
+class _CenteredMessage extends StatelessWidget {
+  const _CenteredMessage({required this.icon, required this.message});
 
+  final IconData icon;
   final String message;
 
   @override
@@ -998,7 +1116,7 @@ class _EmptyClientsState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_rounded, size: 40, color: muted),
+            Icon(icon, size: 40, color: muted),
             const Gap(12),
             Text(
               message,

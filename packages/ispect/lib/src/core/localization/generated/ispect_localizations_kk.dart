@@ -1077,6 +1077,10 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get composerResponse => 'Жауап';
 
   @override
+  String get composerResponsePlaceholder =>
+      'Жауапты көру үшін сұраныс жіберіңіз';
+
+  @override
   String get composerNoClients =>
       'Сұраныстарды жіберу үшін Dio немесе http клиентін тіркеңіз';
 

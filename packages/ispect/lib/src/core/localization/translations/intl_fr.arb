@@ -326,6 +326,7 @@
    "composerValueHint": "Valeur",
    "composerAttachFile": "Joindre un fichier",
    "composerResponse": "Réponse",
+   "composerResponsePlaceholder": "Envoyez une requête pour voir la réponse",
    "composerNoClients": "Enregistrez un client Dio ou http pour envoyer des requêtes",
    "composerErrorUrlRequired": "Saisissez une URL",
    "composerErrorUrlInvalid": "Saisissez une URL absolue valide",

@@ -1050,6 +1050,9 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get composerResponse => '응답';
 
   @override
+  String get composerResponsePlaceholder => '응답을 보려면 요청을 보내세요';
+
+  @override
   String get composerNoClients => '요청을 보내려면 Dio 또는 http 클라이언트를 등록하세요';
 
   @override

@@ -326,6 +326,7 @@
    "composerValueHint": "Valor",
    "composerAttachFile": "Adjuntar archivo",
    "composerResponse": "Respuesta",
+   "composerResponsePlaceholder": "Envía una solicitud para ver la respuesta",
    "composerNoClients": "Registra un cliente Dio o http para enviar solicitudes",
    "composerErrorUrlRequired": "Ingresa una URL",
    "composerErrorUrlInvalid": "Ingresa una URL absoluta válida",

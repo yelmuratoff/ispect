@@ -326,6 +326,7 @@
    "composerValueHint": "Wert",
    "composerAttachFile": "Datei anhängen",
    "composerResponse": "Antwort",
+   "composerResponsePlaceholder": "Sende eine Anfrage, um die Antwort zu sehen",
    "composerNoClients": "Einen Dio- oder http-Client registrieren, um Anfragen zu senden",
    "composerErrorUrlRequired": "URL eingeben",
    "composerErrorUrlInvalid": "Gültige absolute URL eingeben",

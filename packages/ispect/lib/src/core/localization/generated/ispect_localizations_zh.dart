@@ -1050,6 +1050,9 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get composerResponse => '响应';
 
   @override
+  String get composerResponsePlaceholder => '发送请求以查看响应';
+
+  @override
   String get composerNoClients => '注册 Dio 或 http 客户端以发送请求';
 
   @override

@@ -326,6 +326,7 @@
    "composerValueHint": "值",
    "composerAttachFile": "附加文件",
    "composerResponse": "响应",
+   "composerResponsePlaceholder": "发送请求以查看响应",
    "composerNoClients": "注册 Dio 或 http 客户端以发送请求",
    "composerErrorUrlRequired": "请输入 URL",
    "composerErrorUrlInvalid": "请输入有效的绝对 URL",

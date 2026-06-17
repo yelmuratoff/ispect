@@ -326,6 +326,7 @@
    "composerValueHint": "मान",
    "composerAttachFile": "फ़ाइल संलग्न करें",
    "composerResponse": "प्रतिक्रिया",
+   "composerResponsePlaceholder": "प्रतिक्रिया देखने के लिए अनुरोध भेजें",
    "composerNoClients": "अनुरोध भेजने के लिए Dio या http क्लाइंट रजिस्टर करें",
    "composerErrorUrlRequired": "URL दर्ज करें",
    "composerErrorUrlInvalid": "मान्य पूर्ण URL दर्ज करें",

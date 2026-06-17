@@ -1050,6 +1050,9 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get composerResponse => 'レスポンス';
 
   @override
+  String get composerResponsePlaceholder => 'リクエストを送信するとレスポンスが表示されます';
+
+  @override
   String get composerNoClients => 'リクエストを送信するには Dio または http クライアントを登録してください';
 
   @override

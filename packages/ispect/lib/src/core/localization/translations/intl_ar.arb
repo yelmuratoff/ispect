@@ -326,6 +326,7 @@
    "composerValueHint": "القيمة",
    "composerAttachFile": "إرفاق ملف",
    "composerResponse": "استجابة",
+   "composerResponsePlaceholder": "أرسل طلبًا لعرض الاستجابة",
    "composerNoClients": "سجّل عميل Dio أو http لإرسال الطلبات",
    "composerErrorUrlRequired": "أدخل عنوان URL",
    "composerErrorUrlInvalid": "أدخل عنوان URL مطلقًا صالحًا",

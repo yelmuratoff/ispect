@@ -2081,6 +2081,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'Response'**
   String get composerResponse;
 
+  /// No description provided for @composerResponsePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a request to see the response'**
+  String get composerResponsePlaceholder;
+
   /// No description provided for @composerNoClients.
   ///
   /// In en, this message translates to:

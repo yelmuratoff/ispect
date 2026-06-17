@@ -1097,6 +1097,10 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get composerResponse => 'Réponse';
 
   @override
+  String get composerResponsePlaceholder =>
+      'Envoyez une requête pour voir la réponse';
+
+  @override
   String get composerNoClients =>
       'Enregistrez un client Dio ou http pour envoyer des requêtes';
 

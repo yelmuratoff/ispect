@@ -326,6 +326,7 @@
    "composerValueHint": "값",
    "composerAttachFile": "파일 첨부",
    "composerResponse": "응답",
+   "composerResponsePlaceholder": "응답을 보려면 요청을 보내세요",
    "composerNoClients": "요청을 보내려면 Dio 또는 http 클라이언트를 등록하세요",
    "composerErrorUrlRequired": "URL을 입력하세요",
    "composerErrorUrlInvalid": "유효한 절대 URL을 입력하세요",

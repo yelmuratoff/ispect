@@ -327,6 +327,7 @@
    "composerValueHint": "Значение",
    "composerAttachFile": "Прикрепить файл",
    "composerResponse": "Ответ",
+   "composerResponsePlaceholder": "Отправьте запрос, чтобы увидеть ответ",
    "composerNoClients": "Зарегистрируйте клиент Dio или http для отправки запросов",
    "composerErrorUrlRequired": "Введите URL",
    "composerErrorUrlInvalid": "Введите корректный абсолютный URL",

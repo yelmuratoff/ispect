@@ -326,6 +326,7 @@
    "composerValueHint": "値",
    "composerAttachFile": "ファイルを添付",
    "composerResponse": "レスポンス",
+   "composerResponsePlaceholder": "リクエストを送信するとレスポンスが表示されます",
    "composerNoClients": "リクエストを送信するには Dio または http クライアントを登録してください",
    "composerErrorUrlRequired": "URL を入力してください",
    "composerErrorUrlInvalid": "有効な絶対 URL を入力してください",

@@ -1061,6 +1061,9 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get composerResponse => 'استجابة';
 
   @override
+  String get composerResponsePlaceholder => 'أرسل طلبًا لعرض الاستجابة';
+
+  @override
   String get composerNoClients => 'سجّل عميل Dio أو http لإرسال الطلبات';
 
   @override

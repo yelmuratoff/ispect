@@ -326,6 +326,7 @@
     "composerValueHint": "Мән",
     "composerAttachFile": "Файл тіркеу",
     "composerResponse": "Жауап",
+    "composerResponsePlaceholder": "Жауапты көру үшін сұраныс жіберіңіз",
     "composerNoClients": "Сұраныстарды жіберу үшін Dio немесе http клиентін тіркеңіз",
     "composerErrorUrlRequired": "URL енгізіңіз",
     "composerErrorUrlInvalid": "Жарамды абсолютті URL енгізіңіз",

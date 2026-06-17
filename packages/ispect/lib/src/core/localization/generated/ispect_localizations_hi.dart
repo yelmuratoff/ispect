@@ -1079,6 +1079,10 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get composerResponse => 'प्रतिक्रिया';
 
   @override
+  String get composerResponsePlaceholder =>
+      'प्रतिक्रिया देखने के लिए अनुरोध भेजें';
+
+  @override
   String get composerNoClients =>
       'अनुरोध भेजने के लिए Dio या http क्लाइंट रजिस्टर करें';
 
