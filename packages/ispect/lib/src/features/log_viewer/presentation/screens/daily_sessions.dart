@@ -203,6 +203,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
           builder: (_) => LogsV2Screen(
             sessionDate: session,
             onShare: context.iSpect.options.onShare,
+            metadataProvider: context.iSpect.options.metadataProvider,
           ),
         ),
       );

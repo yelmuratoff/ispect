@@ -26,6 +26,26 @@ typedef ISpectLoadLogContentCallback = Future<String?> Function(
   BuildContext context,
 );
 
+/// Supplies environment metadata embedded into exported log files.
+///
+/// Called when the user exports/shares logs. The host app returns app/device
+/// details it already has access to (e.g. from `package_info_plus`,
+/// `device_info_plus`, or `--dart-define` constants); ISpect itself never
+/// collects them. Resolution may be asynchronous.
+///
+/// Example:
+/// ```dart
+/// metadataProvider: () async {
+///   final info = await PackageInfo.fromPlatform();
+///   return ISpectMetadata(
+///     appName: info.appName,
+///     appVersion: info.version,
+///     buildNumber: info.buildNumber,
+///   );
+/// },
+/// ```
+typedef ISpectMetadataProvider = FutureOr<ISpectMetadata> Function();
+
 /// Called when ISpect settings change (logger options, enabled log types, etc.).
 ///
 /// Use this callback to persist settings to local storage and restore them

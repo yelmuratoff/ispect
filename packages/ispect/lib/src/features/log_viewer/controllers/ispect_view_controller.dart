@@ -50,10 +50,14 @@ enum SearchMatchState {
 class ISpectViewController implements Listenable {
   ISpectViewController({
     ISpectShareCallback? onShare,
+    ISpectMetadataProvider? metadataProvider,
     ISpectSettingsState? initialSettings,
     ISpectSettingsChangedCallback? onSettingsChanged,
     bool groupHttpLogs = true,
-  })  : _exportService = LogExportService(onShare: onShare),
+  })  : _exportService = LogExportService(
+          onShare: onShare,
+          metadataProvider: metadataProvider,
+        ),
         _importService = const LogImportService() {
     _display = DisplayController(initialSettings: initialSettings);
     if (initialSettings == null) {

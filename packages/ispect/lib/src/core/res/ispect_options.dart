@@ -73,6 +73,7 @@ final class ISpectOptions {
     this.onLoadLogContent,
     this.onSettingsChanged,
     this.initialSettings,
+    this.metadataProvider,
   });
 
   /// The locale setting for `ISpect`, defining the language and region preferences.
@@ -245,6 +246,14 @@ final class ISpectOptions {
   /// ```
   final ISpectSettingsState? initialSettings;
 
+  /// Supplies environment metadata (app version, device, OS, …) embedded into
+  /// the header of exported/shared log files.
+  ///
+  /// When omitted, exports carry no environment metadata. ISpect never
+  /// collects these values itself — the host app provides them, keeping
+  /// `package_info_plus`/`device_info_plus` out of ISpect's dependencies.
+  final ISpectMetadataProvider? metadataProvider;
+
   /// Creates a new `ISpectOptions` instance with updated values while retaining
   /// existing ones where not specified.
   ///
@@ -278,6 +287,7 @@ final class ISpectOptions {
     ISpectLoadLogContentCallback? onLoadLogContent,
     ISpectSettingsChangedCallback? onSettingsChanged,
     ISpectSettingsState? initialSettings,
+    ISpectMetadataProvider? metadataProvider,
   }) {
     return ISpectOptions(
       locale: locale ?? this.locale,
@@ -299,6 +309,7 @@ final class ISpectOptions {
       onLoadLogContent: onLoadLogContent ?? this.onLoadLogContent,
       onSettingsChanged: onSettingsChanged ?? this.onSettingsChanged,
       initialSettings: initialSettings ?? this.initialSettings,
+      metadataProvider: metadataProvider ?? this.metadataProvider,
     );
   }
 
@@ -326,7 +337,8 @@ final class ISpectOptions {
         other.onOpenFile == onOpenFile &&
         other.onLoadLogContent == onLoadLogContent &&
         other.onSettingsChanged == onSettingsChanged &&
-        other.initialSettings == initialSettings;
+        other.initialSettings == initialSettings &&
+        other.metadataProvider == metadataProvider;
   }
 
   static const _deepEquality = DeepCollectionEquality();
@@ -353,6 +365,7 @@ final class ISpectOptions {
       onLoadLogContent,
       onSettingsChanged,
       initialSettings,
+      metadataProvider,
     );
   }
 
@@ -378,6 +391,7 @@ final class ISpectOptions {
       onLoadLogContent: $onLoadLogContent,
       onSettingsChanged: $onSettingsChanged,
       initialSettings: $initialSettings,
+      metadataProvider: $metadataProvider,
       )''';
   }
 }

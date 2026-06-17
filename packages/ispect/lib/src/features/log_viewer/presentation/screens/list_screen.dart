@@ -28,6 +28,7 @@ class LogsV2Screen extends StatefulWidget {
     this.sessionPath,
     this.sessionDate,
     this.onShare,
+    this.metadataProvider,
   });
 
   final String? appBarTitle;
@@ -35,6 +36,7 @@ class LogsV2Screen extends StatefulWidget {
   final String? sessionPath;
   final DateTime? sessionDate;
   final ISpectShareCallback? onShare;
+  final ISpectMetadataProvider? metadataProvider;
 
   /// Pushes this screen onto the navigation stack
   void push(BuildContext context) {
@@ -62,6 +64,7 @@ class _LogsScreenState extends State<LogsV2Screen> {
     super.initState();
     _logsViewController = ISpectViewController(
       onShare: widget.onShare,
+      metadataProvider: widget.metadataProvider,
     )..toggleExpandedLogs();
     getLogs();
   }

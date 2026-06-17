@@ -17,6 +17,7 @@
 - **`ISpectPerformanceOverlay` rebuilt:** Cross-platform overlay (web + desktop) with UI/raster/total bars, avg/p99/jank stats, current FPS, target line, and a freeze button.
 - **Jank diagnostics:** New `onJankBurst` callback and opt-in `enableJankLogging` log severe frames under `performance-jank` / `performance-error`.
 - **Overlay display options:** `compact: true` single-line summary, `showP90: true`, and a color-blind-safe palette via `ISpectPerformanceOverlayPalettes`.
+- **Export metadata:** New `ISpectOptions.metadataProvider` embeds app/device details (version, build, OS, device, environment, plus free-form `extra`) into the header of exported and shared log files via the typed `ISpectMetadata`. ISpect collects nothing itself — the host app supplies the values, so no new dependencies are added. Keep secrets and PII out of it; the metadata block is not redacted.
 
 ### Behavioral Changes
 

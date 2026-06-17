@@ -18,6 +18,7 @@ export 'src/models/error.dart';
 export 'src/models/exception.dart';
 export 'src/models/log_data_x.dart';
 export 'src/models/log_type.dart';
+export 'src/models/metadata.dart';
 export 'src/models/models.dart';
 export 'src/network/base_interceptor.dart';
 export 'src/network/curl_utils.dart';

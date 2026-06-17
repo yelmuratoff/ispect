@@ -4,11 +4,14 @@ import 'package:ispect/ispect.dart';
 class LogExportService {
   LogExportService({
     ISpectShareCallback? onShare,
+    ISpectMetadataProvider? metadataProvider,
     LogsJsonService? logsJsonService,
   })  : _onShare = onShare,
+        _metadataProvider = metadataProvider,
         _logsJsonService = logsJsonService ?? const LogsJsonService();
 
   final ISpectShareCallback? _onShare;
+  final ISpectMetadataProvider? _metadataProvider;
   final LogsJsonService _logsJsonService;
 
   Future<void> shareLogsFile(String logs) async {
@@ -30,6 +33,7 @@ class LogExportService {
     }
 
     final shareCallback = _ensureShareCallback();
+    final metadata = await _metadataProvider?.call();
     await _logsJsonService.shareFilteredLogsAsJsonFile(
       allLogs,
       filteredLogs,
@@ -39,6 +43,7 @@ class LogExportService {
       onShare: shareCallback,
       enableRedaction: redactKeys != null,
       redactKeys: redactKeys,
+      metadata: metadata,
     );
   }
 
@@ -48,10 +53,12 @@ class LogExportService {
       return;
     }
     final shareCallback = _ensureShareCallback();
+    final metadata = await _metadataProvider?.call();
     await _logsJsonService.shareLogsAsJsonFile(
       logs,
       fileName: 'ispect_all_logs_${DateTime.now().millisecondsSinceEpoch}',
       onShare: shareCallback,
+      metadata: metadata,
     );
   }
 
@@ -68,6 +75,7 @@ class LogExportService {
       return '';
     }
 
+    final metadata = await _metadataProvider?.call();
     return _logsJsonService.saveFilteredLogsToDevice(
       allLogs,
       filteredLogs,
@@ -76,6 +84,7 @@ class LogExportService {
       fileType: fileType,
       enableRedaction: redactKeys != null,
       redactKeys: redactKeys,
+      metadata: metadata,
     );
   }
 
