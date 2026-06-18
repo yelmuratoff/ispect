@@ -26,16 +26,18 @@ String formatTransactionDuration(Duration duration) {
   return '${(duration.inMilliseconds / 1000).toStringAsFixed(1)}s';
 }
 
-/// Status / timing / size summary for a transaction's response or error
-/// section, e.g. `200 OK · 387ms · 1.2 KB`. Empty when nothing is reported.
+/// Status / size summary for a transaction's response or error section,
+/// e.g. `OK · 1.2 KB`. Empty when nothing is reported.
+///
+/// The status code and duration are intentionally omitted — both already show
+/// in the header. Prefers the reason phrase, falling back to the code only when
+/// the server reports no reason.
 String transactionStatusSummary(NetworkTransaction tx) {
   final parts = <String>[];
-  if (tx.statusCode case final code?) {
-    final message = tx.statusMessage;
-    parts.add(message == null ? '$code' : '$code $message');
-  }
-  if (tx.duration case final duration?) {
-    parts.add(formatTransactionDuration(duration));
+  if (tx.statusMessage case final reason?) {
+    parts.add(reason);
+  } else if (tx.statusCode case final code?) {
+    parts.add('$code');
   }
   if (tx.responseContentLength case final size?) {
     parts.add(formatBytes(size));

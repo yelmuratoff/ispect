@@ -19,6 +19,8 @@
 - **Overlay display options:** `compact: true` single-line summary, `showP90: true`, and a color-blind-safe palette via `ISpectPerformanceOverlayPalettes`.
 - **Export metadata:** New `ISpectOptions.metadataProvider` embeds app/device details (version, build, OS, device, environment, plus free-form `extra`) into exported and shared logs via the typed `ISpectMetadata` — both the header of full exports and each individual log entry you copy, share, or export. ISpect collects nothing itself — the host app supplies the values, so no new dependencies are added. Keep secrets and PII out of it; the metadata block is not redacted.
 - **HTTP composer (mini-Postman):** Replay a captured request or compose one from scratch and send it through your own client. Register it with `ISpect.registerSender(DioRequestSender(dio))` (or `HttpClientRequestSender(client)` from `ispectify_http`); a panel entry and a per-log "Edit & resend" action then appear, and the call reuses the client's base URL, auth interceptors, and retries — landing back in the network logs. Attach multipart files through `ISpectOptions.onPickComposerFile`, so no file-picker dependency is added. Redacted header/body values are never resent; the client's interceptors re-add them at send time.
+- **Method-colored network badges:** The request-method pill (GET/POST/PUT/DELETE/…) is colored per method on a theme-aware light/dark palette, matching the HTTP composer.
+- **Clearer expanded transaction card:** The request URL is neutral and each section shows a de-duplicated summary — response reason and payload size, request content type and size (or "No data") — without repeating the method, URL, duration, or status code already in the header.
 
 ### Behavioral Changes
 
@@ -37,6 +39,7 @@
 - **Error capture shape:** Flutter, present, platform, and zoned errors now report the original thrown object and its stack trace instead of a stringified message.
 - **Navigation logging:** A page opened from under a modal (e.g. a profile pushed from a bottom sheet) is now logged as a page transition governed by `isLogPages` instead of being dropped as a "modal" transition.
 - **Logs screen reactivity:** "Clear history" empties the visible list immediately, and view-controller-driven history mutations refresh the UI without a new log emission.
+- **Network status code now displayed:** Grouped transactions show the response status-code chip again — it was read from the wrong metadata key and stayed hidden.
 
 ### Code Quality
 

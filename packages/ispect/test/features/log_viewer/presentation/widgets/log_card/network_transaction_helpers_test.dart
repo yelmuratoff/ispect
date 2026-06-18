@@ -20,12 +20,10 @@ ISpectLogData _response({
   int statusCode = 200,
   String? statusMessage = 'OK',
   int? contentLength,
-  int durationMs = 387,
 }) =>
     ISpectLogData(
       'response',
       additionalData: {
-        TraceKeys.durationMs: durationMs,
         TraceKeys.meta: {
           NetworkJsonKeys.statusCode: statusCode,
           NetworkJsonKeys.responseData: {
@@ -84,13 +82,13 @@ void main() {
   });
 
   group('transactionStatusSummary', () {
-    test('joins status code, reason, and duration', () {
+    test('shows the reason phrase without the duplicated status code', () {
       final tx = NetworkTransaction(
         requestId: 'r',
         request: _request(),
         response: _response(),
       );
-      expect(transactionStatusSummary(tx), '200 OK · 387ms');
+      expect(transactionStatusSummary(tx), 'OK');
     });
 
     test('appends the response size when reported', () {
@@ -99,16 +97,16 @@ void main() {
         request: _request(),
         response: _response(contentLength: 2048),
       );
-      expect(transactionStatusSummary(tx), '200 OK · 387ms · 2.0 KB');
+      expect(transactionStatusSummary(tx), 'OK · 2.0 KB');
     });
 
-    test('omits the reason when absent', () {
+    test('falls back to the code when the server reports no reason', () {
       final tx = NetworkTransaction(
         requestId: 'r',
         request: _request(),
         response: _response(statusCode: 204, statusMessage: null),
       );
-      expect(transactionStatusSummary(tx), '204 · 387ms');
+      expect(transactionStatusSummary(tx), '204');
     });
 
     test('is empty for a pending transaction', () {

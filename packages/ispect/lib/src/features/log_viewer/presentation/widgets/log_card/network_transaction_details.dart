@@ -18,6 +18,7 @@ class TransactionDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ISpect.read(context).theme;
     final l10n = ISpectLocalization.of(context);
+    final requestSummary = transactionRequestSummary(tx);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: context.appTheme.textColor.withValues(alpha: 0.03),
@@ -39,7 +40,6 @@ class TransactionDetails extends StatelessWidget {
                     ) ??
                     color,
                 meta: transactionStatusSummary(tx),
-                message: tx.response!.message ?? '',
               ),
             if (tx.error != null) ...[
               if (tx.response != null) const Gap(6),
@@ -52,7 +52,9 @@ class TransactionDetails extends StatelessWidget {
                     ) ??
                     color,
                 meta: transactionStatusSummary(tx),
-                message: tx.error!.message ?? '',
+                // Transport errors carry no HTTP status, so fall back to the
+                // error message to keep some inline detail.
+                message: tx.statusCode == null ? tx.error!.message ?? '' : '',
               ),
             ],
             // Request LAST
@@ -65,8 +67,7 @@ class TransactionDetails extends StatelessWidget {
                     key: ISpectLogType.httpRequest.key,
                   ) ??
                   color,
-              meta: transactionRequestSummary(tx),
-              message: tx.request.message ?? '',
+              meta: requestSummary.isEmpty ? l10n.noData : requestSummary,
             ),
           ],
         ),
@@ -80,17 +81,19 @@ class _DetailSection extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.color,
-    required this.message,
     this.meta = '',
+    this.message = '',
   });
 
   final String label;
   final IconData icon;
   final Color color;
-  final String message;
 
-  /// Status / size summary shown under the label; hidden when empty.
+  /// Status / size summary shown next to the label; hidden when empty.
   final String meta;
+
+  /// Optional detail line below the label; hidden when empty.
+  final String message;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -131,16 +134,18 @@ class _DetailSection extends StatelessWidget {
                     ],
                   ],
                 ),
-                const Gap(2),
-                Text(
-                  message,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: context.appTheme.textColor.withValues(alpha: 0.6),
-                    fontSize: 11,
+                if (message.isNotEmpty) ...[
+                  const Gap(2),
+                  Text(
+                    message,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: context.appTheme.textColor.withValues(alpha: 0.6),
+                      fontSize: 11,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
