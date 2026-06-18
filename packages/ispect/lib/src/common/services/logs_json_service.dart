@@ -55,7 +55,8 @@ class LogsJsonService {
     final exportData = <String, dynamic>{};
 
     if (includeMetadata) {
-      exportData['metadata'] = _createExportMetadata(logs.length, metadata);
+      exportData[ISpectMetadata.exportKey] =
+          _createExportMetadata(logs.length, metadata);
     }
 
     final logsJson = await _processLogsInChunks(logs);
@@ -398,7 +399,7 @@ class LogsJsonService {
     ISpectMetadata? metadata,
   ) =>
       {
-        'metadata':
+        ISpectMetadata.exportKey:
             _createFilteredMetadata(logs, filteredLogs, filter, metadata),
         'logs': filteredLogs.map((log) => log.toJson()).toList(growable: false),
       };
@@ -435,9 +436,7 @@ class LogsJsonService {
   ) =>
       logsJson.map((log) {
         final redacted = redactionService.redact(log);
-        return redacted is Map<String, dynamic>
-            ? redacted
-            : log; // fallback if redaction returns unexpected type
+        return redacted is Map<String, dynamic> ? redacted : log;
       }).toList(growable: false);
 
   /// Validates JSON structure for logs import
@@ -480,8 +479,9 @@ class LogsJsonService {
 
   /// Extracts metadata from JSON data if available
   Map<String, dynamic>? _extractMetadata(dynamic jsonData) {
-    if (jsonData is Map<String, dynamic> && jsonData.containsKey('metadata')) {
-      final metadata = jsonData['metadata'];
+    if (jsonData is Map<String, dynamic> &&
+        jsonData.containsKey(ISpectMetadata.exportKey)) {
+      final metadata = jsonData[ISpectMetadata.exportKey];
       if (metadata is Map<String, dynamic>) return metadata;
     }
     return null;

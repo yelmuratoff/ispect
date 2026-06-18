@@ -65,7 +65,7 @@ class ISpectShareLogBottomSheet {
     if (metadata != null && !metadata.isEmpty) {
       effectiveData = {
         ...effectiveData,
-        'metadata': metadata.toMap(),
+        ISpectMetadata.exportKey: metadata.toMap(),
       };
     }
 

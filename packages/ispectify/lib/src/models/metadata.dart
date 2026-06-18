@@ -25,6 +25,9 @@ final class ISpectMetadata {
     this.extra,
   });
 
+  /// JSON key under which this metadata block is written in exported logs.
+  static const String exportKey = 'metadata';
+
   /// Human-readable application name (e.g. `My App`).
   final String? appName;
 

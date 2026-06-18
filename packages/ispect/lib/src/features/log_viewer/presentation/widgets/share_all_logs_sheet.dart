@@ -58,7 +58,7 @@ class ISpectShareAllLogsBottomSheet {
         return LogExporter.toCsv(logs, redactKeys: redactKeys);
       case ExportFormat.json:
         final exportData = <String, dynamic>{
-          'metadata': {
+          ISpectMetadata.exportKey: {
             'exportedAt': DateTime.now().toIso8601String(),
             'version': '1.0.0',
             'totalLogs': logs.length,
