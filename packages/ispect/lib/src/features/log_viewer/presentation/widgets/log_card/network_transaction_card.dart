@@ -69,10 +69,6 @@ class NetworkTransactionCard extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Mobile card
-// ---------------------------------------------------------------------------
-
 class _MobileTransactionCard extends StatefulWidget {
   const _MobileTransactionCard({
     required this.transaction,
@@ -219,7 +215,7 @@ class _MobileHeader extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: color,
+                          color: context.appTheme.textColor,
                           fontWeight: FontWeight.w600,
                           fontSize: 12,
                         ),

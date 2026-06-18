@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 
 class TransactionDetails extends StatelessWidget {
   const TransactionDetails({
@@ -37,6 +38,7 @@ class TransactionDetails extends StatelessWidget {
                       key: ISpectLogType.httpResponse.key,
                     ) ??
                     color,
+                meta: transactionStatusSummary(tx),
                 message: tx.response!.message ?? '',
               ),
             if (tx.error != null) ...[
@@ -49,6 +51,7 @@ class TransactionDetails extends StatelessWidget {
                       key: ISpectLogType.httpError.key,
                     ) ??
                     color,
+                meta: transactionStatusSummary(tx),
                 message: tx.error!.message ?? '',
               ),
             ],
@@ -62,6 +65,7 @@ class TransactionDetails extends StatelessWidget {
                     key: ISpectLogType.httpRequest.key,
                   ) ??
                   color,
+              meta: transactionRequestSummary(tx),
               message: tx.request.message ?? '',
             ),
           ],
@@ -77,12 +81,16 @@ class _DetailSection extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.message,
+    this.meta = '',
   });
 
   final String label;
   final IconData icon;
   final Color color;
   final String message;
+
+  /// Status / size summary shown under the label; hidden when empty.
+  final String meta;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -94,13 +102,34 @@ class _DetailSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (meta.isNotEmpty) ...[
+                      const Gap(6),
+                      Flexible(
+                        child: Text(
+                          meta,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: context.appTheme.textColor
+                                .withValues(alpha: 0.5),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const Gap(2),
                 Text(

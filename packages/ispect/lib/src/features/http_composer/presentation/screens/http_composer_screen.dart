@@ -372,7 +372,8 @@ class _MethodPill extends StatelessWidget {
         items: _httpMethods,
         labelOf: (method) => method,
         accentOf: (method) =>
-            JsonColors.methodColors[method] ?? context.ispectPrimaryColor,
+            JsonColors.methodColorFor(method, Theme.of(context).brightness) ??
+            context.ispectPrimaryColor,
         onSelected: controller.setMethod,
       );
 }

@@ -36,6 +36,7 @@ typedef BlocFilterPredicate = bool Function(Object? candidate);
 class ISpectBlocObserver extends BlocObserver {
   ISpectBlocObserver({
     ISpectLogger? logger,
+    // ignore: use_named_constants — the matching named const is deprecated.
     this.settings = const ISpectBlocSettings(),
     this.onBlocEvent,
     this.onBlocTransition,

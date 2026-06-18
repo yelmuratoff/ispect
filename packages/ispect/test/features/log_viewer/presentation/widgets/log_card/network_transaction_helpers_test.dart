@@ -1,5 +1,43 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
+import 'package:ispectify/ispectify.dart';
+
+ISpectLogData _request({String? contentType, int? contentLength}) =>
+    ISpectLogData(
+      'request',
+      additionalData: {
+        TraceKeys.meta: {
+          NetworkJsonKeys.requestData: {
+            if (contentType != null) NetworkJsonKeys.contentType: contentType,
+            if (contentLength != null)
+              NetworkJsonKeys.contentLength: contentLength,
+          },
+        },
+      },
+    );
+
+ISpectLogData _response({
+  int statusCode = 200,
+  String? statusMessage = 'OK',
+  int? contentLength,
+  int durationMs = 387,
+}) =>
+    ISpectLogData(
+      'response',
+      additionalData: {
+        TraceKeys.durationMs: durationMs,
+        TraceKeys.meta: {
+          NetworkJsonKeys.statusCode: statusCode,
+          NetworkJsonKeys.responseData: {
+            NetworkJsonKeys.statusCode: statusCode,
+            if (statusMessage != null)
+              NetworkJsonKeys.statusMessage: statusMessage,
+            if (contentLength != null)
+              NetworkJsonKeys.contentLength: contentLength,
+          },
+        },
+      },
+    );
 
 void main() {
   group('transactionListUrl', () {
@@ -42,6 +80,60 @@ void main() {
     test('returns empty string for null or empty input', () {
       expect(transactionListUrl(null, compact: true), '');
       expect(transactionListUrl('', compact: true), '');
+    });
+  });
+
+  group('transactionStatusSummary', () {
+    test('joins status code, reason, and duration', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(),
+        response: _response(),
+      );
+      expect(transactionStatusSummary(tx), '200 OK · 387ms');
+    });
+
+    test('appends the response size when reported', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(),
+        response: _response(contentLength: 2048),
+      );
+      expect(transactionStatusSummary(tx), '200 OK · 387ms · 2.0 KB');
+    });
+
+    test('omits the reason when absent', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(),
+        response: _response(statusCode: 204, statusMessage: null),
+      );
+      expect(transactionStatusSummary(tx), '204 · 387ms');
+    });
+
+    test('is empty for a pending transaction', () {
+      final tx = NetworkTransaction(requestId: 'r', request: _request());
+      expect(transactionStatusSummary(tx), '');
+    });
+  });
+
+  group('transactionRequestSummary', () {
+    test('joins request content type and size', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(contentType: 'application/json', contentLength: 532),
+        response: _response(),
+      );
+      expect(transactionRequestSummary(tx), 'application/json · 532 B');
+    });
+
+    test('is empty when the request reports neither', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(),
+        response: _response(),
+      );
+      expect(transactionRequestSummary(tx), '');
     });
   });
 }

@@ -5,11 +5,13 @@ import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/interceptors/ws_interceptor.dart';
+import 'package:ispectify_bloc/ispectify_bloc.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:ispectify_http/ispectify_http.dart';
@@ -129,6 +131,48 @@ final _flakyFutureProvider = FutureProvider<String>(
 );
 
 // ---------------------------------------------------------------------------
+// BLoC (real, no codegen) — wired through ISpectBlocObserver
+// ---------------------------------------------------------------------------
+
+sealed class CounterEvent {
+  const CounterEvent();
+}
+
+final class CounterIncremented extends CounterEvent {
+  const CounterIncremented();
+}
+
+final class CounterDecremented extends CounterEvent {
+  const CounterDecremented();
+}
+
+final class CounterReset extends CounterEvent {
+  const CounterReset();
+}
+
+/// Reports a recoverable error via `addError` — exercises onError (bloc-error)
+/// without crashing the bloc, so the demo stays interactive.
+final class CounterFailed extends CounterEvent {
+  const CounterFailed();
+}
+
+/// Counter bloc exercising the full observer surface: onCreate, onEvent,
+/// onTransition, onChange, onError, onDone, and onClose.
+final class CounterBloc extends Bloc<CounterEvent, int> {
+  CounterBloc() : super(0) {
+    on<CounterIncremented>((_, emit) => emit(state + 1));
+    on<CounterDecremented>((_, emit) => emit(state - 1));
+    on<CounterReset>((_, emit) => emit(0));
+    on<CounterFailed>(
+      (_, __) => addError(
+        StateError('demo: counter operation failed'),
+        StackTrace.current,
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
 
@@ -140,6 +184,7 @@ void main() {
         child: const MyApp(),
       ),
     ),
+    onInit: () => Bloc.observer = ISpectBlocObserver(logger: ISpect.logger),
   );
 }
 
@@ -436,6 +481,12 @@ class _HomePageState extends State<_HomePage> {
           _SectionHeader(title: 'Riverpod'),
           const SizedBox(height: 8),
           const _RiverpodScenarios(),
+          const SizedBox(height: 20),
+
+          // BLoC
+          _SectionHeader(title: 'BLoC'),
+          const SizedBox(height: 8),
+          const _BlocScenarios(),
           const SizedBox(height: 20),
 
           // Network & DB
@@ -1562,6 +1613,102 @@ class _RiverpodScenariosState extends ConsumerState<_RiverpodScenarios> {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// BLoC scenarios — real CounterBloc wired through ISpectBlocObserver
+// ---------------------------------------------------------------------------
+
+class _BlocScenarios extends StatefulWidget {
+  const _BlocScenarios();
+
+  @override
+  State<_BlocScenarios> createState() => _BlocScenariosState();
+}
+
+class _BlocScenariosState extends State<_BlocScenarios> {
+  // Bumping the key disposes the old bloc and creates a new one, exercising
+  // onClose + onCreate in a single tap.
+  int _generation = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BlocProvider<CounterBloc>(
+              key: ValueKey(_generation),
+              create: (_) => CounterBloc(),
+              child: const _CounterView(),
+            ),
+            const SizedBox(height: 12),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.restart_alt),
+              label: Text('Recreate bloc (gen #$_generation)'),
+              onPressed: () => setState(() => _generation += 1),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CounterView extends StatelessWidget {
+  const _CounterView();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        BlocBuilder<CounterBloc, int>(
+          builder: (context, count) => Text(
+            'counter: $count',
+            style: theme.textTheme.bodyMedium,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.add),
+              label: const Text('Increment'),
+              onPressed: () =>
+                  context.read<CounterBloc>().add(const CounterIncremented()),
+            ),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.remove),
+              label: const Text('Decrement'),
+              onPressed: () =>
+                  context.read<CounterBloc>().add(const CounterDecremented()),
+            ),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.refresh),
+              label: const Text('Reset'),
+              onPressed: () =>
+                  context.read<CounterBloc>().add(const CounterReset()),
+            ),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.error_outline),
+              label: const Text('Trigger error'),
+              style: FilledButton.styleFrom(
+                foregroundColor: theme.colorScheme.error,
+              ),
+              onPressed: () =>
+                  context.read<CounterBloc>().add(const CounterFailed()),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

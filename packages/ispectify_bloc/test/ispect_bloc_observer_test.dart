@@ -504,10 +504,7 @@ void main() {
         );
         ISpectBlocObserver(
           logger: logger,
-          settings: ISpectBlocSettings(
-            redactor: redactor,
-            printEventFullData: true,
-          ),
+          settings: ISpectBlocSettings(redactor: redactor),
         ).onEvent(bloc, 'test');
 
         final eventLogs = logger.byOperation('event');
@@ -544,11 +541,8 @@ void main() {
     // printEventFullData / printStateFullData
     // ------------------------------------------------------------------
     group('full data logging', () {
-      test('printEventFullData includes event payload in meta', () {
-        ISpectBlocObserver(
-          logger: logger,
-          settings: const ISpectBlocSettings(printEventFullData: true),
-        ).onEvent(bloc, 'detailed_event');
+      test('default includes event payload in meta', () {
+        ISpectBlocObserver(logger: logger).onEvent(bloc, 'detailed_event');
 
         final meta = logger
             .byOperation('event')
@@ -557,8 +551,11 @@ void main() {
         expect(meta[BlocJsonKeys.event], 'detailed_event');
       });
 
-      test('without printEventFullData excludes event payload from meta', () {
-        ISpectBlocObserver(logger: logger).onEvent(bloc, 'detailed_event');
+      test('printEventFullData: false excludes event payload from meta', () {
+        ISpectBlocObserver(
+          logger: logger,
+          settings: const ISpectBlocSettings(printEventFullData: false),
+        ).onEvent(bloc, 'detailed_event');
 
         final meta = logger
             .byOperation('event')
@@ -567,11 +564,8 @@ void main() {
         expect(meta.containsKey(BlocJsonKeys.event), isFalse);
       });
 
-      test('printStateFullData shows full state in transition', () {
-        ISpectBlocObserver(
-          logger: logger,
-          settings: ISpectBlocSettings.verbose,
-        ).onTransition(
+      test('default shows full state in transition', () {
+        ISpectBlocObserver(logger: logger).onTransition(
           bloc,
           const Transition(currentState: 0, event: 'x', nextState: 42),
         );
@@ -584,8 +578,11 @@ void main() {
         expect(meta[BlocJsonKeys.nextState], 42);
       });
 
-      test('without printStateFullData shows runtime type', () {
-        ISpectBlocObserver(logger: logger).onTransition(
+      test('printStateFullData: false shows runtime type', () {
+        ISpectBlocObserver(
+          logger: logger,
+          settings: const ISpectBlocSettings(printStateFullData: false),
+        ).onTransition(
           bloc,
           const Transition(currentState: 0, event: 'x', nextState: 42),
         );
@@ -594,7 +591,6 @@ void main() {
             .byOperation('transition')
             .single
             .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        // formatState returns runtimeType when printStateFullData is false.
         expect(meta[BlocJsonKeys.currentState], isA<Type>());
         expect(meta[BlocJsonKeys.nextState], isA<Type>());
       });

@@ -26,6 +26,32 @@ String formatTransactionDuration(Duration duration) {
   return '${(duration.inMilliseconds / 1000).toStringAsFixed(1)}s';
 }
 
+/// Status / timing / size summary for a transaction's response or error
+/// section, e.g. `200 OK · 387ms · 1.2 KB`. Empty when nothing is reported.
+String transactionStatusSummary(NetworkTransaction tx) {
+  final parts = <String>[];
+  if (tx.statusCode case final code?) {
+    final message = tx.statusMessage;
+    parts.add(message == null ? '$code' : '$code $message');
+  }
+  if (tx.duration case final duration?) {
+    parts.add(formatTransactionDuration(duration));
+  }
+  if (tx.responseContentLength case final size?) {
+    parts.add(formatBytes(size));
+  }
+  return parts.join(' · ');
+}
+
+/// Content type / size summary for a transaction's request section,
+/// e.g. `application/json · 532 B`. Empty when nothing is reported.
+String transactionRequestSummary(NetworkTransaction tx) {
+  final parts = <String>[];
+  if (tx.requestContentType case final type?) parts.add(type);
+  if (tx.requestContentLength case final size?) parts.add(formatBytes(size));
+  return parts.join(' · ');
+}
+
 /// URL to render in a collapsed transaction row.
 ///
 /// With [compact] true, strips the scheme and authority (host:port) so a

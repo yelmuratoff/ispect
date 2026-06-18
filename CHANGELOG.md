@@ -25,6 +25,7 @@
 - **BLoC observer keys:** Granular `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, `bloc-error` replace `state-change` / `state-error` — update filters keyed on the old names.
 - **BLoC `meta` keys:** Now kebab-case; read them via `BlocJsonKeys.*`.
 - **Riverpod `printValues` now defaults to `true`:** Use `ISpectRiverpodSettings.compact` when provider state may carry PII.
+- **BLoC `printEventFullData` / `printStateFullData` now default to `true`:** Events, transitions, and states log full payloads instead of only the runtime type (`int → int` becomes `0 → 1`). `ISpectBlocSettings.verbose` is now equivalent to the default and is deprecated; set the flags to `false` when bloc events or state may carry PII.
 - **`ISpect.run` uncaught-error hook:** Typed `onUncaughtError(Object error, StackTrace? stack)` replaces `onUncaughtErrors(List<dynamic>)`.
 - **`ispectify_ws` drops the `ws` dependency:** `ISpectWSInterceptor` is no longer exported — copy the adapter from the package example and add `ws` to your app. `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged.
 

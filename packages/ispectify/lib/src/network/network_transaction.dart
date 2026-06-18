@@ -1,4 +1,5 @@
 import 'package:ispectify/src/models/data.dart';
+import 'package:ispectify/src/network/network_json_keys.dart';
 import 'package:ispectify/src/trace/trace_keys.dart';
 
 /// Groups a correlated HTTP request with its response or error.
@@ -50,14 +51,30 @@ class NetworkTransaction {
 
   /// HTTP status code from response or error, if available.
   int? get statusCode {
-    // v5: trace meta
-    final code =
-        _traceMeta(response)?['statusCode'] ?? _traceMeta(error)?['statusCode'];
+    final code = _traceMeta(response)?[NetworkJsonKeys.statusCode] ??
+        _traceMeta(error)?[NetworkJsonKeys.statusCode];
     if (code is int) return code;
     // v4 fallback: flat additionalData
     return response?.additionalData?['statusCode'] as int? ??
         error?.additionalData?['statusCode'] as int?;
   }
+
+  /// HTTP status reason phrase (e.g. `No Content`), if reported.
+  String? get statusMessage =>
+      _nonEmptyString(_responseField(NetworkJsonKeys.statusMessage)) ??
+      _nonEmptyString(_errorResponse?[NetworkJsonKeys.statusMessage]);
+
+  /// Media type of the request body (e.g. `application/json`), if reported.
+  String? get requestContentType =>
+      _nonEmptyString(_requestField(NetworkJsonKeys.contentType));
+
+  /// Request body size in bytes, if reported.
+  int? get requestContentLength =>
+      _positiveInt(_requestField(NetworkJsonKeys.contentLength));
+
+  /// Response body size in bytes, if reported.
+  int? get responseContentLength =>
+      _positiveInt(_responseField(NetworkJsonKeys.contentLength));
 
   /// HTTP method from the request.
   String? get method {
@@ -89,15 +106,43 @@ class NetworkTransaction {
         error: error ?? this.error,
       );
 
+  /// The error log's embedded response sub-map, if present.
+  Map<String, dynamic>? get _errorResponse {
+    final resp =
+        _dataMap(error, NetworkJsonKeys.errorData)?[NetworkJsonKeys.response];
+    return resp is Map<String, dynamic> ? resp : null;
+  }
+
   /// Extract trace meta map from a log entry.
   static Map<String, dynamic>? _traceMeta(ISpectLogData? log) {
     final meta = log?.additionalData?[TraceKeys.meta];
     return meta is Map<String, dynamic> ? meta : null;
   }
 
+  /// A data sub-map nested inside a log's trace [meta] envelope, keyed by
+  /// [NetworkJsonKeys.requestData] / [NetworkJsonKeys.responseData] / etc.
+  static Map<String, dynamic>? _dataMap(ISpectLogData? log, String key) {
+    final v = _traceMeta(log)?[key];
+    return v is Map<String, dynamic> ? v : null;
+  }
+
+  Object? _requestField(String key) =>
+      _dataMap(request, NetworkJsonKeys.requestData)?[key];
+
+  Object? _responseField(String key) =>
+      _dataMap(response, NetworkJsonKeys.responseData)?[key];
+
   /// Extract int from trace envelope.
   static int? _metaInt(ISpectLogData? log, String key) {
     final v = log?.additionalData?[key];
     return v is int ? v : null;
+  }
+
+  static String? _nonEmptyString(Object? v) =>
+      v is String && v.isNotEmpty ? v : null;
+
+  static int? _positiveInt(Object? v) {
+    final n = v is int ? v : (v is String ? int.tryParse(v) : null);
+    return n != null && n > 0 ? n : null;
   }
 }

@@ -4,35 +4,38 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 
-// ---------------------------------------------------------------------------
-// Badges
-// ---------------------------------------------------------------------------
-
 class MethodBadge extends StatelessWidget {
   const MethodBadge({required this.method, required this.color, super.key});
 
   final String method;
+
+  /// Fallback color for unknown methods (e.g. the `HTTP` placeholder).
   final Color color;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-          child: Text(
-            method,
-            style: TextStyle(
-              color: color,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
-            ),
+  Widget build(BuildContext context) {
+    final badgeColor =
+        JsonColors.methodColorFor(method, Theme.of(context).brightness) ??
+            color;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.12),
+        borderRadius: const BorderRadius.all(Radius.circular(4)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        child: Text(
+          method,
+          style: TextStyle(
+            color: badgeColor,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.3,
           ),
         ),
-      );
+      ),
+    );
+  }
 }
 
 class StatusBadge extends StatelessWidget {
@@ -150,10 +153,6 @@ class PendingBadge extends StatelessWidget {
         ),
       );
 }
-
-// ---------------------------------------------------------------------------
-// Action widgets (desktop-specific)
-// ---------------------------------------------------------------------------
 
 class DetailChip extends StatelessWidget {
   const DetailChip({

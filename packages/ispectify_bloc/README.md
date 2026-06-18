@@ -81,8 +81,8 @@ const settings = ISpectBlocSettings(
   printClosings: true,
   printCompletions: true,
   printErrors: true,
-  printEventFullData: false, // raw event payloads off by default
-  printStateFullData: false, // raw state payloads off by default
+  printEventFullData: true,  // raw event payloads on by default
+  printStateFullData: true,  // raw state payloads on by default
   enableRedaction: true,     // route meta values through RedactionService when set
 );
 ```
@@ -96,8 +96,14 @@ ISpectBlocObserver(settings: ISpectBlocSettings.silent);
 // Skip per-change / per-completion noise — keeps creations, transitions, errors.
 ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
 
-// Full state payloads on transitions and changes.
-ISpectBlocObserver(settings: ISpectBlocSettings.verbose);
+// Full event and state payloads are captured by default. Opt out per flag to
+// log only the runtime type:
+ISpectBlocObserver(
+  settings: ISpectBlocSettings(
+    printEventFullData: false,
+    printStateFullData: false,
+  ),
+);
 ```
 
 ### Filtering noisy blocs
