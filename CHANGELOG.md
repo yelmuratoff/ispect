@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.2.0-dev.26
+## 5.2.0-dev.27
 
 ### Improvements
 
