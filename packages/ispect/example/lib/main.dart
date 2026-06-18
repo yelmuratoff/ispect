@@ -48,6 +48,11 @@ void main() {
     //
     // Forward uncaught zone errors to Sentry, Crashlytics, etc.
     // onZonedError: (e, st) => Sentry.captureException(e, stackTrace: st),
+    //
+    // Granular hooks (all optional): onFlutterError, onPlatformDispatcherError,
+    // onPresentError, onUncaughtError, the isPrintLoggingEnabled /
+    // isFlutterPrintEnabled / isZoneErrorHandlingEnabled toggles, and
+    // options: ISpectErrorHandlerOptions(...).
   );
 }
 
@@ -209,6 +214,7 @@ class _HomePage extends StatelessWidget {
     //   ispectify_http   — package:http interceptor
     //   ispectify_ws     — WebSocket logger
     //   ispectify_bloc   — Bloc.observer = ISpectBlocObserver()
+    //   ispectify_riverpod — ProviderObserver = ISpectRiverpodObserver()
     //   ispectify_db     — Database tracing (Hive, SharedPreferences, …)
 
     return Scaffold(
@@ -276,6 +282,36 @@ class _HomePage extends StatelessWidget {
             label: const Text('Open JSON viewer'),
           ),
           const SizedBox(height: 24),
+          const _SectionTitle('Drive the panel from code'),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () => ISpect.read(context).toggleISpect(),
+                icon: const Icon(Icons.visibility),
+                label: const Text('Toggle panel'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () =>
+                    ISpect.read(context).togglePerformanceTracking(),
+                icon: const Icon(Icons.speed),
+                label: const Text('Toggle FPS overlay'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () {
+                  final scope = ISpect.read(context);
+                  final next = scope.options.locale.languageCode == 'en'
+                      ? const Locale('ru')
+                      : const Locale('en');
+                  scope.options = scope.options.copyWith(locale: next);
+                },
+                icon: const Icon(Icons.translate),
+                label: const Text('Switch ISpect locale'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
           const _SectionTitle('Inside the panel'),
           const Text(
             'Tap the floating ISpect button to open the panel:\n'
@@ -284,14 +320,7 @@ class _HomePage extends StatelessWidget {
             '"attach file" control appears because onPickComposerFile is set.\n'
             '• Performance, widget inspector, color picker.',
           ),
-          // Other available methods:
-          //   logger.verbose / provider / print / log / logData
-          //
-          // Drive the panel from any widget under ISpectBuilder:
-          //   final scope = ISpect.read(context);
-          //   scope.toggleISpect();              // show / hide the panel
-          //   scope.togglePerformanceTracking(); // FPS overlay
-          //   scope.options = scope.options.copyWith(locale: Locale('ru'));
+          // Other logger methods: verbose / provider / print / log / logData.
         ],
       ),
     );
