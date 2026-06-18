@@ -111,8 +111,35 @@ class _MyAppState extends State<MyApp> {
           // avoid spam; severeJankFactor (default 2.0) sets the threshold.
           enableJankLogging: false,
           // severeJankFactor: 2.0,
-          metadataProvider: _buildMetadata,
-          onPickComposerFile: _pickComposerFile,
+          // Environment metadata shown in the header of exported/shared logs.
+          // Supply values you already own (package_info_plus / device_info_plus
+          // / --dart-define); ISpect never collects them. Resolution may be
+          // async; keep tokens and PII out.
+          metadataProvider: () => const ISpectMetadata(
+            appName: 'ISpect Quick Start',
+            appVersion: '1.0.0',
+            buildNumber: '1',
+            environment: 'dev',
+          ),
+          // Supplies a file for multipart bodies in the HTTP composer. A real
+          // app picks one here, e.g. with package:file_picker:
+          //
+          //   final result = await FilePicker.platform.pickFiles(withData: true);
+          //   if (result == null) return null; // user cancelled
+          //   final file = result.files.single;
+          //   return ComposerPickedFile(
+          //     filename: file.name,
+          //     bytes: file.bytes!,
+          //     contentType: lookupMimeType(file.name) ?? 'application/octet-stream',
+          //   );
+          //
+          // This stub returns in-memory bytes so the "attach file" control
+          // works without a native picker. Omit the callback to hide it.
+          onPickComposerFile: () async => ComposerPickedFile(
+            filename: 'sample.txt',
+            bytes: 'Hello from the ISpect HTTP composer'.codeUnits,
+            contentType: 'text/plain',
+          ),
           onOpenFile: (path) async {
             // Open exported log files (e.g. via package:open_filex).
           },
@@ -166,27 +193,6 @@ class _MyAppState extends State<MyApp> {
       home: const _HomePage(),
     );
   }
-
-  // Environment metadata embedded into the header of exported/shared logs.
-  // ISpect never collects these itself — supply values you already own
-  // (package_info_plus / device_info_plus / --dart-define). Resolution may be
-  // async; keep tokens and PII out, the block is written verbatim.
-  ISpectMetadata _buildMetadata() => const ISpectMetadata(
-        appName: 'ISpect Quick Start',
-        appVersion: '1.0.0',
-        buildNumber: '1',
-        environment: 'dev',
-      );
-
-  // Supplies a file for multipart bodies in the HTTP composer. A real app wires
-  // file_picker / image_picker here; the stub returns in-memory bytes so the
-  // "attach file" control works without a native picker. Omit this callback to
-  // hide that control entirely.
-  Future<ComposerPickedFile?> _pickComposerFile() async => ComposerPickedFile(
-        filename: 'sample.txt',
-        bytes: 'Hello from the ISpect HTTP composer'.codeUnits,
-        contentType: 'text/plain',
-      );
 }
 
 class _HomePage extends StatelessWidget {
