@@ -42,6 +42,11 @@ ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside
   </tr>
 </table>
 
+<div align="center">
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/http_composer.png?raw=true" width="240" alt="HTTP composer" />
+  <p><em>HTTP composer — replay a captured request or build one from scratch, then send it through your registered client.</em></p>
+</div>
+
 <table>
   <tr>
     <td align="center" width="25%">
