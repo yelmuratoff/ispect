@@ -83,16 +83,22 @@ class JsonColors {
       };
 
   /// HTTP method colors for the light theme.
+  ///
+  /// Darker Material [800] shades keep method labels readable on the light
+  /// badge surface and stay visibly distinct from the saturated status
+  /// signals (success green, error red, pending orange), which sit at the
+  /// [500] level. Raw [Colors.red]/[Colors.orange]/[Colors.green] would
+  /// collide exactly with those signals and read as a failure.
   static const methodColors = {
-    'GET': Colors.green,
-    'POST': Colors.blue,
-    'PUT': Colors.orange,
-    'DELETE': Colors.red,
-    'PATCH': Colors.purple,
-    'HEAD': Colors.pink,
-    'OPTIONS': Colors.teal,
-    'TRACE': Colors.grey,
-    'CONNECT': Color(0xFF8D6E63),
+    'GET': Color(0xFF2E7D32),
+    'POST': Color(0xFF1565C0),
+    'PUT': Color(0xFFEF6C00),
+    'DELETE': Color(0xFFC62828),
+    'PATCH': Color(0xFF6A1B9A),
+    'HEAD': Color(0xFFAD1457),
+    'OPTIONS': Color(0xFF00695C),
+    'TRACE': Color(0xFF424242),
+    'CONNECT': Color(0xFF4E342E),
   };
 
   /// HTTP method colors for the dark theme.

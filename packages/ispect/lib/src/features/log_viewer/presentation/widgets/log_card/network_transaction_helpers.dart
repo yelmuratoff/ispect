@@ -26,17 +26,39 @@ String formatTransactionDuration(Duration duration) {
   return '${(duration.inMilliseconds / 1000).toStringAsFixed(1)}s';
 }
 
+/// Canonical HTTP reason phrases whose code already implies success. Showing
+/// them next to the green status badge in the header adds no information.
+const _canonicalSuccessReasons = <int, String>{
+  200: 'OK',
+  201: 'Created',
+  202: 'Accepted',
+  203: 'Non-Authoritative Information',
+  204: 'No Content',
+  205: 'Reset Content',
+  206: 'Partial Content',
+};
+
+bool _isRedundantReason(int? code, String reason) {
+  if (code == null) return false;
+  final canonical = _canonicalSuccessReasons[code];
+  return canonical != null &&
+      canonical.toLowerCase() == reason.trim().toLowerCase();
+}
+
 /// Status / size summary for a transaction's response or error section,
-/// e.g. `OK · 1.2 KB`. Empty when nothing is reported.
+/// e.g. `1.2 KB` or `Not Found · 84 B`. Empty when nothing notable is reported.
 ///
 /// The status code and duration are intentionally omitted — both already show
-/// in the header. Prefers the reason phrase, falling back to the code only when
-/// the server reports no reason.
+/// in the header. The reason phrase is dropped when it is the canonical phrase
+/// for a successful code (`200 OK`, `201 Created`, …) since it only restates
+/// the badge; non-standard and error reasons are kept because they carry
+/// detail the code alone does not.
 String transactionStatusSummary(NetworkTransaction tx) {
   final parts = <String>[];
+  final code = tx.statusCode;
   if (tx.statusMessage case final reason?) {
-    parts.add(reason);
-  } else if (tx.statusCode case final code?) {
+    if (!_isRedundantReason(code, reason)) parts.add(reason);
+  } else if (code != null) {
     parts.add('$code');
   }
   if (tx.responseContentLength case final size?) {

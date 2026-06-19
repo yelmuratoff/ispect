@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 
 class TransactionDetails extends StatelessWidget {
@@ -22,7 +23,9 @@ class TransactionDetails extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: context.appTheme.textColor.withValues(alpha: 0.03),
-        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(ISpectConstants.standardBorderRadius),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(8),
@@ -67,7 +70,7 @@ class TransactionDetails extends StatelessWidget {
                     key: ISpectLogType.httpRequest.key,
                   ) ??
                   color,
-              meta: requestSummary.isEmpty ? l10n.noData : requestSummary,
+              meta: requestSummary,
             ),
           ],
         ),
@@ -124,7 +127,7 @@ class _DetailSection extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: context.appTheme.textColor
-                                .withValues(alpha: 0.5),
+                                .withValues(alpha: 0.65),
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                             fontFeatures: const [FontFeature.tabularFigures()],
@@ -141,7 +144,7 @@ class _DetailSection extends StatelessWidget {
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: context.appTheme.textColor.withValues(alpha: 0.6),
+                      color: context.appTheme.textColor.withValues(alpha: 0.75),
                       fontSize: 11,
                     ),
                   ),

@@ -197,19 +197,21 @@ class SquareIconButton extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onPressed,
         child: SizedBox(
-          width: 28,
-          height: 28,
+          width: kMinInteractiveDimension,
+          height: kMinInteractiveDimension,
           child: Center(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.06),
-                borderRadius: const BorderRadius.all(Radius.circular(7)),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(ISpectConstants.mediumBorderRadius),
+                ),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(8),
                 child: Icon(
                   icon,
-                  size: 13,
+                  size: 16,
                   color: color.withValues(alpha: 0.75),
                 ),
               ),
@@ -241,7 +243,9 @@ class DecoratedLeadingIcon extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.12),
-          borderRadius: const BorderRadius.all(Radius.circular(7)),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(ISpectConstants.mediumBorderRadius),
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(5),

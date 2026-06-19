@@ -21,6 +21,8 @@ final class ISpectConstants {
   static const double iconButtonDimension = 24;
   static const double iconButtonIconSize = 16;
 
+  static const double smallBorderRadius = 4;
+  static const double mediumBorderRadius = 6;
   static const double standardBorderRadius = 8;
   static const double largeBorderRadius = 10;
   static const double snackbarBorderRadius = 16;

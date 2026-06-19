@@ -82,22 +82,50 @@ void main() {
   });
 
   group('transactionStatusSummary', () {
-    test('shows the reason phrase without the duplicated status code', () {
+    test('drops the canonical OK reason that only restates the badge', () {
       final tx = NetworkTransaction(
         requestId: 'r',
         request: _request(),
         response: _response(),
       );
-      expect(transactionStatusSummary(tx), 'OK');
+      expect(transactionStatusSummary(tx), '');
     });
 
-    test('appends the response size when reported', () {
+    test('drops the canonical reason for any 2xx success code', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(),
+        response: _response(statusCode: 201, statusMessage: 'Created'),
+      );
+      expect(transactionStatusSummary(tx), '');
+    });
+
+    test('shows the response size alone when the reason is canonical', () {
       final tx = NetworkTransaction(
         requestId: 'r',
         request: _request(),
         response: _response(contentLength: 2048),
       );
-      expect(transactionStatusSummary(tx), 'OK · 2.0 KB');
+      expect(transactionStatusSummary(tx), '2.0 KB');
+    });
+
+    test('keeps an error reason phrase that the code alone does not convey',
+        () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(),
+        response: _response(statusCode: 404, statusMessage: 'Not Found'),
+      );
+      expect(transactionStatusSummary(tx), 'Not Found');
+    });
+
+    test('keeps a non-standard reason on a 2xx response', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(),
+        response: _response(statusMessage: 'All good'),
+      );
+      expect(transactionStatusSummary(tx), 'All good');
     });
 
     test('falls back to the code when the server reports no reason', () {
