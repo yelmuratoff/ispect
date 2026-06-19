@@ -9,8 +9,9 @@ project's conventions.
 <objective>
 Wire ISpect end-to-end so that in builds compiled with `--dart-define=ISPECT_ENABLED=true`
 the developer gets the inspector panel, route tracking, network capture, database/storage
-tracing, state-management observation, persisted settings, and working share / open-file /
-file-pick / metadata callbacks — for the integrations the app actually uses.
+tracing, state-management observation, crash-reporter / analytics forwarding, persisted
+settings, and the working share / open-file / file-pick / log-import / metadata callbacks —
+for the integrations the app actually uses.
 
 In builds **without** that flag, ISpect must tree-shake away to zero runtime cost.
 
@@ -42,7 +43,8 @@ Setup reference (read first):
 
 - `packages/ispect/example/lib/main.dart` — quick-start: the full, current wiring of
   `ISpect.run`, the navigator observer, localization delegates, `ISpectBuilder.wrap`, and
-  every `ISpectOptions` callback (share, open-file, composer file pick, settings, metadata).
+  every `ISpectOptions` callback (share, open-file, composer file pick, log import, settings,
+  metadata), plus forwarding diagnostics to a crash reporter via `ISpectObserver`.
 - `packages/ispect/example/lib/complex_example.dart` — realistic wiring of `onShare` /
   `onOpenFile` (share_plus / open_filex) and settings persistence.
 - `packages/ispect/example/lib/autoroute_example.dart` — router-based navigation wiring.
@@ -84,6 +86,9 @@ Safety & compatibility:
 
 <principles>
 - Scope to real usage: add an adapter/observer only when the project depends on that library.
+- Cover the full surface: treat the quick-start example and `ISpectOptions` as the exhaustive
+  checklist — every option, callback, and observer there is a capability, not only the few this
+  prompt names. Wire each one the app can support; report what you wired, skipped, and why.
 - One logger: pass `ISpect.logger` to every interceptor and observer so all diagnostics share
   one history. Never create separate logger instances for adapters.
 - Security default-on: keep redaction enabled; keep tokens, credentials, and PII out of logs
@@ -102,7 +107,8 @@ Safety & compatibility:
 3. Add only the matching ISpect packages; run `flutter pub get`.
 4. Wire, keeping the build green at each step: bootstrap (`ISpect.run`) → app wrap (observer,
    localization, `ISpectBuilder.wrap` + options) → network → database → state management →
-   settings persistence → callbacks/metadata.
+   crash-reporter / analytics forwarding (`ISpectObserver`) → settings persistence →
+   callbacks/metadata.
 5. Verify (see `<verification>`).
 </workflow>
 
@@ -120,14 +126,16 @@ Fix failures at the source; do not bypass checks.
 Respond as: (1) Discovery report — what the app uses and which packages/adapters apply;
 (2) Plan — file-by-file changes (pause for confirmation unless told to proceed);
 (3) Implementation; (4) Verification report with command output; (5) Follow-ups —
-anything unverified or intentionally skipped, plus the dev run command.
+anything unverified or intentionally skipped, the logger's optional manual trace helpers for
+domain flows (auth, payments, storage, database, analytics, push, …) — offer, don't wire them
+into business logic unasked — plus the dev run command.
 </output_format>
 
 <recap>
-Read the current sources instead of working from memory; add only what the app uses; share one
-`ISpect.logger`; keep redaction on; gate production safety through compile-time `kISpectEnabled`
-and never ship the flag to release; verify with `flutter analyze` and a gated run before
-claiming completion.
+Read the current sources instead of working from memory; add only what the app uses but cover
+its full option/callback/observer surface; share one `ISpect.logger`; keep redaction on; gate
+production safety through compile-time `kISpectEnabled` and never ship the flag to release;
+verify with `flutter analyze` and a gated run before claiming completion.
 </recap>
 
 ==== END PROMPT ====
