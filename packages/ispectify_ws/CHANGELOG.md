@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.2.0-dev.27
+## 5.2.0-dev.28
 
 ### Improvements
 
@@ -17,14 +17,19 @@
 - **`ISpectPerformanceOverlay` rebuilt:** Cross-platform overlay (web + desktop) with UI/raster/total bars, avg/p99/jank stats, current FPS, target line, and a freeze button.
 - **Jank diagnostics:** New `onJankBurst` callback and opt-in `enableJankLogging` log severe frames under `performance-jank` / `performance-error`.
 - **Overlay display options:** `compact: true` single-line summary, `showP90: true`, and a color-blind-safe palette via `ISpectPerformanceOverlayPalettes`.
-- **Export metadata:** New `ISpectOptions.metadataProvider` embeds app/device details (version, build, OS, device, environment, plus free-form `extra`) into exported and shared logs via the typed `ISpectMetadata` — both the header of full exports and each individual log entry you copy, share, or export. ISpect collects nothing itself — the host app supplies the values, so no new dependencies are added. Keep secrets and PII out of it; the metadata block is not redacted.
-- **HTTP composer (mini-Postman):** Replay a captured request or compose one from scratch and send it through your own client. Register it with `ISpect.registerSender(DioRequestSender(dio))` (or `HttpClientRequestSender(client)` from `ispectify_http`); a panel entry and a per-log "Edit & resend" action then appear, and the call reuses the client's base URL, auth interceptors, and retries — landing back in the network logs. Attach multipart files through `ISpectOptions.onPickComposerFile`, so no file-picker dependency is added. Redacted header/body values are never resent; the client's interceptors re-add them at send time.
+- **Export metadata:** New `ISpectOptions.metadataProvider` embeds app/device details (version, build, OS, device, environment, plus free-form `extra`) into exported and shared logs via the typed `ISpectMetadata`. The host app supplies the values; keep secrets and PII out, as the metadata block is not redacted.
+- **HTTP composer (mini-Postman):** Replay a captured request or compose one from scratch and send it through your own client via `ISpect.registerSender(DioRequestSender(dio))` (or `HttpClientRequestSender` from `ispectify_http`). A panel entry and per-log "Edit & resend" action appear, reusing the client's base URL, auth, and retries, with the result landing back in the network logs. Attach multipart files via `ISpectOptions.onPickComposerFile`; redacted values are never resent.
+- **Method-colored network badges:** The request-method pill (GET/POST/PUT/DELETE/…) is colored per method on a theme-aware palette. The card's left accent bar stays status-colored so failed requests catch the eye, not the method.
+- **Clearer expanded transaction card:** Each section shows a de-duplicated summary without repeating the method, URL, duration, or status code from the header. Empty rows are dropped, so a body-less request expands straight to its actions.
+- **Cleaner network log rows:** Removed a redundant leading icon and toned down the request path so the method badge and status read first.
+- **Network card accessibility:** Action buttons now meet the minimum interactive tap target, with higher-contrast timestamps and section summaries.
 
 ### Behavioral Changes
 
 - **BLoC observer keys:** Granular `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, `bloc-error` replace `state-change` / `state-error` — update filters keyed on the old names.
 - **BLoC `meta` keys:** Now kebab-case; read them via `BlocJsonKeys.*`.
 - **Riverpod `printValues` now defaults to `true`:** Use `ISpectRiverpodSettings.compact` when provider state may carry PII.
+- **BLoC `printEventFullData` / `printStateFullData` now default to `true`:** Events, transitions, and states log full payloads instead of only the runtime type (`int → int` becomes `0 → 1`). `ISpectBlocSettings.verbose` is now equivalent to the default and is deprecated; set the flags to `false` when bloc events or state may carry PII.
 - **`ISpect.run` uncaught-error hook:** Typed `onUncaughtError(Object error, StackTrace? stack)` replaces `onUncaughtErrors(List<dynamic>)`.
 - **`ispectify_ws` drops the `ws` dependency:** `ISpectWSInterceptor` is no longer exported — copy the adapter from the package example and add `ws` to your app. `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged.
 
@@ -36,6 +41,7 @@
 - **Error capture shape:** Flutter, present, platform, and zoned errors now report the original thrown object and its stack trace instead of a stringified message.
 - **Navigation logging:** A page opened from under a modal (e.g. a profile pushed from a bottom sheet) is now logged as a page transition governed by `isLogPages` instead of being dropped as a "modal" transition.
 - **Logs screen reactivity:** "Clear history" empties the visible list immediately, and view-controller-driven history mutations refresh the UI without a new log emission.
+- **Network status code now displayed:** Grouped transactions show the response status-code chip again — it was read from the wrong metadata key and stayed hidden.
 
 ### Code Quality
 
