@@ -76,6 +76,14 @@ String transactionRequestSummary(NetworkTransaction tx) {
   return parts.join(' · ');
 }
 
+/// Whether the expanded card has any inline detail worth a panel — a response
+/// or request summary, or an error. A body-less request collapses to just the
+/// action buttons instead of empty `Response`/`Request` rows.
+bool transactionHasInlineDetails(NetworkTransaction tx) =>
+    (tx.response != null && transactionStatusSummary(tx).isNotEmpty) ||
+    tx.error != null ||
+    transactionRequestSummary(tx).isNotEmpty;
+
 /// URL to render in a collapsed transaction row.
 ///
 /// With [compact] true, strips the scheme and authority (host:port) so a

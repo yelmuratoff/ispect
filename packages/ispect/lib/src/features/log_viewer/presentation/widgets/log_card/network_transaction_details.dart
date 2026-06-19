@@ -19,7 +19,53 @@ class TransactionDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ISpect.read(context).theme;
     final l10n = ISpectLocalization.of(context);
+    final statusSummary = transactionStatusSummary(tx);
     final requestSummary = transactionRequestSummary(tx);
+
+    // Response/Error first (most relevant for debugging), request last. Rows
+    // with nothing to add beyond the header are dropped so a body-less request
+    // doesn't expand into empty labels.
+    final sections = <Widget>[
+      if (tx.response != null && statusSummary.isNotEmpty)
+        _DetailSection(
+          label: l10n.httpResponse,
+          icon: Icons.arrow_downward_rounded,
+          color: theme.getTypeColor(
+                context,
+                key: ISpectLogType.httpResponse.key,
+              ) ??
+              color,
+          meta: statusSummary,
+        ),
+      if (tx.error != null)
+        _DetailSection(
+          label: l10n.error,
+          icon: Icons.error_outline_rounded,
+          color: theme.getTypeColor(
+                context,
+                key: ISpectLogType.httpError.key,
+              ) ??
+              color,
+          meta: statusSummary,
+          // Transport errors carry no HTTP status, so fall back to the
+          // error message to keep some inline detail.
+          message: tx.statusCode == null ? tx.error!.message ?? '' : '',
+        ),
+      if (requestSummary.isNotEmpty)
+        _DetailSection(
+          label: l10n.httpRequest,
+          icon: Icons.arrow_upward_rounded,
+          color: theme.getTypeColor(
+                context,
+                key: ISpectLogType.httpRequest.key,
+              ) ??
+              color,
+          meta: requestSummary,
+        ),
+    ];
+
+    if (sections.isEmpty) return const SizedBox.shrink();
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: context.appTheme.textColor.withValues(alpha: 0.03),
@@ -32,46 +78,10 @@ class TransactionDetails extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Response/Error FIRST (most relevant for debugging)
-            if (tx.response != null)
-              _DetailSection(
-                label: l10n.httpResponse,
-                icon: Icons.arrow_downward_rounded,
-                color: theme.getTypeColor(
-                      context,
-                      key: ISpectLogType.httpResponse.key,
-                    ) ??
-                    color,
-                meta: transactionStatusSummary(tx),
-              ),
-            if (tx.error != null) ...[
-              if (tx.response != null) const Gap(6),
-              _DetailSection(
-                label: l10n.error,
-                icon: Icons.error_outline_rounded,
-                color: theme.getTypeColor(
-                      context,
-                      key: ISpectLogType.httpError.key,
-                    ) ??
-                    color,
-                meta: transactionStatusSummary(tx),
-                // Transport errors carry no HTTP status, so fall back to the
-                // error message to keep some inline detail.
-                message: tx.statusCode == null ? tx.error!.message ?? '' : '',
-              ),
+            for (var i = 0; i < sections.length; i++) ...[
+              if (i > 0) const Gap(6),
+              sections[i],
             ],
-            // Request LAST
-            if (tx.response != null || tx.error != null) const Gap(6),
-            _DetailSection(
-              label: l10n.httpRequest,
-              icon: Icons.arrow_upward_rounded,
-              color: theme.getTypeColor(
-                    context,
-                    key: ISpectLogType.httpRequest.key,
-                  ) ??
-                  color,
-              meta: requestSummary,
-            ),
           ],
         ),
       ),

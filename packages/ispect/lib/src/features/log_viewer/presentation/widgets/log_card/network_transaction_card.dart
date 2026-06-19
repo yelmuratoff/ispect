@@ -4,7 +4,6 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_search_highlight_surface.dart';
-import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_desktop_row.dart';
@@ -97,12 +96,7 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
   @override
   Widget build(BuildContext context) {
     final color = transactionColor(tx);
-    final methodColor = JsonColors.methodColorFor(
-          tx.method ?? '',
-          Theme.of(context).brightness,
-        ) ??
-        color;
-    final accentColor = methodColor.withValues(alpha: _expanded ? 0.9 : 0.7);
+    final accentColor = color.withValues(alpha: _expanded ? 0.9 : 0.7);
 
     return ISpectSearchHighlightSurface(
       searchMatchState: widget.searchMatchState,
@@ -155,8 +149,10 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TransactionDetails(tx: tx, color: color),
-                          const Gap(8),
+                          if (transactionHasInlineDetails(tx)) ...[
+                            TransactionDetails(tx: tx, color: color),
+                            const Gap(8),
+                          ],
                           Row(
                             children: buildActionWidgets(
                               context: context,

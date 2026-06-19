@@ -162,4 +162,42 @@ void main() {
       expect(transactionRequestSummary(tx), '');
     });
   });
+
+  group('transactionHasInlineDetails', () {
+    test('is false when neither request nor response adds anything', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(),
+        response: _response(),
+      );
+      expect(transactionHasInlineDetails(tx), isFalse);
+    });
+
+    test('is true when the response reports a size', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(),
+        response: _response(contentLength: 1024),
+      );
+      expect(transactionHasInlineDetails(tx), isTrue);
+    });
+
+    test('is true when the request reports a content type', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(contentType: 'application/json'),
+        response: _response(),
+      );
+      expect(transactionHasInlineDetails(tx), isTrue);
+    });
+
+    test('is true when the transaction errored', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(),
+        error: _request(),
+      );
+      expect(transactionHasInlineDetails(tx), isTrue);
+    });
+  });
 }
