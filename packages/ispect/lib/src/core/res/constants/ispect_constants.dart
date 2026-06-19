@@ -20,6 +20,7 @@ final class ISpectConstants {
   static const double logCardIconSize = 16;
   static const double iconButtonDimension = 24;
   static const double iconButtonIconSize = 16;
+  static const double actionControlHeight = 28;
 
   static const double smallBorderRadius = 4;
   static const double mediumBorderRadius = 6;

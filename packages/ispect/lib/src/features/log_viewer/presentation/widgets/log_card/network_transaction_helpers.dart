@@ -168,6 +168,7 @@ List<Widget> buildActionWidgets({
   VoidCallback? onOpenResponseDetail,
 }) {
   final l10n = ISpectLocalization.of(context);
+  final theme = ISpect.read(context).theme;
   final widgets = <Widget>[];
 
   final redactedCurl =
@@ -245,7 +246,9 @@ List<Widget> buildActionWidgets({
       const Gap(4),
       DetailChip(
         label: l10n.httpRequest,
-        color: color,
+        color:
+            theme.getTypeColor(context, key: ISpectLogType.httpRequest.key) ??
+                color,
         icon: compactDetailChips
             ? Icons.arrow_upward_rounded
             : Icons.open_in_new_rounded,
@@ -256,11 +259,14 @@ List<Widget> buildActionWidgets({
   }
   if ((tx.response != null || tx.error != null) &&
       onOpenResponseDetail != null) {
+    final responseKey = tx.error != null
+        ? ISpectLogType.httpError.key
+        : ISpectLogType.httpResponse.key;
     widgets.addAll([
       const Gap(4),
       DetailChip(
         label: l10n.httpResponse,
-        color: color,
+        color: theme.getTypeColor(context, key: responseKey) ?? color,
         icon: compactDetailChips
             ? Icons.arrow_downward_rounded
             : Icons.open_in_new_rounded,

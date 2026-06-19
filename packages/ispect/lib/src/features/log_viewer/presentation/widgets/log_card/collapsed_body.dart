@@ -197,19 +197,21 @@ class SquareIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chip = DecoratedBox(
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.06),
-        borderRadius: const BorderRadius.all(
-          Radius.circular(ISpectConstants.mediumBorderRadius),
+    final chip = SizedBox.square(
+      dimension: ISpectConstants.actionControlHeight,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.06),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(ISpectConstants.mediumBorderRadius),
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Icon(
-          icon,
-          size: 16,
-          color: color.withValues(alpha: 0.75),
+        child: Center(
+          child: Icon(
+            icon,
+            size: 16,
+            color: color.withValues(alpha: 0.75),
+          ),
         ),
       ),
     );

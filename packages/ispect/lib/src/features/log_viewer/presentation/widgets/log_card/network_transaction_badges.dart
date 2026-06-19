@@ -183,6 +183,34 @@ class DetailChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final content = Padding(
+      padding: iconOnly
+          ? const EdgeInsets.all(4)
+          : const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (!iconOnly) ...[
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Gap(4),
+          ],
+          Icon(
+            icon,
+            size: iconOnly ? 14 : 12,
+            color: color.withValues(alpha: 0.85),
+          ),
+        ],
+      ),
+    );
+
     final chip = MouseRegion(
       cursor: SystemMouseCursors.click,
       child: DecoratedBox(
@@ -192,33 +220,12 @@ class DetailChip extends StatelessWidget {
             Radius.circular(ISpectConstants.mediumBorderRadius),
           ),
         ),
-        child: Padding(
-          padding: iconOnly
-              ? const EdgeInsets.all(4)
-              : const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (!iconOnly) ...[
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Gap(4),
-              ],
-              Icon(
-                icon,
-                size: iconOnly ? 14 : 12,
-                color: color.withValues(alpha: 0.85),
+        child: iconOnly
+            ? content
+            : SizedBox(
+                height: ISpectConstants.actionControlHeight,
+                child: content,
               ),
-            ],
-          ),
-        ),
       ),
     );
 
