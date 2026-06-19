@@ -20,9 +20,9 @@
 - **Export metadata:** New `ISpectOptions.metadataProvider` embeds app/device details (version, build, OS, device, environment, plus free-form `extra`) into exported and shared logs via the typed `ISpectMetadata`. The host app supplies the values; keep secrets and PII out, as the metadata block is not redacted.
 - **HTTP composer (mini-Postman):** Replay a captured request or compose one from scratch and send it through your own client via `ISpect.registerSender(DioRequestSender(dio))` (or `HttpClientRequestSender` from `ispectify_http`). A panel entry and per-log "Edit & resend" action appear, reusing the client's base URL, auth, and retries, with the result landing back in the network logs. Attach multipart files via `ISpectOptions.onPickComposerFile`; redacted values are never resent.
 - **Method-colored network badges:** The request-method pill (GET/POST/PUT/DELETE/…) is colored per method on a theme-aware palette. The card's left accent bar stays status-colored so failed requests catch the eye, not the method.
-- **Clearer expanded transaction card:** Each section shows a de-duplicated summary without repeating the method, URL, duration, or status code from the header. Empty rows are dropped, so a body-less request expands straight to its actions.
+- **Clearer expanded transaction card:** Each section shows a de-duplicated summary without repeating the method, URL, duration, or status code from the header. The request summary appears only alongside a response or error row, so a plain successful call expands straight to its actions.
 - **Cleaner network log rows:** Removed a redundant leading icon and toned down the request path so the method badge and status read first.
-- **Network card accessibility:** Action buttons now meet the minimum interactive tap target, with higher-contrast timestamps and section summaries.
+- **Tighter card action buttons:** Network actions and each log row's expand/more controls keep the minimum interactive tap height while sitting tighter together; network timestamps and section summaries also gain higher contrast.
 
 ### Behavioral Changes
 

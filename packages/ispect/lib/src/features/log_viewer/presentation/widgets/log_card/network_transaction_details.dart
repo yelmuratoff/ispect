@@ -21,12 +21,13 @@ class TransactionDetails extends StatelessWidget {
     final l10n = ISpectLocalization.of(context);
     final statusSummary = transactionStatusSummary(tx);
     final requestSummary = transactionRequestSummary(tx);
+    final showResponse = tx.response != null && statusSummary.isNotEmpty;
+    final showError = tx.error != null;
 
-    // Response/Error first (most relevant for debugging), request last. Rows
-    // with nothing to add beyond the header are dropped so a body-less request
-    // doesn't expand into empty labels.
+    // The request row only joins a response/error row — alone it just repeats
+    // the request content type, so a plain successful call shows no panel.
     final sections = <Widget>[
-      if (tx.response != null && statusSummary.isNotEmpty)
+      if (showResponse)
         _DetailSection(
           label: l10n.httpResponse,
           icon: Icons.arrow_downward_rounded,
@@ -37,7 +38,7 @@ class TransactionDetails extends StatelessWidget {
               color,
           meta: statusSummary,
         ),
-      if (tx.error != null)
+      if (showError)
         _DetailSection(
           label: l10n.error,
           icon: Icons.error_outline_rounded,
@@ -51,7 +52,7 @@ class TransactionDetails extends StatelessWidget {
           // error message to keep some inline detail.
           message: tx.statusCode == null ? tx.error!.message ?? '' : '',
         ),
-      if (requestSummary.isNotEmpty)
+      if (requestSummary.isNotEmpty && (showResponse || showError))
         _DetailSection(
           label: l10n.httpRequest,
           icon: Icons.arrow_upward_rounded,

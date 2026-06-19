@@ -182,13 +182,13 @@ void main() {
       expect(transactionHasInlineDetails(tx), isTrue);
     });
 
-    test('is true when the request reports a content type', () {
+    test('is false when only the request reports a content type', () {
       final tx = NetworkTransaction(
         requestId: 'r',
         request: _request(contentType: 'application/json'),
         response: _response(),
       );
-      expect(transactionHasInlineDetails(tx), isTrue);
+      expect(transactionHasInlineDetails(tx), isFalse);
     });
 
     test('is true when the transaction errored', () {

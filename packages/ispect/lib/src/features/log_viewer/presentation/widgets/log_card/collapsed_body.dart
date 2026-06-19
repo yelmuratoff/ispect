@@ -119,16 +119,20 @@ class CollapsedBody extends StatelessWidget {
             const Gap(4),
             SlowBadge(durationMs: slowDurationMs!),
           ],
+          const Gap(4),
           SquareIconButton(
             icon: Icons.open_in_full_rounded,
             color: color,
             tooltip: context.ispectL10n.expandLogs,
+            dense: true,
             onPressed: onExpandTap,
           ),
+          const Gap(4),
           SquareIconButton(
             icon: Icons.more_vert_rounded,
             color: color,
             tooltip: context.ispectL10n.actions,
+            dense: true,
             onPressed: onMenuTap,
           ),
         ],
@@ -178,6 +182,7 @@ class SquareIconButton extends StatelessWidget {
     required this.color,
     required this.onPressed,
     this.tooltip,
+    this.dense = false,
     super.key,
   });
 
@@ -186,8 +191,29 @@ class SquareIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String? tooltip;
 
+  /// When `true`, hugs the icon width while keeping a full-height tap target,
+  /// so action-row controls sit tight instead of spreading across fixed squares.
+  final bool dense;
+
   @override
   Widget build(BuildContext context) {
+    final chip = DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.06),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(ISpectConstants.mediumBorderRadius),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Icon(
+          icon,
+          size: 16,
+          color: color.withValues(alpha: 0.75),
+        ),
+      ),
+    );
+
     Widget button = Semantics(
       button: true,
       label: tooltip ?? '',
@@ -196,28 +222,17 @@ class SquareIconButton extends StatelessWidget {
         excludeFromSemantics: true,
         behavior: HitTestBehavior.opaque,
         onTap: onPressed,
-        child: SizedBox(
-          width: kMinInteractiveDimension,
-          height: kMinInteractiveDimension,
-          child: Center(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.06),
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(ISpectConstants.mediumBorderRadius),
-                ),
+        child: dense
+            ? ConstrainedBox(
+                constraints:
+                    const BoxConstraints(minHeight: kMinInteractiveDimension),
+                child: Center(widthFactor: 1, child: chip),
+              )
+            : SizedBox(
+                width: kMinInteractiveDimension,
+                height: kMinInteractiveDimension,
+                child: Center(child: chip),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Icon(
-                  icon,
-                  size: 16,
-                  color: color.withValues(alpha: 0.75),
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
 

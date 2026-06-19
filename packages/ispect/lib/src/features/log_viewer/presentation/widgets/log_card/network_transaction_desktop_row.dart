@@ -229,7 +229,7 @@ class _NetworkTransactionDesktopRowState
               duration: ISpectMotion.short,
               curve: ISpectMotion.standardCurve,
               alignment: Alignment.topCenter,
-              child: _expanded
+              child: _expanded && transactionHasInlineDetails(tx)
                   ? DecoratedBox(
                       decoration: BoxDecoration(
                         color: cardColor.withValues(alpha: 0.5),

@@ -76,13 +76,12 @@ String transactionRequestSummary(NetworkTransaction tx) {
   return parts.join(' · ');
 }
 
-/// Whether the expanded card has any inline detail worth a panel — a response
-/// or request summary, or an error. A body-less request collapses to just the
-/// action buttons instead of empty `Response`/`Request` rows.
+/// Whether the expanded card has an inline panel — a response summary or an
+/// error. The request summary alone is excluded: on its own it just repeats
+/// the request content type.
 bool transactionHasInlineDetails(NetworkTransaction tx) =>
     (tx.response != null && transactionStatusSummary(tx).isNotEmpty) ||
-    tx.error != null ||
-    transactionRequestSummary(tx).isNotEmpty;
+    tx.error != null;
 
 /// URL to render in a collapsed transaction row.
 ///
@@ -199,6 +198,7 @@ List<Widget> buildActionWidgets({
         icon: Icons.share_rounded,
         color: color,
         tooltip: l10n.share,
+        dense: true,
         onPressed: () => shareTransaction(context, tx),
       ),
     );
@@ -209,6 +209,7 @@ List<Widget> buildActionWidgets({
           icon: Icons.terminal_rounded,
           color: color,
           tooltip: l10n.copyAsCurl,
+          dense: true,
           onPressed: () => copyClipboard(context, value: redactedCurl),
         ),
       ]);
@@ -233,6 +234,7 @@ List<Widget> buildActionWidgets({
           icon: Icons.api_rounded,
           color: color,
           tooltip: l10n.composerEditAndResend,
+          dense: true,
           onPressed: openComposer,
         ),
     ]);

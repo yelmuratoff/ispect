@@ -225,7 +225,7 @@ void main() {
     testWidgets(
       'Given a LogCard, '
       'When the action buttons are laid out, '
-      'Then each SquareIconButton meets the minimum interactive tap target',
+      'Then each SquareIconButton keeps the minimum interactive tap height',
       (tester) async {
         await tester.pumpWidget(buildLogCard());
         await tester.pumpAndSettle();
@@ -234,7 +234,6 @@ void main() {
         expect(buttons, findsWidgets);
         for (final element in buttons.evaluate()) {
           final size = tester.getSize(find.byWidget(element.widget));
-          expect(size.width, greaterThanOrEqualTo(kMinInteractiveDimension));
           expect(size.height, greaterThanOrEqualTo(kMinInteractiveDimension));
         }
       },
