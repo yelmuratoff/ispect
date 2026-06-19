@@ -145,7 +145,7 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
               alignment: Alignment.topCenter,
               child: _expanded
                   ? Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
