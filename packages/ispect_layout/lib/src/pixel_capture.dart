@@ -15,7 +15,8 @@ class PixelCapture {
 
   /// Captures the contents of [boundaryKey]'s [RenderRepaintBoundary] into a
   /// [ui.Image] at the current device pixel ratio and returns it along with
-  /// its raw RGBA bytes.
+  /// its RGBA bytes in straight (non-premultiplied) alpha, so a sampled
+  /// translucent pixel reports its true colour rather than a darkened one.
   ///
   /// Returns `null` when the boundary isn't yet mounted. Caller is
   /// responsible for [ui.Image.dispose].
@@ -28,7 +29,8 @@ class PixelCapture {
     final boundary = context.findRenderObject()! as RenderRepaintBoundary;
     final pixelRatio = MediaQuery.of(context).devicePixelRatio;
     final image = await boundary.toImage(pixelRatio: pixelRatio);
-    final byteData = await image.toByteData();
+    final byteData =
+        await image.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
     return (image: image, byteData: byteData);
   }
 

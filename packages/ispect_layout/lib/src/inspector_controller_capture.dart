@@ -103,8 +103,8 @@ extension InspectorControllerCapture on InspectorController {
 
     final clamped = _clampToScreen(offset, context);
     final shiftedOffset = _extractShiftedOffset(clamped, context);
-    final x = shiftedOffset.dx.round().clamp(0, _image!.width - 1);
-    final y = shiftedOffset.dy.round().clamp(0, _image!.height - 1);
+    final x = imagePixelIndex(shiftedOffset.dx, _image!.width);
+    final y = imagePixelIndex(shiftedOffset.dy, _image!.height);
 
     final color = getPixelFromByteData(
       byteDataStateNotifier.value!,

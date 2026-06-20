@@ -4,7 +4,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 /// Reads the color of a pixel at ([x], [y]) from a raw `RGBA8888` [byteData]
-/// buffer (as produced by `ui.Image.toByteData(format: ImageByteFormat.rawRgba)`).
+/// buffer with straight (non-premultiplied) alpha (as produced by
+/// `ui.Image.toByteData(format: ImageByteFormat.rawStraightRgba)`).
 ///
 /// Returns `null` for out-of-range coordinates or truncated buffers — callers
 /// must handle this rather than relying on a default colour.
@@ -41,6 +42,15 @@ Color? getPixelFromByteData(
   final a = byteData.getUint8(index + 3);
 
   return Color.fromARGB(a, r, g, b);
+}
+
+/// Maps a continuous image coordinate (sub-pixel, in image-pixel space) to the
+/// index of the pixel whose cell `[i, i + 1)` contains it, clamped to
+/// `[0, size - 1]`.
+///
+int imagePixelIndex(double coordinate, int size) {
+  assert(size > 0, 'image size must be positive');
+  return coordinate.floor().clamp(0, size - 1);
 }
 
 /// Returns the [color] in `#RRGGBB` (or `#AARRGGBB` when [withAlpha] is true).
