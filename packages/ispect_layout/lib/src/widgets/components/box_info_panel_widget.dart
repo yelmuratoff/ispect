@@ -227,6 +227,16 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
           ..add(const _SectionHeader('appearance'))
           ..add(PropSection(props: dProps));
       }
+      final svgWidget = resolveSvgPicture(target);
+      if (svgWidget != null) {
+        final sProps = svgProps(svgWidget, decimalPlaces: widget.decimalPlaces);
+        if (sProps.isNotEmpty) {
+          divider();
+          out
+            ..add(const _SectionHeader('svg'))
+            ..add(PropSection(props: sProps));
+        }
+      }
     }
 
     out.addAll(_wrapperSections(context, dividerColor));

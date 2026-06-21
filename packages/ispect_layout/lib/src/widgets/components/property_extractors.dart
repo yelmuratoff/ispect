@@ -1,12 +1,14 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:ispect_layout/src/number_format.dart';
+import 'package:ispect_layout/src/widgets/components/image_props.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
 import 'package:ispect_layout/src/widgets/components/value_descriptors.dart';
 
+export 'package:ispect_layout/src/widgets/components/image_props.dart';
+export 'package:ispect_layout/src/widgets/components/svg_props.dart';
 export 'package:ispect_layout/src/widgets/components/value_descriptors.dart';
 
 /// Below this magnitude a transform component (translate / scale - 1) is
@@ -18,18 +20,6 @@ const _kRotationEpsilon = 0.01;
 
 String _fmt(double v, int decimalPlaces) =>
     formatInspectorDouble(v, decimalPlaces: decimalPlaces);
-
-/// Recovers the [ImageProvider] that produced a [RenderImage] via its
-/// [RenderObject.debugCreator]. Only debug builds populate it; returns
-/// `null` in release/profile.
-ImageProvider? resolveImageProvider(RenderImage target) {
-  if (!kDebugMode) return null;
-  final creator = target.debugCreator;
-  if (creator is! DebugCreator) return null;
-  final widget = creator.element.widget;
-  if (widget is Image) return widget.image;
-  return null;
-}
 
 // ─── Common chip builders ────────────────────────────────────────────────────
 
@@ -498,60 +488,6 @@ List<PropSpec> flexProps(RenderFlex target) => [
           child: Text(target.verticalDirection.name),
         ),
     ];
-
-List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
-  final provider = resolveImageProvider(target);
-  final rawImage = target.image;
-  return [
-    if (provider != null)
-      (
-        icon: Icons.image,
-        subtitle: 'source',
-        child: EllipsizedText(describeImageProvider(provider)),
-      ),
-    if (rawImage != null)
-      (
-        icon: Icons.photo_size_select_large,
-        subtitle: 'raw px',
-        child: Text('${rawImage.width}×${rawImage.height}'),
-      ),
-    if (target.fit != null)
-      (
-        icon: Icons.fit_screen,
-        subtitle: 'fit',
-        child: Text(target.fit!.name),
-      ),
-    (
-      icon: Icons.crop_free,
-      subtitle: 'alignment',
-      child: EllipsizedText(describeAlignment(target.alignment)),
-    ),
-    if (target.width != null)
-      (
-        icon: Icons.swap_horiz,
-        subtitle: 'width',
-        child: Text(_fmt(target.width!, decimalPlaces)),
-      ),
-    if (target.height != null)
-      (
-        icon: Icons.swap_vert,
-        subtitle: 'height',
-        child: Text(_fmt(target.height!, decimalPlaces)),
-      ),
-    if (target.repeat != ImageRepeat.noRepeat)
-      (
-        icon: Icons.repeat,
-        subtitle: 'repeat',
-        child: Text(target.repeat.name),
-      ),
-    if (target.color != null)
-      (
-        icon: Icons.color_lens,
-        subtitle: 'color tint',
-        child: ColorHexChip(target.color!),
-      ),
-  ];
-}
 
 List<PropSpec> opacityProps(RenderOpacity target, {int decimalPlaces = 1}) => [
       (
