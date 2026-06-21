@@ -8,6 +8,7 @@ import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
 import 'package:ispect_layout/src/widgets/inspector/box_info.dart';
 import 'package:ispect_layout/src/widgets/inspector/compare_distances.dart';
 import 'package:ispect_layout/src/widgets/inspector/render_box_extension.dart';
+import 'package:ispect_layout/src/widgets/squircle.dart';
 
 class BoxInfoPanelWidget extends StatefulWidget {
   const BoxInfoPanelWidget({
@@ -34,8 +35,39 @@ class BoxInfoPanelWidget extends StatefulWidget {
 class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
   bool _isExpanded = false;
 
+  // Inside the inspector overlay Theme.of(context) is the host app's
+  // ColorScheme; an owned dark, blue-accented scheme keeps the panel in
+  // ISpect's design language instead of inheriting a stray host accent.
+  static const ColorScheme _ownedScheme = ColorScheme(
+    brightness: Brightness.dark,
+    primary: Color(0xFF3B82F6),
+    onPrimary: Colors.white,
+    primaryContainer: Color(0xFF1F3658),
+    onPrimaryContainer: Color(0xFFCFE0FF),
+    secondary: Color(0xFF3B82F6),
+    onSecondary: Colors.white,
+    error: Color(0xFFFF6B6B),
+    onError: Colors.white,
+    surface: Color(0xFF1B1B1F),
+    onSurface: Color(0xFFF5F5F7),
+    surfaceContainerHighest: Color(0xFF26262B),
+    onSurfaceVariant: Color(0xFFAFAFB8),
+    outlineVariant: Color(0xFF3A3A40),
+  );
+
+  static final ThemeData _panelTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    colorScheme: _ownedScheme,
+  );
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => Theme(
+        data: _panelTheme,
+        child: Builder(builder: _buildPanel),
+      );
+
+  Widget _buildPanel(BuildContext context) {
     final theme = Theme.of(context);
     final target = widget.boxInfo.targetRenderBox;
     final dividerColor =
@@ -48,8 +80,7 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
       elevation: 0,
       clipBehavior: Clip.antiAlias,
       color: theme.colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+      shape: InspectorSquircle.border(
         side: BorderSide(
           color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
           width: 1,
@@ -112,9 +143,9 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
         child: Container(
           width: 28,
           height: 28,
-          decoration: BoxDecoration(
+          decoration: InspectorSquircle.decoration(
             color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
+            radius: 8,
           ),
           child: Icon(
             Icons.keyboard_arrow_down_rounded,
@@ -438,9 +469,7 @@ class _PanelTitleBar extends StatelessWidget {
                 foregroundColor: isCompareActive
                     ? theme.colorScheme.onPrimaryContainer
                     : theme.colorScheme.onSurfaceVariant,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                shape: InspectorSquircle.border(radius: 8),
               ),
               onPressed: onCompare,
               icon: const Icon(Icons.compare),
@@ -457,9 +486,7 @@ class _PanelTitleBar extends StatelessWidget {
             style: IconButton.styleFrom(
               backgroundColor: theme.colorScheme.surfaceContainerHighest,
               foregroundColor: theme.colorScheme.onSurfaceVariant,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              shape: InspectorSquircle.border(radius: 8),
             ),
             onPressed: () => _copyRenderTreeToClipboard(context, target),
             icon: const Icon(Icons.copy_rounded),
@@ -687,9 +714,9 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(top: 4, bottom: 8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
+        decoration: InspectorSquircle.decoration(
           color: theme.colorScheme.primaryContainer,
-          borderRadius: BorderRadius.circular(6),
+          radius: 6,
         ),
         child: Text(
           label.toUpperCase(),
@@ -835,9 +862,9 @@ class _BreadcrumbChip extends StatelessWidget {
         : theme.colorScheme.onSurfaceVariant;
     return Material(
       color: background,
-      borderRadius: BorderRadius.circular(6.0),
+      shape: InspectorSquircle.border(radius: 6),
       child: InkWell(
-        borderRadius: BorderRadius.circular(6.0),
+        customBorder: InspectorSquircle.border(radius: 6),
         onTap: isSelected ? null : onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),

@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 /// A widget that catches errors thrown during [pluginBuilder] execution
 /// and displays a styled fallback instead of the default red error screen.
@@ -136,9 +138,9 @@ class _ISpectErrorFallback extends StatelessWidget {
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
+                        decoration: ISpectSquircle.decoration(
                           color: colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(8),
+                          radius: ISpectConstants.standardBorderRadius,
                         ),
                         child: SelectableText(
                           stackTrace.toString(),

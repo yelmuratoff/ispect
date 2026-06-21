@@ -11,12 +11,27 @@ extension ISpectContextExtension on BuildContext {
 
   bool get isDarkMode => appTheme.brightness == Brightness.dark;
 
+  /// ISpect's own effective brightness — dark by default, independent of the
+  /// host app. Falls back to the host brightness when no scope is present, when
+  /// [ISpectTheme.useHostColors] is set, or for [ISpectThemeMode.system].
+  bool get ispectIsDark {
+    final model = ISpect.maybeRead(this);
+    if (model == null) return isDarkMode;
+    final theme = model.theme;
+    if (theme.useHostColors) return isDarkMode;
+    return switch (theme.themeMode) {
+      ISpectThemeMode.dark => true,
+      ISpectThemeMode.light => false,
+      ISpectThemeMode.system => isDarkMode,
+    };
+  }
+
   /// Returns the current `ISpectAppLocalizations` of the `BuildContext`.
   ISpectGeneratedLocalization get ispectL10n => ISpectLocalization.of(this);
 
   ISpectScopeModel get iSpect => ISpect.read(this);
 
-  Color adjustColor(Color color) => isDarkMode
+  Color adjustColor(Color color) => ispectIsDark
       ? adjustColorBrightness(color, 0.9)
       : adjustColorDarken(color, 0.1);
 }

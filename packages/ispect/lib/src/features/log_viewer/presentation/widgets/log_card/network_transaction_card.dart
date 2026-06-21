@@ -4,6 +4,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_search_highlight_surface.dart';
+import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_desktop_row.dart';
@@ -246,7 +247,7 @@ class _MobileHeader extends StatelessWidget {
             const Gap(4),
             StatusBadge(
               text: ISpectLocalization.of(context).pending,
-              color: const Color(0xFFFF9800),
+              color: JsonColors.statusWarning,
             ),
           ],
           const Gap(4),

@@ -3,8 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 
@@ -90,9 +92,7 @@ class ISpectFilterSheet extends StatelessWidget {
                         color: context.appTheme.colorScheme.error
                             .withValues(alpha: 0.3),
                       ),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
+                      shape: ISpectSquircle.border(),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),
@@ -160,9 +160,7 @@ class _SearchModeSection extends StatelessWidget {
               onSelectionChanged: (selected) => onChanged(selected.first),
               style: SegmentedButton.styleFrom(
                 side: BorderSide(color: borderColor),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
+                shape: ISpectSquircle.border(),
               ),
             ),
           ),
@@ -268,10 +266,10 @@ class _LogTypeChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: ISpectMotion.short,
           curve: ISpectMotion.standardCurve,
-          decoration: BoxDecoration(
+          decoration: ISpectSquircle.decoration(
             color: isSelected ? typeColor.withValues(alpha: 0.1) : cardColor,
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-            border: Border.all(
+            radius: ISpectConstants.largeBorderRadius,
+            side: BorderSide(
               color:
                   isSelected ? typeColor.withValues(alpha: 0.4) : borderColor,
             ),

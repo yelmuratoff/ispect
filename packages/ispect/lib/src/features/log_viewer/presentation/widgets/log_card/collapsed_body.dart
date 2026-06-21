@@ -200,11 +200,9 @@ class SquareIconButton extends StatelessWidget {
     final chip = SizedBox.square(
       dimension: ISpectConstants.actionControlHeight,
       child: DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: color.withValues(alpha: 0.06),
-          borderRadius: const BorderRadius.all(
-            Radius.circular(ISpectConstants.mediumBorderRadius),
-          ),
+          radius: ISpectConstants.mediumBorderRadius,
         ),
         child: Center(
           child: Icon(
@@ -258,11 +256,9 @@ class DecoratedLeadingIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: color.withValues(alpha: 0.12),
-          borderRadius: const BorderRadius.all(
-            Radius.circular(ISpectConstants.mediumBorderRadius),
-          ),
+          radius: ISpectConstants.mediumBorderRadius,
         ),
         child: Padding(
           padding: const EdgeInsets.all(5),
@@ -282,15 +278,15 @@ class _StatusCodeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (bgColor, textColor) = _colorsForStatus(statusCode);
+    final (bgColor, textColor) = JsonColors.statusCodeColors(statusCode);
     return Semantics(
       container: true,
       label: 'HTTP status $statusCode',
       excludeSemantics: true,
       child: DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: bgColor.withValues(alpha: 0.12),
-          borderRadius: const BorderRadius.all(Radius.circular(6)),
+          radius: ISpectConstants.mediumBorderRadius,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
@@ -307,10 +303,4 @@ class _StatusCodeBadge extends StatelessWidget {
       ),
     );
   }
-
-  static (Color, Color) _colorsForStatus(int code) => switch (code) {
-        < 300 => (const Color(0xFF4CAF50), const Color(0xFF2E7D32)),
-        < 400 => (const Color(0xFFFF9800), const Color(0xFFE65100)),
-        _ => (const Color(0xFFF44336), const Color(0xFFC62828)),
-      };
 }

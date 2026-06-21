@@ -351,20 +351,20 @@ void main() {
       FloatingActionButton getButton() =>
           tester.widget(finder) as FloatingActionButton;
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
 
       await tester.tap(find.byIcon(Icons.format_shapes));
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.blue);
+      expect(getButton().backgroundColor, const Color(0xFF3B82F6));
       expect(getButton().foregroundColor, Colors.white);
 
       await tester.tap(find.byIcon(Icons.format_shapes));
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
     });
 
     testWidgets('can be toggled via keyboard shortcut', (tester) async {
@@ -378,22 +378,22 @@ void main() {
       FloatingActionButton getButton() =>
           tester.widget(finder) as FloatingActionButton;
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyW);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.blue);
+      expect(getButton().backgroundColor, const Color(0xFF3B82F6));
       expect(getButton().foregroundColor, Colors.white);
 
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyW);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
     });
 
     testWidgets('zoom can be toggled via keyboard shortcut', (tester) async {
@@ -407,22 +407,22 @@ void main() {
       FloatingActionButton getButton() =>
           tester.widget(finder) as FloatingActionButton;
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyZ);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.blue);
+      expect(getButton().backgroundColor, const Color(0xFF3B82F6));
       expect(getButton().foregroundColor, Colors.white);
 
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyZ);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
     });
 
     testWidgets('supports custom multikey zoom shortcuts', (tester) async {
@@ -436,15 +436,15 @@ void main() {
       FloatingActionButton getButton() =>
           tester.widget(finder) as FloatingActionButton;
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyZ);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.blue);
+      expect(getButton().backgroundColor, const Color(0xFF3B82F6));
       expect(getButton().foregroundColor, Colors.white);
 
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyZ);
@@ -452,8 +452,8 @@ void main() {
       await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
     });
 
     testWidgets('respects decimalPlaces from Inspector', (tester) async {
@@ -624,20 +624,20 @@ void main() {
   //     FloatingActionButton getButton() =>
   //         tester.widget(finder) as FloatingActionButton;
 
-  //     expect(getButton().backgroundColor, Colors.white);
-  //     expect(getButton().foregroundColor, Colors.black54);
+  //     expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+  //     expect(getButton().foregroundColor, Colors.white70);
 
   //     await tester.tap(find.byIcon(Icons.colorize));
   //     await tester.pumpAndSettle();
 
-  //     expect(getButton().backgroundColor, Colors.blue);
+  //     expect(getButton().backgroundColor, const Color(0xFF3B82F6));
   //     expect(getButton().foregroundColor, Colors.white);
 
   //     await tester.tap(find.byIcon(Icons.colorize));
   //     await tester.pumpAndSettle();
 
-  //     expect(getButton().backgroundColor, Colors.white);
-  //     expect(getButton().foregroundColor, Colors.black54);
+  //     expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+  //     expect(getButton().foregroundColor, Colors.white70);
   //   });
 
   //   test('colorToHexString returns right colors', () {

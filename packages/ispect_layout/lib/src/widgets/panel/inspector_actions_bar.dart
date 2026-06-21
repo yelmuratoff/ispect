@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/inspector_controller.dart';
+import 'package:ispect_layout/src/theme.dart';
 import 'package:ispect_layout/src/widgets/color_picker/utils.dart';
+import 'package:ispect_layout/src/widgets/squircle.dart';
 
 /// Floating Confirm / Cancel bar shown at the bottom of the screen while
 /// [InspectorMode.colorPicker] or [InspectorMode.zoom] is active.
@@ -92,10 +94,10 @@ class _ActionsRow extends StatelessWidget {
       color: Colors.transparent,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.78),
-          borderRadius: BorderRadius.circular(28.0),
-          boxShadow: [
+        decoration: InspectorSquircle.decoration(
+          color: controller.theme.chromeSurfaceColor.withValues(alpha: 0.92),
+          radius: 16,
+          shadows: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.25),
               blurRadius: 16.0,
@@ -115,6 +117,7 @@ class _ActionsRow extends StatelessWidget {
               onPressed: controller.cancelCurrentMode,
               isPrimary: false,
               showLabel: !isCompact,
+              theme: controller.theme,
             ),
             if (mode == InspectorMode.zoom || mode == InspectorMode.colorPicker)
               _ZoomStepperButtons(
@@ -167,6 +170,7 @@ class _ConfirmButton extends StatelessWidget {
               : null,
           isPrimary: true,
           showLabel: showLabel,
+          theme: controller.theme,
         );
       },
     );
@@ -261,11 +265,12 @@ class _ColorPreviewChip extends StatelessWidget {
         final hex = hasColor ? colorToDisplayHex(color) : '—';
 
         return Material(
-          color: Colors.white.withValues(alpha: hasColor ? 0.12 : 0.06),
-          borderRadius: BorderRadius.circular(20.0),
+          color: controller.theme.chromeOnSurfaceColor
+              .withValues(alpha: hasColor ? 0.12 : 0.06),
+          shape: InspectorSquircle.border(radius: 12),
           child: InkWell(
             onTap: hasColor ? () => _copyHex(context, color) : null,
-            borderRadius: BorderRadius.circular(20.0),
+            customBorder: InspectorSquircle.border(radius: 12),
             child: Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
@@ -281,7 +286,9 @@ class _ColorPreviewChip extends StatelessWidget {
                       overflow: TextOverflow.fade,
                       softWrap: false,
                       style: TextStyle(
-                        color: hasColor ? Colors.white : Colors.white60,
+                        color: hasColor
+                            ? controller.theme.chromeOnAccentColor
+                            : controller.theme.chromeOnSurfaceColor,
                         fontSize: 13.0,
                         fontWeight: FontWeight.w600,
                         fontFamilyFallback: const ['Menlo', 'Courier'],
@@ -295,7 +302,10 @@ class _ColorPreviewChip extends StatelessWidget {
                     Icon(
                       Icons.content_copy,
                       size: 14.0,
-                      color: hasColor ? Colors.white70 : Colors.white38,
+                      color: hasColor
+                          ? controller.theme.chromeOnSurfaceColor
+                          : controller.theme.chromeOnSurfaceColor
+                              .withValues(alpha: 0.5),
                       semanticLabel: 'Copy hex',
                     ),
                   ],
@@ -344,6 +354,7 @@ class _BarButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     required this.isPrimary,
+    required this.theme,
     this.showLabel = true,
   });
 
@@ -352,15 +363,18 @@ class _BarButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isPrimary;
   final bool showLabel;
+  final InspectorTheme theme;
 
   @override
   Widget build(BuildContext context) {
     final isEnabled = onPressed != null;
+    final accent = theme.chromeAccentColor;
     final background = isPrimary
-        ? (isEnabled ? Colors.blue : Colors.blue.withValues(alpha: 0.4))
-        : Colors.white.withValues(alpha: 0.12);
-    final foreground =
-        isPrimary ? Colors.white : (isEnabled ? Colors.white : Colors.white60);
+        ? (isEnabled ? accent : accent.withValues(alpha: 0.4))
+        : theme.chromeOnSurfaceColor.withValues(alpha: 0.12);
+    final foreground = isPrimary
+        ? theme.chromeOnAccentColor
+        : (isEnabled ? theme.chromeOnAccentColor : theme.chromeOnSurfaceColor);
 
     final padding = showLabel
         ? const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0)
@@ -368,10 +382,10 @@ class _BarButton extends StatelessWidget {
 
     return Material(
       color: background,
-      borderRadius: BorderRadius.circular(20.0),
+      shape: InspectorSquircle.border(radius: 12),
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(20.0),
+        customBorder: InspectorSquircle.border(radius: 12),
         child: Padding(
           padding: padding,
           child: Row(
@@ -418,10 +432,10 @@ class _BarIconButton extends StatelessWidget {
     final isEnabled = onPressed != null;
     return Material(
       color: Colors.white.withValues(alpha: isEnabled ? 0.12 : 0.06),
-      borderRadius: BorderRadius.circular(20.0),
+      shape: InspectorSquircle.border(radius: 12),
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(20.0),
+        customBorder: InspectorSquircle.border(radius: 12),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Icon(

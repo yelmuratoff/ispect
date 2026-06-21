@@ -125,4 +125,22 @@ class JsonColors {
       (brightness == Brightness.dark
           ? methodColorsDark
           : methodColors)[method.toUpperCase()];
+
+  /// Semantic status palette (`base` / `dark` pairs) shared by network badges,
+  /// status indicators, and slow-call warnings.
+  static const Color statusSuccess = Color(0xFF4CAF50);
+  static const Color statusSuccessDark = Color(0xFF2E7D32);
+  static const Color statusWarning = Color(0xFFFF9800);
+  static const Color statusWarningDark = Color(0xFFE65100);
+  static const Color statusError = Color(0xFFF44336);
+  static const Color statusErrorDark = Color(0xFFC62828);
+
+  /// Returns the `(base, dark)` badge colours for an HTTP [statusCode]:
+  /// green for 2xx, orange for 3xx, red for 4xx/5xx.
+  static (Color, Color) statusCodeColors(int statusCode) =>
+      switch (statusCode) {
+        < 300 => (statusSuccess, statusSuccessDark),
+        < 400 => (statusWarning, statusWarningDark),
+        _ => (statusError, statusErrorDark),
+      };
 }

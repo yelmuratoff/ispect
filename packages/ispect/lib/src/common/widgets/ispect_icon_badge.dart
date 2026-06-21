@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 
 /// Rounded-square icon container with a primary-tinted background, used across
 /// sheet headers, dialog titles, action tiles, and hint rows.
@@ -21,9 +22,9 @@ class ISpectIconBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final tint = color ?? context.ispectPrimaryColor;
     return DecoratedBox(
-      decoration: BoxDecoration(
+      decoration: ISpectSquircle.decoration(
         color: tint.withValues(alpha: size.bgAlpha),
-        borderRadius: BorderRadius.all(Radius.circular(size.radius)),
+        radius: size.radius,
       ),
       child: Padding(
         padding: EdgeInsets.all(size.padding),

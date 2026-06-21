@@ -155,23 +155,23 @@ void main() {
     testWidgets(
       'Given a LogCard with searchMatchState == focused, '
       'When it is rendered, '
-      'Then the card has a boxShadow decoration',
+      'Then the card has a shadow decoration',
       (tester) async {
         await tester.pumpWidget(
           buildLogCard(searchMatchState: SearchMatchState.focused),
         );
         await tester.pumpAndSettle();
 
-        // The outermost DecoratedBox should have a non-null boxShadow.
+        // The outermost DecoratedBox should carry the focused-match glow.
         final decoratedBox = tester.widget<DecoratedBox>(
           find.descendant(
             of: find.byType(RepaintBoundary),
             matching: find.byType(DecoratedBox).first,
           ),
         );
-        final decoration = decoratedBox.decoration as BoxDecoration;
-        expect(decoration.boxShadow, isNotNull);
-        expect(decoration.boxShadow, isNotEmpty);
+        final decoration = decoratedBox.decoration as ShapeDecoration;
+        expect(decoration.shadows, isNotNull);
+        expect(decoration.shadows, isNotEmpty);
       },
     );
 

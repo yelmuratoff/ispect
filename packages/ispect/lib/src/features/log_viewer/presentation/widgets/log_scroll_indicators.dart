@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 
 /// Indicator shown when new logs arrive while user is scrolled away.
@@ -77,16 +78,15 @@ class ScrollToEdgeFab extends StatelessWidget {
       height: 40,
       child: Material(
         color: cardColor,
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
+        shape: ISpectSquircle.border(),
         elevation: 2,
         shadowColor: Colors.black26,
         child: InkWell(
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          customBorder: ISpectSquircle.border(),
           onTap: onPressed,
           child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
-              border: Border.all(color: borderColor),
+            decoration: ISpectSquircle.decoration(
+              side: BorderSide(color: borderColor),
             ),
             child: Icon(
               isAtBottom

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
@@ -68,11 +69,9 @@ class TransactionDetails extends StatelessWidget {
     if (sections.isEmpty) return const SizedBox.shrink();
 
     return DecoratedBox(
-      decoration: BoxDecoration(
+      decoration: ISpectSquircle.decoration(
         color: context.appTheme.textColor.withValues(alpha: 0.03),
-        borderRadius: const BorderRadius.all(
-          Radius.circular(ISpectConstants.standardBorderRadius),
-        ),
+        radius: ISpectConstants.standardBorderRadius,
       ),
       child: Padding(
         padding: const EdgeInsets.all(8),

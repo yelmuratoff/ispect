@@ -20,6 +20,11 @@ class _InspectorPanelState extends State<InspectorPanel> {
 
   InspectorController get controller => widget.controller;
 
+  Color get _activeColor => controller.theme.chromeAccentColor;
+  Color get _surfaceColor => controller.theme.chromeSurfaceColor;
+  Color get _onSurfaceColor => controller.theme.chromeOnSurfaceColor;
+  Color get _onActiveColor => controller.theme.chromeOnAccentColor;
+
   @override
   void initState() {
     super.initState();
@@ -58,23 +63,23 @@ class _InspectorPanelState extends State<InspectorPanel> {
   }
 
   Color get _visibilityButtonBackgroundColor {
-    if (_isVisible) return Colors.white;
+    if (_isVisible) return _surfaceColor;
 
     if (controller.modeNotifier.value != InspectorMode.none) {
-      return Colors.blue;
+      return _activeColor;
     }
 
-    return Colors.white;
+    return _surfaceColor;
   }
 
   Color get _visibilityButtonForegroundColor {
-    if (_isVisible) return Colors.black54;
+    if (_isVisible) return _onSurfaceColor;
 
     if (controller.modeNotifier.value != InspectorMode.none) {
-      return Colors.white;
+      return _onActiveColor;
     }
 
-    return Colors.black54;
+    return _onSurfaceColor;
   }
 
   @override
@@ -121,12 +126,12 @@ class _InspectorPanelState extends State<InspectorPanel> {
                 ),
                 backgroundColor: (mode == InspectorMode.inspector ||
                         mode == InspectorMode.compareSelect)
-                    ? Colors.blue
-                    : Colors.white,
+                    ? _activeColor
+                    : _surfaceColor,
                 foregroundColor: (mode == InspectorMode.inspector ||
                         mode == InspectorMode.compareSelect)
-                    ? Colors.white
-                    : Colors.black54,
+                    ? _onActiveColor
+                    : _onSurfaceColor,
                 child: const Icon(Icons.format_shapes),
               ),
             if (controller.isColorPickerEnabled) ...[
@@ -139,11 +144,11 @@ class _InspectorPanelState extends State<InspectorPanel> {
                   context: context,
                 ),
                 backgroundColor: mode == InspectorMode.colorPicker
-                    ? Colors.blue
-                    : Colors.white,
+                    ? _activeColor
+                    : _surfaceColor,
                 foregroundColor: mode == InspectorMode.colorPicker
-                    ? Colors.white
-                    : Colors.black54,
+                    ? _onActiveColor
+                    : _onSurfaceColor,
                 child: const Icon(Icons.colorize),
               ),
             ],
@@ -156,9 +161,10 @@ class _InspectorPanelState extends State<InspectorPanel> {
                       : InspectorMode.zoom,
                 ),
                 backgroundColor:
-                    mode == InspectorMode.zoom ? Colors.blue : Colors.white,
-                foregroundColor:
-                    mode == InspectorMode.zoom ? Colors.white : Colors.black54,
+                    mode == InspectorMode.zoom ? _activeColor : _surfaceColor,
+                foregroundColor: mode == InspectorMode.zoom
+                    ? _onActiveColor
+                    : _onSurfaceColor,
                 child: const Icon(Icons.zoom_in),
               ),
             ],

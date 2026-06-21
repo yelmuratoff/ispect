@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/decoration_utils.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
@@ -55,7 +55,7 @@ final class ISpectToaster {
             Gap(12),
           ],
         ),
-        color: const Color.fromARGB(255, 49, 49, 49),
+        color: ISpectConstants.toastBackgroundColor,
         messenger: messenger,
       );
 
@@ -113,7 +113,7 @@ final class ISpectToaster {
         context,
         title: title,
         message: message,
-        color: const Color.fromARGB(255, 49, 49, 49),
+        color: ISpectConstants.toastBackgroundColor,
         duration: duration,
         action: action,
         messenger: messenger,
@@ -211,8 +211,8 @@ final class ISpectToaster {
           behavior: SnackBarBehavior.floating,
           duration: duration ?? const Duration(milliseconds: 4000),
           action: action,
-          shape: RoundedRectangleBorder(
-            borderRadius: DecorationUtils.snackbarBorderRadius,
+          shape: ISpectSquircle.border(
+            radius: ISpectConstants.snackbarBorderRadius,
           ),
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
           content: Column(
@@ -286,8 +286,8 @@ final class ISpectToaster {
         backgroundColor: ISpectConstants.toastBackgroundColor,
         elevation: 0,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: DecorationUtils.snackbarBorderRadius,
+        shape: ISpectSquircle.border(
+          radius: ISpectConstants.snackbarBorderRadius,
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,

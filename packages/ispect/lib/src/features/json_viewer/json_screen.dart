@@ -3,9 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
+import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/json_viewer/breadcrumb_bar.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
@@ -104,7 +107,10 @@ class _JsonScreenState extends State<JsonScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ISpectThemeScope(child: Builder(builder: _buildScaffold));
+
+  Widget _buildScaffold(BuildContext context) {
     final iSpect = ISpect.read(context);
     final bgColor = context.ispectThemeBackground;
     final logKey = widget.data['key']?.toString();
@@ -124,9 +130,9 @@ class _JsonScreenState extends State<JsonScreen> {
                 Container(
                   width: 28,
                   height: 28,
-                  decoration: BoxDecoration(
+                  decoration: ISpectSquircle.decoration(
                     color: logColor.withValues(alpha: 0.12),
-                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                    radius: ISpectConstants.standardBorderRadius,
                   ),
                   child: Icon(logIcon, size: 16, color: logColor),
                 ),
@@ -277,8 +283,8 @@ class _JsonScreenState extends State<JsonScreen> {
               animation: _store,
               builder: (context, _) => Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                child: ClipPath(
+                  clipper: ShapeBorderClipper(shape: ISpectSquircle.border()),
                   child: ColoredBox(
                     color: context.ispectCardColor,
                     child: Padding(
@@ -522,9 +528,9 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
             const Gap(6),
             if (correlationDuration case final d?) ...[
               DecoratedBox(
-                decoration: BoxDecoration(
+                decoration: ISpectSquircle.decoration(
                   color: context.appTheme.textColor.withValues(alpha: 0.08),
-                  borderRadius: const BorderRadius.all(Radius.circular(4)),
+                  radius: ISpectConstants.smallBorderRadius,
                 ),
                 child: Padding(
                   padding:
@@ -573,9 +579,9 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
               child: MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: DecoratedBox(
-                  decoration: BoxDecoration(
+                  decoration: ISpectSquircle.decoration(
                     color: targetColor.withValues(alpha: 0.1),
-                    borderRadius: const BorderRadius.all(Radius.circular(6)),
+                    radius: ISpectConstants.mediumBorderRadius,
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

@@ -26,6 +26,7 @@ final class ISpectConstants {
   static const double mediumBorderRadius = 6;
   static const double standardBorderRadius = 8;
   static const double largeBorderRadius = 10;
+  static const double cardBorderRadius = 12;
   static const double snackbarBorderRadius = 16;
 
   static const double standardHorizontalPadding = 12;

@@ -1,42 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 /// A utility class providing common decoration patterns used throughout the app.
 ///
 /// This class follows the DRY (Don't Repeat Yourself) principle by centralizing
-/// commonly used BoxDecoration patterns.
+/// commonly used decoration patterns. Surfaces use squircle (continuous) corners
+/// via [ISpectSquircle] so they match the rest of the ISpect design system.
 final class DecorationUtils {
   const DecorationUtils._();
 
-  /// Creates a rounded border decoration with a colored border.
+  /// Creates a squircle border decoration with a colored border.
   ///
   /// Uses [ISpectConstants.largeBorderRadius] for the border radius.
-  static BoxDecoration roundedBorder({
+  static ShapeDecoration roundedBorder({
     required Color color,
     double? borderRadius,
   }) =>
-      BoxDecoration(
-        borderRadius: BorderRadius.all(
-          Radius.circular(borderRadius ?? ISpectConstants.largeBorderRadius),
-        ),
-        border: Border.all(color: color),
+      ISpectSquircle.decoration(
+        radius: borderRadius ?? ISpectConstants.largeBorderRadius,
+        side: BorderSide(color: color),
       );
 
-  /// Creates a rounded background decoration with a colored background.
+  /// Creates a squircle background decoration with a colored background.
   ///
   /// Uses [ISpectConstants.standardBorderRadius] for the border radius.
-  static BoxDecoration roundedBackground({
+  static ShapeDecoration roundedBackground({
     required Color color,
     double? borderRadius,
     double? opacity,
   }) =>
-      BoxDecoration(
+      ISpectSquircle.decoration(
         color: color.withValues(
           alpha: opacity ?? ISpectConstants.iconButtonBackgroundOpacity,
         ),
-        borderRadius: BorderRadius.all(
-          Radius.circular(borderRadius ?? ISpectConstants.standardBorderRadius),
-        ),
+        radius: borderRadius ?? ISpectConstants.standardBorderRadius,
       );
 
   /// Creates a standard border radius used in icon buttons and small components.
@@ -47,10 +45,5 @@ final class DecorationUtils {
   /// Creates a large border radius used in containers and cards.
   static BorderRadius get largeBorderRadius => const BorderRadius.all(
         Radius.circular(ISpectConstants.largeBorderRadius),
-      );
-
-  /// Creates a snackbar border radius.
-  static BorderRadius get snackbarBorderRadius => const BorderRadius.all(
-        Radius.circular(ISpectConstants.snackbarBorderRadius),
       );
 }

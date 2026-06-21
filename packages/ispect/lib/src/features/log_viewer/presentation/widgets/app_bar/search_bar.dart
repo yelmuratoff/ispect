@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/ispect_input.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 /// Styled search field shared across log list and JSON viewer screens.
 ///
@@ -32,8 +34,11 @@ class ISpectSearchField extends StatelessWidget {
       controller: controller,
       backgroundColor: WidgetStatePropertyAll(context.ispectCardColor),
       constraints: BoxConstraints(minHeight: context.ispectInputMinHeight),
-      shape: const WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: ISpectInputStyle.borderRadius),
+      shape: WidgetStatePropertyAll(
+        ISpectSquircle.border(radius: ISpectInputStyle.radius),
+      ),
+      side: WidgetStatePropertyAll(
+        BorderSide(color: context.ispectSubtleBorderColor),
       ),
       padding: const WidgetStatePropertyAll(
         EdgeInsets.symmetric(horizontal: 10),
@@ -221,12 +226,10 @@ class _SearchShortcutBadge extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: onSurface.withValues(alpha: 0.05),
-          borderRadius: const BorderRadius.all(Radius.circular(6)),
-          border: Border.all(
-            color: onSurface.withValues(alpha: 0.1),
-          ),
+          radius: ISpectConstants.mediumBorderRadius,
+          side: BorderSide(color: onSurface.withValues(alpha: 0.1)),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

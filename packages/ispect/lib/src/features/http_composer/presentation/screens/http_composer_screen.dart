@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/common/widgets/ispect_input.dart';
+import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/common/widgets/resizable_split_view.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
 
@@ -92,7 +95,10 @@ class _HttpComposerScreenState extends State<HttpComposerScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) =>
+      ISpectThemeScope(child: Builder(builder: _buildScaffold));
+
+  Widget _buildScaffold(BuildContext context) => Scaffold(
         backgroundColor: context.ispectThemeBackground,
         appBar: ISpectFlatAppBar(
           title: ISpectAppBarTitle(
@@ -440,8 +446,7 @@ class _SelectPill<T> extends StatelessWidget {
         padding:
             const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
         shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
+          ISpectSquircle.border(
             side: BorderSide(color: context.ispectSubtleBorderColor),
           ),
         ),
@@ -639,9 +644,9 @@ class _CountBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final onSurface = context.appTheme.colorScheme.onSurface;
     return DecoratedBox(
-      decoration: BoxDecoration(
+      decoration: ISpectSquircle.decoration(
         color: onSurface.withValues(alpha: 0.06),
-        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        radius: ISpectConstants.standardBorderRadius,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
@@ -899,9 +904,7 @@ class _SendButton extends StatelessWidget {
         label: Text(context.ispectL10n.composerSend),
         style: FilledButton.styleFrom(
           minimumSize: const Size(double.infinity, 50),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-          ),
+          shape: ISpectSquircle.border(),
         ),
       );
 }
@@ -1070,9 +1073,9 @@ class _StatusChip extends StatelessWidget {
         ? context.appTheme.colorScheme.error
         : JsonColors.statusColor(status);
     return DecoratedBox(
-      decoration: BoxDecoration(
+      decoration: ISpectSquircle.decoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        radius: ISpectConstants.standardBorderRadius,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

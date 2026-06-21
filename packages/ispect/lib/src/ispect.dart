@@ -98,6 +98,14 @@ final class ISpect {
     return inherited.notifier!;
   }
 
+  /// Like [read] but returns `null` instead of throwing when no
+  /// `ISpectScopeController` is an ancestor. Use for context-derived defaults
+  /// (e.g. resolving ISpect's own brightness) that must stay safe outside the
+  /// scope, such as in tests or detached overlays.
+  static ISpectScopeModel? maybeRead(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<ISpectScopeController>()
+      ?.notifier;
+
   /// Runs the app with centralized logging and error capture.
   ///
   /// If [logger] is not provided, creates a default Flutter logger automatically

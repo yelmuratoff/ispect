@@ -5,6 +5,7 @@ import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/share_sheet.dart';
+import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
 import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
@@ -12,11 +13,11 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/net
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
 
 Color transactionColor(NetworkTransaction tx) {
-  if (tx.isError) return const Color(0xFFF44336);
-  if (tx.isPending) return const Color(0xFFFF9800);
+  if (tx.isError) return JsonColors.statusError;
+  if (tx.isPending) return JsonColors.statusWarning;
   final code = tx.statusCode;
-  if (code != null && code >= 400) return const Color(0xFFF44336);
-  return const Color(0xFF4CAF50);
+  if (code != null && code >= 400) return JsonColors.statusError;
+  return JsonColors.statusSuccess;
 }
 
 String formatTransactionDuration(Duration duration) {

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 /// Detail view widget for displaying selected log data.
 ///
@@ -31,23 +34,25 @@ class LogDetailView extends StatelessWidget {
       MaterialPageRoute<void>(
         builder: (routeContext) {
           final showRelated = onShowRelated;
-          return Scaffold(
-            body: SafeArea(
-              child: LogDetailView(
-                activeData: activeData,
-                correlatedLog: correlatedLog,
-                correlationDuration: correlationDuration,
-                onNavigateToCorrelated: onNavigateToCorrelated,
-                onClose: () {
-                  onClose?.call();
-                  Navigator.of(routeContext).pop();
-                },
-                onShowRelated: showRelated == null
-                    ? null
-                    : (id) {
-                        showRelated(id);
-                        Navigator.of(routeContext).pop();
-                      },
+          return ISpectThemeScope(
+            child: Scaffold(
+              body: SafeArea(
+                child: LogDetailView(
+                  activeData: activeData,
+                  correlatedLog: correlatedLog,
+                  correlationDuration: correlationDuration,
+                  onNavigateToCorrelated: onNavigateToCorrelated,
+                  onClose: () {
+                    onClose?.call();
+                    Navigator.of(routeContext).pop();
+                  },
+                  onShowRelated: showRelated == null
+                      ? null
+                      : (id) {
+                          showRelated(id);
+                          Navigator.of(routeContext).pop();
+                        },
+                ),
               ),
             ),
           );
@@ -208,9 +213,9 @@ class _IdChip extends StatelessWidget {
         child: MouseRegion(
           cursor: onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
           child: DecoratedBox(
-            decoration: BoxDecoration(
+            decoration: ISpectSquircle.decoration(
               color: color.withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.all(Radius.circular(6)),
+              radius: ISpectConstants.mediumBorderRadius,
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -329,9 +334,9 @@ class _DurationChip extends StatelessWidget {
         ? '${duration.inMilliseconds}ms'
         : '${(duration.inMilliseconds / 1000).toStringAsFixed(1)}s';
     return DecoratedBox(
-      decoration: BoxDecoration(
+      decoration: ISpectSquircle.decoration(
         color: context.appTheme.textColor.withValues(alpha: 0.08),
-        borderRadius: const BorderRadius.all(Radius.circular(4)),
+        radius: ISpectConstants.smallBorderRadius,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
@@ -366,9 +371,9 @@ class _GoToButton extends StatelessWidget {
         child: MouseRegion(
           cursor: SystemMouseCursors.click,
           child: DecoratedBox(
-            decoration: BoxDecoration(
+            decoration: ISpectSquircle.decoration(
               color: color.withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.all(Radius.circular(6)),
+              radius: ISpectConstants.mediumBorderRadius,
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

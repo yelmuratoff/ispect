@@ -2,7 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/error_boundary.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/core/res/ispect_default_palette.dart';
 import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/features/log_viewer/controllers/log_page_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
@@ -352,15 +355,34 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   DraggablePanelTheme _buildDefaultPanelTheme(BuildContext context) {
     final theme = context.ispectTheme;
 
+    // Host-colors mode keeps the pre-6.0 behaviour: leave unset colours null so
+    // DraggablePanel falls back to its own defaults.
+    if (theme.useHostColors) {
+      return DraggablePanelTheme(
+        draggableButtonColor: theme.card?.resolve(context),
+        panelBackgroundColor: theme.background?.resolve(context),
+        panelItemColor: theme.card?.resolve(context),
+        foregroundColor: theme.foreground?.resolve(context),
+        panelBorder: switch (theme.divider?.resolve(context)) {
+          final color? => Border.all(color: color),
+          null => null,
+        },
+      );
+    }
+
+    final dark = context.ispectIsDark;
+    Color owned(ISpectDynamicColor? override, ISpectDynamicColor fallback) =>
+        override?.resolve(context) ?? fallback.pick(isDark: dark)!;
+
     return DraggablePanelTheme(
-      draggableButtonColor: theme.card?.resolve(context),
-      panelBackgroundColor: theme.background?.resolve(context),
-      panelItemColor: theme.card?.resolve(context),
-      foregroundColor: theme.foreground?.resolve(context),
-      panelBorder: switch (theme.divider?.resolve(context)) {
-        final color? => Border.all(color: color),
-        null => null,
-      },
+      draggableButtonColor: owned(theme.card, ISpectDefaultPalette.card),
+      panelBackgroundColor:
+          owned(theme.background, ISpectDefaultPalette.background),
+      panelItemColor: owned(theme.card, ISpectDefaultPalette.card),
+      foregroundColor: owned(theme.foreground, ISpectDefaultPalette.foreground),
+      panelBorder: Border.all(
+        color: owned(theme.divider, ISpectDefaultPalette.divider),
+      ),
     );
   }
 
@@ -588,9 +610,9 @@ class _ISpectRenderErrorFallback extends StatelessWidget {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
+                    decoration: ISpectSquircle.decoration(
                       color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
+                      radius: ISpectConstants.standardBorderRadius,
                     ),
                     constraints: const BoxConstraints(maxHeight: 200),
                     child: SingleChildScrollView(
