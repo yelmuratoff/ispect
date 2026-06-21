@@ -1,9 +1,11 @@
 # Changelog
 
-## 6.0.0-dev.30
+## 6.0.0-dev.31
 
 ### Improvements
 
+- **Owned dark theme by default:** ISpect renders its own flat, tonal design language (dark surfaces, a single blue accent, squircle buttons) across logs, JSON viewer, composer, sheets, the inspector panel, and the performance overlay — independent of the host app's theme, with a paired light variant. Choose the mode via `ISpectTheme.themeMode` (`dark`/`light`/`system`); set `ISpectTheme.useHostColors: true` to inherit the host app's `ColorScheme` as before.
+- **Squircle surfaces:** Cards, badges, chips, buttons, text fields, the search bar, sheets, toasts, tiles, JSON viewer nodes, and the inspector overlay (property panel + color-picker toolbar) across ISpect use continuous (squircle) corners for a smoother, more cohesive look, with a larger radius on the log cards and filter button. The widget-inspector property panel also adopts ISpect's owned dark, blue-accented theme instead of inheriting the host app's colors.
 - **`ispectify_riverpod`:** New package — `ISpectRiverpodObserver` logs provider add/update/dispose/fail under `riverpod-*` keys (closes [#80](https://github.com/yelmuratoff/ispect/issues/80)).
 - **Trace extensions:** `ISpectLoggerBloc` and `ISpectLoggerRiverpod` add one method per lifecycle event.
 - **Provider-agnostic `ispectify_ws`:** `WsDiagnostics` and the `WsDiagnosticsSink` port log any WebSocket client; `ws`, `socket_io_client`, and `web_socket_channel` adapters ship in the example.
@@ -42,6 +44,7 @@
 - **Navigation logging:** A page opened from under a modal (e.g. a profile pushed from a bottom sheet) is now logged as a page transition governed by `isLogPages` instead of being dropped as a "modal" transition.
 - **Logs screen reactivity:** "Clear history" empties the visible list immediately, and view-controller-driven history mutations refresh the UI without a new log emission.
 - **Network status code now displayed:** Grouped transactions show the response status-code chip again — it was read from the wrong metadata key and stayed hidden.
+- **Color picker accuracy:** The sampled colour now matches the pixel under the crosshair — near a pixel's half boundary the picker reported the neighbouring pixel, showing a wrong colour on 1px borders and anti-aliased edges. Translucent pixels now report their true colour instead of a darkened, premultiplied one.
 
 ### Code Quality
 
