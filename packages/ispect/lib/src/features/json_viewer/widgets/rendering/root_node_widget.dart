@@ -40,7 +40,11 @@ class RootNodeWidget extends StatelessWidget {
     final text = _keyName();
 
     if (!hasSearchResults) {
-      return Text(text, style: attributeKeyStyle);
+      return Text(
+        text,
+        style: attributeKeyStyle,
+        textWidthBasis: TextWidthBasis.longestLine,
+      );
     }
 
     return HighlightedText(
@@ -51,6 +55,7 @@ class RootNodeWidget extends StatelessWidget {
       primaryMatchStyle: theme.focusedKeySearchNodeHighlightTextStyle,
       secondaryMatchStyle: theme.keySearchHighlightTextStyle,
       focusedSearchMatchIndex: focusedSearchMatchIndex,
+      textWidthBasis: TextWidthBasis.longestLine,
     );
   }
 }

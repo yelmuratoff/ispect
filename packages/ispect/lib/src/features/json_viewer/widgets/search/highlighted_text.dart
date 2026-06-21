@@ -14,6 +14,7 @@ class HighlightedText extends StatelessWidget {
     required this.primaryMatchStyle,
     required this.secondaryMatchStyle,
     required this.focusedSearchMatchIndex,
+    this.textWidthBasis = TextWidthBasis.parent,
     super.key,
   });
 
@@ -23,21 +24,25 @@ class HighlightedText extends StatelessWidget {
   final TextStyle primaryMatchStyle;
   final TextStyle secondaryMatchStyle;
   final int? focusedSearchMatchIndex;
+  final TextWidthBasis textWidthBasis;
 
   @override
   Widget build(BuildContext context) {
     if (highlightedText.isEmpty) {
-      return Text(text, style: style);
+      return Text(text, style: style, textWidthBasis: textWidthBasis);
     }
 
     final positions =
         TextMatchService.instance.findMatches(text, highlightedText);
     if (positions.isEmpty) {
-      return Text(text, style: style);
+      return Text(text, style: style, textWidthBasis: textWidthBasis);
     }
 
     final spans = _buildSpans(text, positions, highlightedText.length);
-    return Text.rich(TextSpan(children: spans));
+    return Text.rich(
+      TextSpan(children: spans),
+      textWidthBasis: textWidthBasis,
+    );
   }
 
   List<InlineSpan> _buildSpans(
