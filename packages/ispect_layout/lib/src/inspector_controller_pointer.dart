@@ -17,11 +17,10 @@ extension InspectorControllerPointer on InspectorController {
     }
 
     if (mode == InspectorMode.zoom) {
-      // Same idea for zoom: the loupe stays anchored where the user tapped,
-      // and they leave via the bottom action bar.
-      if (pointerOffset != null) {
+      final sampleOffset = _pointerHoverPosition ?? pointerOffset;
+      if (sampleOffset != null) {
         final ctx = stackKey.currentContext ?? context;
-        _onZoomHover(pointerOffset, ctx);
+        _onZoomHover(sampleOffset, ctx);
       }
       return;
     }

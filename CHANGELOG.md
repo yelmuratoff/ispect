@@ -46,7 +46,7 @@
 - **Logs screen reactivity:** "Clear history" empties the visible list immediately, and view-controller-driven history mutations refresh the UI without a new log emission.
 - **Network status code now displayed:** Grouped transactions show the response status-code chip again — it was read from the wrong metadata key and stayed hidden.
 - **Color picker accuracy:** The sampled colour now matches the pixel under the crosshair — near a pixel's half boundary the picker reported the neighbouring pixel, showing a wrong colour on 1px borders and anti-aliased edges. Translucent pixels now report their true colour instead of a darkened, premultiplied one.
-- **Color picker release drift:** Lifting a finger no longer commits a different colour than the one under the loupe — the picker locked the pixel at the pointer-up position, which drifts a few pixels from the last drag position on touch.
+- **Color picker release drift:** Lifting a finger no longer jerks the loupe and commits a neighbouring colour — the picker stays on the last position the finger actually pointed at, which was most visible when sampling thin borders or small swatches on touch.
 
 ### Code Quality
 
