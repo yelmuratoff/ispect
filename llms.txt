@@ -10,7 +10,7 @@ need on demand instead of working from memorized API. Treat each package's expor
 `lib/<package>.dart` and `README.md` as the authoritative API surface.
 
 - Repository: https://github.com/yelmuratoff/ispect
-- Version: 5.2.0-dev.25
+- Version: 6.0.0
 
 ## Integration prompt
 

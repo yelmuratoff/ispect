@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.0.0-dev.35
+## 6.0.0
 
 ### Improvements
 
