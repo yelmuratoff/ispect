@@ -6,10 +6,9 @@ extension InspectorControllerPointer on InspectorController {
     if (mode == InspectorMode.none) return;
 
     if (mode == InspectorMode.colorPicker) {
-      // Lock the sampled colour at the tap point but keep the mode active —
-      // user explicitly confirms / cancels via the bottom action bar.
-      if (pointerOffset != null) {
-        _onColorPickerHover(pointerOffset, context);
+      final sampleOffset = _pointerHoverPosition ?? pointerOffset;
+      if (sampleOffset != null) {
+        _onColorPickerHover(sampleOffset, context);
       }
       if (selectedColorStateNotifier.value != null) {
         HapticFeedback.selectionClick();
