@@ -4,6 +4,7 @@ import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/services/log_correlation_index.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/common/widgets/resizable_split_view.dart';
 import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
@@ -62,6 +63,7 @@ class _LogsScreenState extends State<LogsScreen> {
     _logsViewController = widget.controller ??
         ISpectViewController(
           onShare: widget.options.onShare,
+          metadataProvider: widget.options.metadataProvider,
           initialSettings: widget.options.initialSettings,
           onSettingsChanged: _handleSettingsChanged,
         );
@@ -108,7 +110,10 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ISpectThemeScope(child: Builder(builder: _buildScaffold));
+
+  Widget _buildScaffold(BuildContext context) {
     final iSpect = ISpect.read(context);
     final isDesktop = context.screenSize.isDesktop;
     return Scaffold(

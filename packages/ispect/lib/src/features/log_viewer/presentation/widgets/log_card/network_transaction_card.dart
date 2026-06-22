@@ -4,9 +4,8 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_search_highlight_surface.dart';
-import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_desktop_row.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_details.dart';
@@ -25,6 +24,7 @@ class NetworkTransactionCard extends StatelessWidget {
     this.typeColumnWidth = 100,
     this.timeColumnWidth = 140,
     this.searchMatchState = SearchMatchState.none,
+    this.compactUrl = true,
     super.key,
   });
 
@@ -35,6 +35,10 @@ class NetworkTransactionCard extends StatelessWidget {
   final double typeColumnWidth;
   final double timeColumnWidth;
   final SearchMatchState searchMatchState;
+
+  /// Strips the scheme and host from the collapsed-row URL, leaving the path
+  /// and query. The expanded details keep the full URL.
+  final bool compactUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +51,7 @@ class NetworkTransactionCard extends StatelessWidget {
         typeColumnWidth: typeColumnWidth,
         timeColumnWidth: timeColumnWidth,
         searchMatchState: searchMatchState,
+        compactUrl: compactUrl,
       );
     }
     return Padding(
@@ -57,14 +62,11 @@ class NetworkTransactionCard extends StatelessWidget {
         onOpenRequestDetail: onOpenRequestDetail,
         onOpenResponseDetail: onOpenResponseDetail,
         searchMatchState: searchMatchState,
+        compactUrl: compactUrl,
       ),
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Mobile card
-// ---------------------------------------------------------------------------
 
 class _MobileTransactionCard extends StatefulWidget {
   const _MobileTransactionCard({
@@ -73,6 +75,7 @@ class _MobileTransactionCard extends StatefulWidget {
     this.onOpenRequestDetail,
     this.onOpenResponseDetail,
     this.searchMatchState = SearchMatchState.none,
+    this.compactUrl = true,
   });
 
   final NetworkTransaction transaction;
@@ -80,6 +83,7 @@ class _MobileTransactionCard extends StatefulWidget {
   final VoidCallback? onOpenRequestDetail;
   final VoidCallback? onOpenResponseDetail;
   final SearchMatchState searchMatchState;
+  final bool compactUrl;
 
   @override
   State<_MobileTransactionCard> createState() => _MobileTransactionCardState();
@@ -93,7 +97,7 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
   @override
   Widget build(BuildContext context) {
     final color = transactionColor(tx);
-    final accentColor = color.withValues(alpha: _expanded ? 0.9 : 0.5);
+    final accentColor = color.withValues(alpha: _expanded ? 0.9 : 0.7);
 
     return ISpectSearchHighlightSurface(
       searchMatchState: widget.searchMatchState,
@@ -131,6 +135,7 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
                     tx: tx,
                     color: color,
                     expanded: _expanded,
+                    compactUrl: widget.compactUrl,
                   ),
                 ),
               ),
@@ -141,12 +146,14 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
               alignment: Alignment.topCenter,
               child: _expanded
                   ? Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TransactionDetails(tx: tx, color: color),
-                          const Gap(8),
+                          if (transactionHasInlineDetails(tx)) ...[
+                            TransactionDetails(tx: tx, color: color),
+                            const Gap(8),
+                          ],
                           Row(
                             children: buildActionWidgets(
                               context: context,
@@ -175,25 +182,23 @@ class _MobileHeader extends StatelessWidget {
     required this.tx,
     required this.color,
     required this.expanded,
+    required this.compactUrl,
   });
 
   final NetworkTransaction tx;
   final Color color;
   final bool expanded;
+  final bool compactUrl;
 
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          DecoratedLeadingIcon(
-            icon: Icons.swap_vert_rounded,
-            color: color,
-          ),
-          const Gap(ISpectConstants.standardGap),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     MethodBadge(
                       method: tx.method ?? 'HTTP',
@@ -202,12 +207,13 @@ class _MobileHeader extends StatelessWidget {
                     const Gap(6),
                     Expanded(
                       child: Text(
-                        tx.url ?? '',
-                        maxLines: 1,
+                        transactionListUrl(tx.url, compact: compactUrl),
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.w600,
+                          color:
+                              context.appTheme.textColor.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w500,
                           fontSize: 12,
                         ),
                       ),
@@ -218,9 +224,9 @@ class _MobileHeader extends StatelessWidget {
                   _formatTime(tx.request.time),
                   maxLines: 1,
                   style: TextStyle(
-                    color: context.appTheme.textColor.withValues(alpha: 0.4),
+                    color: context.appTheme.textColor.withValues(alpha: 0.6),
                     fontSize: 10,
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -241,7 +247,7 @@ class _MobileHeader extends StatelessWidget {
             const Gap(4),
             StatusBadge(
               text: ISpectLocalization.of(context).pending,
-              color: const Color(0xFFFF9800),
+              color: JsonColors.statusWarning,
             ),
           ],
           const Gap(4),

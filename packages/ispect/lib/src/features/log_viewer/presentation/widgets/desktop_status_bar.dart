@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 /// Status bar at the bottom of the desktop log view.
 class DesktopStatusBar extends StatelessWidget {
@@ -251,10 +253,10 @@ class _KeyBadge extends StatelessWidget {
     final onSurface = Theme.of(context).colorScheme.onSurface;
 
     return DecoratedBox(
-      decoration: BoxDecoration(
+      decoration: ISpectSquircle.decoration(
         color: onSurface.withValues(alpha: 0.06),
-        borderRadius: const BorderRadius.all(Radius.circular(4)),
-        border: Border.all(color: onSurface.withValues(alpha: 0.12)),
+        radius: ISpectConstants.smallBorderRadius,
+        side: BorderSide(color: onSurface.withValues(alpha: 0.12)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),

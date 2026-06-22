@@ -11,7 +11,7 @@
 ///
 /// Thread-safe in Dart's single-threaded event loop.
 /// No external dependencies.
-class RequestIdGenerator {
+final class RequestIdGenerator {
   /// Creates a generator with a unique session prefix.
   RequestIdGenerator()
       : _sessionPrefix = DateTime.now()

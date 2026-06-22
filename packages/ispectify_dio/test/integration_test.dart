@@ -13,6 +13,18 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:test/test.dart';
 
+/// Mimics auth/locale interceptors that rewrite the request via `copyWith`,
+/// allocating a fresh [RequestOptions] for everything downstream.
+class _CopyOptionsInterceptor extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    super.onRequest(
+      options.copyWith(headers: {...options.headers, 'X-Test': '1'}),
+      handler,
+    );
+  }
+}
+
 /// Minimal in-memory HttpClientAdapter.
 ///
 /// Returns a response built from [handler]. The handler receives the
@@ -90,6 +102,60 @@ void main() {
       final responseCid = response.additionalData?[TraceKeys.correlationId];
       expect(requestCid, isNotNull);
       expect(responseCid, equals(requestCid));
+    });
+
+    test('correlation survives a downstream interceptor that copies options',
+        () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final adapter = _FakeHttpAdapter(
+        (_) => _jsonResponse({'ok': true}),
+      );
+      // ISpect runs first, so it stores the trace on the pre-copy options.
+      final dio = _dioWith(adapter)
+        ..interceptors.add(ISpectDioInterceptor(logger: logger))
+        ..interceptors.add(_CopyOptionsInterceptor());
+
+      await dio.get<dynamic>('/users');
+
+      expect(logger.history, hasLength(2));
+      final requestCid =
+          logger.history[0].additionalData?[TraceKeys.correlationId];
+      final responseCid =
+          logger.history[1].additionalData?[TraceKeys.correlationId];
+
+      expect(logger.history[1].key, ISpectLogType.httpResponse.key);
+      expect(requestCid, isNotNull);
+      expect(responseCid, equals(requestCid));
+      // Duration rides in extra too, so it survives the copy.
+      expect(
+        logger.history[1].additionalData?[TraceKeys.durationMs],
+        isNotNull,
+      );
+    });
+
+    test('start stamp is stripped from captured extra; id is preserved',
+        () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final adapter = _FakeHttpAdapter(
+        (_) => _jsonResponse({'ok': true}),
+      );
+      final dio = _dioWith(adapter)
+        ..interceptors.add(ISpectDioInterceptor(logger: logger));
+
+      await dio.get<dynamic>('/users');
+
+      final meta = logger.history[0].additionalData?[TraceKeys.meta] as Map?;
+      final requestData = meta?['request-data'] as Map?;
+      final extra = requestData?[NetworkJsonKeys.extra] as Map?;
+      expect(
+        extra?.containsKey(NetworkJsonKeys.ispectRequestStartedAt),
+        isFalse,
+      );
+      expect(extra?[NetworkJsonKeys.ispectRequestId], isNotNull);
     });
 
     test('4xx response is logged as httpError, not httpResponse', () async {

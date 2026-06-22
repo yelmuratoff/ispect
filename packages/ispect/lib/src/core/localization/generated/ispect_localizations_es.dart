@@ -694,6 +694,9 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
       'Registro de mensajes recibidos por WebSocket';
 
   @override
+  String get wsStateLogDesc => 'WebSocket connection state changed';
+
+  @override
   String get dbQueryLogDesc => 'Registro de consultas a la base de datos';
 
   @override
@@ -748,7 +751,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get groupHttp => 'HTTP';
 
   @override
-  String get groupBloc => 'Bloc';
+  String get groupBloc => 'Estado';
 
   @override
   String get groupRiverpod => 'Riverpod';
@@ -851,6 +854,12 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
+  String get performanceJankLogDesc => 'Frame exceeded the target budget';
+
+  @override
+  String get performanceErrorLogDesc => 'Performance instrumentation error';
 
   @override
   String get transitionPush => 'Push';
@@ -1027,4 +1036,75 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => 'Más opciones';
+
+  @override
+  String get composerTitle => 'Compositor HTTP';
+
+  @override
+  String get composerSend => 'Enviar';
+
+  @override
+  String get composerMethod => 'Método';
+
+  @override
+  String get composerClient => 'Cliente';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => 'Encabezados';
+
+  @override
+  String get composerQueryParameters => 'Parámetros de consulta';
+
+  @override
+  String get composerBody => 'Cuerpo';
+
+  @override
+  String get composerAddField => 'Agregar';
+
+  @override
+  String get composerAddHeader => 'Agregar encabezado';
+
+  @override
+  String get composerAddParameter => 'Agregar parámetro';
+
+  @override
+  String get composerViewJson => 'Abrir en el visor JSON';
+
+  @override
+  String get composerKeyHint => 'Clave';
+
+  @override
+  String get composerValueHint => 'Valor';
+
+  @override
+  String get composerAttachFile => 'Adjuntar archivo';
+
+  @override
+  String get composerResponse => 'Respuesta';
+
+  @override
+  String get composerResponsePlaceholder =>
+      'Envía una solicitud para ver la respuesta';
+
+  @override
+  String get composerNoClients =>
+      'Registra un cliente Dio o http para enviar solicitudes';
+
+  @override
+  String get composerErrorUrlRequired => 'Ingresa una URL';
+
+  @override
+  String get composerErrorUrlInvalid => 'Ingresa una URL absoluta válida';
+
+  @override
+  String get composerErrorInvalidJson => 'El cuerpo no es JSON válido';
+
+  @override
+  String get composerErrorNoClient => 'Ningún cliente registrado';
+
+  @override
+  String get composerEditAndResend => 'Editar y reenviar';
 }

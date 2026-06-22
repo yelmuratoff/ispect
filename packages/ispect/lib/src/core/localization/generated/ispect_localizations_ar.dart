@@ -680,6 +680,9 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'سجل رسائل WebSocket المستلمة';
 
   @override
+  String get wsStateLogDesc => 'WebSocket connection state changed';
+
+  @override
   String get dbQueryLogDesc => 'سجل استعلامات قاعدة البيانات';
 
   @override
@@ -728,7 +731,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get groupHttp => 'HTTP';
 
   @override
-  String get groupBloc => 'Bloc';
+  String get groupBloc => 'الحالة';
 
   @override
   String get groupRiverpod => 'Riverpod';
@@ -831,6 +834,12 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
+  String get performanceJankLogDesc => 'Frame exceeded the target budget';
+
+  @override
+  String get performanceErrorLogDesc => 'Performance instrumentation error';
 
   @override
   String get transitionPush => 'دفع';
@@ -1002,4 +1011,73 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => 'المزيد';
+
+  @override
+  String get composerTitle => 'منشئ طلبات HTTP';
+
+  @override
+  String get composerSend => 'إرسال';
+
+  @override
+  String get composerMethod => 'الطريقة';
+
+  @override
+  String get composerClient => 'العميل';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => 'الرؤوس';
+
+  @override
+  String get composerQueryParameters => 'مَعلَمات الاستعلام';
+
+  @override
+  String get composerBody => 'المحتوى';
+
+  @override
+  String get composerAddField => 'إضافة';
+
+  @override
+  String get composerAddHeader => 'إضافة رأس';
+
+  @override
+  String get composerAddParameter => 'إضافة مَعلَمة';
+
+  @override
+  String get composerViewJson => 'فتح في عارض JSON';
+
+  @override
+  String get composerKeyHint => 'المفتاح';
+
+  @override
+  String get composerValueHint => 'القيمة';
+
+  @override
+  String get composerAttachFile => 'إرفاق ملف';
+
+  @override
+  String get composerResponse => 'استجابة';
+
+  @override
+  String get composerResponsePlaceholder => 'أرسل طلبًا لعرض الاستجابة';
+
+  @override
+  String get composerNoClients => 'سجّل عميل Dio أو http لإرسال الطلبات';
+
+  @override
+  String get composerErrorUrlRequired => 'أدخل عنوان URL';
+
+  @override
+  String get composerErrorUrlInvalid => 'أدخل عنوان URL مطلقًا صالحًا';
+
+  @override
+  String get composerErrorInvalidJson => 'المحتوى ليس JSON صالحًا';
+
+  @override
+  String get composerErrorNoClient => 'لا يوجد عميل مُسجَّل';
+
+  @override
+  String get composerEditAndResend => 'تعديل وإعادة الإرسال';
 }

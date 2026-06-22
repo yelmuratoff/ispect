@@ -1,16 +1,24 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect_example/interceptors/ws_interceptor.dart';
+import 'package:ispectify_bloc/ispectify_bloc.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:ispectify_http/ispectify_http.dart';
+import 'package:ispectify_riverpod/ispectify_riverpod.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:ws/ws.dart';
 
 // ---------------------------------------------------------------------------
 // Observer example
@@ -92,11 +100,92 @@ const _localeOptions = <_LocaleOption>[
 ];
 
 // ---------------------------------------------------------------------------
+// Riverpod providers (real, no codegen) — wired through ISpectRiverpodObserver
+// ---------------------------------------------------------------------------
+
+/// Simple counter — exercises didAddProvider + didUpdateProvider + didDispose.
+final _counterProvider = StateProvider<int>((ref) => 0, name: 'counter');
+
+/// Throws on init — exercises providerDidFail (and didAddProvider with
+/// `value: null`, per Riverpod's contract).
+final _failingProvider = Provider<int>(
+  (ref) => throw StateError('demo: provider init failed'),
+  name: 'failing',
+);
+
+/// Family parameter shows up as `argument` in the trace meta, useful for
+/// verifying redaction and multi-instance handling.
+final _userNameProvider = Provider.family<String, int>(
+  (ref, userId) => 'user-$userId',
+  name: 'user-name',
+);
+
+/// Async provider whose future throws — exercises providerDidFail after the
+/// initial didAddProvider with `AsyncValue.loading`.
+final _flakyFutureProvider = FutureProvider<String>(
+  (ref) async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    throw const FormatException('demo: malformed payload');
+  },
+  name: 'flaky-future',
+);
+
+// ---------------------------------------------------------------------------
+// BLoC (real, no codegen) — wired through ISpectBlocObserver
+// ---------------------------------------------------------------------------
+
+sealed class CounterEvent {
+  const CounterEvent();
+}
+
+final class CounterIncremented extends CounterEvent {
+  const CounterIncremented();
+}
+
+final class CounterDecremented extends CounterEvent {
+  const CounterDecremented();
+}
+
+final class CounterReset extends CounterEvent {
+  const CounterReset();
+}
+
+/// Reports a recoverable error via `addError` — exercises onError (bloc-error)
+/// without crashing the bloc, so the demo stays interactive.
+final class CounterFailed extends CounterEvent {
+  const CounterFailed();
+}
+
+/// Counter bloc exercising the full observer surface: onCreate, onEvent,
+/// onTransition, onChange, onError, onDone, and onClose.
+final class CounterBloc extends Bloc<CounterEvent, int> {
+  CounterBloc() : super(0) {
+    on<CounterIncremented>((_, emit) => emit(state + 1));
+    on<CounterDecremented>((_, emit) => emit(state - 1));
+    on<CounterReset>((_, emit) => emit(0));
+    on<CounterFailed>(
+      (_, __) => addError(
+        StateError('demo: counter operation failed'),
+        StackTrace.current,
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
 
 void main() {
-  ISpect.run(() => runApp(const MyApp()));
+  ISpect.run(
+    () => runApp(
+      ProviderScope(
+        observers: [ISpectRiverpodObserver(logger: ISpect.logger)],
+        child: const MyApp(),
+      ),
+    ),
+    onInit: () => Bloc.observer = ISpectBlocObserver(logger: ISpect.logger),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -120,6 +209,8 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       locale: _locale,
+      showPerformanceOverlay: false,
+      debugShowCheckedModeBanner: false,
       supportedLocales: _localeOptions.map((o) => o.locale),
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
@@ -146,6 +237,7 @@ class _MyAppState extends State<MyApp> {
         child: child!,
         options: ISpectOptions(
           observer: _observer,
+          enableJankLogging: true,
           onSettingsChanged: (settings) {
             ISpect.logger.log('Settings changed: ${settings.toString()}',
                 additionalData: settings.toMap());
@@ -156,6 +248,14 @@ class _MyAppState extends State<MyApp> {
             subject: req.subject,
             files: req.filePaths.map(XFile.new).toList(),
           )),
+          // Demo stub for the HTTP composer's multipart "attach file". A real
+          // app wires file_picker / image_picker here; this returns a canned
+          // in-memory file so the flow is testable without a native picker.
+          onPickComposerFile: () async => ComposerPickedFile(
+            filename: 'sample.txt',
+            bytes: utf8.encode('Hello from the ISpect HTTP composer'),
+            contentType: 'text/plain',
+          ),
         ),
         theme: ISpectTheme(
           primary: _preset.primary,
@@ -366,6 +466,27 @@ class _HomePageState extends State<_HomePage> {
             trailing: const Icon(Icons.chevron_right),
             onTap: _logComplexPayload,
           ),
+          const SizedBox(height: 8),
+          _ScenarioCard(
+            icon: Icons.speed,
+            title: 'Performance Jank',
+            subtitle: 'Block UI thread ~250 ms — overlay spikes, '
+                'performance-jank log entry appears in viewer',
+            trailing: const Icon(Icons.chevron_right),
+            onTap: _triggerSevereJank,
+          ),
+          const SizedBox(height: 20),
+
+          // Riverpod
+          _SectionHeader(title: 'Riverpod'),
+          const SizedBox(height: 8),
+          const _RiverpodScenarios(),
+          const SizedBox(height: 20),
+
+          // BLoC
+          _SectionHeader(title: 'BLoC'),
+          const SizedBox(height: 8),
+          const _BlocScenarios(),
           const SizedBox(height: 20),
 
           // Network & DB
@@ -535,25 +656,8 @@ class _HomePageState extends State<_HomePage> {
       additionalData: {TraceKeys.correlationId: httpErrId, 'status': 404},
     );
 
-    // \u2500\u2500 WebSocket \u2014 correlationId links frames of the same session \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-    final wsId = generateTraceId();
-    logger.log(
-      '{"type":"subscribe","channel":"prices"}',
-      type: ISpectLogType.wsSent,
-      additionalData: {TraceKeys.correlationId: wsId, 'channel': 'prices'},
-    );
-    logger.log(
-      '{"type":"snapshot","data":[...]}',
-      type: ISpectLogType.wsReceived,
-      additionalData: {TraceKeys.correlationId: wsId},
-    );
-    logger.log(
-      'WS connection dropped',
-      type: ISpectLogType.wsError,
-      exception: Exception('WebSocket: 1006 Abnormal Closure'),
-      stackTrace: StackTrace.current,
-      additionalData: {TraceKeys.correlationId: wsId},
-    );
+    // \u2500\u2500 WebSocket \u2014 real connection through WsDiagnostics \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    await _runWebSocketDemo(logger);
 
     // \u2500\u2500 BLoC \u2014 correlationId = bloc instance ID, links full lifecycle \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     final blocId = generateTraceId();
@@ -1107,6 +1211,28 @@ class _HomePageState extends State<_HomePage> {
     });
   }
 
+  void _triggerSevereJank() {
+    // Run heavy work after the current frame so the tap response paints
+    // before the freeze — otherwise the snackbar would also be stuck.
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      final sw = Stopwatch()..start();
+      var acc = 0.0;
+      while (sw.elapsedMilliseconds < 250) {
+        for (var i = 0; i < 20000; i++) {
+          acc += i * 1.000001;
+        }
+      }
+      // Touch `acc` so the loop is not optimized away in release builds.
+      if (acc < 0) ISpect.logger.debug('unreachable $acc');
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Blocking UI thread ~250 ms — watch the overlay'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   void _logComplexPayload() {
     ISpect.logger.info(
       'Complex payload with deep nesting',
@@ -1237,6 +1363,32 @@ class _HomePageState extends State<_HomePage> {
 // ---------------------------------------------------------------------------
 // Quick log buttons grid
 // ---------------------------------------------------------------------------
+
+/// Connects to a public echo server through the local `ws` adapter so the
+/// WebSocket logs (`ws-sent` / `ws-received` / `ws-state`) are real, not
+/// simulated. Bounded by a timeout so the demo never hangs offline.
+Future<void> _runWebSocketDemo(ISpectLogger logger) async {
+  const url = 'wss://echo.websocket.org';
+  final interceptor = ISpectWSInterceptor(logger: logger);
+  final client = WebSocketClient(
+    WebSocketOptions.common(interceptors: [interceptor]),
+  );
+  interceptor.setClient(client);
+  try {
+    await client.connect(url).timeout(const Duration(seconds: 5));
+    await client.add('{"type":"subscribe","channel":"prices"}');
+    await Future<void>.delayed(const Duration(seconds: 1));
+  } on Object catch (e, st) {
+    logger.handle(
+      exception: e,
+      stackTrace: st,
+      message: 'WebSocket demo failed',
+    );
+  } finally {
+    await client.close();
+    await interceptor.dispose();
+  }
+}
 
 class _QuickLogsGrid extends StatelessWidget {
   @override
@@ -1378,6 +1530,190 @@ class _SectionHeader extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Riverpod scenarios — real providers wired through ISpectRiverpodObserver
+// ---------------------------------------------------------------------------
+
+class _RiverpodScenarios extends ConsumerStatefulWidget {
+  const _RiverpodScenarios();
+
+  @override
+  ConsumerState<_RiverpodScenarios> createState() => _RiverpodScenariosState();
+}
+
+class _RiverpodScenariosState extends ConsumerState<_RiverpodScenarios> {
+  int _familyUserId = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final counter = ref.watch(_counterProvider);
+    final userName = ref.watch(_userNameProvider(_familyUserId));
+    final flaky = ref.watch(_flakyFutureProvider);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'counter: $counter   ·   ${_familyUserId == 0 ? 'no user' : userName}',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'flaky-future: ${flaky.when(
+                data: (v) => v,
+                loading: () => 'loading…',
+                error: (e, _) => 'error: $e',
+              )}',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.tonalIcon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('Increment'),
+                  onPressed: () => ref.read(_counterProvider.notifier).state++,
+                ),
+                FilledButton.tonalIcon(
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Invalidate counter'),
+                  onPressed: () => ref.invalidate(_counterProvider),
+                ),
+                FilledButton.tonalIcon(
+                  icon: const Icon(Icons.person_add),
+                  label: Text('user-${_familyUserId + 1}'),
+                  onPressed: () => setState(() => _familyUserId += 1),
+                ),
+                FilledButton.tonalIcon(
+                  icon: const Icon(Icons.replay),
+                  label: const Text('Retry flaky future'),
+                  onPressed: () => ref.invalidate(_flakyFutureProvider),
+                ),
+                FilledButton.tonalIcon(
+                  icon: const Icon(Icons.error_outline),
+                  label: const Text('Read failing provider'),
+                  style: FilledButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                  ),
+                  onPressed: () {
+                    try {
+                      ref.read(_failingProvider);
+                    } on StateError catch (_) {
+                      // Swallow — `providerDidFail` already routed it to ISpect.
+                    }
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// BLoC scenarios — real CounterBloc wired through ISpectBlocObserver
+// ---------------------------------------------------------------------------
+
+class _BlocScenarios extends StatefulWidget {
+  const _BlocScenarios();
+
+  @override
+  State<_BlocScenarios> createState() => _BlocScenariosState();
+}
+
+class _BlocScenariosState extends State<_BlocScenarios> {
+  // Bumping the key disposes the old bloc and creates a new one, exercising
+  // onClose + onCreate in a single tap.
+  int _generation = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BlocProvider<CounterBloc>(
+              key: ValueKey(_generation),
+              create: (_) => CounterBloc(),
+              child: const _CounterView(),
+            ),
+            const SizedBox(height: 12),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.restart_alt),
+              label: Text('Recreate bloc (gen #$_generation)'),
+              onPressed: () => setState(() => _generation += 1),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CounterView extends StatelessWidget {
+  const _CounterView();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        BlocBuilder<CounterBloc, int>(
+          builder: (context, count) => Text(
+            'counter: $count',
+            style: theme.textTheme.bodyMedium,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.add),
+              label: const Text('Increment'),
+              onPressed: () =>
+                  context.read<CounterBloc>().add(const CounterIncremented()),
+            ),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.remove),
+              label: const Text('Decrement'),
+              onPressed: () =>
+                  context.read<CounterBloc>().add(const CounterDecremented()),
+            ),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.refresh),
+              label: const Text('Reset'),
+              onPressed: () =>
+                  context.read<CounterBloc>().add(const CounterReset()),
+            ),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.error_outline),
+              label: const Text('Trigger error'),
+              style: FilledButton.styleFrom(
+                foregroundColor: theme.colorScheme.error,
+              ),
+              onPressed: () =>
+                  context.read<CounterBloc>().add(const CounterFailed()),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Network & Database section
 // ---------------------------------------------------------------------------
 
@@ -1431,10 +1767,17 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
         ),
       ],
     );
+
+    // Expose both clients to the in-app HTTP composer ("mini-Postman"). Replays
+    // and composed requests then travel through these same instrumented clients.
+    ISpect.registerSender(DioRequestSender(_dio, label: 'Dio'));
+    ISpect.registerSender(HttpClientRequestSender(_httpClient, label: 'HTTP'));
   }
 
   @override
   void dispose() {
+    ISpect.unregisterSender('dio');
+    ISpect.unregisterSender('http');
     _dio.close();
     _httpClient.close();
     super.dispose();
@@ -1450,6 +1793,14 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
           children: [
             if (_isLoading) const LinearProgressIndicator(),
             if (_isLoading) const SizedBox(height: 12),
+
+            Text(
+              'HTTP composer: open the panel → api icon to compose a request, '
+              'or fire any call below then long-press its network log → '
+              'Edit & resend.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
 
             // Dio
             Text(
@@ -2127,11 +2478,28 @@ class _DomainTracesSectionState extends State<_DomainTracesSection> {
                 _chip('Error', Icons.error, Colors.red, _sseError),
               ],
             ),
+            const SizedBox(height: 16),
+
+            // WebSocket
+            Text('WebSocket', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('Connect & subscribe', Icons.cable, Colors.teal,
+                    _wsSubscribe),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
+
+  // ── WebSocket ───────────────────────────────────────────────────────────
+
+  Future<void> _wsSubscribe() => _runWebSocketDemo(ISpect.logger);
 
   // ── Auth ──────────────────────────────────────────────────────────────
 

@@ -15,7 +15,9 @@ class ISpectShareLogBottomSheet {
   final Map<String, dynamic> truncatedData;
 
   Future<void> show(BuildContext context) {
-    final shareCallback = context.iSpect.options.onShare;
+    final options = context.iSpect.options;
+    final shareCallback = options.onShare;
+    final metadataProvider = options.metadataProvider;
     final controller = ExportController(
       availableFormats: ExportFormat.values,
       onShare: shareCallback,
@@ -24,29 +26,54 @@ class ISpectShareLogBottomSheet {
     return ISpectExportSheet.show(
       context,
       controller: controller,
-      contentBuilder: (format, {required action, redactKeys}) {
-        final source = action == ExportAction.copy ? truncatedData : data;
-        final maxDepth = action == ExportAction.copy ? 10 : 500;
-        final maxIterableSize = action == ExportAction.copy ? 100 : 10000;
-
-        var effectiveData = source;
-        if (redactKeys != null) {
-          final redactionService = RedactionService(sensitiveKeys: redactKeys);
-          final redacted = redactionService.redact(source);
-          if (redacted is Map<String, dynamic>) {
-            effectiveData = redacted;
-          }
-        }
-
-        return Future.value(
-          _formatSingleLog(
-            effectiveData,
-            format: format,
-            maxDepth: maxDepth,
-            maxIterableSize: maxIterableSize,
-          ),
+      contentBuilder: (format, {required action, redactKeys}) async {
+        final metadata = await metadataProvider?.call();
+        return buildContent(
+          data: data,
+          truncatedData: truncatedData,
+          format: format,
+          action: action,
+          redactKeys: redactKeys,
+          metadata: metadata,
         );
       },
+    );
+  }
+
+  @visibleForTesting
+  static String buildContent({
+    required Map<String, dynamic> data,
+    required Map<String, dynamic> truncatedData,
+    required ExportFormat format,
+    required ExportAction action,
+    Set<String>? redactKeys,
+    ISpectMetadata? metadata,
+  }) {
+    final source = action == ExportAction.copy ? truncatedData : data;
+    final maxDepth = action == ExportAction.copy ? 10 : 500;
+    final maxIterableSize = action == ExportAction.copy ? 100 : 10000;
+
+    var effectiveData = source;
+    if (redactKeys != null) {
+      final redactionService = RedactionService(sensitiveKeys: redactKeys);
+      final redacted = redactionService.redact(source);
+      if (redacted is Map<String, dynamic>) {
+        effectiveData = redacted;
+      }
+    }
+
+    if (metadata != null && !metadata.isEmpty) {
+      effectiveData = {
+        ...effectiveData,
+        ISpectMetadata.exportKey: metadata.toMap(),
+      };
+    }
+
+    return _formatSingleLog(
+      effectiveData,
+      format: format,
+      maxDepth: maxDepth,
+      maxIterableSize: maxIterableSize,
     );
   }
 

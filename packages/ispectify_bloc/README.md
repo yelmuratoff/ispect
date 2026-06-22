@@ -47,8 +47,8 @@
 ```yaml
 dependencies:
   flutter_bloc: ^8.0.0
-  ispectify: ^5.0.4
-  ispectify_bloc: ^5.0.4
+  ispectify: ^6.0.0-dev.35
+  ispectify_bloc: ^6.0.0-dev.35
 ```
 
 ## Quick start
@@ -60,14 +60,64 @@ import 'package:ispectify_bloc/ispectify_bloc.dart';
 
 ISpect.run(
   () => runApp(const MyApp()),
-  logger: logger,
   onInit: () {
-    Bloc.observer = ISpectBlocObserver(logger: logger);
+    Bloc.observer = ISpectBlocObserver(logger: ISpect.logger);
   },
 );
 ```
 
-The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-change`, `bloc-error`, `bloc-create`, and `bloc-close` log-type keys. Filter them in the debug panel or through `ISpectSettingsState.disabledLogTypes`.
+The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`, `bloc-close`, `bloc-done`, and `bloc-error` log-type keys, each with a dedicated icon, palette entry, and localized description in the log viewer. Filter them in the debug panel or through `ISpectSettingsState.disabledLogTypes`.
+
+## Settings
+
+`ISpectBlocSettings` controls which lifecycle events are captured and whether raw event/state payloads are written to trace meta. Payload capture is off by default — runtime types are emitted instead, so it is safe to leave the observer enabled in shared environments.
+
+```dart
+const settings = ISpectBlocSettings(
+  printEvents: true,
+  printTransitions: true,
+  printChanges: true,
+  printCreations: true,
+  printClosings: true,
+  printCompletions: true,
+  printErrors: true,
+  printEventFullData: true,  // raw event payloads on by default
+  printStateFullData: true,  // raw state payloads on by default
+  enableRedaction: true,     // route meta values through RedactionService when set
+);
+```
+
+### Presets
+
+```dart
+// Logs disabled entirely.
+ISpectBlocObserver(settings: ISpectBlocSettings.silent);
+
+// Skip per-change / per-completion noise — keeps creations, transitions, errors.
+ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
+
+// Full event and state payloads are captured by default. Opt out per flag to
+// log only the runtime type:
+ISpectBlocObserver(
+  settings: ISpectBlocSettings(
+    printEventFullData: false,
+    printStateFullData: false,
+  ),
+);
+```
+
+### Filtering noisy blocs
+
+```dart
+ISpectBlocObserver(
+  // Drop everything for blocs whose runtime type matches one of these patterns.
+  filters: [RegExp(r'AnalyticsBloc'), 'MetricsCubit'],
+  settings: ISpectBlocSettings(
+    // Or skip individual events / transitions / changes by inspecting them.
+    eventFilter: (bloc, event) => event is! HeartbeatEvent,
+  ),
+);
+```
 
 ## The ISpect toolkit
 
@@ -80,9 +130,10 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core: typed log entries, filtering, tracing, observers. |
 | [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction. |
 | [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction. |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction. |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | Provider-agnostic WebSocket capture (any client) with automatic redaction. |
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing for SQL, ORMs, and KV stores. |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event, state, transition, and error observer. |
+| [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer. |
 
 
 ## Contributing

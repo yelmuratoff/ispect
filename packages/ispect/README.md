@@ -71,26 +71,66 @@ ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="240" alt="Share sheet" /><br />
       <sub><strong>Export and share</strong><br />Send sessions and logs for debugging or QA.</sub>
     </td>
-    <td align="center" width="34%"></td>
+    <td align="center" width="34%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/performance.png?raw=true" width="240" alt="Performance overlay" /><br />
+      <sub><strong>Performance overlay</strong><br />Live frame misses and dropped-frame counts.</sub>
+    </td>
   </tr>
 </table>
 
-<details>
-  <summary><strong>Mobile screenshots</strong></summary>
-  <br />
-  <div align="center">
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/1.jpg" width="180" alt="Typography inspector on mobile" />
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/2.jpg" width="180" alt="Layout inspector on mobile" />
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/3.jpg" width="180" alt="Spacing inspector on mobile" />
-  </div>
-  <br />
-  <div align="center">
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/4.jpg" width="180" alt="Decoration inspector on mobile" />
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/5.jpg" width="180" alt="Transform inspector on mobile" />
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/6.jpg" width="180" alt="Effects inspector on mobile" />
-    <img src="https://raw.githubusercontent.com/yelmuratoff/packages_assets/main/assets/ispect/7.jpg" width="180" alt="Alignment and margin inspector on mobile" />
-  </div>
-</details>
+<div align="center">
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/http_composer.png?raw=true" width="240" alt="HTTP composer" />
+  <p><em>HTTP composer — replay a captured request or build one from scratch, then send it through your registered client.</em></p>
+</div>
+
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/text.png?raw=true" width="180" alt="Typography inspector" /><br />
+      <sub><strong>Typography</strong><br />Style, scaler, and overflow.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/rich_text.png?raw=true" width="180" alt="Rich text inspector" /><br />
+      <sub><strong>Rich text</strong><br />Span-by-span style breakdown.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/borders.png?raw=true" width="180" alt="Borders and radii inspector" /><br />
+      <sub><strong>Borders &amp; radii</strong><br />Per-side borders and corner formatting.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/gradient.png?raw=true" width="180" alt="Gradient inspector" /><br />
+      <sub><strong>Gradients</strong><br />Stops, <code>begin</code>/<code>end</code>, tile mode.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/dark_gradient.png?raw=true" width="180" alt="Dark theme gradient inspector" /><br />
+      <sub><strong>Dark themes</strong><br />Decoration against dark backgrounds.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/shadow_blur.png?raw=true" width="180" alt="Shadow and blur inspector" /><br />
+      <sub><strong>Shadows &amp; blur</strong><br />Box shadows and backdrop filters.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/network_image.png?raw=true" width="180" alt="Network image inspector" /><br />
+      <sub><strong>Images</strong><br />Source, raw pixels, fit, and alignment.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/rotated_box.png?raw=true" width="180" alt="Transform and clip inspector" /><br />
+      <sub><strong>Transform &amp; clip</strong><br />Matrix decomposition and clip shape.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/compare.png?raw=true" width="180" alt="Compare two widgets" /><br />
+      <sub><strong>Compare</strong><br />Pixel gaps between two widgets.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/zoom.png?raw=true" width="180" alt="Zoom magnifier overlay" /><br />
+      <sub><strong>Zoom</strong><br />Pixel-level magnifier overlay.</sub>
+    </td>
+  </tr>
+</table>
 
 ## What it covers
 
@@ -103,8 +143,10 @@ The toolkit handles the diagnostics most projects rebuild by hand for every new 
 | Widget inspector | Tap a widget to read its render box, decoration, constraints, padding, transforms, and text style. |
 | Structured logs | Typed entries with severity, log-type keys, filters, bounded history, and JSON export/import. |
 | Network capture | Request/response/error capture for Dio, the `http` package, and WebSocket clients. Requests and responses are paired by correlation ID. |
+| HTTP composer | Replay a captured request or build one from scratch and send it through your registered `Dio`/`http` client, reusing its base URL, auth interceptors, and retries. Opt in with `ISpect.registerSender`; redacted values are re-added by the client at send time, not resent. |
 | Database tracing | One `dbTrace` extension wraps any storage call with timing, redaction, optional sampling, and a slow-query threshold. |
 | BLoC observer | Events, transitions, state changes, errors, and create/close hooks routed through the log pipeline. |
+| Riverpod observer | Provider add, update, dispose, and failure events routed through the log pipeline with the same redaction surface. |
 | Redaction | Auth headers, tokens, passwords, PII, and financial data masked before they reach logs, exports, observers, or the cURL helper. |
 | Observer hooks | Forward selected log categories to your own sink through an `ISpectObserver` adapter. |
 | Localization | 12 UI languages: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi. |
@@ -142,7 +184,7 @@ Start with the UI shell and metadata-only diagnostics. Turn deeper capture on fo
 1. Add `ispect` and wrap the app with `ISpect.run(...)` and `ISpectBuilder.wrap(...)`.
 2. Run internal builds with `--dart-define=ISPECT_ENABLED=true`.
 3. Keep production jobs free of that flag.
-4. Add network, database, and BLoC modules one at a time as you need them.
+4. Add network, database, BLoC, and Riverpod modules one at a time as you need them.
 5. Leave body and header capture off until a payload-level investigation needs it.
 6. Add your project's redaction keys before sharing exported sessions with anyone outside the team.
 
@@ -157,20 +199,21 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core: typed log entries, filtering, tracing, observers. |
 | [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction. |
 | [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction. |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction. |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | Provider-agnostic WebSocket capture (any client) with automatic redaction. |
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing for SQL, ORMs, and KV stores. |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event, state, transition, and error observer. |
+| [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer. |
 
 
 ## Release channel
 
-`5.0.0-dev` is the active pre-release line for the 5.x architecture. If your dependency policy disallows pre-release versions, pin the latest stable 4.x release from pub.dev. `5.0.0` stable will follow once the dev line settles.
+The `5.x` line is the current stable channel and is the recommended pin for new integrations. If your dependency policy still requires the older API surface, the latest 4.x release remains available on pub.dev.
 
 ## Project state
 
 What you can verify from the repository today:
 
-- The current line is `5.0.0-dev`. 4.x stable is still available on pub.dev for teams that need it.
+- The current line is `5.x` stable. 4.x stable is still available on pub.dev for teams that need it.
 - SDK baseline is Dart `>=3.6.0 <4.0.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
 - A `production_safety` CI job builds a release APK without `ISPECT_ENABLED` and counts residual `"ispect"` strings in the binary.
 - Network capture, export, clipboard, cURL generation, and observer boundaries share the same `RedactionService`.
@@ -178,6 +221,7 @@ What you can verify from the repository today:
 
 Linked policies:
 
+- [AI integration prompt](https://github.com/yelmuratoff/ispect/blob/main/docs/prompt.md) — paste into any AI assistant to add ISpect for you
 - [Security and data handling](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md)
 - [Compatibility policy](https://github.com/yelmuratoff/ispect/blob/main/docs/COMPATIBILITY.md)
 - [Deprecations and migration notes](https://github.com/yelmuratoff/ispect/blob/main/docs/DEPRECATIONS.md)
@@ -192,9 +236,11 @@ Disabled builds are inactive at compile time, so there is nothing to benchmark w
 
 ## Quick start
 
+> **Prefer to let an AI wire it up?** If you are unsure how to integrate ISpect, copy the ready-made prompt at [`docs/prompt.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/prompt.md) and paste it into any AI coding assistant (Claude Code, Cursor, Copilot, etc.). It instructs the agent to read the current sources and add ISpect correctly and efficiently — initialization, route observer, network/database/state-management tracing, settings, and the share/open-file callbacks — scoped to what your project actually uses.
+
 ```yaml
 dependencies:
-  ispect: ^5.0.4
+  ispect: ^6.0.0-dev.35
 ```
 
 ```dart
@@ -234,7 +280,7 @@ flutter run --dart-define=ISPECT_ENABLED=true
 flutter build apk
 ```
 
-Per-client guides (Dio, `http`, WebSocket, DB, BLoC, layout inspector) live in the individual package READMEs linked in the table above.
+Per-client guides (Dio, `http`, WebSocket, DB, BLoC, Riverpod, layout inspector) live in the individual package READMEs linked in the table above.
 
 ## Production safety
 

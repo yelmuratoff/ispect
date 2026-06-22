@@ -688,6 +688,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'WebSocket қабылданған хабарламалар журналы';
 
   @override
+  String get wsStateLogDesc => 'WebSocket connection state changed';
+
+  @override
   String get dbQueryLogDesc => 'Дерекқор сұранымдары журналы';
 
   @override
@@ -739,7 +742,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get groupHttp => 'HTTP';
 
   @override
-  String get groupBloc => 'Bloc';
+  String get groupBloc => 'State';
 
   @override
   String get groupRiverpod => 'Riverpod';
@@ -842,6 +845,12 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
+  String get performanceJankLogDesc => 'Frame exceeded the target budget';
+
+  @override
+  String get performanceErrorLogDesc => 'Performance instrumentation error';
 
   @override
   String get transitionPush => 'Push';
@@ -1018,4 +1027,75 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => 'Қосымша';
+
+  @override
+  String get composerTitle => 'HTTP композер';
+
+  @override
+  String get composerSend => 'Жіберу';
+
+  @override
+  String get composerMethod => 'Әдіс';
+
+  @override
+  String get composerClient => 'Клиент';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => 'Тақырыптар';
+
+  @override
+  String get composerQueryParameters => 'Сұраныс параметрлері';
+
+  @override
+  String get composerBody => 'Мазмұн';
+
+  @override
+  String get composerAddField => 'Қосу';
+
+  @override
+  String get composerAddHeader => 'Тақырып қосу';
+
+  @override
+  String get composerAddParameter => 'Параметр қосу';
+
+  @override
+  String get composerViewJson => 'JSON көрушіде ашу';
+
+  @override
+  String get composerKeyHint => 'Кілт';
+
+  @override
+  String get composerValueHint => 'Мән';
+
+  @override
+  String get composerAttachFile => 'Файл тіркеу';
+
+  @override
+  String get composerResponse => 'Жауап';
+
+  @override
+  String get composerResponsePlaceholder =>
+      'Жауапты көру үшін сұраныс жіберіңіз';
+
+  @override
+  String get composerNoClients =>
+      'Сұраныстарды жіберу үшін Dio немесе http клиентін тіркеңіз';
+
+  @override
+  String get composerErrorUrlRequired => 'URL енгізіңіз';
+
+  @override
+  String get composerErrorUrlInvalid => 'Жарамды абсолютті URL енгізіңіз';
+
+  @override
+  String get composerErrorInvalidJson => 'Мазмұн жарамды JSON емес';
+
+  @override
+  String get composerErrorNoClient => 'Тіркелген клиент жоқ';
+
+  @override
+  String get composerEditAndResend => 'Өңдеп қайта жіберу';
 }

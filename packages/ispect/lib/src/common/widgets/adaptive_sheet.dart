@@ -2,6 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:ispect/src/core/res/ispect_default_palette.dart';
+import 'package:ispect/src/core/res/ispect_theme_data.dart';
+
+/// Wraps modal sheet/dialog content in ISpect's owned theme. Modals push onto
+/// the root navigator, above the ISpect scope, so the theme is resolved from
+/// [scopeContext] (the caller, under the scope) rather than the modal subtree.
+Widget _ispectThemedModal(
+  BuildContext scopeContext,
+  ISpectScopeModel iSpect,
+  Widget child,
+) =>
+    iSpect.theme.useHostColors
+        ? child
+        : Theme(
+            data: buildISpectThemeData(dark: scopeContext.ispectIsDark),
+            child: child,
+          );
 
 /// Shows a responsive sheet: bottom sheet on phone, dialog on larger screens.
 ///
@@ -26,20 +44,28 @@ Future<T?> showISpectSheet<T>(
       phone: () {
         final iSpect = ISpect.read(context);
         final bgColor = iSpect.theme.background?.resolve(context) ??
-            context.appTheme.colorScheme.surfaceContainerLowest;
-        final borderRadius = topOnlyRadius
-            ? const BorderRadius.vertical(top: Radius.circular(16))
-            : const BorderRadius.all(Radius.circular(16));
+            (iSpect.theme.useHostColors
+                ? context.appTheme.colorScheme.surfaceContainerLowest
+                : ISpectDefaultPalette.background
+                    .pick(isDark: context.ispectIsDark)!);
+        final borderRadius = (topOnlyRadius
+                ? const BorderRadius.vertical(top: Radius.circular(16))
+                : const BorderRadius.all(Radius.circular(16))) *
+            ISpectSquircle.scale;
+        final sheetShape =
+            ContinuousRectangleBorder(borderRadius: borderRadius);
 
         if (fitContent) {
           return showModalBottomSheet<T>(
             context: context,
             isScrollControlled: true,
             backgroundColor: bgColor,
-            shape: RoundedRectangleBorder(borderRadius: borderRadius),
+            shape: sheetShape,
             routeSettings: routeSettings,
-            builder: (_) => SafeArea(
-              child: builder(context, null),
+            builder: (_) => _ispectThemedModal(
+              context,
+              iSpect,
+              SafeArea(child: builder(context, null)),
             ),
           );
         }
@@ -57,11 +83,15 @@ Future<T?> showISpectSheet<T>(
             builder: (context, scrollController) => ScrollConfiguration(
               behavior: const _ClampingScrollBehavior(),
               child: DecoratedBox(
-                decoration: BoxDecoration(
+                decoration: ShapeDecoration(
                   color: bgColor,
-                  borderRadius: borderRadius,
+                  shape: sheetShape,
                 ),
-                child: builder(context, scrollController),
+                child: _ispectThemedModal(
+                  context,
+                  iSpect,
+                  builder(context, scrollController),
+                ),
               ),
             ),
           ),
@@ -70,21 +100,28 @@ Future<T?> showISpectSheet<T>(
       orElse: () {
         final iSpect = ISpect.read(context);
         final bgColor = iSpect.theme.background?.resolve(context) ??
-            context.appTheme.colorScheme.surfaceContainerLowest;
+            (iSpect.theme.useHostColors
+                ? context.appTheme.colorScheme.surfaceContainerLowest
+                : ISpectDefaultPalette.background
+                    .pick(isDark: context.ispectIsDark)!);
 
         return showDialog<T>(
           context: context,
           useRootNavigator: useRootNavigator,
           routeSettings: routeSettings,
-          builder: (_) => ScrollConfiguration(
-            behavior: const _ClampingScrollBehavior(),
-            child: AlertDialog(
-              contentPadding: const EdgeInsets.only(bottom: 16),
-              backgroundColor: bgColor,
-              clipBehavior: Clip.antiAlias,
-              content: SizedBox(
-                width: dialogWidth,
-                child: builder(context, null),
+          builder: (_) => _ispectThemedModal(
+            context,
+            iSpect,
+            ScrollConfiguration(
+              behavior: const _ClampingScrollBehavior(),
+              child: AlertDialog(
+                contentPadding: const EdgeInsets.only(bottom: 16),
+                backgroundColor: bgColor,
+                clipBehavior: Clip.antiAlias,
+                content: SizedBox(
+                  width: dialogWidth,
+                  child: builder(context, null),
+                ),
               ),
             ),
           ),

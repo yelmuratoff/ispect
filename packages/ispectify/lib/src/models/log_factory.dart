@@ -2,7 +2,7 @@ import 'package:ispectify/ispectify.dart';
 
 /// Creates [ISpectLogData] entries with consistent configuration
 /// from [ISpectLoggerOptions].
-abstract class LogFactory {
+abstract final class LogFactory {
   /// Creates a log entry for [type], optionally overriding the default [level].
   static ISpectLogData fromType({
     required ISpectLogType type,

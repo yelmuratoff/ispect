@@ -332,6 +332,36 @@ void main() {
     });
   });
 
+  // ── wsState (ws-state key) ───────────────────────────────────────
+  group('wsState', () {
+    late FakeISpectLogger logger;
+    setUp(() => logger = FakeISpectLogger());
+
+    test('emits the ws-state key, not the ws-received success key', () {
+      logger.wsState(source: 'ws', state: 'open', target: 'wss://x/y');
+
+      final log = logger.lastTrace!;
+      expect(log.key, ISpectLogType.wsState.key);
+      expect(log.key, isNot(ISpectLogType.wsReceived.key));
+      expect(log.additionalData?[TraceKeys.category], wsCategory.id);
+      expect(log.additionalData?[TraceKeys.success], isTrue);
+      expect(log.traceMeta, containsPair('state', 'open'));
+    });
+
+    test('carries correlationId so state shares the session group', () {
+      logger.wsState(
+        source: 'ws',
+        state: 'connecting',
+        correlationId: 'session-1',
+      );
+
+      expect(
+        logger.lastTrace!.additionalData?[TraceKeys.correlationId],
+        'session-1',
+      );
+    });
+  });
+
   // ── ISpectLogDataX ───────────────────────────────────────────────
   group('ISpectLogDataX', () {
     test('trace field getters return correct values', () {

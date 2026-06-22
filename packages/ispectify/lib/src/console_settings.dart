@@ -5,7 +5,7 @@ import 'package:ispectify/src/models/log_level.dart';
 /// Configuration settings for ISpectLogger logger.
 ///
 /// This class defines how logs are formatted, colored, and displayed.
-class ConsoleSettings {
+final class ConsoleSettings {
   /// Creates an instance of `ConsoleSettings` with customizable options.
   ///
   /// - `colors`: Custom ANSI colors for different log levels.

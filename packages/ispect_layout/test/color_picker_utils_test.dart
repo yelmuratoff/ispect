@@ -168,6 +168,31 @@ void main() {
     });
   });
 
+  group('imagePixelIndex', () {
+    test('maps a coordinate to the pixel cell that contains it (floor)', () {
+      expect(imagePixelIndex(3.0, 10), 3);
+      expect(imagePixelIndex(3.4, 10), 3);
+      expect(imagePixelIndex(3.99, 10), 3);
+    });
+
+    test('samples the crosshair pixel, not the neighbour, at the half boundary',
+        () {
+      // Round would jump to pixel 4 here; the crosshair still sits inside
+      // cell [3, 4), so the sampled pixel must stay 3.
+      expect(imagePixelIndex(3.5, 10), 3);
+    });
+
+    test('clamps coordinates at or past the right edge to the last pixel', () {
+      expect(imagePixelIndex(10.0, 10), 9);
+      expect(imagePixelIndex(12.5, 10), 9);
+    });
+
+    test('clamps negative coordinates to the first pixel', () {
+      expect(imagePixelIndex(-0.3, 10), 0);
+      expect(imagePixelIndex(-5.0, 10), 0);
+    });
+  });
+
   group('ColorSchemeInspector', () {
     final scheme = const ColorScheme.light(
       primary: Color(0xFF112233),

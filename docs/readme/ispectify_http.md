@@ -42,6 +42,8 @@ ISpect.run(
 );
 ```
 
+> Register `ISpectHttpInterceptor` **last** in the `interceptors` list. Request/response correlation is keyed on the `BaseRequest` instance, and `http_interceptor` lets each interceptor return a new request object. If an interceptor registered after it rebuilds the request, the response can't be matched and stays "Pending".
+
 ## Settings
 
 `ISpectHttpInterceptorSettings` mirrors the Dio version. Headers and body capture toggles, with `enableRedaction: true` by default.

@@ -19,6 +19,7 @@ PACKAGES=(
 	ispectify_dio      # depends on ispectify
 	ispectify_http     # depends on ispectify
 	ispectify_ws       # depends on ispectify
+	ispectify_riverpod # depends on ispectify
    ispectify_db      # depends on ispectify
 	ispect_layout      # standalone Flutter layout inspector (no internal deps)
 	ispect             # core panel depends on ispectify + integrations (dev)

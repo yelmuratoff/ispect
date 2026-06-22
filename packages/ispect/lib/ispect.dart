@@ -1,10 +1,30 @@
 export 'package:draggable_panel/draggable_panel.dart'
     show
+        DockType,
         DraggablePanel,
+        DraggablePanelButtonBuilder,
+        DraggablePanelButtonFrameBuilder,
         DraggablePanelButtonItem,
+        DraggablePanelButtonRender,
+        DraggablePanelButtonThemeData,
+        DraggablePanelContent,
+        DraggablePanelContentBuilder,
         DraggablePanelController,
+        DraggablePanelHandleBuilder,
+        DraggablePanelHandleThemeData,
         DraggablePanelItem,
-        DraggablePanelTheme;
+        DraggablePanelItemBuilder,
+        DraggablePanelItemFrameBuilder,
+        DraggablePanelItemRender,
+        DraggablePanelItemThemeData,
+        DraggablePanelMotion,
+        DraggablePanelSurface,
+        DraggablePanelSurfaceBuilder,
+        DraggablePanelTheme,
+        DraggablePanelTooltipData,
+        DraggablePanelTooltipPresenter,
+        DraggablePanelTooltipThemeData,
+        PanelState;
 export 'package:ispect/src/common/controllers/ispect_scope.dart';
 export 'package:ispect/src/common/errors/ispect_scope_not_found_error.dart';
 export 'package:ispect/src/common/models/action_item.dart';
@@ -12,6 +32,7 @@ export 'package:ispect/src/common/plugins/inspector_plugin.dart';
 export 'package:ispect/src/common/utils/ispect_localizations.dart';
 export 'package:ispect/src/core/localization/localization.dart';
 export 'package:ispect/src/core/res/ispect_options.dart';
+export 'package:ispect/src/core/res/ispect_panel.dart';
 export 'package:ispect/src/core/res/ispect_theme.dart';
 export 'package:ispect/src/features/inspector/src/inspector_builder.dart';
 export 'package:ispect/src/ispect.dart';

@@ -467,6 +467,7 @@ class _MainLogsViewState extends State<MainLogsView> {
           widget.logsViewController.matchStateForTransaction(entry),
       typeColumnWidth: _controller.typeColumnWidth,
       timeColumnWidth: _controller.timeColumnWidth,
+      compactUrl: widget.logsViewController.compactNetworkUrls,
       onTap: isDesktop
           ? () => widget.logsViewController.selectLog(entry.request)
           : null,

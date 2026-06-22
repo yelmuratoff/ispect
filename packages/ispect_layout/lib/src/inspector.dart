@@ -196,8 +196,13 @@ class InspectorState extends State<Inspector> {
                 child: Listener(
                   behavior: HitTestBehavior.translucent,
                   onPointerUp: (e) => _controller.onTap(e.position, context),
-                  onPointerMove: (e) =>
-                      _controller.onPointerMove(e.position, context),
+                  onPointerMove: (e) {
+                    // On touch release the engine injects a synthesized move to
+                    // the shifted up position before the up event — ignore it
+                    // so the loupe holds steady and samples the real pixel.
+                    if (e.synthesized) return;
+                    _controller.onPointerMove(e.position, context);
+                  },
                   onPointerDown: (e) =>
                       _controller.onPointerMove(e.position, context),
                   onPointerHover: (e) =>

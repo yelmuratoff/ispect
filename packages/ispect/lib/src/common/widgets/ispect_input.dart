@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 
 /// Shared sizing tokens for ISpect inputs. Keep in sync with
 /// [ISpectSearchField] so search bars and plain text fields read as one
@@ -10,9 +11,6 @@ abstract final class ISpectInputStyle {
   static const double fontSize = 14;
   static const EdgeInsets denseContentPadding =
       EdgeInsets.symmetric(horizontal: 12, vertical: 12);
-
-  static const BorderRadius borderRadius =
-      BorderRadius.all(Radius.circular(radius));
 
   /// Default text style for ISpect inputs.
   ///
@@ -48,10 +46,10 @@ InputDecoration ispectInputDecoration(
   final borderColor = context.ispectSubtleBorderColor;
   final primary = context.ispectPrimaryColor;
 
-  OutlineInputBorder border(Color color, {double width = 1}) =>
-      OutlineInputBorder(
-        borderRadius: ISpectInputStyle.borderRadius,
-        borderSide: BorderSide(color: color, width: width),
+  InputBorder border(Color color, {double width = 1}) =>
+      ISpectSquircle.inputBorder(
+        radius: ISpectInputStyle.radius,
+        side: BorderSide(color: color, width: width),
       );
 
   return InputDecoration(

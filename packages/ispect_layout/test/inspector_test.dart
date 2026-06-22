@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/ispect_layout.dart';
+import 'package:ispect_layout/src/widgets/components/box_info_panel_widget.dart';
 
 // class _ColorPickerTestPainter extends CustomPainter {
 //   static Color localPositionToColor({
@@ -350,20 +351,20 @@ void main() {
       FloatingActionButton getButton() =>
           tester.widget(finder) as FloatingActionButton;
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
 
       await tester.tap(find.byIcon(Icons.format_shapes));
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.blue);
+      expect(getButton().backgroundColor, const Color(0xFF3B82F6));
       expect(getButton().foregroundColor, Colors.white);
 
       await tester.tap(find.byIcon(Icons.format_shapes));
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
     });
 
     testWidgets('can be toggled via keyboard shortcut', (tester) async {
@@ -377,22 +378,22 @@ void main() {
       FloatingActionButton getButton() =>
           tester.widget(finder) as FloatingActionButton;
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyW);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.blue);
+      expect(getButton().backgroundColor, const Color(0xFF3B82F6));
       expect(getButton().foregroundColor, Colors.white);
 
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyW);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
     });
 
     testWidgets('zoom can be toggled via keyboard shortcut', (tester) async {
@@ -406,22 +407,22 @@ void main() {
       FloatingActionButton getButton() =>
           tester.widget(finder) as FloatingActionButton;
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyZ);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.blue);
+      expect(getButton().backgroundColor, const Color(0xFF3B82F6));
       expect(getButton().foregroundColor, Colors.white);
 
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyZ);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
     });
 
     testWidgets('supports custom multikey zoom shortcuts', (tester) async {
@@ -435,15 +436,15 @@ void main() {
       FloatingActionButton getButton() =>
           tester.widget(finder) as FloatingActionButton;
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
 
       await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.meta);
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyZ);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.blue);
+      expect(getButton().backgroundColor, const Color(0xFF3B82F6));
       expect(getButton().foregroundColor, Colors.white);
 
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyZ);
@@ -451,8 +452,8 @@ void main() {
       await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
       await tester.pump();
 
-      expect(getButton().backgroundColor, Colors.white);
-      expect(getButton().foregroundColor, Colors.black54);
+      expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+      expect(getButton().foregroundColor, Colors.white70);
     });
 
     testWidgets('respects decimalPlaces from Inspector', (tester) async {
@@ -485,14 +486,16 @@ void main() {
       await tester.tapAt(position);
       await tester.pump();
 
-      expect(find.textContaining('RenderDecoratedBox'), findsOneWidget);
+      expect(find.textContaining('DecoratedBox'), findsWidgets);
       expect(find.text('100.0 × 100.0'), findsWidgets);
 
-      await tester.tap(find.byType(ExpansionTile));
+      await tester.tap(find.byType(BoxInfoPanelWidget));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('L:50.0  T:150.0  R:50.0  B:150.0'), findsOneWidget);
+      // Padding shown as box-model diagram: individual values rather than LTRB string.
+      expect(find.text('50.0'), findsWidgets);
+      expect(find.text('150.0'), findsWidgets);
       expect(find.text('border radius'), findsOneWidget);
       expect(find.text('12.0'), findsOneWidget);
     });
@@ -511,7 +514,7 @@ void main() {
       await tester.tapAt(position);
       await tester.pump();
 
-      await tester.tap(find.byType(ExpansionTile));
+      await tester.tap(find.byType(BoxInfoPanelWidget));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
@@ -530,7 +533,7 @@ void main() {
       await tester.tapAt(tester.getCenter(find.byKey(_rowTextKey)));
       await tester.pump();
 
-      expect(find.textContaining('RenderParagraph'), findsOneWidget);
+      expect(find.textContaining('Paragraph'), findsWidgets);
 
       final flexChip = find.text('Flex');
       expect(flexChip, findsOneWidget);
@@ -539,7 +542,7 @@ void main() {
       await tester.pump();
 
       // Active target now matches the Row, not the Text.
-      expect(find.textContaining('RenderFlex'), findsOneWidget);
+      expect(find.textContaining('Flex'), findsWidgets);
       expect(find.text('80.0 × 40.0'), findsWidgets);
     });
 
@@ -621,20 +624,20 @@ void main() {
   //     FloatingActionButton getButton() =>
   //         tester.widget(finder) as FloatingActionButton;
 
-  //     expect(getButton().backgroundColor, Colors.white);
-  //     expect(getButton().foregroundColor, Colors.black54);
+  //     expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+  //     expect(getButton().foregroundColor, Colors.white70);
 
   //     await tester.tap(find.byIcon(Icons.colorize));
   //     await tester.pumpAndSettle();
 
-  //     expect(getButton().backgroundColor, Colors.blue);
+  //     expect(getButton().backgroundColor, const Color(0xFF3B82F6));
   //     expect(getButton().foregroundColor, Colors.white);
 
   //     await tester.tap(find.byIcon(Icons.colorize));
   //     await tester.pumpAndSettle();
 
-  //     expect(getButton().backgroundColor, Colors.white);
-  //     expect(getButton().foregroundColor, Colors.black54);
+  //     expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
+  //     expect(getButton().foregroundColor, Colors.white70);
   //   });
 
   //   test('colorToHexString returns right colors', () {

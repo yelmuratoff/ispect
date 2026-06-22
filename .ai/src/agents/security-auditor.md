@@ -5,7 +5,6 @@ description: >
   export/observer risks, and production-gating mistakes. USE PROACTIVELY when
   changes touch network capture, database tracing, log export/import, clipboard,
   cURL generation, observers, or ISPECT_ENABLED behavior.
-model: sonnet
 tools:
   - Read
   - Grep

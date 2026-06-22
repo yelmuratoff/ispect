@@ -10,6 +10,7 @@ void main() {
       expect(c.isLogOrderReversed, isTrue);
       expect(c.groupHttpLogs, isTrue);
       expect(c.useRelativeTime, isFalse);
+      expect(c.compactNetworkUrls, isTrue);
     });
 
     test('hydrates from initialSettings', () {
@@ -22,12 +23,14 @@ void main() {
           isLogOrderReversed: false,
           groupHttpLogs: false,
           useRelativeTime: true,
+          compactNetworkUrls: false,
         ),
       );
       expect(c.expandedLogs, isTrue);
       expect(c.isLogOrderReversed, isFalse);
       expect(c.groupHttpLogs, isFalse);
       expect(c.useRelativeTime, isTrue);
+      expect(c.compactNetworkUrls, isFalse);
     });
   });
 
@@ -67,6 +70,13 @@ void main() {
       expect(n, 1);
     });
 
+    test('toggleCompactNetworkUrls flips and notifies', () {
+      final before = c.compactNetworkUrls;
+      c.toggleCompactNetworkUrls();
+      expect(c.compactNetworkUrls, !before);
+      expect(n, 1);
+    });
+
     test('setting same value does not notify', () {
       c.expandedLogs = c.expandedLogs;
       expect(n, 0);
@@ -88,6 +98,7 @@ void main() {
             isLogOrderReversed: false,
             groupHttpLogs: false,
             useRelativeTime: true,
+            compactNetworkUrls: false,
           ),
         );
 
@@ -95,6 +106,7 @@ void main() {
       expect(c.isLogOrderReversed, isFalse);
       expect(c.groupHttpLogs, isFalse);
       expect(c.useRelativeTime, isTrue);
+      expect(c.compactNetworkUrls, isFalse);
       expect(n, 1);
     });
 

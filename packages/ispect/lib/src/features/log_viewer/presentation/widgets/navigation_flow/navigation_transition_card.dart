@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/observers/transition.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/navigation_flow/actions_sheet.dart';
 
@@ -107,13 +109,13 @@ class NavigationTransitionCard extends StatelessWidget {
     final colorScheme = context.appTheme.colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
+      decoration: ISpectSquircle.decoration(
         color: context.ispectTheme.card?.resolve(context),
-        border: Border.all(
+        radius: ISpectConstants.standardBorderRadius,
+        side: BorderSide(
           color: context.ispectTheme.divider?.resolve(context) ??
               colorScheme.onSurface.withValues(alpha: 0.2),
         ),
-        borderRadius: const BorderRadius.all(Radius.circular(8)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

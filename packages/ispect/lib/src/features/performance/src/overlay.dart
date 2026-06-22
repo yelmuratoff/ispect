@@ -1,164 +1,503 @@
-import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' show VertexMode, Vertices;
+
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:ispect/src/features/performance/src/memory_stats.dart'
+    as memory;
+import 'package:ispect/src/features/performance/src/stats.dart';
+import 'package:ispect/src/ispect.dart';
+import 'package:ispectify/ispectify.dart';
 
-/// A widget that displays a custom performance overlay showing frame timing stats
-/// (UI, Raster, and High Latency) based on [FrameTiming].
+/// Fallback when [View.display.refreshRate] is unavailable.
+const double _kFallbackRefreshRate = 60;
+
+const double _kBarGap = 1;
+const double _kHeaderHeight = 16;
+const double _kPauseButtonSize = 18;
+const double _kStatsFontSize = 10;
+const double _kHeaderFontSize = 9;
+const double _kStatsLineHeight = 1.15;
+const double _kCapMarkerHeight = 4;
+const double _kColumnDividerWidth = 1;
+const double _kCompactHeight = 24;
+const EdgeInsets _kStatsPadding = EdgeInsets.fromLTRB(4, 2, 4, 0);
+const EdgeInsets _kHeaderPadding =
+    EdgeInsets.symmetric(horizontal: 6, vertical: 1);
+const EdgeInsets _kCompactPadding =
+    EdgeInsets.symmetric(horizontal: 6, vertical: 4);
+
+const String _kOverlaySemanticsLabel = 'Performance overlay';
+
+/// Discards startup spikes (JIT, asset decode, shader cache) from session
+/// min FPS and drop counter.
+const Duration _kWarmupDuration = Duration(milliseconds: 800);
+
+/// RSS rarely changes within one frame; sampling at 1 Hz keeps the readout
+/// useful without burning syscalls every tick.
+const Duration _kMemoryPollInterval = Duration(seconds: 1);
+
+const double _kFpsHealthyRatio = 0.95;
+const double _kFpsWarningRatio = 0.80;
+
+/// How long after warmup to collect baseline samples before locking in their
+/// median. Lets the app navigate past the lightweight splash/first screen so
+/// the reference point reflects "normal" steady-state usage, not boot.
+const Duration _kMemoryBaselineSettleWindow = Duration(seconds: 5);
+
+/// EWMA smoothing factor for the displayed RSS value — α≈0.3 gives roughly
+/// a 3-sample effective window, enough to swallow GC/allocator jiggle
+/// without lagging real growth by more than ~3 seconds.
+const double _kMemoryEwmaAlpha = 0.3;
+
+/// The default overlay is not color-blind safe. Opt in by passing each
+/// `colorBlind*` value into the matching overlay parameter — including
+/// [colorBlindOverTarget], which the default `overTargetColor` does not pick
+/// up automatically.
+abstract final class ISpectPerformanceOverlayPalettes {
+  static const ui = Colors.teal;
+  static const raster = Colors.blue;
+  static const total = Colors.purple;
+
+  /// Wong/Okabe palette, distinguishable under deuteranopia, protanopia, and
+  /// tritanopia.
+  static const colorBlindUi = Color(0xFF009E73);
+  static const colorBlindRaster = Color(0xFFE69F00);
+  static const colorBlindTotal = Color(0xFFCC79A7);
+  static const colorBlindOverTarget = Color(0xFFD55E00);
+}
+
+/// Cross-platform performance overlay built on [FrameTiming] — works on web
+/// and desktop where Flutter's native [PerformanceOverlay] does not.
 ///
-/// Unlike Flutter's native [PerformanceOverlay], this works across all platforms
-/// including web and desktop, and provides more granular, opinionated visual feedback.
+/// UI build and raster are each checked against the full frame target (not
+/// half) because the two threads pipeline across frames. The "8ms + 8ms"
+/// split in the Flutter docs is about input-to-display latency, not jank.
 ///
-/// The overlay displays charts for:
-/// - UI frame build durations
-/// - Raster durations
-/// - Total frame latencies
-///
-/// Each bar represents a recent frame, with red bars indicating frame times
-/// that exceed the [targetFrameTime].
-///
-/// Can be aligned and scaled, and provides customizable styling options.
-class ISpectPerformanceOverlay extends StatelessWidget {
-  /// Creates a performance overlay widget.
-  ///
-  /// The [child] is the main content; the overlay renders on top of it when [enabled].
+/// As with Flutter's native overlay, the readings are only meaningful in
+/// profile mode — debug-mode asserts and JIT inflate frame work, so numbers
+/// there exist to spot trends, not to evaluate release-build performance.
+class ISpectPerformanceOverlay extends StatefulWidget {
   const ISpectPerformanceOverlay({
     required this.child,
     super.key,
     this.enabled = true,
     this.alignment = Alignment.topRight,
     this.scale = 1,
-    this.sampleSize = 32,
-    this.targetFrameTime = const Duration(microseconds: 16667),
+    this.width,
+    this.height,
+    this.sampleSize = 64,
+    this.targetFrameTime,
     this.barRangeMax = const Duration(milliseconds: 50),
     this.backgroundColor = Colors.white,
     this.textColor = Colors.black,
     this.uiColor = Colors.teal,
     this.rasterColor = Colors.blue,
-    this.highLatencyColor = Colors.cyan,
-  });
+    this.totalColor = Colors.purple,
+    this.overTargetColor = const Color(0xFFFF5252),
+    this.compact = false,
+    this.showP90 = false,
+    this.allowFreeze = true,
+    this.onFrameTiming,
+    this.enableJankLogging = false,
+    this.severeJankFactor = 2.0,
+    this.jankLogCooldown = const Duration(seconds: 1),
+    this.showMemory = true,
+    this.memoryWarnRatio = 1.3,
+    this.memoryDangerRatio = 2.0,
+    this.showAllTimeStats = false,
+    this.onJankBurst,
+    this.jankBurstWindow = 3,
+    this.jankBurstCooldown = const Duration(seconds: 1),
+  })  : assert(severeJankFactor >= 1.0, 'severeJankFactor must be >= 1'),
+        assert(sampleSize > 0, 'sampleSize must be > 0'),
+        assert(jankBurstWindow > 0, 'jankBurstWindow must be > 0'),
+        assert(memoryWarnRatio >= 1.0, 'memoryWarnRatio must be >= 1'),
+        assert(
+          memoryDangerRatio > memoryWarnRatio,
+          'memoryDangerRatio must exceed memoryWarnRatio',
+        );
 
-  /// Whether the overlay is visible.
   final bool enabled;
 
-  /// Where to align the overlay within the screen.
+  /// Horizontal alignment only takes effect when [width] is finite; with a
+  /// `null` width the overlay fills the available width regardless.
   final Alignment alignment;
 
-  /// How much to scale the overlay.
   final double scale;
 
-  /// Number of recent frames to display in the chart.
+  /// `null` fills the available horizontal space.
+  final double? width;
+
+  /// `null` picks a default sized for [compact] / [showP90].
+  final double? height;
+
   final int sampleSize;
 
-  /// Target frame time; durations above this will be shown in red.
-  final Duration targetFrameTime;
+  /// Total frame budget; applied identically to UI, raster, and total. When
+  /// `null`, derived from the active display's refresh rate. All three
+  /// metrics share the same target because UI and raster pipeline across
+  /// frames — both threads independently get the full per-frame budget.
+  final Duration? targetFrameTime;
 
-  /// Maximum expected bar duration range; durations beyond this are capped.
+  /// Bars beyond this are visually capped and marked with a notch.
   final Duration barRangeMax;
 
-  /// Background color of the chart container.
   final Color backgroundColor;
 
-  /// Foreground color for the text labels.
+  /// Drives text labels, the target line, and the freeze button glyph.
   final Color textColor;
 
-  /// Bar color for UI durations.
   final Color uiColor;
-
-  /// Bar color for raster durations.
   final Color rasterColor;
+  final Color totalColor;
 
-  /// Bar color for total latency durations.
-  final Color highLatencyColor;
+  /// Applied to bars **and** labels that exceed the per-metric target.
+  final Color overTargetColor;
 
-  /// The widget to display behind the overlay.
+  /// Render a single-line summary instead of three charts.
+  final bool compact;
+
+  /// Show p90 alongside p99 in the detailed layout. No effect in [compact].
+  final bool showP90;
+
+  /// Show the small freeze button for pausing the chart in place.
+  /// A long-press on the same button resets session counters (all-time
+  /// min FPS and dropped-frame total).
+  final bool allowFreeze;
+
+  /// Fires for every collected [FrameTiming], including while the chart is
+  /// frozen so a downstream pipeline does not lose data. The first reported
+  /// frame is dropped to filter warm-up noise (JIT compile, asset decode,
+  /// shader cache miss), so this callback will not see it either.
+  ///
+  /// Invoked synchronously from `SchedulerBinding.addTimingsCallback` — keep
+  /// the body in microseconds or defer work to a post-frame callback /
+  /// isolate. Exceptions are caught and routed through [ISpect.logger] so
+  /// they do not poison the engine's timings dispatch.
+  final void Function(FrameTiming timing)? onFrameTiming;
+
+  /// Log frames where `max(buildDuration, rasterDuration) > targetFrameTime ×
+  /// severeJankFactor` via [ISpect.logger]. Off by default to avoid log spam.
+  /// Numbers are misleading in debug mode (JIT, asserts, scheduling delays);
+  /// turn it on for profile/release builds.
+  final bool enableJankLogging;
+
+  /// `2.0` matches "visible hitch" on 60Hz; below `1.0` would log every
+  /// frame above target.
+  final double severeJankFactor;
+
+  /// Minimum gap between two consecutive jank log entries. A sustained jank
+  /// session (e.g. log viewer rebuilding itself on every new entry) can
+  /// otherwise create a feedback loop where each log triggers more frame
+  /// work. Defaults to one second.
+  final Duration jankLogCooldown;
+
+  /// Show current process RSS in the header and `peak MB` under
+  /// [showAllTimeStats]. Falls back to no-op on web where `dart:io` is
+  /// unavailable.
+  final bool showMemory;
+
+  /// RSS within `[1.0, memoryWarnRatio]` of the post-warmup baseline keeps
+  /// the readout neutral; beyond it the colour switches to warn.
+  final double memoryWarnRatio;
+
+  /// RSS above `memoryDangerRatio × baseline` is rendered in
+  /// [overTargetColor]. Defaults to `2.0` — RSS doubling since the baseline
+  /// usually signals a leak or unbounded cache.
+  final double memoryDangerRatio;
+
+  /// Append session-wide `min · drop` figures next to the FPS reading.
+  final bool showAllTimeStats;
+
+  /// Fires after [jankBurstWindow] consecutive over-target frames, throttled
+  /// by [jankBurstCooldown]. Runs on the engine's timings dispatch — keep
+  /// the body fast.
+  final void Function(double currentFps)? onJankBurst;
+
+  final int jankBurstWindow;
+
+  final Duration jankBurstCooldown;
+
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => Stack(
-        children: [
-          child,
-          if (enabled)
-            Positioned.fill(
-              child: Align(
-                alignment: alignment,
-                child: Directionality(
-                  textDirection: TextDirection.ltr,
-                  child: IgnorePointer(
-                    child: Transform.scale(
-                      alignment: alignment,
-                      scale: scale,
-                      child: _ISpectPerformanceOverlay(
-                        sampleSize: sampleSize,
-                        targetFrameTime: targetFrameTime,
-                        barRangeMax: barRangeMax,
-                        backgroundColor: backgroundColor,
-                        textColor: textColor,
-                        uiColor: uiColor,
-                        rasterColor: rasterColor,
-                        highLatencyColor: highLatencyColor,
-                      ),
-                    ),
-                  ),
+  State<ISpectPerformanceOverlay> createState() =>
+      _ISpectPerformanceOverlayState();
+}
+
+class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
+  bool _paused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    assert(
+      widget.barRangeMax.inMicroseconds > 0,
+      'barRangeMax must be greater than zero',
+    );
+    assert(
+      widget.targetFrameTime == null ||
+          widget.targetFrameTime!.inMicroseconds > 0,
+      'targetFrameTime must be positive when provided',
+    );
+    assert(
+      widget.targetFrameTime == null ||
+          widget.targetFrameTime!.inMicroseconds <=
+              widget.barRangeMax.inMicroseconds,
+      'targetFrameTime must fit within barRangeMax so the target line can '
+      'render inside the chart',
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.enabled) return widget.child;
+
+    final target = widget.targetFrameTime ?? _resolveTargetFromDisplay(context);
+    final refreshRate = _resolveRefreshRate(context);
+    final resolvedHeight = widget.height ?? _defaultHeight();
+
+    Widget overlay = SizedBox(
+      width: widget.width,
+      height: resolvedHeight,
+      child: _OverlayBody(
+        sampleSize: widget.sampleSize,
+        target: target,
+        refreshRate: refreshRate,
+        barRangeMax: widget.barRangeMax,
+        backgroundColor: widget.backgroundColor,
+        textColor: widget.textColor,
+        uiColor: widget.uiColor,
+        rasterColor: widget.rasterColor,
+        totalColor: widget.totalColor,
+        overTargetColor: widget.overTargetColor,
+        compact: widget.compact,
+        showP90: widget.showP90,
+        allowFreeze: widget.allowFreeze,
+        paused: _paused,
+        onTogglePause: _togglePause,
+        onFrameTiming: widget.onFrameTiming,
+        enableJankLogging: widget.enableJankLogging,
+        severeJankFactor: widget.severeJankFactor,
+        jankLogCooldown: widget.jankLogCooldown,
+        showMemory: widget.showMemory,
+        memoryWarnRatio: widget.memoryWarnRatio,
+        memoryDangerRatio: widget.memoryDangerRatio,
+        showAllTimeStats: widget.showAllTimeStats,
+        onJankBurst: widget.onJankBurst,
+        jankBurstWindow: widget.jankBurstWindow,
+        jankBurstCooldown: widget.jankBurstCooldown,
+      ),
+    );
+    // Skip the Transform layer in the common (default) case so the engine
+    // does not allocate one just to apply an identity matrix.
+    if (widget.scale != 1) {
+      overlay = Transform.scale(
+        alignment: widget.alignment,
+        scale: widget.scale,
+        child: overlay,
+      );
+    }
+
+    final viewPadding = MediaQuery.viewPaddingOf(context);
+    final alignY = widget.alignment.y;
+    final insetPadding = EdgeInsets.only(
+      top: alignY < 0 ? viewPadding.top : 0,
+      bottom: alignY > 0 ? viewPadding.bottom : 0,
+    );
+
+    return Stack(
+      children: [
+        widget.child,
+        Positioned.fill(
+          child: Align(
+            alignment: widget.alignment,
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: RepaintBoundary(
+                child: ColoredBox(
+                  color: widget.backgroundColor,
+                  child: Padding(padding: insetPadding, child: overlay),
                 ),
               ),
             ),
-        ],
-      );
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _togglePause() => setState(() => _paused = !_paused);
+
+  double _defaultHeight() {
+    if (widget.compact) return _kCompactHeight;
+    final statLines = widget.showP90 ? 4 : 3;
+    final textBlock = _kStatsFontSize * _kStatsLineHeight * statLines;
+    return _kHeaderHeight + textBlock + 18;
+  }
+
+  static Duration _resolveTargetFromDisplay(BuildContext context) =>
+      Duration(microseconds: (1e6 / _resolveRefreshRate(context)).round());
+
+  static double _resolveRefreshRate(BuildContext context) {
+    final view = View.maybeOf(context);
+    final hz = view?.display.refreshRate ?? 0;
+    return hz > 0 ? hz : _kFallbackRefreshRate;
+  }
 }
 
-/// Internal stateful widget that collects and displays frame timings.
-class _ISpectPerformanceOverlay extends StatefulWidget {
-  /// Creates the internal performance overlay.
-  const _ISpectPerformanceOverlay({
+@immutable
+class _OverlaySnapshot {
+  const _OverlaySnapshot({
+    required this.uiUs,
+    required this.rasterUs,
+    required this.totalUs,
+    required this.uiStats,
+    required this.rasterStats,
+    required this.totalStats,
+    required this.fps,
+    required this.lastFrameMissedVsyncs,
+    required this.allTimeMinFps,
+    required this.droppedFramesTotal,
+    required this.rssBytes,
+    required this.peakRssBytes,
+    required this.baselineRssBytes,
+  });
+
+  final List<int> uiUs;
+  final List<int> rasterUs;
+  final List<int> totalUs;
+
+  final PerformanceChartStats uiStats;
+  final PerformanceChartStats rasterStats;
+  final PerformanceChartStats totalStats;
+
+  final double? fps;
+
+  /// Surfaces the latest hitch in the header before it ages out of the FPS
+  /// window.
+  final int lastFrameMissedVsyncs;
+
+  final double? allTimeMinFps;
+
+  final int droppedFramesTotal;
+
+  /// Most recent process RSS in bytes, `null` on web or before the first
+  /// memory poll.
+  final int? rssBytes;
+
+  /// Session-wide peak RSS in bytes, reset together with the other session
+  /// counters via long-press on the freeze button.
+  final int? peakRssBytes;
+
+  /// First stable RSS sample captured after warmup; used as the reference
+  /// point for growth-tier coloring. Reset alongside [peakRssBytes].
+  final int? baselineRssBytes;
+
+  static const _OverlaySnapshot empty = _OverlaySnapshot(
+    uiUs: <int>[],
+    rasterUs: <int>[],
+    totalUs: <int>[],
+    uiStats: PerformanceChartStats.zero,
+    rasterStats: PerformanceChartStats.zero,
+    totalStats: PerformanceChartStats.zero,
+    fps: null,
+    lastFrameMissedVsyncs: 0,
+    allTimeMinFps: null,
+    droppedFramesTotal: 0,
+    rssBytes: null,
+    peakRssBytes: null,
+    baselineRssBytes: null,
+  );
+}
+
+class _OverlayBody extends StatefulWidget {
+  const _OverlayBody({
     required this.sampleSize,
-    required this.targetFrameTime,
+    required this.target,
+    required this.refreshRate,
     required this.barRangeMax,
     required this.backgroundColor,
     required this.textColor,
     required this.uiColor,
     required this.rasterColor,
-    required this.highLatencyColor,
+    required this.totalColor,
+    required this.overTargetColor,
+    required this.compact,
+    required this.showP90,
+    required this.allowFreeze,
+    required this.paused,
+    required this.onTogglePause,
+    required this.onFrameTiming,
+    required this.enableJankLogging,
+    required this.severeJankFactor,
+    required this.jankLogCooldown,
+    required this.showMemory,
+    required this.memoryWarnRatio,
+    required this.memoryDangerRatio,
+    required this.showAllTimeStats,
+    required this.onJankBurst,
+    required this.jankBurstWindow,
+    required this.jankBurstCooldown,
   });
 
-  /// Number of recent frames to display in the chart.
   final int sampleSize;
-
-  /// Target frame time; durations above this will be shown in red.
-  final Duration targetFrameTime;
-
-  /// Maximum expected bar duration range; durations beyond this are capped.
+  final Duration target;
+  final double refreshRate;
   final Duration barRangeMax;
-
-  /// Background color of the chart container.
   final Color backgroundColor;
-
-  /// Foreground color for the text labels.
   final Color textColor;
-
-  /// Bar color for UI durations.
   final Color uiColor;
-
-  /// Bar color for raster durations.
   final Color rasterColor;
-
-  /// Bar color for total latency durations.
-  final Color highLatencyColor;
+  final Color totalColor;
+  final Color overTargetColor;
+  final bool compact;
+  final bool showP90;
+  final bool allowFreeze;
+  final bool paused;
+  final VoidCallback onTogglePause;
+  final void Function(FrameTiming timing)? onFrameTiming;
+  final bool enableJankLogging;
+  final double severeJankFactor;
+  final Duration jankLogCooldown;
+  final bool showMemory;
+  final double memoryWarnRatio;
+  final double memoryDangerRatio;
+  final bool showAllTimeStats;
+  final void Function(double currentFps)? onJankBurst;
+  final int jankBurstWindow;
+  final Duration jankBurstCooldown;
 
   @override
-  State<_ISpectPerformanceOverlay> createState() =>
-      _ISpectPerformanceOverlayState();
+  State<_OverlayBody> createState() => _OverlayBodyState();
 }
 
-/// State for [_ISpectPerformanceOverlay] that manages frame timing samples.
-class _ISpectPerformanceOverlayState extends State<_ISpectPerformanceOverlay> {
-  /// Recent frame timing samples.
-  List<FrameTiming> _samples = const [];
+class _OverlayBodyState extends State<_OverlayBody> {
+  final ValueNotifier<_OverlaySnapshot> _snapshot =
+      ValueNotifier<_OverlaySnapshot>(_OverlaySnapshot.empty);
 
-  /// Whether the first sample has been skipped (to avoid warm-up noise).
+  final List<int> _uiUs = <int>[];
+  final List<int> _rasterUs = <int>[];
+  final List<int> _totalUs = <int>[];
+
   bool _skippedFirstSample = false;
+  final Stopwatch _warmupTimer = Stopwatch();
 
-  /// Prevents multiple setState calls in one frame.
-  bool _pendingSetState = false;
+  double _allTimeMinFps = double.infinity;
+  int _droppedFramesTotal = 0;
+  int _lastFrameMissedVsyncs = 0;
+  int _consecutiveJankCount = 0;
+  final Stopwatch _jankBurstCooldown = Stopwatch();
+  final Stopwatch _jankLogCooldown = Stopwatch();
+
+  int? _currentRssBytes;
+  int? _smoothedRssBytes;
+  int? _peakRssBytes;
+  int? _baselineRssBytes;
+  List<int> _baselineSamples = <int>[];
+  final Stopwatch _memoryPollTimer = Stopwatch();
 
   @override
   void initState() {
@@ -169,21 +508,16 @@ class _ISpectPerformanceOverlayState extends State<_ISpectPerformanceOverlay> {
   @override
   void dispose() {
     SchedulerBinding.instance.removeTimingsCallback(_timingsCallback);
+    _snapshot.dispose();
     super.dispose();
   }
 
-  /// Pending samples accumulated while waiting for post-frame callback.
-  List<FrameTiming> _pendingSamples = const [];
+  bool get _warmupCompleted =>
+      _warmupTimer.elapsedMilliseconds >= _kWarmupDuration.inMilliseconds;
 
-  /// Callback that collects frame timing samples from the engine.
-  ///
-  /// This is invoked by [SchedulerBinding.addTimingsCallback] whenever new frame
-  /// timings are available. It stores a rolling window of the most recent
-  /// [widget.sampleSize] entries.
   void _timingsCallback(List<FrameTiming> frameTimings) {
     if (!mounted) return;
 
-    // Skip the very first frame sample to avoid warm-up noise.
     final newSamples = _skippedFirstSample
         ? frameTimings
         : frameTimings.length > 1
@@ -192,336 +526,902 @@ class _ISpectPerformanceOverlayState extends State<_ISpectPerformanceOverlay> {
     _skippedFirstSample = true;
 
     if (newSamples.isEmpty) return;
+    if (!_warmupTimer.isRunning) _warmupTimer.start();
 
-    // Accumulate samples so nothing is lost between post-frame callbacks.
-    _pendingSamples = <FrameTiming>[..._pendingSamples, ...newSamples];
+    final onTiming = widget.onFrameTiming;
+    if (onTiming != null) {
+      for (final t in newSamples) {
+        try {
+          onTiming(t);
+        } catch (e, st) {
+          ISpect.logger.handle(
+            exception: e,
+            stackTrace: st,
+            message: 'ISpectPerformanceOverlay.onFrameTiming threw',
+          );
+        }
+      }
+    }
+    if (widget.enableJankLogging) {
+      _logSevereJank(newSamples);
+    }
+    _trackJankBurst(newSamples);
 
-    if (_pendingSetState) return;
-    _pendingSetState = true;
+    if (widget.paused) return;
 
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final combined = <FrameTiming>[..._samples, ..._pendingSamples];
-      final dropCount = math.max(0, combined.length - widget.sampleSize);
-      setState(() {
-        _samples = combined.sublist(dropCount);
-        _pendingSamples = const [];
-        _pendingSetState = false;
-      });
-    });
-  }
+    final targetUs = widget.target.inMicroseconds;
+    for (final t in newSamples) {
+      _uiUs.add(t.buildDuration.inMicroseconds);
+      _rasterUs.add(t.rasterDuration.inMicroseconds);
+      _totalUs.add(t.totalSpan.inMicroseconds);
+    }
+    _trimToWindow(_uiUs);
+    _trimToWindow(_rasterUs);
+    _trimToWindow(_totalUs);
 
-  @override
-  Widget build(BuildContext context) {
-    final devicePixelRatio =
-        MediaQuery.maybeOf(context)?.devicePixelRatio ?? 1.0;
+    final fps = computeSmoothFps(_totalUs, widget.refreshRate);
+    if (_warmupCompleted && fps != null && fps > 0 && fps < _allTimeMinFps) {
+      _allTimeMinFps = fps;
+    }
 
-    final height = 40.0 * devicePixelRatio.clamp(1.0, 2.0);
+    if (widget.showMemory) _pollMemoryIfDue();
 
-    // Optimization: buildDuration/rasterDuration/totalSpan are computed once
-    final uiSamples = [for (final e in _samples) e.buildDuration];
-    final rasterSamples = [for (final e in _samples) e.rasterDuration];
-    final latencySamples = [for (final e in _samples) e.totalSpan];
-
-    return SizedBox(
-      width: double.maxFinite,
-      height: height,
-      child: ColoredBox(
-        color: widget.backgroundColor,
-        child: ClipRect(
-          child: Row(
-            children: [
-              _ChartColumn(
-                type: 'UI',
-                samples: uiSamples,
-                color: widget.uiColor,
-                sampleSize: widget.sampleSize,
-                targetFrameTime: widget.targetFrameTime,
-                barRangeMax: widget.barRangeMax,
-                textStyle: const TextStyle(fontSize: 10),
-              ),
-              const VerticalDivider(width: 2, thickness: 2),
-              _ChartColumn(
-                type: 'raster',
-                samples: rasterSamples,
-                color: widget.rasterColor,
-                sampleSize: widget.sampleSize,
-                targetFrameTime: widget.targetFrameTime,
-                barRangeMax: widget.barRangeMax,
-                textStyle: const TextStyle(fontSize: 10),
-              ),
-              const VerticalDivider(width: 2, thickness: 2),
-              _ChartColumn(
-                type: 'high latency',
-                samples: latencySamples,
-                color: widget.highLatencyColor,
-                sampleSize: widget.sampleSize,
-                targetFrameTime: widget.targetFrameTime,
-                barRangeMax: widget.barRangeMax,
-                textStyle: const TextStyle(fontSize: 10),
-              ),
-            ],
-          ),
-        ),
-      ),
+    // Painter reads these inside the same frame this callback runs in,
+    // before the next engine dispatch can mutate them — defensive copies
+    // would just churn the GC.
+    _snapshot.value = _OverlaySnapshot(
+      uiUs: _uiUs,
+      rasterUs: _rasterUs,
+      totalUs: _totalUs,
+      uiStats: PerformanceChartStats.fromMicroseconds(_uiUs, targetUs),
+      rasterStats: PerformanceChartStats.fromMicroseconds(_rasterUs, targetUs),
+      totalStats: PerformanceChartStats.fromMicroseconds(_totalUs, targetUs),
+      fps: fps,
+      lastFrameMissedVsyncs: _lastFrameMissedVsyncs,
+      allTimeMinFps: _allTimeMinFps == double.infinity ? null : _allTimeMinFps,
+      droppedFramesTotal: _droppedFramesTotal,
+      rssBytes: _smoothedRssBytes,
+      peakRssBytes: _peakRssBytes,
+      baselineRssBytes: _baselineRssBytes,
     );
   }
-}
 
-/// A column widget that displays a single performance chart.
-class _ChartColumn extends StatelessWidget {
-  /// Creates a chart column for a specific frame timing type.
-  const _ChartColumn({
-    required this.type,
-    required this.samples,
-    required this.color,
-    required this.sampleSize,
-    required this.targetFrameTime,
-    required this.barRangeMax,
-    required this.textStyle,
-  });
-
-  /// The type of frame timing (e.g., 'UI', 'raster', 'high latency').
-  final String type;
-
-  /// The list of frame timing samples to display.
-  final List<Duration> samples;
-
-  /// The color of the bars in the chart.
-  final Color color;
-
-  /// Number of recent frames to display in the chart.
-  final int sampleSize;
-
-  /// Target frame time; durations above this will be shown in red.
-  final Duration targetFrameTime;
-
-  /// Maximum expected bar duration range; durations beyond this are capped.
-  final Duration barRangeMax;
-
-  /// Text style for the chart labels.
-  final TextStyle textStyle;
-
-  @override
-  Widget build(BuildContext context) => Expanded(
-        child: _PerformanceChart(
-          type: type,
-          samples: samples,
-          sampleSize: sampleSize,
-          targetFrameTime: targetFrameTime,
-          barRangeMax: barRangeMax,
-          color: color,
-          textStyle: textStyle,
-        ),
-      );
-}
-
-/// A chart widget that renders frame timings as vertical bars.
-///
-/// Displays the maximum, average, and FPS for each sample set.
-class _PerformanceChart extends StatelessWidget {
-  /// Creates a performance chart for a set of frame timings.
-  const _PerformanceChart({
-    required this.type,
-    required this.samples,
-    required this.sampleSize,
-    required this.targetFrameTime,
-    required this.barRangeMax,
-    required this.color,
-    required this.textStyle,
-  }) : assert(samples.length <= sampleSize);
-
-  /// The type of frame timing (e.g., 'UI', 'raster', 'high latency').
-  final String type;
-
-  /// The list of frame timing samples to display.
-  final List<Duration> samples;
-
-  /// Number of recent frames to display in the chart.
-  final int sampleSize;
-
-  /// Target frame time; durations above this will be shown in red.
-  final Duration targetFrameTime;
-
-  /// Maximum expected bar duration range; durations beyond this are capped.
-  final Duration barRangeMax;
-
-  /// The color of the bars in the chart.
-  final Color color;
-
-  /// Text style for the chart labels.
-  final TextStyle textStyle;
-
-  @override
-  Widget build(BuildContext context) {
-    final maxDuration = samples.isEmpty
-        ? Duration.zero
-        : samples.reduce((a, b) => a > b ? a : b);
-    final total = samples.fold(Duration.zero, (a, b) => a + b);
-    final avg = samples.isEmpty
-        ? Duration.zero
-        : Duration(microseconds: total.inMicroseconds ~/ samples.length);
-    final fps = samples.isEmpty ? 0 : 1e6 / avg.inMicroseconds;
-
-    return Material(
-      color: Colors.transparent,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _OverlayPainter(
-                samples,
-                sampleSize,
-                targetFrameTime,
-                barRangeMax,
-                color,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(2),
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'max ${maxDuration.ms}ms\n',
-                      style: TextStyle(
-                        color: maxDuration <= targetFrameTime
-                            ? null
-                            : const Color.fromARGB(255, 255, 151, 144),
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'avg ${avg.ms}ms\n',
-                      style: TextStyle(
-                        color: avg <= targetFrameTime
-                            ? null
-                            : const Color.fromARGB(255, 255, 151, 144),
-                      ),
-                    ),
-                    TextSpan(
-                      text: '$type ${fps.toStringAsFixed(1)} FPS',
-                    ),
-                  ],
-                  style: textStyle,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  void _pollMemoryIfDue() {
+    if (_memoryPollTimer.isRunning &&
+        _memoryPollTimer.elapsed < _kMemoryPollInterval) {
+      return;
+    }
+    _memoryPollTimer
+      ..reset()
+      ..start();
+    final rss = memory.readCurrentRssBytes();
+    if (rss == null) return;
+    _currentRssBytes = rss;
+    // Smooth the *displayed* value with an EWMA so GC/allocator jiggle does
+    // not flicker the colour tier. Peak and baseline observe this smoothed
+    // signal too — a brief allocation spike that GC immediately collects
+    // should not pin peak.
+    final previousSmoothed = _smoothedRssBytes;
+    _smoothedRssBytes = previousSmoothed == null
+        ? rss
+        : (_kMemoryEwmaAlpha * rss + (1 - _kMemoryEwmaAlpha) * previousSmoothed)
+            .round();
+    // Baseline: collect samples for `_kMemoryBaselineSettleWindow` after
+    // warmup, then lock in the median. Median is robust to a single big
+    // navigation that lands during the window.
+    if (_warmupCompleted && _baselineRssBytes == null) {
+      _baselineSamples.add(rss);
+      if (_warmupTimer.elapsed >=
+          _kWarmupDuration + _kMemoryBaselineSettleWindow) {
+        _baselineRssBytes = _medianInt(_baselineSamples);
+        _baselineSamples = const <int>[];
+      }
+    }
+    final smoothed = _smoothedRssBytes!;
+    final previousPeak = _peakRssBytes;
+    if (previousPeak == null || smoothed > previousPeak) {
+      _peakRssBytes = smoothed;
+    }
   }
-}
 
-/// A custom painter that visualizes frame performance over time.
-///
-/// This painter draws:
-/// - A horizontal black line representing the target frame duration.
-/// - A series of vertical bars (one per sampled frame duration) showing how
-///   each frame compares to the target and maximum frame duration.
-///   - Bars under the target duration are colored with [color].
-///   - Bars exceeding the target are colored red.
-///
-/// Used in performance overlays to provide visual feedback on frame rendering
-/// times, particularly useful in diagnosing dropped frames or jank.
-class _OverlayPainter extends CustomPainter {
-  /// Creates a painter for the performance overlay chart.
-  const _OverlayPainter(
-    this.samples,
-    this.sampleSize,
-    this.targetFrameTime,
-    this.barRangeMax,
-    this.color,
-  );
+  static int _medianInt(List<int> samples) {
+    final sorted = List<int>.of(samples)..sort();
+    final n = sorted.length;
+    if (n.isOdd) return sorted[n ~/ 2];
+    return ((sorted[n ~/ 2 - 1] + sorted[n ~/ 2]) / 2).round();
+  }
 
-  /// Frame duration samples to visualize.
-  final List<Duration> samples;
+  void _trimToWindow(List<int> buffer) {
+    final overflow = buffer.length - widget.sampleSize;
+    if (overflow > 0) buffer.removeRange(0, overflow);
+  }
 
-  /// Number of frame samples to show in the overlay.
-  final int sampleSize;
+  void _trackJankBurst(Iterable<FrameTiming> samples) {
+    final targetUs = widget.target.inMicroseconds;
+    final onBurst = widget.onJankBurst;
+    final cooldownMs = widget.jankBurstCooldown.inMilliseconds;
+    final warmedUp = _warmupCompleted;
+    var lastPerceptible = 0;
+    for (final t in samples) {
+      final totalUs = t.totalSpan.inMicroseconds;
+      final missed = missedVsyncs(totalUs, targetUs);
+      final perceptible = perceptibleDrops(totalUs, targetUs);
+      lastPerceptible = perceptible;
+      if (missed > 0) {
+        if (warmedUp) _droppedFramesTotal += perceptible;
+        _consecutiveJankCount++;
+        if (warmedUp &&
+            onBurst != null &&
+            _consecutiveJankCount >= widget.jankBurstWindow &&
+            (!_jankBurstCooldown.isRunning ||
+                _jankBurstCooldown.elapsedMilliseconds >= cooldownMs)) {
+          _jankBurstCooldown
+            ..reset()
+            ..start();
+          final fps = _snapshot.value.fps ?? widget.refreshRate;
+          try {
+            onBurst(fps);
+          } catch (e, st) {
+            ISpect.logger.handle(
+              exception: e,
+              stackTrace: st,
+              message: 'ISpectPerformanceOverlay.onJankBurst threw',
+            );
+          }
+        }
+      } else {
+        _consecutiveJankCount = 0;
+      }
+    }
+    _lastFrameMissedVsyncs = lastPerceptible;
+  }
 
-  /// Target frame duration (e.g., 16ms for 60 FPS).
-  final Duration targetFrameTime;
-
-  /// Maximum frame duration represented in the chart.
-  ///
-  /// Any durations above this value will be capped visually at full height.
-  final Duration barRangeMax;
-
-  /// Color for bars that are within or below [targetFrameTime].
-  ///
-  /// Frames exceeding the target will be rendered in red.
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Draw a horizontal line to mark the target frame time.
-    final lineY =
-        size.height * (1 - (targetFrameTime / barRangeMax).clamp(0.0, 1.0));
-    canvas.drawLine(
-      Offset(0, lineY),
-      Offset(size.width, lineY),
-      Paint()..color = Colors.black,
-    );
-
-    final barWidth = size.width / sampleSize;
-    final paint = Paint();
-
-    // Draw bars for each sample (most recent on the right).
-    for (var i = sampleSize - 1; i >= 0; i--) {
-      final index = i - sampleSize + samples.length;
-      if (index < 0) break;
-      final duration = samples[index];
-      final heightFactor = (duration / barRangeMax).clamp(0.0, 1.0);
-      paint.color = duration <= targetFrameTime ? color : Colors.red;
-      canvas.drawRect(
-        Rect.fromLTWH(
-          i * barWidth,
-          size.height * (1 - heightFactor),
-          barWidth,
-          size.height * heightFactor,
-        ),
-        paint,
+  void _logSevereJank(Iterable<FrameTiming> samples) {
+    final thresholdUs =
+        (widget.target.inMicroseconds * widget.severeJankFactor).round();
+    final cooldownMs = widget.jankLogCooldown.inMilliseconds;
+    for (final t in samples) {
+      // Use the heaviest thread's work — `totalSpan` includes scheduling
+      // wait time, which inflates in debug mode and idle UIs to false jank.
+      final buildUs = t.buildDuration.inMicroseconds;
+      final rasterUs = t.rasterDuration.inMicroseconds;
+      final workUs = buildUs > rasterUs ? buildUs : rasterUs;
+      if (workUs <= thresholdUs) continue;
+      // Throttle: one entry per cooldown window. Without this a sustained
+      // jank session (e.g. log viewer rebuilding itself on every new entry)
+      // creates a feedback loop where each log triggers more frame work.
+      if (_jankLogCooldown.isRunning &&
+          _jankLogCooldown.elapsedMilliseconds < cooldownMs) {
+        continue;
+      }
+      _jankLogCooldown
+        ..reset()
+        ..start();
+      // No `stackTrace`: by the time `addTimingsCallback` fires the offending
+      // frame is done — the current stack is engine code, not the cause.
+      ISpect.logger.performanceJank(
+        source: 'overlay',
+        buildDuration: t.buildDuration,
+        rasterDuration: t.rasterDuration,
+        totalSpan: t.totalSpan,
+        targetFrameTime: widget.target,
       );
     }
   }
 
+  void _resetSessionStats() {
+    _allTimeMinFps = double.infinity;
+    _droppedFramesTotal = 0;
+    _lastFrameMissedVsyncs = 0;
+    _consecutiveJankCount = 0;
+    _jankBurstCooldown
+      ..stop()
+      ..reset();
+    _jankLogCooldown
+      ..stop()
+      ..reset();
+    // Snap baseline and peak to the last smoothed reading so colouring
+    // restarts from "now" without the 5s settle gap.
+    final snapped = _smoothedRssBytes ?? _currentRssBytes;
+    _peakRssBytes = snapped;
+    _baselineRssBytes = snapped;
+    _baselineSamples = const <int>[];
+    final current = _snapshot.value;
+    _snapshot.value = _OverlaySnapshot(
+      uiUs: current.uiUs,
+      rasterUs: current.rasterUs,
+      totalUs: current.totalUs,
+      uiStats: current.uiStats,
+      rasterStats: current.rasterStats,
+      totalStats: current.totalStats,
+      fps: current.fps,
+      lastFrameMissedVsyncs: 0,
+      allTimeMinFps: null,
+      droppedFramesTotal: 0,
+      rssBytes: _smoothedRssBytes,
+      peakRssBytes: _peakRssBytes,
+      baselineRssBytes: _baselineRssBytes,
+    );
+  }
+
   @override
-  bool shouldRepaint(covariant _OverlayPainter oldDelegate) =>
-      oldDelegate.samples != samples;
+  Widget build(BuildContext context) => Semantics(
+        container: true,
+        explicitChildNodes: true,
+        label: _kOverlaySemanticsLabel,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: RepaintBoundary(
+                  child: CustomPaint(
+                    painter: _ChartPainter(
+                      snapshot: _snapshot,
+                      sampleSize: widget.sampleSize,
+                      target: widget.target,
+                      refreshRate: widget.refreshRate,
+                      barRangeMax: widget.barRangeMax,
+                      backgroundColor: widget.backgroundColor,
+                      textColor: widget.textColor,
+                      uiColor: widget.uiColor,
+                      rasterColor: widget.rasterColor,
+                      totalColor: widget.totalColor,
+                      overTargetColor: widget.overTargetColor,
+                      compact: widget.compact,
+                      showP90: widget.showP90,
+                      showMemory: widget.showMemory,
+                      memoryWarnRatio: widget.memoryWarnRatio,
+                      memoryDangerRatio: widget.memoryDangerRatio,
+                      showAllTimeStats: widget.showAllTimeStats,
+                      paused: widget.paused,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            if (widget.allowFreeze)
+              Positioned(
+                top: 1,
+                right: 1,
+                child: _FreezeButton(
+                  paused: widget.paused,
+                  onTap: widget.onTogglePause,
+                  onLongPress: _resetSessionStats,
+                  color: widget.textColor,
+                ),
+              ),
+          ],
+        ),
+      );
 }
 
-/// Extension on [Duration] to provide convenience methods for
-/// division and formatted millisecond representation.
-///
-/// Useful for performance monitoring and frame timing calculations.
-extension on Duration {
-  /// Divides this [Duration] by another [Duration] and returns the result as a [double].
-  ///
-  /// For example:
-  /// ```dart
-  /// const a = Duration(milliseconds: 24);
-  /// const b = Duration(milliseconds: 12);
-  /// final ratio = a / b; // 2.0
-  /// ```
-  ///
-  /// Edge cases:
-  /// - Returns `infinity` if [other] is zero.
-  /// - Returns `NaN` if both are zero.
-  double operator /(Duration other) => inMicroseconds / other.inMicroseconds;
+/// One painter for the whole overlay so per-frame updates repaint a single
+/// render object instead of rebuilding a widget subtree — the listenable
+/// passed to `super(repaint: ...)` drives invalidation directly from sample
+/// updates.
+class _ChartPainter extends CustomPainter {
+  _ChartPainter({
+    required this.snapshot,
+    required this.sampleSize,
+    required this.target,
+    required this.refreshRate,
+    required this.barRangeMax,
+    required this.backgroundColor,
+    required this.textColor,
+    required this.uiColor,
+    required this.rasterColor,
+    required this.totalColor,
+    required this.overTargetColor,
+    required this.compact,
+    required this.showP90,
+    required this.showMemory,
+    required this.memoryWarnRatio,
+    required this.memoryDangerRatio,
+    required this.showAllTimeStats,
+    required this.paused,
+  })  : _underBuffer = Float32List(sampleSize * 12),
+        _overBuffer = Float32List(sampleSize * 12),
+        _capBuffer = Float32List(sampleSize * 6),
+        super(repaint: snapshot);
 
-  /// Returns this duration as milliseconds with 1 decimal precision.
-  ///
-  /// Example:
-  /// ```dart
-  /// const d = Duration(microseconds: 12345);
-  /// print(d.ms); // "12.3"
-  /// ```
-  ///
-  /// This is useful for readable frame timing overlays or logs.
-  String get ms => (inMicroseconds / 1e3).toStringAsFixed(1);
+  final ValueListenable<_OverlaySnapshot> snapshot;
+  final int sampleSize;
+  final Duration target;
+  final double refreshRate;
+  final Duration barRangeMax;
+  final Color backgroundColor;
+  final Color textColor;
+  final Color uiColor;
+  final Color rasterColor;
+  final Color totalColor;
+  final Color overTargetColor;
+  final bool compact;
+  final bool showP90;
+  final bool showMemory;
+  final double memoryWarnRatio;
+  final double memoryDangerRatio;
+  final bool showAllTimeStats;
+  final bool paused;
+
+  // Paints are mutated in place each frame; the loop never allocates one.
+  final Paint _bgPaint = Paint();
+  final Paint _barPaint = Paint();
+  final Paint _gridPaint = Paint()..strokeWidth = 1;
+  final Paint _capMarkerPaint = Paint();
+  final Paint _dividerPaint = Paint();
+  late final Paint _backplatePaint = Paint()
+    ..color = backgroundColor.withValues(alpha: 0.7)
+    ..style = PaintingStyle.fill;
+
+  // Pre-allocated triangle buffers — one bar contributes 6 vertices
+  // (12 floats), a capped notch adds 3 vertices. Reused across paints so
+  // the per-frame draw call never grows a List<double> or copies into a
+  // fresh Float32List.
+  final Float32List _underBuffer;
+  final Float32List _overBuffer;
+  final Float32List _capBuffer;
+
+  final TextPainter _headerPainter = TextPainter(
+    textDirection: TextDirection.ltr,
+    maxLines: 1,
+    ellipsis: '…',
+  );
+  final TextPainter _compactPainter = TextPainter(
+    textDirection: TextDirection.ltr,
+    maxLines: 1,
+    ellipsis: '…',
+  );
+  final TextPainter _uiStatsPainter =
+      TextPainter(textDirection: TextDirection.ltr);
+  final TextPainter _rasterStatsPainter =
+      TextPainter(textDirection: TextDirection.ltr);
+  final TextPainter _totalStatsPainter =
+      TextPainter(textDirection: TextDirection.ltr);
+
+  late final TextStyle _statsStyle = TextStyle(
+    color: textColor,
+    fontSize: _kStatsFontSize,
+    height: _kStatsLineHeight,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
+  late final TextStyle _headerStyle = TextStyle(
+    color: textColor.withValues(alpha: 0.85),
+    fontSize: _kHeaderFontSize,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
+  late final TextStyle _headerBoldStyle =
+      _headerStyle.copyWith(fontWeight: FontWeight.w700);
+  late final TextStyle _headerPausedStyle = _headerStyle.copyWith(
+    color: textColor,
+    fontWeight: FontWeight.w700,
+  );
+  late final TextStyle _overTargetStyle = TextStyle(color: overTargetColor);
+  late final TextStyle _uiLabelStyle =
+      TextStyle(color: uiColor, fontWeight: FontWeight.w700);
+  late final TextStyle _rasterLabelStyle =
+      TextStyle(color: rasterColor, fontWeight: FontWeight.w700);
+  late final TextStyle _totalLabelStyle =
+      TextStyle(color: totalColor, fontWeight: FontWeight.w700);
+  late final TextStyle _compactPausedStyle = TextStyle(
+    color: textColor.withValues(alpha: 0.7),
+    fontWeight: FontWeight.w700,
+  );
+  // Lerp allocates; precompute the warn-tier colour and its dependent styles.
+  late final Color _warnFpsColor =
+      Color.lerp(textColor, overTargetColor, 0.55) ?? overTargetColor;
+  late final TextStyle _headerBoldWarnStyle =
+      _headerBoldStyle.copyWith(color: _warnFpsColor);
+  late final TextStyle _headerBoldDangerStyle =
+      _headerBoldStyle.copyWith(color: overTargetColor);
+  late final TextStyle _warnStyle = TextStyle(color: _warnFpsColor);
+
+  late final Color _gridColor = textColor.withValues(alpha: 0.4);
+  late final Color _gridColorSecondary =
+      textColor.withValues(alpha: textColor.a * 0.4 * 0.4);
+  late final Color _capMarkerColor = textColor.withValues(alpha: 0.85);
+  late final Color _dividerColor = textColor.withValues(alpha: 0.2);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = snapshot.value;
+    final targetUs = target.inMicroseconds;
+    _bgPaint.color = backgroundColor;
+    canvas.drawRect(Offset.zero & size, _bgPaint);
+
+    if (compact) {
+      _paintCompact(canvas, size, s);
+      return;
+    }
+
+    _paintHeader(canvas, Rect.fromLTWH(0, 0, size.width, _kHeaderHeight), s);
+
+    const chartTop = _kHeaderHeight;
+    final chartHeight = size.height - _kHeaderHeight;
+    if (chartHeight <= 0 || size.width <= 2 * _kColumnDividerWidth) return;
+
+    final columnWidth = (size.width - 2 * _kColumnDividerWidth) / 3;
+
+    _dividerPaint.color = _dividerColor;
+    canvas
+      ..drawRect(
+        Rect.fromLTWH(columnWidth, chartTop, _kColumnDividerWidth, chartHeight),
+        _dividerPaint,
+      )
+      ..drawRect(
+        Rect.fromLTWH(
+          2 * columnWidth + _kColumnDividerWidth,
+          chartTop,
+          _kColumnDividerWidth,
+          chartHeight,
+        ),
+        _dividerPaint,
+      );
+
+    _paintColumn(
+      canvas: canvas,
+      rect: Rect.fromLTWH(0, chartTop, columnWidth, chartHeight),
+      samplesUs: s.uiUs,
+      targetUs: targetUs,
+      barColor: uiColor,
+      stats: s.uiStats,
+      statsPainter: _uiStatsPainter,
+      labelText: 'UI',
+      labelStyle: _uiLabelStyle,
+    );
+    _paintColumn(
+      canvas: canvas,
+      rect: Rect.fromLTWH(
+        columnWidth + _kColumnDividerWidth,
+        chartTop,
+        columnWidth,
+        chartHeight,
+      ),
+      samplesUs: s.rasterUs,
+      targetUs: targetUs,
+      barColor: rasterColor,
+      stats: s.rasterStats,
+      statsPainter: _rasterStatsPainter,
+      labelText: 'Raster',
+      labelStyle: _rasterLabelStyle,
+    );
+    _paintColumn(
+      canvas: canvas,
+      rect: Rect.fromLTWH(
+        2 * (columnWidth + _kColumnDividerWidth),
+        chartTop,
+        columnWidth,
+        chartHeight,
+      ),
+      samplesUs: s.totalUs,
+      targetUs: targetUs,
+      barColor: totalColor,
+      stats: s.totalStats,
+      statsPainter: _totalStatsPainter,
+      labelText: 'Total',
+      labelStyle: _totalLabelStyle,
+    );
+  }
+
+  TextStyle _fpsHealthStyle(double? fps) {
+    if (fps == null || refreshRate <= 0) return _headerBoldStyle;
+    final ratio = fps / refreshRate;
+    if (ratio >= _kFpsHealthyRatio) return _headerBoldStyle;
+    if (ratio >= _kFpsWarningRatio) return _headerBoldWarnStyle;
+    return _headerBoldDangerStyle;
+  }
+
+  /// Returns `null` when RSS is at or below `memoryWarnRatio × baseline`,
+  /// so the default header/compact text style applies. Above warn → amber,
+  /// above danger → overTargetColor.
+  TextStyle? _memoryHealthStyle(int? rss, int? baseline) {
+    if (rss == null || baseline == null || baseline <= 0) return null;
+    final ratio = rss / baseline;
+    if (ratio <= memoryWarnRatio) return null;
+    if (ratio <= memoryDangerRatio) return _warnStyle;
+    return _overTargetStyle;
+  }
+
+  void _paintHeader(Canvas canvas, Rect rect, _OverlaySnapshot s) {
+    _headerPainter.text = TextSpan(
+      style: _headerStyle,
+      children: [
+        TextSpan(text: '${refreshRate.toStringAsFixed(0)}Hz · '),
+        TextSpan(
+          text: '${s.fps?.toStringAsFixed(1) ?? '--'} FPS',
+          style: _fpsHealthStyle(s.fps),
+        ),
+        if (showMemory && s.rssBytes != null)
+          TextSpan(
+            text: ' · ${_formatMb(s.rssBytes!)} MB',
+            style: _memoryHealthStyle(s.rssBytes, s.baselineRssBytes),
+          ),
+        if (s.lastFrameMissedVsyncs > 0)
+          TextSpan(
+            text: ' · +${s.lastFrameMissedVsyncs}',
+            style: _overTargetStyle,
+          ),
+        if (!showAllTimeStats && s.droppedFramesTotal > 0)
+          TextSpan(
+            text: ' · ${s.droppedFramesTotal} drops',
+            style: _overTargetStyle,
+          ),
+        if (showAllTimeStats) ..._allTimeStatsSpans(s),
+        if (paused) TextSpan(text: '  · PAUSED', style: _headerPausedStyle),
+      ],
+    );
+    final maxWidth =
+        (rect.width - _kHeaderPadding.horizontal).clamp(0.0, double.infinity);
+    _headerPainter.layout(maxWidth: maxWidth);
+    final y = rect.top + (rect.height - _headerPainter.height) / 2;
+    final origin = Offset(rect.left + _kHeaderPadding.left, y);
+    _paintTextBackplate(canvas, _headerPainter, origin);
+    _headerPainter.paint(canvas, origin);
+  }
+
+  static const double _kBackplateInflateX = 3;
+  static const double _kBackplateInflateY = 1;
+  static const Radius _kBackplateRadius = Radius.circular(3);
+
+  void _paintTextBackplate(
+    Canvas canvas,
+    TextPainter painter,
+    Offset offset,
+  ) {
+    final rect = Rect.fromLTWH(
+      offset.dx - _kBackplateInflateX,
+      offset.dy - _kBackplateInflateY,
+      painter.width + _kBackplateInflateX * 2,
+      painter.height + _kBackplateInflateY * 2,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, _kBackplateRadius),
+      _backplatePaint,
+    );
+  }
+
+  Iterable<TextSpan> _allTimeStatsSpans(_OverlaySnapshot s) sync* {
+    final min = s.allTimeMinFps;
+    if (min != null) yield TextSpan(text: ' · min ${min.toStringAsFixed(0)}');
+    if (s.droppedFramesTotal > 0 && s.lastFrameMissedVsyncs == 0) {
+      yield TextSpan(
+        text: ' · drop ${s.droppedFramesTotal}',
+        style: _overTargetStyle,
+      );
+    }
+    if (showMemory && s.baselineRssBytes != null) {
+      yield TextSpan(text: ' · base ${_formatMb(s.baselineRssBytes!)}MB');
+    }
+    if (showMemory && s.peakRssBytes != null) {
+      yield TextSpan(text: ' · peak ${_formatMb(s.peakRssBytes!)}MB');
+    }
+  }
+
+  void _paintCompact(Canvas canvas, Size size, _OverlaySnapshot s) {
+    final uiStats = s.uiStats;
+    final rasterStats = s.rasterStats;
+    final totalStats = s.totalStats;
+    // Summing per-thread counts would triple-count the same dropped frame;
+    // totalSpan is the user-visible "frame missed" signal.
+    final jankTotal = totalStats.jankCount;
+
+    TextSpan metric(
+      String label,
+      TextStyle labelStyle,
+      PerformanceChartStats stats,
+    ) =>
+        TextSpan(
+          children: [
+            TextSpan(text: label, style: labelStyle),
+            TextSpan(
+              text: ' ${_formatMs(stats.avg)}/${_formatMs(stats.p99)}ms ',
+              style: stats.p99 > target ? _overTargetStyle : null,
+            ),
+            const TextSpan(text: '· '),
+          ],
+        );
+
+    _compactPainter.text = TextSpan(
+      style: _statsStyle,
+      children: [
+        TextSpan(text: '${refreshRate.toStringAsFixed(0)}Hz · '),
+        TextSpan(
+          text: '${s.fps?.toStringAsFixed(1) ?? '--'} FPS ',
+          style: _fpsHealthStyle(s.fps),
+        ),
+        const TextSpan(text: '· '),
+        metric('UI', _uiLabelStyle, uiStats),
+        metric('R', _rasterLabelStyle, rasterStats),
+        metric('T', _totalLabelStyle, totalStats),
+        TextSpan(
+          text: '$jankTotal jank',
+          style: jankTotal > 0 ? _overTargetStyle : null,
+        ),
+        if (showMemory && s.rssBytes != null)
+          TextSpan(
+            text: ' · ${_formatMb(s.rssBytes!)}MB',
+            style: _memoryHealthStyle(s.rssBytes, s.baselineRssBytes),
+          ),
+        if (showAllTimeStats) ..._allTimeStatsSpans(s),
+        if (paused) TextSpan(text: '  · PAUSED', style: _compactPausedStyle),
+      ],
+    );
+    final maxWidth =
+        (size.width - _kCompactPadding.horizontal).clamp(0.0, double.infinity);
+    _compactPainter.layout(maxWidth: maxWidth);
+    final origin = Offset(_kCompactPadding.left, _kCompactPadding.top);
+    _paintTextBackplate(canvas, _compactPainter, origin);
+    _compactPainter.paint(canvas, origin);
+  }
+
+  void _paintColumn({
+    required Canvas canvas,
+    required Rect rect,
+    required List<int> samplesUs,
+    required int targetUs,
+    required Color barColor,
+    required PerformanceChartStats stats,
+    required TextPainter statsPainter,
+    required String labelText,
+    required TextStyle labelStyle,
+  }) {
+    _paintBars(canvas, rect, samplesUs, targetUs, barColor);
+    _paintGrid(canvas, rect);
+    _paintStatsText(
+      canvas: canvas,
+      rect: rect,
+      stats: stats,
+      statsPainter: statsPainter,
+      labelText: labelText,
+      labelStyle: labelStyle,
+    );
+  }
+
+  void _paintBars(
+    Canvas canvas,
+    Rect rect,
+    List<int> samplesUs,
+    int targetUs,
+    Color barColor,
+  ) {
+    final rangeUs = barRangeMax.inMicroseconds;
+    if (rangeUs <= 0 || samplesUs.isEmpty || sampleSize <= 0) return;
+
+    final slotWidth = rect.width / sampleSize;
+    final barWidth = (slotWidth - _kBarGap).clamp(1.0, slotWidth);
+
+    // Two vertex batches per column (under-target colour + over-target colour)
+    // collapse up to `sampleSize` drawRect calls into 2 drawVertices calls,
+    // plus a third batch for the small "off-chart" notches on capped bars.
+    var underLen = 0;
+    var overLen = 0;
+    var capLen = 0;
+
+    for (var i = sampleSize - 1; i >= 0; i--) {
+      final index = i - sampleSize + samplesUs.length;
+      if (index < 0) break;
+      final us = samplesUs[index];
+      final isCapped = us > rangeUs;
+      final heightFactor = (us / rangeUs).clamp(0.0, 1.0);
+      final left = rect.left + i * slotWidth;
+      final right = left + barWidth;
+      final top = rect.bottom - rect.height * heightFactor;
+      final bottom = rect.bottom;
+
+      if (us <= targetUs) {
+        underLen =
+            _writeBarQuad(_underBuffer, underLen, left, top, right, bottom);
+      } else {
+        overLen = _writeBarQuad(_overBuffer, overLen, left, top, right, bottom);
+      }
+
+      if (isCapped) {
+        final centerX = left + barWidth / 2;
+        final notchBase = rect.top + _kCapMarkerHeight;
+        capLen = _writeCapTri(
+          _capBuffer,
+          capLen,
+          centerX,
+          rect.top,
+          left,
+          right,
+          notchBase,
+        );
+      }
+    }
+
+    if (underLen > 0) {
+      _barPaint.color = barColor;
+      _drawTriangleBatch(canvas, _underBuffer, underLen, _barPaint);
+    }
+    if (overLen > 0) {
+      _barPaint.color = overTargetColor;
+      _drawTriangleBatch(canvas, _overBuffer, overLen, _barPaint);
+    }
+    if (capLen > 0) {
+      _capMarkerPaint.color = _capMarkerColor;
+      _drawTriangleBatch(canvas, _capBuffer, capLen, _capMarkerPaint);
+    }
+  }
+
+  static int _writeBarQuad(
+    Float32List buf,
+    int i,
+    double left,
+    double top,
+    double right,
+    double bottom,
+  ) {
+    buf[i] = left;
+    buf[i + 1] = top;
+    buf[i + 2] = right;
+    buf[i + 3] = top;
+    buf[i + 4] = left;
+    buf[i + 5] = bottom;
+    buf[i + 6] = right;
+    buf[i + 7] = top;
+    buf[i + 8] = right;
+    buf[i + 9] = bottom;
+    buf[i + 10] = left;
+    buf[i + 11] = bottom;
+    return i + 12;
+  }
+
+  static int _writeCapTri(
+    Float32List buf,
+    int i,
+    double cx,
+    double yTop,
+    double left,
+    double right,
+    double notchBase,
+  ) {
+    buf[i] = cx;
+    buf[i + 1] = yTop;
+    buf[i + 2] = left;
+    buf[i + 3] = notchBase;
+    buf[i + 4] = right;
+    buf[i + 5] = notchBase;
+    return i + 6;
+  }
+
+  static void _drawTriangleBatch(
+    Canvas canvas,
+    Float32List buffer,
+    int length,
+    Paint paint,
+  ) {
+    final positions = length == buffer.length
+        ? buffer
+        : Float32List.sublistView(buffer, 0, length);
+    final vertices = Vertices.raw(VertexMode.triangles, positions);
+    canvas.drawVertices(vertices, BlendMode.srcOver, paint);
+    vertices.dispose();
+  }
+
+  void _paintGrid(Canvas canvas, Rect rect) {
+    final rangeUs = barRangeMax.inMicroseconds;
+    if (rangeUs <= 0) return;
+    for (var multiple = 1; multiple <= 4; multiple++) {
+      final yUs = target.inMicroseconds * multiple;
+      if (yUs > rangeUs) break;
+      final factor = yUs / rangeUs;
+      final y = rect.bottom - rect.height * factor;
+      _gridPaint.color = multiple == 1 ? _gridColor : _gridColorSecondary;
+      canvas.drawLine(Offset(rect.left, y), Offset(rect.right, y), _gridPaint);
+    }
+  }
+
+  void _paintStatsText({
+    required Canvas canvas,
+    required Rect rect,
+    required PerformanceChartStats stats,
+    required TextPainter statsPainter,
+    required String labelText,
+    required TextStyle labelStyle,
+  }) {
+    statsPainter.text = TextSpan(
+      style: _statsStyle,
+      children: <TextSpan>[
+        TextSpan(text: labelText, style: labelStyle),
+        TextSpan(
+          text: '  ${stats.jankCount} jank\n',
+          style: stats.jankCount > 0 ? _overTargetStyle : null,
+        ),
+        TextSpan(
+          text: 'avg ${_formatMs(stats.avg)}ms\n',
+          style: stats.avg > target ? _overTargetStyle : null,
+        ),
+        if (showP90)
+          TextSpan(
+            text: 'p90 ${_formatMs(stats.p90)}ms\n',
+            style: stats.p90 > target ? _overTargetStyle : null,
+          ),
+        TextSpan(
+          text: 'p99 ${_formatMs(stats.p99)}ms',
+          style: stats.p99 > target ? _overTargetStyle : null,
+        ),
+      ],
+    );
+    final maxWidth =
+        (rect.width - _kStatsPadding.horizontal).clamp(0.0, double.infinity);
+    statsPainter.layout(maxWidth: maxWidth);
+    final origin = Offset(
+      rect.left + _kStatsPadding.left,
+      rect.top + _kStatsPadding.top,
+    );
+    _paintTextBackplate(canvas, statsPainter, origin);
+    statsPainter.paint(canvas, origin);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ChartPainter old) =>
+      old.snapshot != snapshot ||
+      old.target != target ||
+      old.refreshRate != refreshRate ||
+      old.barRangeMax != barRangeMax ||
+      old.backgroundColor != backgroundColor ||
+      old.textColor != textColor ||
+      old.uiColor != uiColor ||
+      old.rasterColor != rasterColor ||
+      old.totalColor != totalColor ||
+      old.overTargetColor != overTargetColor ||
+      old.compact != compact ||
+      old.showP90 != showP90 ||
+      old.showMemory != showMemory ||
+      old.memoryWarnRatio != memoryWarnRatio ||
+      old.memoryDangerRatio != memoryDangerRatio ||
+      old.showAllTimeStats != showAllTimeStats ||
+      old.paused != paused ||
+      old.sampleSize != sampleSize;
+}
+
+/// Sits outside the overlay's `IgnorePointer` so taps land here while the
+/// rest of the chart stays transparent to gestures.
+class _FreezeButton extends StatelessWidget {
+  const _FreezeButton({
+    required this.paused,
+    required this.onTap,
+    required this.onLongPress,
+    required this.color,
+  });
+
+  final bool paused;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        container: true,
+        button: true,
+        label:
+            paused ? 'Resume performance overlay' : 'Pause performance overlay',
+        onLongPressHint: 'Reset session stats',
+        child: SizedBox(
+          width: _kPauseButtonSize,
+          height: _kPauseButtonSize,
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkResponse(
+              onTap: onTap,
+              onLongPress: onLongPress,
+              radius: _kPauseButtonSize,
+              child: Center(
+                child: Icon(
+                  paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                  size: 14,
+                  color: color,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+String _formatMs(Duration d) => (d.inMicroseconds / 1e3).toStringAsFixed(1);
+
+String _formatMb(int bytes) {
+  final mb = bytes / (1024 * 1024);
+  return mb >= 100 ? mb.toStringAsFixed(0) : mb.toStringAsFixed(1);
 }

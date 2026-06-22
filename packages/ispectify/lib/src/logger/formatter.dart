@@ -8,17 +8,15 @@ abstract interface class ILoggerFormatter {
   );
 }
 
-/// Renders single-line logs verbatim and indents continuation lines of
-/// multi-line payloads (e.g. network curl dumps, JSON bodies).
+/// Applies ANSI color per line and substitutes a placeholder for empty
+/// payloads. Layout (level column, indent, metadata) is owned by
+/// [ILogEntryFormatter]; this formatter intentionally does not reshape the
+/// incoming message so single-line and multi-line entries align identically.
 ///
-/// ```
-/// Single-line message
-///
-/// - First line of multi-line payload
-///   Second line
-///   Third line
-/// ```
-class ExtendedLoggerFormatter implements ILoggerFormatter {
+/// Coloring is applied per line so each line carries its own reset sequence —
+/// terminals and log viewers that strip styling on `\n` keep the color of
+/// every line intact.
+base class ExtendedLoggerFormatter implements ILoggerFormatter {
   const ExtendedLoggerFormatter();
 
   @override
@@ -26,25 +24,12 @@ class ExtendedLoggerFormatter implements ILoggerFormatter {
     LogDetails details,
     ConsoleSettings settings,
   ) {
-    final message = details.message?.toString() ?? '';
+    final message = details.message?.toString();
+    final text =
+        (message == null || message.isEmpty) ? '(empty log message)' : message;
 
-    final List<String> lines;
-    if (message.isEmpty) {
-      lines = ['(empty log message)'];
-    } else {
-      final rawLines = message.split('\n');
-      if (rawLines.length == 1) {
-        lines = rawLines;
-      } else {
-        lines = [
-          '- ${rawLines.first}',
-          ...rawLines.skip(1).map((line) => '  $line'),
-        ];
-      }
-    }
+    if (!settings.enableColors) return text;
 
-    return settings.enableColors
-        ? lines.map(details.pen.write).join('\n')
-        : lines.join('\n');
+    return text.split('\n').map(details.pen.write).join('\n');
   }
 }

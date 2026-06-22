@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:draggable_panel/draggable_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect_layout/ispect_layout.dart';
 
@@ -14,10 +15,67 @@ void main() {
       themeMode: ThemeMode.system,
       builder: (context, child) => Inspector(
         isEnabled: true,
+        panelBuilder: (context, controller, content) => _CustomShowcasePanel(
+          controller: controller,
+          child: content,
+        ),
         child: child!,
       ),
     ),
   );
+}
+
+class _CustomShowcasePanel extends StatelessWidget {
+  const _CustomShowcasePanel({
+    required this.controller,
+    required this.child,
+  });
+
+  final InspectorController controller;
+  final Widget child;
+
+  void _toggleMode(
+    InspectorMode target, {
+    BuildContext? pickerContext,
+  }) {
+    final next =
+        controller.modeNotifier.value == target ? InspectorMode.none : target;
+    controller.setMode(next, context: pickerContext);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: controller.modeNotifier,
+      builder: (context, _) {
+        final mode = controller.modeNotifier.value;
+        return DraggablePanel(
+          items: [
+            DraggablePanelItem(
+              icon: Icons.format_shapes,
+              description: 'Inspect widgets',
+              enableBadge: mode == InspectorMode.inspector,
+              onTap: (_) => _toggleMode(InspectorMode.inspector),
+            ),
+            DraggablePanelItem(
+              icon: Icons.colorize,
+              description: 'Pick a colour from the canvas',
+              enableBadge: mode == InspectorMode.colorPicker,
+              onTap: (ctx) =>
+                  _toggleMode(InspectorMode.colorPicker, pickerContext: ctx),
+            ),
+            DraggablePanelItem(
+              icon: Icons.zoom_in,
+              description: 'Magnify a region',
+              enableBadge: mode == InspectorMode.zoom,
+              onTap: (_) => _toggleMode(InspectorMode.zoom),
+            ),
+          ],
+          child: child,
+        );
+      },
+    );
+  }
 }
 
 class ShowcaseApp extends StatelessWidget {
@@ -1349,6 +1407,13 @@ class _ImagesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final networkFallback = Image.asset(
+      'assets/showcase_image.png',
+      width: 300,
+      height: 160,
+      fit: BoxFit.cover,
+    );
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -1357,31 +1422,22 @@ class _ImagesTab extends StatelessWidget {
         children: [
           const Text('RenderImage — network source'),
           Image.network(
-            'https://picsum.photos/seed/inspector/300/160',
+            'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
             width: 300,
             height: 160,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Container(
-              width: 300,
-              height: 160,
-              color: Colors.grey.shade300,
-              alignment: Alignment.center,
-              child: const Text('network image unavailable'),
-            ),
+            loadingBuilder: (_, child, progress) =>
+                progress == null ? child : networkFallback,
+            errorBuilder: (_, __, ___) => networkFallback,
           ),
           const Text('RenderImage with color tint'),
-          Image.network(
-            'https://picsum.photos/seed/tint/200/120',
+          Image.asset(
+            'assets/showcase_image.png',
             width: 200,
             height: 120,
             fit: BoxFit.cover,
             color: Colors.deepOrange,
             colorBlendMode: BlendMode.modulate,
-            errorBuilder: (_, __, ___) => Container(
-              width: 200,
-              height: 120,
-              color: Colors.grey.shade300,
-            ),
           ),
           const Text('DecorationImage (BoxDecoration.image)'),
           Container(
@@ -1390,9 +1446,7 @@ class _ImagesTab extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               image: const DecorationImage(
-                image: NetworkImage(
-                  'https://picsum.photos/seed/deco/600/240',
-                ),
+                image: AssetImage('assets/showcase_image.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black38,
@@ -1412,9 +1466,7 @@ class _ImagesTab extends StatelessWidget {
             height: 80,
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(
-                  'https://picsum.photos/seed/tile/60/60',
-                ),
+                image: AssetImage('assets/showcase_tile.png'),
                 repeat: ImageRepeat.repeat,
               ),
             ),

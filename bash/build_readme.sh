@@ -46,6 +46,7 @@ TARGETS=(
   "ispectify_db:$ROOT_DIR/packages/ispectify_db/README.md:ispectify_db"
   "ispectify_dio:$ROOT_DIR/packages/ispectify_dio/README.md:ispectify_dio"
   "ispectify_http:$ROOT_DIR/packages/ispectify_http/README.md:ispectify_http"
+  "ispectify_riverpod:$ROOT_DIR/packages/ispectify_riverpod/README.md:ispectify_riverpod"
   "ispectify_ws:$ROOT_DIR/packages/ispectify_ws/README.md:ispectify_ws"
 )
 

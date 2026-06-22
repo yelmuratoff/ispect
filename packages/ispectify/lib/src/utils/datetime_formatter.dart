@@ -2,7 +2,7 @@
 ///
 /// Provides various time formatting styles, including full timestamps
 /// and time with milliseconds.
-class ISpectDateTimeFormatter {
+final class ISpectDateTimeFormatter {
   /// Creates an instance of [ISpectDateTimeFormatter] with the given [date].
   const ISpectDateTimeFormatter(this.date);
 

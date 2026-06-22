@@ -1,5 +1,5 @@
 /// Per-call overrides for ignored values and keys.
-class RedactionRequest {
+final class RedactionRequest {
   const RedactionRequest._({
     this.ignoredValues,
     this.ignoredKeysLower,

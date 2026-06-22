@@ -11,12 +11,27 @@ extension ISpectContextExtension on BuildContext {
 
   bool get isDarkMode => appTheme.brightness == Brightness.dark;
 
+  /// ISpect's own effective brightness — dark by default, independent of the
+  /// host app. Falls back to the host brightness when no scope is present, when
+  /// [ISpectTheme.useHostColors] is set, or for [ISpectThemeMode.system].
+  bool get ispectIsDark {
+    final model = ISpect.maybeRead(this);
+    if (model == null) return isDarkMode;
+    final theme = model.theme;
+    if (theme.useHostColors) return isDarkMode;
+    return switch (theme.themeMode) {
+      ISpectThemeMode.dark => true,
+      ISpectThemeMode.light => false,
+      ISpectThemeMode.system => isDarkMode,
+    };
+  }
+
   /// Returns the current `ISpectAppLocalizations` of the `BuildContext`.
   ISpectGeneratedLocalization get ispectL10n => ISpectLocalization.of(this);
 
   ISpectScopeModel get iSpect => ISpect.read(this);
 
-  Color adjustColor(Color color) => isDarkMode
+  Color adjustColor(Color color) => ispectIsDark
       ? adjustColorBrightness(color, 0.9)
       : adjustColorDarken(color, 0.1);
 }
@@ -79,19 +94,12 @@ abstract final class ISpectMotion {
 }
 
 extension OptionsExtension on ISpectOptions {
-  Future<void> push(BuildContext context, Route<dynamic> route) async {
-    if (observer != null) {
-      await observer?.navigator?.push(route);
-    } else {
-      await Navigator.of(context).push(route);
-    }
-  }
+  /// Pushes [route] onto the navigator that owns [context].
+  Future<void> push(BuildContext context, Route<dynamic> route) =>
+      Navigator.of(context).push(route);
 
+  /// Pops the current route via the navigator that owns [context].
   void pop(BuildContext context) {
-    if (observer != null) {
-      observer?.navigator?.pop();
-    } else {
-      Navigator.of(context).pop();
-    }
+    Navigator.of(context).maybePop();
   }
 }

@@ -688,6 +688,9 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'वेब-सॉकेट प्राप्त संदेश लॉग';
 
   @override
+  String get wsStateLogDesc => 'WebSocket connection state changed';
+
+  @override
   String get dbQueryLogDesc => 'डेटाबेस क्वेरी लॉग';
 
   @override
@@ -741,7 +744,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get groupHttp => 'HTTP';
 
   @override
-  String get groupBloc => 'Bloc';
+  String get groupBloc => 'स्थिति';
 
   @override
   String get groupRiverpod => 'Riverpod';
@@ -844,6 +847,12 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
+  String get performanceJankLogDesc => 'Frame exceeded the target budget';
+
+  @override
+  String get performanceErrorLogDesc => 'Performance instrumentation error';
 
   @override
   String get transitionPush => 'पुश';
@@ -1020,4 +1029,75 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => 'और विकल्प';
+
+  @override
+  String get composerTitle => 'HTTP कंपोज़र';
+
+  @override
+  String get composerSend => 'भेजें';
+
+  @override
+  String get composerMethod => 'विधि';
+
+  @override
+  String get composerClient => 'क्लाइंट';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => 'हेडर';
+
+  @override
+  String get composerQueryParameters => 'क्वेरी पैरामीटर';
+
+  @override
+  String get composerBody => 'बॉडी';
+
+  @override
+  String get composerAddField => 'जोड़ें';
+
+  @override
+  String get composerAddHeader => 'हेडर जोड़ें';
+
+  @override
+  String get composerAddParameter => 'पैरामीटर जोड़ें';
+
+  @override
+  String get composerViewJson => 'JSON व्यूअर में खोलें';
+
+  @override
+  String get composerKeyHint => 'कुंजी';
+
+  @override
+  String get composerValueHint => 'मान';
+
+  @override
+  String get composerAttachFile => 'फ़ाइल संलग्न करें';
+
+  @override
+  String get composerResponse => 'प्रतिक्रिया';
+
+  @override
+  String get composerResponsePlaceholder =>
+      'प्रतिक्रिया देखने के लिए अनुरोध भेजें';
+
+  @override
+  String get composerNoClients =>
+      'अनुरोध भेजने के लिए Dio या http क्लाइंट रजिस्टर करें';
+
+  @override
+  String get composerErrorUrlRequired => 'URL दर्ज करें';
+
+  @override
+  String get composerErrorUrlInvalid => 'मान्य पूर्ण URL दर्ज करें';
+
+  @override
+  String get composerErrorInvalidJson => 'बॉडी मान्य JSON नहीं है';
+
+  @override
+  String get composerErrorNoClient => 'कोई क्लाइंट रजिस्टर नहीं है';
+
+  @override
+  String get composerEditAndResend => 'संपादित करें और दोबारा भेजें';
 }

@@ -16,6 +16,7 @@ final class ISpect {
   static ISpectLogger? _logger;
   static bool _isInitialized = false;
   static ErrorHandlerService? _errorHandler;
+  static final NetworkSenderRegistry _senders = NetworkSenderRegistry();
 
   /// Returns the global logger instance.
   ///
@@ -51,12 +52,33 @@ final class ISpect {
     return true;
   }
 
+  /// Clients registered for request replay/compose (the in-app HTTP composer).
+  ///
+  /// Empty unless the app opts in via [registerSender]; the composer UI hides
+  /// itself when this is empty.
+  static List<NetworkRequestSender> get senders => _senders.senders;
+
+  /// Registers a client so the composer can send through it, reusing its base
+  /// URL, auth interceptors, and retries.
+  ///
+  /// A sender with the same id replaces the previous one. No-op when
+  /// `kISpectEnabled` is `false`, so production builds neither retain the
+  /// client nor expose request sending.
+  static void registerSender(NetworkRequestSender sender) {
+    if (!kISpectEnabled) return;
+    _senders.register(sender);
+  }
+
+  /// Removes a client previously passed to [registerSender] by its id.
+  static void unregisterSender(String id) => _senders.unregister(id);
+
   /// Disposes current ISpect state (useful for testing or hot restart).
   static Future<void> dispose() async {
     await _logger?.dispose();
     _isInitialized = false;
     _logger = null;
     _errorHandler = null;
+    _senders.clear();
     ISpectNavigatorObserver.resetCurrent();
   }
 
@@ -76,6 +98,14 @@ final class ISpect {
     return inherited.notifier!;
   }
 
+  /// Like [read] but returns `null` instead of throwing when no
+  /// `ISpectScopeController` is an ancestor. Use for context-derived defaults
+  /// (e.g. resolving ISpect's own brightness) that must stay safe outside the
+  /// scope, such as in tests or detached overlays.
+  static ISpectScopeModel? maybeRead(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<ISpectScopeController>()
+      ?.notifier;
+
   /// Runs the app with centralized logging and error capture.
   ///
   /// If [logger] is not provided, creates a default Flutter logger automatically
@@ -83,6 +113,11 @@ final class ISpect {
   ///
   /// When `kISpectEnabled` is `false` (default), this method simply calls
   /// the callback without any ISpect initialization, enabling tree-shaking.
+  ///
+  /// Perform binding setup (`WidgetsFlutterBinding.ensureInitialized()`) inside
+  /// [callback] or [onInit] rather than before calling [run]: both run in the
+  /// guarded zone, so initializing the binding outside it causes a Flutter
+  /// "Zone mismatch" warning and can drop errors from the installed handlers.
   ///
   /// ### Example (Simple):
   /// ```dart
@@ -117,7 +152,7 @@ final class ISpect {
     void Function(Object, StackTrace)? onPlatformDispatcherError,
     void Function(FlutterErrorDetails, StackTrace?)? onFlutterError,
     void Function(FlutterErrorDetails, StackTrace?)? onPresentError,
-    void Function(List<dynamic>)? onUncaughtErrors,
+    void Function(Object error, StackTrace? stack)? onUncaughtError,
     ISpectErrorHandlerOptions options = const ISpectErrorHandlerOptions(),
     List<String> filters = const [],
   }) {
@@ -136,26 +171,32 @@ final class ISpect {
       onPlatformDispatcherError: onPlatformDispatcherError,
       onFlutterError: onFlutterError,
       onPresentError: onPresentError,
-      onUncaughtErrors: onUncaughtErrors,
+      onUncaughtError: onUncaughtError,
     );
 
-    onInit?.call();
+    // Run init/app/post-init inside the guarded zone so that binding setup
+    // (e.g. `WidgetsFlutterBinding.ensureInitialized()`) and `runApp` share the
+    // same zone — mixing zones triggers Flutter's "Zone mismatch" warning and
+    // can drop errors from the handlers installed above.
+    void bootstrap() {
+      onInit?.call();
+      callback();
+      onInitialized?.call();
+    }
 
     if (isZoneErrorHandlingEnabled) {
       _runInZone(
-        callback,
+        bootstrap,
         onZonedError: onZonedError,
         isPrintLoggingEnabled: isPrintLoggingEnabled,
         isFlutterPrintEnabled: isFlutterPrintEnabled,
-        onUncaughtErrors: onUncaughtErrors,
+        onUncaughtError: onUncaughtError,
         isUncaughtErrorsHandlingEnabled:
             options.isUncaughtErrorsHandlingEnabled,
       );
     } else {
-      callback();
+      bootstrap();
     }
-
-    onInitialized?.call();
   }
 
   static void _runInZone<T>(
@@ -164,7 +205,7 @@ final class ISpect {
     required bool isFlutterPrintEnabled,
     required bool isUncaughtErrorsHandlingEnabled,
     void Function(Object, StackTrace)? onZonedError,
-    void Function(List<dynamic>)? onUncaughtErrors,
+    void Function(Object error, StackTrace? stack)? onUncaughtError,
   }) {
     runZonedGuarded(
       callback,
@@ -173,7 +214,7 @@ final class ISpect {
           error,
           stackTrace,
           onZonedError: onZonedError,
-          onUncaughtErrors: onUncaughtErrors,
+          onUncaughtError: onUncaughtError,
           isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
         );
       },

@@ -73,7 +73,7 @@ void main() {
         expect(logs, hasLength(1));
         final meta =
             logs.single.additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        expect(meta['blocType'], 'DummyBloc');
+        expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
       });
 
       test('skips creation log when printCreations disabled', () {
@@ -97,7 +97,7 @@ void main() {
         expect(logs, hasLength(1));
         final meta =
             logs.single.additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        expect(meta['blocType'], 'DummyBloc');
+        expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
       });
 
       test('skips close log when printClosings disabled', () {
@@ -127,8 +127,8 @@ void main() {
         expect(logs, hasLength(1));
         final meta =
             logs.single.additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        expect(meta['blocType'], 'DummyBloc');
-        expect(meta['eventType'], 'String');
+        expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
+        expect(meta[BlocJsonKeys.eventType], 'String');
       });
 
       test('skips transition log when printTransitions disabled', () {
@@ -156,7 +156,7 @@ void main() {
         expect(logs, hasLength(1));
         final meta =
             logs.single.additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        expect(meta['blocType'], 'DummyBloc');
+        expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
       });
 
       test('skips change log when printChanges disabled', () {
@@ -200,7 +200,7 @@ void main() {
         final doneLog = logger.byOperation('done').single;
         final meta =
             doneLog.additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        expect(meta['hasError'], isTrue);
+        expect(meta[BlocJsonKeys.hasError], isTrue);
       });
 
       test('logs successful completion without error', () {
@@ -216,7 +216,7 @@ void main() {
         final doneLog = logger.byOperation('done').single;
         final meta =
             doneLog.additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        expect(meta['hasError'], isFalse);
+        expect(meta[BlocJsonKeys.hasError], isFalse);
         expect(
           doneLog.additionalData?[TraceKeys.success],
           isTrue,
@@ -504,10 +504,7 @@ void main() {
         );
         ISpectBlocObserver(
           logger: logger,
-          settings: ISpectBlocSettings(
-            redactor: redactor,
-            printEventFullData: true,
-          ),
+          settings: ISpectBlocSettings(redactor: redactor),
         ).onEvent(bloc, 'test');
 
         final eventLogs = logger.byOperation('event');
@@ -516,12 +513,12 @@ void main() {
         // in this case, so values should pass through).
         final meta = eventLogs.single.additionalData?[TraceKeys.meta]
             as Map<String, dynamic>;
-        expect(meta['blocType'], 'DummyBloc');
+        expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
       });
 
       test('does not redact when enableRedaction is false', () {
         final redactor = RedactionService(
-          sensitiveKeys: {'blocType'},
+          sensitiveKeys: {BlocJsonKeys.blocType},
         );
         ISpectBlocObserver(
           logger: logger,
@@ -536,7 +533,7 @@ void main() {
             .single
             .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
         // Should NOT be redacted because enableRedaction is false.
-        expect(meta['blocType'], 'DummyBloc');
+        expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
       });
     });
 
@@ -544,47 +541,30 @@ void main() {
     // printEventFullData / printStateFullData
     // ------------------------------------------------------------------
     group('full data logging', () {
-      test('printEventFullData includes event payload in meta', () {
-        ISpectBlocObserver(
-          logger: logger,
-          settings: const ISpectBlocSettings(printEventFullData: true),
-        ).onEvent(bloc, 'detailed_event');
-
-        final meta = logger
-            .byOperation('event')
-            .single
-            .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        expect(meta['event'], 'detailed_event');
-      });
-
-      test('without printEventFullData excludes event payload from meta', () {
+      test('default includes event payload in meta', () {
         ISpectBlocObserver(logger: logger).onEvent(bloc, 'detailed_event');
 
         final meta = logger
             .byOperation('event')
             .single
             .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        expect(meta.containsKey('event'), isFalse);
+        expect(meta[BlocJsonKeys.event], 'detailed_event');
       });
 
-      test('printStateFullData shows full state in transition', () {
+      test('printEventFullData: false excludes event payload from meta', () {
         ISpectBlocObserver(
           logger: logger,
-          settings: ISpectBlocSettings.verbose,
-        ).onTransition(
-          bloc,
-          const Transition(currentState: 0, event: 'x', nextState: 42),
-        );
+          settings: const ISpectBlocSettings(printEventFullData: false),
+        ).onEvent(bloc, 'detailed_event');
 
         final meta = logger
-            .byOperation('transition')
+            .byOperation('event')
             .single
             .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        expect(meta['currentState'], 0);
-        expect(meta['nextState'], 42);
+        expect(meta.containsKey(BlocJsonKeys.event), isFalse);
       });
 
-      test('without printStateFullData shows runtime type', () {
+      test('default shows full state in transition', () {
         ISpectBlocObserver(logger: logger).onTransition(
           bloc,
           const Transition(currentState: 0, event: 'x', nextState: 42),
@@ -594,9 +574,25 @@ void main() {
             .byOperation('transition')
             .single
             .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        // formatState returns runtimeType when printStateFullData is false.
-        expect(meta['currentState'], isA<Type>());
-        expect(meta['nextState'], isA<Type>());
+        expect(meta[BlocJsonKeys.currentState], 0);
+        expect(meta[BlocJsonKeys.nextState], 42);
+      });
+
+      test('printStateFullData: false shows runtime type', () {
+        ISpectBlocObserver(
+          logger: logger,
+          settings: const ISpectBlocSettings(printStateFullData: false),
+        ).onTransition(
+          bloc,
+          const Transition(currentState: 0, event: 'x', nextState: 42),
+        );
+
+        final meta = logger
+            .byOperation('transition')
+            .single
+            .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
+        expect(meta[BlocJsonKeys.currentState], isA<Type>());
+        expect(meta[BlocJsonKeys.nextState], isA<Type>());
       });
     });
 
@@ -646,7 +642,7 @@ void main() {
         expect(logs, hasLength(1));
         final meta =
             logs.single.additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-        expect(meta['blocType'], 'CounterCubit');
+        expect(meta[BlocJsonKeys.blocType], 'CounterCubit');
 
         cubit.close();
       });

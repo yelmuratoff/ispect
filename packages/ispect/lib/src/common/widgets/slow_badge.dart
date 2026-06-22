@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/core/res/json_color.dart';
 
 class SlowBadge extends StatelessWidget {
   const SlowBadge({required this.durationMs, super.key});
@@ -11,16 +14,16 @@ class SlowBadge extends StatelessWidget {
         ? 'Slow: ${durationMs}ms'
         : 'Slow: ${(durationMs / 1000).toStringAsFixed(1)}s';
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Color(0x1FFF9800),
-        borderRadius: BorderRadius.all(Radius.circular(4)),
+      decoration: ISpectSquircle.decoration(
+        color: JsonColors.statusWarning.withValues(alpha: 0.12),
+        radius: ISpectConstants.smallBorderRadius,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
         child: Text(
           text,
           style: const TextStyle(
-            color: Color(0xFFE65100),
+            color: JsonColors.statusWarningDark,
             fontSize: 10,
             fontWeight: FontWeight.w700,
             fontFeatures: [FontFeature.tabularFigures()],

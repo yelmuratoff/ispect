@@ -13,13 +13,15 @@ dependency_overrides:
     path: ../../ispectify_dio
   ispect:
     path: ../../ispect
+  ispect_layout:
+    path: ../../ispect_layout
 
 dependencies:
   flutter:
     sdk: flutter
   dio: ^5.0.0
-  ispectify_dio: ^5.0.4
-  ispect: ^5.0.4
+  ispectify_dio: ^6.0.0-dev.35
+  ispect: ^6.0.0-dev.35
 
 dev_dependencies:
   flutter_test:

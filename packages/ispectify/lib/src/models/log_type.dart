@@ -108,6 +108,10 @@ final class ISpectLogType {
     isError: true,
     level: LogLevel.error,
   );
+  static const wsState = ISpectLogType(
+    'ws-state',
+    category: TraceCategoryIds.ws,
+  );
 
   // ── State (BLoC / Riverpod) ────────────────────────────────────────────────
   static const blocEvent = ISpectLogType(
@@ -291,6 +295,19 @@ final class ISpectLogType {
     category: TraceCategoryIds.navigation,
   );
 
+  // ── Performance ────────────────────────────────────────────────────────────
+  static const performanceJank = ISpectLogType(
+    'performance-jank',
+    category: TraceCategoryIds.performance,
+    level: LogLevel.warning,
+  );
+  static const performanceError = ISpectLogType(
+    'performance-error',
+    category: TraceCategoryIds.performance,
+    isError: true,
+    level: LogLevel.error,
+  );
+
   // ── Discovery ──────────────────────────────────────────────────────────────
 
   /// All built-in log types. Used for filter UI and key discovery.
@@ -312,6 +329,7 @@ final class ISpectLogType {
     wsSent,
     wsReceived,
     wsError,
+    wsState,
     blocEvent,
     blocTransition,
     blocState,
@@ -347,6 +365,8 @@ final class ISpectLogType {
     graphqlResponse,
     graphqlError,
     route,
+    performanceJank,
+    performanceError,
   ];
 
   static final Map<String, ISpectLogType> _byKey = {
@@ -426,6 +446,7 @@ final class ISpectLogType {
     // websocket
     'ws-sent': AnsiPen()..xterm(207),
     'ws-received': AnsiPen()..xterm(35),
+    'ws-state': AnsiPen()..xterm(44),
     // navigation / misc
     'route': AnsiPen()..xterm(135),
     'good': AnsiPen()..green(),

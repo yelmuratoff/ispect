@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ispect_layout/src/number_format.dart';
@@ -80,11 +82,14 @@ class BoxInfo {
     for (final box in hitTestPath) {
       final isStrong = _isStronglyMeaningfulRenderBox(box);
       final isHelper = _isLayoutHelperRenderBox(box);
-      if (!isStrong && !isHelper) continue;
+      final isTarget = identical(box, targetRenderBox);
+      if (!isStrong && !isHelper && !isTarget) continue;
 
       if (result.isNotEmpty && result.last.size == box.size) {
-        final prevStrong = _isStronglyMeaningfulRenderBox(result.last);
-        if (isStrong || !prevStrong) {
+        final prev = result.last;
+        if (identical(prev, targetRenderBox)) continue;
+        final prevStrong = _isStronglyMeaningfulRenderBox(prev);
+        if (isTarget || isStrong || !prevStrong) {
           result[result.length - 1] = box;
         }
       } else {
@@ -162,6 +167,9 @@ class BoxInfo {
           containerRect!.bottom,
         )
       : null;
+
+  /// The original (logical) padding between the container and target render boxes.
+  EdgeInsets get originalPadding => _calculateOriginalPadding();
 
   /// Describes the original (logical) padding without zoom transformation.
   String describeOriginalPadding({int decimalPlaces = 1}) {
@@ -336,12 +344,19 @@ class _NoopBuildContext implements BuildContext {
 Rect? getRectFromRenderBox(RenderBox renderBox) {
   if (!renderBox.attached) return null;
 
-  final topLeft = renderBox.localToGlobal(Offset.zero);
-  final bottomRight = renderBox.localToGlobal(
-    Offset(renderBox.size.width, renderBox.size.height),
-  );
+  final w = renderBox.size.width;
+  final h = renderBox.size.height;
+  final tl = renderBox.localToGlobal(Offset.zero);
+  final tr = renderBox.localToGlobal(Offset(w, 0));
+  final bl = renderBox.localToGlobal(Offset(0, h));
+  final br = renderBox.localToGlobal(Offset(w, h));
 
-  return Rect.fromPoints(topLeft, bottomRight);
+  final minX = math.min(math.min(tl.dx, tr.dx), math.min(bl.dx, br.dx));
+  final maxX = math.max(math.max(tl.dx, tr.dx), math.max(bl.dx, br.dx));
+  final minY = math.min(math.min(tl.dy, tr.dy), math.min(bl.dy, br.dy));
+  final maxY = math.max(math.max(tl.dy, tr.dy), math.max(bl.dy, br.dy));
+
+  return Rect.fromLTRB(minX, minY, maxX, maxY);
 }
 
 double calculateBoxPosition({
@@ -349,25 +364,11 @@ double calculateBoxPosition({
   required double height,
   double padding = 8.0,
 }) {
-  final preferredHeight = height;
-
-  // Position when the overlay is placed inside the container
+  final aboveTopEdge = rect.top - padding - height;
   final insideTopEdge = rect.top + padding;
-  final insideBottomEdge = rect.bottom - padding - preferredHeight;
 
-  // Position when the overlay is placed above the container
-  final aboveTopEdge = rect.top - padding - preferredHeight;
-
-  // Position when the overlay is placed below the container
-  final belowTopEdge = rect.bottom + padding;
-
-  final minHeightToBeInsideContainer = (height + padding) * 2;
-
-  final isInsideContainer = rect.height > minHeightToBeInsideContainer;
-
-  if (isInsideContainer) {
-    return (insideTopEdge > padding) ? insideTopEdge : insideBottomEdge;
-  } else {
-    return (aboveTopEdge > padding) ? aboveTopEdge : belowTopEdge;
-  }
+  // Prefer above the widget so the label never overlaps the content.
+  if (aboveTopEdge >= padding) return aboveTopEdge;
+  // Fall back to inside-at-top when there's no room above.
+  return insideTopEdge;
 }

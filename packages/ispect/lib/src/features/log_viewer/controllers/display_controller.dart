@@ -9,12 +9,14 @@ class DisplayController extends ChangeNotifier {
       : _expandedLogs = initialSettings?.expandedLogs ?? false,
         _isLogOrderReversed = initialSettings?.isLogOrderReversed ?? true,
         _groupHttpLogs = initialSettings?.groupHttpLogs ?? true,
-        _useRelativeTime = initialSettings?.useRelativeTime ?? false;
+        _useRelativeTime = initialSettings?.useRelativeTime ?? false,
+        _compactNetworkUrls = initialSettings?.compactNetworkUrls ?? true;
 
   bool _expandedLogs;
   bool _isLogOrderReversed;
   bool _groupHttpLogs;
   bool _useRelativeTime;
+  bool _compactNetworkUrls;
 
   /// Sets the initial value for [groupHttpLogs] before listeners attach.
   // ignore: use_setters_to_change_properties
@@ -74,16 +76,31 @@ class DisplayController extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get compactNetworkUrls => _compactNetworkUrls;
+
+  set compactNetworkUrls(bool value) {
+    if (_compactNetworkUrls == value) return;
+    _compactNetworkUrls = value;
+    notifyListeners();
+  }
+
+  void toggleCompactNetworkUrls() {
+    _compactNetworkUrls = !_compactNetworkUrls;
+    notifyListeners();
+  }
+
   void applyFromSettings(ISpectSettingsState settings) {
     final changed = _expandedLogs != settings.expandedLogs ||
         _isLogOrderReversed != settings.isLogOrderReversed ||
         _groupHttpLogs != settings.groupHttpLogs ||
-        _useRelativeTime != settings.useRelativeTime;
+        _useRelativeTime != settings.useRelativeTime ||
+        _compactNetworkUrls != settings.compactNetworkUrls;
     if (!changed) return;
     _expandedLogs = settings.expandedLogs;
     _isLogOrderReversed = settings.isLogOrderReversed;
     _groupHttpLogs = settings.groupHttpLogs;
     _useRelativeTime = settings.useRelativeTime;
+    _compactNetworkUrls = settings.compactNetworkUrls;
     notifyListeners();
   }
 }

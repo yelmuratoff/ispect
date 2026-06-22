@@ -3,7 +3,7 @@
 /// Useful for debugging ("why is my field hidden?") and observability.
 /// Each traversal owns one [RedactionStats] that is populated during the walk
 /// and exposed via [RedactionResult] or [HeaderRedactionResult].
-class RedactionStats {
+final class RedactionStats {
   int _keyBased = 0;
   int _patternBased = 0;
   int _depthLimited = 0;

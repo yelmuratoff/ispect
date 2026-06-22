@@ -31,6 +31,35 @@ void main() {
       expect(restored.logCategories, equals(theme.logCategories));
     });
 
+    test('toMap / fromMap roundtrip preserves themeMode and useHostColors', () {
+      const theme = ISpectTheme(
+        themeMode: ISpectThemeMode.system,
+        useHostColors: true,
+      );
+
+      final restored = ISpectTheme.fromMap(theme.toMap());
+
+      expect(restored.themeMode, equals(ISpectThemeMode.system));
+      expect(restored.useHostColors, isTrue);
+    });
+
+    test('defaults to dark themeMode and owned colors (useHostColors false)',
+        () {
+      const theme = ISpectTheme();
+
+      expect(theme.themeMode, equals(ISpectThemeMode.dark));
+      expect(theme.useHostColors, isFalse);
+    });
+
+    test('fromMap without theme keys defaults to dark and owned colors', () {
+      final map = <String, dynamic>{'page_title': 'Legacy'};
+
+      final theme = ISpectTheme.fromMap(map);
+
+      expect(theme.themeMode, equals(ISpectThemeMode.dark));
+      expect(theme.useHostColors, isFalse);
+    });
+
     test('toMap / fromMap does not serialize icons (icons are code-only)', () {
       const theme = ISpectTheme(
         logIcons: {'http-request': Icons.cloud_upload},

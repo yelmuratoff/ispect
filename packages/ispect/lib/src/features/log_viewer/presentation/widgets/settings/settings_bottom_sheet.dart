@@ -275,6 +275,14 @@ class _SettingsContentState extends State<_SettingsContent> {
                     currentSettings.copyWith(useRelativeTime: v),
                   ),
                 ),
+                ToggleSpec(
+                  title: 'Compact URLs',
+                  icon: Icons.link_off_rounded,
+                  enabled: currentSettings.compactNetworkUrls,
+                  onChanged: (v) => _onSettingChanged(
+                    currentSettings.copyWith(compactNetworkUrls: v),
+                  ),
+                ),
               ],
             ),
           ),

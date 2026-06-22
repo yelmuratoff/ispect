@@ -16,8 +16,10 @@ class DioRequestData {
         NetworkPayloadSanitizer.toStringKeyMap(requestOptions.headers);
     final normalizedQuery =
         NetworkPayloadSanitizer.toStringKeyMap(requestOptions.queryParameters);
-    final normalizedExtra =
-        NetworkPayloadSanitizer.toStringKeyMap(requestOptions.extra);
+    // Internal timing stamp, not part of the request the caller made.
+    final extra = Map<String, dynamic>.from(requestOptions.extra)
+      ..remove(NetworkJsonKeys.ispectRequestStartedAt);
+    final normalizedExtra = NetworkPayloadSanitizer.toStringKeyMap(extra);
     final normalizedData = _normalizeBody(requestOptions.data);
 
     final url = requestOptions.uri.toString();
@@ -93,6 +95,7 @@ class DioRequestData {
       key: NetworkJsonKeys.extra,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      preserveKeys: {NetworkJsonKeys.ispectRequestId},
     );
   }
 
@@ -100,6 +103,6 @@ class DioRequestData {
     if (data is FormData) {
       return DioFormDataSerializer.serialize(data);
     }
-    return data;
+    return NetworkPayloadSanitizer.encodeJsonGracefully(data);
   }
 }

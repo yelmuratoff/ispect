@@ -1,37 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
-
-// ---------------------------------------------------------------------------
-// Badges
-// ---------------------------------------------------------------------------
 
 class MethodBadge extends StatelessWidget {
   const MethodBadge({required this.method, required this.color, super.key});
 
   final String method;
+
+  /// Fallback color for unknown methods (e.g. the `HTTP` placeholder).
   final Color color;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-          child: Text(
-            method,
-            style: TextStyle(
-              color: color,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
-            ),
+  Widget build(BuildContext context) {
+    final badgeColor =
+        JsonColors.methodColorFor(method, Theme.of(context).brightness) ??
+            color;
+    return DecoratedBox(
+      decoration: ISpectSquircle.decoration(
+        color: badgeColor.withValues(alpha: 0.12),
+        radius: ISpectConstants.smallBorderRadius,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        child: Text(
+          method,
+          style: TextStyle(
+            color: badgeColor,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.3,
           ),
         ),
-      );
+      ),
+    );
+  }
 }
 
 class StatusBadge extends StatelessWidget {
@@ -42,9 +48,9 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: color.withValues(alpha: 0.12),
-          borderRadius: const BorderRadius.all(Radius.circular(6)),
+          radius: ISpectConstants.mediumBorderRadius,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
@@ -68,19 +74,15 @@ class DesktopStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (bgColor, textColor) = switch (statusCode) {
-      < 300 => (const Color(0xFF4CAF50), const Color(0xFF2E7D32)),
-      < 400 => (const Color(0xFFFF9800), const Color(0xFFE65100)),
-      _ => (const Color(0xFFF44336), const Color(0xFFC62828)),
-    };
+    final (bgColor, textColor) = JsonColors.statusCodeColors(statusCode);
     return Semantics(
       container: true,
       label: 'HTTP status $statusCode',
       excludeSemantics: true,
       child: DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: bgColor.withValues(alpha: 0.12),
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
+          radius: ISpectConstants.smallBorderRadius,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
@@ -106,9 +108,9 @@ class DurationBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: context.appTheme.textColor.withValues(alpha: 0.06),
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
+          radius: ISpectConstants.smallBorderRadius,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
@@ -132,16 +134,16 @@ class PendingBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: const Color(0xFFFF9800).withValues(alpha: 0.12),
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
+        decoration: ISpectSquircle.decoration(
+          color: JsonColors.statusWarning.withValues(alpha: 0.12),
+          radius: ISpectConstants.smallBorderRadius,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
           child: Text(
             label,
             style: const TextStyle(
-              color: Color(0xFFE65100),
+              color: JsonColors.statusWarningDark,
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -149,10 +151,6 @@ class PendingBadge extends StatelessWidget {
         ),
       );
 }
-
-// ---------------------------------------------------------------------------
-// Action widgets (desktop-specific)
-// ---------------------------------------------------------------------------
 
 class DetailChip extends StatelessWidget {
   const DetailChip({
@@ -172,40 +170,47 @@ class DetailChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final content = Padding(
+      padding: iconOnly
+          ? const EdgeInsets.all(4)
+          : const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (!iconOnly) ...[
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Gap(4),
+          ],
+          Icon(
+            icon,
+            size: iconOnly ? 14 : 12,
+            color: color.withValues(alpha: 0.85),
+          ),
+        ],
+      ),
+    );
+
     final chip = MouseRegion(
       cursor: SystemMouseCursors.click,
       child: DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: color.withValues(alpha: 0.08),
-          borderRadius: const BorderRadius.all(Radius.circular(6)),
+          radius: ISpectConstants.mediumBorderRadius,
         ),
-        child: Padding(
-          padding: iconOnly
-              ? const EdgeInsets.all(4)
-              : const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (!iconOnly) ...[
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Gap(4),
-              ],
-              Icon(
-                icon,
-                size: iconOnly ? 14 : 12,
-                color: color.withValues(alpha: 0.85),
+        child: iconOnly
+            ? content
+            : SizedBox(
+                height: ISpectConstants.actionControlHeight,
+                child: content,
               ),
-            ],
-          ),
-        ),
       ),
     );
 
@@ -215,8 +220,17 @@ class DetailChip extends StatelessWidget {
       onTap: onTap,
       child: GestureDetector(
         excludeFromSemantics: true,
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: iconOnly ? Tooltip(message: label, child: chip) : chip,
+        child: iconOnly
+            ? Tooltip(message: label, child: chip)
+            // Pad the touch target up to the minimum on the labeled mobile
+            // chip while keeping the chip itself compact.
+            : ConstrainedBox(
+                constraints:
+                    const BoxConstraints(minHeight: kMinInteractiveDimension),
+                child: Center(widthFactor: 1, child: chip),
+              ),
       ),
     );
   }
@@ -245,7 +259,9 @@ class SmallActionIcon extends StatelessWidget {
           message: tooltip ?? '',
           child: InkWell(
             excludeFromSemantics: true,
-            borderRadius: const BorderRadius.all(Radius.circular(4)),
+            customBorder: ISpectSquircle.border(
+              radius: ISpectConstants.smallBorderRadius,
+            ),
             onTap: onPressed,
             child: Padding(
               padding: const EdgeInsets.all(4),

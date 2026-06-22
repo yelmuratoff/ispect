@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:ispectify/src/history/serialization.dart';
 import 'package:ispectify/src/models/data.dart';
+import 'package:ispectify/src/models/metadata.dart';
 import 'package:ispectify/src/redaction/redaction_service.dart';
 import 'package:ispectify/src/trace/trace_keys.dart';
 
@@ -57,6 +58,7 @@ abstract final class LogExporter {
     List<ISpectLogData> logs, {
     int? maxLogs = defaultMaxLogs,
     Set<String>? redactKeys,
+    ISpectMetadata? metadata,
   }) {
     final capped = _cap(logs, maxLogs);
     final buffer = StringBuffer()
@@ -65,8 +67,9 @@ abstract final class LogExporter {
       ..writeln(
         'Total entries: ${capped.length}'
         '${capped.length < logs.length ? ' (capped from ${logs.length})' : ''}',
-      )
-      ..writeln('---');
+      );
+    _writeMetadata(buffer, metadata);
+    buffer.writeln('---');
     for (final log in capped) {
       buffer.writeln(log.toText(redactKeys: redactKeys));
     }
@@ -78,6 +81,7 @@ abstract final class LogExporter {
     List<ISpectLogData> logs, {
     int? maxLogs = defaultMaxLogs,
     Set<String>? redactKeys,
+    ISpectMetadata? metadata,
   }) {
     final capped = _cap(logs, maxLogs);
     final buffer = StringBuffer()
@@ -87,8 +91,9 @@ abstract final class LogExporter {
         '> Generated: ${DateTime.now().toIso8601String()} | '
         'Entries: ${capped.length}'
         '${capped.length < logs.length ? ' (capped from ${logs.length})' : ''}',
-      )
-      ..writeln();
+      );
+    _writeMetadata(buffer, metadata, linePrefix: '> ');
+    buffer.writeln();
     for (final log in capped) {
       buffer
         ..writeln(log.toMarkdown(redactKeys: redactKeys))
@@ -134,6 +139,19 @@ abstract final class LogExporter {
       );
     }
     return buffer.toString();
+  }
+
+  /// Appends each non-null metadata field as a `key: value` line, prefixing
+  /// every line with [linePrefix] (e.g. `> ` for Markdown blockquotes).
+  static void _writeMetadata(
+    StringBuffer buffer,
+    ISpectMetadata? metadata, {
+    String linePrefix = '',
+  }) {
+    if (metadata == null) return;
+    for (final entry in metadata.toMap().entries) {
+      buffer.writeln('$linePrefix${entry.key}: ${entry.value}');
+    }
   }
 
   static List<ISpectLogData> _cap(List<ISpectLogData> logs, int? maxLogs) {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 
 class BreadcrumbBar extends StatefulWidget {
@@ -72,9 +74,9 @@ class BreadcrumbBarState extends State<BreadcrumbBar> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       child: DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: chipColor,
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          radius: ISpectConstants.largeBorderRadius,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

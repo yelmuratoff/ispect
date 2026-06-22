@@ -2,7 +2,7 @@
 ///
 /// Passed to [RedactionWalker] so that mutation on the service does not affect
 /// an in-flight traversal.
-class RedactionConfig {
+final class RedactionConfig {
   const RedactionConfig({
     required this.sensitiveKeysLower,
     required this.sensitiveKeyPatterns,

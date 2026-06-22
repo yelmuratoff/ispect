@@ -359,5 +359,36 @@ void main() {
         completes,
       );
     });
+
+    group('environment metadata', () {
+      test('merges supplied metadata into the export metadata block', () async {
+        final json = await service.exportToJson(
+          sampleLogs,
+          metadata: const ISpectMetadata(
+            appVersion: '1.4.2',
+            os: 'iOS',
+            extra: {'flavor': 'qa'},
+          ),
+        );
+
+        final decoded = jsonDecode(json) as Map<String, dynamic>;
+        final metadata = decoded['metadata'] as Map<String, dynamic>;
+
+        expect(metadata['appVersion'], equals('1.4.2'));
+        expect(metadata['os'], equals('iOS'));
+        expect(metadata['flavor'], equals('qa'));
+        expect(metadata['platform'], equals('ispect'));
+      });
+
+      test('omits environment fields when no metadata is supplied', () async {
+        final json = await service.exportToJson(sampleLogs);
+
+        final decoded = jsonDecode(json) as Map<String, dynamic>;
+        final metadata = decoded['metadata'] as Map<String, dynamic>;
+
+        expect(metadata.containsKey('appVersion'), isFalse);
+        expect(metadata['platform'], equals('ispect'));
+      });
+    });
   });
 }

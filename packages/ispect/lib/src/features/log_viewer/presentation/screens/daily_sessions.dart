@@ -10,6 +10,7 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
+import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/list_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/empty_logs_widget.dart';
 
@@ -57,12 +58,6 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     }
 
     await openFile(history.sessionDirectory);
-
-    // copyClipboard(
-    //   context,
-    //   value: history.sessionDirectory,
-    //   title: '✅ ${context.ispectL10n.sessionsPathCopied}',
-    // );
   }
 
   Future<void> _copyPathToClipboard() async {
@@ -103,7 +98,10 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) =>
+      ISpectThemeScope(child: Builder(builder: _buildScaffold));
+
+  Widget _buildScaffold(BuildContext context) => Scaffold(
         backgroundColor: context.ispectThemeBackground,
         appBar: ISpectFlatAppBar(
           title: ISpectAppBarTitle(
@@ -203,6 +201,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
           builder: (_) => LogsV2Screen(
             sessionDate: session,
             onShare: context.iSpect.options.onShare,
+            metadataProvider: context.iSpect.options.metadataProvider,
           ),
         ),
       );

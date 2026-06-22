@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_input.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 String formatCount(int value) {
   if (value >= 1000 && value % 1000 == 0) return '${value ~/ 1000}k';
@@ -88,10 +90,10 @@ class LimitTile extends StatelessWidget {
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
+            decoration: ISpectSquircle.decoration(
               color: primaryColor.withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-              border: Border.all(color: primaryColor.withValues(alpha: 0.35)),
+              radius: ISpectConstants.standardBorderRadius,
+              side: BorderSide(color: primaryColor.withValues(alpha: 0.35)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

@@ -5,7 +5,7 @@ import 'dart:typed_data';
 /// Acts as a mediator between the tree-walking engine and pluggable strategies,
 /// exposing only the capabilities strategies need without coupling them to
 /// walker internals.
-class RedactionContext {
+final class RedactionContext {
   const RedactionContext({
     required this.placeholder,
     required this.redactBinary,

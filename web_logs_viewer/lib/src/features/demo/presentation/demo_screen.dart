@@ -9,8 +9,8 @@ import 'package:ispect/ispect.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
-import 'package:ispectify_ws/ispectify_ws.dart';
 import 'package:web_logs_viewer/src/core/localization/generated/app_localizations.dart';
+import 'package:web_logs_viewer/src/features/demo/data/ispect_ws_interceptor.dart';
 import 'package:web_logs_viewer/src/core/services/theme_manager.dart';
 import 'package:web_logs_viewer/src/core/utils/load_file_example.dart';
 import 'package:web_logs_viewer/src/features/demo/bloc/test_bloc.dart';

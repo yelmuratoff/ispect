@@ -1349,6 +1349,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'Message received through WebSocket connection'**
   String get wsReceivedLogDesc;
 
+  /// No description provided for @wsStateLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'WebSocket connection state changed'**
+  String get wsStateLogDesc;
+
   /// No description provided for @dbQueryLogDesc.
   ///
   /// In en, this message translates to:
@@ -1442,7 +1448,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @groupBloc.
   ///
   /// In en, this message translates to:
-  /// **'Bloc'**
+  /// **'State'**
   String get groupBloc;
 
   /// No description provided for @groupRiverpod.
@@ -1648,6 +1654,18 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'GraphQL operation failed'**
   String get graphqlErrorLogDesc;
+
+  /// No description provided for @performanceJankLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Frame exceeded the target budget'**
+  String get performanceJankLogDesc;
+
+  /// No description provided for @performanceErrorLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance instrumentation error'**
+  String get performanceErrorLogDesc;
 
   /// No description provided for @transitionPush.
   ///
@@ -1966,6 +1984,144 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'More options'**
   String get moreOptions;
+
+  /// No description provided for @composerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HTTP Composer'**
+  String get composerTitle;
+
+  /// No description provided for @composerSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get composerSend;
+
+  /// No description provided for @composerMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Method'**
+  String get composerMethod;
+
+  /// No description provided for @composerClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Client'**
+  String get composerClient;
+
+  /// No description provided for @composerUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://api.example.com/path'**
+  String get composerUrlHint;
+
+  /// No description provided for @composerHeaders.
+  ///
+  /// In en, this message translates to:
+  /// **'Headers'**
+  String get composerHeaders;
+
+  /// No description provided for @composerQueryParameters.
+  ///
+  /// In en, this message translates to:
+  /// **'Query parameters'**
+  String get composerQueryParameters;
+
+  /// No description provided for @composerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Body'**
+  String get composerBody;
+
+  /// No description provided for @composerAddField.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get composerAddField;
+
+  /// No description provided for @composerAddHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Add header'**
+  String get composerAddHeader;
+
+  /// No description provided for @composerAddParameter.
+  ///
+  /// In en, this message translates to:
+  /// **'Add parameter'**
+  String get composerAddParameter;
+
+  /// No description provided for @composerViewJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in JSON viewer'**
+  String get composerViewJson;
+
+  /// No description provided for @composerKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Key'**
+  String get composerKeyHint;
+
+  /// No description provided for @composerValueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get composerValueHint;
+
+  /// No description provided for @composerAttachFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach file'**
+  String get composerAttachFile;
+
+  /// No description provided for @composerResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Response'**
+  String get composerResponse;
+
+  /// No description provided for @composerResponsePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a request to see the response'**
+  String get composerResponsePlaceholder;
+
+  /// No description provided for @composerNoClients.
+  ///
+  /// In en, this message translates to:
+  /// **'Register a Dio or http client to send requests'**
+  String get composerNoClients;
+
+  /// No description provided for @composerErrorUrlRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a URL'**
+  String get composerErrorUrlRequired;
+
+  /// No description provided for @composerErrorUrlInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid absolute URL'**
+  String get composerErrorUrlInvalid;
+
+  /// No description provided for @composerErrorInvalidJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Body is not valid JSON'**
+  String get composerErrorInvalidJson;
+
+  /// No description provided for @composerErrorNoClient.
+  ///
+  /// In en, this message translates to:
+  /// **'No client registered'**
+  String get composerErrorNoClient;
+
+  /// No description provided for @composerEditAndResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit & resend'**
+  String get composerEditAndResend;
 }
 
 class _ISpectGeneratedLocalizationDelegate

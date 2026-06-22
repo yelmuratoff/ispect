@@ -6,8 +6,11 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/common/utils/severity_bar.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/slow_badge.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/column_widths.dart';
@@ -129,7 +132,9 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
             child: Material(
               elevation: 4,
               shadowColor: Colors.black26,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              shape: ISpectSquircle.border(
+                radius: ISpectConstants.standardBorderRadius,
+              ),
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Container(
                 constraints: const BoxConstraints(maxWidth: tooltipMaxWidth),
@@ -443,7 +448,9 @@ class _DesktopActionIcon extends StatelessWidget {
           message: tooltip ?? '',
           child: InkWell(
             excludeFromSemantics: true,
-            borderRadius: const BorderRadius.all(Radius.circular(4)),
+            customBorder: ISpectSquircle.border(
+              radius: ISpectConstants.smallBorderRadius,
+            ),
             onTap: onPressed,
             child: Padding(
               padding: const EdgeInsets.all(4),
@@ -465,19 +472,15 @@ class _DesktopStatusCodeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (bgColor, textColor) = switch (statusCode) {
-      < 300 => (const Color(0xFF4CAF50), const Color(0xFF2E7D32)),
-      < 400 => (const Color(0xFFFF9800), const Color(0xFFE65100)),
-      _ => (const Color(0xFFF44336), const Color(0xFFC62828)),
-    };
+    final (bgColor, textColor) = JsonColors.statusCodeColors(statusCode);
     return Semantics(
       container: true,
       label: 'HTTP status $statusCode',
       excludeSemantics: true,
       child: DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: bgColor.withValues(alpha: 0.12),
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
+          radius: ISpectConstants.smallBorderRadius,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),

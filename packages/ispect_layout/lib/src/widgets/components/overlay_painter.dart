@@ -38,6 +38,10 @@ class OverlayPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Target may detach between build-time guards and this paint call
+    // (e.g. the inspected widget left the tree in the same frame).
+    if (!boxInfo.targetRenderBox.attached) return;
+
     final rect = boxInfo.targetRectShifted;
 
     _paintPaddingHighlights(canvas);

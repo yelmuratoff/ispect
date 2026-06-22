@@ -11,7 +11,9 @@ class ISpectShareAllLogsBottomSheet {
   const ISpectShareAllLogsBottomSheet();
 
   Future<void> show(BuildContext context) {
-    final shareCallback = context.iSpect.options.onShare;
+    final options = context.iSpect.options;
+    final shareCallback = options.onShare;
+    final metadataProvider = options.metadataProvider;
     final controller = ExportController(
       availableFormats: ExportFormat.values,
       onShare: shareCallback,
@@ -20,32 +22,48 @@ class ISpectShareAllLogsBottomSheet {
     return ISpectExportSheet.show(
       context,
       controller: controller,
-      contentBuilder: (format, {required action, redactKeys}) =>
-          _buildContent(format, redactKeys: redactKeys),
+      contentBuilder: (format, {required action, redactKeys}) async {
+        final metadata = await metadataProvider?.call();
+        return _buildContent(
+          format,
+          redactKeys: redactKeys,
+          metadata: metadata,
+        );
+      },
     );
   }
 
   static Future<String> _buildContent(
     ExportFormat format, {
     Set<String>? redactKeys,
+    ISpectMetadata? metadata,
   }) async {
     final logs = ISpect.logger.history;
     if (logs.isEmpty) return '';
 
     switch (format) {
       case ExportFormat.text:
-        return LogExporter.toText(logs, redactKeys: redactKeys);
+        return LogExporter.toText(
+          logs,
+          redactKeys: redactKeys,
+          metadata: metadata,
+        );
       case ExportFormat.markdown:
-        return LogExporter.toMarkdown(logs, redactKeys: redactKeys);
+        return LogExporter.toMarkdown(
+          logs,
+          redactKeys: redactKeys,
+          metadata: metadata,
+        );
       case ExportFormat.csv:
         return LogExporter.toCsv(logs, redactKeys: redactKeys);
       case ExportFormat.json:
         final exportData = <String, dynamic>{
-          'metadata': {
+          ISpectMetadata.exportKey: {
             'exportedAt': DateTime.now().toIso8601String(),
             'version': '1.0.0',
             'totalLogs': logs.length,
             'platform': 'ispect',
+            ...?metadata?.toMap(),
           },
           'logs': logs.map((log) => log.toJson()).toList(growable: false),
         };

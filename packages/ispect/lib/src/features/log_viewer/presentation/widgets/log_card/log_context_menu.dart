@@ -8,12 +8,16 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_icon_badge.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
+import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
+import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
+import 'package:ispect/src/ispect.dart';
 import 'package:ispectify/ispectify.dart';
 
 enum LogContextAction {
   copyMessage,
   share,
   copyCurl,
+  editAndResend,
   openDetail,
   navigationFlow,
   showOnlyType,
@@ -35,15 +39,18 @@ Future<void> showLogContextMenu({
 
   final hasFilterActions = data.key != null && onTypeFilterTap != null;
   final hasNavigationFlow = onNavigationFlowTap != null;
+  final canEditResend = ISpect.senders.isNotEmpty &&
+      HttpComposerController.seedFromLog(data) != null;
   final logKey = data.key;
   final logDescription = theme.getTypeDescription(context, key: logKey);
   final logIcon = theme.getTypeIcon(context, key: logKey);
   final logColor = theme.getTypeColor(context, key: logKey);
 
-  // Sheet sizing roughly tracks how many tiles we render.
-  final tileCount = 3 // copy, share, expand always present
-      +
+  // Sheet sizing tracks tile count: 3 unconditional tiles (copy, share,
+  // expand) plus the conditional ones below.
+  final tileCount = 3 +
       (data.curlCommand != null ? 1 : 0) +
+      (canEditResend ? 1 : 0) +
       (hasNavigationFlow ? 1 : 0) +
       (hasFilterActions ? 2 : 0);
   final estimatedSize = (0.18 + 0.06 * tileCount).clamp(0.32, 0.7);
@@ -56,6 +63,7 @@ Future<void> showLogContextMenu({
     builder: (context, scrollController) => SafeArea(
       child: _LogContextMenuSheet(
         hasCurl: data.curlCommand != null,
+        hasEditResend: canEditResend,
         hasNavigationFlow: hasNavigationFlow,
         hasFilterActions: hasFilterActions,
         l10n: l10n,
@@ -78,6 +86,8 @@ Future<void> showLogContextMenu({
     case LogContextAction.copyCurl:
       final curl = data.curlCommandWith(redactor: defaultCurlRedactor);
       if (curl != null) copyClipboard(context, value: curl);
+    case LogContextAction.editAndResend:
+      await HttpComposerScreen.openFromLog(context, data);
     case LogContextAction.openDetail:
       onOpenDetail?.call();
     case LogContextAction.navigationFlow:
@@ -101,6 +111,7 @@ String _formatLogType(String? key, String fallback) {
 class _LogContextMenuSheet extends StatelessWidget {
   const _LogContextMenuSheet({
     required this.hasCurl,
+    required this.hasEditResend,
     required this.hasNavigationFlow,
     required this.hasFilterActions,
     required this.l10n,
@@ -112,6 +123,7 @@ class _LogContextMenuSheet extends StatelessWidget {
   });
 
   final bool hasCurl;
+  final bool hasEditResend;
   final bool hasNavigationFlow;
   final bool hasFilterActions;
   final ISpectGeneratedLocalization l10n;
@@ -164,6 +176,15 @@ class _LogContextMenuSheet extends StatelessWidget {
                     onTap: () => Navigator.pop(
                       context,
                       LogContextAction.copyCurl,
+                    ),
+                  ),
+                if (hasEditResend)
+                  _ActionTile(
+                    icon: Icons.api_rounded,
+                    label: l10n.composerEditAndResend,
+                    onTap: () => Navigator.pop(
+                      context,
+                      LogContextAction.editAndResend,
                     ),
                   ),
                 _ActionTile(

@@ -1,58 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/core/res/ispect_default_palette.dart';
 import 'package:ispect/src/features/performance/performance.dart';
 
-/// A widget that wraps a `child` with a [CustomPerformanceOverlay]
-/// when performance tracking is enabled.
-///
-/// This builder provides a simple way to conditionally enable an overlay that
-/// displays frame performance metrics (e.g., FPS, frame timing bars).
-///
-/// It also applies visual styling for the overlay based on the provided `theme`.
-///
-/// The overlay uses a fixed `TextDirection.ltr` to avoid being affected by the
-/// ambient directionality, ensuring consistent placement and rendering.
-///
-/// Typically used near the top of the widget tree to wrap the main app content.
-///
-/// Example usage:
-/// ```dart
-/// ISpectPerformanceOverlayBuilder(
-///   isPerformanceTrackingEnabled: true,
-///   theme: Theme.of(context),
-///   child: MyAppView(),
-/// )
-/// ```
-///
-/// See also:
-/// - `ISpectPerformanceOverlay`, which this builder configures and displays.
+/// Wraps [child] with an [ISpectPerformanceOverlay] gated by
+/// [isPerformanceTrackingEnabled]. Pins the overlay to `TextDirection.ltr`
+/// so its placement is independent of the ambient directionality.
 class ISpectPerformanceOverlayBuilder extends StatelessWidget {
-  /// Creates a `ISpectPerformanceOverlayBuilder`.
-  ///
-  /// - `child] is the content to wrap with the performance overlay.
-  /// - `isPerformanceTrackingEnabled] determines whether the overlay is shown.
-  /// - `theme] is used to derive overlay colors from the current theme context.
   const ISpectPerformanceOverlayBuilder({
     required this.child,
     required this.isPerformanceTrackingEnabled,
     super.key,
+    this.enableJankLogging = false,
+    this.severeJankFactor = 2.0,
   });
 
-  /// The widget to display beneath the performance overlay.
   final Widget child;
-
-  /// Whether performance tracking and overlay display is enabled.
   final bool isPerformanceTrackingEnabled;
+  final bool enableJankLogging;
+  final double severeJankFactor;
 
   @override
-  Widget build(BuildContext context) => Directionality(
-        textDirection: TextDirection.ltr,
-        child: ISpectPerformanceOverlay(
-          enabled: isPerformanceTrackingEnabled,
-          alignment: Alignment.topCenter,
-          backgroundColor: context.appTheme.colorScheme.surface.withAlpha(100),
-          textColor: context.appTheme.colorScheme.onSurface,
-          child: child,
-        ),
-      );
+  Widget build(BuildContext context) {
+    final colorScheme = context.appTheme.colorScheme;
+    final useHost = context.ispectTheme.useHostColors;
+    final dark = context.ispectIsDark;
+
+    final background = (useHost
+            ? colorScheme.surfaceContainerHighest
+            : ISpectDefaultPalette.card.pick(isDark: dark)!)
+        .withValues(alpha: 0.95);
+    final textColor = useHost
+        ? colorScheme.onSurface
+        : ISpectDefaultPalette.foreground.pick(isDark: dark)!;
+    final overTarget = useHost
+        ? colorScheme.error
+        : ISpectDefaultPalette.error.pick(isDark: dark)!;
+
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: ISpectPerformanceOverlay(
+        enabled: isPerformanceTrackingEnabled,
+        alignment: Alignment.topCenter,
+        backgroundColor: background,
+        textColor: textColor,
+        overTargetColor: overTarget,
+        enableJankLogging: enableJankLogging,
+        severeJankFactor: severeJankFactor,
+        child: child,
+      ),
+    );
+  }
 }

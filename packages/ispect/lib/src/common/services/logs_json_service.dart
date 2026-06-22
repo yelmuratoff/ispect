@@ -50,11 +50,13 @@ class LogsJsonService {
     bool includeMetadata = true,
     RedactionService? redactionService,
     bool enableRedaction = true,
+    ISpectMetadata? metadata,
   }) async {
     final exportData = <String, dynamic>{};
 
     if (includeMetadata) {
-      exportData['metadata'] = _createExportMetadata(logs.length);
+      exportData[ISpectMetadata.exportKey] =
+          _createExportMetadata(logs.length, metadata);
     }
 
     final logsJson = await _processLogsInChunks(logs);
@@ -69,11 +71,16 @@ class LogsJsonService {
   }
 
   /// Creates export metadata with current timestamp and version
-  Map<String, dynamic> _createExportMetadata(int totalLogs) => {
+  Map<String, dynamic> _createExportMetadata(
+    int totalLogs,
+    ISpectMetadata? metadata,
+  ) =>
+      {
         'exportedAt': DateTime.now().toIso8601String(),
         'version': '1.0.0',
         'totalLogs': totalLogs,
         'platform': 'ispect',
+        ...?metadata?.toMap(),
       };
 
   /// Processes logs in chunks to prevent memory issues
@@ -235,6 +242,7 @@ class LogsJsonService {
     bool includeMetadata = true,
     RedactionService? redactionService,
     bool enableRedaction = true,
+    ISpectMetadata? metadata,
   }) async {
     if (logs.isEmpty) {
       ISpect.logger.info('No logs to export. Skipping file creation.');
@@ -246,6 +254,7 @@ class LogsJsonService {
       includeMetadata: includeMetadata,
       redactionService: redactionService,
       enableRedaction: enableRedaction,
+      metadata: metadata,
     );
     await LogsFileFactory.shareFile(
       jsonContent,
@@ -270,6 +279,7 @@ class LogsJsonService {
     RedactionService? redactionService,
     bool enableRedaction = true,
     Set<String>? redactKeys,
+    ISpectMetadata? metadata,
   }) async {
     if (filteredLogs.isEmpty) {
       ISpect.logger.info('No filtered logs to export. Skipping file creation.');
@@ -284,6 +294,7 @@ class LogsJsonService {
       redactionService: redactionService,
       enableRedaction: enableRedaction,
       redactKeys: redactKeys,
+      metadata: metadata,
     );
 
     await LogsFileFactory.shareFile(
@@ -306,6 +317,7 @@ class LogsJsonService {
     RedactionService? redactionService,
     bool enableRedaction = true,
     Set<String>? redactKeys,
+    ISpectMetadata? metadata,
   }) async {
     if (filteredLogs.isEmpty) {
       ISpect.logger.info('No filtered logs to export. Skipping file creation.');
@@ -320,6 +332,7 @@ class LogsJsonService {
       redactionService: redactionService,
       enableRedaction: enableRedaction,
       redactKeys: redactKeys,
+      metadata: metadata,
     );
 
     return LogsFileFactory.saveToDevice(
@@ -337,6 +350,7 @@ class LogsJsonService {
     RedactionService? redactionService,
     bool enableRedaction = true,
     Set<String>? redactKeys,
+    ISpectMetadata? metadata,
   }) {
     final effectiveRedactKeys =
         redactKeys ?? (enableRedaction ? defaultSensitiveKeys : null);
@@ -346,11 +360,13 @@ class LogsJsonService {
         return LogExporter.toText(
           filteredLogs,
           redactKeys: effectiveRedactKeys,
+          metadata: metadata,
         );
       case 'md':
         return LogExporter.toMarkdown(
           filteredLogs,
           redactKeys: effectiveRedactKeys,
+          metadata: metadata,
         );
       case 'csv':
         return LogExporter.toCsv(
@@ -362,6 +378,7 @@ class LogsJsonService {
           logs,
           filteredLogs,
           filter,
+          metadata,
         );
         if (enableRedaction && redactionService != null) {
           final logsData = exportData['logs'];
@@ -379,9 +396,11 @@ class LogsJsonService {
     List<ISpectLogData> logs,
     List<ISpectLogData> filteredLogs,
     ISpectFilter filter,
+    ISpectMetadata? metadata,
   ) =>
       {
-        'metadata': _createFilteredMetadata(logs, filteredLogs, filter),
+        ISpectMetadata.exportKey:
+            _createFilteredMetadata(logs, filteredLogs, filter, metadata),
         'logs': filteredLogs.map((log) => log.toJson()).toList(growable: false),
       };
 
@@ -390,6 +409,7 @@ class LogsJsonService {
     List<ISpectLogData> logs,
     List<ISpectLogData> filteredLogs,
     ISpectFilter filter,
+    ISpectMetadata? metadata,
   ) =>
       {
         'exportedAt': DateTime.now().toIso8601String(),
@@ -397,6 +417,7 @@ class LogsJsonService {
         'filteredLogs': filteredLogs.length,
         'platform': 'ispect',
         'appliedFilter': _createFilterSummary(filter),
+        ...?metadata?.toMap(),
       };
 
   /// Creates summary of applied filter
@@ -415,9 +436,7 @@ class LogsJsonService {
   ) =>
       logsJson.map((log) {
         final redacted = redactionService.redact(log);
-        return redacted is Map<String, dynamic>
-            ? redacted
-            : log; // fallback if redaction returns unexpected type
+        return redacted is Map<String, dynamic> ? redacted : log;
       }).toList(growable: false);
 
   /// Validates JSON structure for logs import
@@ -460,8 +479,9 @@ class LogsJsonService {
 
   /// Extracts metadata from JSON data if available
   Map<String, dynamic>? _extractMetadata(dynamic jsonData) {
-    if (jsonData is Map<String, dynamic> && jsonData.containsKey('metadata')) {
-      final metadata = jsonData['metadata'];
+    if (jsonData is Map<String, dynamic> &&
+        jsonData.containsKey(ISpectMetadata.exportKey)) {
+      final metadata = jsonData[ISpectMetadata.exportKey];
       if (metadata is Map<String, dynamic>) return metadata;
     }
     return null;

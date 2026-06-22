@@ -36,7 +36,11 @@ class ISpectDynamicColor {
   final Color? dark;
   final Color? light;
 
-  Color? resolve(BuildContext context) => context.isDarkMode ? dark : light;
+  Color? resolve(BuildContext context) => context.ispectIsDark ? dark : light;
+
+  /// Picks the [dark] or [light] variant without a context. Used by ISpect's
+  /// owned default palette, which resolves against ISpect's own brightness.
+  Color? pick({required bool isDark}) => isDark ? dark : light;
 
   ISpectDynamicColor copyWith({
     Color? dark,
@@ -73,6 +77,12 @@ class ISpectDynamicColor {
   int get hashCode => Object.hash(dark, light);
 }
 
+/// Which brightness ISpect renders its own UI in.
+///
+/// Defaults to [dark]. [system] follows the host app's brightness.
+/// Ignored when [ISpectTheme.useHostColors] is `true` (host brightness wins).
+enum ISpectThemeMode { dark, light, system }
+
 /// Defines the theme configuration for `ISpect`, including colors, icons, and log descriptions.
 ///
 /// This class allows customization of appearance settings such as:
@@ -97,6 +107,8 @@ class ISpectTheme {
   ///
   const ISpectTheme({
     this.pageTitle = 'ISpect',
+    this.themeMode = ISpectThemeMode.dark,
+    this.useHostColors = false,
     this.background,
     this.foreground,
     this.divider,
@@ -145,6 +157,11 @@ class ISpectTheme {
 
     return ISpectTheme(
       pageTitle: cast<String?>('page_title'),
+      themeMode: ISpectThemeMode.values.firstWhere(
+        (m) => m.name == map['theme_mode'],
+        orElse: () => ISpectThemeMode.dark,
+      ),
+      useHostColors: map['use_host_colors'] as bool? ?? false,
       background: map['background'] != null
           ? ISpectDynamicColor.fromMap(
               Map.from(cast<Map<String, dynamic>>('background')),
@@ -200,6 +217,15 @@ class ISpectTheme {
 
   /// The title displayed on the inspector page.
   final String? pageTitle;
+
+  /// Brightness ISpect renders its own UI in. Defaults to [ISpectThemeMode.dark]
+  /// so ISpect keeps its identity regardless of the host app's brightness.
+  final ISpectThemeMode themeMode;
+
+  /// When `true`, ISpect drops its own default palette and inherits the host
+  /// app's [ColorScheme] and brightness (the pre-6.0 behaviour). Per-field
+  /// overrides on this theme still apply on top. Defaults to `false`.
+  final bool useHostColors;
 
   /// Background color
   final ISpectDynamicColor? background;
@@ -271,6 +297,8 @@ class ISpectTheme {
   /// ```
   ISpectTheme copyWith({
     String? pageTitle,
+    ISpectThemeMode? themeMode,
+    bool? useHostColors,
     ISpectDynamicColor? background,
     ISpectDynamicColor? foreground,
     ISpectDynamicColor? divider,
@@ -286,6 +314,8 @@ class ISpectTheme {
   }) =>
       ISpectTheme(
         pageTitle: pageTitle ?? this.pageTitle,
+        themeMode: themeMode ?? this.themeMode,
+        useHostColors: useHostColors ?? this.useHostColors,
         background: background ?? this.background,
         foreground: foreground ?? this.foreground,
         divider: divider ?? this.divider,
@@ -310,6 +340,8 @@ class ISpectTheme {
   /// ```
   ISpectTheme merge(ISpectTheme other) => ISpectTheme(
         pageTitle: other.pageTitle ?? pageTitle,
+        themeMode: other.themeMode,
+        useHostColors: other.useHostColors,
         background: other.background ?? background,
         foreground: other.foreground ?? foreground,
         divider: other.divider ?? divider,
@@ -384,7 +416,7 @@ class ISpectTheme {
   /// - Merges `logColors` with default colors from `ISpectConstants`.
   /// - Uses dark mode colors if enabled.
   Map<String, Color> colors(BuildContext context) =>
-      context.isDarkMode ? _getDarkColors(this) : _getLightColors(this);
+      context.ispectIsDark ? _getDarkColors(this) : _getLightColors(this);
 
   /// Returns a combined map of default and custom log icons.
   ///
@@ -421,6 +453,8 @@ class ISpectTheme {
 
   Map<String, dynamic> toMap() => {
         'page_title': pageTitle,
+        'theme_mode': themeMode.name,
+        'use_host_colors': useHostColors,
         'background': background?.toMap(),
         'foreground': foreground?.toMap(),
         'divider': divider?.toMap(),
@@ -448,6 +482,8 @@ class ISpectTheme {
   @override
   String toString() => '''ISpectTheme(
       pageTitle: $pageTitle,
+      themeMode: $themeMode,
+      useHostColors: $useHostColors,
       background: $background,
       foreground: $foreground,
       divider: $divider,
@@ -470,6 +506,8 @@ class ISpectTheme {
     final listEquals = const ListEquality<ISpectLogType>().equals;
     return other is ISpectTheme &&
         other.pageTitle == pageTitle &&
+        other.themeMode == themeMode &&
+        other.useHostColors == useHostColors &&
         other.background == background &&
         other.foreground == foreground &&
         other.divider == divider &&
@@ -489,6 +527,8 @@ class ISpectTheme {
     const equality = DeepCollectionEquality();
     return Object.hash(
       pageTitle,
+      themeMode,
+      useHostColors,
       background,
       foreground,
       divider,

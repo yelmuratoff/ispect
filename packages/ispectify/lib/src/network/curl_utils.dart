@@ -1,7 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
 /// Utility class for generating cURL commands from HTTP request data.
-class CurlUtils {
+abstract final class CurlUtils {
   /// Generates a cURL command string from the provided request data.
   ///
   /// - [data]: A map containing request details such as 'uri', 'method',

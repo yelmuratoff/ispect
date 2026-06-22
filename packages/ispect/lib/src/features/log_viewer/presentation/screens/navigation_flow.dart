@@ -5,6 +5,7 @@ import 'package:ispect/src/common/observers/transition.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
+import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/navigation_flow/actions_sheet.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/navigation_flow/navigation_transition_card.dart';
 
@@ -50,7 +51,10 @@ class _ISpectNavigationFlowScreenState
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) =>
+      ISpectThemeScope(child: Builder(builder: _buildScaffold));
+
+  Widget _buildScaffold(BuildContext context) => Scaffold(
         backgroundColor: context.ispectThemeBackground,
         appBar: ISpectFlatAppBar(
           title: ISpectAppBarTitle(

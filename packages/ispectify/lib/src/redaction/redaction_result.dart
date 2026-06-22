@@ -2,7 +2,7 @@ import 'package:ispectify/src/redaction/redaction_stats.dart';
 
 /// The outcome of a redaction operation: the redacted data and statistics
 /// about what was redacted.
-class RedactionResult {
+final class RedactionResult {
   const RedactionResult({
     required this.data,
     required this.stats,
@@ -16,7 +16,7 @@ class RedactionResult {
 }
 
 /// The outcome of a header redaction operation.
-class HeaderRedactionResult {
+final class HeaderRedactionResult {
   const HeaderRedactionResult({
     required this.headers,
     required this.stats,

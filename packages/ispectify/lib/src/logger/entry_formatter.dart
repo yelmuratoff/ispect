@@ -36,7 +36,7 @@ String? _levelFromKey(String? key) =>
 ///
 /// All metadata fields between the timestamp and message are optional and
 /// only rendered when present in [ISpectLogData.additionalData].
-class HumanLogEntryFormatter implements ILogEntryFormatter {
+base class HumanLogEntryFormatter implements ILogEntryFormatter {
   const HumanLogEntryFormatter();
 
   @override

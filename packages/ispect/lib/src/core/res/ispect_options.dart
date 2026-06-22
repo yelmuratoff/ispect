@@ -9,6 +9,7 @@ import 'package:ispect/src/common/models/action_item.dart';
 import 'package:ispect/src/common/plugins/inspector_plugin.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
+import 'package:ispect/src/core/res/ispect_panel.dart';
 
 /// A configuration class for `ISpect`, defining various options including locale settings,
 /// feature toggles, action items, and panel configurations.
@@ -57,11 +58,14 @@ final class ISpectOptions {
     this.observer,
     this.isLogPageEnabled = true,
     this.isPerformanceEnabled = true,
+    this.enableJankLogging = false,
+    this.severeJankFactor = 2.0,
     this.isInspectorEnabled = true,
     this.isColorPickerEnabled = true,
     this.actionItems = const [],
     this.panelItems = const [],
     this.panelButtons = const [],
+    this.panelBuilder,
     this.plugins = const [],
     this.logBuilder,
     this.onShare,
@@ -69,6 +73,8 @@ final class ISpectOptions {
     this.onLoadLogContent,
     this.onSettingsChanged,
     this.initialSettings,
+    this.metadataProvider,
+    this.onPickComposerFile,
   });
 
   /// The locale setting for `ISpect`, defining the language and region preferences.
@@ -90,6 +96,17 @@ final class ISpectOptions {
   /// When `true`, performance monitoring features will be available.
   /// Defaults to `true`.
   final bool isPerformanceEnabled;
+
+  /// Routes frames where `totalSpan > target × severeJankFactor` through
+  /// [`ISpect.logger`](ISpect.logger) under [`performanceCategory`]. Off by
+  /// default to avoid log spam; enable when you want jank entries in the log
+  /// viewer.
+  final bool enableJankLogging;
+
+  /// Multiplier applied to the frame-time budget when deciding whether a
+  /// frame counts as severe jank. `2.0` matches "visible hitch" on 60Hz.
+  /// Ignored unless [enableJankLogging] is `true`.
+  final double severeJankFactor;
 
   /// Controls visibility of the widget inspector.
   ///
@@ -128,6 +145,31 @@ final class ISpectOptions {
   /// - `label`: The text label displayed for the button
   /// - `onTap`: A callback function triggered when the button is tapped
   final List<DraggablePanelButtonItem> panelButtons;
+
+  /// Builds the entire draggable diagnostics panel, replacing ISpect's default
+  /// `DraggablePanel`.
+  ///
+  /// ISpect still assembles the items (built-in tools + [panelItems] + plugins),
+  /// [panelButtons], the controller, and the default theme, and hands them to
+  /// the builder via [ISpectPanelData]. Return a `DraggablePanel` configured
+  /// however you like — every `draggable_panel` parameter (content/shell
+  /// builders, motion, behavior flags, tooltips, sizing) is available here,
+  /// including ones added in future `draggable_panel` releases, without ISpect
+  /// forwarding each one.
+  ///
+  /// ```dart
+  /// ISpectOptions(
+  ///   panelBuilder: (context, data) => DraggablePanel(
+  ///     controller: data.controller,
+  ///     items: data.items,
+  ///     buttons: data.buttons,
+  ///     theme: data.theme.copyWith(panelWidth: 240),
+  ///     panelHeight: 320,
+  ///     child: data.child,
+  ///   ),
+  /// )
+  /// ```
+  final ISpectPanelBuilder? panelBuilder;
 
   /// A list of plugins that extend the inspector panel with custom screens.
   ///
@@ -205,6 +247,20 @@ final class ISpectOptions {
   /// ```
   final ISpectSettingsState? initialSettings;
 
+  /// Supplies environment metadata (app version, device, OS, …) embedded into
+  /// the header of exported/shared log files.
+  ///
+  /// When omitted, exports carry no environment metadata. ISpect never
+  /// collects these values itself — the host app provides them, keeping
+  /// `package_info_plus`/`device_info_plus` out of ISpect's dependencies.
+  final ISpectMetadataProvider? metadataProvider;
+
+  /// Supplies files for multipart bodies in the HTTP composer.
+  ///
+  /// When omitted, the composer still supports multipart text fields but hides
+  /// the "attach file" control, so no file-picker dependency is required.
+  final ISpectComposerFilePicker? onPickComposerFile;
+
   /// Creates a new `ISpectOptions` instance with updated values while retaining
   /// existing ones where not specified.
   ///
@@ -223,11 +279,14 @@ final class ISpectOptions {
     NavigatorObserver? observer,
     bool? isLogPageEnabled,
     bool? isPerformanceEnabled,
+    bool? enableJankLogging,
+    double? severeJankFactor,
     bool? isInspectorEnabled,
     bool? isColorPickerEnabled,
     List<ISpectActionItem>? actionItems,
     List<DraggablePanelItem>? panelItems,
     List<DraggablePanelButtonItem>? panelButtons,
+    ISpectPanelBuilder? panelBuilder,
     List<InspectorPlugin>? plugins,
     ISpectLogDataBuilder? logBuilder,
     ISpectShareCallback? onShare,
@@ -235,17 +294,22 @@ final class ISpectOptions {
     ISpectLoadLogContentCallback? onLoadLogContent,
     ISpectSettingsChangedCallback? onSettingsChanged,
     ISpectSettingsState? initialSettings,
+    ISpectMetadataProvider? metadataProvider,
+    ISpectComposerFilePicker? onPickComposerFile,
   }) {
     return ISpectOptions(
       locale: locale ?? this.locale,
       observer: observer ?? this.observer,
       isLogPageEnabled: isLogPageEnabled ?? this.isLogPageEnabled,
       isPerformanceEnabled: isPerformanceEnabled ?? this.isPerformanceEnabled,
+      enableJankLogging: enableJankLogging ?? this.enableJankLogging,
+      severeJankFactor: severeJankFactor ?? this.severeJankFactor,
       isInspectorEnabled: isInspectorEnabled ?? this.isInspectorEnabled,
       isColorPickerEnabled: isColorPickerEnabled ?? this.isColorPickerEnabled,
       actionItems: actionItems ?? this.actionItems,
       panelItems: panelItems ?? this.panelItems,
       panelButtons: panelButtons ?? this.panelButtons,
+      panelBuilder: panelBuilder ?? this.panelBuilder,
       plugins: plugins ?? this.plugins,
       logBuilder: logBuilder ?? this.logBuilder,
       onShare: onShare ?? this.onShare,
@@ -253,6 +317,8 @@ final class ISpectOptions {
       onLoadLogContent: onLoadLogContent ?? this.onLoadLogContent,
       onSettingsChanged: onSettingsChanged ?? this.onSettingsChanged,
       initialSettings: initialSettings ?? this.initialSettings,
+      metadataProvider: metadataProvider ?? this.metadataProvider,
+      onPickComposerFile: onPickComposerFile ?? this.onPickComposerFile,
     );
   }
 
@@ -266,34 +332,42 @@ final class ISpectOptions {
         other.observer == observer &&
         other.isLogPageEnabled == isLogPageEnabled &&
         other.isPerformanceEnabled == isPerformanceEnabled &&
+        other.enableJankLogging == enableJankLogging &&
+        other.severeJankFactor == severeJankFactor &&
         other.isInspectorEnabled == isInspectorEnabled &&
         other.isColorPickerEnabled == isColorPickerEnabled &&
         listEquals(other.actionItems, actionItems) &&
         listEquals(other.panelItems, panelItems) &&
         listEquals(other.panelButtons, panelButtons) &&
+        other.panelBuilder == panelBuilder &&
         listEquals(other.plugins, plugins) &&
         other.logBuilder == logBuilder &&
         other.onShare == onShare &&
         other.onOpenFile == onOpenFile &&
         other.onLoadLogContent == onLoadLogContent &&
         other.onSettingsChanged == onSettingsChanged &&
-        other.initialSettings == initialSettings;
+        other.initialSettings == initialSettings &&
+        other.metadataProvider == metadataProvider &&
+        other.onPickComposerFile == onPickComposerFile;
   }
 
   static const _deepEquality = DeepCollectionEquality();
 
   @override
   int get hashCode {
-    return Object.hash(
+    return Object.hashAll([
       locale,
       observer,
       isLogPageEnabled,
       isPerformanceEnabled,
+      enableJankLogging,
+      severeJankFactor,
       isInspectorEnabled,
       isColorPickerEnabled,
       _deepEquality.hash(actionItems),
       _deepEquality.hash(panelItems),
       _deepEquality.hash(panelButtons),
+      panelBuilder,
       _deepEquality.hash(plugins),
       logBuilder,
       onShare,
@@ -301,7 +375,9 @@ final class ISpectOptions {
       onLoadLogContent,
       onSettingsChanged,
       initialSettings,
-    );
+      metadataProvider,
+      onPickComposerFile,
+    ]);
   }
 
   @override
@@ -311,11 +387,14 @@ final class ISpectOptions {
       observer: $observer,
       isLogPageEnabled: $isLogPageEnabled,
       isPerformanceEnabled: $isPerformanceEnabled,
+      enableJankLogging: $enableJankLogging,
+      severeJankFactor: $severeJankFactor,
       isInspectorEnabled: $isInspectorEnabled,
       isColorPickerEnabled: $isColorPickerEnabled,
       actionItems: $actionItems,
       panelItems: $panelItems,
       panelButtons: $panelButtons,
+      panelBuilder: $panelBuilder,
       plugins: $plugins,
       logBuilder: $logBuilder,
       onShare: $onShare,
@@ -323,6 +402,8 @@ final class ISpectOptions {
       onLoadLogContent: $onLoadLogContent,
       onSettingsChanged: $onSettingsChanged,
       initialSettings: $initialSettings,
+      metadataProvider: $metadataProvider,
+      onPickComposerFile: $onPickComposerFile,
       )''';
   }
 }

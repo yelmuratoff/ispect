@@ -6,6 +6,14 @@ import 'package:ispectify_http/src/data/_data.dart';
 import 'package:ispectify_http/src/settings.dart';
 
 /// HTTP client interceptor that logs requests/responses via the trace API.
+///
+/// Register this interceptor **last** in the `interceptors` list. Correlation
+/// between a request and its response is keyed on the `BaseRequest` instance,
+/// and `http_interceptor` lets each interceptor return a *new* request object
+/// (`current = await interceptor.interceptRequest(...)`). Placing this last
+/// guarantees it observes the same final request object on both the request and
+/// response legs; an interceptor registered after it that rebuilds the request
+/// would otherwise leave the response uncorrelated (shown as "Pending").
 class ISpectHttpInterceptor
     with
         NetworkLoggerMixin,
@@ -83,8 +91,8 @@ class ISpectHttpInterceptor
       correlationId: requestId,
       config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
       meta: {
-        'request-id': requestId,
-        'request-data': requestDataJson,
+        NetworkJsonKeys.requestId: requestId,
+        NetworkJsonKeys.requestData: requestDataJson,
         NetworkLogRenderer.renderHintsKey: {
           NetworkLogRenderer.hintPrintBody: settings.printRequestData,
           NetworkLogRenderer.hintPrintHeaders: settings.printRequestHeaders,
@@ -137,9 +145,9 @@ class ISpectHttpInterceptor
     final responseDataJson = responseData.toJson();
     if (useRedaction) HttpResponseData.redact(responseDataJson, redactor);
     final baseMeta = <String, Object?>{
-      if (requestId != null) 'request-id': requestId,
-      'status-code': response.statusCode,
-      'response-data': responseDataJson,
+      if (requestId != null) NetworkJsonKeys.requestId: requestId,
+      NetworkJsonKeys.statusCode: response.statusCode,
+      NetworkJsonKeys.responseData: responseDataJson,
     };
 
     final method = request?.method ?? 'UNKNOWN';

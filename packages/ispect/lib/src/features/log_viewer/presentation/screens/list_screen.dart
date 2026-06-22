@@ -3,6 +3,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
+import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/common/widgets/resizable_split_view.dart';
 import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
@@ -28,6 +29,7 @@ class LogsV2Screen extends StatefulWidget {
     this.sessionPath,
     this.sessionDate,
     this.onShare,
+    this.metadataProvider,
   });
 
   final String? appBarTitle;
@@ -35,6 +37,7 @@ class LogsV2Screen extends StatefulWidget {
   final String? sessionPath;
   final DateTime? sessionDate;
   final ISpectShareCallback? onShare;
+  final ISpectMetadataProvider? metadataProvider;
 
   /// Pushes this screen onto the navigation stack
   void push(BuildContext context) {
@@ -62,6 +65,7 @@ class _LogsScreenState extends State<LogsV2Screen> {
     super.initState();
     _logsViewController = ISpectViewController(
       onShare: widget.onShare,
+      metadataProvider: widget.metadataProvider,
     )..toggleExpandedLogs();
     getLogs();
   }
@@ -76,7 +80,10 @@ class _LogsScreenState extends State<LogsV2Screen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ISpectThemeScope(child: Builder(builder: _buildScaffold));
+
+  Widget _buildScaffold(BuildContext context) {
     final iSpect = ISpect.read(context);
     return Scaffold(
       backgroundColor: context.ispectThemeBackground,

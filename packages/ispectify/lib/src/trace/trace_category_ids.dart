@@ -24,6 +24,9 @@ abstract final class TraceCategoryIds {
   // ── UI ─────────────────────────────────────────────────────────────────
   static const navigation = 'navigation';
 
+  // ── Runtime ────────────────────────────────────────────────────────────
+  static const performance = 'performance';
+
   // ── Fallback ───────────────────────────────────────────────────────────
   static const general = 'general';
 
@@ -42,5 +45,6 @@ abstract final class TraceCategoryIds {
     analytics,
     payment,
     navigation,
+    performance,
   };
 }

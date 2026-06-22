@@ -43,7 +43,6 @@ Potential integrations land only when there is real demand and a maintainable AP
 
 - GraphQL clients.
 - gRPC clients.
-- Riverpod observer.
 - GoRouter and AutoRoute navigation diagnostics.
 - Firebase and Supabase wrappers.
 - Analytics and crash-reporting breadcrumbs.

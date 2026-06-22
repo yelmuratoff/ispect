@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
@@ -195,10 +196,7 @@ class _LogTypeGroup extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
-        ),
+        decoration: ISpectSquircle.decoration(color: cardColor),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
           child: Column(
@@ -267,17 +265,19 @@ class _LogTypeChip extends StatelessWidget {
         child: InkWell(
           excludeFromSemantics: true,
           onTap: onToggled,
-          borderRadius: const BorderRadius.all(Radius.circular(8)),
+          customBorder: ISpectSquircle.border(
+            radius: ISpectConstants.standardBorderRadius,
+          ),
           child: AnimatedContainer(
             duration: ISpectMotion.short,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
+            decoration: ISpectSquircle.decoration(
               color: isEnabled
                   ? effectiveColor?.withValues(alpha: 0.12)
                   : context.appTheme.colorScheme.onSurface
                       .withValues(alpha: 0.04),
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-              border: Border.all(
+              radius: ISpectConstants.standardBorderRadius,
+              side: BorderSide(
                 color: isEnabled
                     ? effectiveColor?.withValues(alpha: 0.3) ??
                         Colors.transparent

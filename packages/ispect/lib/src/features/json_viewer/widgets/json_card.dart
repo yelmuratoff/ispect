@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/features/json_viewer/extensions/color_extensions.dart';
 
 /// A card-like container widget that wraps its child
@@ -49,11 +50,12 @@ class JsonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          border:
-              borderSide != null ? Border.fromBorderSide(borderSide!) : null,
+        decoration: ShapeDecoration(
           color: backgroundColor?.withAlphaPercent(0.2),
-          borderRadius: borderRadius,
+          shape: ContinuousRectangleBorder(
+            borderRadius: borderRadius * ISpectSquircle.scale,
+            side: borderSide ?? BorderSide.none,
+          ),
         ),
         child: Padding(
           padding: padding,

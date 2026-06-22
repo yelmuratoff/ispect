@@ -48,8 +48,8 @@
 dependencies:
   http: ^1.0.0
   http_interceptor: ^2.0.0
-  ispectify: ^5.0.4
-  ispectify_http: ^5.0.4
+  ispectify: ^6.0.0-dev.35
+  ispectify_http: ^6.0.0-dev.35
 ```
 
 ## Quick start
@@ -77,6 +77,8 @@ ISpect.run(
   },
 );
 ```
+
+> Register `ISpectHttpInterceptor` **last** in the `interceptors` list. Request/response correlation is keyed on the `BaseRequest` instance, and `http_interceptor` lets each interceptor return a new request object. If an interceptor registered after it rebuilds the request, the response can't be matched and stays "Pending".
 
 ## Settings
 
@@ -164,9 +166,10 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core: typed log entries, filtering, tracing, observers. |
 | [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction. |
 | [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction. |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | WebSocket traffic capture with automatic redaction. |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | Provider-agnostic WebSocket capture (any client) with automatic redaction. |
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing for SQL, ORMs, and KV stores. |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event, state, transition, and error observer. |
+| [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer. |
 
 
 ## Contributing

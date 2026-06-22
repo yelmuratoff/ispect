@@ -31,7 +31,7 @@ String formatRadius(Radius r, {int decimalPlaces = 1}) => r.x == r.y
     );
   }
   return (
-    label: 'radius TL/TR/BR/BL',
+    label: 'radius',
     value: corners
         .map((corner) => formatRadius(corner, decimalPlaces: decimalPlaces))
         .join(', '),
@@ -126,7 +126,12 @@ String describeTextScaler(TextScaler scaler) {
 String describeImageFilter(ImageFilter filter) {
   assert(_assertReleaseSafeContracts());
   final raw = filter.toString();
-  if (!raw.startsWith(_kStrippedToStringPrefix)) return raw;
+  if (!raw.startsWith(_kStrippedToStringPrefix)) {
+    return raw.replaceFirst('ImageFilter.', '').replaceAllMapped(
+          RegExp(r',\s*(TileMode\.\w+|unspecified)\)$'),
+          (_) => ')',
+        );
+  }
   final kind = _ImageFilterKind.lookup(filter.runtimeType);
   if (kind == null) return 'ImageFilter';
   try {
@@ -255,6 +260,46 @@ List<TextStyle> extractTextStyles(InlineSpan span, [List<TextStyle>? out]) {
     }
   }
   return out;
+}
+
+/// One styled segment: the explicit [TextStyle] on a span node plus a short
+/// preview of the text that node directly holds (not its children). Spans with
+/// no explicit style are omitted.
+typedef SpanStyleGroup = ({TextStyle style, String? textPreview});
+
+const _kSpanPreviewCap = 36;
+
+/// Traverses an [InlineSpan] tree depth-first, collecting each node that
+/// carries an explicit [TextStyle] paired with a short preview of that node's
+/// own text (not its children). Used by the inspector's TYPOGRAPHY section to
+/// visually group chips by span.
+List<SpanStyleGroup> extractSpanStyleGroups(InlineSpan root) {
+  final result = <SpanStyleGroup>[];
+
+  void visit(InlineSpan node) {
+    if (node is TextSpan) {
+      if (node.style != null) {
+        String? preview;
+        final text = node.text;
+        if (text != null && text.isNotEmpty) {
+          final clean = text.replaceAll('\n', '⏎');
+          preview = clean.length > _kSpanPreviewCap
+              ? '${clean.substring(0, _kSpanPreviewCap)}…'
+              : clean;
+        }
+        result.add((style: node.style!, textPreview: preview));
+      }
+      final children = node.children;
+      if (children != null) {
+        for (final c in children) {
+          visit(c);
+        }
+      }
+    }
+  }
+
+  visit(root);
+  return result;
 }
 
 /// Truncated, newline-escaped plain-text preview of an [InlineSpan]. Caps at

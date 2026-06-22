@@ -30,8 +30,8 @@ class ISpectBlocSettings {
     this.printCreations = true,
     this.printClosings = true,
     this.printErrors = true,
-    this.printEventFullData = false,
-    this.printStateFullData = false,
+    this.printEventFullData = true,
+    this.printStateFullData = true,
     this.transitionFilter,
     this.eventFilter,
     this.changeFilter,
@@ -49,9 +49,14 @@ class ISpectBlocSettings {
   );
 
   /// Logs every lifecycle event with full payloads.
-  static const ISpectBlocSettings verbose = ISpectBlocSettings(
-    printStateFullData: true,
-  );
+  ///
+  /// The default settings already capture full event and state payloads, so
+  /// this preset is now equivalent to `ISpectBlocSettings()`.
+  @Deprecated(
+    'Default settings now capture full payloads; use ISpectBlocSettings(). '
+    'Will be removed in 6.0.0.',
+  )
+  static const ISpectBlocSettings verbose = ISpectBlocSettings();
 
   /// Whether logging is enabled.
   final bool enabled;

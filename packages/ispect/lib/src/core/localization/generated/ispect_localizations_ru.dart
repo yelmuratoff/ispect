@@ -691,6 +691,9 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
       'Сообщение получено через WebSocket соединение';
 
   @override
+  String get wsStateLogDesc => 'Изменение состояния WebSocket соединения';
+
+  @override
   String get dbQueryLogDesc => 'Запрос к базе данных выполнен';
 
   @override
@@ -742,7 +745,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get groupHttp => 'HTTP';
 
   @override
-  String get groupBloc => 'Bloc';
+  String get groupBloc => 'Состояние';
 
   @override
   String get groupRiverpod => 'Riverpod';
@@ -845,6 +848,12 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get graphqlErrorLogDesc => 'Ошибка GraphQL операции';
+
+  @override
+  String get performanceJankLogDesc => 'Кадр превысил бюджет рендера';
+
+  @override
+  String get performanceErrorLogDesc => 'Ошибка телеметрии производительности';
 
   @override
   String get transitionPush => 'Push';
@@ -1020,4 +1029,75 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => 'Ещё';
+
+  @override
+  String get composerTitle => 'HTTP-композер';
+
+  @override
+  String get composerSend => 'Отправить';
+
+  @override
+  String get composerMethod => 'Метод';
+
+  @override
+  String get composerClient => 'Клиент';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => 'Заголовки';
+
+  @override
+  String get composerQueryParameters => 'Параметры запроса';
+
+  @override
+  String get composerBody => 'Тело';
+
+  @override
+  String get composerAddField => 'Добавить';
+
+  @override
+  String get composerAddHeader => 'Добавить заголовок';
+
+  @override
+  String get composerAddParameter => 'Добавить параметр';
+
+  @override
+  String get composerViewJson => 'Открыть в просмотре JSON';
+
+  @override
+  String get composerKeyHint => 'Ключ';
+
+  @override
+  String get composerValueHint => 'Значение';
+
+  @override
+  String get composerAttachFile => 'Прикрепить файл';
+
+  @override
+  String get composerResponse => 'Ответ';
+
+  @override
+  String get composerResponsePlaceholder =>
+      'Отправьте запрос, чтобы увидеть ответ';
+
+  @override
+  String get composerNoClients =>
+      'Зарегистрируйте клиент Dio или http для отправки запросов';
+
+  @override
+  String get composerErrorUrlRequired => 'Введите URL';
+
+  @override
+  String get composerErrorUrlInvalid => 'Введите корректный абсолютный URL';
+
+  @override
+  String get composerErrorInvalidJson => 'Тело не является корректным JSON';
+
+  @override
+  String get composerErrorNoClient => 'Клиент не зарегистрирован';
+
+  @override
+  String get composerEditAndResend => 'Изменить и отправить';
 }

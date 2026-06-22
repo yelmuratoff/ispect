@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_bloc/src/data/_data.dart';
 import 'package:ispectify_bloc/src/settings.dart';
 
 typedef BlocEventCallback = void Function(
@@ -29,10 +30,13 @@ typedef BlocLifecycleCallback = void Function(BlocBase<dynamic> bloc);
 
 typedef BlocFilterPredicate = bool Function(Object? candidate);
 
-/// BLoC observer that logs lifecycle events via the unified trace API.
+/// BLoC observer that logs lifecycle events via the unified trace API under
+/// the `bloc-event`, `bloc-transition`, `bloc-state`, `bloc-create`,
+/// `bloc-close`, `bloc-done`, and `bloc-error` log keys.
 class ISpectBlocObserver extends BlocObserver {
   ISpectBlocObserver({
     ISpectLogger? logger,
+    // ignore: use_named_constants — the matching named const is deprecated.
     this.settings = const ISpectBlocSettings(),
     this.onBlocEvent,
     this.onBlocTransition,
@@ -56,6 +60,8 @@ class ISpectBlocObserver extends BlocObserver {
   final ISpectBlocSettings settings;
   final List<Pattern> filters;
   final BlocFilterPredicate? filterPredicate;
+
+  static const String _source = 'bloc';
 
   /// Event correlation: stores pending eventIds per bloc instance.
   /// Queue (FIFO) handles concurrent events correctly.
@@ -104,10 +110,16 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (_) {}
   }
 
-  Map<String, Object?>? _applyMeta(Map<String, Object?>? meta) =>
-      settings.isRedactionActive
-          ? settings.redactAdditionalData(meta ?? {})
-          : meta;
+  Map<String, Object?> _withRedaction(
+    Map<String, dynamic> data,
+    void Function(Map<String, dynamic>, RedactionService) redact,
+  ) {
+    final redactor = settings.redactor;
+    if (settings.isRedactionActive && redactor != null) {
+      redact(data, redactor);
+    }
+    return data;
+  }
 
   @override
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
@@ -128,22 +140,20 @@ class ISpectBlocObserver extends BlocObserver {
     final eventId = generateTraceId();
     (_pendingEventIds[bloc] ??= Queue<String>()).add(eventId);
 
-    final blocType = bloc.runtimeType.toString();
-    final eventTypeName = event.runtimeType.toString();
-    _logger.stateChange(
-      source: 'bloc',
-      operation: 'event',
-      stateName: blocType,
-      success: true,
+    final data = BlocEventData(
+      bloc: bloc,
+      event: event,
+      includeFullData: settings.printEventFullData,
+    );
+    final meta = _withRedaction(data.toJson(), BlocEventData.redact);
+    _logger.blocEvent(
+      source: _source,
+      target: data.blocType,
       correlationId: eventId,
+      meta: meta,
       consoleMessage: settings.printEventFullData && event != null
-          ? '[bloc] event → $blocType\nEvent($eventTypeName): $event'
-          : '[bloc] event → $blocType ($eventTypeName)',
-      meta: _applyMeta({
-        'blocType': blocType,
-        'eventType': eventTypeName,
-        if (settings.printEventFullData && event != null) 'event': event,
-      }),
+          ? '[bloc] event → ${data.blocType}\nEvent(${data.eventType}): $event'
+          : '[bloc] event → ${data.blocType} (${data.eventType})',
     );
   }
 
@@ -167,31 +177,27 @@ class ISpectBlocObserver extends BlocObserver {
     }
 
     final eventId = _pendingEventIds[bloc]?.firstOrNull;
-    final blocType = bloc.runtimeType.toString();
-    final currentStateFormatted = settings.formatState(transition.currentState);
-    final nextStateFormatted = settings.formatState(transition.nextState);
-    final eventTypeName = transition.event.runtimeType.toString();
-    _logger.stateChange(
-      source: 'bloc',
-      operation: 'transition',
-      stateName: blocType,
-      success: true,
+    final data = BlocTransitionData(
+      bloc: bloc,
+      transition: transition,
+      includeEventFullData: settings.printEventFullData,
+      formattedCurrentState: settings.formatState(transition.currentState),
+      formattedNextState: settings.formatState(transition.nextState),
+    );
+    final meta = _withRedaction(data.toJson(), BlocTransitionData.redact);
+    _logger.blocTransition(
+      source: _source,
+      target: data.blocType,
       correlationId: eventId,
+      meta: meta,
       consoleMessage: _buildBlocTransitionMessage(
-        blocType: blocType,
-        eventTypeName: eventTypeName,
-        currentState: currentStateFormatted,
-        nextState: nextStateFormatted,
+        blocType: data.blocType,
+        eventTypeName: data.eventType,
+        currentState: data.formattedCurrentState,
+        nextState: data.formattedNextState,
         printEventFullData: settings.printEventFullData,
         event: transition.event,
       ),
-      meta: _applyMeta({
-        'blocType': blocType,
-        'eventType': eventTypeName,
-        'currentState': currentStateFormatted,
-        'nextState': nextStateFormatted,
-        if (settings.printEventFullData) 'event': transition.event,
-      }),
     );
   }
 
@@ -213,25 +219,23 @@ class ISpectBlocObserver extends BlocObserver {
 
     // Peek eventId (no pop — pop happens only in onDone)
     final eventId = _pendingEventIds[bloc]?.firstOrNull;
-    final blocType = bloc.runtimeType.toString();
-    final currentStateFormatted = settings.formatState(change.currentState);
-    final nextStateFormatted = settings.formatState(change.nextState);
-    _logger.stateChange(
-      source: 'bloc',
-      operation: 'state',
-      stateName: blocType,
-      success: true,
+    final data = BlocChangeData(
+      bloc: bloc,
+      change: change,
+      formattedCurrentState: settings.formatState(change.currentState),
+      formattedNextState: settings.formatState(change.nextState),
+    );
+    final meta = _withRedaction(data.toJson(), BlocChangeData.redact);
+    _logger.blocState(
+      source: _source,
+      target: data.blocType,
       correlationId: eventId,
+      meta: meta,
       consoleMessage: _buildBlocChangeMessage(
-        blocType: blocType,
-        currentState: currentStateFormatted,
-        nextState: nextStateFormatted,
+        blocType: data.blocType,
+        currentState: data.formattedCurrentState,
+        nextState: data.formattedNextState,
       ),
-      meta: _applyMeta({
-        'blocType': blocType,
-        'currentState': currentStateFormatted,
-        'nextState': nextStateFormatted,
-      }),
     );
   }
 
@@ -247,14 +251,18 @@ class ISpectBlocObserver extends BlocObserver {
       _logCallbackError('onBlocError', callbackError);
     }
 
-    final blocType = bloc.runtimeType.toString();
-    _logger.stateChange(
-      source: 'bloc',
-      operation: 'error',
-      stateName: blocType,
+    final data = BlocErrorData(
+      bloc: bloc,
+      error: error,
+      stackTrace: stackTrace,
+    );
+    final meta = _withRedaction(data.toJson(), BlocErrorData.redact);
+    _logger.blocError(
+      source: _source,
+      target: data.blocType,
       error: error,
       errorStackTrace: stackTrace,
-      meta: _applyMeta({'blocType': blocType}),
+      meta: meta,
     );
   }
 
@@ -270,13 +278,12 @@ class ISpectBlocObserver extends BlocObserver {
       _logCallbackError('onBlocCreate', callbackError);
     }
 
-    final blocType = bloc.runtimeType.toString();
-    _logger.stateChange(
-      source: 'bloc',
-      operation: 'create',
-      stateName: blocType,
-      success: true,
-      meta: _applyMeta({'blocType': blocType}),
+    final data = BlocLifecycleData(bloc: bloc);
+    final meta = _withRedaction(data.toJson(), BlocLifecycleData.redact);
+    _logger.blocCreate(
+      source: _source,
+      target: data.blocType,
+      meta: meta,
     );
   }
 
@@ -292,13 +299,12 @@ class ISpectBlocObserver extends BlocObserver {
       _logCallbackError('onBlocClose', callbackError);
     }
 
-    final blocType = bloc.runtimeType.toString();
-    _logger.stateChange(
-      source: 'bloc',
-      operation: 'close',
-      stateName: blocType,
-      success: true,
-      meta: _applyMeta({'blocType': blocType}),
+    final data = BlocLifecycleData(bloc: bloc);
+    final meta = _withRedaction(data.toJson(), BlocLifecycleData.redact);
+    _logger.blocClose(
+      source: _source,
+      target: data.blocType,
+      meta: meta,
     );
 
     // Clear any pending event IDs for this bloc to prevent memory leaks.
@@ -326,25 +332,24 @@ class ISpectBlocObserver extends BlocObserver {
         (settings.printErrors && error != null);
     if (!shouldLogCompletion) return;
 
-    final blocType = bloc.runtimeType.toString();
-    final eventTypeName = event?.runtimeType.toString();
-    _logger.stateChange(
-      source: 'bloc',
-      operation: 'done',
-      stateName: blocType,
-      success: error == null,
+    final data = BlocDoneData(
+      bloc: bloc,
+      event: event,
+      hasError: error != null,
+      includeFullData: settings.printEventFullData,
+    );
+    final meta = _withRedaction(data.toJson(), BlocDoneData.redact);
+    _logger.blocDone(
+      source: _source,
+      target: data.blocType,
+      hasError: data.hasError,
       error: error,
       errorStackTrace: stackTrace,
       correlationId: eventId,
+      meta: meta,
       consoleMessage: settings.printEventFullData && event != null
-          ? '[bloc] done → $blocType\nEvent($eventTypeName): $event'
-          : '[bloc] done → $blocType${eventTypeName != null ? ' ($eventTypeName)' : ''}',
-      meta: _applyMeta({
-        'blocType': blocType,
-        if (event != null) 'eventType': eventTypeName,
-        if (settings.printEventFullData && event != null) 'event': event,
-        'hasError': error != null,
-      }),
+          ? '[bloc] done → ${data.blocType}\nEvent(${data.eventType}): $event'
+          : '[bloc] done → ${data.blocType}${data.eventType != null ? ' (${data.eventType})' : ''}',
     );
   }
 

@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/services/error_handler_options.dart';
 import 'package:ispectify/ispectify.dart';
 
-class ErrorHandlerService {
+/// Installs and owns the app-level error/log handlers (`FlutterError`,
+/// `PlatformDispatcher`, guarded-zone, and `print`) and funnels every captured
+/// failure through [ISpectLogger.handle].
+final class ErrorHandlerService {
   ErrorHandlerService({
     required this.logger,
     required this.filters,
@@ -21,14 +24,14 @@ class ErrorHandlerService {
     void Function(Object, StackTrace)? onPlatformDispatcherError,
     void Function(FlutterErrorDetails, StackTrace?)? onFlutterError,
     void Function(FlutterErrorDetails, StackTrace?)? onPresentError,
-    void Function(List<dynamic>)? onUncaughtErrors,
+    void Function(Object error, StackTrace? stack)? onUncaughtError,
   }) {
     logger.info('🚀 ISpect: Setting up error handling.');
 
     if (options.isFlutterPresentHandlingEnabled) {
       _setupPresentErrorHandler(
         onPresentError: onPresentError,
-        onUncaughtErrors: onUncaughtErrors,
+        onUncaughtError: onUncaughtError,
         isUncaughtErrorsHandlingEnabled:
             options.isUncaughtErrorsHandlingEnabled,
       );
@@ -37,7 +40,7 @@ class ErrorHandlerService {
     if (options.isPlatformDispatcherHandlingEnabled) {
       _setupPlatformDispatcherHandler(
         onPlatformDispatcherError: onPlatformDispatcherError,
-        onUncaughtErrors: onUncaughtErrors,
+        onUncaughtError: onUncaughtError,
         isUncaughtErrorsHandlingEnabled:
             options.isUncaughtErrorsHandlingEnabled,
       );
@@ -46,7 +49,7 @@ class ErrorHandlerService {
     if (options.isFlutterErrorHandlingEnabled) {
       _setupFlutterErrorHandler(
         onFlutterError: onFlutterError,
-        onUncaughtErrors: onUncaughtErrors,
+        onUncaughtError: onUncaughtError,
         isUncaughtErrorsHandlingEnabled:
             options.isUncaughtErrorsHandlingEnabled,
       );
@@ -57,133 +60,79 @@ class ErrorHandlerService {
 
   void _setupPresentErrorHandler({
     required void Function(FlutterErrorDetails, StackTrace?)? onPresentError,
-    required void Function(List<dynamic>)? onUncaughtErrors,
+    required void Function(Object error, StackTrace? stack)? onUncaughtError,
     required bool isUncaughtErrorsHandlingEnabled,
   }) {
     FlutterError.presentError = (details) {
-      void handleError() {
+      void report() {
         onPresentError?.call(details, details.stack);
-
-        final snapshot = _captureStrings(
-          details.exceptionAsString(),
-          details.stack,
+        _report(
+          exception: details.exception,
+          stack: details.stack,
+          logMessage: 'Flutter error presented',
+          onUncaughtError: onUncaughtError,
+          isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
         );
-
-        if (_shouldHandleError(snapshot)) {
-          logger.handle(
-            message: 'Flutter error presented',
-            exception: details,
-            stackTrace: details.stack,
-          );
-          _notifyUncaughtErrors(
-            <dynamic>[details, details.stack],
-            isEnabled: isUncaughtErrorsHandlingEnabled,
-            callback: onUncaughtErrors,
-          );
-        }
       }
 
       try {
-        WidgetsBinding.instance.addPostFrameCallback((_) => handleError());
+        WidgetsBinding.instance.addPostFrameCallback((_) => report());
       } catch (_) {
-        handleError();
+        report();
       }
     };
   }
 
   void _setupPlatformDispatcherHandler({
     required void Function(Object, StackTrace)? onPlatformDispatcherError,
-    required void Function(List<dynamic>)? onUncaughtErrors,
+    required void Function(Object error, StackTrace? stack)? onUncaughtError,
     required bool isUncaughtErrorsHandlingEnabled,
   }) {
     PlatformDispatcher.instance.onError = (error, stack) {
       onPlatformDispatcherError?.call(error, stack);
-
-      final snapshot = _captureStrings(error, stack);
-
-      if (_shouldHandleError(snapshot)) {
-        logger.handle(
-          message: 'Platform error caught',
-          exception: error,
-          stackTrace: stack,
-        );
-        _notifyUncaughtErrors(
-          <dynamic>[error, stack],
-          isEnabled: isUncaughtErrorsHandlingEnabled,
-          callback: onUncaughtErrors,
-        );
-      }
+      _report(
+        exception: error,
+        stack: stack,
+        logMessage: 'Platform error caught',
+        onUncaughtError: onUncaughtError,
+        isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
+      );
       return true;
     };
   }
 
   void _setupFlutterErrorHandler({
     required void Function(FlutterErrorDetails, StackTrace?)? onFlutterError,
-    required void Function(List<dynamic>)? onUncaughtErrors,
+    required void Function(Object error, StackTrace? stack)? onUncaughtError,
     required bool isUncaughtErrorsHandlingEnabled,
   }) {
     FlutterError.onError = (details) {
       onFlutterError?.call(details, details.stack);
-
-      final snapshot = _captureStrings(details, details.stack);
-
-      if (_shouldHandleError(snapshot)) {
-        logger.error(
-          'FlutterErrorDetails',
-          exception: snapshot.message,
-          stackTrace: details.stack,
-        );
-        _notifyUncaughtErrors(
-          <dynamic>[details, details.stack],
-          isEnabled: isUncaughtErrorsHandlingEnabled,
-          callback: onUncaughtErrors,
-        );
-      }
+      _report(
+        exception: details.exception,
+        stack: details.stack,
+        logMessage: 'Flutter error caught',
+        onUncaughtError: onUncaughtError,
+        isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
+      );
     };
-  }
-
-  bool _shouldHandleError(_ErrorSnapshot snapshot) {
-    if (filters.isEmpty) return true;
-
-    return !filters.any(
-      (filter) =>
-          snapshot.message.contains(filter) || snapshot.stack.contains(filter),
-    );
-  }
-
-  void _notifyUncaughtErrors(
-    List<dynamic> errorData, {
-    required bool isEnabled,
-    required void Function(List<dynamic>)? callback,
-  }) {
-    if (isEnabled) {
-      callback?.call(errorData);
-    }
   }
 
   void handleZoneError(
     Object error,
     StackTrace stackTrace, {
     required void Function(Object, StackTrace)? onZonedError,
-    required void Function(List<dynamic>)? onUncaughtErrors,
+    required void Function(Object error, StackTrace? stack)? onUncaughtError,
     required bool isUncaughtErrorsHandlingEnabled,
   }) {
     onZonedError?.call(error, stackTrace);
-
-    final snapshot = _captureStrings(error, stackTrace);
-
-    if (_shouldHandleError(snapshot)) {
-      logger.handle(
-        message: 'Zoned error caught',
-        exception: error,
-        stackTrace: stackTrace,
-      );
-      _notifyUncaughtErrors(
-        <dynamic>[error, stackTrace],
-        isEnabled: isUncaughtErrorsHandlingEnabled,
-        callback: onUncaughtErrors,
-      );
-    }
+    _report(
+      exception: error,
+      stack: stackTrace,
+      logMessage: 'Zoned error caught',
+      onUncaughtError: onUncaughtError,
+      isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
+    );
   }
 
   void handleZonePrint(
@@ -201,7 +150,7 @@ class ErrorHandlerService {
 
     _isHandlingPrint = true;
     try {
-      if (isPrintLoggingEnabled && !_containsAnsi(line)) {
+      if (isPrintLoggingEnabled && !containsAnsi(line)) {
         logger.print(line);
       } else if (isFlutterPrintEnabled) {
         zoneDelegate.print(parent, line);
@@ -211,18 +160,36 @@ class ErrorHandlerService {
     }
   }
 
-  bool _containsAnsi(String line) => containsAnsi(line);
+  /// Logs [exception]/[stack] through [ISpectLogger.handle] when it passes the
+  /// configured [filters], then forwards it to [onUncaughtError] when uncaught
+  /// reporting is enabled.
+  void _report({
+    required Object exception,
+    required StackTrace? stack,
+    required String logMessage,
+    required void Function(Object error, StackTrace? stack)? onUncaughtError,
+    required bool isUncaughtErrorsHandlingEnabled,
+  }) {
+    if (!_shouldHandleError(exception, stack)) return;
 
-  _ErrorSnapshot _captureStrings(Object? exception, StackTrace? stack) {
-    final message = exception?.toString() ?? '<null exception>';
-    final stackStr = stack?.toString() ?? '<no stack trace>';
-    return _ErrorSnapshot(message, stackStr);
+    logger.handle(
+      message: logMessage,
+      exception: exception,
+      stackTrace: stack,
+    );
+
+    if (isUncaughtErrorsHandlingEnabled) {
+      onUncaughtError?.call(exception, stack);
+    }
   }
-}
 
-class _ErrorSnapshot {
-  const _ErrorSnapshot(this.message, this.stack);
+  bool _shouldHandleError(Object exception, StackTrace? stack) {
+    if (filters.isEmpty) return true;
 
-  final String message;
-  final String stack;
+    final message = exception.toString();
+    final stackText = stack?.toString() ?? '';
+    return !filters.any(
+      (filter) => message.contains(filter) || stackText.contains(filter),
+    );
+  }
 }

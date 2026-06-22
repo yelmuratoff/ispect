@@ -2,7 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/error_boundary.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/core/res/ispect_default_palette.dart';
+import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/features/log_viewer/controllers/log_page_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
 import 'package:ispect/src/features/performance/src/builder.dart';
@@ -111,6 +115,14 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   late final ISpectLogPageController _logPageController;
   late final DraggablePanelController _panelController;
 
+  /// Navigator that hosts ISpect's own screens, decoupled from the host router.
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+  /// Drives pointer passthrough: `false` keeps the navigator transparent and
+  /// non-interactive so the app below stays usable while no ISpect route is open.
+  final ValueNotifier<bool> _hasOverlayRoute = ValueNotifier<bool>(false);
+  int _overlayDepth = 0;
+
   ErrorWidgetBuilder? _originalErrorWidgetBuilder;
 
   @override
@@ -187,6 +199,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     if (widget.controller == null) {
       _panelController.dispose();
     }
+    _hasOverlayRoute.dispose();
     model.dispose();
     super.dispose();
   }
@@ -204,8 +217,14 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     return ListenableBuilder(
       listenable: model,
       builder: (context, _) {
-        // Build the widget tree with the necessary layers.
         var currentChild = widget.child;
+
+        // Host ISpect's own screens so its navigation never touches the host router.
+        currentChild = _ISpectNavigationHost(
+          navigatorKey: _navigatorKey,
+          hasOverlayRoute: _hasOverlayRoute,
+          child: currentChild,
+        );
 
         // Add inspector from the inspector package.
         currentChild = pkg_inspector.Inspector(
@@ -218,6 +237,8 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         // Add performance overlay to the widget tree.
         currentChild = ISpectPerformanceOverlayBuilder(
           isPerformanceTrackingEnabled: model.isPerformanceTrackingEnabled,
+          enableJankLogging: model.options.enableJankLogging,
+          severeJankFactor: model.options.severeJankFactor,
           child: currentChild,
         );
 
@@ -245,84 +266,161 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         _logPageController,
       ]),
       child: child,
-      builder: (context, child) => DraggablePanel(
-        theme: theme.panelTheme ?? _buildDefaultPanelTheme(context),
-        controller: _panelController,
-        items: [
-          if (settings.isLogPageEnabled)
-            DraggablePanelItem(
-              icon: _logPageController.inLoggerPage
-                  ? Icons.undo_rounded
-                  : Icons.reorder_rounded,
-              enableBadge: _logPageController.inLoggerPage,
-              onTap: (_) => _launchInfospect(context, options),
-              description: _logPageController.inLoggerPage
-                  ? context.ispectL10n.backToMainScreen
-                  : context.ispectL10n.openLogViewer,
-            ),
-          if (settings.isPerformanceEnabled)
-            DraggablePanelItem(
-              icon: Icons.monitor_heart_outlined,
-              enableBadge: iSpect.isPerformanceTrackingEnabled,
-              onTap: (_) => iSpect.togglePerformanceTracking(),
-              description: context.ispectL10n.togglePerformanceTracking,
-            ),
-          if (settings.isInspectorEnabled)
-            DraggablePanelItem(
-              icon: Icons.format_shapes_rounded,
-              enableBadge: controller.modeNotifier.value ==
-                  pkg_inspector.InspectorMode.inspector,
-              onTap: (_) => controller.setMode(
-                controller.modeNotifier.value ==
-                        pkg_inspector.InspectorMode.inspector
-                    ? pkg_inspector.InspectorMode.none
-                    : pkg_inspector.InspectorMode.inspector,
+      builder: (context, child) {
+        final data = ISpectPanelData(
+          controller: _panelController,
+          theme: theme.panelTheme ?? _buildDefaultPanelTheme(context),
+          buttons: options.panelButtons,
+          child: child,
+          items: [
+            if (settings.isLogPageEnabled)
+              DraggablePanelItem(
+                icon: _logPageController.inLoggerPage
+                    ? Icons.undo_rounded
+                    : Icons.reorder_rounded,
+                enableBadge: _logPageController.inLoggerPage,
+                onTap: (_) => _launchInfospect(context, options),
+                description: _logPageController.inLoggerPage
+                    ? context.ispectL10n.backToMainScreen
+                    : context.ispectL10n.openLogViewer,
               ),
-              description: context.ispectL10n.inspectWidgets,
-            ),
-          if (settings.isColorPickerEnabled)
-            DraggablePanelItem(
-              icon: Icons.colorize_rounded,
-              enableBadge: controller.modeNotifier.value ==
-                  pkg_inspector.InspectorMode.colorPicker,
-              onTap: (ctx) => controller.setMode(
-                controller.modeNotifier.value ==
-                        pkg_inspector.InspectorMode.colorPicker
-                    ? pkg_inspector.InspectorMode.none
-                    : pkg_inspector.InspectorMode.colorPicker,
-                context: ctx,
+            if (settings.isPerformanceEnabled)
+              DraggablePanelItem(
+                icon: Icons.monitor_heart_outlined,
+                enableBadge: iSpect.isPerformanceTrackingEnabled,
+                onTap: (_) => iSpect.togglePerformanceTracking(),
+                description: context.ispectL10n.togglePerformanceTracking,
               ),
-              description: context.ispectL10n.zoomPickColor,
-            ),
-          ...options.panelItems,
-          // Plugin-generated panel items
-          for (final plugin in options.plugins)
-            DraggablePanelItem(
-              icon: plugin.icon,
-              enableBadge: plugin.enableBadge,
-              description: plugin.description ?? plugin.title,
-              onTap: (context) => _launchPluginScreen(context, plugin, options),
-            ),
-        ],
-        buttons: options.panelButtons,
-        child: child,
-      ),
+            if (settings.isInspectorEnabled)
+              DraggablePanelItem(
+                icon: Icons.format_shapes_rounded,
+                enableBadge: controller.modeNotifier.value ==
+                    pkg_inspector.InspectorMode.inspector,
+                onTap: (_) => controller.setMode(
+                  controller.modeNotifier.value ==
+                          pkg_inspector.InspectorMode.inspector
+                      ? pkg_inspector.InspectorMode.none
+                      : pkg_inspector.InspectorMode.inspector,
+                ),
+                description: context.ispectL10n.inspectWidgets,
+              ),
+            if (settings.isColorPickerEnabled)
+              DraggablePanelItem(
+                icon: Icons.colorize_rounded,
+                enableBadge: controller.modeNotifier.value ==
+                    pkg_inspector.InspectorMode.colorPicker,
+                onTap: (ctx) => controller.setMode(
+                  controller.modeNotifier.value ==
+                          pkg_inspector.InspectorMode.colorPicker
+                      ? pkg_inspector.InspectorMode.none
+                      : pkg_inspector.InspectorMode.colorPicker,
+                  context: ctx,
+                ),
+                description: context.ispectL10n.zoomPickColor,
+              ),
+            if (ISpect.senders.isNotEmpty)
+              DraggablePanelItem(
+                icon: Icons.api_rounded,
+                enableBadge: false,
+                onTap: (ctx) => _launchComposer(ctx, options),
+                description: context.ispectL10n.composerTitle,
+              ),
+            ...options.panelItems,
+            // Plugin-generated panel items
+            for (final plugin in options.plugins)
+              DraggablePanelItem(
+                icon: plugin.icon,
+                enableBadge: plugin.enableBadge,
+                description: plugin.description ?? plugin.title,
+                onTap: (context) =>
+                    _launchPluginScreen(context, plugin, options),
+              ),
+          ],
+        );
+
+        final panelBuilder = options.panelBuilder;
+        if (panelBuilder != null) return panelBuilder(context, data);
+
+        return DraggablePanel(
+          theme: data.theme,
+          controller: data.controller,
+          items: data.items,
+          buttons: data.buttons,
+          child: data.child,
+        );
+      },
     );
   }
 
   DraggablePanelTheme _buildDefaultPanelTheme(BuildContext context) {
     final theme = context.ispectTheme;
 
+    // Host-colors mode keeps the pre-6.0 behaviour: leave unset colours null so
+    // DraggablePanel falls back to its own defaults.
+    if (theme.useHostColors) {
+      return DraggablePanelTheme(
+        draggableButtonColor: theme.card?.resolve(context),
+        panelBackgroundColor: theme.background?.resolve(context),
+        panelItemColor: theme.card?.resolve(context),
+        foregroundColor: theme.foreground?.resolve(context),
+        panelBorder: switch (theme.divider?.resolve(context)) {
+          final color? => Border.all(color: color),
+          null => null,
+        },
+      );
+    }
+
+    final dark = context.ispectIsDark;
+    Color owned(ISpectDynamicColor? override, ISpectDynamicColor fallback) =>
+        override?.resolve(context) ?? fallback.pick(isDark: dark)!;
+
     return DraggablePanelTheme(
-      draggableButtonColor: theme.card?.resolve(context),
-      panelBackgroundColor: theme.background?.resolve(context),
-      panelItemColor: theme.card?.resolve(context),
-      foregroundColor: theme.foreground?.resolve(context),
-      panelBorder: switch (theme.divider?.resolve(context)) {
-        final color? => Border.all(color: color),
-        null => null,
-      },
+      draggableButtonColor: owned(theme.card, ISpectDefaultPalette.card),
+      panelBackgroundColor:
+          owned(theme.background, ISpectDefaultPalette.background),
+      panelItemColor: owned(theme.card, ISpectDefaultPalette.card),
+      foregroundColor: owned(theme.foreground, ISpectDefaultPalette.foreground),
+      panelBorder: Border.all(
+        color: owned(theme.divider, ISpectDefaultPalette.divider),
+      ),
     );
+  }
+
+  void _enterOverlay() {
+    _overlayDepth++;
+    _hasOverlayRoute.value = true;
+  }
+
+  void _exitOverlay() {
+    if (_overlayDepth > 0) _overlayDepth--;
+
+    if (mounted) _hasOverlayRoute.value = _overlayDepth > 0;
+  }
+
+  Future<void> _launchComposer(
+    BuildContext context,
+    ISpectOptions options,
+  ) async {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
+    final route = MaterialPageRoute<void>(
+      builder: (_) => ISpectScopeController(
+        model: model,
+        child: HttpComposerScreen(
+          senders: ISpect.senders,
+          onPickComposerFile: options.onPickComposerFile,
+        ),
+      ),
+      settings: const RouteSettings(name: 'ISpect HTTP Composer'),
+    );
+
+    _enterOverlay();
+    try {
+      await navigator.push(route);
+    } finally {
+      _exitOverlay();
+    }
   }
 
   Future<void> _launchPluginScreen(
@@ -330,6 +428,9 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     InspectorPlugin plugin,
     ISpectOptions options,
   ) async {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
     final route = MaterialPageRoute<void>(
       builder: (_) => ISpectScopeController(
         model: model,
@@ -345,13 +446,27 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       ),
       settings: RouteSettings(name: 'ISpect Plugin: ${plugin.id}'),
     );
-    await options.push(context, route);
+
+    _enterOverlay();
+    try {
+      await navigator.push(route);
+    } finally {
+      _exitOverlay();
+    }
   }
 
   Future<void> _launchInfospect(
     BuildContext context,
     ISpectOptions options,
   ) async {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
+    if (_logPageController.inLoggerPage) {
+      await navigator.maybePop();
+      return;
+    }
+
     final iSpect = ISpect.read(context);
     final iSpectScreen = MaterialPageRoute<dynamic>(
       builder: (_) => LogsScreen(
@@ -360,15 +475,89 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       ),
       settings: const RouteSettings(name: 'ISpect Screen'),
     );
-    if (_logPageController.inLoggerPage) {
-      options.pop(context);
-    } else {
-      _logPageController.setInLoggerPage(isLoggerPage: true);
-      await options.push(context, iSpectScreen);
-      if (context.mounted) {
+
+    _logPageController.setInLoggerPage(isLoggerPage: true);
+    _enterOverlay();
+    try {
+      await navigator.push(iSpectScreen);
+    } finally {
+      _exitOverlay();
+      if (mounted) {
         _logPageController.setInLoggerPage(isLoggerPage: false);
       }
     }
+  }
+}
+
+/// Hosts ISpect's screens in a dedicated [Navigator] layered over the app.
+///
+/// ISpect renders its own screens (log viewer, plugins, JSON drill-downs) on
+/// this navigator instead of the host app's, so its imperative push/pop never
+/// depends on the host router's navigation contract. Declarative routers such
+/// as `yx_navigation` override [NavigatorState.pop] in a way that rejects
+/// imperatively pushed routes; isolating ISpect on its own navigator keeps it
+/// working regardless of the host router and leaves the host untouched.
+///
+/// While no ISpect route is open the navigator holds only a transparent
+/// placeholder and ignores pointers, so the app below stays fully interactive.
+class _ISpectNavigationHost extends StatelessWidget {
+  const _ISpectNavigationHost({
+    required this.navigatorKey,
+    required this.hasOverlayRoute,
+    required this.child,
+  });
+
+  final GlobalKey<NavigatorState> navigatorKey;
+  final ValueListenable<bool> hasOverlayRoute;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    // A fresh hero scope avoids sharing the host navigator's HeroController,
+    // which Flutter forbids across two navigators.
+    Widget overlay = HeroControllerScope.none(
+      child: ValueListenableBuilder<bool>(
+        valueListenable: hasOverlayRoute,
+        builder: (context, hasRoute, navigator) => IgnorePointer(
+          ignoring: !hasRoute,
+          child: navigator,
+        ),
+        child: Navigator(
+          key: navigatorKey,
+          onGenerateInitialRoutes: (_, __) => [
+            PageRouteBuilder<void>(
+              opaque: false,
+              pageBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Route the system back button to the ISpect navigator, but only when a
+    // Router owns it: BackButtonListener resolves Router.of and throws under a
+    // plain (non-router) MaterialApp.
+    if (Router.maybeOf(context) != null) {
+      overlay = BackButtonListener(
+        onBackButtonPressed: () async {
+          final navigator = navigatorKey.currentState;
+          if (navigator != null && navigator.canPop()) {
+            await navigator.maybePop();
+            return true;
+          }
+          return false;
+        },
+        child: overlay,
+      );
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        child,
+        Positioned.fill(child: overlay),
+      ],
+    );
   }
 }
 
@@ -421,9 +610,9 @@ class _ISpectRenderErrorFallback extends StatelessWidget {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
+                    decoration: ISpectSquircle.decoration(
                       color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
+                      radius: ISpectConstants.standardBorderRadius,
                     ),
                     constraints: const BoxConstraints(maxHeight: 200),
                     child: SingleChildScrollView(

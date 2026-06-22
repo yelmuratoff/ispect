@@ -119,16 +119,20 @@ class CollapsedBody extends StatelessWidget {
             const Gap(4),
             SlowBadge(durationMs: slowDurationMs!),
           ],
+          const Gap(4),
           SquareIconButton(
             icon: Icons.open_in_full_rounded,
             color: color,
             tooltip: context.ispectL10n.expandLogs,
+            dense: true,
             onPressed: onExpandTap,
           ),
+          const Gap(4),
           SquareIconButton(
             icon: Icons.more_vert_rounded,
             color: color,
             tooltip: context.ispectL10n.actions,
+            dense: true,
             onPressed: onMenuTap,
           ),
         ],
@@ -178,6 +182,7 @@ class SquareIconButton extends StatelessWidget {
     required this.color,
     required this.onPressed,
     this.tooltip,
+    this.dense = false,
     super.key,
   });
 
@@ -186,8 +191,29 @@ class SquareIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String? tooltip;
 
+  /// When `true`, hugs the icon width while keeping a full-height tap target,
+  /// so action-row controls sit tight instead of spreading across fixed squares.
+  final bool dense;
+
   @override
   Widget build(BuildContext context) {
+    final chip = SizedBox.square(
+      dimension: ISpectConstants.actionControlHeight,
+      child: DecoratedBox(
+        decoration: ISpectSquircle.decoration(
+          color: color.withValues(alpha: 0.06),
+          radius: ISpectConstants.mediumBorderRadius,
+        ),
+        child: Center(
+          child: Icon(
+            icon,
+            size: 16,
+            color: color.withValues(alpha: 0.75),
+          ),
+        ),
+      ),
+    );
+
     Widget button = Semantics(
       button: true,
       label: tooltip ?? '',
@@ -196,26 +222,17 @@ class SquareIconButton extends StatelessWidget {
         excludeFromSemantics: true,
         behavior: HitTestBehavior.opaque,
         onTap: onPressed,
-        child: SizedBox(
-          width: 28,
-          height: 28,
-          child: Center(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.06),
-                borderRadius: const BorderRadius.all(Radius.circular(7)),
+        child: dense
+            ? ConstrainedBox(
+                constraints:
+                    const BoxConstraints(minHeight: kMinInteractiveDimension),
+                child: Center(widthFactor: 1, child: chip),
+              )
+            : SizedBox(
+                width: kMinInteractiveDimension,
+                height: kMinInteractiveDimension,
+                child: Center(child: chip),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Icon(
-                  icon,
-                  size: 13,
-                  color: color.withValues(alpha: 0.75),
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
 
@@ -239,9 +256,9 @@ class DecoratedLeadingIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: color.withValues(alpha: 0.12),
-          borderRadius: const BorderRadius.all(Radius.circular(7)),
+          radius: ISpectConstants.mediumBorderRadius,
         ),
         child: Padding(
           padding: const EdgeInsets.all(5),
@@ -261,15 +278,15 @@ class _StatusCodeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (bgColor, textColor) = _colorsForStatus(statusCode);
+    final (bgColor, textColor) = JsonColors.statusCodeColors(statusCode);
     return Semantics(
       container: true,
       label: 'HTTP status $statusCode',
       excludeSemantics: true,
       child: DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: ISpectSquircle.decoration(
           color: bgColor.withValues(alpha: 0.12),
-          borderRadius: const BorderRadius.all(Radius.circular(6)),
+          radius: ISpectConstants.mediumBorderRadius,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
@@ -286,10 +303,4 @@ class _StatusCodeBadge extends StatelessWidget {
       ),
     );
   }
-
-  static (Color, Color) _colorsForStatus(int code) => switch (code) {
-        < 300 => (const Color(0xFF4CAF50), const Color(0xFF2E7D32)),
-        < 400 => (const Color(0xFFFF9800), const Color(0xFFE65100)),
-        _ => (const Color(0xFFF44336), const Color(0xFFC62828)),
-      };
 }

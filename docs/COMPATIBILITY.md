@@ -23,10 +23,11 @@ CI runs against a pinned Flutter SDK as the required signal, and against the lat
 | `ispectify_ws`   | Dart / Flutter apps using `ws`               | WebSocket diagnostics with redaction.                                       |
 | `ispectify_db`   | Dart                                         | Passive DB operation tracing through explicit wrappers and extensions.      |
 | `ispectify_bloc` | Dart / Flutter apps using `bloc`             | BLoC and Cubit observer.                                                    |
+| `ispectify_riverpod` | Dart / Flutter apps using `riverpod`     | Riverpod `ProviderObserver` for add, update, dispose, and failure events.   |
 
 ## Release channels
 
-`5.0.0-dev` is a pre-release channel. Teams that need stable-only dependencies should stay on the latest stable 4.x release until `5.0.0` ships.
+The `5.x` line is the current stable channel. `5.0.0-dev` was the pre-release line during the 5.x architecture rollout and is no longer published. Teams that need an older API surface can pin the latest 4.x release from pub.dev, but new work targets `5.x`.
 
 ## Compatibility changes
 

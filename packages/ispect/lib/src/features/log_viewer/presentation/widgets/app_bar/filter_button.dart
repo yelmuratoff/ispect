@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 
 class ISpectFilterButton extends StatelessWidget {
   const ISpectFilterButton({
@@ -34,14 +35,14 @@ class ISpectFilterButton extends StatelessWidget {
         child: Material(
           color:
               hasActiveState ? primaryColor.withValues(alpha: 0.12) : cardColor,
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          shape: ISpectSquircle.border(),
           child: Semantics(
             button: true,
             label: context.ispectL10n.filters,
             onTap: onPressed,
             child: InkWell(
               excludeFromSemantics: true,
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              customBorder: ISpectSquircle.border(),
               onTap: onPressed,
               child: Stack(
                 clipBehavior: Clip.none,

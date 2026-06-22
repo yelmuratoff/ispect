@@ -676,6 +676,9 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'WebSocket 受信メッセージのログ';
 
   @override
+  String get wsStateLogDesc => 'WebSocket connection state changed';
+
+  @override
   String get dbQueryLogDesc => 'データベースクエリのログ';
 
   @override
@@ -721,7 +724,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get groupHttp => 'HTTP';
 
   @override
-  String get groupBloc => 'Bloc';
+  String get groupBloc => '状態';
 
   @override
   String get groupRiverpod => 'Riverpod';
@@ -824,6 +827,12 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get graphqlErrorLogDesc => 'GraphQL operation failed';
+
+  @override
+  String get performanceJankLogDesc => 'Frame exceeded the target budget';
+
+  @override
+  String get performanceErrorLogDesc => 'Performance instrumentation error';
 
   @override
   String get transitionPush => 'プッシュ';
@@ -991,4 +1000,73 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get moreOptions => 'その他';
+
+  @override
+  String get composerTitle => 'HTTP コンポーザー';
+
+  @override
+  String get composerSend => '送信';
+
+  @override
+  String get composerMethod => 'メソッド';
+
+  @override
+  String get composerClient => 'クライアント';
+
+  @override
+  String get composerUrlHint => 'https://api.example.com/path';
+
+  @override
+  String get composerHeaders => 'ヘッダー';
+
+  @override
+  String get composerQueryParameters => 'クエリパラメータ';
+
+  @override
+  String get composerBody => 'ボディ';
+
+  @override
+  String get composerAddField => '追加';
+
+  @override
+  String get composerAddHeader => 'ヘッダーを追加';
+
+  @override
+  String get composerAddParameter => 'パラメータを追加';
+
+  @override
+  String get composerViewJson => 'JSONビューアで開く';
+
+  @override
+  String get composerKeyHint => 'キー';
+
+  @override
+  String get composerValueHint => '値';
+
+  @override
+  String get composerAttachFile => 'ファイルを添付';
+
+  @override
+  String get composerResponse => 'レスポンス';
+
+  @override
+  String get composerResponsePlaceholder => 'リクエストを送信するとレスポンスが表示されます';
+
+  @override
+  String get composerNoClients => 'リクエストを送信するには Dio または http クライアントを登録してください';
+
+  @override
+  String get composerErrorUrlRequired => 'URL を入力してください';
+
+  @override
+  String get composerErrorUrlInvalid => '有効な絶対 URL を入力してください';
+
+  @override
+  String get composerErrorInvalidJson => 'ボディが有効な JSON ではありません';
+
+  @override
+  String get composerErrorNoClient => 'クライアントが登録されていません';
+
+  @override
+  String get composerEditAndResend => '編集して再送信';
 }

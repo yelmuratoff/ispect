@@ -3,58 +3,53 @@ import 'package:flutter/material.dart';
 /// Defines a set of colors used for representing JSON data types and HTTP methods.
 ///
 /// All type colors provide light/dark variants to ensure WCAG AA contrast
-/// (≥ 4.5:1) on both light and dark backgrounds.
+/// (≥ 4.5:1) on both light and dark backgrounds. Dark variants use lighter
+/// Material shades of the same hue.
 class JsonColors {
   JsonColors._();
 
-  // ---------------------------------------------------------------------------
-  // JSON value type colors — light / dark pairs
-  // ---------------------------------------------------------------------------
-
   /// Color used for `null` values in JSON.
   static const nullColor = Colors.blueGrey;
-  static const nullColorDark = Color(0xFFB0BEC5); // blueGrey[200]
+  static const nullColorDark = Color(0xFFB0BEC5);
 
   /// Color used for `boolean` values in JSON.
   static const boolColor = Colors.orange;
-  static const boolColorDark =
-      Color(0xFFFFCC80); // orange[200] — same hue, lighter
+  static const boolColorDark = Color(0xFFFFCC80);
 
   /// Color used for JSON tree structure elements.
   static const jsonTreeColor = Color(0xFF2D45C3);
-  static const jsonTreeColorDark = Color(0xFF9FA8DA); // indigo[200]
+  static const jsonTreeColorDark = Color(0xFF9FA8DA);
 
   /// Color used for JSON objects.
   static const objectColor = Colors.blue;
-  static const objectColorDark = Color(0xFF90CAF9); // blue[200]
+  static const objectColorDark = Color(0xFF90CAF9);
 
   /// Color used for JSON arrays.
-  static const arrayColor = Color(0xFF00897B); // teal[600]
-  static const arrayColorDark = Color(0xFF80CBC4); // teal[200]
+  static const arrayColor = Color(0xFF00897B);
+  static const arrayColorDark = Color(0xFF80CBC4);
 
   /// Color used for numeric values in JSON.
   static const numColor = Colors.deepPurpleAccent;
-  static const numColorDark = Color(0xFFB39DDB); // deepPurple[200] — same hue
+  static const numColorDark = Color(0xFFB39DDB);
 
   /// Color used for string values in JSON.
   static const stringColor = Color(0xFFCD44D9);
-  static const stringColorDark =
-      Color(0xFFF48FB1); // pink[200] — same hue family
+  static const stringColorDark = Color(0xFFF48FB1);
 
   /// Background color of the JSON viewer.
   static const jsonBackgroundColor = Color(0xFFE8E8E8);
 
   /// Color used for JSON keys.
   static const jsonKeyColor = Color(0xFF2D45C3);
-  static const jsonKeyColorDark = Color(0xFF9FA8DA); // indigo[200]
+  static const jsonKeyColorDark = Color(0xFF9FA8DA);
 
   /// Color used for hidden containers in JSON structure.
   static const hiddenContainerColor = Color(0xFFBB5BC3);
 
-  /// Color used for date-time values in JSON.
+  /// Color used for date-time values in JSON. The dark variant is kept distinct
+  /// from [arrayColorDark] so the two type colors stay distinguishable.
   static const dateTimeColor = Colors.teal;
-  static const dateTimeColorDark =
-      Color(0xFFA5D6A7); // green[200] — distinct from array
+  static const dateTimeColorDark = Color(0xFFA5D6A7);
 
   /// Returns the appropriate color for [Brightness].
   static Color nullColorFor(Brightness b) =>
@@ -87,16 +82,65 @@ class JsonColors {
         _ => Colors.grey,
       };
 
-  /// Maps HTTP methods to their respective colors (light theme).
+  /// HTTP method colors for the light theme.
+  ///
+  /// Darker Material [800] shades keep method labels readable on the light
+  /// badge surface and stay visibly distinct from the saturated status
+  /// signals (success green, error red, pending orange), which sit at the
+  /// [500] level. Raw [Colors.red]/[Colors.orange]/[Colors.green] would
+  /// collide exactly with those signals and read as a failure.
   static const methodColors = {
-    'GET': Colors.green,
-    'POST': Colors.blue,
-    'PUT': Colors.orange,
-    'DELETE': Colors.red,
-    'PATCH': Colors.purple,
-    'HEAD': Colors.pink,
-    'OPTIONS': Colors.teal,
-    'TRACE': Colors.grey,
-    'CONNECT': Color(0xFF8D6E63), // brown[400] — readable on both themes
+    'GET': Color(0xFF2E7D32),
+    'POST': Color(0xFF1565C0),
+    'PUT': Color(0xFFEF6C00),
+    'DELETE': Color(0xFFC62828),
+    'PATCH': Color(0xFF6A1B9A),
+    'HEAD': Color(0xFFAD1457),
+    'OPTIONS': Color(0xFF00695C),
+    'TRACE': Color(0xFF424242),
+    'CONNECT': Color(0xFF4E342E),
   };
+
+  /// HTTP method colors for the dark theme.
+  ///
+  /// Lighter Material [300] shades read better on dark surfaces and stay
+  /// visibly distinct from the saturated status signals (error red,
+  /// pending orange).
+  static const methodColorsDark = {
+    'GET': Color(0xFF81C784),
+    'POST': Color(0xFF64B5F6),
+    'PUT': Color(0xFFFFB74D),
+    'DELETE': Color(0xFFE57373),
+    'PATCH': Color(0xFFBA68C8),
+    'HEAD': Color(0xFFF06292),
+    'OPTIONS': Color(0xFF4DB6AC),
+    'TRACE': Color(0xFFBDBDBD),
+    'CONNECT': Color(0xFFA1887F),
+  };
+
+  /// Returns the color for an HTTP [method] on the given [brightness].
+  ///
+  /// Returns `null` for unknown methods so callers can supply a fallback.
+  static Color? methodColorFor(String method, Brightness brightness) =>
+      (brightness == Brightness.dark
+          ? methodColorsDark
+          : methodColors)[method.toUpperCase()];
+
+  /// Semantic status palette (`base` / `dark` pairs) shared by network badges,
+  /// status indicators, and slow-call warnings.
+  static const Color statusSuccess = Color(0xFF4CAF50);
+  static const Color statusSuccessDark = Color(0xFF2E7D32);
+  static const Color statusWarning = Color(0xFFFF9800);
+  static const Color statusWarningDark = Color(0xFFE65100);
+  static const Color statusError = Color(0xFFF44336);
+  static const Color statusErrorDark = Color(0xFFC62828);
+
+  /// Returns the `(base, dark)` badge colours for an HTTP [statusCode]:
+  /// green for 2xx, orange for 3xx, red for 4xx/5xx.
+  static (Color, Color) statusCodeColors(int statusCode) =>
+      switch (statusCode) {
+        < 300 => (statusSuccess, statusSuccessDark),
+        < 400 => (statusWarning, statusWarningDark),
+        _ => (statusError, statusErrorDark),
+      };
 }

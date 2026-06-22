@@ -10,16 +10,9 @@ import 'package:ispectify/src/models/log_level.dart';
 import 'package:ispectify/src/options.dart';
 import 'package:ispectify/src/utils/string_extension.dart';
 
-/// Coordinates the flow of `ISpectLogData` through the logger pipeline.
-///
-/// This type centralizes the side-effects that happen when a log is accepted:
-/// - fan-out through the public stream
-/// - persisting into history
-/// - forwarding to the console logger
-///
-/// `ISpectLogger` owns an instance of this class and updates it whenever
-/// dependencies change during `configure`.
-class LogPipeline {
+/// Coordinates fan-out of accepted log entries to the stream, history, and
+/// console logger. Owned by `ISpectLogger`; reconfigured via [update].
+final class LogPipeline {
   LogPipeline({
     required StreamController<ISpectLogData> streamController,
     required ISpectLoggerOptions options,
@@ -51,7 +44,6 @@ class LogPipeline {
     _filter = filter ?? _filter;
   }
 
-  /// Removes the current filter so that all logs are accepted.
   void clearFilter() {
     _filter = null;
   }
@@ -78,7 +70,8 @@ class LogPipeline {
         _streamController.add(data);
       }
     } catch (e) {
-      // Prevent dispatch errors from crashing the logger.
+      // Internal error fallback: cannot log via ISpect itself without
+      // re-entering this dispatch, so use dart:developer directly.
       log('[ISpect] Log dispatch failed: $e');
     } finally {
       _isDispatching = false;
@@ -109,7 +102,7 @@ class LogPipeline {
             : null,
       );
     } catch (e) {
-      // Prevent console logging errors from propagating.
+      // Same fallback rationale as above.
       log('[ISpect] Console logging failed: $e');
     }
   }

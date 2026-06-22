@@ -50,10 +50,14 @@ enum SearchMatchState {
 class ISpectViewController implements Listenable {
   ISpectViewController({
     ISpectShareCallback? onShare,
+    ISpectMetadataProvider? metadataProvider,
     ISpectSettingsState? initialSettings,
     ISpectSettingsChangedCallback? onSettingsChanged,
     bool groupHttpLogs = true,
-  })  : _exportService = LogExportService(onShare: onShare),
+  })  : _exportService = LogExportService(
+          onShare: onShare,
+          metadataProvider: metadataProvider,
+        ),
         _importService = const LogImportService() {
     _display = DisplayController(initialSettings: initialSettings);
     if (initialSettings == null) {
@@ -97,6 +101,7 @@ class ISpectViewController implements Listenable {
       isLogOrderReversed: _display.isLogOrderReversed,
       groupHttpLogs: _display.groupHttpLogs,
       useRelativeTime: _display.useRelativeTime,
+      compactNetworkUrls: _display.compactNetworkUrls,
     );
     if (next != current) {
       _settingsManager.updateSettings(next);
@@ -223,6 +228,9 @@ class ISpectViewController implements Listenable {
 
   bool get useRelativeTime => _display.useRelativeTime;
   void toggleTimestampFormat() => _display.toggleTimestampFormat();
+
+  bool get compactNetworkUrls => _display.compactNetworkUrls;
+  void toggleCompactNetworkUrls() => _display.toggleCompactNetworkUrls();
 
   // --- Settings ---
 
