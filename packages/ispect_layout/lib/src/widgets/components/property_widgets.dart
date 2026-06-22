@@ -85,7 +85,7 @@ class EllipsizedText extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
         value,
-        maxLines: 2,
+        maxLines: 4,
         overflow: TextOverflow.ellipsis,
         softWrap: true,
       );
