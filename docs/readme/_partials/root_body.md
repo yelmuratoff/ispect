@@ -76,12 +76,22 @@ ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside
       <sub><strong>Shadows &amp; blur</strong><br />Box shadows and backdrop filters.</sub>
     </td>
     <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/network_image.png?raw=true" width="180" alt="Network image inspector" /><br />
+      <sub><strong>Images</strong><br />Source, raw pixels, fit, and alignment.</sub>
+    </td>
+    <td align="center" width="25%">
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/rotated_box.png?raw=true" width="180" alt="Transform and clip inspector" /><br />
       <sub><strong>Transform &amp; clip</strong><br />Matrix decomposition and clip shape.</sub>
     </td>
+  </tr>
+  <tr>
     <td align="center" width="25%">
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/compare.png?raw=true" width="180" alt="Compare two widgets" /><br />
       <sub><strong>Compare</strong><br />Pixel gaps between two widgets.</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/zoom.png?raw=true" width="180" alt="Zoom magnifier overlay" /><br />
+      <sub><strong>Zoom</strong><br />Pixel-level magnifier overlay.</sub>
     </td>
   </tr>
 </table>

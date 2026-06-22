@@ -11,8 +11,10 @@ A standalone package. It works on its own, without the rest of the [ISpect toolk
   <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/gradient.png?raw=true" width="220" alt="Gradient" />
   <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/dark_gradient.png?raw=true" width="220" alt="Dark theme gradient" />
   <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/shadow_blur.png?raw=true" width="220" alt="Shadow and blur" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/network_image.png?raw=true" width="220" alt="Network image" />
   <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/rotated_box.png?raw=true" width="220" alt="Transform and clip" />
   <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/compare.png?raw=true" width="220" alt="Compare two widgets" />
+  <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/inspect/zoom.png?raw=true" width="220" alt="Zoom magnifier" />
 </div>
 
 ## What it surfaces
