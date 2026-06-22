@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.0.0-dev.31
+## 6.0.0-dev.32
 
 ### Improvements
 
@@ -14,6 +14,7 @@
 - **Draggable panel 3.0.0:** Reliable button hide/reveal and a content-sized adaptive layout that anchors to the button.
 - **Custom panel via `ISpectOptions.panelBuilder`:** Receive a prepared `ISpectPanelData` and return a `DraggablePanel` configured with any `draggable_panel` parameter.
 - **Inspector property chips:** Inline labels for composite values (offset, border, gradient, shadow), asymmetric radii in a 2×2 grid, per-row multi-shadows, and cleaner `ImageFilter` descriptions.
+- **Inspector image & SVG details:** Picking an `Image` (network/asset/memory/file) now surfaces its source, raw pixels with estimated decode memory, scale, filter quality, blend mode, 9-patch center slice, and invert/anti-alias flags; flutter_svg pictures get their own section with source, fit, alignment, and color filter (no dependency added).
 - **Inspector selection box:** Correctly encloses rotated and skewed widgets, with the size label moved above the box.
 - **Typography span grouping:** Multi-span `RichText` groups each span's chips under a preview of its text.
 - **`ISpectPerformanceOverlay` rebuilt:** Cross-platform overlay (web + desktop) with UI/raster/total bars, avg/p99/jank stats, current FPS, target line, and a freeze button.
@@ -45,6 +46,7 @@
 - **Logs screen reactivity:** "Clear history" empties the visible list immediately, and view-controller-driven history mutations refresh the UI without a new log emission.
 - **Network status code now displayed:** Grouped transactions show the response status-code chip again — it was read from the wrong metadata key and stayed hidden.
 - **Color picker accuracy:** The sampled colour now matches the pixel under the crosshair — near a pixel's half boundary the picker reported the neighbouring pixel, showing a wrong colour on 1px borders and anti-aliased edges. Translucent pixels now report their true colour instead of a darkened, premultiplied one.
+- **Color picker release drift:** Lifting a finger no longer commits a different colour than the one under the loupe — the picker locked the pixel at the pointer-up position, which drifts a few pixels from the last drag position on touch.
 
 ### Code Quality
 
