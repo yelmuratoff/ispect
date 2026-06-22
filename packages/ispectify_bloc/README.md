@@ -47,8 +47,8 @@
 ```yaml
 dependencies:
   flutter_bloc: ^8.0.0
-  ispectify: ^6.0.0-dev.34
-  ispectify_bloc: ^6.0.0-dev.34
+  ispectify: ^6.0.0-dev.35
+  ispectify_bloc: ^6.0.0-dev.35
 ```
 
 ## Quick start
