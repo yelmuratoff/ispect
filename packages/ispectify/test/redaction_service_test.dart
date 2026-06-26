@@ -141,6 +141,82 @@ void main() {
       });
     });
 
+    group('full masking of high-sensitivity keys', () {
+      test('fully masks credentials without revealing edge characters', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'password': 'abcdefghijklmnop',
+          'access_token': 'eyJhbGciOi.payloadpayload.signaturesig',
+          'secret': 'topsecretvalue123',
+        })! as Map<String, Object?>;
+
+        expect(map['password'], '[REDACTED]');
+        expect(map['access_token'], '[REDACTED]');
+        expect(map['secret'], '[REDACTED]');
+      });
+
+      test('fully masks financial and government identifiers', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'ssn': '123-45-6789',
+          'iban': 'DE89370400440532013000',
+          'cardNumber': '4111111111111111',
+          'cvv': '123',
+        })! as Map<String, Object?>;
+
+        expect(map['ssn'], '[REDACTED]');
+        expect(map['iban'], '[REDACTED]');
+        expect(map['cardNumber'], '[REDACTED]');
+        expect(map['cvv'], '[REDACTED]');
+      });
+
+      test('keeps structure-aware masking for authorization', () {
+        final service = RedactionService();
+        final headers = service.redactHeaders({
+          'authorization': 'Bearer aaaaaaaaaaaaaaaaaaaa',
+        });
+
+        expect(headers['authorization'], startsWith('Bearer '));
+        expect(
+          headers['authorization'],
+          isNot(contains('aaaaaaaaaaaaaaaaaaaa')),
+        );
+        expect(headers['authorization'], isNot('[REDACTED]'));
+      });
+    });
+
+    group('additional sensitive key variants', () {
+      test('recognizes password abbreviations and fragments', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'pwd': 'shorty1',
+          'passwd': 'shorty2',
+          'user_pwd': 'shorty3',
+        })! as Map<String, Object?>;
+
+        expect(map['pwd'], '[REDACTED]');
+        expect(map['passwd'], '[REDACTED]');
+        expect(map['user_pwd'], isNot('shorty3'));
+      });
+
+      test('recognizes signature, hmac, pan, dob, and xsrf keys', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'signature': 'sig-aaaaaaaaaaaa',
+          'hmac': 'hmac-aaaaaaaaaaaa',
+          'pan': '4111111111111111',
+          'dateOfBirth': '1990-01-01',
+          'xsrf': 'xsrf-aaaaaaaaaaaa',
+        })! as Map<String, Object?>;
+
+        expect(map['signature'], '[REDACTED]');
+        expect(map['hmac'], '[REDACTED]');
+        expect(map['pan'], '[REDACTED]');
+        expect(map['dateOfBirth'], isNot('1990-01-01'));
+        expect(map['xsrf'], '[REDACTED]');
+      });
+    });
+
     group('redactUrl', () {
       test('returns original URL when nothing to redact', () {
         final service = RedactionService();

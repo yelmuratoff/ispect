@@ -14,11 +14,15 @@ const Set<String> defaultSensitiveKeys = <String>{
   'refresh_token',
   'id_token',
   'password',
+  'passwd',
+  'pwd',
   'secret',
   'client-secret',
   'client_secret',
   'private-key',
   'private_key',
+  'signature',
+  'hmac',
   'set-cookie',
   'cookie',
   'bearer_token',
@@ -30,6 +34,10 @@ const Set<String> defaultSensitiveKeys = <String>{
   'csrf_token',
   'csrf-token',
   'x-csrf-token',
+  'xsrf',
+  'xsrf_token',
+  'xsrf-token',
+  'x-xsrf-token',
   'mfa_code',
   'mfa-code',
   'totp',
@@ -80,6 +88,10 @@ const Set<String> defaultSensitiveKeys = <String>{
   'license_number',
   'licensenumber',
   'license-number',
+  'dob',
+  'date_of_birth',
+  'dateofbirth',
+  'date-of-birth',
 
   // Financial Information
   'credit_card',
@@ -116,6 +128,7 @@ const Set<String> defaultSensitiveKeys = <String>{
   'swiftcode',
   'swift-code',
   'bic',
+  'pan',
 
   // Cryptocurrency
   'wallet',
@@ -166,7 +179,10 @@ final List<RegExp> defaultSensitiveKeyPatterns = <RegExp>[
   // Authentication patterns
   RegExp(r'(?:^|[_\-])token(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])secret(?:$|[_\-])', caseSensitive: false),
-  RegExp(r'(?:^|[_\-])pass(?:word)?(?:$|[_\-])', caseSensitive: false),
+  RegExp(
+    r'(?:^|[_\-])(?:pass(?:word)?|passwd|pwd)(?:$|[_\-])',
+    caseSensitive: false,
+  ),
   RegExp(r'(?:^|[_\-])key(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])auth(?:$|[_\-])', caseSensitive: false),
 
@@ -209,8 +225,135 @@ final List<RegExp> defaultSensitiveKeyPatterns = <RegExp>[
   RegExp(r'(?:^|[_\-])cell[_\-]?(?:phone|num)', caseSensitive: false),
 ];
 
-/// Keys whose values are always fully replaced with placeholder (no partial
-/// masking), regardless of whether the key is also in [defaultSensitiveKeys].
+/// Keys whose values are always fully replaced with the placeholder (no
+/// partial/edge masking), regardless of whether the key is also in
+/// [defaultSensitiveKeys].
+///
+/// Covers credentials, financial account numbers, security codes, and
+/// government identifiers, where even the first/last characters of the value
+/// leak meaningful information. `authorization`/`cookie` are intentionally
+/// absent: their structure-aware masking preserves the (non-sensitive) auth
+/// scheme and cookie names while masking the secret. Context-dependent contact
+/// fields (email, phone, username) also keep edge masking to aid debugging.
 const Set<String> defaultFullyMaskedKeys = <String>{
   'filename',
+
+  // Credentials & secrets
+  'x-api-key',
+  'api-key',
+  'apikey',
+  'token',
+  'access_token',
+  'refresh_token',
+  'id_token',
+  'bearer_token',
+  'session_token',
+  'session-token',
+  'session_id',
+  'session-id',
+  'password',
+  'passwd',
+  'pwd',
+  'secret',
+  'client-secret',
+  'client_secret',
+  'private-key',
+  'private_key',
+  'signature',
+  'hmac',
+  'csrf',
+  'csrf_token',
+  'csrf-token',
+  'x-csrf-token',
+  'xsrf',
+  'xsrf_token',
+  'xsrf-token',
+  'x-xsrf-token',
+  'mfa_code',
+  'mfa-code',
+  'totp',
+  'otp',
+  'one_time_password',
+  'verification_code',
+  'verification-code',
+  'pin_code',
+  'pin-code',
+
+  // Device & push tokens
+  'device_token',
+  'device-token',
+  'fcm_token',
+  'fcm-token',
+  'apns_token',
+  'apns-token',
+  'push_token',
+  'push-token',
+
+  // Government identifiers
+  'ssn',
+  'social_security',
+  'social-security',
+  'social_security_number',
+  'socialsecuritynumber',
+  'national_id',
+  'nationalid',
+  'national-id',
+  'passport',
+  'passport_number',
+  'passportnumber',
+  'passport-number',
+  'drivers_license',
+  'driverslicense',
+  'drivers-license',
+  'driver_license',
+  'driverlicense',
+  'driver-license',
+  'license_number',
+  'licensenumber',
+  'license-number',
+  'dob',
+  'date_of_birth',
+  'dateofbirth',
+  'date-of-birth',
+
+  // Financial accounts & security codes
+  'credit_card',
+  'creditcard',
+  'credit-card',
+  'card_number',
+  'cardnumber',
+  'card-number',
+  'cc_number',
+  'ccnumber',
+  'cc-number',
+  'cvv',
+  'cvc',
+  'cvv2',
+  'card_cvv',
+  'cardcvv',
+  'security_code',
+  'securitycode',
+  'security-code',
+  'bank_account',
+  'bankaccount',
+  'bank-account',
+  'account_number',
+  'accountnumber',
+  'account-number',
+  'routing_number',
+  'routingnumber',
+  'routing-number',
+  'iban',
+  'swift',
+  'swift_code',
+  'swiftcode',
+  'swift-code',
+  'bic',
+  'pan',
+
+  // Cryptocurrency
+  'wallet',
+  'wallet_address',
+  'walletaddress',
+  'wallet-address',
 };

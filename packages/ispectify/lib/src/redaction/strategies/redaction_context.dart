@@ -75,6 +75,7 @@ final class RedactionContext {
     if (keyName == null) return false;
     final trimmed = keyName.trim();
     final lower = trimmed.toLowerCase();
+    if (isIgnoredKey(lower)) return false;
     if (fullyMaskedKeyNamesLower.contains(lower)) return true;
     if (trimmed == lower) return false;
     return fullyMaskedKeyNamesLower.contains(_canonicalizeKey(trimmed));
