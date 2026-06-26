@@ -34,11 +34,12 @@ void main() {
     });
 
     test('drops redacted header values and records their keys', () {
+      // Legacy '***' mask from pre-unification captures must still be detected.
       final parsed = NetworkReplayRequestParser.fromRequestMap({
         NetworkJsonKeys.method: 'GET',
         NetworkJsonKeys.url: 'https://api.example.com/me',
         NetworkJsonKeys.headers: {
-          'Authorization': redactedMask,
+          'Authorization': '***',
           'Accept': 'application/json',
         },
       });

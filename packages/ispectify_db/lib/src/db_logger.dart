@@ -426,7 +426,7 @@ extension ISpectLoggerDb on ISpectLogger {
     final redactor = shouldRedact
         ? RedactionService(
             sensitiveKeys: sensitiveKeys,
-            placeholder: redactedMask,
+            placeholder: defaultPlaceholder,
           )
         : null;
 

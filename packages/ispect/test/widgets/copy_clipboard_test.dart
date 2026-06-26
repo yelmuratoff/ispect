@@ -42,7 +42,7 @@ void main() {
 
         expect(clipboardText, isNotNull);
         expect(clipboardText, isNot(contains('super-secret-token')));
-        expect(clipboardText, contains('Bearer ***'));
+        expect(clipboardText, contains('Bearer [REDACTED]'));
       },
     );
 
@@ -63,7 +63,7 @@ void main() {
 
         expect(clipboardText, isNotNull);
         expect(clipboardText, isNot(contains('p@ss123')));
-        expect(clipboardText, contains('"password": "***"'));
+        expect(clipboardText, contains('"password": "[REDACTED]"'));
       },
     );
 
@@ -84,7 +84,7 @@ void main() {
 
         expect(clipboardText, isNotNull);
         expect(clipboardText, isNot(contains('alice:secret')));
-        expect(clipboardText, contains('://***:***@'));
+        expect(clipboardText, contains('://REDACTED@'));
       },
     );
 

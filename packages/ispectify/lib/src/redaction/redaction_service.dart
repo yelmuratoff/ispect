@@ -17,20 +17,19 @@ export 'package:ispectify/src/redaction/constants/key_defaults.dart';
 /// ```dart
 /// final redactor = RedactionService(
 ///   sensitiveKeys: {'authorization', 'password', 'token'},
-///   placeholder: '***',
 /// );
 ///
 /// final headers = redactor.redactHeaders({
 ///   'authorization': 'Bearer abc123',
 ///   'content-type': 'application/json',
 /// });
-/// // {authorization: ***, content-type: application/json}
+/// // {authorization: [REDACTED], content-type: application/json}
 ///
 /// final body = redactor.redact({
 ///   'user': 'alice',
 ///   'password': 'p@ss',
 /// });
-/// // {user: alice, password: ***}
+/// // {user: alice, password: [REDACTED]}
 /// ```
 class RedactionService {
   RedactionService({
@@ -264,18 +263,17 @@ class RedactionService {
   /// string. Used by the `trace()` pipeline for auto-redaction of the target
   /// field.
   static String redactTarget(String target, Set<String> redactKeys) {
-    // 1. URL credentials: ://user:pass@host → ://***:***@host
+    // Collapse userInfo to one token, matching redactUrl's Uri.replace path.
     var result = target.replaceAllMapped(
       _urlCredentialPattern,
-      (m) => m[2] != null ? '://***:***@' : '://***@',
+      (m) => '://${ph.userInfoRedactedPlaceholder}@',
     );
-    // 2. Query params with sensitive keys
     if (result.contains('?')) {
       for (final key in redactKeys) {
         final escaped = RegExp.escape(key);
         result = result.replaceAllMapped(
           RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
-          (m) => '${m[1]}${m[2]}=***',
+          (m) => '${m[1]}${m[2]}=${ph.defaultPlaceholder}',
         );
       }
     }
@@ -297,23 +295,24 @@ class RedactionService {
     // A single alternation over all keys compiles two regexes instead of one
     // per key, which matters when [redactKeys] is the full default set.
     final keys = redactKeys.map(RegExp.escape).join('|');
+    const mask = ph.defaultPlaceholder;
 
     return value
         .replaceAllMapped(
           _urlCredentialPattern,
-          (m) => m[2] != null ? '://***:***@' : '://***@',
+          (m) => '://${ph.userInfoRedactedPlaceholder}@',
         )
         .replaceAllMapped(
           _exportTokenPattern,
-          (m) => '${m[1]} ***',
+          (m) => '${m[1]} $mask',
         )
         .replaceAllMapped(
           RegExp('([?&])($keys)=([^&\\s]*)', caseSensitive: false),
-          (m) => '${m[1]}${m[2]}=***',
+          (m) => '${m[1]}${m[2]}=$mask',
         )
         .replaceAllMapped(
           RegExp('"($keys)"\\s*:\\s*"[^"]*"', caseSensitive: false),
-          (m) => '"${m[1]}": "***"',
+          (m) => '"${m[1]}": "$mask"',
         );
   }
 
@@ -339,7 +338,7 @@ class RedactionService {
     Object? data,
     Iterable<String> keys, {
     int maxDepth = 50,
-    String placeholder = redactedMask,
+    String placeholder = ph.defaultPlaceholder,
   }) {
     if (data == null || keys.isEmpty || maxDepth <= 0) return data;
 

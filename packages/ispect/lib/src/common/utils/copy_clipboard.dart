@@ -14,7 +14,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 /// data (HTTP bodies, headers, full log JSON). The string is then run through
 /// [RedactionService.redactExportString] using [redactKeys] — URL credentials,
 /// `Bearer`/`Basic`/`Token` prefixes, query params and JSON fields whose keys
-/// match any of [redactKeys] are replaced with `***`. When [redact] is `false`
+/// match any of [redactKeys] are replaced with `[REDACTED]`. When [redact] is `false`
 /// (the default) the value is copied verbatim; use this only for safe values
 /// (paths, IDs, already-redacted curl strings).
 ///

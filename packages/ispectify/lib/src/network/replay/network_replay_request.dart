@@ -49,7 +49,7 @@ final class NetworkReplayRequest {
 /// carrying which values were dropped because they were redacted.
 ///
 /// The UI uses this to mark fields as "provided by your client" instead of
-/// silently sending placeholder text such as `***`.
+/// silently sending placeholder text such as `[REDACTED]`.
 @immutable
 final class ParsedReplayRequest {
   const ParsedReplayRequest({
@@ -180,5 +180,9 @@ abstract final class NetworkReplayRequestParser {
   }
 
   static bool _isRedacted(String value) =>
-      value == redactedMask || value == defaultPlaceholder;
+      value == defaultPlaceholder || value == _legacyShortMask;
+
+  /// Pre-unification short mask, still recognized so replay never resends a
+  /// value redacted by an older capture.
+  static const String _legacyShortMask = '***';
 }

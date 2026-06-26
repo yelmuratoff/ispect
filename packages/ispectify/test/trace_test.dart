@@ -577,7 +577,7 @@ void main() {
         'https://user:pass@host/path',
         defaultSensitiveKeys,
       );
-      expect(result, contains('***:***@'));
+      expect(result, contains('://REDACTED@'));
       expect(result, isNot(contains('user:pass')));
     });
 
@@ -586,7 +586,7 @@ void main() {
         '/api?token=abc&name=test',
         const {'token'},
       );
-      expect(result, contains('token=***'));
+      expect(result, contains('token=[REDACTED]'));
       expect(result, contains('name=test'));
     });
 
@@ -601,7 +601,7 @@ void main() {
         'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9',
         defaultSensitiveKeys,
       );
-      expect(result, contains('Bearer ***'));
+      expect(result, contains('Bearer [REDACTED]'));
     });
 
     test('redactExportString with null keys returns unchanged', () {
@@ -614,9 +614,9 @@ void main() {
         'https://api.test/x?token=abc&password=p1&keep=ok&secret=s1',
         const {'token', 'password', 'secret'},
       );
-      expect(result, contains('token=***'));
-      expect(result, contains('password=***'));
-      expect(result, contains('secret=***'));
+      expect(result, contains('token=[REDACTED]'));
+      expect(result, contains('password=[REDACTED]'));
+      expect(result, contains('secret=[REDACTED]'));
       expect(result, contains('keep=ok'));
     });
 
@@ -625,8 +625,8 @@ void main() {
         '{"token": "abc", "password": "p1", "keep": "ok"}',
         const {'token', 'password'},
       );
-      expect(result, contains('"token": "***"'));
-      expect(result, contains('"password": "***"'));
+      expect(result, contains('"token": "[REDACTED]"'));
+      expect(result, contains('"password": "[REDACTED]"'));
       expect(result, contains('"keep": "ok"'));
     });
 

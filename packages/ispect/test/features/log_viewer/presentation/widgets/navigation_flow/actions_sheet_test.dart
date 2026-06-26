@@ -32,7 +32,7 @@ void main() {
       );
 
       expect(content, isNot(contains('super-secret-abc123')));
-      expect(content, contains('***'));
+      expect(content, contains('[REDACTED]'));
       expect(content, contains('profile'));
     });
 
@@ -66,7 +66,7 @@ void main() {
 
       expect(content, startsWith('# Navigation Flow'));
       expect(content, isNot(contains('Bearer super-secret-abc123')));
-      expect(content, contains('Bearer ***'));
+      expect(content, contains('Bearer [REDACTED]'));
     });
 
     test('masks arguments on the single-transition share path', () {

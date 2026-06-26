@@ -251,7 +251,7 @@ void main() {
           {'Authorization'},
         )! as Map<String, Object?>;
 
-        expect(result['authorization'], '***');
+        expect(result['authorization'], '[REDACTED]');
         expect(result['safe'], 'visible');
       });
 
@@ -261,7 +261,7 @@ void main() {
           {'authorization'},
         )! as Map<String, Object?>;
 
-        expect(result['Authorization'], '***');
+        expect(result['Authorization'], '[REDACTED]');
       });
     });
 
