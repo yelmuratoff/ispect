@@ -6,15 +6,17 @@ abstract final class CurlUtils {
   ///
   /// - [data]: A map containing request details such as 'uri', 'method',
   ///   'headers', 'data'.
-  /// - [redactor]: When provided, header values are passed through
-  ///   [RedactionService.redactHeaders] and the body through
+  /// - [redactor]: When provided, the URL is passed through
+  ///   [RedactionService.redactUrl], header values through
+  ///   [RedactionService.redactHeaders], and the body through
   ///   [RedactionService.redact] before being written to the command.
   ///
-  /// **Headers and body are NOT redacted unless a [RedactionService] is
-  /// provided.** Without a [redactor], values such as `Authorization`,
-  /// `Cookie`, and `X-API-Key` will appear verbatim in the generated string.
-  /// Always pass a [redactor] when the result is exposed to users (copy to
-  /// clipboard, share sheet, bug report).
+  /// **The URL, headers, and body are NOT redacted unless a [RedactionService]
+  /// is provided.** Without a [redactor], values such as `Authorization`,
+  /// `Cookie`, `X-API-Key`, and URL credentials or query parameters
+  /// (`?token=…`, `user:pass@host`) will appear verbatim in the generated
+  /// string. Always pass a [redactor] when the result is exposed to users
+  /// (copy to clipboard, share sheet, bug report).
   ///
   /// Returns `null` if the data is insufficient to generate a valid cURL
   /// command.
@@ -32,8 +34,9 @@ abstract final class CurlUtils {
     final method = data['method'] as String?;
     if (uri == null || method == null) return null;
 
+    final safeUri = redactor != null ? redactor.redactUrl(uri) : uri;
     final buffer = StringBuffer(
-      'curl -X ${_shellEscape(method)} ${_shellEscape(uri)}',
+      'curl -X ${_shellEscape(method)} ${_shellEscape(safeUri)}',
     );
 
     final rawHeaders = data['headers'] as Map<String, dynamic>?;

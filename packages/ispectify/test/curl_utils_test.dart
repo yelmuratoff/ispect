@@ -145,6 +145,38 @@ void main() {
         expect(curl, contains('en_US'));
       });
 
+      test('redacts sensitive query parameters in the URL', () {
+        final data = {
+          'method': 'GET',
+          'uri': 'https://api.example.com/v1/me?token=secret123&page=2',
+        };
+        final curl = CurlUtils.generateCurl(data, redactor: RedactionService());
+        expect(curl, isNotNull);
+        expect(curl, isNot(contains('secret123')));
+        // Non-sensitive query parameters survive.
+        expect(curl, contains('page=2'));
+      });
+
+      test('redacts userInfo credentials in the URL', () {
+        final data = {
+          'method': 'GET',
+          'uri': 'https://alice:hunter2@api.example.com/path',
+        };
+        final curl = CurlUtils.generateCurl(data, redactor: RedactionService());
+        expect(curl, isNotNull);
+        expect(curl, isNot(contains('alice:hunter2')));
+        expect(curl, isNot(contains('hunter2')));
+      });
+
+      test('passes the raw URL through when redactor is null', () {
+        final data = {
+          'method': 'GET',
+          'uri': 'https://api.example.com/v1/me?token=secret123',
+        };
+        final curl = CurlUtils.generateCurl(data);
+        expect(curl, contains('token=secret123'));
+      });
+
       test('passes raw headers and body through when redactor is null', () {
         final data = {
           'method': 'POST',
