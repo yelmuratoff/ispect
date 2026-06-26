@@ -28,11 +28,14 @@ final class ISpect {
   /// called explicitly; the lazy fallback only keeps logging usable.
   ///
   /// When `kISpectEnabled` is `false` (default in release builds), the lazy
-  /// instance is effectively unreachable from the rest of ISpect and gets
-  /// tree-shaken.
+  /// instance is created disabled — it retains no history and emits no console
+  /// output, so logging through it is a no-op. This keeps diagnostics from
+  /// accumulating in memory in production builds where ISpect is gated off.
   static ISpectLogger get logger {
     if (!_isInitialized) {
-      _logger = ISpectLogger();
+      _logger = kISpectEnabled
+          ? ISpectLogger()
+          : ISpectLogger(options: ISpectLoggerOptions(enabled: false));
       _isInitialized = true;
     }
     return _logger!;
