@@ -608,6 +608,35 @@ void main() {
       const input = 'some text with token=abc';
       expect(RedactionService.redactExportString(input, null), input);
     });
+
+    test('redactExportString redacts every key in query params', () {
+      final result = RedactionService.redactExportString(
+        'https://api.test/x?token=abc&password=p1&keep=ok&secret=s1',
+        const {'token', 'password', 'secret'},
+      );
+      expect(result, contains('token=***'));
+      expect(result, contains('password=***'));
+      expect(result, contains('secret=***'));
+      expect(result, contains('keep=ok'));
+    });
+
+    test('redactExportString redacts every key in JSON form', () {
+      final result = RedactionService.redactExportString(
+        '{"token": "abc", "password": "p1", "keep": "ok"}',
+        const {'token', 'password'},
+      );
+      expect(result, contains('"token": "***"'));
+      expect(result, contains('"password": "***"'));
+      expect(result, contains('"keep": "ok"'));
+    });
+
+    test('redactExportString leaves keys outside the set untouched', () {
+      const input = 'https://api.test/x?session=keepme';
+      expect(
+        RedactionService.redactExportString(input, const {'token'}),
+        input,
+      );
+    });
   });
 
   // ── Serialization ────────────────────────────────────────────────

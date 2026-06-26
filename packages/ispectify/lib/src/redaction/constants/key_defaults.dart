@@ -357,3 +357,14 @@ const Set<String> defaultFullyMaskedKeys = <String>{
   'walletaddress',
   'wallet-address',
 };
+
+/// Lowercased form of [defaultSensitiveKeys], computed once so callers that
+/// build a [RedactionService] with the defaults do not re-lowercase and
+/// re-allocate the set on every construction.
+final Set<String> defaultSensitiveKeysLower =
+    defaultSensitiveKeys.map((e) => e.toLowerCase()).toSet();
+
+/// Lowercased form of [defaultFullyMaskedKeys], computed once. See
+/// [defaultSensitiveKeysLower].
+final Set<String> defaultFullyMaskedKeysLower =
+    defaultFullyMaskedKeys.map((e) => e.toLowerCase()).toSet();

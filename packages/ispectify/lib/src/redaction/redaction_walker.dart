@@ -93,7 +93,8 @@ final class RedactionWalker {
   void _trackStrategyHit(String? keyName) {
     final ctx = _cachedContext;
     if (keyName != null && ctx != null) {
-      if (ctx.isFullyMaskedKey(keyName) || ctx.isSensitiveKey(keyName)) {
+      final classification = ctx.classifyKey(keyName);
+      if (classification.fullyMasked || classification.sensitive) {
         stats.incrementKeyBased();
         return;
       }

@@ -51,9 +51,9 @@ class RedactionService {
               PatternBasedRedaction(),
             ]),
         _config = RedactionConfig(
-          sensitiveKeysLower: (sensitiveKeys ?? defaultSensitiveKeys)
-              .map((e) => e.toLowerCase())
-              .toSet(),
+          sensitiveKeysLower: sensitiveKeys == null
+              ? defaultSensitiveKeysLower
+              : sensitiveKeys.map((e) => e.toLowerCase()).toSet(),
           sensitiveKeyPatterns:
               sensitiveKeyPatterns ?? defaultSensitiveKeyPatterns,
           maxDepth: maxDepth ?? 100,
@@ -65,9 +65,9 @@ class RedactionService {
           ignoredKeyNamesLower: {
             ...?(ignoredKeys?.map((e) => e.toLowerCase())),
           },
-          fullyMaskedKeyNamesLower: (fullyMaskedKeys ?? defaultFullyMaskedKeys)
-              .map((e) => e.toLowerCase())
-              .toSet(),
+          fullyMaskedKeyNamesLower: fullyMaskedKeys == null
+              ? defaultFullyMaskedKeysLower
+              : fullyMaskedKeys.map((e) => e.toLowerCase()).toSet(),
         ) {
     if (_config.maxDepth <= 0) {
       throw ArgumentError(
@@ -293,43 +293,34 @@ class RedactionService {
   /// and error strings that may contain sensitive data.
   static String redactExportString(String value, Set<String>? redactKeys) {
     if (redactKeys == null || redactKeys.isEmpty) return value;
-    var result = value;
 
-    // 1. URL credentials
-    result = result.replaceAllMapped(
-      _urlCredentialPattern,
-      (m) => m[2] != null ? '://***:***@' : '://***@',
-    );
+    // A single alternation over all keys compiles two regexes instead of one
+    // per key, which matters when [redactKeys] is the full default set.
+    final keys = redactKeys.map(RegExp.escape).join('|');
 
-    // 2. Bearer/Basic tokens
-    result = result.replaceAllMapped(
-      RegExp(
-        r'(Bearer|Basic|Token)\s+[A-Za-z0-9+/=._~-]+',
-        caseSensitive: false,
-      ),
-      (m) => '${m[1]} ***',
-    );
-
-    // 3. Query params with sensitive keys
-    for (final key in redactKeys) {
-      final escaped = RegExp.escape(key);
-      result = result.replaceAllMapped(
-        RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
-        (m) => '${m[1]}${m[2]}=***',
-      );
-    }
-
-    // 4. JSON patterns: "password": "secret123" → "password": "***"
-    for (final key in redactKeys) {
-      final escaped = RegExp.escape(key);
-      result = result.replaceAllMapped(
-        RegExp('"($escaped)"\\s*:\\s*"[^"]*"', caseSensitive: false),
-        (m) => '"${m[1]}": "***"',
-      );
-    }
-
-    return result;
+    return value
+        .replaceAllMapped(
+          _urlCredentialPattern,
+          (m) => m[2] != null ? '://***:***@' : '://***@',
+        )
+        .replaceAllMapped(
+          _exportTokenPattern,
+          (m) => '${m[1]} ***',
+        )
+        .replaceAllMapped(
+          RegExp('([?&])($keys)=([^&\\s]*)', caseSensitive: false),
+          (m) => '${m[1]}${m[2]}=***',
+        )
+        .replaceAllMapped(
+          RegExp('"($keys)"\\s*:\\s*"[^"]*"', caseSensitive: false),
+          (m) => '"${m[1]}": "***"',
+        );
   }
+
+  static final _exportTokenPattern = RegExp(
+    r'(Bearer|Basic|Token)\s+[A-Za-z0-9+/=._~-]+',
+    caseSensitive: false,
+  );
 
   // ---------------------------------------------------------------------------
   // Lightweight key-based redaction (static)

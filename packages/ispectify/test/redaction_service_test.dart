@@ -5,6 +5,32 @@ import 'package:test/test.dart';
 
 void main() {
   group('RedactionService', () {
+    test('hoisted default lower sets equal the lowercased defaults', () {
+      expect(
+        defaultSensitiveKeysLower,
+        defaultSensitiveKeys.map((e) => e.toLowerCase()).toSet(),
+      );
+      expect(
+        defaultFullyMaskedKeysLower,
+        defaultFullyMaskedKeys.map((e) => e.toLowerCase()).toSet(),
+      );
+    });
+
+    test('default-constructed service redacts same as explicit default keys',
+        () {
+      final auto = RedactionService();
+      final explicit = RedactionService(
+        sensitiveKeys: defaultSensitiveKeys,
+        fullyMaskedKeys: defaultFullyMaskedKeys,
+      );
+      final input = <String, Object?>{
+        'password': 'p',
+        'accessToken': 'a',
+        'keep': 'v',
+      };
+      expect(auto.redact(input), explicit.redact(input));
+    });
+
     test('redacts sensitive headers by default', () {
       final service = RedactionService();
       final headers = service.redactHeaders({
