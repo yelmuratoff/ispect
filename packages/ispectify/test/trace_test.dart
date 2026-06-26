@@ -650,6 +650,67 @@ void main() {
     });
   });
 
+  group('additionalData export redaction (M8)', () {
+    ISpectLogData secretLog() => ISpectLogData(
+          'user action',
+          key: 'info',
+          additionalData: const {
+            TraceKeys.category: 'general',
+            'password': 'hunter2',
+            'userMeta': {'token': 'super-secret-token'},
+          },
+        );
+
+    test('toText masks nested sensitive additionalData when redactKeys given',
+        () {
+      final text = secretLog().toText(redactKeys: {'password', 'token'});
+
+      expect(text, isNot(contains('hunter2')));
+      expect(text, isNot(contains('super-secret-token')));
+      expect(text, contains('[REDACTED]'));
+      expect(text, contains('general'));
+    });
+
+    test(
+        'toMarkdown masks nested sensitive additionalData when redactKeys given',
+        () {
+      final md = secretLog().toMarkdown(redactKeys: {'password', 'token'});
+
+      expect(md, isNot(contains('hunter2')));
+      expect(md, isNot(contains('super-secret-token')));
+      expect(md, contains('[REDACTED]'));
+    });
+
+    test(
+        'toJsonLines masks nested sensitive additionalData when redactKeys given',
+        () {
+      final jsonl = LogExporter.toJsonLines(
+        [secretLog()],
+        redactKeys: {'password', 'token'},
+      );
+
+      expect(jsonl, isNot(contains('hunter2')));
+      expect(jsonl, isNot(contains('super-secret-token')));
+      expect(jsonl, contains('[REDACTED]'));
+    });
+
+    test('toText leaves additionalData raw when redactKeys is null (opt-out)',
+        () {
+      final text = secretLog().toText();
+
+      expect(text, contains('hunter2'));
+      expect(text, contains('super-secret-token'));
+    });
+
+    test('toJsonLines leaves additionalData raw when redactKeys null (opt-out)',
+        () {
+      final jsonl = LogExporter.toJsonLines([secretLog()]);
+
+      expect(jsonl, contains('hunter2'));
+      expect(jsonl, contains('super-secret-token'));
+    });
+  });
+
   // ── isHttpLog includes httpError ─────────────────────────────────
   test('isHttpLog includes httpError', () {
     final log = ISpectLogData('err', key: 'http-error');
