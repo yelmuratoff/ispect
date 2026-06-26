@@ -390,5 +390,65 @@ void main() {
         expect(metadata['platform'], equals('ispect'));
       });
     });
+
+    group('filtered JSON redaction (H6)', () {
+      ISpectLogData sensitiveLog() => ISpectLogData(
+            'Sensitive filtered payload',
+            time: DateTime(2025, 1, 1, 12),
+            logLevel: LogLevel.info,
+            additionalData: const {
+              'authorization': 'Bearer super-secret-token',
+              'safe': 'visible',
+            },
+          );
+
+      String jsonContentFor(
+        List<ISpectLogData> logs, {
+        bool enableRedaction = true,
+        Set<String>? redactKeys,
+      }) =>
+          service.formatFilteredContent(
+            logs: logs,
+            filteredLogs: logs,
+            filter: ISpectFilter(),
+            fileType: 'json',
+            enableRedaction: enableRedaction,
+            redactKeys: redactKeys,
+          );
+
+      test('masks sensitive values in filtered JSON when redactKeys is set',
+          () {
+        final content = jsonContentFor(
+          [sensitiveLog()],
+          redactKeys: const {'authorization'},
+        );
+
+        expect(content, isNot(contains('super-secret-token')));
+        expect(content, contains('visible'));
+      });
+
+      test('redacts default sensitive keys in filtered JSON by default', () {
+        final log = ISpectLogData(
+          'Sensitive filtered payload',
+          time: DateTime(2025, 1, 1, 12),
+          logLevel: LogLevel.info,
+          additionalData: const {'password': 'hunter2', 'safe': 'visible'},
+        );
+
+        final content = jsonContentFor([log]);
+
+        expect(content, isNot(contains('hunter2')));
+        expect(content, contains('visible'));
+      });
+
+      test('keeps filtered JSON raw when redaction is disabled (opt-out)', () {
+        final content = jsonContentFor(
+          [sensitiveLog()],
+          enableRedaction: false,
+        );
+
+        expect(content, contains('super-secret-token'));
+      });
+    });
   });
 }
