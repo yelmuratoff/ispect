@@ -109,12 +109,13 @@ void main() {
 
       test('redacts keys with surrounding whitespace', () {
         final service = RedactionService();
-        final headers = service.redactHeaders({
-          'authorization ': 'Bearer ws-secret-token',
-        });
+        // A plain value with no token/scheme/base64 shape, so only a key match
+        // (after trimming) can redact it — isolates the whitespace handling.
+        final map = service.redact({
+          'password ': 'plainvalue123',
+        })! as Map<String, Object?>;
 
-        expect(headers['authorization '], isNot(contains('ws-secret-token')));
-        expect(headers['authorization '], contains('[REDACTED]'));
+        expect(map['password '], '[REDACTED]');
       });
 
       test('leaves non-sensitive camelCase keys untouched', () {
