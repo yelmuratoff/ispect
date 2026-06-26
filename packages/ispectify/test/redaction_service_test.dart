@@ -260,10 +260,19 @@ void main() {
         expect(result, isNot(contains('user:pass')));
       });
 
-      test('returns unparseable URL unchanged', () {
+      test('returns unparseable URL unchanged when nothing is sensitive', () {
         final service = RedactionService();
         const bad = ':::not-a-url';
         expect(service.redactUrl(bad), bad);
+      });
+
+      test('sanitizes credentials and sensitive params in an unparseable URL',
+          () {
+        final service = RedactionService();
+        const malformed = 'ht!tp://user:pass@host/path?token=secret';
+        final result = service.redactUrl(malformed);
+        expect(result, isNot(contains('user:pass')));
+        expect(result, isNot(contains('secret')));
       });
     });
 

@@ -209,10 +209,16 @@ class RedactionService {
   /// Redacts query-parameter values and userInfo credentials in a URL string.
   ///
   /// Returns the original [url] unchanged when there is nothing to redact
-  /// (no query parameters and no userInfo) or the URL cannot be parsed.
+  /// (no query parameters and no userInfo). When the URL cannot be parsed,
+  /// falls back to regex-based sanitization of credentials and sensitive
+  /// query parameters rather than returning it verbatim.
   String redactUrl(String url) {
     final uri = Uri.tryParse(url);
-    if (uri == null) return url;
+    if (uri == null) {
+      // Malformed URL — Uri APIs are unavailable. Best-effort regex sanitize
+      // so credentials and sensitive query params don't survive verbatim.
+      return redactExportString(url, _config.sensitiveKeysLower);
+    }
 
     final hasParams = uri.queryParameters.isNotEmpty;
     final hasUserInfo = uri.userInfo.isNotEmpty;
