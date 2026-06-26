@@ -95,12 +95,19 @@ class ISpectRiverpodObserver extends ProviderObserver {
     } catch (_) {}
   }
 
+  /// Defaults to a [RedactionService] when redaction is enabled but no explicit
+  /// redactor was supplied, so sensitive payloads are masked out of the box —
+  /// matching the network/DB interceptors. `null` only when redaction is off.
+  late final RedactionService? _redactor = settings.enableRedaction
+      ? (settings.redactor ?? RedactionService())
+      : null;
+
   Map<String, Object?> _withRedaction(
     Map<String, dynamic> data,
     void Function(Map<String, dynamic>, RedactionService) redact,
   ) {
-    final redactor = settings.redactor;
-    if (settings.isRedactionActive && redactor != null) {
+    final redactor = _redactor;
+    if (redactor != null) {
       redact(data, redactor);
     }
     return data;
@@ -136,7 +143,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
       target: data.providerName,
       meta: meta,
       consoleMessage: settings.printValues
-          ? '[riverpod] add → ${data.providerName}\nValue: ${settings.formatValue(value)}'
+          ? '[riverpod] add → ${data.providerName}\nValue: ${meta[RiverpodJsonKeys.value]}'
           : '[riverpod] add → ${data.providerName}',
     );
   }
@@ -174,8 +181,10 @@ class ISpectRiverpodObserver extends ProviderObserver {
       includeValue: settings.printValues,
     );
     final meta = _withRedaction(data.toJson(), RiverpodUpdateData.redact);
-    final previousFormatted = settings.formatValue(previousValue);
-    final nextFormatted = settings.formatValue(newValue);
+    final previousFormatted = meta[RiverpodJsonKeys.previousValue] ??
+        meta[RiverpodJsonKeys.previousValueType];
+    final nextFormatted =
+        meta[RiverpodJsonKeys.newValue] ?? meta[RiverpodJsonKeys.newValueType];
     _logger.riverpodUpdate(
       source: _source,
       target: data.providerName,

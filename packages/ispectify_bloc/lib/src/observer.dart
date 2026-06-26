@@ -110,12 +110,19 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (_) {}
   }
 
+  /// Defaults to a [RedactionService] when redaction is enabled but no explicit
+  /// redactor was supplied, so sensitive payloads are masked out of the box —
+  /// matching the network/DB interceptors. `null` only when redaction is off.
+  late final RedactionService? _redactor = settings.enableRedaction
+      ? (settings.redactor ?? RedactionService())
+      : null;
+
   Map<String, Object?> _withRedaction(
     Map<String, dynamic> data,
     void Function(Map<String, dynamic>, RedactionService) redact,
   ) {
-    final redactor = settings.redactor;
-    if (settings.isRedactionActive && redactor != null) {
+    final redactor = _redactor;
+    if (redactor != null) {
       redact(data, redactor);
     }
     return data;
@@ -146,13 +153,14 @@ class ISpectBlocObserver extends BlocObserver {
       includeFullData: settings.printEventFullData,
     );
     final meta = _withRedaction(data.toJson(), BlocEventData.redact);
+    final redactedEvent = meta[BlocJsonKeys.event];
     _logger.blocEvent(
       source: _source,
       target: data.blocType,
       correlationId: eventId,
       meta: meta,
-      consoleMessage: settings.printEventFullData && event != null
-          ? '[bloc] event → ${data.blocType}\nEvent(${data.eventType}): $event'
+      consoleMessage: redactedEvent != null
+          ? '[bloc] event → ${data.blocType}\nEvent(${data.eventType}): $redactedEvent'
           : '[bloc] event → ${data.blocType} (${data.eventType})',
     );
   }
@@ -193,10 +201,9 @@ class ISpectBlocObserver extends BlocObserver {
       consoleMessage: _buildBlocTransitionMessage(
         blocType: data.blocType,
         eventTypeName: data.eventType,
-        currentState: data.formattedCurrentState,
-        nextState: data.formattedNextState,
-        printEventFullData: settings.printEventFullData,
-        event: transition.event,
+        currentState: meta[BlocJsonKeys.currentState],
+        nextState: meta[BlocJsonKeys.nextState],
+        event: meta[BlocJsonKeys.event],
       ),
     );
   }
@@ -233,8 +240,8 @@ class ISpectBlocObserver extends BlocObserver {
       meta: meta,
       consoleMessage: _buildBlocChangeMessage(
         blocType: data.blocType,
-        currentState: data.formattedCurrentState,
-        nextState: data.formattedNextState,
+        currentState: meta[BlocJsonKeys.currentState],
+        nextState: meta[BlocJsonKeys.nextState],
       ),
     );
   }
@@ -339,6 +346,7 @@ class ISpectBlocObserver extends BlocObserver {
       includeFullData: settings.printEventFullData,
     );
     final meta = _withRedaction(data.toJson(), BlocDoneData.redact);
+    final redactedEvent = meta[BlocJsonKeys.event];
     _logger.blocDone(
       source: _source,
       target: data.blocType,
@@ -347,8 +355,8 @@ class ISpectBlocObserver extends BlocObserver {
       errorStackTrace: stackTrace,
       correlationId: eventId,
       meta: meta,
-      consoleMessage: settings.printEventFullData && event != null
-          ? '[bloc] done → ${data.blocType}\nEvent(${data.eventType}): $event'
+      consoleMessage: redactedEvent != null
+          ? '[bloc] done → ${data.blocType}\nEvent(${data.eventType}): $redactedEvent'
           : '[bloc] done → ${data.blocType}${data.eventType != null ? ' (${data.eventType})' : ''}',
     );
   }
@@ -356,14 +364,13 @@ class ISpectBlocObserver extends BlocObserver {
   static String _buildBlocTransitionMessage({
     required String blocType,
     required String eventTypeName,
-    required Object currentState,
-    required Object nextState,
-    required bool printEventFullData,
+    required Object? currentState,
+    required Object? nextState,
     required Object? event,
   }) {
     final buf = StringBuffer('[bloc] transition → $blocType')
       ..write('\n$currentState → $nextState');
-    if (printEventFullData && event != null) {
+    if (event != null) {
       buf.write('\nEvent($eventTypeName): $event');
     } else {
       buf.write(' ($eventTypeName)');
@@ -373,8 +380,8 @@ class ISpectBlocObserver extends BlocObserver {
 
   static String _buildBlocChangeMessage({
     required String blocType,
-    required Object currentState,
-    required Object nextState,
+    required Object? currentState,
+    required Object? nextState,
   }) =>
       '[bloc] state → $blocType\n$currentState → $nextState';
 }

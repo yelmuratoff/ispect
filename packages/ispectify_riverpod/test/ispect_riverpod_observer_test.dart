@@ -404,6 +404,52 @@ void main() {
       });
     });
 
+    group('console message redaction', () {
+      const secret = 'sk-live-super-secret-value-1234567890';
+
+      test('masks sensitive value fields in the add console message by default',
+          () {
+        ISpectRiverpodObserver(logger: logger).didAddProvider(
+          _counterProvider,
+          <String, dynamic>{'password': secret},
+          container,
+        );
+
+        final message = logger.byOperation('add').single.message;
+        expect(message, isNot(contains(secret)));
+        expect(message, contains('password'));
+      });
+
+      test(
+          'masks sensitive value fields in the update console message by '
+          'default', () {
+        ISpectRiverpodObserver(logger: logger).didUpdateProvider(
+          _counterProvider,
+          0,
+          <String, dynamic>{'token': secret},
+          container,
+        );
+
+        final message = logger.byOperation('update').single.message;
+        expect(message, isNot(contains(secret)));
+        expect(message, contains('token'));
+      });
+
+      test('keeps the raw value in the console when redaction disabled', () {
+        ISpectRiverpodObserver(
+          logger: logger,
+          settings: const ISpectRiverpodSettings(enableRedaction: false),
+        ).didAddProvider(
+          _counterProvider,
+          <String, dynamic>{'password': secret},
+          container,
+        );
+
+        final message = logger.byOperation('add').single.message;
+        expect(message, contains(secret));
+      });
+    });
+
     // ------------------------------------------------------------------
     // Enabled toggle and presets
     // ------------------------------------------------------------------
