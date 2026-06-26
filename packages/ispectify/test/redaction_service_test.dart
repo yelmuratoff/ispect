@@ -67,6 +67,80 @@ void main() {
       expect(kDefaultSensitiveKeys, equals(defaultSensitiveKeys));
     });
 
+    group('camelCase and whitespace key matching', () {
+      test('redacts camelCase credential keys', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'accessToken': 'aaa-access-secret-bbb',
+          'refreshToken': 'ccc-refresh-secret-ddd',
+          'idToken': 'eee-id-secret-fff',
+          'displayName': 'Alice',
+        })! as Map<String, Object?>;
+
+        expect(map['accessToken'], isNot(contains('access-secret')));
+        expect(map['refreshToken'], isNot(contains('refresh-secret')));
+        expect(map['idToken'], isNot(contains('id-secret')));
+        expect(map['displayName'], 'Alice');
+      });
+
+      test('redacts camelCase password keys', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'confirmPassword': 'pw-confirm-secret',
+          'newPassword': 'pw-new-secret',
+        })! as Map<String, Object?>;
+
+        expect(map['confirmPassword'], isNot(contains('confirm-secret')));
+        expect(map['newPassword'], isNot(contains('new-secret')));
+      });
+
+      test('redacts PascalCase and other camelCase sensitive keys', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'AccessToken': 'pascal-secret-value',
+          'sessionId': 'session-secret-value',
+          'cardNumber': '4111-1111-1111-1111',
+        })! as Map<String, Object?>;
+
+        expect(map['AccessToken'], isNot(contains('pascal-secret-value')));
+        expect(map['sessionId'], isNot(contains('session-secret-value')));
+        expect(map['cardNumber'], isNot(contains('4111-1111-1111-1111')));
+      });
+
+      test('redacts keys with surrounding whitespace', () {
+        final service = RedactionService();
+        final headers = service.redactHeaders({
+          'authorization ': 'Bearer ws-secret-token',
+        });
+
+        expect(headers['authorization '], isNot(contains('ws-secret-token')));
+        expect(headers['authorization '], contains('[REDACTED]'));
+      });
+
+      test('leaves non-sensitive camelCase keys untouched', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'firstName': 'Alice',
+          'createdAt': '2026-01-01',
+          'itemKeyboard': 'visible',
+        })! as Map<String, Object?>;
+
+        expect(map['firstName'], 'Alice');
+        expect(map['createdAt'], '2026-01-01');
+        expect(map['itemKeyboard'], 'visible');
+      });
+
+      test('per-call ignored camelCase key is not redacted', () {
+        final service = RedactionService();
+        final map = service.redact(
+          {'accessToken': 'visible-value'},
+          ignoredKeys: {'accessToken'},
+        )! as Map<String, Object?>;
+
+        expect(map['accessToken'], 'visible-value');
+      });
+    });
+
     group('redactUrl', () {
       test('returns original URL when nothing to redact', () {
         final service = RedactionService();

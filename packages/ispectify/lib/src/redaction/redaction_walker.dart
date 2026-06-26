@@ -91,10 +91,9 @@ final class RedactionWalker {
 
   /// Determines whether the hit was key-based or pattern-based.
   void _trackStrategyHit(String? keyName) {
-    if (keyName != null) {
-      final lower = keyName.toLowerCase();
-      if (config.fullyMaskedKeyNamesLower.contains(lower) ||
-          (_cachedContext?.isSensitiveKeyLower(lower) ?? false)) {
+    final ctx = _cachedContext;
+    if (keyName != null && ctx != null) {
+      if (ctx.isFullyMaskedKey(keyName) || ctx.isSensitiveKey(keyName)) {
         stats.incrementKeyBased();
         return;
       }
