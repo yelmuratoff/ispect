@@ -31,6 +31,44 @@ void main() {
       expect(auto.redact(input), explicit.redact(input));
     });
 
+    test('redacts personal PII keys by default', () {
+      final service = RedactionService();
+      final out = service.redact({
+        'firstName': 'Emily',
+        'last_name': 'Johnson',
+        'gender': 'female',
+        'nationality': 'United States',
+        'home_address': '1 Main Street',
+        'tax_id': '123-45-6789',
+        'birthday': '1990-01-01',
+        'keep': 'visible',
+      })! as Map<String, Object?>;
+
+      expect(out['firstName'], '[REDACTED]');
+      expect(out['last_name'], '[REDACTED]');
+      expect(out['gender'], '[REDACTED]');
+      expect(out['nationality'], '[REDACTED]');
+      expect(out['home_address'], '[REDACTED]');
+      expect(out['tax_id'], '[REDACTED]');
+      expect(out['birthday'], '[REDACTED]');
+      expect(out['keep'], 'visible');
+    });
+
+    test('does not redact ambiguous non-PII keys by default', () {
+      final service = RedactionService();
+      final out = service.redact({
+        'name': 'Checkout Screen',
+        'age': 42,
+        'address': 'Main Office',
+        'location': 'Dashboard View',
+      })! as Map<String, Object?>;
+
+      expect(out['name'], 'Checkout Screen');
+      expect(out['age'], 42);
+      expect(out['address'], 'Main Office');
+      expect(out['location'], 'Dashboard View');
+    });
+
     test('redacts sensitive headers by default', () {
       final service = RedactionService();
       final headers = service.redactHeaders({
@@ -147,12 +185,12 @@ void main() {
       test('leaves non-sensitive camelCase keys untouched', () {
         final service = RedactionService();
         final map = service.redact({
-          'firstName': 'Alice',
+          'sortOrder': 'ascending',
           'createdAt': '2026-01-01',
           'itemKeyboard': 'visible',
         })! as Map<String, Object?>;
 
-        expect(map['firstName'], 'Alice');
+        expect(map['sortOrder'], 'ascending');
         expect(map['createdAt'], '2026-01-01');
         expect(map['itemKeyboard'], 'visible');
       });

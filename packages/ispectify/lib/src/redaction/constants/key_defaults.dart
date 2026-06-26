@@ -164,6 +164,80 @@ const Set<String> defaultSensitiveKeys = <String>{
   'street_address',
   'streetaddress',
   'street-address',
+
+  // Personal Names (PII)
+  'first_name',
+  'firstname',
+  'first-name',
+  'last_name',
+  'lastname',
+  'last-name',
+  'middle_name',
+  'middlename',
+  'middle-name',
+  'full_name',
+  'fullname',
+  'full-name',
+  'given_name',
+  'givenname',
+  'given-name',
+  'family_name',
+  'familyname',
+  'family-name',
+  'maiden_name',
+  'maidenname',
+  'maiden-name',
+  'surname',
+
+  // Demographics & Special-Category PII
+  'gender',
+  'sex',
+  'nationality',
+  'ethnicity',
+  'religion',
+  'sexual_orientation',
+  'sexualorientation',
+  'sexual-orientation',
+  'blood_type',
+  'bloodtype',
+  'blood-type',
+
+  // Birth Date & Place
+  'birthday',
+  'birth_date',
+  'birthdate',
+  'birth-date',
+  'place_of_birth',
+  'placeofbirth',
+  'place-of-birth',
+  'birth_place',
+  'birthplace',
+  'birth-place',
+
+  // Postal Addresses (qualified)
+  'home_address',
+  'homeaddress',
+  'home-address',
+  'mailing_address',
+  'mailingaddress',
+  'mailing-address',
+  'billing_address',
+  'billingaddress',
+  'billing-address',
+  'shipping_address',
+  'shippingaddress',
+  'shipping-address',
+
+  // Tax Identifiers
+  'tax_id',
+  'taxid',
+  'tax-id',
+  'taxpayer_id',
+  'taxpayerid',
+  'taxpayer-id',
+  'vat_number',
+  'vatnumber',
+  'vat-number',
 };
 
 /// Backward-compatible alias for [defaultSensitiveKeys].
@@ -229,12 +303,13 @@ final List<RegExp> defaultSensitiveKeyPatterns = <RegExp>[
 /// partial/edge masking), regardless of whether the key is also in
 /// [defaultSensitiveKeys].
 ///
-/// Covers credentials, financial account numbers, security codes, and
-/// government identifiers, where even the first/last characters of the value
-/// leak meaningful information. `authorization`/`cookie` are intentionally
-/// absent: their structure-aware masking preserves the (non-sensitive) auth
-/// scheme and cookie names while masking the secret. Context-dependent contact
-/// fields (email, phone, username) also keep edge masking to aid debugging.
+/// Covers credentials, financial account numbers, security codes, government
+/// identifiers, personal names, demographics, birth and postal details, and
+/// tax identifiers — values where even the first/last characters leak
+/// meaningful information. `authorization`/`cookie` are intentionally absent:
+/// their structure-aware masking preserves the (non-sensitive) auth scheme and
+/// cookie names while masking the secret. Context-dependent contact fields
+/// (email, phone, username) also keep edge masking to aid debugging.
 const Set<String> defaultFullyMaskedKeys = <String>{
   'filename',
 
@@ -356,6 +431,80 @@ const Set<String> defaultFullyMaskedKeys = <String>{
   'wallet_address',
   'walletaddress',
   'wallet-address',
+
+  // Personal Names (PII)
+  'first_name',
+  'firstname',
+  'first-name',
+  'last_name',
+  'lastname',
+  'last-name',
+  'middle_name',
+  'middlename',
+  'middle-name',
+  'full_name',
+  'fullname',
+  'full-name',
+  'given_name',
+  'givenname',
+  'given-name',
+  'family_name',
+  'familyname',
+  'family-name',
+  'maiden_name',
+  'maidenname',
+  'maiden-name',
+  'surname',
+
+  // Demographics & Special-Category PII
+  'gender',
+  'sex',
+  'nationality',
+  'ethnicity',
+  'religion',
+  'sexual_orientation',
+  'sexualorientation',
+  'sexual-orientation',
+  'blood_type',
+  'bloodtype',
+  'blood-type',
+
+  // Birth Date & Place
+  'birthday',
+  'birth_date',
+  'birthdate',
+  'birth-date',
+  'place_of_birth',
+  'placeofbirth',
+  'place-of-birth',
+  'birth_place',
+  'birthplace',
+  'birth-place',
+
+  // Postal Addresses (qualified)
+  'home_address',
+  'homeaddress',
+  'home-address',
+  'mailing_address',
+  'mailingaddress',
+  'mailing-address',
+  'billing_address',
+  'billingaddress',
+  'billing-address',
+  'shipping_address',
+  'shippingaddress',
+  'shipping-address',
+
+  // Tax Identifiers
+  'tax_id',
+  'taxid',
+  'tax-id',
+  'taxpayer_id',
+  'taxpayerid',
+  'taxpayer-id',
+  'vat_number',
+  'vatnumber',
+  'vat-number',
 };
 
 /// Lowercased form of [defaultSensitiveKeys], computed once so callers that
