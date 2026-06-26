@@ -217,6 +217,27 @@ void main() {
       });
     });
 
+    group('redactByKeys', () {
+      test('matches a mixed-case Set against lowercase data keys', () {
+        final result = RedactionService.redactByKeys(
+          {'authorization': 'Bearer secret', 'safe': 'visible'},
+          {'Authorization'},
+        )! as Map<String, Object?>;
+
+        expect(result['authorization'], '***');
+        expect(result['safe'], 'visible');
+      });
+
+      test('matches lowercase keys against mixed-case data keys', () {
+        final result = RedactionService.redactByKeys(
+          {'Authorization': 'Bearer secret'},
+          {'authorization'},
+        )! as Map<String, Object?>;
+
+        expect(result['Authorization'], '***');
+      });
+    });
+
     group('redactUrl', () {
       test('returns original URL when nothing to redact', () {
         final service = RedactionService();

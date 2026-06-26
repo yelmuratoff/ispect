@@ -346,8 +346,7 @@ class RedactionService {
   }) {
     if (data == null || keys.isEmpty || maxDepth <= 0) return data;
 
-    final lowerKeys =
-        keys is Set<String> ? keys : keys.map((k) => k.toLowerCase()).toSet();
+    final lowerKeys = keys.map((k) => k.toLowerCase()).toSet();
     return _redactByKeysImpl(data, lowerKeys, maxDepth, placeholder);
   }
 
