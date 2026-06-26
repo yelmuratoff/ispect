@@ -143,6 +143,12 @@ final class ISpect {
   /// # Production (ISpect removed via tree-shaking)
   /// flutter build apk
   /// ```
+  ///
+  /// Pass [redactionEnabled] to flip the global redaction kill-switch
+  /// ([ISpectRedaction.enabled]) for the whole app — network, database,
+  /// BLoC/Riverpod, navigation, and every export path. Defaults to `null`,
+  /// which leaves redaction on (the safe default). Set it to `false` only for
+  /// builds that genuinely need raw payloads.
   static void run<T>(
     T Function() callback, {
     ISpectLogger? logger,
@@ -158,10 +164,15 @@ final class ISpect {
     void Function(Object error, StackTrace? stack)? onUncaughtError,
     ISpectErrorHandlerOptions options = const ISpectErrorHandlerOptions(),
     List<String> filters = const [],
+    bool? redactionEnabled,
   }) {
     if (!kISpectEnabled) {
       callback();
       return;
+    }
+
+    if (redactionEnabled != null) {
+      ISpectRedaction.enabled = redactionEnabled;
     }
 
     final effectiveLogger = logger ?? ISpectFlutter.init();

@@ -48,6 +48,7 @@ export 'src/redaction/constants/placeholders.dart';
 export 'src/redaction/redaction_result.dart';
 export 'src/redaction/redaction_service.dart';
 export 'src/redaction/redaction_stats.dart';
+export 'src/redaction/redaction_toggle.dart';
 export 'src/redaction/strategies/composite_redaction_strategy.dart';
 export 'src/redaction/strategies/key_based_redaction.dart';
 export 'src/redaction/strategies/pattern_based_redaction.dart';

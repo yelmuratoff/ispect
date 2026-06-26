@@ -269,6 +269,44 @@ void main() {
         reason: 'Raw Authorization token must not leak into history',
       );
     });
+
+    test('global ISpectRedaction kill-switch disables interceptor redaction',
+        () async {
+      addTearDown(() => ISpectRedaction.enabled = true);
+      ISpectRedaction.enabled = false;
+
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final adapter = _FakeHttpAdapter(
+        (_) => _jsonResponse({'ok': true}),
+      );
+      final dio = _dioWith(adapter)
+        ..interceptors.add(
+          ISpectDioInterceptor(
+            logger: logger,
+            settings: const ISpectDioInterceptorSettings(
+              printRequestHeaders: true,
+            ),
+          ),
+        );
+
+      const secret = 'Bearer super-secret-token-xyz';
+      await dio.get<dynamic>(
+        '/me',
+        options: Options(headers: {'Authorization': secret}),
+      );
+
+      final request = logger.history
+          .firstWhere((r) => r.key == ISpectLogType.httpRequest.key);
+
+      final serialized = jsonEncode(_stringify(request.additionalData));
+      expect(
+        serialized.contains('super-secret-token-xyz'),
+        isTrue,
+        reason: 'With redaction globally disabled, the raw token is captured',
+      );
+    });
   });
 }
 
