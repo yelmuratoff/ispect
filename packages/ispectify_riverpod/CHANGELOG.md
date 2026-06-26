@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.0.1
+
+### Security
+
+- **Redaction hardened across capture and export:** Sensitive keys are matched more broadly (camelCase and whitespace-trimmed forms), the default sensitive-key set is broadened, and credential/PII values are fully masked. Redaction now fails closed — a payload that can't be processed is masked rather than passed through.
+- **Diagnostics redacted everywhere they leave the app:** Network URLs (including in generated cURL), database values and error messages, BLoC/Riverpod console output, navigation route arguments, and every export path (JSON, text, Markdown, file share, and clipboard copy) are redacted by default.
+- **Inert in production builds:** When ISpect is compiled out (`ISPECT_ENABLED` omitted), observers stay silent and the global logger retains no history and writes nothing to the console, so diagnostics don't accumulate in release builds.
+
 ## 6.0.0
 
 ### Improvements
