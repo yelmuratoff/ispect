@@ -1,6 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_riverpod/src/data/_data.dart';
 import 'package:ispectify_riverpod/src/settings.dart';
+import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart';
 
 typedef RiverpodProviderCallback = void Function(
@@ -58,6 +59,16 @@ class ISpectRiverpodObserver extends ProviderObserver {
 
   static const String _source = 'riverpod';
 
+  /// Test-only override for the compile-time [kISpectEnabled] gate.
+  ///
+  /// Production code leaves this `null`, so logging follows `kISpectEnabled`
+  /// and tree-shakes away when the flag is omitted. Tests set it to exercise
+  /// the enabled path without a `--dart-define`.
+  @visibleForTesting
+  static bool? debugEnabledOverride;
+
+  bool get _ispectEnabled => debugEnabledOverride ?? kISpectEnabled;
+
   bool _isFiltered(ProviderBase<Object?> provider) {
     final providerName = _providerName(provider);
     if (filterPredicate?.call(providerName) ?? false) {
@@ -78,7 +89,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
     required bool toggle,
     required ProviderBase<Object?> provider,
   }) {
-    if (!settings.enabled || !toggle) {
+    if (!_ispectEnabled || !settings.enabled || !toggle) {
       return false;
     }
     if (settings.providerFilter?.call(provider) == false) {

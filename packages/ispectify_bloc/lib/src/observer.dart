@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/src/data/_data.dart';
 import 'package:ispectify_bloc/src/settings.dart';
+import 'package:meta/meta.dart';
 
 typedef BlocEventCallback = void Function(
   Bloc<dynamic, dynamic> bloc,
@@ -63,6 +64,16 @@ class ISpectBlocObserver extends BlocObserver {
 
   static const String _source = 'bloc';
 
+  /// Test-only override for the compile-time [kISpectEnabled] gate.
+  ///
+  /// Production code leaves this `null`, so logging follows `kISpectEnabled`
+  /// and tree-shakes away when the flag is omitted. Tests set it to exercise
+  /// the enabled path without a `--dart-define`.
+  @visibleForTesting
+  static bool? debugEnabledOverride;
+
+  bool get _ispectEnabled => debugEnabledOverride ?? kISpectEnabled;
+
   /// Event correlation: stores pending eventIds per bloc instance.
   /// Queue (FIFO) handles concurrent events correctly.
   /// Expando is GC-safe — cleaned when Bloc is destroyed.
@@ -96,7 +107,7 @@ class ISpectBlocObserver extends BlocObserver {
     required bool toggle,
     required Object? candidate,
   }) {
-    if (!settings.enabled || !toggle) {
+    if (!_ispectEnabled || !settings.enabled || !toggle) {
       return false;
     }
     return !_isFiltered(candidate);
@@ -332,7 +343,7 @@ class ISpectBlocObserver extends BlocObserver {
     final eventId = queue?.firstOrNull;
     if (queue != null && queue.isNotEmpty) queue.removeFirst();
 
-    final isEnabled = settings.enabled && !_isFiltered(bloc);
+    final isEnabled = _ispectEnabled && settings.enabled && !_isFiltered(bloc);
     if (!isEnabled) return;
 
     final shouldLogCompletion = (settings.printCompletions && error == null) ||

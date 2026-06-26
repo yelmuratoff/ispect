@@ -53,11 +53,13 @@ void main() {
     late ProviderContainer container;
 
     setUp(() {
+      ISpectRiverpodObserver.debugEnabledOverride = true;
       logger = RecordingLogger();
       container = ProviderContainer();
     });
 
     tearDown(() {
+      ISpectRiverpodObserver.debugEnabledOverride = null;
       container.dispose();
     });
 
@@ -401,6 +403,24 @@ void main() {
             .single
             .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
         expect(meta[RiverpodJsonKeys.providerName], isNot('counter'));
+      });
+    });
+
+    group('kISpectEnabled gate', () {
+      test('emits nothing when ISpect is disabled at build time', () {
+        ISpectRiverpodObserver.debugEnabledOverride = false;
+        ISpectRiverpodObserver(logger: logger)
+          ..didAddProvider(_counterProvider, 0, container)
+          ..didUpdateProvider(_counterProvider, 0, 1, container)
+          ..didDisposeProvider(_counterProvider, container)
+          ..providerDidFail(
+            _failingProvider,
+            StateError('boom'),
+            StackTrace.current,
+            container,
+          );
+
+        expect(logger.records, isEmpty);
       });
     });
 

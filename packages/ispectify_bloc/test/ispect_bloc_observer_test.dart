@@ -54,11 +54,13 @@ void main() {
     late DummyBloc bloc;
 
     setUp(() {
+      ISpectBlocObserver.debugEnabledOverride = true;
       logger = RecordingLogger();
       bloc = DummyBloc();
     });
 
     tearDown(() async {
+      ISpectBlocObserver.debugEnabledOverride = null;
       await bloc.close();
     });
 
@@ -534,6 +536,25 @@ void main() {
             .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
         // Should NOT be redacted because enableRedaction is false.
         expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
+      });
+    });
+
+    group('kISpectEnabled gate', () {
+      test('emits nothing when ISpect is disabled at build time', () {
+        ISpectBlocObserver.debugEnabledOverride = false;
+        ISpectBlocObserver(logger: logger)
+          ..onCreate(bloc)
+          ..onEvent(bloc, 'test')
+          ..onTransition(
+            bloc,
+            const Transition(currentState: 0, event: 'x', nextState: 1),
+          )
+          ..onChange(bloc, const Change(currentState: 0, nextState: 1))
+          ..onError(bloc, Exception('fail'), StackTrace.current)
+          ..onDone(bloc, 'test')
+          ..onClose(bloc);
+
+        expect(logger.records, isEmpty);
       });
     });
 
