@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.0.3
+
+### Bug Fixes
+
+- **WebAssembly (WASM) support:** `ispect` is WASM-ready and supports all six platforms (Android, iOS, web, Windows, macOS, Linux). `flutter build web --wasm` now succeeds; log export uses the browser download on web and WASM, and the native filesystem on other platforms.
+
 ## 6.0.2
 
 ### Security
