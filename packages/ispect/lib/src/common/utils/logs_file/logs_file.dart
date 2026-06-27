@@ -1,9 +1,5 @@
-// Cross-platform logs file utilities
+// Platform implementations are selected by LogsFileFactory and deliberately not
+// re-exported: that keeps dart:io and dart:js_interop off the default import
+// path, which WASM/cross-platform analysis requires.
 export 'base/base.dart';
 export 'factory/factory.dart';
-
-// Export platform-specific implementations
-export 'implementations/native_logs_file.dart'
-    if (dart.library.js_interop) 'implementations/web_logs_file.dart';
-export 'implementations/web_logs_file.dart'
-    if (dart.library.io) 'implementations/native_logs_file.dart';

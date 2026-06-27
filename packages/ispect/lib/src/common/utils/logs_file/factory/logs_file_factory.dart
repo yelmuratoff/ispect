@@ -1,5 +1,6 @@
 import 'package:ispect/src/common/utils/logs_file/base/base_logs_file.dart';
-import 'package:ispect/src/common/utils/logs_file/factory/native_factory.dart'
+import 'package:ispect/src/common/utils/logs_file/factory/stub_factory.dart'
+    if (dart.library.io) 'package:ispect/src/common/utils/logs_file/factory/native_factory.dart'
     if (dart.library.js_interop) 'package:ispect/src/common/utils/logs_file/factory/web_factory.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
 
