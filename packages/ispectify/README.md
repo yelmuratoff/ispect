@@ -133,6 +133,19 @@ final logger = ISpectLogger(
 
 The boxed formatter renders the same fields as the default (so redaction and network bodies carry over), and the border glyph and width follow `ConsoleSettings.lineSymbol` / `maxLineWidth`. Implement `ILogEntryFormatter` for a fully custom layout; the default is the compact `HumanLogEntryFormatter`.
 
+By default, entries are written with `print` (browser console on web). To route them through `dart:developer` instead — so they appear in the DevTools logging view with structured metadata — pass the `developerLogOutput` sink:
+
+```dart
+final logger = ISpectLogger(
+  logger: ISpectBaseLogger(
+    output: developerLogOutput,
+    settings: ConsoleSettings(formatter: const BoxedLogEntryFormatter()),
+  ),
+);
+```
+
+Each entry becomes a single `log()` call, so multi-line boxed output stays intact, and the log level is mapped through. Messages arrive colored when `ConsoleSettings.enableColors` is on; if your log viewer shows ANSI codes as raw escape sequences, pair it with `enableColors: false`. Flutter apps initialized via `ISpect.run` / `ISpectFlutter.init()` already use a platform-adaptive output (`dart:developer` on iOS/macOS, `print` elsewhere); `developerLogOutput` is for code that wires `ISpectBaseLogger` directly, or any custom `LoggerOutput`.
+
 ## Tracing
 
 Trace extensions wrap work in a paired start/end log entry with duration, outcome, and an optional result projection. You get one-line "did this domain action succeed?" entries in the log viewer instead of a flood of unrelated logs.
