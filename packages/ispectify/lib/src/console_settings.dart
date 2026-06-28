@@ -1,5 +1,6 @@
 import 'package:ansicolor/ansicolor.dart';
 import 'package:ispectify/src/logger/console_utils.dart';
+import 'package:ispectify/src/logger/entry_formatter.dart';
 import 'package:ispectify/src/models/log_level.dart';
 
 /// Configuration settings for ISpectLogger logger.
@@ -24,6 +25,9 @@ final class ConsoleSettings {
   ///   `additionalData` for filtering and the in-app viewer. Custom
   ///   user-supplied IDs (`msg-1`, `txn-orders-2`, …) are never trimmed.
   ///   (default: `true`).
+  /// - `formatter`: Owns the end-to-end shape of each console line. Defaults to
+  ///   the compact [HumanLogEntryFormatter]; pass [BoxedLogEntryFormatter] for
+  ///   visually-separated boxed output, or any custom [ILogEntryFormatter].
   ConsoleSettings({
     Map<LogLevel, AnsiPen>? colors,
     this.enabled = true,
@@ -34,6 +38,7 @@ final class ConsoleSettings {
     this.enableColors = true,
     this.fullTimestamp = false,
     this.truncateTraceIds = true,
+    this.formatter = const HumanLogEntryFormatter(),
   })  : assert(maxLineWidth > 0, 'maxLineWidth must be positive'),
         colors = Map<LogLevel, AnsiPen>.unmodifiable({
           ...ConsoleUtils.ansiColors,
@@ -68,6 +73,9 @@ final class ConsoleSettings {
   /// 8-character prefix in the console metadata column.
   final bool truncateTraceIds;
 
+  /// Strategy that renders each [ISpectLogData] entry into its console string.
+  final ILogEntryFormatter formatter;
+
   /// Creates a new instance of `ConsoleSettings` with modified properties.
   ///
   /// If a parameter is `null`, the existing value is preserved.
@@ -81,6 +89,7 @@ final class ConsoleSettings {
     bool? enableColors,
     bool? fullTimestamp,
     bool? truncateTraceIds,
+    ILogEntryFormatter? formatter,
   }) =>
       ConsoleSettings(
         colors: colors ?? this.colors,
@@ -92,5 +101,6 @@ final class ConsoleSettings {
         enableColors: enableColors ?? this.enableColors,
         fullTimestamp: fullTimestamp ?? this.fullTimestamp,
         truncateTraceIds: truncateTraceIds ?? this.truncateTraceIds,
+        formatter: formatter ?? this.formatter,
       );
 }

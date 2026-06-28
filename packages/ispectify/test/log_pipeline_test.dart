@@ -114,6 +114,30 @@ void main() {
       expect(history.history.single.key, 'after');
     });
 
+    test('console output uses the formatter configured on ConsoleSettings', () {
+      final captured = <String>[];
+      final boxedLogger = ISpectBaseLogger(
+        settings: ConsoleSettings(
+          enableColors: false,
+          formatter: const BoxedLogEntryFormatter(),
+        ),
+        output: (message, {logLevel, error, stackTrace, time}) =>
+            captured.add(message),
+      );
+      LogPipeline(
+        streamController: streamController,
+        options: ISpectLoggerOptions(),
+        consoleLogger: boxedLogger,
+        history: history,
+      ).dispatch(
+        ISpectLogData('boxed me', key: 'info', logLevel: LogLevel.info),
+      );
+
+      expect(captured, hasLength(1));
+      expect(captured.single, startsWith('┌'));
+      expect(captured.single, contains('boxed me'));
+    });
+
     test('dispatch swallows errors from history.add without crashing', () {
       pipeline = LogPipeline(
         streamController: streamController,

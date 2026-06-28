@@ -3,7 +3,6 @@ import 'dart:developer';
 
 import 'package:ispectify/src/filter/filter.dart';
 import 'package:ispectify/src/history/history.dart';
-import 'package:ispectify/src/logger/entry_formatter.dart';
 import 'package:ispectify/src/logger/logger.dart';
 import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/log_level.dart';
@@ -85,7 +84,7 @@ final class LogPipeline {
       final settings = _consoleLogger.settings;
 
       final rendered = truncateString(
-        const HumanLogEntryFormatter().format(data, settings),
+        settings.formatter.format(data, settings),
         maxLength: _options.logTruncateLength,
       );
 

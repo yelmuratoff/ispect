@@ -77,6 +77,26 @@ final logger = ISpectLogger(
 );
 ```
 
+## Console output
+
+Console entries use a compact, single-line format by default. Switch to a boxed format — each entry framed for visual separation in a busy console — by setting `ConsoleSettings.formatter`:
+
+```dart
+final logger = ISpectLogger(
+  logger: ISpectBaseLogger(
+    settings: ConsoleSettings(formatter: const BoxedLogEntryFormatter()),
+  ),
+);
+```
+
+```text
+┌──────────────────────────────────────────────
+│ INFO    [route] | 17:20:42.910 | Push | / → /detail
+└──────────────────────────────────────────────
+```
+
+The boxed formatter renders the same fields as the default (so redaction and network bodies carry over), and the border glyph and width follow `ConsoleSettings.lineSymbol` / `maxLineWidth`. Implement `ILogEntryFormatter` for a fully custom layout; the default is the compact `HumanLogEntryFormatter`.
+
 ## Tracing
 
 Trace extensions wrap work in a paired start/end log entry with duration, outcome, and an optional result projection. You get one-line "did this domain action succeed?" entries in the log viewer instead of a flood of unrelated logs.
