@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.0.5
+
+### Improvements
+
+- **`dart:developer` console output:** Opt into DevTools-native structured logging with `ISpectBaseLogger(output: developerLogOutput)` — each entry becomes one `log()` call (boxed output stays intact) with the log level mapped through. The default `print`/console output is unchanged ([#85](https://github.com/yelmuratoff/ispect/issues/85)).
+
 ## 6.0.4
 
 ### Improvements
