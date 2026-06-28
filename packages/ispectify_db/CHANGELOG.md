@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.0.4
+
+### Improvements
+
+- **Pretty/boxed console logs:** Opt into framed, visually-separated console output via `ConsoleSettings(formatter: const BoxedLogEntryFormatter())`, or supply any custom `ILogEntryFormatter`. The compact default is unchanged ([#85](https://github.com/yelmuratoff/ispect/issues/85)).
+
 ## 6.0.3
 
 ### Bug Fixes
