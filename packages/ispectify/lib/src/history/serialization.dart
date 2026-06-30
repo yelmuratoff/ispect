@@ -42,7 +42,8 @@ extension ISpectLogDataSerialization on ISpectLogData {
     final buffer = StringBuffer()..writeln('[$formattedTime] [$key] $message');
 
     if (additionalData != null && additionalData!.isNotEmpty) {
-      final sanitized = _stripPrivateKeys(additionalData!);
+      final sanitized =
+          _redactAdditionalData(_stripPrivateKeys(additionalData!), redactKeys);
       for (final entry in sanitized.entries) {
         // Skip TraceKeys.error — raw error string may contain PII.
         // Error info printed below in dedicated section with Layer 3 redaction.
@@ -106,8 +107,10 @@ extension ISpectLogDataSerialization on ISpectLogData {
     }
 
     if (additionalData != null && additionalData!.isNotEmpty) {
-      final safeData = _stripPrivateKeys(additionalData!)
-        ..remove(TraceKeys.error);
+      final safeData = _redactAdditionalData(
+        _stripPrivateKeys(additionalData!)..remove(TraceKeys.error),
+        redactKeys,
+      );
       if (safeData.isNotEmpty) {
         buffer
           ..writeln()
@@ -148,6 +151,19 @@ extension ISpectLogDataSerialization on ISpectLogData {
         LogLevel.debug => '[DEBUG]',
         _ => '[-]',
       };
+}
+
+/// Key+pattern-redacts [data] via [RedactionService] so secrets nested in
+/// additionalData never reach text / markdown export. Returns [data] unchanged
+/// when [redactKeys] is null or empty — the deliberate unredacted-export
+/// opt-out, matching the JSON export path.
+Map<String, dynamic> _redactAdditionalData(
+  Map<String, dynamic> data,
+  Set<String>? redactKeys,
+) {
+  if (redactKeys == null || redactKeys.isEmpty) return data;
+  final redacted = RedactionService(sensitiveKeys: redactKeys).redact(data);
+  return redacted is Map<String, dynamic> ? redacted : data;
 }
 
 /// Recursively drops `_`-prefixed keys from [data] and any nested maps.

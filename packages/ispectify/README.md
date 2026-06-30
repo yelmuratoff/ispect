@@ -48,7 +48,7 @@
 
 ```yaml
 dependencies:
-  ispectify: ^6.0.0
+  ispectify: ^6.0.5
 ```
 
 ## Quick start
@@ -112,6 +112,39 @@ final logger = ISpectLogger(
   ),
 );
 ```
+
+## Console output
+
+Console entries use a compact, single-line format by default. Switch to a boxed format — each entry framed for visual separation in a busy console — by setting `ConsoleSettings.formatter`:
+
+```dart
+final logger = ISpectLogger(
+  logger: ISpectBaseLogger(
+    settings: ConsoleSettings(formatter: const BoxedLogEntryFormatter()),
+  ),
+);
+```
+
+```text
+┌──────────────────────────────────────────────
+│ INFO    [route] | 17:20:42.910 | Push | / → /detail
+└──────────────────────────────────────────────
+```
+
+The boxed formatter renders the same fields as the default (so redaction and network bodies carry over), and the border glyph and width follow `ConsoleSettings.lineSymbol` / `maxLineWidth`. Implement `ILogEntryFormatter` for a fully custom layout; the default is the compact `HumanLogEntryFormatter`.
+
+By default, entries are written with `print` (browser console on web). To route them through `dart:developer` instead — so they appear in the DevTools logging view with structured metadata — pass the `developerLogOutput` sink:
+
+```dart
+final logger = ISpectLogger(
+  logger: ISpectBaseLogger(
+    output: developerLogOutput,
+    settings: ConsoleSettings(formatter: const BoxedLogEntryFormatter()),
+  ),
+);
+```
+
+Each entry becomes a single `log()` call, so multi-line boxed output stays intact, and the log level is mapped through. Messages arrive colored when `ConsoleSettings.enableColors` is on; if your log viewer shows ANSI codes as raw escape sequences, pair it with `enableColors: false`. Flutter apps initialized via `ISpect.run` / `ISpectFlutter.init()` already use a platform-adaptive output (`dart:developer` on iOS/macOS, `print` elsewhere); `developerLogOutput` is for code that wires `ISpectBaseLogger` directly, or any custom `LoggerOutput`.
 
 ## Tracing
 

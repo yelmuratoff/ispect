@@ -28,11 +28,14 @@ final class ISpect {
   /// called explicitly; the lazy fallback only keeps logging usable.
   ///
   /// When `kISpectEnabled` is `false` (default in release builds), the lazy
-  /// instance is effectively unreachable from the rest of ISpect and gets
-  /// tree-shaken.
+  /// instance is created disabled — it retains no history and emits no console
+  /// output, so logging through it is a no-op. This keeps diagnostics from
+  /// accumulating in memory in production builds where ISpect is gated off.
   static ISpectLogger get logger {
     if (!_isInitialized) {
-      _logger = ISpectLogger();
+      _logger = kISpectEnabled
+          ? ISpectLogger()
+          : ISpectLogger(options: ISpectLoggerOptions(enabled: false));
       _isInitialized = true;
     }
     return _logger!;
@@ -140,6 +143,12 @@ final class ISpect {
   /// # Production (ISpect removed via tree-shaking)
   /// flutter build apk
   /// ```
+  ///
+  /// Pass [redactionEnabled] to flip the global redaction kill-switch
+  /// ([ISpectRedaction.enabled]) for the whole app — network, database,
+  /// BLoC/Riverpod, navigation, and every export path. Defaults to `null`,
+  /// which leaves redaction on (the safe default). Set it to `false` only for
+  /// builds that genuinely need raw payloads.
   static void run<T>(
     T Function() callback, {
     ISpectLogger? logger,
@@ -155,10 +164,15 @@ final class ISpect {
     void Function(Object error, StackTrace? stack)? onUncaughtError,
     ISpectErrorHandlerOptions options = const ISpectErrorHandlerOptions(),
     List<String> filters = const [],
+    bool? redactionEnabled,
   }) {
     if (!kISpectEnabled) {
       callback();
       return;
+    }
+
+    if (redactionEnabled != null) {
+      ISpectRedaction.enabled = redactionEnabled;
     }
 
     final effectiveLogger = logger ?? ISpectFlutter.init();

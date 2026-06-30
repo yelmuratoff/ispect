@@ -9,6 +9,8 @@ import 'package:ispectify/src/utils/datetime_formatter.dart';
 /// Unlike `ILoggerFormatter` (which only decorates a pre-built string with
 /// color/indent), implementations own the end-to-end shape of an output line
 /// — level, source, category, timestamp, correlation metadata, and message.
+///
+/// Select the active implementation via [ConsoleSettings.formatter].
 abstract interface class ILogEntryFormatter {
   String format(ISpectLogData data, ConsoleSettings settings);
 }
@@ -42,13 +44,7 @@ base class HumanLogEntryFormatter implements ILogEntryFormatter {
   @override
   String format(ISpectLogData data, ConsoleSettings settings) {
     final buffer = StringBuffer(_buildHeader(data, settings));
-    final headline = data.textMessage;
-    final networkBody = NetworkLogRenderer.isNetworkLog(data)
-        ? NetworkLogRenderer.renderBody(data)
-        : '';
-    final body = networkBody.isEmpty
-        ? headline
-        : (headline.isEmpty ? networkBody : '$headline\n$networkBody');
+    final body = _buildBody(data);
 
     if (body.isEmpty) {
       buffer.write('(empty log message)');
@@ -67,47 +63,108 @@ base class HumanLogEntryFormatter implements ILogEntryFormatter {
 
     return buffer.toString();
   }
+}
 
-  String _buildHeader(ISpectLogData data, ConsoleSettings settings) {
-    final explicitLevel = data.logLevel?.name;
-    final levelFromKey = _levelFromKey(data.key);
-    final levelLabel = (explicitLevel ?? levelFromKey ?? 'log').toUpperCase();
-    final paddedLevel = levelLabel.padRight(_levelColumnWidth);
+/// Boxed console output: an opt-in alternative to [HumanLogEntryFormatter]
+/// that frames each entry so individual logs stay distinct in a busy console.
+///
+/// ```text
+/// ┌──────────────────────────────────────────────
+/// │ INFO    [route] | 17:20:42.910 | Push | / → /detail
+/// └──────────────────────────────────────────────
+/// ```
+///
+/// Renders the same fields as [HumanLogEntryFormatter] (so redaction and
+/// network-body rendering carry over unchanged); only the layout differs.
+/// The border width comes from [ConsoleSettings.maxLineWidth]; the glyph comes
+/// from [ConsoleSettings.lineSymbol], which must be a single character so the
+/// border stays one column wide — any other value falls back to `─`. Color is
+/// applied per line downstream by the active `ILoggerFormatter`, so the whole
+/// box takes the entry's pen.
+///
+/// Enable via `ConsoleSettings(formatter: const BoxedLogEntryFormatter())`.
+base class BoxedLogEntryFormatter implements ILogEntryFormatter {
+  const BoxedLogEntryFormatter();
 
-    final source = _readNonEmptyString(data, TraceKeys.source);
-    final sourceLabel = source != null ? ' [$source]' : '';
+  static const String _fallbackGlyph = '─';
 
-    final keyIsLevel = data.key != null &&
-        (data.key == explicitLevel || data.key == levelFromKey);
-    final categoryLabel =
-        data.key != null && !keyIsLevel ? ' [${data.key}]' : '';
+  @override
+  String format(ISpectLogData data, ConsoleSettings settings) {
+    final glyph =
+        settings.lineSymbol.length == 1 ? settings.lineSymbol : _fallbackGlyph;
+    final border = glyph * settings.maxLineWidth;
+    final header = _buildHeader(data, settings);
+    final body = _buildBody(data);
+    final lines =
+        body.isEmpty ? const ['(empty log message)'] : body.split('\n');
 
-    final timestamp = settings.fullTimestamp
-        ? ISpectDateTimeFormatter(data.time).iso8601Local
-        : data.formattedTime;
-
-    final metadata = _buildMetadata(data, settings);
-    final metadataSection = metadata.isEmpty ? '' : ' $metadata |';
-
-    return '$paddedLevel$sourceLabel$categoryLabel | $timestamp |$metadataSection ';
-  }
-
-  String _buildMetadata(ISpectLogData data, ConsoleSettings settings) {
-    final parts = <String>[];
-    final tid = _readNonEmptyString(data, TraceKeys.transactionId);
-    if (tid != null) {
-      parts
-          .add('tid=${settings.truncateTraceIds ? _shortenTraceId(tid) : tid}');
+    final buffer = StringBuffer('┌$border')
+      ..write('\n│ ')
+      ..write(header)
+      ..write(lines.first);
+    for (final line in lines.skip(1)) {
+      buffer
+        ..write('\n│ ')
+        ..write(line);
     }
-    final cid = _readNonEmptyString(data, TraceKeys.correlationId);
-    if (cid != null) {
-      parts
-          .add('cid=${settings.truncateTraceIds ? _shortenTraceId(cid) : cid}');
-    }
-    final dur = _readInt(data, TraceKeys.durationMs);
-    if (dur != null) parts.add('dur=${dur}ms');
-    return parts.join(' ');
+    buffer.write('\n└$border');
+
+    return buffer.toString();
   }
+}
+
+/// Builds the header segment shared by all entry formatters: padded level,
+/// optional source/category labels, timestamp, and correlation metadata.
+/// Ends with a trailing `| ` so a message can follow inline.
+String _buildHeader(ISpectLogData data, ConsoleSettings settings) {
+  final explicitLevel = data.logLevel?.name;
+  final levelFromKey = _levelFromKey(data.key);
+  final levelLabel = (explicitLevel ?? levelFromKey ?? 'log').toUpperCase();
+  final paddedLevel = levelLabel.padRight(_levelColumnWidth);
+
+  final source = _readNonEmptyString(data, TraceKeys.source);
+  final sourceLabel = source != null ? ' [$source]' : '';
+
+  final keyIsLevel = data.key != null &&
+      (data.key == explicitLevel || data.key == levelFromKey);
+  final categoryLabel = data.key != null && !keyIsLevel ? ' [${data.key}]' : '';
+
+  final timestamp = settings.fullTimestamp
+      ? ISpectDateTimeFormatter(data.time).iso8601Local
+      : data.formattedTime;
+
+  final metadata = _buildMetadata(data, settings);
+  final metadataSection = metadata.isEmpty ? '' : ' $metadata |';
+
+  return '$paddedLevel$sourceLabel$categoryLabel | $timestamp |$metadataSection ';
+}
+
+/// Builds the entry body shared by all formatters: the full text message
+/// (message + error + exception + stack trace) plus the network body block
+/// for network/WS entries. Returns an empty string when there is nothing to
+/// show, letting each formatter render its own placeholder.
+String _buildBody(ISpectLogData data) {
+  final headline = data.textMessage;
+  final networkBody = NetworkLogRenderer.isNetworkLog(data)
+      ? NetworkLogRenderer.renderBody(data)
+      : '';
+  if (networkBody.isEmpty) return headline;
+  return headline.isEmpty ? networkBody : '$headline\n$networkBody';
+}
+
+String _buildMetadata(ISpectLogData data, ConsoleSettings settings) {
+  final parts = <String>[];
+  final tid = _readNonEmptyString(data, TraceKeys.transactionId);
+  if (tid != null) {
+    parts.add('tid=${settings.truncateTraceIds ? _shortenTraceId(tid) : tid}');
+  }
+  final cid = _readNonEmptyString(data, TraceKeys.correlationId);
+  if (cid != null) {
+    parts.add('cid=${settings.truncateTraceIds ? _shortenTraceId(cid) : cid}');
+  }
+  final dur = _readInt(data, TraceKeys.durationMs);
+  if (dur != null) parts.add('dur=${dur}ms');
+  return parts.join(' ');
 }
 
 /// Auto-generated trace IDs are 16-character hex (see `generateTraceId`).

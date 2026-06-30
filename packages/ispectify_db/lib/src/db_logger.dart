@@ -420,14 +420,18 @@ extension ISpectLoggerDb on ISpectLogger {
   /// Preprocesses DB-specific fields into a meta map for trace().
   static Map<String, Object?> _preprocessDb(DbPreprocessInput input) {
     final shouldRedact = input.shouldRedact;
-    final sensitiveKeys = input.sensitiveKeys;
+    final sensitiveKeys = input.sensitiveKeys.toSet();
     final maxArgsLen = input.resolvedMaxArgsLength;
 
-    Object? redactData(Object? data) => ISpectDbCore.redactIfNeeded(
-          data,
-          shouldRedact: shouldRedact,
-          keys: sensitiveKeys,
-        );
+    final redactor = shouldRedact
+        ? RedactionService(
+            sensitiveKeys: sensitiveKeys,
+            placeholder: defaultPlaceholder,
+          )
+        : null;
+
+    Object? redactData(Object? data) =>
+        data == null ? null : (redactor?.redact(data) ?? data);
 
     final truncatedStmt = _truncateToString(
       input.statement,
@@ -436,7 +440,7 @@ extension ISpectLoggerDb on ISpectLogger {
 
     final processedArgs = _processPositionalArgs(
       input.args,
-      shouldRedact: shouldRedact,
+      redactor: redactor,
       sensitiveKeys: sensitiveKeys,
       statement: input.statement,
       maxLen: maxArgsLen,
@@ -455,6 +459,15 @@ extension ISpectLoggerDb on ISpectLogger {
       input.resolvedMaxValueLength,
     );
 
+    final errorText = input.error == null
+        ? null
+        : shouldRedact
+            ? RedactionService.redactExportString(
+                '${input.error}',
+                sensitiveKeys,
+              )
+            : '${input.error}';
+
     return ISpectDbCore.clean(<String, Object?>{
       'statement': shouldRedact ? digest : truncatedStmt,
       'statementDigest': digest,
@@ -468,7 +481,7 @@ extension ISpectLoggerDb on ISpectLogger {
       if (input.cacheHit != null) 'cacheHit': input.cacheHit,
       if (truncatedValue != null) 'value': truncatedValue,
       if (processedMeta != null) 'userMeta': processedMeta,
-      if (input.error != null) 'dbError': '${input.error}',
+      if (errorText != null) 'dbError': errorText,
     });
   }
 
@@ -480,16 +493,21 @@ extension ISpectLoggerDb on ISpectLogger {
 
   static List<Object?>? _processPositionalArgs(
     List<Object?>? args, {
-    required bool shouldRedact,
+    required RedactionService? redactor,
     required Iterable<String> sensitiveKeys,
     required String? statement,
     required int maxLen,
   }) {
     if (args == null) return null;
-    final redacted = shouldRedact
-        ? ISpectDbCore.redactPositionalArgs(args, sensitiveKeys, statement)
-        : args;
-    final truncated = truncateLeaves(redacted, maxLength: maxLen);
+    var processed = args;
+    if (redactor != null) {
+      final columnMasked =
+          ISpectDbCore.redactPositionalArgs(args, sensitiveKeys, statement);
+      final patternMasked = redactor.redact(columnMasked);
+      processed =
+          patternMasked is List ? patternMasked.cast<Object?>() : columnMasked;
+    }
+    final truncated = truncateLeaves(processed, maxLength: maxLen);
     return truncated is List ? truncated.cast<Object?>() : null;
   }
 

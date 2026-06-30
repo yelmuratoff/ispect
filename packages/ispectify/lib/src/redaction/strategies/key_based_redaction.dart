@@ -18,17 +18,17 @@ class KeyBasedRedaction implements RedactionStrategy {
   }) {
     if (keyName == null) return null;
 
-    final lower = keyName.toLowerCase();
+    final classification = context.classifyKey(keyName);
 
     // Fully-masked keys: replace the entire string value with placeholder.
-    if (context.fullyMaskedKeyNamesLower.contains(lower)) {
+    if (classification.fullyMasked) {
       if (node is String && !context.isIgnoredValue(node)) {
         return context.placeholder;
       }
     }
 
     // Sensitive keys: redact the value.
-    if (!context.isSensitiveKeyLower(lower)) return null;
+    if (!classification.sensitive) return null;
 
     if (node is String) {
       if (context.isIgnoredValue(node)) return node;

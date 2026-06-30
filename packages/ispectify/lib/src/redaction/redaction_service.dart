@@ -17,20 +17,19 @@ export 'package:ispectify/src/redaction/constants/key_defaults.dart';
 /// ```dart
 /// final redactor = RedactionService(
 ///   sensitiveKeys: {'authorization', 'password', 'token'},
-///   placeholder: '***',
 /// );
 ///
 /// final headers = redactor.redactHeaders({
 ///   'authorization': 'Bearer abc123',
 ///   'content-type': 'application/json',
 /// });
-/// // {authorization: ***, content-type: application/json}
+/// // {authorization: [REDACTED], content-type: application/json}
 ///
 /// final body = redactor.redact({
 ///   'user': 'alice',
 ///   'password': 'p@ss',
 /// });
-/// // {user: alice, password: ***}
+/// // {user: alice, password: [REDACTED]}
 /// ```
 class RedactionService {
   RedactionService({
@@ -51,9 +50,9 @@ class RedactionService {
               PatternBasedRedaction(),
             ]),
         _config = RedactionConfig(
-          sensitiveKeysLower: (sensitiveKeys ?? defaultSensitiveKeys)
-              .map((e) => e.toLowerCase())
-              .toSet(),
+          sensitiveKeysLower: sensitiveKeys == null
+              ? defaultSensitiveKeysLower
+              : sensitiveKeys.map((e) => e.toLowerCase()).toSet(),
           sensitiveKeyPatterns:
               sensitiveKeyPatterns ?? defaultSensitiveKeyPatterns,
           maxDepth: maxDepth ?? 100,
@@ -65,9 +64,9 @@ class RedactionService {
           ignoredKeyNamesLower: {
             ...?(ignoredKeys?.map((e) => e.toLowerCase())),
           },
-          fullyMaskedKeyNamesLower: (fullyMaskedKeys ?? defaultFullyMaskedKeys)
-              .map((e) => e.toLowerCase())
-              .toSet(),
+          fullyMaskedKeyNamesLower: fullyMaskedKeys == null
+              ? defaultFullyMaskedKeysLower
+              : fullyMaskedKeys.map((e) => e.toLowerCase()).toSet(),
         ) {
     if (_config.maxDepth <= 0) {
       throw ArgumentError(
@@ -89,25 +88,35 @@ class RedactionService {
   final RedactionStrategy _strategy;
 
   /// Redacts header values, respecting optional per-call overrides.
+  ///
+  /// Returns [headers] unchanged when redaction is globally disabled via
+  /// [ISpectRedaction.enabled].
   Map<String, Object?> redactHeaders(
     Map<String, Object?> headers, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
-  }) =>
-      _createWalker(
-        RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
-      ).redactHeaders(headers);
+  }) {
+    if (!ISpectRedaction.enabled) return headers;
+    return _createWalker(
+      RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
+    ).redactHeaders(headers);
+  }
 
   /// Redacts any JSON-like payload (Map/List/scalars).
+  ///
+  /// Returns [data] unchanged when redaction is globally disabled via
+  /// [ISpectRedaction.enabled].
   Object? redact(
     Object? data, {
     String? keyName,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
-  }) =>
-      _createWalker(
-        RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
-      ).redact(data, keyName: keyName);
+  }) {
+    if (!ISpectRedaction.enabled) return data;
+    return _createWalker(
+      RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
+    ).redact(data, keyName: keyName);
+  }
 
   /// Like [redactHeaders], but also returns [RedactionStats] describing
   /// what was redacted and why.
@@ -116,6 +125,9 @@ class RedactionService {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) {
+    if (!ISpectRedaction.enabled) {
+      return HeaderRedactionResult(headers: headers, stats: RedactionStats());
+    }
     final walker = _createWalker(
       RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
     );
@@ -131,6 +143,9 @@ class RedactionService {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) {
+    if (!ISpectRedaction.enabled) {
+      return RedactionResult(data: data, stats: RedactionStats());
+    }
     final walker = _createWalker(
       RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
     );
@@ -209,10 +224,17 @@ class RedactionService {
   /// Redacts query-parameter values and userInfo credentials in a URL string.
   ///
   /// Returns the original [url] unchanged when there is nothing to redact
-  /// (no query parameters and no userInfo) or the URL cannot be parsed.
+  /// (no query parameters and no userInfo). When the URL cannot be parsed,
+  /// falls back to regex-based sanitization of credentials and sensitive
+  /// query parameters rather than returning it verbatim.
   String redactUrl(String url) {
+    if (!ISpectRedaction.enabled) return url;
     final uri = Uri.tryParse(url);
-    if (uri == null) return url;
+    if (uri == null) {
+      // Malformed URL — Uri APIs are unavailable. Best-effort regex sanitize
+      // so credentials and sensitive query params don't survive verbatim.
+      return redactExportString(url, _config.sensitiveKeysLower);
+    }
 
     final hasParams = uri.queryParameters.isNotEmpty;
     final hasUserInfo = uri.userInfo.isNotEmpty;
@@ -238,10 +260,13 @@ class RedactionService {
   ///
   /// Useful for sanitizing error messages that may contain full URLs with
   /// sensitive query parameters or credentials.
-  String redactUrlsInText(String text) => text.replaceAllMapped(
-        urlPattern,
-        (match) => redactUrl(match.group(0)!),
-      );
+  String redactUrlsInText(String text) {
+    if (!ISpectRedaction.enabled) return text;
+    return text.replaceAllMapped(
+      urlPattern,
+      (match) => redactUrl(match.group(0)!),
+    );
+  }
 
   // ---------------------------------------------------------------------------
   // Shared patterns
@@ -258,18 +283,18 @@ class RedactionService {
   /// string. Used by the `trace()` pipeline for auto-redaction of the target
   /// field.
   static String redactTarget(String target, Set<String> redactKeys) {
-    // 1. URL credentials: ://user:pass@host → ://***:***@host
+    if (!ISpectRedaction.enabled) return target;
+    // Collapse userInfo to one token, matching redactUrl's Uri.replace path.
     var result = target.replaceAllMapped(
       _urlCredentialPattern,
-      (m) => m[2] != null ? '://***:***@' : '://***@',
+      (m) => '://${ph.userInfoRedactedPlaceholder}@',
     );
-    // 2. Query params with sensitive keys
     if (result.contains('?')) {
       for (final key in redactKeys) {
         final escaped = RegExp.escape(key);
         result = result.replaceAllMapped(
           RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
-          (m) => '${m[1]}${m[2]}=***',
+          (m) => '${m[1]}${m[2]}=${ph.defaultPlaceholder}',
         );
       }
     }
@@ -286,44 +311,37 @@ class RedactionService {
   /// Used by toText(), toMarkdown(), LogExporter for exception.toString()
   /// and error strings that may contain sensitive data.
   static String redactExportString(String value, Set<String>? redactKeys) {
+    if (!ISpectRedaction.enabled) return value;
     if (redactKeys == null || redactKeys.isEmpty) return value;
-    var result = value;
 
-    // 1. URL credentials
-    result = result.replaceAllMapped(
-      _urlCredentialPattern,
-      (m) => m[2] != null ? '://***:***@' : '://***@',
-    );
+    // A single alternation over all keys compiles two regexes instead of one
+    // per key, which matters when [redactKeys] is the full default set.
+    final keys = redactKeys.map(RegExp.escape).join('|');
+    const mask = ph.defaultPlaceholder;
 
-    // 2. Bearer/Basic tokens
-    result = result.replaceAllMapped(
-      RegExp(
-        r'(Bearer|Basic|Token)\s+[A-Za-z0-9+/=._~-]+',
-        caseSensitive: false,
-      ),
-      (m) => '${m[1]} ***',
-    );
-
-    // 3. Query params with sensitive keys
-    for (final key in redactKeys) {
-      final escaped = RegExp.escape(key);
-      result = result.replaceAllMapped(
-        RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
-        (m) => '${m[1]}${m[2]}=***',
-      );
-    }
-
-    // 4. JSON patterns: "password": "secret123" → "password": "***"
-    for (final key in redactKeys) {
-      final escaped = RegExp.escape(key);
-      result = result.replaceAllMapped(
-        RegExp('"($escaped)"\\s*:\\s*"[^"]*"', caseSensitive: false),
-        (m) => '"${m[1]}": "***"',
-      );
-    }
-
-    return result;
+    return value
+        .replaceAllMapped(
+          _urlCredentialPattern,
+          (m) => '://${ph.userInfoRedactedPlaceholder}@',
+        )
+        .replaceAllMapped(
+          _exportTokenPattern,
+          (m) => '${m[1]} $mask',
+        )
+        .replaceAllMapped(
+          RegExp('([?&])($keys)=([^&\\s]*)', caseSensitive: false),
+          (m) => '${m[1]}${m[2]}=$mask',
+        )
+        .replaceAllMapped(
+          RegExp('"($keys)"\\s*:\\s*"[^"]*"', caseSensitive: false),
+          (m) => '"${m[1]}": "$mask"',
+        );
   }
+
+  static final _exportTokenPattern = RegExp(
+    r'(Bearer|Basic|Token)\s+[A-Za-z0-9+/=._~-]+',
+    caseSensitive: false,
+  );
 
   // ---------------------------------------------------------------------------
   // Lightweight key-based redaction (static)
@@ -342,12 +360,12 @@ class RedactionService {
     Object? data,
     Iterable<String> keys, {
     int maxDepth = 50,
-    String placeholder = redactedMask,
+    String placeholder = ph.defaultPlaceholder,
   }) {
+    if (!ISpectRedaction.enabled) return data;
     if (data == null || keys.isEmpty || maxDepth <= 0) return data;
 
-    final lowerKeys =
-        keys is Set<String> ? keys : keys.map((k) => k.toLowerCase()).toSet();
+    final lowerKeys = keys.map((k) => k.toLowerCase()).toSet();
     return _redactByKeysImpl(data, lowerKeys, maxDepth, placeholder);
   }
 

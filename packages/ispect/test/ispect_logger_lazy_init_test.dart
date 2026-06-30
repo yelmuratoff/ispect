@@ -28,6 +28,19 @@ void main() {
       expect(identical(first, second), isTrue);
     });
 
+    test('lazy logger is disabled and retains no history when gated off',
+        () async {
+      await ISpect.dispose();
+
+      final logger = ISpect.logger;
+
+      expect(logger.options.enabled, isFalse);
+
+      logger.info('diagnostic that must not be retained in production');
+
+      expect(logger.history, isEmpty);
+    });
+
     test('dispose() resets state and allows a fresh lazy logger', () async {
       await ISpect.dispose();
 

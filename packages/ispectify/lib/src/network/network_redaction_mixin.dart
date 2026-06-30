@@ -82,6 +82,9 @@ mixin NetworkRedactionMixin {
   /// Processes and redacts a map, ensuring string keys.
   ///
   /// Applies redaction if enabled, then converts to Map<String, dynamic>.
+  ///
+  /// Fails closed: if processing throws, returns a placeholder map instead of
+  /// the original (unredacted) data, mirroring [safeRedact].
   Map<String, dynamic> processMapData(
     Map<dynamic, dynamic> data, {
     required bool useRedaction,
@@ -94,12 +97,15 @@ mixin NetworkRedactionMixin {
 
       final mapToConvert = redacted is Map ? redacted : data;
       return mapToConvert.map((k, v) => MapEntry(k.toString(), v));
-    } catch (_) {
-      try {
-        return _payload.stringKeyMap(data);
-      } catch (_) {
-        return <String, dynamic>{'raw': ph.conversionFailedPlaceholder};
-      }
+    } catch (e, s) {
+      logger.logData(
+        ISpectLogData(
+          'Redaction failed, data omitted: $e',
+          logLevel: LogLevel.warning,
+          stackTrace: s,
+        ),
+      );
+      return <String, dynamic>{'raw': ph.redactionFailedPlaceholder};
     }
   }
 }

@@ -63,7 +63,7 @@ final class ISpectDbCore {
     final sensitive = stmtLower == null ||
         keys.any((k) => stmtLower.contains(k.toLowerCase()));
     if (!sensitive) return args;
-    return args.map((e) => e == null ? null : redactedMask).toList();
+    return args.map((e) => e == null ? null : defaultPlaceholder).toList();
   }
 
   /// Removes entries with `null` values or empty-string values.

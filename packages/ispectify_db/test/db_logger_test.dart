@@ -58,7 +58,7 @@ void main() {
         (meta['args'] as List).first.toString().contains('...'),
         isTrue,
       );
-      expect((meta['namedArgs'] as Map)['password'], '***');
+      expect((meta['namedArgs'] as Map)['password'], '[REDACTED]');
     });
 
     test('sets error logs to LogLevel.error', () {
@@ -140,7 +140,7 @@ void main() {
       final add = logger.history.last.additionalData ?? {};
       final meta = add['meta'] as Map<String, dynamic>;
       final args = meta['args'] as List;
-      expect(args.first, '***');
+      expect(args.first, '[REDACTED]');
     });
 
     test('logs value and projection correctly', () {
@@ -237,6 +237,89 @@ void main() {
       // trace() always emits 'slow' when both duration and slowThreshold
       // are present; Duration.zero is NOT > threshold, so slow == false.
       expect(add['slow'], isFalse);
+    });
+  });
+
+  group('redaction (H4/M4)', () {
+    const token = 'ghp_1234567890abcdefghij';
+
+    test('masks token-shaped positional args even when no column is sensitive',
+        () {
+      logger.db(
+        source: 'pg',
+        operation: 'query',
+        statement: 'SELECT * FROM t WHERE x = ?',
+        args: const [token],
+      );
+
+      final meta = (logger.history.last.additionalData ?? {})['meta'] as Map;
+      final args = meta['args'] as List;
+      expect(args.first, isNot(token));
+      expect(args.first.toString(), contains('[REDACTED]'));
+    });
+
+    test('masks token-shaped named arg values under non-sensitive keys', () {
+      logger.db(
+        source: 'pg',
+        operation: 'query',
+        statement: 'SELECT 1',
+        namedArgs: const {'payload': token},
+      );
+
+      final meta = (logger.history.last.additionalData ?? {})['meta'] as Map;
+      final namedArgs = meta['namedArgs'] as Map;
+      expect(namedArgs['payload'], isNot(token));
+      expect(namedArgs['payload'].toString(), contains('[REDACTED]'));
+    });
+
+    test('masks token-shaped result values under non-sensitive keys', () {
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        key: 'k',
+        value: token,
+      );
+
+      final meta = (logger.history.last.additionalData ?? {})['meta'] as Map;
+      expect(meta['value'], isNot(token));
+      expect(meta['value'].toString(), contains('[REDACTED]'));
+    });
+
+    test('redacts credentials embedded in the db error message', () {
+      logger.db(
+        source: 'pg',
+        operation: 'query',
+        statement: 'SELECT 1',
+        success: false,
+        error: 'auth failed: Bearer sk-live-abcdef1234567890 '
+            'via postgres://admin:s3cr3t@db.example.com',
+      );
+
+      final entry = logger.history.last;
+      expect(entry.key, 'db-error');
+      final meta = (entry.additionalData ?? {})['meta'] as Map;
+      final dbError = meta['dbError'] as String;
+      expect(dbError, contains('Bearer [REDACTED]'));
+      expect(dbError, isNot(contains('sk-live-abcdef1234567890')));
+      expect(dbError, isNot(contains('s3cr3t')));
+    });
+
+    test('keeps positional args and db error raw when redaction is disabled',
+        () {
+      logger.db(
+        source: 'pg',
+        operation: 'query',
+        statement: 'SELECT * FROM t WHERE x = ?',
+        args: const [token],
+        success: false,
+        error: 'Bearer sk-live-abcdef1234567890',
+        redact: false,
+        config: const ISpectDbConfig(redact: false),
+      );
+
+      final meta = (logger.history.last.additionalData ?? {})['meta'] as Map;
+      expect((meta['args'] as List).first, token);
+      expect(meta['dbError'], 'Bearer sk-live-abcdef1234567890');
     });
   });
 
@@ -921,7 +1004,7 @@ void main() {
         ['password', 'token'],
         'INSERT INTO users (name, password) VALUES (?, ?)',
       );
-      expect(args, ['***', '***']);
+      expect(args, ['[REDACTED]', '[REDACTED]']);
     });
 
     test('redacts all args when statement is null (precaution)', () {
@@ -930,7 +1013,7 @@ void main() {
         ['password'],
         null,
       );
-      expect(args, ['***', '***']);
+      expect(args, ['[REDACTED]', '[REDACTED]']);
     });
 
     test('returns empty list as-is', () {
@@ -948,7 +1031,7 @@ void main() {
         ['password'],
         null,
       );
-      expect(args, [null, '***']);
+      expect(args, [null, '[REDACTED]']);
     });
   });
 

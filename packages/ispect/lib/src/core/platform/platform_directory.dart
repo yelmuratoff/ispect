@@ -1,5 +1,6 @@
-import 'package:ispect/src/core/platform/platform_directory_native.dart'
-    if (dart.library.js_interop) 'platform_directory_web.dart' as impl;
+import 'package:ispect/src/core/platform/platform_directory_web.dart'
+    if (dart.library.io) 'package:ispect/src/core/platform/platform_directory_native.dart'
+    as impl;
 
 export 'platform_directory_base.dart' show PlatformDirectoryProvider;
 

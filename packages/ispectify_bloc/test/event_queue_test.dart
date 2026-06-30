@@ -43,11 +43,13 @@ void main() {
     late _DummyBloc bloc;
 
     setUp(() {
+      ISpectBlocObserver.debugEnabledOverride = true;
       logger = _RecordingLogger();
       bloc = _DummyBloc();
     });
 
     tearDown(() async {
+      ISpectBlocObserver.debugEnabledOverride = null;
       await bloc.close();
     });
 

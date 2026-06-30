@@ -20,27 +20,15 @@ abstract final class LogExporter {
     Set<String>? redactKeys,
   }) {
     final capped = _cap(logs, maxLogs);
+    final redactor = (redactKeys != null && redactKeys.isNotEmpty)
+        ? RedactionService(sensitiveKeys: redactKeys)
+        : null;
     return capped.map((log) {
       try {
         final json = log.toJson();
-        if (redactKeys != null && redactKeys.isNotEmpty) {
-          final ex = json['exception'];
-          if (ex is String) {
-            json['exception'] =
-                RedactionService.redactExportString(ex, redactKeys);
-          }
-          final err = json['error'];
-          if (err is String) {
-            json['error'] =
-                RedactionService.redactExportString(err, redactKeys);
-          }
-          final ad = json['additional-data'];
-          if (ad is Map && ad[TraceKeys.error] is String) {
-            ad[TraceKeys.error] = RedactionService.redactExportString(
-              ad[TraceKeys.error] as String,
-              redactKeys,
-            );
-          }
+        if (redactor != null) {
+          final redacted = redactor.redact(json);
+          return jsonEncode(redacted is Map ? redacted : json);
         }
         return jsonEncode(json);
       } catch (_) {

@@ -99,5 +99,36 @@ void main() {
       );
       expect(out, isNull);
     });
+
+    test('classifyKey matches camelCase keys via snake_case canonicalization',
+        () {
+      final ctx = context(
+        sensitive: const {'access_token'},
+        fullyMasked: const {'api_key'},
+      );
+      expect(ctx.classifyKey('accessToken').sensitive, isTrue);
+      expect(ctx.classifyKey('apiKey').fullyMasked, isTrue);
+    });
+
+    test('classifyKey agrees with isSensitiveKey and isFullyMaskedKey', () {
+      final ctx = context(
+        sensitive: const {'access_token'},
+        fullyMasked: const {'api_key'},
+      );
+      for (final key in ['accessToken', 'apiKey', 'plain']) {
+        final c = ctx.classifyKey(key);
+        expect(c.sensitive, ctx.isSensitiveKey(key), reason: key);
+        expect(c.fullyMasked, ctx.isFullyMaskedKey(key), reason: key);
+      }
+    });
+
+    test('fully masks a camelCase key matched by canonical form', () {
+      final out = strategy.tryRedact(
+        'value',
+        context: context(fullyMasked: const {'api_key'}),
+        keyName: 'apiKey',
+      );
+      expect(out, '[REDACTED]');
+    });
   });
 }

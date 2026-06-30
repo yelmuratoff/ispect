@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/chunking.dart';
+import 'package:meta/meta.dart';
 
 Object? _toEncodable(dynamic object) {
   if (object is Uri) return object.toString();
@@ -286,7 +287,7 @@ class LogsJsonService {
       return;
     }
 
-    final content = _formatFilteredContent(
+    final content = formatFilteredContent(
       logs: logs,
       filteredLogs: filteredLogs,
       filter: filter,
@@ -324,7 +325,7 @@ class LogsJsonService {
       return '';
     }
 
-    final content = _formatFilteredContent(
+    final content = formatFilteredContent(
       logs: logs,
       filteredLogs: filteredLogs,
       filter: filter,
@@ -342,7 +343,15 @@ class LogsJsonService {
     );
   }
 
-  String _formatFilteredContent({
+  /// Formats filtered logs into [fileType], applying redaction consistently
+  /// across every format.
+  ///
+  /// When [enableRedaction] is true, the JSON branch derives a
+  /// [RedactionService] from the effective sensitive-key set (the same keys
+  /// the txt/md/csv branches use) unless an explicit [redactionService] is
+  /// supplied, so passing [redactKeys] alone is enough to redact JSON exports.
+  @visibleForTesting
+  String formatFilteredContent({
     required List<ISpectLogData> logs,
     required List<ISpectLogData> filteredLogs,
     required ISpectFilter filter,
@@ -380,10 +389,16 @@ class LogsJsonService {
           filter,
           metadata,
         );
-        if (enableRedaction && redactionService != null) {
+        final effectiveService = !enableRedaction
+            ? null
+            : redactionService ??
+                (effectiveRedactKeys != null
+                    ? RedactionService(sensitiveKeys: effectiveRedactKeys)
+                    : null);
+        if (effectiveService != null) {
           final logsData = exportData['logs'];
           if (logsData is List<Map<String, dynamic>>) {
-            exportData['logs'] = _redactLogsList(logsData, redactionService);
+            exportData['logs'] = _redactLogsList(logsData, effectiveService);
           }
         }
         const encoder = JsonEncoder.withIndent('  ', _toEncodable);

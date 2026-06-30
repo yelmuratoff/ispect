@@ -42,22 +42,65 @@ final class RedactionContext {
   final bool Function(String value) isLikelyBase64;
   final bool Function(String value) isProbablyBinaryString;
 
-  /// Whether [keyName] is classified as sensitive (case-insensitive).
-  bool isSensitiveKey(String? keyName) {
-    if (keyName == null) return false;
-    return isSensitiveKeyLower(keyName.toLowerCase());
+  /// Classifies [keyName] as fully-masked and/or sensitive in a single
+  /// normalization pass, so the per-key hot path avoids repeating
+  /// trim/lowercase/canonicalize across separate [isSensitiveKey] and
+  /// [isFullyMaskedKey] calls.
+  ///
+  /// Matching is case-insensitive, whitespace-trimmed, and camelCase-aware:
+  /// `accessToken` is normalized to `access_token` before matching, so the
+  /// default snake/kebab key set and patterns also cover the camelCase keys
+  /// that dominate Dart/JS JSON payloads.
+  ({bool fullyMasked, bool sensitive}) classifyKey(String? keyName) {
+    if (keyName == null) return _noMatch;
+    final trimmed = keyName.trim();
+    final lower = trimmed.toLowerCase();
+    if (isIgnoredKey(lower)) return _noMatch;
+    final canonical = trimmed == lower ? null : _canonicalizeKey(trimmed);
+    return (
+      fullyMasked: fullyMaskedKeyNamesLower.contains(lower) ||
+          (canonical != null && fullyMaskedKeyNamesLower.contains(canonical)),
+      sensitive: _matchesSensitive(lower) ||
+          (canonical != null && _matchesSensitive(canonical)),
+    );
   }
+
+  /// Whether [keyName] is classified as sensitive. See [classifyKey].
+  bool isSensitiveKey(String? keyName) => classifyKey(keyName).sensitive;
 
   /// Same as [isSensitiveKey] but expects an already-lowercased key.
   ///
-  /// Use this when you have already called `toLowerCase()` on the key to
-  /// avoid a redundant allocation.
+  /// Cannot recover camelCase boundaries from an already-lowercased key, so
+  /// prefer [isSensitiveKey] when the original-case key is available.
   bool isSensitiveKeyLower(String lowerKey) {
-    if (isIgnoredKey(lowerKey)) return false;
+    final trimmed = lowerKey.trim();
+    if (isIgnoredKey(trimmed)) return false;
+    return _matchesSensitive(trimmed);
+  }
+
+  /// Whether [keyName]'s value must be fully replaced with the placeholder
+  /// (no edge-visible characters). See [classifyKey].
+  bool isFullyMaskedKey(String? keyName) => classifyKey(keyName).fullyMasked;
+
+  static const ({bool fullyMasked, bool sensitive}) _noMatch =
+      (fullyMasked: false, sensitive: false);
+
+  bool _matchesSensitive(String lowerKey) {
     if (sensitiveKeysLower.contains(lowerKey)) return true;
     for (final pattern in sensitiveKeyPatterns) {
       if (pattern.hasMatch(lowerKey)) return true;
     }
     return false;
   }
+
+  /// Normalizes camelCase / PascalCase boundaries to `_`, then lowercases.
+  /// `accessToken`, `AccessToken`, and `XMLHttpToken` → `access_token` /
+  /// `xml_http_token`.
+  static String _canonicalizeKey(String key) => key
+      .replaceAllMapped(_acronymBoundary, (m) => '${m[1]}_${m[2]}')
+      .replaceAllMapped(_camelBoundary, (m) => '${m[1]}_${m[2]}')
+      .toLowerCase();
+
+  static final RegExp _camelBoundary = RegExp('([a-z0-9])([A-Z])');
+  static final RegExp _acronymBoundary = RegExp('([A-Z]+)([A-Z][a-z])');
 }

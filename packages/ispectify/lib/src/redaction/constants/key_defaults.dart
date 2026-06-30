@@ -14,11 +14,15 @@ const Set<String> defaultSensitiveKeys = <String>{
   'refresh_token',
   'id_token',
   'password',
+  'passwd',
+  'pwd',
   'secret',
   'client-secret',
   'client_secret',
   'private-key',
   'private_key',
+  'signature',
+  'hmac',
   'set-cookie',
   'cookie',
   'bearer_token',
@@ -30,6 +34,10 @@ const Set<String> defaultSensitiveKeys = <String>{
   'csrf_token',
   'csrf-token',
   'x-csrf-token',
+  'xsrf',
+  'xsrf_token',
+  'xsrf-token',
+  'x-xsrf-token',
   'mfa_code',
   'mfa-code',
   'totp',
@@ -80,6 +88,10 @@ const Set<String> defaultSensitiveKeys = <String>{
   'license_number',
   'licensenumber',
   'license-number',
+  'dob',
+  'date_of_birth',
+  'dateofbirth',
+  'date-of-birth',
 
   // Financial Information
   'credit_card',
@@ -116,6 +128,7 @@ const Set<String> defaultSensitiveKeys = <String>{
   'swiftcode',
   'swift-code',
   'bic',
+  'pan',
 
   // Cryptocurrency
   'wallet',
@@ -151,6 +164,80 @@ const Set<String> defaultSensitiveKeys = <String>{
   'street_address',
   'streetaddress',
   'street-address',
+
+  // Personal Names (PII)
+  'first_name',
+  'firstname',
+  'first-name',
+  'last_name',
+  'lastname',
+  'last-name',
+  'middle_name',
+  'middlename',
+  'middle-name',
+  'full_name',
+  'fullname',
+  'full-name',
+  'given_name',
+  'givenname',
+  'given-name',
+  'family_name',
+  'familyname',
+  'family-name',
+  'maiden_name',
+  'maidenname',
+  'maiden-name',
+  'surname',
+
+  // Demographics & Special-Category PII
+  'gender',
+  'sex',
+  'nationality',
+  'ethnicity',
+  'religion',
+  'sexual_orientation',
+  'sexualorientation',
+  'sexual-orientation',
+  'blood_type',
+  'bloodtype',
+  'blood-type',
+
+  // Birth Date & Place
+  'birthday',
+  'birth_date',
+  'birthdate',
+  'birth-date',
+  'place_of_birth',
+  'placeofbirth',
+  'place-of-birth',
+  'birth_place',
+  'birthplace',
+  'birth-place',
+
+  // Postal Addresses (qualified)
+  'home_address',
+  'homeaddress',
+  'home-address',
+  'mailing_address',
+  'mailingaddress',
+  'mailing-address',
+  'billing_address',
+  'billingaddress',
+  'billing-address',
+  'shipping_address',
+  'shippingaddress',
+  'shipping-address',
+
+  // Tax Identifiers
+  'tax_id',
+  'taxid',
+  'tax-id',
+  'taxpayer_id',
+  'taxpayerid',
+  'taxpayer-id',
+  'vat_number',
+  'vatnumber',
+  'vat-number',
 };
 
 /// Backward-compatible alias for [defaultSensitiveKeys].
@@ -166,7 +253,10 @@ final List<RegExp> defaultSensitiveKeyPatterns = <RegExp>[
   // Authentication patterns
   RegExp(r'(?:^|[_\-])token(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])secret(?:$|[_\-])', caseSensitive: false),
-  RegExp(r'(?:^|[_\-])pass(?:word)?(?:$|[_\-])', caseSensitive: false),
+  RegExp(
+    r'(?:^|[_\-])(?:pass(?:word)?|passwd|pwd)(?:$|[_\-])',
+    caseSensitive: false,
+  ),
   RegExp(r'(?:^|[_\-])key(?:$|[_\-])', caseSensitive: false),
   RegExp(r'(?:^|[_\-])auth(?:$|[_\-])', caseSensitive: false),
 
@@ -209,8 +299,221 @@ final List<RegExp> defaultSensitiveKeyPatterns = <RegExp>[
   RegExp(r'(?:^|[_\-])cell[_\-]?(?:phone|num)', caseSensitive: false),
 ];
 
-/// Keys whose values are always fully replaced with placeholder (no partial
-/// masking), regardless of whether the key is also in [defaultSensitiveKeys].
+/// Keys whose values are always fully replaced with the placeholder (no
+/// partial/edge masking), regardless of whether the key is also in
+/// [defaultSensitiveKeys].
+///
+/// Covers credentials, financial account numbers, security codes, government
+/// identifiers, personal names, demographics, birth and postal details, and
+/// tax identifiers — values where even the first/last characters leak
+/// meaningful information. `authorization`/`cookie` are intentionally absent:
+/// their structure-aware masking preserves the (non-sensitive) auth scheme and
+/// cookie names while masking the secret. Context-dependent contact fields
+/// (email, phone, username) also keep edge masking to aid debugging.
 const Set<String> defaultFullyMaskedKeys = <String>{
   'filename',
+
+  // Credentials & secrets
+  'x-api-key',
+  'api-key',
+  'apikey',
+  'token',
+  'access_token',
+  'refresh_token',
+  'id_token',
+  'bearer_token',
+  'session_token',
+  'session-token',
+  'session_id',
+  'session-id',
+  'password',
+  'passwd',
+  'pwd',
+  'secret',
+  'client-secret',
+  'client_secret',
+  'private-key',
+  'private_key',
+  'signature',
+  'hmac',
+  'csrf',
+  'csrf_token',
+  'csrf-token',
+  'x-csrf-token',
+  'xsrf',
+  'xsrf_token',
+  'xsrf-token',
+  'x-xsrf-token',
+  'mfa_code',
+  'mfa-code',
+  'totp',
+  'otp',
+  'one_time_password',
+  'verification_code',
+  'verification-code',
+  'pin_code',
+  'pin-code',
+
+  // Device & push tokens
+  'device_token',
+  'device-token',
+  'fcm_token',
+  'fcm-token',
+  'apns_token',
+  'apns-token',
+  'push_token',
+  'push-token',
+
+  // Government identifiers
+  'ssn',
+  'social_security',
+  'social-security',
+  'social_security_number',
+  'socialsecuritynumber',
+  'national_id',
+  'nationalid',
+  'national-id',
+  'passport',
+  'passport_number',
+  'passportnumber',
+  'passport-number',
+  'drivers_license',
+  'driverslicense',
+  'drivers-license',
+  'driver_license',
+  'driverlicense',
+  'driver-license',
+  'license_number',
+  'licensenumber',
+  'license-number',
+  'dob',
+  'date_of_birth',
+  'dateofbirth',
+  'date-of-birth',
+
+  // Financial accounts & security codes
+  'credit_card',
+  'creditcard',
+  'credit-card',
+  'card_number',
+  'cardnumber',
+  'card-number',
+  'cc_number',
+  'ccnumber',
+  'cc-number',
+  'cvv',
+  'cvc',
+  'cvv2',
+  'card_cvv',
+  'cardcvv',
+  'security_code',
+  'securitycode',
+  'security-code',
+  'bank_account',
+  'bankaccount',
+  'bank-account',
+  'account_number',
+  'accountnumber',
+  'account-number',
+  'routing_number',
+  'routingnumber',
+  'routing-number',
+  'iban',
+  'swift',
+  'swift_code',
+  'swiftcode',
+  'swift-code',
+  'bic',
+  'pan',
+
+  // Cryptocurrency
+  'wallet',
+  'wallet_address',
+  'walletaddress',
+  'wallet-address',
+
+  // Personal Names (PII)
+  'first_name',
+  'firstname',
+  'first-name',
+  'last_name',
+  'lastname',
+  'last-name',
+  'middle_name',
+  'middlename',
+  'middle-name',
+  'full_name',
+  'fullname',
+  'full-name',
+  'given_name',
+  'givenname',
+  'given-name',
+  'family_name',
+  'familyname',
+  'family-name',
+  'maiden_name',
+  'maidenname',
+  'maiden-name',
+  'surname',
+
+  // Demographics & Special-Category PII
+  'gender',
+  'sex',
+  'nationality',
+  'ethnicity',
+  'religion',
+  'sexual_orientation',
+  'sexualorientation',
+  'sexual-orientation',
+  'blood_type',
+  'bloodtype',
+  'blood-type',
+
+  // Birth Date & Place
+  'birthday',
+  'birth_date',
+  'birthdate',
+  'birth-date',
+  'place_of_birth',
+  'placeofbirth',
+  'place-of-birth',
+  'birth_place',
+  'birthplace',
+  'birth-place',
+
+  // Postal Addresses (qualified)
+  'home_address',
+  'homeaddress',
+  'home-address',
+  'mailing_address',
+  'mailingaddress',
+  'mailing-address',
+  'billing_address',
+  'billingaddress',
+  'billing-address',
+  'shipping_address',
+  'shippingaddress',
+  'shipping-address',
+
+  // Tax Identifiers
+  'tax_id',
+  'taxid',
+  'tax-id',
+  'taxpayer_id',
+  'taxpayerid',
+  'taxpayer-id',
+  'vat_number',
+  'vatnumber',
+  'vat-number',
 };
+
+/// Lowercased form of [defaultSensitiveKeys], computed once so callers that
+/// build a [RedactionService] with the defaults do not re-lowercase and
+/// re-allocate the set on every construction.
+final Set<String> defaultSensitiveKeysLower =
+    defaultSensitiveKeys.map((e) => e.toLowerCase()).toSet();
+
+/// Lowercased form of [defaultFullyMaskedKeys], computed once. See
+/// [defaultSensitiveKeysLower].
+final Set<String> defaultFullyMaskedKeysLower =
+    defaultFullyMaskedKeys.map((e) => e.toLowerCase()).toSet();

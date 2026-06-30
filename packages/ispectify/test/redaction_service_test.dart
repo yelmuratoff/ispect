@@ -5,6 +5,70 @@ import 'package:test/test.dart';
 
 void main() {
   group('RedactionService', () {
+    test('hoisted default lower sets equal the lowercased defaults', () {
+      expect(
+        defaultSensitiveKeysLower,
+        defaultSensitiveKeys.map((e) => e.toLowerCase()).toSet(),
+      );
+      expect(
+        defaultFullyMaskedKeysLower,
+        defaultFullyMaskedKeys.map((e) => e.toLowerCase()).toSet(),
+      );
+    });
+
+    test('default-constructed service redacts same as explicit default keys',
+        () {
+      final auto = RedactionService();
+      final explicit = RedactionService(
+        sensitiveKeys: defaultSensitiveKeys,
+        fullyMaskedKeys: defaultFullyMaskedKeys,
+      );
+      final input = <String, Object?>{
+        'password': 'p',
+        'accessToken': 'a',
+        'keep': 'v',
+      };
+      expect(auto.redact(input), explicit.redact(input));
+    });
+
+    test('redacts personal PII keys by default', () {
+      final service = RedactionService();
+      final out = service.redact({
+        'firstName': 'Emily',
+        'last_name': 'Johnson',
+        'gender': 'female',
+        'nationality': 'United States',
+        'home_address': '1 Main Street',
+        'tax_id': '123-45-6789',
+        'birthday': '1990-01-01',
+        'keep': 'visible',
+      })! as Map<String, Object?>;
+
+      expect(out['firstName'], '[REDACTED]');
+      expect(out['last_name'], '[REDACTED]');
+      expect(out['gender'], '[REDACTED]');
+      expect(out['nationality'], '[REDACTED]');
+      expect(out['home_address'], '[REDACTED]');
+      expect(out['tax_id'], '[REDACTED]');
+      expect(out['birthday'], '[REDACTED]');
+      expect(out['keep'], 'visible');
+    });
+
+    test('does not redact ambiguous non-PII keys by default', () {
+      final service = RedactionService();
+      final out = service.redact({
+        'name': 'Checkout Screen',
+        'age': 42,
+        'address': 'Main Office',
+        'location': 'Dashboard View',
+      })! as Map<String, Object?>;
+
+      expect(out['name'], 'Checkout Screen');
+      expect(out['age'], 42);
+      expect(out['address'], 'Main Office');
+      expect(out['location'], 'Dashboard View');
+    });
+
     test('redacts sensitive headers by default', () {
       final service = RedactionService();
       final headers = service.redactHeaders({
@@ -67,6 +131,178 @@ void main() {
       expect(kDefaultSensitiveKeys, equals(defaultSensitiveKeys));
     });
 
+    group('camelCase and whitespace key matching', () {
+      test('redacts camelCase credential keys', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'accessToken': 'aaa-access-secret-bbb',
+          'refreshToken': 'ccc-refresh-secret-ddd',
+          'idToken': 'eee-id-secret-fff',
+          'displayName': 'Alice',
+        })! as Map<String, Object?>;
+
+        expect(map['accessToken'], isNot(contains('access-secret')));
+        expect(map['refreshToken'], isNot(contains('refresh-secret')));
+        expect(map['idToken'], isNot(contains('id-secret')));
+        expect(map['displayName'], 'Alice');
+      });
+
+      test('redacts camelCase password keys', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'confirmPassword': 'pw-confirm-secret',
+          'newPassword': 'pw-new-secret',
+        })! as Map<String, Object?>;
+
+        expect(map['confirmPassword'], isNot(contains('confirm-secret')));
+        expect(map['newPassword'], isNot(contains('new-secret')));
+      });
+
+      test('redacts PascalCase and other camelCase sensitive keys', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'AccessToken': 'pascal-secret-value',
+          'sessionId': 'session-secret-value',
+          'cardNumber': '4111-1111-1111-1111',
+        })! as Map<String, Object?>;
+
+        expect(map['AccessToken'], isNot(contains('pascal-secret-value')));
+        expect(map['sessionId'], isNot(contains('session-secret-value')));
+        expect(map['cardNumber'], isNot(contains('4111-1111-1111-1111')));
+      });
+
+      test('redacts keys with surrounding whitespace', () {
+        final service = RedactionService();
+        // A plain value with no token/scheme/base64 shape, so only a key match
+        // (after trimming) can redact it — isolates the whitespace handling.
+        final map = service.redact({
+          'password ': 'plainvalue123',
+        })! as Map<String, Object?>;
+
+        expect(map['password '], '[REDACTED]');
+      });
+
+      test('leaves non-sensitive camelCase keys untouched', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'sortOrder': 'ascending',
+          'createdAt': '2026-01-01',
+          'itemKeyboard': 'visible',
+        })! as Map<String, Object?>;
+
+        expect(map['sortOrder'], 'ascending');
+        expect(map['createdAt'], '2026-01-01');
+        expect(map['itemKeyboard'], 'visible');
+      });
+
+      test('per-call ignored camelCase key is not redacted', () {
+        final service = RedactionService();
+        final map = service.redact(
+          {'accessToken': 'visible-value'},
+          ignoredKeys: {'accessToken'},
+        )! as Map<String, Object?>;
+
+        expect(map['accessToken'], 'visible-value');
+      });
+    });
+
+    group('full masking of high-sensitivity keys', () {
+      test('fully masks credentials without revealing edge characters', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'password': 'abcdefghijklmnop',
+          'access_token': 'eyJhbGciOi.payloadpayload.signaturesig',
+          'secret': 'topsecretvalue123',
+        })! as Map<String, Object?>;
+
+        expect(map['password'], '[REDACTED]');
+        expect(map['access_token'], '[REDACTED]');
+        expect(map['secret'], '[REDACTED]');
+      });
+
+      test('fully masks financial and government identifiers', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'ssn': '123-45-6789',
+          'iban': 'DE89370400440532013000',
+          'cardNumber': '4111111111111111',
+          'cvv': '123',
+        })! as Map<String, Object?>;
+
+        expect(map['ssn'], '[REDACTED]');
+        expect(map['iban'], '[REDACTED]');
+        expect(map['cardNumber'], '[REDACTED]');
+        expect(map['cvv'], '[REDACTED]');
+      });
+
+      test('keeps structure-aware masking for authorization', () {
+        final service = RedactionService();
+        final headers = service.redactHeaders({
+          'authorization': 'Bearer aaaaaaaaaaaaaaaaaaaa',
+        });
+
+        expect(headers['authorization'], startsWith('Bearer '));
+        expect(
+          headers['authorization'],
+          isNot(contains('aaaaaaaaaaaaaaaaaaaa')),
+        );
+        expect(headers['authorization'], isNot('[REDACTED]'));
+      });
+    });
+
+    group('additional sensitive key variants', () {
+      test('recognizes password abbreviations and fragments', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'pwd': 'shorty1',
+          'passwd': 'shorty2',
+          'user_pwd': 'shorty3',
+        })! as Map<String, Object?>;
+
+        expect(map['pwd'], '[REDACTED]');
+        expect(map['passwd'], '[REDACTED]');
+        expect(map['user_pwd'], isNot('shorty3'));
+      });
+
+      test('recognizes signature, hmac, pan, dob, and xsrf keys', () {
+        final service = RedactionService();
+        final map = service.redact({
+          'signature': 'sig-aaaaaaaaaaaa',
+          'hmac': 'hmac-aaaaaaaaaaaa',
+          'pan': '4111111111111111',
+          'dateOfBirth': '1990-01-01',
+          'xsrf': 'xsrf-aaaaaaaaaaaa',
+        })! as Map<String, Object?>;
+
+        expect(map['signature'], '[REDACTED]');
+        expect(map['hmac'], '[REDACTED]');
+        expect(map['pan'], '[REDACTED]');
+        expect(map['dateOfBirth'], isNot('1990-01-01'));
+        expect(map['xsrf'], '[REDACTED]');
+      });
+    });
+
+    group('redactByKeys', () {
+      test('matches a mixed-case Set against lowercase data keys', () {
+        final result = RedactionService.redactByKeys(
+          {'authorization': 'Bearer secret', 'safe': 'visible'},
+          {'Authorization'},
+        )! as Map<String, Object?>;
+
+        expect(result['authorization'], '[REDACTED]');
+        expect(result['safe'], 'visible');
+      });
+
+      test('matches lowercase keys against mixed-case data keys', () {
+        final result = RedactionService.redactByKeys(
+          {'Authorization': 'Bearer secret'},
+          {'authorization'},
+        )! as Map<String, Object?>;
+
+        expect(result['Authorization'], '[REDACTED]');
+      });
+    });
+
     group('redactUrl', () {
       test('returns original URL when nothing to redact', () {
         final service = RedactionService();
@@ -89,10 +325,19 @@ void main() {
         expect(result, isNot(contains('user:pass')));
       });
 
-      test('returns unparseable URL unchanged', () {
+      test('returns unparseable URL unchanged when nothing is sensitive', () {
         final service = RedactionService();
         const bad = ':::not-a-url';
         expect(service.redactUrl(bad), bad);
+      });
+
+      test('sanitizes credentials and sensitive params in an unparseable URL',
+          () {
+        final service = RedactionService();
+        const malformed = 'ht!tp://user:pass@host/path?token=secret';
+        final result = service.redactUrl(malformed);
+        expect(result, isNot(contains('user:pass')));
+        expect(result, isNot(contains('secret')));
       });
     });
 

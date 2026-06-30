@@ -577,7 +577,7 @@ void main() {
         'https://user:pass@host/path',
         defaultSensitiveKeys,
       );
-      expect(result, contains('***:***@'));
+      expect(result, contains('://REDACTED@'));
       expect(result, isNot(contains('user:pass')));
     });
 
@@ -586,7 +586,7 @@ void main() {
         '/api?token=abc&name=test',
         const {'token'},
       );
-      expect(result, contains('token=***'));
+      expect(result, contains('token=[REDACTED]'));
       expect(result, contains('name=test'));
     });
 
@@ -601,12 +601,41 @@ void main() {
         'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9',
         defaultSensitiveKeys,
       );
-      expect(result, contains('Bearer ***'));
+      expect(result, contains('Bearer [REDACTED]'));
     });
 
     test('redactExportString with null keys returns unchanged', () {
       const input = 'some text with token=abc';
       expect(RedactionService.redactExportString(input, null), input);
+    });
+
+    test('redactExportString redacts every key in query params', () {
+      final result = RedactionService.redactExportString(
+        'https://api.test/x?token=abc&password=p1&keep=ok&secret=s1',
+        const {'token', 'password', 'secret'},
+      );
+      expect(result, contains('token=[REDACTED]'));
+      expect(result, contains('password=[REDACTED]'));
+      expect(result, contains('secret=[REDACTED]'));
+      expect(result, contains('keep=ok'));
+    });
+
+    test('redactExportString redacts every key in JSON form', () {
+      final result = RedactionService.redactExportString(
+        '{"token": "abc", "password": "p1", "keep": "ok"}',
+        const {'token', 'password'},
+      );
+      expect(result, contains('"token": "[REDACTED]"'));
+      expect(result, contains('"password": "[REDACTED]"'));
+      expect(result, contains('"keep": "ok"'));
+    });
+
+    test('redactExportString leaves keys outside the set untouched', () {
+      const input = 'https://api.test/x?session=keepme';
+      expect(
+        RedactionService.redactExportString(input, const {'token'}),
+        input,
+      );
     });
   });
 
@@ -647,6 +676,67 @@ void main() {
       final logs = List.generate(100, (i) => ISpectLogData('log $i'));
       final text = LogExporter.toText(logs, maxLogs: 10);
       expect(text, contains('capped from 100'));
+    });
+  });
+
+  group('additionalData export redaction (M8)', () {
+    ISpectLogData secretLog() => ISpectLogData(
+          'user action',
+          key: 'info',
+          additionalData: const {
+            TraceKeys.category: 'general',
+            'password': 'hunter2',
+            'userMeta': {'token': 'super-secret-token'},
+          },
+        );
+
+    test('toText masks nested sensitive additionalData when redactKeys given',
+        () {
+      final text = secretLog().toText(redactKeys: {'password', 'token'});
+
+      expect(text, isNot(contains('hunter2')));
+      expect(text, isNot(contains('super-secret-token')));
+      expect(text, contains('[REDACTED]'));
+      expect(text, contains('general'));
+    });
+
+    test(
+        'toMarkdown masks nested sensitive additionalData when redactKeys given',
+        () {
+      final md = secretLog().toMarkdown(redactKeys: {'password', 'token'});
+
+      expect(md, isNot(contains('hunter2')));
+      expect(md, isNot(contains('super-secret-token')));
+      expect(md, contains('[REDACTED]'));
+    });
+
+    test(
+        'toJsonLines masks nested sensitive additionalData when redactKeys given',
+        () {
+      final jsonl = LogExporter.toJsonLines(
+        [secretLog()],
+        redactKeys: {'password', 'token'},
+      );
+
+      expect(jsonl, isNot(contains('hunter2')));
+      expect(jsonl, isNot(contains('super-secret-token')));
+      expect(jsonl, contains('[REDACTED]'));
+    });
+
+    test('toText leaves additionalData raw when redactKeys is null (opt-out)',
+        () {
+      final text = secretLog().toText();
+
+      expect(text, contains('hunter2'));
+      expect(text, contains('super-secret-token'));
+    });
+
+    test('toJsonLines leaves additionalData raw when redactKeys null (opt-out)',
+        () {
+      final jsonl = LogExporter.toJsonLines([secretLog()]);
+
+      expect(jsonl, contains('hunter2'));
+      expect(jsonl, contains('super-secret-token'));
     });
   });
 

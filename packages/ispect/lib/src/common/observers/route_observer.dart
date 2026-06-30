@@ -282,18 +282,20 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     buffer.writeln(
         '${type.title} | $previousRouteName ($previousRouteType) → $routeName ($routeType)');
 
-    // Arguments info — redacted by default (only type and key names)
+    // Arguments info — redacted by default (only type and key names). The
+    // global ISpectRedaction kill-switch overrides the per-observer flag.
+    final redactArguments = enableArgumentRedaction && ISpectRedaction.enabled;
     switch (route?.settings.arguments) {
       case null:
         break;
       case final Map<String, dynamic> args:
-        if (enableArgumentRedaction) {
+        if (redactArguments) {
           buffer.writeln('Arguments: {${args.keys.join(', ')}}');
         } else {
           buffer.writeln('Arguments: $args');
         }
       case final Object args:
-        if (enableArgumentRedaction) {
+        if (redactArguments) {
           buffer.writeln('Arguments: (${args.runtimeType})');
         } else {
           buffer.writeln('Arguments: $args');

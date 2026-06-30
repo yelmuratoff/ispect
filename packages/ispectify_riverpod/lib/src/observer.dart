@@ -1,6 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_riverpod/src/data/_data.dart';
 import 'package:ispectify_riverpod/src/settings.dart';
+import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart';
 
 typedef RiverpodProviderCallback = void Function(
@@ -58,6 +59,16 @@ class ISpectRiverpodObserver extends ProviderObserver {
 
   static const String _source = 'riverpod';
 
+  /// Test-only override for the compile-time [kISpectEnabled] gate.
+  ///
+  /// Production code leaves this `null`, so logging follows `kISpectEnabled`
+  /// and tree-shakes away when the flag is omitted. Tests set it to exercise
+  /// the enabled path without a `--dart-define`.
+  @visibleForTesting
+  static bool? debugEnabledOverride;
+
+  bool get _ispectEnabled => debugEnabledOverride ?? kISpectEnabled;
+
   bool _isFiltered(ProviderBase<Object?> provider) {
     final providerName = _providerName(provider);
     if (filterPredicate?.call(providerName) ?? false) {
@@ -78,7 +89,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
     required bool toggle,
     required ProviderBase<Object?> provider,
   }) {
-    if (!settings.enabled || !toggle) {
+    if (!_ispectEnabled || !settings.enabled || !toggle) {
       return false;
     }
     if (settings.providerFilter?.call(provider) == false) {
@@ -95,12 +106,19 @@ class ISpectRiverpodObserver extends ProviderObserver {
     } catch (_) {}
   }
 
+  /// Defaults to a [RedactionService] when redaction is enabled but no explicit
+  /// redactor was supplied, so sensitive payloads are masked out of the box —
+  /// matching the network/DB interceptors. `null` only when redaction is off.
+  late final RedactionService? _redactor = settings.enableRedaction
+      ? (settings.redactor ?? RedactionService())
+      : null;
+
   Map<String, Object?> _withRedaction(
     Map<String, dynamic> data,
     void Function(Map<String, dynamic>, RedactionService) redact,
   ) {
-    final redactor = settings.redactor;
-    if (settings.isRedactionActive && redactor != null) {
+    final redactor = _redactor;
+    if (redactor != null) {
       redact(data, redactor);
     }
     return data;
@@ -136,7 +154,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
       target: data.providerName,
       meta: meta,
       consoleMessage: settings.printValues
-          ? '[riverpod] add → ${data.providerName}\nValue: ${settings.formatValue(value)}'
+          ? '[riverpod] add → ${data.providerName}\nValue: ${meta[RiverpodJsonKeys.value]}'
           : '[riverpod] add → ${data.providerName}',
     );
   }
@@ -174,8 +192,10 @@ class ISpectRiverpodObserver extends ProviderObserver {
       includeValue: settings.printValues,
     );
     final meta = _withRedaction(data.toJson(), RiverpodUpdateData.redact);
-    final previousFormatted = settings.formatValue(previousValue);
-    final nextFormatted = settings.formatValue(newValue);
+    final previousFormatted = meta[RiverpodJsonKeys.previousValue] ??
+        meta[RiverpodJsonKeys.previousValueType];
+    final nextFormatted =
+        meta[RiverpodJsonKeys.newValue] ?? meta[RiverpodJsonKeys.newValueType];
     _logger.riverpodUpdate(
       source: _source,
       target: data.providerName,

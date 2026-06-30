@@ -26,6 +26,7 @@ void main() {
     late BlocObserver previous;
 
     setUp(() {
+      ISpectBlocObserver.debugEnabledOverride = true;
       logger = ISpectLogger(
         options: ISpectLoggerOptions(useConsoleLogs: false),
       );
@@ -34,6 +35,7 @@ void main() {
     });
 
     tearDown(() {
+      ISpectBlocObserver.debugEnabledOverride = null;
       Bloc.observer = previous;
     });
 

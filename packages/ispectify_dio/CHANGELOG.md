@@ -1,5 +1,32 @@
 # Changelog
 
+## 6.0.5
+
+### Improvements
+
+- **`dart:developer` console output:** Opt into DevTools-native structured logging with `ISpectBaseLogger(output: developerLogOutput)` — each entry becomes one `log()` call (boxed output stays intact) with the log level mapped through. The default `print`/console output is unchanged ([#85](https://github.com/yelmuratoff/ispect/issues/85)).
+
+## 6.0.4
+
+### Improvements
+
+- **Pretty/boxed console logs:** Opt into framed, visually-separated console output via `ConsoleSettings(formatter: const BoxedLogEntryFormatter())`, or supply any custom `ILogEntryFormatter`. The compact default is unchanged ([#85](https://github.com/yelmuratoff/ispect/issues/85)).
+
+## 6.0.3
+
+### Bug Fixes
+
+- **WebAssembly (WASM) support:** `ispect` is WASM-ready and supports all six platforms (Android, iOS, web, Windows, macOS, Linux). `flutter build web --wasm` now succeeds; log export uses the browser download on web and WASM, and the native filesystem on other platforms.
+
+## 6.0.2
+
+### Security
+
+- **Redaction hardened across capture and export:** Sensitive keys are matched more broadly (camelCase and whitespace-trimmed forms), the default sensitive-key set is broadened, and credential/PII values are fully masked. Redaction now fails closed — a payload that can't be processed is masked rather than passed through.
+- **Diagnostics redacted everywhere they leave the app:** Network URLs (including in generated cURL), database values and error messages, BLoC/Riverpod console output, navigation route arguments, and every export path (JSON, text, Markdown, file share, and clipboard copy) are redacted by default.
+- **One-switch redaction control:** A single source of truth turns redaction on or off everywhere at once — `ISpectRedaction.enabled = false` (or `ISpect.run(redactionEnabled: false)`) disables masking across network, database, BLoC/Riverpod, navigation, and all export paths. On by default; disabling is a deliberate opt-out.
+- **Inert in production builds:** When ISpect is compiled out (`ISPECT_ENABLED` omitted), observers stay silent and the global logger retains no history and writes nothing to the console, so diagnostics don't accumulate in release builds.
+
 ## 6.0.0
 
 ### Improvements

@@ -54,11 +54,13 @@ void main() {
     late DummyBloc bloc;
 
     setUp(() {
+      ISpectBlocObserver.debugEnabledOverride = true;
       logger = RecordingLogger();
       bloc = DummyBloc();
     });
 
     tearDown(() async {
+      ISpectBlocObserver.debugEnabledOverride = null;
       await bloc.close();
     });
 
@@ -534,6 +536,66 @@ void main() {
             .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
         // Should NOT be redacted because enableRedaction is false.
         expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
+      });
+    });
+
+    group('kISpectEnabled gate', () {
+      test('emits nothing when ISpect is disabled at build time', () {
+        ISpectBlocObserver.debugEnabledOverride = false;
+        ISpectBlocObserver(logger: logger)
+          ..onCreate(bloc)
+          ..onEvent(bloc, 'test')
+          ..onTransition(
+            bloc,
+            const Transition(currentState: 0, event: 'x', nextState: 1),
+          )
+          ..onChange(bloc, const Change(currentState: 0, nextState: 1))
+          ..onError(bloc, Exception('fail'), StackTrace.current)
+          ..onDone(bloc, 'test')
+          ..onClose(bloc);
+
+        expect(logger.records, isEmpty);
+      });
+    });
+
+    group('console message redaction', () {
+      const secret = 'sk-live-super-secret-value-1234567890';
+
+      test('masks sensitive event fields in the console message by default',
+          () {
+        ISpectBlocObserver(logger: logger)
+            .onEvent(bloc, <String, dynamic>{'password': secret});
+
+        final message = logger.byOperation('event').single.message;
+        expect(message, isNot(contains(secret)));
+        expect(message, contains('password'));
+      });
+
+      test('masks sensitive state fields in the transition console message',
+          () {
+        ISpectBlocObserver(logger: logger).onTransition(
+          bloc,
+          const Transition<String, Object>(
+            currentState: 0,
+            event: 'x',
+            nextState: <String, dynamic>{'token': secret},
+          ),
+        );
+
+        final message = logger.byOperation('transition').single.message;
+        expect(message, isNot(contains(secret)));
+        expect(message, contains('token'));
+      });
+
+      test('keeps the raw event payload in the console when redaction disabled',
+          () {
+        ISpectBlocObserver(
+          logger: logger,
+          settings: const ISpectBlocSettings(enableRedaction: false),
+        ).onEvent(bloc, <String, dynamic>{'password': secret});
+
+        final message = logger.byOperation('event').single.message;
+        expect(message, contains(secret));
       });
     });
 
