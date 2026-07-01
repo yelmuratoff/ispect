@@ -1,41 +1,26 @@
 # Roadmap
 
-ISpect is on the `5.0.0-dev` line. The priority is to stabilize the 5.x architecture, documentation, release-safety checks, and the compatibility story before `5.0.0` ships as stable.
+ISpect is on the `6.x` line (currently `6.0.5`). The 5.x architecture rollout — owned dark theme, hardened redaction pipeline, WASM support, pluggable log formatting — has shipped, and the core hardening pass (redaction coverage, docs, generated READMEs, CI gates, package modularity, release process) is complete. What remains is closing the evidence gaps before pitching ISpect to larger teams, and picking up new integrations if real demand shows up.
 
 This roadmap is short on purpose. It describes the direction, not a promise that every imaginable integration ships in the next release.
 
-## Now: 5.0 stabilization
+## Next: optional file-based session history
 
-- Harden production-safety checks for builds where `ISPECT_ENABLED` is omitted.
-- Keep redaction on by default and expand coverage for realistic payloads.
-- Document data handling, security, deprecations, compatibility, and release channels.
-- Keep package READMEs generated from `docs/readme/`.
-- Preserve package modularity so teams install only what they need.
-- Keep analyzer and tests green against the pinned Flutter SDK used in CI.
-- Keep positioning focused on internal builds.
-- Complete publish dry-runs before cutting stable `5.0.0`.
+`ispectify` already defines a `FileLogHistory` interface (`packages/ispectify/lib/src/history/file_log`) — daily file save/load, JSON import/export, cleanup, per-session lookup — and `ispect` already ships the browsing UI (`DailySessionsScreen`, per-day `LogsV2Screen`), wired through `ISpect.logger.fileLogHistory` and hidden automatically when it's absent. A concrete implementation shipped once (`DailyFileLogHistory`, 4.3.0) but did not carry over into the 5.x/6.x rewrite. What's missing is a first-party implementation to plug back in.
 
-## Next: integration quality
-
-- Improve observer examples for internal tools, without presenting them as bundled production-telemetry adapters.
-- Add focused examples for common QA and staging rollout patterns.
-- Expand database examples where wrappers already exist.
-- Improve test fixtures for redaction, export/import, network correlation, and session history.
-- Add stronger release-footprint reporting in CI.
-- Add a reproducible benchmark suite for startup cost, logging volume, export volume, history bounds, and payload capture on/off.
-- Add real-world use cases or adoption notes when they can be published with concrete numbers, not invented ones.
-- Decide whether the Dart and Flutter SDK baseline should stay as-is for 5.0 stable or whether a wider compatibility window is practical.
+- Ship a concrete `FileLogHistory` in `ispectify`, opt-in via `ISpectFlutter.init(history: ...)` — not the default `ILogHistory` — matching the interface already in place.
+- Support day-based grouping (what the interface already models via `getAvailableLogDates`/`getLogsByDate`) and evaluate explicit session-based grouping (`getLogsBySession` already anticipates non-daily boundaries, e.g. per app launch).
+- Route every write through the same redaction pipeline as export (`RedactionService`/`LogExporter`) — `ISpectLogData.toJson()` does not redact by default, so a naive implementation would persist unredacted secrets to disk.
+- Bound retention: wire `maxSessionDays`, `maxFileSize`, and a cleanup strategy (oldest-first, size-based, or archive — the `SessionCleanupStrategy` enum and `SessionStatistics` snapshot already exist but aren't connected to a live implementation) into `ISpectLoggerOptions`.
+- Stay inert when `ISPECT_ENABLED` is omitted, same as the rest of the toolkit — no persisted session files in production builds.
+- Add tests for redaction-on-write, rotation/cleanup boundaries, and the disabled-build no-op path.
 
 ## Evidence before enterprise adoption
 
-These are not required to use ISpect on internal builds, but they help larger teams trust the project:
+Not required to use ISpect on internal builds, but these help larger teams trust the project:
 
-- A stable `5.0.0` release after the dev validation line settles.
-- Published benchmark methodology and results.
-- A link from the docs to the production-safety CI result.
-- Package publish dry-run results.
-- At least two real internal QA or staging use cases.
-- Migration examples for deprecated 5.x APIs.
+- A reproducible benchmark suite and published results for startup cost, logging volume, export volume, history bounds, and payload capture on/off.
+- At least two real internal QA or staging use cases, published with concrete numbers, not invented ones.
 
 ## Later: optional integrations
 
