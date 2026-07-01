@@ -23,5 +23,6 @@
 ## Anti-Patterns
 
 - Do not use `print` or `debugPrint` for package logging except for existing gated warnings in initialization paths.
+- Do not use `dart:developer` `log` for application logging. The single exception is ISpect's own internal error-fallback paths inside `LogPipeline` and similar core dispatchers, where routing the error back through `ISpect.logger` would cause reentrancy. Such fallback calls must stay scoped to the catch block and prefixed with `[ISpect]`.
 - Do not replace established small helpers with generated code.
 - Do not add untyped `Map` or `List` values where the analyzer can infer a precise type.
