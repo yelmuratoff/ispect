@@ -28,6 +28,9 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   /// - `isLogPages`: Whether to log page navigations.
   /// - `isLogModals`: Whether to log modal transitions.
   /// - `isLogOtherTypes`: Whether to log other navigation types.
+  /// - `showArgumentValues`: When false (default), logs only argument key
+  ///   names for maps, or the runtime type for other objects. When true,
+  ///   includes full argument values.
   ISpectNavigatorObserver({
     this.isLogGestures = false,
     this.isLogPages = true,
@@ -41,8 +44,12 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     this.onStartUserGesture,
     this.onStopUserGesture,
     this.maxTransitions = 200,
-    this.enableArgumentRedaction = true,
-  });
+    bool showArgumentValues = false,
+    @Deprecated('Use showArgumentValues instead.')
+    bool? enableArgumentRedaction,
+  }) : showArgumentValues = enableArgumentRedaction == null
+            ? showArgumentValues
+            : !enableArgumentRedaction;
 
   /// The most recently installed `ISpectNavigatorObserver`.
   ///
@@ -135,10 +142,10 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       onStartUserGesture;
   final VoidCallback? onStopUserGesture;
 
-  /// When true, route arguments are redacted in log messages by showing
-  /// only their type and key names (no values). Defaults to true for security.
-  /// Set to false to include full argument details in logs.
-  final bool enableArgumentRedaction;
+  /// When true, route argument values are included in log messages.
+  /// Defaults to false so only parameter key names are logged.
+  /// Setting [ISpectRedaction.enabled] to false shows full values globally.
+  final bool showArgumentValues;
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
@@ -204,7 +211,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
 
     addTransition(transition);
 
-    final logMessage = _buildLogMessage(type, route, previousRoute);
+    final logMessage = buildLogMessage(type, route, previousRoute);
     ISpect.logger.route(logMessage, transitionId: correlationId);
   }
 
@@ -268,7 +275,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   }
 
   /// Builds a structured log message for route transitions.
-  String _buildLogMessage(
+  @visibleForTesting
+  String buildLogMessage(
     TransitionType type,
     Route<dynamic>? route,
     Route<dynamic>? previousRoute,
@@ -282,23 +290,22 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     buffer.writeln(
         '${type.title} | $previousRouteName ($previousRouteType) → $routeName ($routeType)');
 
-    // Arguments info — redacted by default (only type and key names). The
-    // global ISpectRedaction kill-switch overrides the per-observer flag.
-    final redactArguments = enableArgumentRedaction && ISpectRedaction.enabled;
+    final showValues = showArgumentValues || !ISpectRedaction.enabled;
     switch (route?.settings.arguments) {
       case null:
         break;
-      case final Map<String, dynamic> args:
-        if (redactArguments) {
-          buffer.writeln('Arguments: {${args.keys.join(', ')}}');
-        } else {
+      case final Map<dynamic, dynamic> args:
+        final keys = args.keys.map((key) => key.toString()).join(', ');
+        if (showValues) {
           buffer.writeln('Arguments: $args');
+        } else {
+          buffer.writeln('Arguments: {$keys}');
         }
       case final Object args:
-        if (redactArguments) {
-          buffer.writeln('Arguments: (${args.runtimeType})');
-        } else {
+        if (showValues) {
           buffer.writeln('Arguments: $args');
+        } else {
+          buffer.writeln('Arguments: (${args.runtimeType})');
         }
     }
 
