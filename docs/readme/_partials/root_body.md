@@ -113,7 +113,7 @@ The toolkit handles the diagnostics most projects rebuild by hand for every new 
 | Riverpod observer | Provider add, update, dispose, and failure events routed through the log pipeline with the same redaction surface. |
 | Redaction | Auth headers, tokens, passwords, PII, and financial data masked before they reach logs, exports, observers, or the cURL helper. |
 | Observer hooks | Forward selected log categories to your own sink through an `ISpectObserver` adapter. |
-| Localization | 12 UI languages: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi. |
+| Localization | 14 UI languages: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi, ckb, ku. |
 
 ## Compared to the obvious alternatives
 
