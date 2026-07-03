@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.0.6
+
+### Improvements
+
+- **Kurdish localization:** ISpect's UI is now translated into Sorani (`ckb`) and Kurmanji (`ku`); both resolve automatically through `ISpectLocalization.supportedLocales`. Apps that display ISpect in these locales own their Material/Cupertino delegates, as with every other locale.
+
 ## 6.0.5
 
 ### Improvements

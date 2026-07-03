@@ -60,8 +60,8 @@
 ```yaml
 dependencies:
   dio: ^5.0.0
-  ispectify: ^6.0.5
-  ispectify_dio: ^6.0.5
+  ispectify: ^6.0.6
+  ispectify_dio: ^6.0.6
 ```
 
 ## Quick start
