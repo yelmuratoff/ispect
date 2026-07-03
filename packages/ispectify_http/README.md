@@ -60,8 +60,8 @@
 dependencies:
   http: ^1.0.0
   http_interceptor: ^2.0.0
-  ispectify: ^6.0.6
-  ispectify_http: ^6.0.6
+  ispectify: ^6.0.7
+  ispectify_http: ^6.0.7
 ```
 
 ## Quick start

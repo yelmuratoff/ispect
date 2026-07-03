@@ -252,7 +252,7 @@ Disabled builds are inactive at compile time, so there is nothing to benchmark w
 
 ```yaml
 dependencies:
-  ispect: ^6.0.6
+  ispect: ^6.0.7
 ```
 
 ```dart
