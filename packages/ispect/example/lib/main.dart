@@ -18,6 +18,7 @@
 // run `lib/complex_example.dart`.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ispect/ispect.dart';
 
 // Forward ISpect events to your crash reporter / analytics.
@@ -78,8 +79,12 @@ class _MyAppState extends State<MyApp> {
           // Your custom NavigatorObservers (analytics, deep links, etc.)
         ],
       ),
+      supportedLocales: ISpectGeneratedLocalization.supportedLocales,
       localizationsDelegates: [
-        // Your app delegates (e.g. GlobalMaterialLocalizations.delegate)
+        ...ISpectKurdishLocalizations.delegates,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
         ...ISpectLocalizations.delegate(),
       ],
       theme: ThemeData(

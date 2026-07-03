@@ -97,6 +97,8 @@ const _localeOptions = <_LocaleOption>[
   _LocaleOption(Locale('ko'), '한국어'),
   _LocaleOption(Locale('hi'), 'हिन्दी'),
   _LocaleOption(Locale('ar'), 'العربية'),
+  _LocaleOption(Locale('ckb'), 'کوردیی ناوەندی (Sorani)'),
+  _LocaleOption(Locale('ku'), 'Kurdî (Kurmancî)'),
 ];
 
 // ---------------------------------------------------------------------------
@@ -213,6 +215,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       supportedLocales: _localeOptions.map((o) => o.locale),
       localizationsDelegates: [
+        ...ISpectKurdishLocalizations.delegates,
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

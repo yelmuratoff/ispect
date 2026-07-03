@@ -36,11 +36,13 @@ class DeclarativeNavigationExampleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       localizationsDelegates: [
+        ...ISpectKurdishLocalizations.delegates,
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         ...ISpectLocalizations.delegate(),
       ],
+      supportedLocales: ISpectGeneratedLocalization.supportedLocales,
       routerConfig: _router.config(),
       builder: (context, child) => ISpectBuilder.wrap(
         options: ISpectOptions(

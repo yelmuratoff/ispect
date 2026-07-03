@@ -42,6 +42,7 @@
 - **`ISpectPerformanceOverlay` rebuilt:** Cross-platform (web + desktop) overlay with UI/raster/total bars, FPS, avg/p99 and jank stats, plus an opt-in `enableJankLogging` callback for severe frames.
 - **Draggable panel 3.0.0:** More reliable hide/reveal and a content-sized adaptive layout; customize it fully via `ISpectOptions.panelBuilder`.
 - **Export metadata:** `ISpectOptions.metadataProvider` embeds app/device details into exported and shared logs via the typed `ISpectMetadata` (host-supplied and not redacted — keep secrets and PII out).
+- **Kurdish localization:** Added Sorani (`ckb`) and Kurmanji (`ku`) translations for ISpect UI strings, plus custom Material/Cupertino/Widgets delegates via `ISpectKurdishLocalizations.delegates` for locales Flutter does not ship natively.
 
 ### Behavioral Changes
 

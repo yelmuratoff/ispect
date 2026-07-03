@@ -35,11 +35,13 @@ class NestedNavigationApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       localizationsDelegates: [
+        ...ISpectKurdishLocalizations.delegates,
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         ...ISpectLocalizations.delegate(),
       ],
+      supportedLocales: ISpectGeneratedLocalization.supportedLocales,
       routerConfig: nestedRouter.config(
         navigatorObservers: () => [nestedRouter.observer, observer],
       ),
