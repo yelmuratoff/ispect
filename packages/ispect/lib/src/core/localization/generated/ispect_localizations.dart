@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'ispect_localizations_ar.dart';
+import 'ispect_localizations_ckb.dart';
 import 'ispect_localizations_de.dart';
 import 'ispect_localizations_en.dart';
 import 'ispect_localizations_es.dart';
@@ -14,6 +15,7 @@ import 'ispect_localizations_hi.dart';
 import 'ispect_localizations_ja.dart';
 import 'ispect_localizations_kk.dart';
 import 'ispect_localizations_ko.dart';
+import 'ispect_localizations_ku.dart';
 import 'ispect_localizations_pt.dart';
 import 'ispect_localizations_ru.dart';
 import 'ispect_localizations_zh.dart';
@@ -106,6 +108,7 @@ abstract class ISpectGeneratedLocalization {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('ar'),
+    Locale('ckb'),
     Locale('de'),
     Locale('en'),
     Locale('es'),
@@ -114,6 +117,7 @@ abstract class ISpectGeneratedLocalization {
     Locale('ja'),
     Locale('kk'),
     Locale('ko'),
+    Locale('ku'),
     Locale('pt'),
     Locale('ru'),
     Locale('zh')
@@ -2137,6 +2141,7 @@ class _ISpectGeneratedLocalizationDelegate
   @override
   bool isSupported(Locale locale) => <String>[
         'ar',
+        'ckb',
         'de',
         'en',
         'es',
@@ -2145,6 +2150,7 @@ class _ISpectGeneratedLocalizationDelegate
         'ja',
         'kk',
         'ko',
+        'ku',
         'pt',
         'ru',
         'zh'
@@ -2159,6 +2165,8 @@ ISpectGeneratedLocalization lookupISpectGeneratedLocalization(Locale locale) {
   switch (locale.languageCode) {
     case 'ar':
       return ISpectGeneratedLocalizationAr();
+    case 'ckb':
+      return ISpectGeneratedLocalizationCkb();
     case 'de':
       return ISpectGeneratedLocalizationDe();
     case 'en':
@@ -2175,6 +2183,8 @@ ISpectGeneratedLocalization lookupISpectGeneratedLocalization(Locale locale) {
       return ISpectGeneratedLocalizationKk();
     case 'ko':
       return ISpectGeneratedLocalizationKo();
+    case 'ku':
+      return ISpectGeneratedLocalizationKu();
     case 'pt':
       return ISpectGeneratedLocalizationPt();
     case 'ru':
