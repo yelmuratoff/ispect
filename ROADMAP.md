@@ -1,7 +1,5 @@
 # Roadmap
 
-ISpect is on the `6.x` line (currently `6.0.5`). The 5.x architecture rollout — owned dark theme, hardened redaction pipeline, WASM support, pluggable log formatting — has shipped, and the core hardening pass (redaction coverage, docs, generated READMEs, CI gates, package modularity, release process) is complete. What remains is closing the evidence gaps before pitching ISpect to larger teams, and picking up new integrations if real demand shows up.
-
 This roadmap is short on purpose. It describes the direction, not a promise that every imaginable integration ships in the next release.
 
 ## Next: optional file-based session history
@@ -21,6 +19,20 @@ Not required to use ISpect on internal builds, but these help larger teams trust
 
 - A reproducible benchmark suite and published results for startup cost, logging volume, export volume, history bounds, and payload capture on/off.
 - At least two real internal QA or staging use cases, published with concrete numbers, not invented ones.
+
+The point of the numbers is to turn "ISpect is cheap" into evidence: the disabled build tree-shakes to a no-op, and the enabled build's cost is predictable and controllable. `docs/PERFORMANCE.md` states this model but has no figures yet — these fill it in without inventing anything.
+
+### How to measure
+
+Most of what matters is pure Dart (`ispectify`, `ispectify_db`) and needs no device. Scope a `benchmark_harness` `dev_dependency` to the package that uses it (per the dependency rules), keep inputs fixed (no unseeded `Random`), and measure on the CI-pinned Flutter `3.32.6`.
+
+- **Disabled-build footprint** — compare `flutter build apk --analyze-size` with and without `--dart-define=ISPECT_ENABLED=true` (treemap + total), and cold start via `flutter run --profile --trace-startup` (`timeToFirstFrameMicros`). Proves tree-shaking.
+- **Per-log cost** — a `BenchmarkBase` case in `packages/ispectify/benchmark/`: `logger.info` metadata-only vs with payload, plus `useHistory: false` vs bounded `maxHistoryItems` (`packages/ispectify/lib/src/options.dart`) to isolate the history cost. Compile AOT (`dart compile exe`) — JIT numbers mislead.
+- **Redaction cost** — same harness, run 1/10/100 KB payloads through `RedactionService` / `NetworkMapRedactor`, report µs/op to confirm the "proportional to payload size" claim.
+- **Interceptor overhead** — Flutter test over a mock transport (no real network, per the testing rules): added latency with vs without the ISpect interceptor, metadata-only vs body-capture; database interceptors over an in-memory driver.
+- **High-volume / FPS** — an `integration_test` in profile mode driving an event stream, wrapped in `binding.traceAction` + `TimelineSummary` for frame build time and missed-frame (jank) count, filters on vs off.
+
+Record the hardware next to every number, warm up before measuring, and run comparable passes on the same machine — otherwise the results are not reproducible.
 
 ## Developer experience: onboarding and examples
 
