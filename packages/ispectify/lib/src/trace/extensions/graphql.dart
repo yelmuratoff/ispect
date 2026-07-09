@@ -17,6 +17,7 @@ extension ISpectLoggerGraphQL on ISpectLogger {
     String? operationName,
     String? document,
     Map<String, Object?>? variables,
+    Map<String, Object?>? meta,
     Object? Function(T)? projectResult,
     ISpectTraceConfig? config,
     String? correlationId,
@@ -31,6 +32,7 @@ extension ISpectLoggerGraphQL on ISpectLogger {
         if (document != null)
           'document': truncateValue(document, cfg.maxValueLength) ?? '',
         if (variables != null) 'variables': variables,
+        ...?meta,
       },
       run: run,
       projectResult: projectResult,

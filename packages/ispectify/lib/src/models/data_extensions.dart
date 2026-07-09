@@ -2,6 +2,13 @@ import 'package:ispectify/ispectify.dart';
 
 /// Utility extensions on [ISpectLogData]: copy, formatting, cURL generation.
 extension ISpectDataX on ISpectLogData {
+  /// Returns a copy with the given fields replaced.
+  ///
+  /// Preserves [ISpectLogData.id] by default so the copy stays equal to the
+  /// original under the id-based `==`/`hashCode`; pass [id] to mint a new
+  /// identity. Always returns a base [ISpectLogData] — subtypes such as
+  /// [ISpectLogException]/[ISpectLogError] are not reconstructed, since this is
+  /// an extension method and cannot dispatch on the runtime type.
   ISpectLogData copyWith({
     Object? message,
     LogLevel? logLevel,
@@ -12,6 +19,7 @@ extension ISpectDataX on ISpectLogData {
     AnsiPen? pen,
     String? key,
     Map<String, dynamic>? additionalData,
+    String? id,
   }) =>
       ISpectLogData(
         message ?? this.message,
@@ -23,8 +31,10 @@ extension ISpectDataX on ISpectLogData {
         pen: pen ?? this.pen,
         key: key ?? this.key,
         additionalData: additionalData ?? this.additionalData,
+        id: id ?? this.id,
       );
 
+  /// Identity-preserving copy: equal to the original under `==`.
   ISpectLogData copy() => copyWith();
 
   /// Truncated summary for debugging/display.

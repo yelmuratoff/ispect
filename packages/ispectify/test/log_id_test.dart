@@ -33,5 +33,20 @@ void main() {
       final later = LogId.generate();
       expect(earlier.compareTo(later), lessThan(0));
     });
+
+    test('timestamp prefix decodes to the current epoch millisecond', () {
+      const alphabet = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+      final before = DateTime.now().millisecondsSinceEpoch;
+      final id = LogId.generate();
+      final after = DateTime.now().millisecondsSinceEpoch;
+
+      var decoded = 0;
+      for (final char in id.substring(0, 10).split('')) {
+        decoded = decoded * 32 + alphabet.indexOf(char);
+      }
+
+      expect(decoded, greaterThanOrEqualTo(before));
+      expect(decoded, lessThanOrEqualTo(after));
+    });
   });
 }

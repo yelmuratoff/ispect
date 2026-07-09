@@ -41,6 +41,23 @@ void main() {
       expect(copiedData.pen, equals(originalData.pen));
     });
 
+    test('copy() preserves id so it stays equal to the original', () {
+      final original = ISpectLogData('Test message', key: 'test-key');
+      final copied = original.copy();
+
+      expect(copied.id, equals(original.id));
+      expect(copied, equals(original));
+      expect(copied.hashCode, equals(original.hashCode));
+    });
+
+    test('copyWith(id:) mints a new identity', () {
+      final original = ISpectLogData('Test message');
+      final copied = original.copyWith(id: 'custom-id');
+
+      expect(copied.id, equals('custom-id'));
+      expect(copied, isNot(equals(original)));
+    });
+
     test('copyWith() preserves additionalData when no parameters provided', () {
       final originalData = ISpectLogData(
         'Test message',

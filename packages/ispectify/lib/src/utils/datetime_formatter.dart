@@ -26,7 +26,7 @@ final class ISpectDateTimeFormatter {
 
   /// Returns the full formatted date and time.
   ///
-  /// Format: `DD.MM.YYYY | HH:MM:SS | Xms`
+  /// Format: `DD.MM.YYYY | HH:MM:SS.mmm`
   String get fullTime {
     final d = date;
     if (d == null) return '';

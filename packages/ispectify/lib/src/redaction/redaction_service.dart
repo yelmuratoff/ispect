@@ -238,7 +238,11 @@ class RedactionService {
 
     final hasParams = uri.queryParameters.isNotEmpty;
     final hasUserInfo = uri.userInfo.isNotEmpty;
-    if (!hasParams && !hasUserInfo) return url;
+    final redactedFragment =
+        uri.fragment.isNotEmpty ? _redactFragment(uri.fragment) : null;
+    final fragmentChanged =
+        redactedFragment != null && redactedFragment != uri.fragment;
+    if (!hasParams && !hasUserInfo && !fragmentChanged) return url;
 
     final redactedParams = hasParams
         ? uri.queryParameters.map(
@@ -251,8 +255,26 @@ class RedactionService {
         .replace(
           userInfo: hasUserInfo ? ph.userInfoRedactedPlaceholder : null,
           queryParameters: redactedParams,
+          fragment: fragmentChanged ? redactedFragment : null,
         )
         .toString();
+  }
+
+  /// Redacts sensitive values in a URL fragment that carries `key=value` pairs
+  /// (e.g. the OAuth implicit-grant `#access_token=…&id_token=…` redirect).
+  ///
+  /// Returns [fragment] unchanged when it is not a `key=value` list.
+  String _redactFragment(String fragment) {
+    if (!fragment.contains('=')) return fragment;
+    return fragment.split('&').map((pair) {
+      final idx = pair.indexOf('=');
+      if (idx < 0) return pair;
+      final key = pair.substring(0, idx);
+      final value = pair.substring(idx + 1);
+      final decodedKey = Uri.decodeQueryComponent(key);
+      final redacted = redact(value, keyName: decodedKey)?.toString() ?? '';
+      return '$key=$redacted';
+    }).join('&');
   }
 
   /// Finds HTTP(S) URLs embedded in [text] and redacts their query parameters
@@ -289,14 +311,14 @@ class RedactionService {
       _urlCredentialPattern,
       (m) => '://${ph.userInfoRedactedPlaceholder}@',
     );
-    if (result.contains('?')) {
-      for (final key in redactKeys) {
-        final escaped = RegExp.escape(key);
-        result = result.replaceAllMapped(
-          RegExp('([?&])($escaped)=([^&\\s]*)', caseSensitive: false),
-          (m) => '${m[1]}${m[2]}=${ph.defaultPlaceholder}',
-        );
-      }
+    if (result.contains('?') && redactKeys.isNotEmpty) {
+      // Single alternation over all keys compiles one regex instead of one per
+      // key — matters when [redactKeys] is the full default set (~200 entries).
+      final keys = redactKeys.map(RegExp.escape).join('|');
+      result = result.replaceAllMapped(
+        RegExp('([?&])($keys)=([^&\\s]*)', caseSensitive: false),
+        (m) => '${m[1]}${m[2]}=${ph.defaultPlaceholder}',
+      );
     }
     return result;
   }
@@ -308,18 +330,17 @@ class RedactionService {
   /// Regex-based redaction for export strings. Covers URL credentials,
   /// Bearer/Basic tokens, query params, and JSON patterns.
   ///
+  /// URL credentials and `Bearer`/`Basic`/`Token` scheme tokens carry no key
+  /// dependency and are always scrubbed. The key-based query-param and JSON
+  /// patterns run only when [redactKeys] is non-empty.
+  ///
   /// Used by toText(), toMarkdown(), LogExporter for exception.toString()
   /// and error strings that may contain sensitive data.
   static String redactExportString(String value, Set<String>? redactKeys) {
     if (!ISpectRedaction.enabled) return value;
-    if (redactKeys == null || redactKeys.isEmpty) return value;
 
-    // A single alternation over all keys compiles two regexes instead of one
-    // per key, which matters when [redactKeys] is the full default set.
-    final keys = redactKeys.map(RegExp.escape).join('|');
     const mask = ph.defaultPlaceholder;
-
-    return value
+    final scrubbed = value
         .replaceAllMapped(
           _urlCredentialPattern,
           (m) => '://${ph.userInfoRedactedPlaceholder}@',
@@ -327,7 +348,14 @@ class RedactionService {
         .replaceAllMapped(
           _exportTokenPattern,
           (m) => '${m[1]} $mask',
-        )
+        );
+
+    if (redactKeys == null || redactKeys.isEmpty) return scrubbed;
+
+    // A single alternation over all keys compiles two regexes instead of one
+    // per key, which matters when [redactKeys] is the full default set.
+    final keys = redactKeys.map(RegExp.escape).join('|');
+    return scrubbed
         .replaceAllMapped(
           RegExp('([?&])($keys)=([^&\\s]*)', caseSensitive: false),
           (m) => '${m[1]}${m[2]}=$mask',
@@ -359,7 +387,7 @@ class RedactionService {
   static Object? redactByKeys(
     Object? data,
     Iterable<String> keys, {
-    int maxDepth = 50,
+    int maxDepth = 100,
     String placeholder = ph.defaultPlaceholder,
   }) {
     if (!ISpectRedaction.enabled) return data;

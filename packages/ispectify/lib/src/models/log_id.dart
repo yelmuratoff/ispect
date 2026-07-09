@@ -23,13 +23,15 @@ abstract final class LogId {
     final ms = DateTime.now().millisecondsSinceEpoch;
     final buffer = StringBuffer();
 
-    // Timestamp: 48 bits → 10 base32 chars, big-endian. The top 2 bits are
-    // always zero because 48 < 50, which keeps the encoding ULID-spec compliant.
+    // Timestamp: 48 bits → 10 base32 chars, big-endian. Encoded with
+    // division/modulo rather than bitwise ops: on dart2js `&`/`>>` truncate to
+    // 32 bits and would corrupt a millisecond epoch (~1.7e12), whereas `%`/`~/`
+    // stay exact up to 2^53 and keep ids lexicographically time-sortable on web.
     var timestamp = ms;
     final timeChars = List<String>.filled(10, '0');
     for (var i = 9; i >= 0; i--) {
-      timeChars[i] = _alphabet[timestamp & 0x1F];
-      timestamp >>= 5;
+      timeChars[i] = _alphabet[timestamp % 32];
+      timestamp ~/= 32;
     }
     buffer.writeAll(timeChars);
 

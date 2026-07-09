@@ -51,7 +51,10 @@ final class RedactionWalker {
       return config.placeholder;
     }
 
-    // Delegate leaf redaction to pluggable strategies.
+    // Delegate leaf redaction to pluggable strategies. A strategy that throws
+    // propagates by design: boundary callers (NetworkRedactionMixin.safeRedact
+    // / processMapData) catch it, log a warning, and fail closed to a
+    // placeholder — so failures stay loud rather than being silently swallowed.
     final ctx = _cachedContext ??= _createContext();
     final strategyResult = strategy.tryRedact(
       node,

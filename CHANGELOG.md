@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Security
+
+- **URL fragment redaction:** sensitive values in a URL fragment — such as the OAuth `#access_token=…` redirect — are now masked in logs, error messages, and exports.
+- **Export credential scrubbing:** URL credentials and `Bearer`/`Basic`/`Token` values are now stripped from text, Markdown, CSV, and JSON Lines exports even when no redaction keys are supplied.
+- **Trace `value` redacted by default:** the `value` captured by `trace` and its async/sync/stream variants is now redacted alongside `meta` and `target`; opt out with `ISpectTraceConfig(redact: false)`.
+- **Wider export redaction:** CSV targets, exported stack traces, and the JSON Lines fallback are now redacted, and a failed JSON encode surfaces the error instead of being dropped.
+- **Network redaction fails closed:** redacted network payloads never fall back to raw data when a value can't be processed.
+
+### Bug Fixes
+
+- **Web-safe log IDs:** log entry IDs stay correctly time-sortable on web builds.
+- **`copyWith` keeps identity:** `ISpectLogData.copyWith`/`copy` preserve the original `id` so copies compare equal and de-duplicate correctly; pass `id:` for a new one.
+- **Observer recursion:** a log emitted synchronously from inside an observer is dropped instead of recursing.
+- **WebSocket log keys:** `wsSend`/`wsReceive` always use `ws-sent`/`ws-received` — and error frames `ws-error` — regardless of the operation name.
+- **Request ID collisions:** network request IDs no longer collide between separate app runs started close together.
+
+### Improvements
+
+- **`meta` on `graphqlTrace` and `sse`:** both now accept an optional `meta` map, matching the other trace helpers.
+- **Consistent projection warnings:** a throwing `projectResult`/`projectEvent` is logged as a warning across all trace variants instead of being silently dropped in streams.
+- **Private keys in lists:** internal `_`-prefixed keys nested inside list elements are now stripped from exports.
+
 ## 6.0.7
 
 ### Improvements

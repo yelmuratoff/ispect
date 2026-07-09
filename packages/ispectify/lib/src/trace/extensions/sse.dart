@@ -17,6 +17,7 @@ extension ISpectLoggerSSE on ISpectLogger {
     Object? error,
     StackTrace? errorStackTrace,
     Map<String, Object?>? data,
+    Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
   }) =>
@@ -32,6 +33,7 @@ extension ISpectLoggerSSE on ISpectLogger {
         meta: {
           if (eventType != null) 'eventType': eventType,
           if (data != null) 'data': data,
+          ...?meta,
         },
         correlationId: correlationId,
         config: config,

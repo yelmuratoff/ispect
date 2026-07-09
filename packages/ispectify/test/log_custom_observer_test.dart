@@ -92,4 +92,36 @@ void main() {
       reason: 'onError should not be called for Exception',
     );
   });
+
+  test('re-entrant log from inside an observer is dropped, not recursed', () {
+    late final ISpectLogger logger;
+    var onLogCalls = 0;
+    final observer = _ReentrantObserver(() {
+      onLogCalls++;
+      logger.info('logged from inside observer');
+    });
+    final built = ISpectLogger(observer: observer);
+    logger = built;
+
+    built.info('outer');
+
+    // The outer log invokes the observer once; the observer's own log is
+    // dropped by the re-entrancy guard rather than invoking the observer again.
+    expect(onLogCalls, 1);
+  });
+}
+
+class _ReentrantObserver implements ISpectObserver {
+  _ReentrantObserver(this._onLog);
+
+  final void Function() _onLog;
+
+  @override
+  void onError(ISpectLogData data) {}
+
+  @override
+  void onException(ISpectLogData data) {}
+
+  @override
+  void onLog(ISpectLogData data) => _onLog();
 }

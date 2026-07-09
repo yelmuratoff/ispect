@@ -135,6 +135,10 @@ extension ISpectTrace on ISpectLogger {
           ? RedactionService.redactByKeys(meta, cfg.redactKeys)
           : meta;
 
+      final safeValue = cfg.redact
+          ? RedactionService.redactByKeys(value, cfg.redactKeys)
+          : value;
+
       final rawTxnId = Zone.current[_txnZoneKey];
       final zoneTxnId = rawTxnId is String ? rawTxnId : null;
 
@@ -145,7 +149,7 @@ extension ISpectTrace on ISpectLogger {
         if (safeTarget != null) TraceKeys.target: safeTarget,
         if (key != null) TraceKeys.key: key,
         if (value != null)
-          TraceKeys.value: truncateValue(value, cfg.maxValueLength),
+          TraceKeys.value: truncateValue(safeValue, cfg.maxValueLength),
         if (duration != null) TraceKeys.durationMs: duration.inMilliseconds,
         if (duration != null && cfg.slowThreshold != null)
           TraceKeys.slow: duration > cfg.slowThreshold!,
@@ -197,7 +201,7 @@ extension ISpectTrace on ISpectLogger {
         try {
           projected = projectResult(result);
         } catch (e, st) {
-          handle(exception: e, stackTrace: st);
+          _logProjectionFailure('traceAsync', e, st);
         }
       }
 
@@ -241,6 +245,17 @@ extension ISpectTrace on ISpectLogger {
     }
   }
 
+  /// A projection callback (`projectResult`/`projectEvent`) threw — the traced
+  /// operation itself succeeded, so this is reported as a warning (not routed
+  /// through the error handler) and never swallowed silently.
+  void _logProjectionFailure(String wrapper, Object error, StackTrace st) {
+    log(
+      '$wrapper: projection callback threw unexpectedly — $error',
+      logLevel: LogLevel.warning,
+      stackTrace: st,
+    );
+  }
+
   // ── Sync wrapper ────────────────────────────────────────────────────
 
   T traceSync<T>({
@@ -270,11 +285,7 @@ extension ISpectTrace on ISpectLogger {
         try {
           projected = projectResult(result);
         } catch (e, st) {
-          log(
-            'traceSync: projectResult threw unexpectedly — $e',
-            logLevel: LogLevel.warning,
-            stackTrace: st,
-          );
+          _logProjectionFailure('traceSync', e, st);
         }
       }
 
@@ -409,7 +420,9 @@ extension ISpectTrace on ISpectLogger {
           if (projectEvent != null) {
             try {
               projected = projectEvent(data);
-            } catch (_) {}
+            } catch (e, st) {
+              _logProjectionFailure('traceStream', e, st);
+            }
           }
           trace(
             category: category,

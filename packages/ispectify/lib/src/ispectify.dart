@@ -442,12 +442,23 @@ class ISpectLogger {
 
   /// Runs filter check, notifies observers, then delegates fan-out (stream,
   /// history, console) to the pipeline.
+  /// Guards the whole emit path (observers + pipeline) against re-entrancy:
+  /// a `log(...)` call made synchronously from inside an observer is dropped
+  /// rather than recursing. Safe without a lock in Dart's single-threaded loop.
+  bool _isProcessing = false;
+
   void _processLog(ISpectLogData data) {
     if (!_isActive) return;
+    if (_isProcessing) return;
     if (!_pipeline.shouldProcess(data)) return;
 
-    _notifyObservers(data.notifyObserver);
-    _pipeline.dispatch(data);
+    _isProcessing = true;
+    try {
+      _notifyObservers(data.notifyObserver);
+      _pipeline.dispatch(data);
+    } finally {
+      _isProcessing = false;
+    }
   }
 
   /// Closes the stream, drops observers, releases history resources. After

@@ -32,7 +32,6 @@ extension ISpectLoggerPush on ISpectLogger {
           ...?meta,
         },
         config: config,
-        // Auto-correlation: use messageId if correlationId not provided.
         correlationId: correlationId ?? messageId,
       );
 }

@@ -139,6 +139,18 @@ void main() {
       );
       expect(logger.traces.first.key, 'http-request');
     });
+
+    test('redacts sensitive keys in the value field by default', () {
+      logger.trace(
+        category: dbCategory,
+        source: 'test',
+        operation: 'get',
+        value: const {'password': 'hunter2', 'id': 7},
+      );
+      final value = logger.traces.first.additionalData?[TraceKeys.value];
+      expect('$value', isNot(contains('hunter2')));
+      expect('$value', contains('[REDACTED]'));
+    });
   });
 
   // ── traceAsync ───────────────────────────────────────────────────
@@ -333,6 +345,30 @@ void main() {
   });
 
   // ── wsState (ws-state key) ───────────────────────────────────────
+  group('wsSend / wsReceive', () {
+    late FakeISpectLogger logger;
+    setUp(() => logger = FakeISpectLogger());
+
+    test('wsSend pins the ws-sent key regardless of operation', () {
+      logger.wsSend(source: 'ws', operation: 'anything');
+      expect(logger.lastTrace!.key, ISpectLogType.wsSent.key);
+    });
+
+    test('wsReceive pins the ws-received key regardless of operation', () {
+      logger.wsReceive(source: 'ws', operation: 'anything');
+      expect(logger.lastTrace!.key, ISpectLogType.wsReceived.key);
+    });
+
+    test('an error frame still resolves to the ws-error key', () {
+      logger.wsReceive(
+        source: 'ws',
+        operation: 'receive',
+        error: StateError('boom'),
+      );
+      expect(logger.lastTrace!.key, ISpectLogType.wsError.key);
+    });
+  });
+
   group('wsState', () {
     late FakeISpectLogger logger;
     setUp(() => logger = FakeISpectLogger());

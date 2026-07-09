@@ -94,9 +94,14 @@ mixin NetworkRedactionMixin {
           _payload.body(data, enableRedaction: useRedaction) ?? data;
 
       if (redacted is Map<String, dynamic>) return redacted;
+      if (redacted is Map) {
+        return redacted.map((k, v) => MapEntry(k.toString(), v));
+      }
 
-      final mapToConvert = redacted is Map ? redacted : data;
-      return mapToConvert.map((k, v) => MapEntry(k.toString(), v));
+      // Redaction collapsed the whole map to a scalar placeholder (a
+      // fail-closed strategy throw or a depth limit). Never fall back to the
+      // raw input — wrap the placeholder instead.
+      return <String, dynamic>{'raw': redacted};
     } catch (e, s) {
       logger.logData(
         ISpectLogData(

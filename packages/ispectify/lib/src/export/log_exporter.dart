@@ -31,11 +31,13 @@ abstract final class LogExporter {
           return jsonEncode(redacted is Map ? redacted : json);
         }
         return jsonEncode(json);
-      } catch (_) {
+      } catch (e) {
         return jsonEncode({
-          'message': '${log.message}',
+          'message':
+              RedactionService.redactExportString('${log.message}', redactKeys),
           'key': log.key,
           'time': log.formattedTime,
+          'export-error': e.toString(),
         });
       }
     }).join('\n');
@@ -107,10 +109,8 @@ abstract final class LogExporter {
       );
     for (final log in capped) {
       final ad = log.additionalData;
-      final rawMessage = log.message?.toString() ?? '';
-      final safeMessage = redactKeys != null
-          ? RedactionService.redactExportString(rawMessage, redactKeys)
-          : rawMessage;
+      String scrub(String value) =>
+          RedactionService.redactExportString(value, redactKeys);
       buffer.writeln(
         [
           _csvEscape(log.formattedTime),
@@ -119,10 +119,10 @@ abstract final class LogExporter {
           _csvEscape(ad?[TraceKeys.category]?.toString() ?? ''),
           _csvEscape(ad?[TraceKeys.source]?.toString() ?? ''),
           _csvEscape(ad?[TraceKeys.operation]?.toString() ?? ''),
-          _csvEscape(ad?[TraceKeys.target]?.toString() ?? ''),
+          _csvEscape(scrub(ad?[TraceKeys.target]?.toString() ?? '')),
           _csvEscape(ad?[TraceKeys.durationMs]?.toString() ?? ''),
           _csvEscape(ad?[TraceKeys.success]?.toString() ?? ''),
-          _csvEscape(safeMessage),
+          _csvEscape(scrub(log.message?.toString() ?? '')),
         ].join(','),
       );
     }

@@ -3,8 +3,31 @@ import 'dart:typed_data';
 import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
+class _ThrowingStrategy implements RedactionStrategy {
+  const _ThrowingStrategy();
+
+  @override
+  Object? tryRedact(
+    Object? node, {
+    required RedactionContext context,
+    String? keyName,
+  }) =>
+      throw StateError('boom');
+}
+
 void main() {
   group('RedactionService', () {
+    test('propagates a strategy error so boundary callers fail closed', () {
+      // The walker is fail-loud by design: it does not swallow a throwing
+      // strategy. Boundary callers (NetworkRedactionMixin) catch and fail
+      // closed to a placeholder while logging a warning.
+      final service = RedactionService(strategy: const _ThrowingStrategy());
+      expect(
+        () => service.redact({'password': 'secret'}),
+        throwsA(isA<StateError>()),
+      );
+    });
+
     test('hoisted default lower sets equal the lowercased defaults', () {
       expect(
         defaultSensitiveKeysLower,
@@ -338,6 +361,49 @@ void main() {
         final result = service.redactUrl(malformed);
         expect(result, isNot(contains('user:pass')));
         expect(result, isNot(contains('secret')));
+      });
+
+      test('redacts sensitive values in the URL fragment (implicit-grant)', () {
+        final service = RedactionService();
+        final result = service.redactUrl(
+          'https://app.example.com/callback#access_token=abc123&id_token=xyz789',
+        );
+        expect(result, isNot(contains('abc123')));
+        expect(result, isNot(contains('xyz789')));
+        expect(result, contains('access_token='));
+      });
+
+      test('leaves a non key-value fragment unchanged', () {
+        final service = RedactionService();
+        const url = 'https://example.com/docs#section-two';
+        expect(service.redactUrl(url), url);
+      });
+    });
+
+    group('redactExportString', () {
+      test('scrubs Bearer tokens even when no keys are provided', () {
+        final result = RedactionService.redactExportString(
+          'Request failed with header Authorization: Bearer secret-jwt-token',
+          null,
+        );
+        expect(result, isNot(contains('secret-jwt-token')));
+      });
+
+      test('scrubs URL credentials even when keys are empty', () {
+        final result = RedactionService.redactExportString(
+          'connect to https://user:pass@db.internal/path',
+          const <String>{},
+        );
+        expect(result, isNot(contains('user:pass')));
+      });
+
+      test('applies key-based query redaction when keys are provided', () {
+        final result = RedactionService.redactExportString(
+          'GET /api?token=leaked',
+          const {'token'},
+        );
+        expect(result, isNot(contains('leaked')));
+        expect(result, contains('token='));
       });
     });
 

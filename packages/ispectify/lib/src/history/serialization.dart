@@ -75,7 +75,11 @@ extension ISpectLogDataSerialization on ISpectLogData {
         '  Error: ${RedactionService.redactExportString(errStr, redactKeys)}',
       );
     }
-    if (stackTrace != null) buffer.writeln('  StackTrace:\n$stackTrace');
+    if (stackTrace != null) {
+      final traceStr =
+          RedactionService.redactExportString('$stackTrace', redactKeys);
+      buffer.writeln('  StackTrace:\n$traceStr');
+    }
 
     return buffer.toString();
   }
@@ -138,7 +142,9 @@ extension ISpectLogDataSerialization on ISpectLogData {
       );
     }
     if (stackTrace != null) {
-      buffer.writeln('\n**Stack trace:**\n```\n$stackTrace\n```');
+      final traceStr =
+          RedactionService.redactExportString('$stackTrace', redactKeys);
+      buffer.writeln('\n**Stack trace:**\n```\n$traceStr\n```');
     }
 
     return buffer.toString();
@@ -174,16 +180,18 @@ Map<String, dynamic> _stripPrivateKeys(Map<String, dynamic> data) {
   final out = <String, dynamic>{};
   for (final entry in data.entries) {
     if (entry.key.startsWith('_')) continue;
-    final value = entry.value;
-    if (value is Map<String, dynamic>) {
-      out[entry.key] = _stripPrivateKeys(value);
-    } else if (value is Map) {
-      out[entry.key] = _stripPrivateKeys(Map<String, dynamic>.from(value));
-    } else {
-      out[entry.key] = value;
-    }
+    out[entry.key] = _stripPrivateValue(entry.value);
   }
   return out;
+}
+
+/// Recurses into maps and lists so `_`-prefixed keys are stripped even when
+/// nested inside a list element.
+Object? _stripPrivateValue(Object? value) {
+  if (value is Map<String, dynamic>) return _stripPrivateKeys(value);
+  if (value is Map) return _stripPrivateKeys(Map<String, dynamic>.from(value));
+  if (value is List) return value.map(_stripPrivateValue).toList();
+  return value;
 }
 
 /// Utility class for ISpectLogData JSON operations.
