@@ -4,6 +4,27 @@ import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('compile-time disabled constructor has no side effects', () async {
+    final root = await Directory.systemTemp.createTemp('ispect-history-');
+    addTearDown(() => root.delete(recursive: true));
+    var providerCalls = 0;
+    final history = RollingFileLogHistory(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async {
+        providerCalls++;
+        return root.path;
+      },
+    );
+
+    await (history
+          ..add(ISpectLogData('entry', id: 'A'))
+          ..dispose())
+        .saveToDailyFile();
+
+    expect(providerCalls, 0);
+    expect(await root.list().toList(), isEmpty);
+  });
+
   test('writes redacted unique records and reads the day in order', () async {
     final root = await Directory.systemTemp.createTemp('ispect-history-');
     addTearDown(() => root.delete(recursive: true));

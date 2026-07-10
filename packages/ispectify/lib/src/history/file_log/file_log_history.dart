@@ -35,7 +35,7 @@ abstract class FileLogHistory implements ILogHistory {
   /// Removes the log file for [date].
   Future<void> clearDateStorage(DateTime date);
 
-  /// Path to the session directory.
+  /// Path to the managed history directory.
   String get sessionDirectory;
 
   /// Path to today's log file.
@@ -53,10 +53,10 @@ abstract class FileLogHistory implements ILogHistory {
   /// Reads logs for [date] without modifying current history.
   Future<List<ISpectLogData>> getLogsByDate(DateTime date);
 
-  /// File path for [date]. Returns empty string if the file does not exist.
+  /// File or directory path for [date]. Returns empty string when absent.
   Future<String> getLogPathByDate(DateTime date);
 
-  /// Reads logs from a specific session file path.
+  /// Reads logs from a managed segment, legacy file, or date-directory path.
   Future<List<ISpectLogData>> getLogsBySession(String sessionPath);
 
   /// Calculates comprehensive session statistics.

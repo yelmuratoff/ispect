@@ -25,8 +25,7 @@ class DailySessionsScreen extends StatefulWidget {
         builder: (_) => this,
         settings: RouteSettings(
           name: 'ISpect Daily Sessions Screen',
-          arguments:
-              history != null ? {'directory': history!.sessionDirectory} : null,
+          arguments: history != null ? {'file-history-configured': true} : null,
         ),
       ),
     );

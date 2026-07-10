@@ -1,3 +1,4 @@
+import 'package:ispect/src/common/history/flutter_file_log_history_factory.dart';
 import 'package:ispect/src/core/platform/platform_output.dart';
 import 'package:ispectify/ispectify.dart';
 
@@ -30,16 +31,31 @@ extension ISpectFlutter on ISpectLogger {
     ISpectLoggerOptions? options,
     ISpectFilter? filter,
     ILogHistory? history,
-  }) =>
-      ISpectLogger(
-        logger: (logger ?? ISpectBaseLogger()).copyWith(
-          output: _defaultFlutterOutput,
-        ),
-        options: options,
-        observer: observer,
-        filter: filter,
-        history: history,
+    FileLogHistoryOptions? fileHistory,
+  }) {
+    if (history != null && fileHistory != null) {
+      throw ArgumentError(
+        'history and fileHistory cannot be provided together',
       );
+    }
+    final resolvedOptions = options ?? ISpectLoggerOptions();
+    final resolvedHistory = history ??
+        (fileHistory == null
+            ? null
+            : createFlutterFileLogHistory(
+                loggerOptions: resolvedOptions,
+                fileHistoryOptions: fileHistory,
+              ));
+    return ISpectLogger(
+      logger: (logger ?? ISpectBaseLogger()).copyWith(
+        output: _defaultFlutterOutput,
+      ),
+      options: resolvedOptions,
+      observer: observer,
+      filter: filter,
+      history: resolvedHistory,
+    );
+  }
 
   /// Default output handler for logging in Flutter.
   ///
