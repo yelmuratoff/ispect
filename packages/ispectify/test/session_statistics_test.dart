@@ -29,10 +29,12 @@ void main() {
         autoSaveInterval: statsBase.autoSaveInterval,
         enableAutoSave: statsBase.enableAutoSave,
         maxFileSize: statsBase.maxFileSize,
+        maxTotalSize: 50 * 1024 * 1024,
         cleanupStrategy: statsBase.cleanupStrategy,
       );
       final s = stats.toString();
       expect(s.contains('Total Size:'), isTrue);
+      expect(s.contains('Max Total Size: 50.0 MB'), isTrue);
     });
   });
 }

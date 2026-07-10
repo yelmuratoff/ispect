@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:ispectify/ispectify.dart';
 
+export 'file_log_history_exception.dart';
+export 'file_log_history_options.dart';
 export 'session_cleanup_strategy.dart';
 export 'session_statistics.dart';
 

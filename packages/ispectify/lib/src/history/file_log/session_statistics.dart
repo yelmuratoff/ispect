@@ -14,6 +14,7 @@ class SessionStatistics {
     required this.enableAutoSave,
     required this.maxFileSize,
     required this.cleanupStrategy,
+    this.maxTotalSize = 0,
   });
 
   final int totalDays;
@@ -25,6 +26,7 @@ class SessionStatistics {
   final Duration autoSaveInterval;
   final bool enableAutoSave;
   final int maxFileSize;
+  final int maxTotalSize;
   final SessionCleanupStrategy cleanupStrategy;
 
   @override
@@ -41,6 +43,7 @@ Session Statistics:
 - Max Session Days: $maxSessionDays
 - Auto-save: ${enableAutoSave ? 'Enabled (${autoSaveInterval.inSeconds}s)' : 'Disabled'}
 - Max File Size: ${formatBytes(maxFileSize)}
+- Max Total Size: ${formatBytes(maxTotalSize)}
 - Cleanup Strategy: ${cleanupStrategy.name}
 ''';
   }
