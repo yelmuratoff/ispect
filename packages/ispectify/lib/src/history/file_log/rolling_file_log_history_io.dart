@@ -128,6 +128,8 @@ final class RollingFileLogHistory implements FileLogHistory {
 
   @override
   void clear() {
+    _autoSaveTimer?.cancel();
+    _autoSaveTimer = null;
     _buffer.clear();
     _pending.clear();
   }
@@ -139,6 +141,12 @@ final class RollingFileLogHistory implements FileLogHistory {
       ..addAll(failed);
     for (final entry in newer.entries) {
       _pending.putIfAbsent(entry.key, () => entry.value);
+    }
+    while (_pending.length > _loggerOptions.maxHistoryItems) {
+      _pending.remove(_pending.keys.first);
+      _reportError(
+        const FileLogLimitException(operation: 'pendingBufferOverflow'),
+      );
     }
   }
 
@@ -244,9 +252,12 @@ final class RollingFileLogHistory implements FileLogHistory {
   Future<String> exportToJson() async {
     final records = <Object?>[];
     for (final log in history) {
+      final storedSessionId = log.additionalData?[TraceKeys.sessionId];
       final encoded = _codec.encode(
         log,
-        sessionId: _sessionId,
+        sessionId: storedSessionId is String && storedSessionId.isNotEmpty
+            ? storedSessionId
+            : _sessionId,
         maxBytes: _options.maxFileSize,
       );
       records.add(jsonDecode(utf8.decode(encoded.bytes).trim()));
@@ -313,8 +324,11 @@ final class RollingFileLogHistory implements FileLogHistory {
     await for (final entity in Directory(sessionDirectory).list()) {
       final name = _basename(entity.path);
       if (entity is Directory && _dateNamePattern.hasMatch(name)) {
-        final date = DateTime.tryParse(name);
-        if (date != null) dates.add(date);
+        final artifacts = await _segmentFiles(entity, includeArchives: true);
+        if (artifacts.isNotEmpty) {
+          final date = DateTime.tryParse(name);
+          if (date != null) dates.add(date);
+        }
       } else if (entity is File) {
         final match = _legacyNamePattern.firstMatch(name);
         final date = DateTime.tryParse(match?.group(1) ?? '');
@@ -368,7 +382,10 @@ final class RollingFileLogHistory implements FileLogHistory {
     if (!_enabled) return '';
     await _ensureInitialized();
     final directory = Directory(_dateDirectoryPath(date));
-    if (await directory.exists()) return directory.path;
+    if (await directory.exists() &&
+        (await _segmentFiles(directory, includeArchives: true)).isNotEmpty) {
+      return directory.path;
+    }
     final legacy = File(_legacyFilePath(date));
     return await legacy.exists() ? legacy.path : '';
   }

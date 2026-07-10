@@ -217,6 +217,28 @@ void main() {
     expect(await sibling.exists(), isTrue);
     expect(await unmanaged.exists(), isTrue);
   });
+
+  test('ignores date directories without managed history artifacts', () async {
+    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    addTearDown(() => root.delete(recursive: true));
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+    );
+    addTearDown(history.dispose);
+    await history.getAvailableLogDates();
+    final date = DateTime(2026, 7, 10);
+    final directory = Directory(
+      '${history.sessionDirectory}${Platform.pathSeparator}2026-07-10',
+    );
+    await directory.create();
+    await File('${directory.path}${Platform.pathSeparator}notes.txt')
+        .writeAsString('unmanaged');
+
+    expect(await history.getAvailableLogDates(), isEmpty);
+    expect(await history.getLogPathByDate(date), isEmpty);
+  });
 }
 
 Future<File> _writeSizedSegment(

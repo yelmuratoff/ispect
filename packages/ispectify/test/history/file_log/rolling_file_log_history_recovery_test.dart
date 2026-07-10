@@ -252,6 +252,100 @@ void main() {
     );
   });
 
+  test('restored failed batch stays within the pending limit', () async {
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    final providerStarted = Completer<void>();
+    final releaseProvider = Completer<void>();
+    final errors = <FileLogHistoryException>[];
+    var unavailable = true;
+    final date = DateTime(2026, 7, 10, 9);
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false, maxHistoryItems: 2),
+      directoryProvider: () async {
+        if (!providerStarted.isCompleted) providerStarted.complete();
+        await releaseProvider.future;
+        if (unavailable) throw const FileSystemException('unavailable');
+        return root.path;
+      },
+      options: FileLogHistoryOptions(
+        enableAutoSave: false,
+        onError: errors.add,
+      ),
+    )
+      ..add(ISpectLogData('first', id: 'A', time: date))
+      ..add(ISpectLogData('second', id: 'B', time: date));
+    addTearDown(history.dispose);
+
+    final failedSave = history.saveToDailyFile();
+    await providerStarted.future;
+    history
+      ..add(ISpectLogData('third', id: 'C', time: date))
+      ..add(ISpectLogData('fourth', id: 'D', time: date));
+    releaseProvider.complete();
+    await expectLater(failedSave, throwsA(isA<FileLogStorageException>()));
+
+    expect(errors.whereType<FileLogLimitException>(), hasLength(2));
+    unavailable = false;
+    await history.saveToDailyFile();
+    expect(
+      (await history.getLogsByDate(date)).map((log) => log.id),
+      ['C', 'D'],
+    );
+  });
+
+  test('export preserves an imported session ID', () async {
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+    );
+    addTearDown(history.dispose);
+    await history.importFromJson(
+      jsonEncode([
+        ISpectLogData(
+          'imported',
+          id: 'A',
+          additionalData: const {TraceKeys.sessionId: 'ORIGINAL-SESSION'},
+        ).toJson(),
+      ]),
+    );
+
+    final exported = jsonDecode(await history.exportToJson()) as List<dynamic>;
+    final record = exported.single as Map<String, dynamic>;
+    final additionalData = record['additional-data'] as Map<String, dynamic>;
+
+    expect(additionalData[TraceKeys.sessionId], 'ORIGINAL-SESSION');
+  });
+
+  test('clear cancels the pending auto-save timer', () async {
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    var providerCalls = 0;
+    late _TestTimer timer;
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async {
+        providerCalls++;
+        return root.path;
+      },
+      timerFactory: (duration, callback) =>
+          timer = _TestTimer(duration, callback),
+    );
+    addTearDown(history.dispose);
+
+    history
+      ..add(ISpectLogData('entry', id: 'A'))
+      ..clear();
+    timer.fire();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(timer.isActive, isFalse);
+    expect(providerCalls, 0);
+  });
+
   test('skips malformed complete lines and ignores one incomplete tail',
       () async {
     final root = await Directory.systemTemp.createTemp('ispect-recovery-');
