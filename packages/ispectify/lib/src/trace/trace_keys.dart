@@ -16,4 +16,6 @@ abstract final class TraceKeys {
   static const meta = 'meta';
   static const transactionId = 'transactionId';
   static const correlationId = 'correlationId';
+  static const sessionId = 'session.id';
+  static const payloadTruncated = 'payload-truncated';
 }
