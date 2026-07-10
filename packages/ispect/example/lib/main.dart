@@ -8,6 +8,7 @@
 //
 // What this file shows:
 //   • Guarded startup via ISpect.run (FlutterError + zone error handlers).
+//   • Opt-in rolling file history with bounded disk retention.
 //   • Every ISpect.logger level (info/good/warning/error/debug/critical/…).
 //   • The standalone JSON viewer screen.
 //   • The HTTP composer ("mini-Postman") — wired through onPickComposerFile.
@@ -36,8 +37,15 @@ void main() {
   // (FlutterError, PlatformDispatcher, runZonedGuarded).
   ISpect.run(
     () => runApp(const MyApp()),
-    // Provide a custom logger if you need a non-default ISpectFlutter setup.
-    // logger: ISpectFlutter.init(observer: SentryISpectObserver()),
+    logger: ISpectFlutter.init(
+      options: ISpectLoggerOptions(maxHistoryItems: 10000),
+      fileHistory: const FileLogHistoryOptions(
+        maxSessionDays: 7,
+        maxFileSize: 5 * 1024 * 1024,
+        maxTotalSize: 50 * 1024 * 1024,
+      ),
+      // observer: SentryISpectObserver(),
+    ),
     //
     // Lifecycle hooks fire before/after the zoned callback.
     // onInit: () {},
