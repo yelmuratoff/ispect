@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:ispectify/ispectify.dart';
@@ -20,6 +22,7 @@ final class RollingFileLogHistory implements FileLogHistory {
           options: options,
           redactor: redactor,
           enabled: kISpectEnabled,
+          timerFactory: null,
         );
 
   @visibleForTesting
@@ -28,12 +31,14 @@ final class RollingFileLogHistory implements FileLogHistory {
     required FileLogDirectoryProvider directoryProvider,
     FileLogHistoryOptions options = const FileLogHistoryOptions(),
     RedactionService? redactor,
+    Timer Function(Duration, void Function())? timerFactory,
   }) : this._(
           loggerOptions,
           directoryProvider: directoryProvider,
           options: options,
           redactor: redactor,
           enabled: true,
+          timerFactory: timerFactory,
         );
 
   RollingFileLogHistory._(
@@ -42,12 +47,15 @@ final class RollingFileLogHistory implements FileLogHistory {
     required FileLogHistoryOptions options,
     required RedactionService? redactor,
     required bool enabled,
+    required Timer Function(Duration, void Function())? timerFactory,
   })  : _directoryProvider = directoryProvider,
         _options = options,
         _enabled = enabled,
+        _loggerOptions = loggerOptions,
         _buffer = BoundedLogBuffer(loggerOptions),
         _codec = FileLogCodec(redactor: redactor ?? RedactionService()),
         _sessionId = LogId.generate(),
+        _timerFactory = timerFactory ?? Timer.new,
         _autoSaveInterval = options.autoSaveInterval,
         _autoSaveEnabled = options.enableAutoSave {
     options.validate();
@@ -59,15 +67,19 @@ final class RollingFileLogHistory implements FileLogHistory {
   final FileLogDirectoryProvider _directoryProvider;
   final FileLogHistoryOptions _options;
   final bool _enabled;
+  final ISpectLoggerOptions _loggerOptions;
   final BoundedLogBuffer _buffer;
   final FileLogCodec _codec;
   final String _sessionId;
+  final Timer Function(Duration, void Function()) _timerFactory;
   final LinkedHashMap<String, _PendingLog> _pending =
       LinkedHashMap<String, _PendingLog>();
 
   Future<void>? _initialization;
+  Future<void> _operationChain = Future<void>.value();
   String? _resolvedSessionDirectory;
   String? _resolvedTodaySessionPath;
+  Timer? _autoSaveTimer;
   Duration _autoSaveInterval;
   bool _autoSaveEnabled;
 
@@ -86,8 +98,26 @@ final class RollingFileLogHistory implements FileLogHistory {
 
   @override
   void add(ISpectLogData data) {
+    _add(data, sessionId: _sessionId);
+  }
+
+  void _add(ISpectLogData data, {required String sessionId}) {
     if (!_enabled || !_buffer.add(data)) return;
-    _pending[data.id] = _PendingLog(log: data, sessionId: _sessionId);
+    final maxPending = _loggerOptions.maxHistoryItems;
+    if (_pending.length >= maxPending && _pending.isNotEmpty) {
+      _pending.remove(_pending.keys.first);
+      _reportError(
+        const FileLogLimitException(operation: 'pendingBufferOverflow'),
+      );
+    }
+    _pending[data.id] = _PendingLog(log: data, sessionId: sessionId);
+    if (_autoSaveEnabled) {
+      _scheduleAutoSave(
+        _pending.length >= _options.maxBatchItems
+            ? Duration.zero
+            : _autoSaveInterval,
+      );
+    }
   }
 
   @override
@@ -96,31 +126,95 @@ final class RollingFileLogHistory implements FileLogHistory {
     _pending.clear();
   }
 
-  @override
-  void dispose() {}
+  void _restorePending(LinkedHashMap<String, _PendingLog> failed) {
+    final newer = LinkedHashMap<String, _PendingLog>.of(_pending);
+    _pending
+      ..clear()
+      ..addAll(failed);
+    for (final entry in newer.entries) {
+      _pending.putIfAbsent(entry.key, () => entry.value);
+    }
+  }
 
-  @override
-  Future<void> saveToDailyFile() async {
-    if (!_enabled) return;
-    await _ensureInitialized();
-    if (_pending.isEmpty) return;
+  void _scheduleAutoSave(Duration duration) {
+    if (!_autoSaveEnabled || _pending.isEmpty) return;
+    if (_autoSaveTimer?.isActive ?? false) {
+      if (duration != Duration.zero) return;
+      _autoSaveTimer!.cancel();
+    }
+    _autoSaveTimer = _timerFactory(duration, () {
+      _autoSaveTimer = null;
+      unawaited(_runBackgroundFlush());
+    });
+  }
 
-    final snapshot = List<_PendingLog>.of(_pending.values);
+  Future<void> _runBackgroundFlush() async {
     try {
-      for (final pending in snapshot) {
+      await _enqueueFlush();
+    } on FileLogHistoryException catch (error) {
+      _reportError(error);
+    }
+  }
+
+  void _reportError(FileLogHistoryException error) {
+    final handler = _options.onError;
+    if (handler != null) {
+      try {
+        handler(error);
+        return;
+      } catch (_) {
+        // Fall through to the internal non-reentrant diagnostic sink.
+      }
+    }
+    developer.log('[ISpect] $error', name: 'ispectify.file-history');
+  }
+
+  @override
+  void dispose() {
+    _autoSaveTimer?.cancel();
+    _autoSaveTimer = null;
+  }
+
+  @override
+  Future<void> saveToDailyFile() {
+    if (!_enabled) return Future<void>.value();
+    _autoSaveTimer?.cancel();
+    _autoSaveTimer = null;
+    return _enqueueFlush();
+  }
+
+  Future<void> _enqueueFlush() {
+    final completer = Completer<void>();
+    final previous = _operationChain;
+    _operationChain = () async {
+      await previous;
+      try {
+        await _flushPending();
+        completer.complete();
+      } catch (error, stackTrace) {
+        completer.completeError(error, stackTrace);
+      }
+    }();
+    return completer.future;
+  }
+
+  Future<void> _flushPending() async {
+    final snapshot = LinkedHashMap<String, _PendingLog>.of(_pending);
+    _pending.clear();
+    try {
+      await _ensureInitialized();
+      for (final pending in snapshot.values.toList(growable: false)) {
         final encoded = _codec.encode(
           pending.log,
           sessionId: pending.sessionId,
           maxBytes: _options.maxFileSize,
         );
         await _appendRecord(pending.log.time, encoded.bytes);
+        snapshot.remove(pending.log.id);
       }
-      for (final pending in snapshot) {
-        _pending.remove(pending.log.id);
-      }
-    } on FileLogHistoryException {
-      rethrow;
     } catch (error, stackTrace) {
+      _restorePending(snapshot);
+      if (error is FileLogHistoryException) rethrow;
       throw FileLogStorageException(
         operation: 'saveToDailyFile',
         path: _resolvedSessionDirectory,
@@ -155,7 +249,31 @@ final class RollingFileLogHistory implements FileLogHistory {
 
   @override
   Future<void> importFromJson(String jsonString) async {
-    _codec.decodeLegacyArray(jsonString).forEach(add);
+    if (utf8.encode(jsonString).length > _options.maxTotalSize) {
+      throw const FileLogLimitException(operation: 'importFromJson');
+    }
+    final trimmed = jsonString.trim();
+    if (trimmed.isEmpty) {
+      throw const FileLogFormatException(operation: 'importFromJson');
+    }
+
+    final logs = trimmed.startsWith('[')
+        ? _codec.decodeLegacyArray(trimmed)
+        : trimmed
+            .split('\n')
+            .where((line) => line.trim().isNotEmpty)
+            .map(_codec.decodeLine)
+            .toList(growable: false);
+    final importSessionId = LogId.generate();
+    for (final log in logs) {
+      final storedSessionId = log.additionalData?[TraceKeys.sessionId];
+      _add(
+        log,
+        sessionId: storedSessionId is String && storedSessionId.isNotEmpty
+            ? storedSessionId
+            : importSessionId,
+      );
+    }
   }
 
   @override
@@ -276,10 +394,28 @@ final class RollingFileLogHistory implements FileLogHistory {
     }
     _autoSaveEnabled = enabled ?? _autoSaveEnabled;
     _autoSaveInterval = interval ?? _autoSaveInterval;
+    _autoSaveTimer?.cancel();
+    _autoSaveTimer = null;
+    if (_autoSaveEnabled && _pending.isNotEmpty) {
+      _scheduleAutoSave(_autoSaveInterval);
+    }
   }
 
-  Future<void> _ensureInitialized() =>
-      _initialization ??= _initializeDirectory();
+  Future<void> _ensureInitialized() async {
+    final existing = _initialization;
+    if (existing != null) return existing;
+
+    final initialization = _initializeDirectory();
+    _initialization = initialization;
+    try {
+      await initialization;
+    } catch (_) {
+      if (identical(_initialization, initialization)) {
+        _initialization = null;
+      }
+      rethrow;
+    }
+  }
 
   Future<void> _initializeDirectory() async {
     try {
@@ -307,22 +443,56 @@ final class RollingFileLogHistory implements FileLogHistory {
     var active = segments.isEmpty
         ? File(_join(directory.path, '000000.jsonl'))
         : segments.last;
+    final tailIsAppendable = await _repairIncompleteTail(active);
     final currentLength = await active.exists() ? await active.length() : 0;
-    if (currentLength > 0 &&
-        currentLength + bytes.length > _options.maxFileSize) {
-      final currentIndex = segments.isEmpty
-          ? 0
-          : int.parse(_basename(active.path).substring(0, 6));
-      active = File(
-        _join(
-          directory.path,
-          '${(currentIndex + 1).toString().padLeft(6, '0')}.jsonl',
-        ),
-      );
+    if (!tailIsAppendable ||
+        currentLength > 0 &&
+            currentLength + bytes.length > _options.maxFileSize) {
+      active = _nextSegment(directory, active, segments.isNotEmpty);
     }
     await active.writeAsBytes(bytes, mode: FileMode.append, flush: true);
     if (_dateName(date) == _dateName(DateTime.now())) {
       _resolvedTodaySessionPath = active.path;
+    }
+  }
+
+  File _nextSegment(Directory directory, File active, bool hasSegments) {
+    final currentIndex =
+        hasSegments ? int.parse(_basename(active.path).substring(0, 6)) : 0;
+    return File(
+      _join(
+        directory.path,
+        '${(currentIndex + 1).toString().padLeft(6, '0')}.jsonl',
+      ),
+    );
+  }
+
+  Future<bool> _repairIncompleteTail(File file) async {
+    if (!await file.exists()) return true;
+    final handle = await file.open(mode: FileMode.append);
+    try {
+      final length = await handle.length();
+      if (length == 0) return true;
+      await handle.setPosition(length - 1);
+      if (await handle.readByte() == 0x0A) return true;
+
+      const chunkSize = 8192;
+      var cursor = length;
+      while (cursor > 0) {
+        final start = cursor > chunkSize ? cursor - chunkSize : 0;
+        await handle.setPosition(start);
+        final chunk = await handle.read(cursor - start);
+        for (var index = chunk.length - 1; index >= 0; index--) {
+          if (chunk[index] == 0x0A) {
+            await handle.truncate(start + index + 1);
+            return true;
+          }
+        }
+        cursor = start;
+      }
+      return false;
+    } finally {
+      await handle.close();
     }
   }
 
@@ -346,10 +516,23 @@ final class RollingFileLogHistory implements FileLogHistory {
   Future<List<ISpectLogData>> _readFiles(Iterable<File> files) async {
     final byId = <String, ISpectLogData>{};
     for (final file in files) {
-      for (final line in await file.readAsLines()) {
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty) continue;
+      final completeLength =
+          bytes.last == 0x0A ? bytes.length : bytes.lastIndexOf(0x0A) + 1;
+      if (completeLength == 0) continue;
+      final text = utf8.decode(
+        bytes.sublist(0, completeLength),
+        allowMalformed: true,
+      );
+      for (final line in const LineSplitter().convert(text)) {
         if (line.isEmpty) continue;
-        final log = _codec.decodeLine(line);
-        byId.putIfAbsent(log.id, () => log);
+        try {
+          final log = _codec.decodeLine(line);
+          byId.putIfAbsent(log.id, () => log);
+        } on FileLogFormatException catch (error) {
+          _reportError(error);
+        }
       }
     }
     final logs = byId.values.toList()

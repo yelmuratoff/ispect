@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_unused_constructor_parameters
 
+import 'dart:async';
+
 import 'package:ispectify/ispectify.dart';
 
 final class RollingFileLogHistory implements FileLogHistory {
@@ -17,6 +19,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     required FileLogDirectoryProvider directoryProvider,
     FileLogHistoryOptions options = const FileLogHistoryOptions(),
     RedactionService? redactor,
+    Timer Function(Duration, void Function())? timerFactory,
   }) {
     throw UnsupportedError('File log history requires dart:io');
   }

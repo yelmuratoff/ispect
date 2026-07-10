@@ -467,8 +467,14 @@ class ISpectLogger {
     if (_isDisposed) return;
     _isDisposed = true;
     _observerManager.clear();
-    _history.dispose();
-    await _loggerStreamController.close();
+    try {
+      if (_history case final FileLogHistory fileHistory) {
+        await fileHistory.saveToDailyFile();
+      }
+    } finally {
+      _history.dispose();
+      await _loggerStreamController.close();
+    }
   }
 }
 
