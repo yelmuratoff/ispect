@@ -20,6 +20,7 @@
 
 ### Improvements
 
+- **Rolling file history:** opt-in `RollingFileLogHistory` persists redacted daily JSON Lines with bounded retention, archive support, and legacy 4.x daily-file compatibility.
 - **`meta` on `graphqlTrace` and `sse`:** both now accept an optional `meta` map, matching the other trace helpers.
 - **Consistent projection warnings:** a throwing `projectResult`/`projectEvent` is logged as a warning across all trace variants instead of being silently dropped in streams.
 - **Private keys in lists:** internal `_`-prefixed keys nested inside list elements are now stripped from exports.

@@ -200,6 +200,27 @@ Start with the UI shell and metadata-only diagnostics. Turn deeper capture on fo
 5. Leave body and header capture off until a payload-level investigation needs it.
 6. Add your project's redaction keys before sharing exported sessions with anyone outside the team.
 
+### Rolling file history (opt-in)
+
+Internal Flutter builds can keep a bounded, daily history across app launches:
+
+```dart
+final logger = ISpectFlutter.init(
+  options: ISpectLoggerOptions(maxHistoryItems: 10_000),
+  fileHistory: const FileLogHistoryOptions(
+    maxSessionDays: 7,
+    maxFileSize: 5 * 1024 * 1024,
+    maxTotalSize: 50 * 1024 * 1024,
+  ),
+);
+
+ISpect.run(() => runApp(const App()), logger: logger);
+```
+
+`RollingFileLogHistory` writes redacted JSON Lines to the application cache, rotates segments by their actual UTF-8 size, and bounds both retained days and total disk usage. Existing 4.x `logs_YYYY-MM-DD.json` files remain readable. `ISpectFlutter.init(fileHistory: ...)` falls back to normal in-memory history on web, and creates no directory, timer, or file when `ISPECT_ENABLED` is omitted.
+
+The global redaction switch remains authoritative. Setting `ISpectRedaction.enabled = false` while file history is configured deliberately allows raw values to be persisted. Keep it enabled unless an isolated internal investigation explicitly requires unredacted diagnostics.
+
 ## The ISpect toolkit
 
 ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.

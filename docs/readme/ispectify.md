@@ -77,6 +77,28 @@ final logger = ISpectLogger(
 );
 ```
 
+### Rolling file history
+
+On Dart IO platforms, opt into bounded JSON Lines persistence by supplying a cache directory owned by your application:
+
+```dart
+final loggerOptions = ISpectLoggerOptions(maxHistoryItems: 10_000);
+final history = RollingFileLogHistory(
+  loggerOptions,
+  directoryProvider: () async => '/path/to/application-cache',
+  options: const FileLogHistoryOptions(
+    maxSessionDays: 7,
+    maxFileSize: 5 * 1024 * 1024,
+    maxTotalSize: 50 * 1024 * 1024,
+  ),
+);
+final logger = ISpectLogger(options: loggerOptions, history: history);
+```
+
+Records are redacted before they reach disk, grouped into daily rolling segments, and deduplicated by log ID. Retention can delete the oldest or largest closed segments, or GZIP old segments with `SessionCleanupStrategy.archiveOldest`. Legacy 4.x daily JSON arrays remain readable. The implementation stays inert unless `ISPECT_ENABLED` is present; web consumers should keep the default in-memory history.
+
+Disabling the global `ISpectRedaction.enabled` switch is an explicit opt-out that also disables redaction before file persistence and JSON export.
+
 ## Console output
 
 Console entries use a compact, single-line format by default. Switch to a boxed format — each entry framed for visual separation in a busy console — by setting `ConsoleSettings.formatter`:

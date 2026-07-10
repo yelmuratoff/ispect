@@ -2,16 +2,9 @@
 
 This roadmap is short on purpose. It describes the direction, not a promise that every imaginable integration ships in the next release.
 
-## Next: optional file-based session history
+## Shipped: optional rolling file history
 
-`ispectify` already defines a `FileLogHistory` interface (`packages/ispectify/lib/src/history/file_log`) — daily file save/load, JSON import/export, cleanup, per-session lookup — and `ispect` already ships the browsing UI (`DailySessionsScreen`, per-day `LogsV2Screen`), wired through `ISpect.logger.fileLogHistory` and hidden automatically when it's absent. A concrete implementation shipped once (`DailyFileLogHistory`, 4.3.0) but did not carry over into the 5.x/6.x rewrite. What's missing is a first-party implementation to plug back in.
-
-- Ship a concrete `FileLogHistory` in `ispectify`, opt-in via `ISpectFlutter.init(history: ...)` — not the default `ILogHistory` — matching the interface already in place.
-- Support day-based grouping (what the interface already models via `getAvailableLogDates`/`getLogsByDate`) and evaluate explicit session-based grouping (`getLogsBySession` already anticipates non-daily boundaries, e.g. per app launch).
-- Route every write through the same redaction pipeline as export (`RedactionService`/`LogExporter`) — `ISpectLogData.toJson()` does not redact by default, so a naive implementation would persist unredacted secrets to disk.
-- Bound retention: wire `maxSessionDays`, `maxFileSize`, and a cleanup strategy (oldest-first, size-based, or archive — the `SessionCleanupStrategy` enum and `SessionStatistics` snapshot already exist but aren't connected to a live implementation) into `ISpectLoggerOptions`.
-- Stay inert when `ISPECT_ENABLED` is omitted, same as the rest of the toolkit — no persisted session files in production builds.
-- Add tests for redaction-on-write, rotation/cleanup boundaries, and the disabled-build no-op path.
+`RollingFileLogHistory` restores first-party daily persistence as an opt-in feature with redaction-before-write, exact-size segment rotation, bounded retention, GZIP archives, legacy 4.x reads, and compile-time-disabled no-op behavior. Flutter apps enable it through `ISpectFlutter.init(fileHistory: ...)`; web keeps the in-memory fallback.
 
 ## Evidence before enterprise adoption
 
