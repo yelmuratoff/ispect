@@ -3,10 +3,12 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/history/file_log/bounded_log_buffer.dart';
 import 'package:ispectify/src/history/file_log/file_log_codec.dart';
+import 'package:ispectify/src/history/file_log/retention_planner.dart';
 import 'package:ispectify/src/models/log_id.dart';
 import 'package:meta/meta.dart';
 
@@ -62,7 +64,10 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   static final RegExp _segmentNamePattern = RegExp(r'^\d{6}\.jsonl$');
+  static final RegExp _archiveNamePattern = RegExp(r'^\d{6}\.jsonl\.gz$');
   static final RegExp _dateNamePattern = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+  static final RegExp _legacyNamePattern =
+      RegExp(r'^logs_(\d{4}-\d{2}-\d{2})\.json$');
 
   final FileLogDirectoryProvider _directoryProvider;
   final FileLogHistoryOptions _options;
@@ -78,6 +83,7 @@ final class RollingFileLogHistory implements FileLogHistory {
   Future<void>? _initialization;
   Future<void> _operationChain = Future<void>.value();
   String? _resolvedSessionDirectory;
+  String? _canonicalSessionDirectory;
   String? _resolvedTodaySessionPath;
   Timer? _autoSaveTimer;
   Duration _autoSaveInterval;
@@ -212,6 +218,7 @@ final class RollingFileLogHistory implements FileLogHistory {
         await _appendRecord(pending.log.time, encoded.bytes);
         snapshot.remove(pending.log.id);
       }
+      await _applyRetention();
     } catch (error, stackTrace) {
       _restorePending(snapshot);
       if (error is FileLogHistoryException) rethrow;
@@ -280,13 +287,10 @@ final class RollingFileLogHistory implements FileLogHistory {
   Future<void> clearAllFileStorage() async {
     if (!_enabled) return;
     await _ensureInitialized();
-    final directory = Directory(sessionDirectory);
-    if (await directory.exists()) {
-      await directory.delete(recursive: true);
+    for (final artifact in await _scanArtifacts()) {
+      await _deleteArtifact(artifact);
     }
-    _initialization = null;
-    _resolvedSessionDirectory = null;
-    _resolvedTodaySessionPath = null;
+    await _deleteEmptyDateDirectories();
   }
 
   @override
@@ -297,6 +301,8 @@ final class RollingFileLogHistory implements FileLogHistory {
     if (await directory.exists()) {
       await directory.delete(recursive: true);
     }
+    final legacy = File(_legacyFilePath(date));
+    if (await legacy.exists()) await legacy.delete();
   }
 
   @override
@@ -305,14 +311,18 @@ final class RollingFileLogHistory implements FileLogHistory {
     await _ensureInitialized();
     final dates = <DateTime>[];
     await for (final entity in Directory(sessionDirectory).list()) {
-      if (entity is! Directory) continue;
       final name = _basename(entity.path);
-      if (!_dateNamePattern.hasMatch(name)) continue;
-      final date = DateTime.tryParse(name);
-      if (date != null) dates.add(date);
+      if (entity is Directory && _dateNamePattern.hasMatch(name)) {
+        final date = DateTime.tryParse(name);
+        if (date != null) dates.add(date);
+      } else if (entity is File) {
+        final match = _legacyNamePattern.firstMatch(name);
+        final date = DateTime.tryParse(match?.group(1) ?? '');
+        if (date != null) dates.add(date);
+      }
     }
-    dates.sort();
-    return dates;
+    final uniqueDates = dates.toSet().toList()..sort();
+    return uniqueDates;
   }
 
   @override
@@ -320,15 +330,18 @@ final class RollingFileLogHistory implements FileLogHistory {
     if (!_enabled) return 0;
     await _ensureInitialized();
     final directory = Directory(_dateDirectoryPath(date));
-    if (!await directory.exists()) return 0;
-
     var total = 0;
-    await for (final entity in directory.list()) {
-      if (entity is File &&
-          _segmentNamePattern.hasMatch(_basename(entity.path))) {
-        total += await entity.length();
+    if (await directory.exists()) {
+      await for (final entity in directory.list()) {
+        if (entity is File &&
+            (_segmentNamePattern.hasMatch(_basename(entity.path)) ||
+                _archiveNamePattern.hasMatch(_basename(entity.path)))) {
+          total += await entity.length();
+        }
       }
     }
+    final legacy = File(_legacyFilePath(date));
+    if (await legacy.exists()) total += await legacy.length();
     return total;
   }
 
@@ -340,7 +353,14 @@ final class RollingFileLogHistory implements FileLogHistory {
   Future<List<ISpectLogData>> getLogsByDate(DateTime date) async {
     if (!_enabled) return const [];
     await _ensureInitialized();
-    return _readDirectory(Directory(_dateDirectoryPath(date)));
+    final files = <File>[];
+    final directory = Directory(_dateDirectoryPath(date));
+    if (await directory.exists()) {
+      files.addAll(await _segmentFiles(directory, includeArchives: true));
+    }
+    final legacy = File(_legacyFilePath(date));
+    if (await legacy.exists()) files.add(legacy);
+    return _readFiles(files);
   }
 
   @override
@@ -348,19 +368,43 @@ final class RollingFileLogHistory implements FileLogHistory {
     if (!_enabled) return '';
     await _ensureInitialized();
     final directory = Directory(_dateDirectoryPath(date));
-    return await directory.exists() ? directory.path : '';
+    if (await directory.exists()) return directory.path;
+    final legacy = File(_legacyFilePath(date));
+    return await legacy.exists() ? legacy.path : '';
   }
 
   @override
   Future<List<ISpectLogData>> getLogsBySession(String sessionPath) async {
     if (!_enabled) return const [];
     await _ensureInitialized();
+    await _assertManagedPath(sessionPath);
     final type = await FileSystemEntity.type(sessionPath);
     return switch (type) {
-      FileSystemEntityType.directory => _readDirectory(Directory(sessionPath)),
-      FileSystemEntityType.file => _readFiles([File(sessionPath)]),
+      FileSystemEntityType.directory
+          when _isManagedDateDirectory(sessionPath) =>
+        _readDirectory(Directory(sessionPath)),
+      FileSystemEntityType.file when _isManagedHistoryFile(sessionPath) =>
+        _readFiles([File(sessionPath)]),
+      FileSystemEntityType.directory ||
+      FileSystemEntityType.file =>
+        throw const FileLogAccessException(operation: 'getLogsBySession'),
       _ => const <ISpectLogData>[],
     };
+  }
+
+  bool _isManagedDateDirectory(String path) =>
+      _dateNamePattern.hasMatch(_basename(path)) &&
+      Directory(path).parent.path == sessionDirectory;
+
+  bool _isManagedHistoryFile(String path) {
+    final name = _basename(path);
+    if (_legacyNamePattern.hasMatch(name)) {
+      return File(path).parent.path == sessionDirectory;
+    }
+    return (_segmentNamePattern.hasMatch(name) ||
+            _archiveNamePattern.hasMatch(name)) &&
+        _dateNamePattern.hasMatch(_basename(File(path).parent.path)) &&
+        File(path).parent.parent.path == sessionDirectory;
   }
 
   @override
@@ -370,7 +414,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     var totalEntries = 0;
     for (final date in dates) {
       totalSize += await getDateFileSize(date);
-      totalEntries += (await getLogsByDate(date)).length;
+      totalEntries += await _countDateEntries(date);
     }
     return SessionStatistics(
       totalDays: dates.length,
@@ -423,10 +467,12 @@ final class RollingFileLogHistory implements FileLogHistory {
       final directory = Directory(_join(root, 'ispect_logs'));
       await directory.create(recursive: true);
       _resolvedSessionDirectory = directory.path;
+      _canonicalSessionDirectory = await directory.resolveSymbolicLinks();
       _resolvedTodaySessionPath = _join(
         _join(directory.path, _dateName(DateTime.now())),
         '000000.jsonl',
       );
+      await _applyRetention();
     } catch (error, stackTrace) {
       throw FileLogStorageException(
         operation: 'initialize',
@@ -496,11 +542,16 @@ final class RollingFileLogHistory implements FileLogHistory {
     }
   }
 
-  Future<List<File>> _segmentFiles(Directory directory) async {
+  Future<List<File>> _segmentFiles(
+    Directory directory, {
+    bool includeArchives = false,
+  }) async {
     final files = <File>[];
     await for (final entity in directory.list()) {
+      final name = _basename(entity.path);
       if (entity is File &&
-          _segmentNamePattern.hasMatch(_basename(entity.path))) {
+          (_segmentNamePattern.hasMatch(name) ||
+              includeArchives && _archiveNamePattern.hasMatch(name))) {
         files.add(entity);
       }
     }
@@ -510,13 +561,35 @@ final class RollingFileLogHistory implements FileLogHistory {
 
   Future<List<ISpectLogData>> _readDirectory(Directory directory) async {
     if (!await directory.exists()) return const [];
-    return _readFiles(await _segmentFiles(directory));
+    return _readFiles(await _segmentFiles(directory, includeArchives: true));
   }
 
   Future<List<ISpectLogData>> _readFiles(Iterable<File> files) async {
     final byId = <String, ISpectLogData>{};
     for (final file in files) {
-      final bytes = await file.readAsBytes();
+      final name = _basename(file.path);
+      if (_legacyNamePattern.hasMatch(name)) {
+        final input = await file.readAsString();
+        for (final log in _codec.decodeLegacyArray(input)) {
+          byId.putIfAbsent(log.id, () => log);
+        }
+        continue;
+      }
+
+      List<int> bytes;
+      try {
+        bytes = await _readSegmentBytes(file);
+      } catch (error, stackTrace) {
+        _reportError(
+          FileLogFormatException(
+            operation: 'readSegment',
+            path: file.path,
+            cause: error,
+            stackTrace: stackTrace,
+          ),
+        );
+        continue;
+      }
       if (bytes.isEmpty) continue;
       final completeLength =
           bytes.last == 0x0A ? bytes.length : bytes.lastIndexOf(0x0A) + 1;
@@ -543,8 +616,206 @@ final class RollingFileLogHistory implements FileLogHistory {
     return logs;
   }
 
+  Future<List<int>> _readSegmentBytes(File file) async {
+    if (!file.path.endsWith('.gz')) return file.readAsBytes();
+    final builder = BytesBuilder(copy: false);
+    await file.openRead().transform(gzip.decoder).forEach(builder.add);
+    return builder.takeBytes();
+  }
+
+  Future<int> _countDateEntries(DateTime date) async {
+    var count = 0;
+    final directory = Directory(_dateDirectoryPath(date));
+    if (await directory.exists()) {
+      final files = await _segmentFiles(directory, includeArchives: true);
+      for (final file in files) {
+        final bytes = await _readSegmentBytes(file);
+        final completeLength = bytes.isNotEmpty && bytes.last == 0x0A
+            ? bytes.length
+            : bytes.lastIndexOf(0x0A) + 1;
+        if (completeLength == 0) continue;
+        count += const LineSplitter()
+            .convert(
+              utf8.decode(
+                bytes.sublist(0, completeLength),
+                allowMalformed: true,
+              ),
+            )
+            .where((line) => line.isNotEmpty)
+            .length;
+      }
+    }
+    final legacy = File(_legacyFilePath(date));
+    if (await legacy.exists()) {
+      count += _codec.decodeLegacyArray(await legacy.readAsString()).length;
+    }
+    return count;
+  }
+
+  Future<void> _assertManagedPath(String candidatePath) async {
+    final canonicalRoot = _canonicalSessionDirectory;
+    if (canonicalRoot == null) {
+      throw const FileLogAccessException(operation: 'getLogsBySession');
+    }
+
+    final type = await FileSystemEntity.type(candidatePath);
+    if (type == FileSystemEntityType.notFound) {
+      final hasTraversal = candidatePath
+          .split(RegExp(r'[/\\]+'))
+          .any((segment) => segment == '..');
+      if (!hasTraversal && _isWithinRoot(candidatePath, sessionDirectory)) {
+        return;
+      }
+      throw const FileLogAccessException(operation: 'getLogsBySession');
+    }
+
+    final canonicalCandidate = switch (type) {
+      FileSystemEntityType.directory =>
+        await Directory(candidatePath).resolveSymbolicLinks(),
+      FileSystemEntityType.file =>
+        await File(candidatePath).resolveSymbolicLinks(),
+      FileSystemEntityType.link =>
+        await Link(candidatePath).resolveSymbolicLinks(),
+      _ => candidatePath,
+    };
+    if (!_isWithinRoot(canonicalCandidate, canonicalRoot)) {
+      throw const FileLogAccessException(operation: 'getLogsBySession');
+    }
+  }
+
+  bool _isWithinRoot(String path, String root) =>
+      path == root || path.startsWith('$root${Platform.pathSeparator}');
+
+  Future<void> _applyRetention() async {
+    while (true) {
+      final artifacts = await _scanArtifacts();
+      final actions = RetentionPlanner(_options).plan(artifacts);
+      if (actions.isEmpty) return;
+
+      for (final action in actions) {
+        switch (action) {
+          case DeleteArtifact():
+            await _deleteArtifact(action.artifact);
+          case ArchiveArtifact():
+            await _archiveArtifact(action.artifact);
+        }
+      }
+      await _deleteEmptyDateDirectories();
+    }
+  }
+
+  Future<List<FileLogArtifact>> _scanArtifacts() async {
+    final artifacts = <FileLogArtifact>[];
+    final root = Directory(sessionDirectory);
+    await for (final entity in root.list()) {
+      final name = _basename(entity.path);
+      if (entity is Directory && _dateNamePattern.hasMatch(name)) {
+        final date = DateTime.tryParse(name);
+        if (date == null) continue;
+        final files = <File>[];
+        await for (final child in entity.list()) {
+          if (child is File) files.add(child);
+        }
+        final liveSegments = files
+            .where((file) => _segmentNamePattern.hasMatch(_basename(file.path)))
+            .toList()
+          ..sort((left, right) => left.path.compareTo(right.path));
+        final activePath =
+            name == _dateName(DateTime.now()) && liveSegments.isNotEmpty
+                ? liveSegments.last.path
+                : null;
+        for (final file in files) {
+          final fileName = _basename(file.path);
+          final isSegment = _segmentNamePattern.hasMatch(fileName);
+          final isArchive = _archiveNamePattern.hasMatch(fileName);
+          final isTemporary = fileName.endsWith('.tmp');
+          if (!isSegment && !isArchive && !isTemporary) continue;
+          artifacts.add(
+            FileLogArtifact(
+              path: file.path,
+              date: date,
+              size: await file.length(),
+              isActive: file.path == activePath,
+              isArchive: isArchive,
+              isTemporary: isTemporary,
+              canArchive: isSegment,
+            ),
+          );
+        }
+      } else if (entity is File) {
+        final legacyMatch = _legacyNamePattern.firstMatch(name);
+        final legacyDate = DateTime.tryParse(legacyMatch?.group(1) ?? '');
+        if (legacyDate != null) {
+          artifacts.add(
+            FileLogArtifact(
+              path: entity.path,
+              date: legacyDate,
+              size: await entity.length(),
+              canArchive: false,
+            ),
+          );
+        } else if (name.endsWith('.tmp')) {
+          artifacts.add(
+            FileLogArtifact(
+              path: entity.path,
+              date: DateTime.fromMillisecondsSinceEpoch(0),
+              size: await entity.length(),
+              isTemporary: true,
+              canArchive: false,
+            ),
+          );
+        }
+      }
+    }
+    return artifacts;
+  }
+
+  Future<void> _deleteArtifact(FileLogArtifact artifact) async {
+    final file = File(artifact.path);
+    if (await file.exists()) await file.delete();
+  }
+
+  Future<void> _archiveArtifact(FileLogArtifact artifact) async {
+    final source = File(artifact.path);
+    final target = File('${source.path}.gz');
+    final temporary = File('${target.path}.tmp');
+    var renamed = false;
+    try {
+      await source
+          .openRead()
+          .transform(gzip.encoder)
+          .pipe(temporary.openWrite());
+      await temporary.rename(target.path);
+      renamed = true;
+      await source.delete();
+    } catch (error, stackTrace) {
+      throw FileLogStorageException(
+        operation: 'archive',
+        path: source.path,
+        cause: error,
+        stackTrace: stackTrace,
+      );
+    } finally {
+      if (!renamed && await temporary.exists()) await temporary.delete();
+    }
+  }
+
+  Future<void> _deleteEmptyDateDirectories() async {
+    await for (final entity in Directory(sessionDirectory).list()) {
+      if (entity is! Directory ||
+          !_dateNamePattern.hasMatch(_basename(entity.path))) {
+        continue;
+      }
+      if (!await entity.list().isEmpty) continue;
+      await entity.delete();
+    }
+  }
+
   String _dateDirectoryPath(DateTime date) =>
       _join(sessionDirectory, _dateName(date));
+
+  String _legacyFilePath(DateTime date) =>
+      _join(sessionDirectory, 'logs_${_dateName(date)}.json');
 
   String _dateName(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
       '${date.month.toString().padLeft(2, '0')}-'
