@@ -184,6 +184,15 @@ void main() {
         child: const MyApp(),
       ),
     ),
+    logger: ISpectFlutter.init(
+      options: ISpectLoggerOptions(maxHistoryItems: 10000),
+      fileHistory: const FileLogHistoryOptions(
+        maxSessionDays: 7,
+        maxFileSize: 5 * 1024 * 1024,
+        maxTotalSize: 50 * 1024 * 1024,
+      ),
+      // observer: SentryISpectObserver(),
+    ),
     onInit: () => Bloc.observer = ISpectBlocObserver(logger: ISpect.logger),
   );
 }
