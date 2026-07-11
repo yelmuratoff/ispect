@@ -28,8 +28,8 @@ class MainLogsView extends StatefulWidget {
     required this.searchFocusNode,
     required this.logsScrollController,
     required this.logsViewController,
-    required this.onSettingsTap,
     super.key,
+    this.onSettingsTap,
     this.appBarTitle,
     this.hasDetailPanel = false,
   });
@@ -40,7 +40,7 @@ class MainLogsView extends StatefulWidget {
   final FocusNode searchFocusNode;
   final ScrollController logsScrollController;
   final ISpectViewController logsViewController;
-  final VoidCallback onSettingsTap;
+  final VoidCallback? onSettingsTap;
   final String? appBarTitle;
   final bool hasDetailPanel;
 

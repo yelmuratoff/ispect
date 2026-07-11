@@ -2,19 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/services/log_correlation_index.dart';
-import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
-import 'package:ispect/src/common/widgets/resizable_split_view.dart';
 import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/file_processing_result.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/daily_sessions.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/navigation_flow.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_viewer_dialogs.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_builder.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/main_logs_view.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_viewer_body.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_all_logs_sheet.dart';
 import 'package:ispect/src/features/log_viewer/services/file_processing_service.dart';
@@ -42,13 +38,6 @@ class _LogsScreenState extends State<LogsScreen> {
   final _logsScrollController = ScrollController();
   late final ISpectViewController _logsViewController;
   static const _fileService = FileProcessingService();
-
-  /// Persisted split ratio so it survives detail panel toggling.
-  double _splitRatio = 0.4;
-
-  /// Correlation index for O(1) request↔response/error lookup in the
-  /// detail panel. Rebuilt lazily when the input list identity changes.
-  final _correlationIndex = LogCorrelationIndex();
 
   // Bridges controller settings to the global scope so feature-toggle flips
   // reach the inspector panel without waiting for a logs-screen rebuild.
@@ -115,116 +104,24 @@ class _LogsScreenState extends State<LogsScreen> {
 
   Widget _buildScaffold(BuildContext context) {
     final iSpect = ISpect.read(context);
-    final isDesktop = context.screenSize.isDesktop;
     return Scaffold(
       backgroundColor: context.ispectThemeBackground,
       body: ISpectLogsBuilder(
         logger: ISpect.logger,
         controller: _logsViewController,
-        builder: (context, data) => ListenableBuilder(
-          listenable: _logsViewController,
-          builder: (_, __) {
-            // Desktop uses detailData for the panel; mobile/tablet uses activeData.
-            final hasDetail = isDesktop
-                ? _logsViewController.detailData != null
-                : _logsViewController.activeData != null;
-            final showDetailPanel = hasDetail && !context.screenSize.isPhone;
-
-            final logsView = MainLogsView(
-              logsData: data,
-              iSpectTheme: iSpect,
-              titleFiltersController: _titleFiltersController,
-              searchFocusNode: _searchFocusNode,
-              logsScrollController: _logsScrollController,
-              logsViewController: _logsViewController,
-              appBarTitle: widget.appBarTitle,
-              onSettingsTap: () => _openLogsSettings(context),
-              hasDetailPanel: showDetailPanel,
-            );
-
-            if (!showDetailPanel) {
-              return logsView;
-            }
-
-            final activeForDetail = isDesktop
-                ? _logsViewController.detailData!
-                : _logsViewController.activeData!;
-
-            // Find correlated log for cross-navigation.
-            final correlation = _findCorrelation(
-              activeForDetail,
-              data,
-            );
-
-            final detailView = LogDetailView(
-              activeData: activeForDetail,
-              onClose: () {
-                if (isDesktop) {
-                  _logsViewController.closeDetail();
-                } else {
-                  _logsViewController.activeData = null;
-                }
-              },
-              correlatedLog: correlation?.log,
-              correlationDuration: correlation?.duration,
-              onNavigateToCorrelated: correlation?.log != null
-                  ? () {
-                      if (isDesktop) {
-                        _logsViewController
-                            .selectAndFollowDetail(correlation!.log!);
-                      } else {
-                        _logsViewController.activeData = correlation!.log;
-                      }
-                    }
-                  : null,
-              onShowRelated: (id) {
-                _logsViewController.searchByCorrelationId(id);
-              },
-            );
-
-            if (isDesktop) {
-              return ResizableSplitView(
-                initialRatio: _splitRatio,
-                minRatio: 0.35,
-                maxRatio: 0.65,
-                onRatioChanged: (ratio) => _splitRatio = ratio,
-                left: logsView,
-                right: detailView,
-              );
-            }
-
-            // Tablet: fixed split, no drag.
-            return Row(
-              children: [
-                Expanded(flex: 5, child: logsView),
-                VerticalDivider(
-                  color: context.ispectTheme.divider?.resolve(context),
-                  width: 1,
-                  thickness: 1,
-                ),
-                Expanded(flex: 5, child: detailView),
-              ],
-            );
-          },
+        builder: (context, data) => LogsViewerBody(
+          logsData: data,
+          controller: _logsViewController,
+          iSpectTheme: iSpect,
+          titleFiltersController: _titleFiltersController,
+          searchFocusNode: _searchFocusNode,
+          logsScrollController: _logsScrollController,
+          appBarTitle: widget.appBarTitle,
+          onSettingsTap: () => _openLogsSettings(context),
         ),
       ),
     );
   }
-
-  /// Finds a correlated log entry for the given [activeLog].
-  ///
-  /// Delegates to [LogCorrelationIndex] for an O(1) lookup by requestId,
-  /// returning the opposite role (request → response/error, response/error
-  /// → request).
-  LogCorrelation? _findCorrelation(
-    ISpectLogData activeLog,
-    List<ISpectLogData> allLogs,
-  ) =>
-      _correlationIndex.find(
-        activeLog,
-        allLogs,
-        _logsViewController.outputGeneration,
-      );
 
   Future<void> _openLogsSettings(BuildContext context) async {
     final logger = ISpectLoggerNotifier(ISpect.logger);

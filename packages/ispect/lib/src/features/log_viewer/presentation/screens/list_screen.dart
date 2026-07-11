@@ -1,26 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/screen_size.dart';
-import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
-import 'package:ispect/src/common/widgets/resizable_split_view.dart';
 import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/empty_logs_widget.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/desktop_log_row.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/desktop_log_table_header.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_viewer_body.dart';
 
-/// Screen for browsing, searching, and filtering application logs.
+/// Browses an independent, immutable set of logs (a file-history session or a
+/// caller-supplied list) using the same viewer as the live logs screen.
 ///
-/// - Parameters: options, appBarTitle, navigatorObserver
-/// - Return: StatefulWidget that displays logs in a scrollable list
-/// - Usage example: LogsScreen(options: myOptions).push(context)
-/// - Edge case notes: Handles empty state when no logs are available
+/// Unlike [LogsScreen], this screen does not observe [ISpect.logger]; it
+/// renders whatever [logs] / session it resolves once.
 class LogsV2Screen extends StatefulWidget {
   const LogsV2Screen({
     this.logs,
@@ -39,7 +29,6 @@ class LogsV2Screen extends StatefulWidget {
   final ISpectShareCallback? onShare;
   final ISpectMetadataProvider? metadataProvider;
 
-  /// Pushes this screen onto the navigation stack
   void push(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -50,15 +39,15 @@ class LogsV2Screen extends StatefulWidget {
   }
 
   @override
-  State<LogsV2Screen> createState() => _LogsScreenState();
+  State<LogsV2Screen> createState() => _LogsV2ScreenState();
 }
 
-class _LogsScreenState extends State<LogsV2Screen> {
+class _LogsV2ScreenState extends State<LogsV2Screen> {
   final _titleFiltersController = GroupButtonController();
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
   late final ISpectViewController _logsViewController;
-  final List<ISpectLogData> _logs = [];
+  List<ISpectLogData> _logs = const [];
 
   @override
   void initState() {
@@ -67,7 +56,7 @@ class _LogsScreenState extends State<LogsV2Screen> {
       onShare: widget.onShare,
       metadataProvider: widget.metadataProvider,
     )..toggleExpandedLogs();
-    getLogs();
+    _loadLogs();
   }
 
   @override
@@ -83,64 +72,22 @@ class _LogsScreenState extends State<LogsV2Screen> {
   Widget build(BuildContext context) =>
       ISpectThemeScope(child: Builder(builder: _buildScaffold));
 
-  Widget _buildScaffold(BuildContext context) {
-    final iSpect = ISpect.read(context);
-    return Scaffold(
-      backgroundColor: context.ispectThemeBackground,
-      body: ListenableBuilder(
-        listenable: _logsViewController,
-        builder: (_, __) {
-          final hasDetail = _logsViewController.activeData != null;
-          final showDetailPanel = hasDetail && !context.screenSize.isPhone;
+  Widget _buildScaffold(BuildContext context) => Scaffold(
+        backgroundColor: context.ispectThemeBackground,
+        body: LogsViewerBody(
+          logsData: _logs,
+          controller: _logsViewController,
+          iSpectTheme: ISpect.read(context),
+          titleFiltersController: _titleFiltersController,
+          searchFocusNode: _searchFocusNode,
+          logsScrollController: _logsScrollController,
+          appBarTitle: widget.appBarTitle,
+        ),
+      );
 
-          final logsView = _MainLogsView(
-            logsData: _logs,
-            iSpectTheme: iSpect,
-            titleFiltersController: _titleFiltersController,
-            searchFocusNode: _searchFocusNode,
-            logsScrollController: _logsScrollController,
-            logsViewController: _logsViewController,
-            appBarTitle: widget.appBarTitle,
-          );
-
-          if (!showDetailPanel) {
-            return logsView;
-          }
-
-          final detailView = _DetailView(
-            activeData: _logsViewController.activeData!,
-            onClose: () => _logsViewController.activeData = null,
-          );
-
-          if (context.screenSize.isDesktop) {
-            return ResizableSplitView(
-              minRatio: 0.25,
-              maxRatio: 0.7,
-              left: logsView,
-              right: detailView,
-            );
-          }
-
-          // Tablet: fixed split, no drag.
-          return Row(
-            children: [
-              Expanded(flex: 5, child: logsView),
-              VerticalDivider(
-                color: context.ispectTheme.divider?.resolve(context),
-                width: 1,
-                thickness: 1,
-              ),
-              Expanded(flex: 5, child: detailView),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Future<void> getLogs() async {
+  Future<void> _loadLogs() async {
     List<ISpectLogData>? logs;
-    if (widget.logs != null && widget.logs!.isNotEmpty) {
+    if (widget.logs != null) {
       logs = widget.logs;
     } else if (widget.sessionPath != null) {
       final fileLogHistory = ISpect.logger.fileLogHistory;
@@ -150,214 +97,8 @@ class _LogsScreenState extends State<LogsV2Screen> {
       logs = await fileLogHistory?.getLogsByDate(widget.sessionDate!);
     }
     if (!mounted) return;
-    if (logs != null && logs.isNotEmpty) {
-      _logs
-        ..clear()
-        ..addAll(logs);
-      setState(() {});
-    }
-  }
-}
-
-/// A widget that represents a single log entry in the list.
-class _LogListItem extends StatelessWidget {
-  const _LogListItem({
-    required this.logData,
-    required this.itemIndex,
-    required this.statusIcon,
-    required this.statusColor,
-    required this.isExpanded,
-    required this.onItemTapped,
-    required this.onSharePressed,
-    this.searchMatchState = SearchMatchState.none,
-    super.key,
-  });
-
-  final ISpectLogData logData;
-  final int itemIndex;
-  final IconData statusIcon;
-  final Color statusColor;
-  final bool isExpanded;
-  final VoidCallback onItemTapped;
-  final VoidCallback onSharePressed;
-  final SearchMatchState searchMatchState;
-
-  @override
-  Widget build(BuildContext context) {
-    if (context.screenSize.isDesktop) {
-      return DesktopLogRow(
-        icon: statusIcon,
-        color: statusColor,
-        data: logData,
-        index: itemIndex,
-        isSelected: isExpanded,
-        searchMatchState: searchMatchState,
-        onShareTap: onSharePressed,
-        onTap: onItemTapped,
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      child: LogCard(
-        icon: statusIcon,
-        color: statusColor,
-        data: logData,
-        index: itemIndex,
-        isExpanded: isExpanded,
-        searchMatchState: searchMatchState,
-        onShareTap: onSharePressed,
-        onTap: onItemTapped,
-      ),
+    setState(
+      () => _logs = List<ISpectLogData>.unmodifiable(logs ?? const []),
     );
   }
-}
-
-/// Main logs view widget that displays the scrollable list of logs
-class _MainLogsView extends StatelessWidget {
-  const _MainLogsView({
-    required this.logsData,
-    required this.iSpectTheme,
-    required this.titleFiltersController,
-    required this.searchFocusNode,
-    required this.logsScrollController,
-    required this.logsViewController,
-    this.appBarTitle,
-  });
-
-  final List<ISpectLogData> logsData;
-  final ISpectScopeModel iSpectTheme;
-  final GroupButtonController titleFiltersController;
-  final FocusNode searchFocusNode;
-  final ScrollController logsScrollController;
-  final ISpectViewController logsViewController;
-
-  final String? appBarTitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final isHighlightMode =
-        logsViewController.searchMode == SearchMode.highlight;
-
-    // In highlight mode, apply only title/type filters (not search).
-    // In filter mode, apply all filters including search.
-    final filteredLogEntries = isHighlightMode
-        ? logsViewController.applyFiltersWithoutSearch(logsData)
-        : logsViewController.applyCurrentFilters(logsData);
-
-    final levelStats = logsViewController.getLevelStats(logsData);
-
-    List<ISpectLogData>? matchesToCommit;
-    if (isHighlightMode) {
-      var matches = logsViewController.findSearchMatches(filteredLogEntries);
-      if (logsViewController.isLogOrderReversed && matches.isNotEmpty) {
-        matches = matches.reversed.toList();
-      }
-      matchesToCommit = matches;
-    }
-
-    final logTypeKeys = logsViewController.getLogTypeKeys(logsData);
-
-    if (matchesToCommit != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        logsViewController.updateSearchMatches(matchesToCommit!);
-      });
-    }
-
-    return RepaintBoundary(
-      child: CustomScrollView(
-        controller: logsScrollController,
-        // ignore: deprecated_member_use
-        cacheExtent: 1000,
-        slivers: [
-          ISpectAppBar(
-            focusNode: searchFocusNode,
-            title: appBarTitle,
-            titlesController: titleFiltersController,
-            titles: logTypeKeys.all,
-            uniqTitles: logTypeKeys.unique,
-            controller: logsViewController,
-            onToggleTitle: (key, selected) => logsViewController
-                .handleLogTypeKeyFilterToggle(key, isSelected: selected),
-            backgroundColor: iSpectTheme.theme.background?.resolve(context),
-            filteredCount: isHighlightMode
-                ? logsViewController.searchMatchCount
-                : filteredLogEntries.length,
-            totalCount:
-                isHighlightMode ? filteredLogEntries.length : logsData.length,
-            errorCount: levelStats.errors,
-            warningCount: levelStats.warnings,
-          ),
-          if (context.screenSize.isDesktop)
-            const SliverToBoxAdapter(
-              child: DesktopLogTableHeader(),
-            ),
-          if (filteredLogEntries.isEmpty)
-            const SliverToBoxAdapter(
-              child: EmptyLogsWidget(),
-            ),
-          SliverList.builder(
-            itemCount: filteredLogEntries.length,
-            findChildIndexCallback: (key) {
-              if (key is! ValueKey<String>) return null;
-              final id = key.value;
-              for (var i = 0; i < filteredLogEntries.length; i++) {
-                if (filteredLogEntries[i].id == id) return i;
-              }
-              return null;
-            },
-            itemBuilder: (context, index) {
-              final result = logsViewController.getLogEntryAtIndex(
-                filteredLogEntries,
-                index,
-              );
-              if (result == null) return const SizedBox.shrink();
-              final (entry: logEntry, actualIndex: _) = result;
-
-              return _LogListItem(
-                key: ValueKey(logEntry.id),
-                logData: logEntry,
-                itemIndex: index,
-                statusIcon:
-                    iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
-                statusColor: iSpectTheme.theme
-                        .getTypeColor(context, key: logEntry.key) ??
-                    Colors.grey,
-                isExpanded: logsViewController.activeData == logEntry ||
-                    logsViewController.expandedLogs,
-                searchMatchState: logsViewController.matchStateFor(logEntry),
-                onSharePressed: () => ISpectShareLogBottomSheet(
-                  data: logEntry.toJson(),
-                  truncatedData: logEntry.toJson(truncated: true),
-                ).show(context),
-                onItemTapped: () =>
-                    logsViewController.handleLogItemTap(logEntry),
-              );
-            },
-          ),
-          const SliverGap(8),
-        ],
-      ),
-    );
-  }
-}
-
-/// Detail view widget for displaying selected log data
-class _DetailView extends StatelessWidget {
-  const _DetailView({
-    required this.activeData,
-    required this.onClose,
-  });
-
-  final ISpectLogData activeData;
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) => RepaintBoundary(
-        child: LogDetailView(
-          key: ValueKey(activeData.id),
-          activeData: activeData,
-          onClose: onClose,
-        ),
-      );
 }
