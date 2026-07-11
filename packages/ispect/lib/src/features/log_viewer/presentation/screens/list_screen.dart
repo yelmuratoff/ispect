@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
-import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_viewer_body.dart';
+import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
 
 /// Browses an independent, immutable set of logs (a file-history session or a
 /// caller-supplied list) using the same viewer as the live logs screen.
@@ -43,47 +39,29 @@ class LogsV2Screen extends StatefulWidget {
 }
 
 class _LogsV2ScreenState extends State<LogsV2Screen> {
-  final _titleFiltersController = GroupButtonController();
-  final _searchFocusNode = FocusNode();
-  final _logsScrollController = ScrollController();
-  late final ISpectViewController _logsViewController;
   List<ISpectLogData> _logs = const [];
 
   @override
   void initState() {
     super.initState();
-    _logsViewController = ISpectViewController(
-      onShare: widget.onShare,
-      metadataProvider: widget.metadataProvider,
-    )..toggleExpandedLogs();
     _loadLogs();
   }
 
   @override
-  void dispose() {
-    _searchFocusNode.dispose();
-    _titleFiltersController.dispose();
-    _logsViewController.dispose();
-    _logsScrollController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    final scope = ISpect.read(context);
+    return LogsScreen(
+      options: scope.options.copyWith(
+        onShare: widget.onShare,
+        metadataProvider: widget.metadataProvider,
+      ),
+      appBarTitle: widget.appBarTitle ?? scope.theme.pageTitle,
+      logs: _logs,
+      onClearHistory: _clearLogs,
+    );
   }
 
-  @override
-  Widget build(BuildContext context) =>
-      ISpectThemeScope(child: Builder(builder: _buildScaffold));
-
-  Widget _buildScaffold(BuildContext context) => Scaffold(
-        backgroundColor: context.ispectThemeBackground,
-        body: LogsViewerBody(
-          logsData: _logs,
-          controller: _logsViewController,
-          iSpectTheme: ISpect.read(context),
-          titleFiltersController: _titleFiltersController,
-          searchFocusNode: _searchFocusNode,
-          logsScrollController: _logsScrollController,
-          appBarTitle: widget.appBarTitle,
-        ),
-      );
+  void _clearLogs() => setState(() => _logs = const []);
 
   Future<void> _loadLogs() async {
     List<ISpectLogData>? logs;

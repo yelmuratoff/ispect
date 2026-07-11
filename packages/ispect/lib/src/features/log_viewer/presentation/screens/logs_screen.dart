@@ -22,11 +22,15 @@ class LogsScreen extends StatefulWidget {
     super.key,
     this.appBarTitle,
     this.controller,
+    this.logs,
+    this.onClearHistory,
   });
 
   final String? appBarTitle;
   final ISpectOptions options;
   final ISpectViewController? controller;
+  final List<ISpectLogData>? logs;
+  final VoidCallback? onClearHistory;
 
   @override
   State<LogsScreen> createState() => _LogsScreenState();
@@ -104,12 +108,7 @@ class _LogsScreenState extends State<LogsScreen> {
 
   Widget _buildScaffold(BuildContext context) {
     final iSpect = ISpect.read(context);
-    return Scaffold(
-      backgroundColor: context.ispectThemeBackground,
-      body: ISpectLogsBuilder(
-        logger: ISpect.logger,
-        controller: _logsViewController,
-        builder: (context, data) => LogsViewerBody(
+    Widget buildViewer(List<ISpectLogData> data) => LogsViewerBody(
           logsData: data,
           controller: _logsViewController,
           iSpectTheme: iSpect,
@@ -118,8 +117,18 @@ class _LogsScreenState extends State<LogsScreen> {
           logsScrollController: _logsScrollController,
           appBarTitle: widget.appBarTitle,
           onSettingsTap: () => _openLogsSettings(context),
-        ),
-      ),
+        );
+
+    return Scaffold(
+      backgroundColor: context.ispectThemeBackground,
+      body: switch (widget.logs) {
+        final logs? => buildViewer(logs),
+        null => ISpectLogsBuilder(
+            logger: ISpect.logger,
+            controller: _logsViewController,
+            builder: (_, data) => buildViewer(data),
+          ),
+      },
     );
   }
 
@@ -189,8 +198,9 @@ class _LogsScreenState extends State<LogsScreen> {
 
   ISpectActionItem _buildClearHistoryAction(BuildContext context) =>
       ISpectActionItem(
-        onTap: (_) =>
-            _logsViewController.clearLogsHistory(ISpect.logger.clearHistory),
+        onTap: (_) => _logsViewController.clearLogsHistory(
+          widget.onClearHistory ?? ISpect.logger.clearHistory,
+        ),
         title: context.ispectL10n.clearHistory,
         icon: Icons.delete_outline,
         description: context.ispectL10n.clearHistoryDesc,
@@ -198,7 +208,11 @@ class _LogsScreenState extends State<LogsScreen> {
 
   ISpectActionItem _buildShareLogsAction(BuildContext context) =>
       ISpectActionItem(
-        onTap: (_) => const ISpectShareAllLogsBottomSheet().show(context),
+        onTap: (_) => ISpectShareAllLogsBottomSheet(
+          logs: widget.logs,
+          onShare: widget.options.onShare,
+          metadataProvider: widget.options.metadataProvider,
+        ).show(context),
         title: context.ispectL10n.shareLogsFile,
         icon: Icons.ios_share_outlined,
         description: context.ispectL10n.shareLogsFileDesc,
