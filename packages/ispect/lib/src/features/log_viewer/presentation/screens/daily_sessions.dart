@@ -11,7 +11,7 @@ import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
-import 'package:ispect/src/features/log_viewer/presentation/screens/list_screen.dart';
+import 'package:ispect/src/features/log_viewer/presentation/screens/session_logs_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/empty_logs_widget.dart';
 
 class DailySessionsScreen extends StatefulWidget {
@@ -191,19 +191,11 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     if (!mounted) return;
 
     try {
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          settings: RouteSettings(
-            name: 'ISpect Daily Session Logs',
-            arguments: {'date': session.toIso8601String()},
-          ),
-          builder: (_) => LogsV2Screen(
-            sessionDate: session,
-            onShare: context.iSpect.options.onShare,
-            metadataProvider: context.iSpect.options.metadataProvider,
-          ),
-        ),
-      );
+      await SessionLogsScreen(
+        sessionDate: session,
+        onShare: context.iSpect.options.onShare,
+        metadataProvider: context.iSpect.options.metadataProvider,
+      ).push(context);
     } catch (e) {
       if (mounted) {
         _showErrorDialog('Failed to load logs: $e');

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
 
 /// Browses an independent, immutable set of logs (a file-history session or a
@@ -7,8 +9,8 @@ import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.
 ///
 /// Unlike [LogsScreen], this screen does not observe [ISpect.logger]; it
 /// renders whatever [logs] / session it resolves once.
-class LogsV2Screen extends StatefulWidget {
-  const LogsV2Screen({
+class SessionLogsScreen extends StatefulWidget {
+  const SessionLogsScreen({
     this.logs,
     super.key,
     this.appBarTitle,
@@ -25,20 +27,23 @@ class LogsV2Screen extends StatefulWidget {
   final ISpectShareCallback? onShare;
   final ISpectMetadataProvider? metadataProvider;
 
-  void push(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => this,
-        settings: const RouteSettings(name: 'ISpect V2 Screen'),
-      ),
-    );
-  }
+  Future<void> push(BuildContext context) => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => this,
+          settings: RouteSettings(
+            name: 'ISpect Session Logs Screen',
+            arguments: sessionDate != null
+                ? {'date': sessionDate!.toIso8601String()}
+                : null,
+          ),
+        ),
+      );
 
   @override
-  State<LogsV2Screen> createState() => _LogsV2ScreenState();
+  State<SessionLogsScreen> createState() => _SessionLogsScreenState();
 }
 
-class _LogsV2ScreenState extends State<LogsV2Screen> {
+class _SessionLogsScreenState extends State<SessionLogsScreen> {
   List<ISpectLogData> _logs = const [];
 
   @override
@@ -55,10 +60,21 @@ class _LogsV2ScreenState extends State<LogsV2Screen> {
         onShare: widget.onShare,
         metadataProvider: widget.metadataProvider,
       ),
-      appBarTitle: widget.appBarTitle ?? scope.theme.pageTitle,
+      appBarTitle: _resolveTitle(context, scope),
       logs: _logs,
       onClearHistory: _clearLogs,
     );
+  }
+
+  String? _resolveTitle(BuildContext context, ISpectScopeModel scope) {
+    if (widget.appBarTitle != null) return widget.appBarTitle;
+    final date = widget.sessionDate;
+    if (date != null) {
+      return date.isToday
+          ? '📅 ${context.ispectL10n.current}: ${date.toFormattedString()}'
+          : date.toFormattedString();
+    }
+    return scope.theme.pageTitle;
   }
 
   void _clearLogs() => setState(() => _logs = const []);

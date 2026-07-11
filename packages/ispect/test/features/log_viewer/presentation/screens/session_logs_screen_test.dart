@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/models/export_format.dart';
-import 'package:ispect/src/features/log_viewer/presentation/screens/list_screen.dart';
+import 'package:ispect/src/features/log_viewer/presentation/screens/session_logs_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_list_item.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_all_logs_sheet.dart';
 
@@ -17,7 +17,7 @@ void main() {
 
       await tester.pumpWidget(
         appShell(
-          LogsV2Screen(
+          SessionLogsScreen(
             logs: [
               ISpectLogData(
                 'persisted session entry',
@@ -47,7 +47,7 @@ void main() {
 
     await tester.pumpWidget(
       appShell(
-        LogsV2Screen(
+        SessionLogsScreen(
           logs: [
             ISpectLogData(
               'snapshot-only entry',
