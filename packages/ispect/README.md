@@ -219,6 +219,10 @@ ISpect.run(() => runApp(const App()), logger: logger);
 
 `RollingFileLogHistory` writes redacted JSON Lines to the application cache, rotates segments by their actual UTF-8 size, and bounds both retained days and total disk usage. Existing 4.x `logs_YYYY-MM-DD.json` files remain readable. `ISpectFlutter.init(fileHistory: ...)` falls back to normal in-memory history on web, and creates no directory, timer, or file when `ISPECT_ENABLED` is omitted.
 
+Passing `fileHistory:` above is all it takes: the log viewer then automatically surfaces a **Daily Sessions** browser — reachable from the settings sheet or by tapping the app-bar title — where each retained day reopens in the same viewer for browsing and search. The browser appears whenever `ISpect.logger.fileLogHistory` is set; nothing else needs wiring. Optionally set `onOpenFile`/`onShare` on the builder's `ISpectOptions` to add open-in-file-manager and share buttons for those sessions.
+
+Persistence activates only on non-web builds run with `--dart-define=ISPECT_ENABLED=true` (see [Production safety](#production-safety)); otherwise the file history stays inert.
+
 The global redaction switch remains authoritative. Setting `ISpectRedaction.enabled = false` while file history is configured deliberately allows raw values to be persisted. Keep it enabled unless an isolated internal investigation explicitly requires unredacted diagnostics.
 
 ## The ISpect toolkit
