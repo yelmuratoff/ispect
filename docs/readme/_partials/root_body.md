@@ -1,5 +1,11 @@
 <!-- partial:header -->
 
+<div align="center">
+  <a href="https://github.com/yelmuratoff/ispect/blob/benchmark-data/report.md">
+    <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fyelmuratoff%2Fispect%2Fbenchmark-data%2Fbadge.json&style=for-the-badge" alt="Latest benchmark result">
+  </a>
+</div>
+
 ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside internal builds (developer machines, QA, staging) and gives testers and engineers a way to look at logs, network calls, database operations, BLoC events, navigation, and the widget tree without attaching a debugger. The toolkit is compile-time gated. Omit `--dart-define=ISPECT_ENABLED=true` and every entry point becomes a `const`-guarded no-op that Dart's tree-shaker can drop from release builds.
 
 [Live web demo](https://yelmuratoff.github.io/ispect/). Drop an exported log file in to walk through a session in the browser.

@@ -12,6 +12,8 @@
 
 ### Bug Fixes
 
+- **WebAssembly compatibility:** opt-in rolling file history no longer
+  prevents Web/WASM builds.
 - **Web-safe log IDs:** log entry IDs stay correctly time-sortable on web builds.
 - **`copyWith` keeps identity:** `ISpectLogData.copyWith`/`copy` preserve the original `id` so copies compare equal and de-duplicate correctly; pass `id:` for a new one.
 - **Observer recursion:** a log emitted synchronously from inside an observer is dropped instead of recursing.

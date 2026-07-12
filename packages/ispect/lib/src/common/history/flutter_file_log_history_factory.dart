@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:ispect/src/core/platform/platform_directory.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:path_provider/path_provider.dart';
 
 FileLogHistory? createFlutterFileLogHistory({
   required ISpectLoggerOptions loggerOptions,
@@ -13,10 +13,7 @@ FileLogHistory? createFlutterFileLogHistory({
   return RollingFileLogHistory(
     loggerOptions,
     options: fileHistoryOptions,
-    directoryProvider: directoryProvider ??
-        () async {
-          final directory = await getApplicationCacheDirectory();
-          return directory.path;
-        },
+    directoryProvider:
+        directoryProvider ?? platformDirectoryProvider.cacheDirectoryPath,
   );
 }

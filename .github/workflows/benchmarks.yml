@@ -1,0 +1,77 @@
+name: Benchmarks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/ispect/**"
+      - "packages/ispectify/**"
+      - "bash/run_benchmarks.sh"
+      - "bash/measure_release_size.sh"
+      - ".github/workflows/benchmarks.yml"
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  measure:
+    name: Measure benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.32.6"
+          channel: stable
+          cache: true
+
+      - name: Run pure Dart benchmarks
+        run: ./bash/run_benchmarks.sh
+
+      - name: Measure Android release footprint
+        run: ./bash/measure_release_size.sh
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: benchmark-artifacts
+          path: build/benchmarks/
+
+  publish:
+    name: Publish latest metrics
+    needs: measure
+    if: github.ref == 'refs/heads/main' && needs.measure.result == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download benchmark artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: benchmark-artifacts
+          path: benchmark-artifacts
+
+      - name: Publish generated metrics branch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          output="$(mktemp -d)"
+          git init "$output"
+          cd "$output"
+          git checkout --orphan benchmark-data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp -R "$GITHUB_WORKSPACE/benchmark-artifacts/published/." .
+          touch .nojekyll
+          git add .
+          git commit -m "chore: publish benchmark metrics"
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin benchmark-data

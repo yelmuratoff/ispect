@@ -4,6 +4,8 @@
 /// native). The return type is `Object` to avoid importing `dart:io` in the
 /// base, keeping web builds happy. Callers on native can cast to `Directory`.
 abstract class PlatformDirectoryProvider {
+  Future<String> cacheDirectoryPath();
+
   Future<Object> logsBaseDirectory();
   Future<Object> tempDirectory();
 }

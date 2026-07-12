@@ -2,10 +2,6 @@
 
 This roadmap is short on purpose. It describes the direction, not a promise that every imaginable integration ships in the next release.
 
-## Shipped: optional rolling file history
-
-`RollingFileLogHistory` restores first-party daily persistence as an opt-in feature with redaction-before-write, exact-size segment rotation, bounded retention, GZIP archives, legacy 4.x reads, and compile-time-disabled no-op behavior. Flutter apps enable it through `ISpectFlutter.init(fileHistory: ...)`; web keeps the in-memory fallback.
-
 ## Evidence before enterprise adoption
 
 Not required to use ISpect on internal builds, but these help larger teams trust the project:

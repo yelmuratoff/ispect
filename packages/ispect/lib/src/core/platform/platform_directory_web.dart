@@ -4,6 +4,10 @@ class _WebPlatformDirectoryProvider implements PlatformDirectoryProvider {
   const _WebPlatformDirectoryProvider();
 
   @override
+  Future<String> cacheDirectoryPath() async =>
+      throw UnsupportedError('cacheDirectoryPath is not available on web');
+
+  @override
   Future<Object> logsBaseDirectory() async =>
       throw UnsupportedError('logsBaseDirectory is not available on web');
 

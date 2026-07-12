@@ -6,6 +6,10 @@ class DefaultPlatformDirectoryProvider implements PlatformDirectoryProvider {
   const DefaultPlatformDirectoryProvider();
 
   @override
+  Future<String> cacheDirectoryPath() async =>
+      (await getApplicationCacheDirectory()).path;
+
+  @override
   Future<Object> logsBaseDirectory() async {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
