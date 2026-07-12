@@ -2,9 +2,7 @@
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
@@ -14,7 +12,6 @@ import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
-import 'package:ispect/src/features/log_viewer/presentation/screens/daily_sessions.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_button.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_sheet.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/search_bar.dart';
@@ -278,44 +275,30 @@ class _AppBarTitle extends StatelessWidget {
       button: true,
       label: title ?? 'ISpect',
       hint: 'Open session history',
-      child: GestureDetector(
-        excludeFromSemantics: true,
-        onTap: () {
-          if (kReleaseMode) return;
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => DailySessionsScreen(
-                history: ISpect.logger.fileLogHistory,
-              ),
-              settings: const RouteSettings(name: 'ISpect Info Screen'),
-            ),
-          );
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                title ?? '',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: hasCounter ? 20 : 26,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
-                  height: 1.1,
-                ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Text(
+              title ?? '',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: hasCounter ? 20 : 26,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+                height: 1.1,
               ),
             ),
-            if (hasCounter)
-              _AppBarCounter(
-                total: totalCount,
-                errors: errorCount,
-                warnings: warningCount,
-              ),
-          ],
-        ),
+          ),
+          if (hasCounter)
+            _AppBarCounter(
+              total: totalCount,
+              errors: errorCount,
+              warnings: warningCount,
+            ),
+        ],
       ),
     );
   }
