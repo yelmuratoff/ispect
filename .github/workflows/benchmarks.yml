@@ -6,6 +6,9 @@ on:
     paths:
       - "packages/ispect/**"
       - "packages/ispectify/**"
+      - "packages/ispectify_db/**"
+      - "packages/ispectify_dio/**"
+      - "packages/ispectify_http/**"
       - "bash/run_benchmarks.sh"
       - "bash/measure_release_size.sh"
       - ".github/workflows/benchmarks.yml"

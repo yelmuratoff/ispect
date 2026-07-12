@@ -44,8 +44,11 @@ compare results from different machines as though they were a regression.
 The `ispectify` benchmark covers metadata-only and payload logging, disabled
 and bounded history, redaction of 1, 10, and 100 KB payloads, and JSON Lines
 exports of 100 and 1,000 entries. The same run measures `ispectify_db`
-`dbTraceSync` against a direct in-memory operation. All cases compile to AOT
-before running so that JIT warm-up does not distort the result.
+`dbTraceSync` against a direct in-memory operation, plus `dio.*` and `http.*`
+request batches against fixed in-memory transports. The adapter suites compare
+the baseline client, metadata-only diagnostics, and body-enabled diagnostics.
+All pure Dart cases compile to AOT before running so that JIT warm-up does not
+distort the result.
 
 ```bash
 ./bash/run_benchmarks.sh
@@ -77,6 +80,21 @@ flutter run --profile --trace-startup
 flutter run --profile --trace-startup --dart-define=ISPECT_ENABLED=true
 ```
 
-Record `timeToFirstFrameMicros` from each trace. A future high-volume scenario
-must collect both `FrameTiming.buildDuration` and `FrameTiming.rasterDuration`;
+Record `timeToFirstFrameMicros` from each trace. The high-volume scenario
+collects both `FrameTiming.buildDuration` and `FrameTiming.rasterDuration`;
 build time alone cannot expose raster-thread jank.
+
+The fixed high-volume scenario is an integration test. It runs only in profile
+mode, renders the same 2,000 synthetic events with filters disabled and enabled,
+and places build/raster timing summaries plus missed-frame counts in the
+integration-test report data:
+
+```bash
+cd packages/ispect/example
+flutter test integration_test/high_volume_profile_test.dart --profile -d <device-id> \
+  --dart-define=ISPECT_ENABLED=true
+```
+
+Record the device model, refresh rate, OS, commit, and the generated report
+alongside any published comparison. The scenario is a measurement harness, not
+a CI regression threshold.
