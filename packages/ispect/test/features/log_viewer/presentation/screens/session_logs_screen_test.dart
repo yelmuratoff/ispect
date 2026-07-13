@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
@@ -92,5 +94,30 @@ void main() {
     );
 
     expect(content, contains('shared snapshot entry'));
+  });
+
+  test('JSON export stringifies non-encodable diagnostic values', () async {
+    final content = await buildLogsExportContent(
+      ExportFormat.json,
+      logs: [
+        ISpectLogData(
+          'Dio-style diagnostic entry',
+          id: 'NON-ENCODABLE-SNAPSHOT',
+          additionalData: {
+            'timeout': const Duration(seconds: 1),
+            'endpoint': Uri.parse('https://example.com/logs'),
+          },
+        ),
+      ],
+      redactKeys: defaultSensitiveKeys,
+    );
+
+    final decoded = jsonDecode(content) as Map<String, dynamic>;
+    final logs = decoded['logs'] as List<dynamic>;
+    final log = logs.single as Map<String, dynamic>;
+    final additionalData = log['additional-data'] as Map<String, dynamic>;
+
+    expect(additionalData['timeout'], '0:00:01.000000');
+    expect(additionalData['endpoint'], 'https://example.com/logs');
   });
 }

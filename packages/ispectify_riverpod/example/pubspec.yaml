@@ -6,8 +6,8 @@ environment:
   sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
-  ispectify: ^6.1.1
-  ispectify_riverpod: ^6.1.1
+  ispectify: ^6.1.2
+  ispectify_riverpod: ^6.1.2
   riverpod: ^2.5.0
 
 dependency_overrides:

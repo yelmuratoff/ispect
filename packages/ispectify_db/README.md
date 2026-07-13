@@ -60,8 +60,8 @@
 
 ```yaml
 dependencies:
-  ispectify: ^6.1.1
-  ispectify_db: ^6.1.1
+  ispectify: ^6.1.2
+  ispectify_db: ^6.1.2
 ```
 
 ## Quick start

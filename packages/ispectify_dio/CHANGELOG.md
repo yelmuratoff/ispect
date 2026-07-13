@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.1.2
+
+### Bug Fixes
+
+- **JSON log sharing:** Sharing all logs no longer fails when diagnostic metadata contains values such as `Duration`, `Uri`, enums, or client-specific objects.
+
 ## 6.1.1
 
 ### Improvements

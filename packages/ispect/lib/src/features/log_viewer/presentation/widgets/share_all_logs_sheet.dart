@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/export_controller.dart';
@@ -67,26 +65,12 @@ Future<String> buildLogsExportContent(
     case ExportFormat.csv:
       return LogExporter.toCsv(logs, redactKeys: redactKeys);
     case ExportFormat.json:
-      final exportData = <String, dynamic>{
-        ISpectMetadata.exportKey: {
-          'exportedAt': DateTime.now().toIso8601String(),
-          'version': '1.0.0',
-          'totalLogs': logs.length,
-          'platform': 'ispect',
-          ...?metadata?.toMap(),
-        },
-        'logs': logs.map((log) => log.toJson()).toList(growable: false),
-      };
-      if (redactKeys != null) {
-        final redactionService = RedactionService(sensitiveKeys: redactKeys);
-        final logsData = exportData['logs'];
-        if (logsData is List<Map<String, dynamic>>) {
-          exportData['logs'] = logsData.map((log) {
-            final redacted = redactionService.redact(log);
-            return redacted is Map<String, dynamic> ? redacted : log;
-          }).toList(growable: false);
-        }
-      }
-      return const JsonEncoder.withIndent('  ').convert(exportData);
+      return const LogsJsonService().exportToJson(
+        logs,
+        redactionService: redactKeys == null
+            ? null
+            : RedactionService(sensitiveKeys: redactKeys),
+        metadata: metadata,
+      );
   }
 }
