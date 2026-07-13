@@ -41,12 +41,14 @@ void _appendResults(Map<String, Object?> metrics, String path) {
   final decoded = jsonDecode(File(path).readAsStringSync());
   if (decoded is! Map<Object?, Object?>) {
     throw const FormatException(
-        'Additional benchmark input must be a JSON object');
+      'Additional benchmark input must be a JSON object',
+    );
   }
   final additionalResults = decoded['results'];
   if (additionalResults is! List<Object?>) {
     throw const FormatException(
-        'Additional benchmark input must contain results');
+      'Additional benchmark input must contain results',
+    );
   }
   final results = metrics['results'];
   if (results is! List<Object?>) {
