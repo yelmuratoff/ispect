@@ -68,7 +68,8 @@ This builds the `ispect` example twice: once with `ISPECT_ENABLED` omitted and
 once enabled. APKs and `--analyze-size` reports are saved to
 `build/benchmarks/release-size/`. Compare the two analysis JSON files in the
 DevTools App Size tool; do not present the raw APK as a store download-size
-estimate.
+estimate. If benchmark inputs are missing, the script first runs the pure Dart
+benchmark suite so that the published report remains complete.
 
 ### Startup and frame timing
 

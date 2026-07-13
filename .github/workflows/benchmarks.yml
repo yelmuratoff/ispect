@@ -17,7 +17,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: benchmark-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   measure:
@@ -26,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v6
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -52,6 +56,8 @@ jobs:
     needs: measure
     if: github.ref == 'refs/heads/main' && needs.measure.result == 'success'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Download benchmark artifacts

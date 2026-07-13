@@ -4,6 +4,21 @@ set -euo pipefail
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 example_dir="${root_dir}/packages/ispect/example"
 output_dir="${root_dir}/build/benchmarks/release-size"
+benchmark_input_dir="${root_dir}/build/benchmarks"
+
+required_benchmark_inputs=(
+  "${benchmark_input_dir}/ispectify.json"
+  "${benchmark_input_dir}/ispectify_db.json"
+  "${benchmark_input_dir}/ispectify_dio.json"
+  "${benchmark_input_dir}/ispectify_http.json"
+)
+
+for benchmark_input in "${required_benchmark_inputs[@]}"; do
+  if [[ ! -f "${benchmark_input}" ]]; then
+    "${root_dir}/bash/run_benchmarks.sh"
+    break
+  fi
+done
 
 mkdir -p "${output_dir}"
 pushd "${example_dir}" >/dev/null
