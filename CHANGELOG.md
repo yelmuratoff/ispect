@@ -1,5 +1,15 @@
 # Changelog
 
+## 6.1.1
+
+### Improvements
+
+- **Published benchmark results:** CI-generated AOT hot-path and Android release-footprint metrics are now linked from the performance guide; physical-device startup and frame profiling remain explicitly documented as pending measurements.
+- **Faster onboarding:** the README now opens with a copy-paste Flutter setup, an integration package selector, and a documented `ispectify` logger-only path.
+- **Focused examples:** the `ispect` showcase now has separate network, WebSocket, database, BLoC, Riverpod, and routing targets; BLoC and Riverpod also include standalone pure-Dart examples.
+- **Architecture walkthroughs:** new integration guidance shows where ISpect fits in Clean Architecture, BLoC, Riverpod, and Navigator-based routing.
+- **Database setup guidance:** the database guide now passes `ISpectDbConfig` directly to traced calls, matching the public API.
+
 ## 6.1.0
 
 ### Security

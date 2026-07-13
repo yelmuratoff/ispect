@@ -48,7 +48,7 @@
 </div>
 
 
-`ispectify` is the logging core of the [ISpect toolkit](#the-ispect-toolkit). Pure Dart, no Flutter dependency. Use it in CLI tools, server-side Dart, and shared business-logic packages.
+`ispectify` is the logging core of the [ISpect toolkit](#the-ispect-toolkit). Pure Dart, no Flutter dependency. Use it in CLI tools, server-side Dart, and shared business-logic packages. You do not need `ispect` or the in-app panel to use it.
 
 - Typed log entries with explicit severity levels and log-type keys.
 - Filtering, bounded in-memory history, and configurable truncation.
@@ -60,10 +60,10 @@
 
 ```yaml
 dependencies:
-  ispectify: ^6.1.0
+  ispectify: ^6.1.1
 ```
 
-## Quick start
+## Logger-only quick start
 
 ```dart
 import 'package:ispectify/ispectify.dart';
@@ -74,6 +74,10 @@ logger.info('Application started');
 logger.warning('Cache miss, falling back to network');
 logger.error('Payment gateway returned 502', exception, stackTrace);
 ```
+
+For Flutter UI, navigator diagnostics, and session browsing, add `ispect` on
+top of this logger. Keep `ispectify` alone when logs are consumed by the
+console, an observer, or your own UI.
 
 Custom log types:
 
@@ -281,17 +285,17 @@ Exported logs are plain-text JSON. Do not write PII (emails, phone numbers, toke
 
 ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
 
-| Package | What it does |
-| --- | --- |
-| [`ispect`](https://pub.dev/packages/ispect) | Flutter UI: debug panel, log viewer, navigation observer, inspector integration. |
-| [`ispect_layout`](https://pub.dev/packages/ispect_layout) | Visual layout inspector with sizes, constraints, decorations, compare mode, and a color picker. |
-| [`ispectify`](https://pub.dev/packages/ispectify) | Pure-Dart logging core: typed log entries, filtering, tracing, observers. |
-| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio) | Dio HTTP interceptor with automatic redaction. |
-| [`ispectify_http`](https://pub.dev/packages/ispectify_http) | `http` package interceptor with automatic redaction. |
-| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws) | Provider-agnostic WebSocket capture (any client) with automatic redaction. |
-| [`ispectify_db`](https://pub.dev/packages/ispectify_db) | Database operation tracing for SQL, ORMs, and KV stores. |
-| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc) | BLoC event, state, transition, and error observer. |
-| [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer. |
+| Package                                                             | What it does                                                                                    |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [`ispect`](https://pub.dev/packages/ispect)                         | Flutter UI: debug panel, log viewer, navigation observer, inspector integration.                |
+| [`ispect_layout`](https://pub.dev/packages/ispect_layout)           | Visual layout inspector with sizes, constraints, decorations, compare mode, and a color picker. |
+| [`ispectify`](https://pub.dev/packages/ispectify)                   | Pure-Dart logging core: typed log entries, filtering, tracing, observers.                       |
+| [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)           | Dio HTTP interceptor with automatic redaction.                                                  |
+| [`ispectify_http`](https://pub.dev/packages/ispectify_http)         | `http` package interceptor with automatic redaction.                                            |
+| [`ispectify_ws`](https://pub.dev/packages/ispectify_ws)             | Provider-agnostic WebSocket capture (any client) with automatic redaction.                      |
+| [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
+| [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
+| [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
 
 
 ## Contributing

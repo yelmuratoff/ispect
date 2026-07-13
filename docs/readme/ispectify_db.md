@@ -18,12 +18,12 @@ dependencies:
 
 ## Quick start
 
-Configure once at startup:
+Pass configuration at the traced call site:
 
 ```dart
 import 'package:ispectify_db/ispectify_db.dart';
 
-ISpectDbCore.config = const ISpectDbConfig(
+const dbConfig = ISpectDbConfig(
   sampleRate: 1.0,
   redact: true,
   attachStackOnError: true,
@@ -44,6 +44,7 @@ final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
   table: 'users',
   run: () => db.rawQuery('SELECT * FROM users WHERE id = ?', [userId]),
   projectResult: (rows) => {'rows': rows.length},
+  config: dbConfig,
 );
 ```
 
@@ -51,16 +52,16 @@ final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
 
 ## Configuration
 
-| Field | Default | What it does |
-| --- | --- | --- |
-| `sampleRate` | `1.0` | Fraction of calls to log. `0.1` keeps 10% of them. |
-| `redact` | `true` | Mask sensitive keys in `args` and `statement`. |
-| `redactKeys` | built-in set | Override the redaction key list. |
-| `attachStackOnError` | `true` | Capture and log a stack trace on failure. |
-| `slowThreshold` | `null` | Re-emit durations above the threshold as a `db-slow-query` entry. (Renamed from `slowQueryThreshold` in 5.0.) |
+| Field                | Default      | What it does                                                                                                  |
+| -------------------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
+| `sampleRate`         | `1.0`        | Fraction of calls to log. `0.1` keeps 10% of them.                                                            |
+| `redact`             | `true`       | Mask sensitive keys in `args` and `statement`.                                                                |
+| `redactKeys`         | built-in set | Override the redaction key list.                                                                              |
+| `attachStackOnError` | `true`       | Capture and log a stack trace on failure.                                                                     |
+| `slowThreshold`      | `null`       | Re-emit durations above the threshold as a `db-slow-query` entry. (Renamed from `slowQueryThreshold` in 5.0.) |
 
 ```dart
-ISpectDbCore.config = const ISpectDbConfig(
+const dbConfig = ISpectDbConfig(
   redact: true,
   redactKeys: ['password', 'token', 'secret'],
   slowThreshold: Duration(milliseconds: 250),

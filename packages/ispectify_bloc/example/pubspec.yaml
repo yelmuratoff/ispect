@@ -1,0 +1,17 @@
+name: ispectify_bloc_example
+description: Minimal standalone BLoC observer example for ISpect.
+publish_to: none
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+
+dependencies:
+  bloc: ^9.1.0
+  ispectify: ^6.1.1
+  ispectify_bloc: ^6.1.1
+
+dependency_overrides:
+  ispectify:
+    path: ../../ispectify
+  ispectify_bloc:
+    path: ..

@@ -1,5 +1,15 @@
 # Changelog
 
+## 6.1.1
+
+### Improvements
+
+- **Published benchmark results:** CI-generated AOT hot-path and Android release-footprint metrics are now linked from the performance guide; physical-device startup and frame profiling remain explicitly documented as pending measurements.
+- **Faster onboarding:** the README now opens with a copy-paste Flutter setup, an integration package selector, and a documented `ispectify` logger-only path.
+- **Focused examples:** the `ispect` showcase now has separate network, WebSocket, database, BLoC, Riverpod, and routing targets; BLoC and Riverpod also include standalone pure-Dart examples.
+- **Architecture walkthroughs:** new integration guidance shows where ISpect fits in Clean Architecture, BLoC, Riverpod, and Navigator-based routing.
+- **Database setup guidance:** the database guide now passes `ISpectDbConfig` directly to traced calls, matching the public API.
+
 ## 6.1.0
 
 ### Security
@@ -12,6 +22,8 @@
 
 ### Bug Fixes
 
+- **WebAssembly compatibility:** opt-in rolling file history no longer
+  prevents Web/WASM builds.
 - **Web-safe log IDs:** log entry IDs stay correctly time-sortable on web builds.
 - **`copyWith` keeps identity:** `ISpectLogData.copyWith`/`copy` preserve the original `id` so copies compare equal and de-duplicate correctly; pass `id:` for a new one.
 - **Observer recursion:** a log emitted synchronously from inside an observer is dropped instead of recursing.

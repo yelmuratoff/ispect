@@ -43,11 +43,11 @@ channel.stream.listen(
 
 The package example ships thin adapters that wire a concrete client to `WsDiagnostics` — copy the one you need into your app (and add that client to your own `pubspec.yaml`):
 
-| Client | Adapter |
-| --- | --- |
-| [`ws`](https://pub.dev/packages/ws) (plugfox) | `example/lib/interceptors/ws_interceptor.dart` |
+| Client                                                              | Adapter                                                        |
+| ------------------------------------------------------------------- | -------------------------------------------------------------- |
+| [`ws`](https://pub.dev/packages/ws) (plugfox)                       | `example/lib/interceptors/ws_interceptor.dart`                 |
 | [`web_socket_channel`](https://pub.dev/packages/web_socket_channel) | `example/lib/interceptors/web_socket_channel_interceptor.dart` |
-| [`socket_io_client`](https://pub.dev/packages/socket_io_client) | `example/lib/interceptors/socket_io_interceptor.dart` |
+| [`socket_io_client`](https://pub.dev/packages/socket_io_client)     | `example/lib/interceptors/socket_io_interceptor.dart`          |
 
 > Migrating from 5.x? `ISpectWSInterceptor` moved out of the published package into `example/lib/interceptors/ws_interceptor.dart`. Copy it in and add `ws` to your app — `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged. See `docs/DEPRECATIONS.md`.
 

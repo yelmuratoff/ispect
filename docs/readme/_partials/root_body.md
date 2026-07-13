@@ -10,6 +10,100 @@ ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside
 
 [Live web demo](https://yelmuratoff.github.io/ispect/). Drop an exported log file in to walk through a session in the browser.
 
+## Start here
+
+Add the Flutter panel, paste this setup, and run an internal build. It is the
+smallest complete `ispect` integration: guarded startup, in-app panel, and
+navigation diagnostics.
+
+```yaml
+dependencies:
+  ispect: ^{{version}}
+```
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:ispect/ispect.dart';
+
+void main() => ISpect.run(() => runApp(const MyApp()));
+
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final _observer = ISpectNavigatorObserver();
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          ...ISpectLocalizations.delegate(),
+        ],
+        navigatorObservers: ISpectNavigatorObserver.observers(
+          observer: _observer,
+        ),
+        builder: (_, child) => ISpectBuilder.wrap(
+          child: child!,
+          options: ISpectOptions(observer: _observer),
+        ),
+        home: const Scaffold(body: Center(child: Text('My app'))),
+      );
+}
+```
+
+```bash
+# Internal build: diagnostics active.
+flutter run --dart-define=ISPECT_ENABLED=true
+
+# Public release: omit the flag so the toolkit is inactive.
+flutter build apk
+```
+
+### Choose the package you need
+
+| Need                                            | Package                             |
+| ----------------------------------------------- | ----------------------------------- |
+| Structured logging only, with no Flutter UI     | `ispectify`                         |
+| In-app panel, navigator observer, and inspector | `ispect`                            |
+| Dio or `http` requests                          | `ispectify_dio` or `ispectify_http` |
+| WebSocket frames                                | `ispectify_ws`                      |
+| Database or storage operations                  | `ispectify_db`                      |
+| BLoC/Cubit lifecycle                            | `ispectify_bloc`                    |
+| Riverpod provider lifecycle                     | `ispectify_riverpod`                |
+| Layout inspection only                          | `ispect_layout`                     |
+
+Each adapter depends on `ispectify`; add `ispect` only when the Flutter UI is
+useful. See the package README for the focused setup.
+
+### Focused runnable examples
+
+The `ispect` showcase keeps one target per integration, alongside the full
+`complex_example.dart` tour:
+
+```bash
+cd packages/ispect/example
+flutter run -t lib/network/main.dart --dart-define=ISPECT_ENABLED=true
+flutter run -t lib/ws/main.dart --dart-define=ISPECT_ENABLED=true
+flutter run -t lib/db/main.dart --dart-define=ISPECT_ENABLED=true
+flutter run -t lib/bloc/main.dart --dart-define=ISPECT_ENABLED=true
+flutter run -t lib/riverpod/main.dart --dart-define=ISPECT_ENABLED=true
+flutter run -t lib/routing/main.dart --dart-define=ISPECT_ENABLED=true
+```
+
+The standalone BLoC and Riverpod observer examples run without Flutter:
+
+```bash
+cd packages/ispectify_bloc/example && dart run -DISPECT_ENABLED=true main.dart
+cd packages/ispectify_riverpod/example && dart run -DISPECT_ENABLED=true main.dart
+```
+
 ## Preview
 
 <div align="center">
@@ -106,28 +200,28 @@ ISpect is a pre-release diagnostics toolkit for Flutter and Dart. It runs inside
 
 The toolkit handles the diagnostics most projects rebuild by hand for every new app.
 
-| Capability | What it does |
-| --- | --- |
-| Release gating | `kISpectEnabled` is a compile-time constant. Disabled builds tree-shake the toolkit out, so production binaries do not carry it. |
-| Debug panel | Draggable in-app overlay with the log viewer, custom actions, and badges. |
-| Widget inspector | Tap a widget to read its render box, decoration, constraints, padding, transforms, and text style. |
-| Structured logs | Typed entries with severity, log-type keys, filters, bounded history, and JSON export/import. |
-| Network capture | Request/response/error capture for Dio, the `http` package, and WebSocket clients. Requests and responses are paired by correlation ID. |
-| HTTP composer | Replay a captured request or build one from scratch and send it through your registered `Dio`/`http` client, reusing its base URL, auth interceptors, and retries. Opt in with `ISpect.registerSender`; redacted values are re-added by the client at send time, not resent. |
-| Database tracing | One `dbTrace` extension wraps any storage call with timing, redaction, optional sampling, and a slow-query threshold. |
-| BLoC observer | Events, transitions, state changes, errors, and create/close hooks routed through the log pipeline. |
-| Riverpod observer | Provider add, update, dispose, and failure events routed through the log pipeline with the same redaction surface. |
-| Redaction | Auth headers, tokens, passwords, PII, and financial data masked before they reach logs, exports, observers, or the cURL helper. |
-| Observer hooks | Forward selected log categories to your own sink through an `ISpectObserver` adapter. |
-| Localization | 14 UI languages: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi, ckb, ku. |
+| Capability        | What it does                                                                                                                                                                                                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Release gating    | `kISpectEnabled` is a compile-time constant. Disabled builds tree-shake the toolkit out, so production binaries do not carry it.                                                                                                                                             |
+| Debug panel       | Draggable in-app overlay with the log viewer, custom actions, and badges.                                                                                                                                                                                                    |
+| Widget inspector  | Tap a widget to read its render box, decoration, constraints, padding, transforms, and text style.                                                                                                                                                                           |
+| Structured logs   | Typed entries with severity, log-type keys, filters, bounded history, and JSON export/import.                                                                                                                                                                                |
+| Network capture   | Request/response/error capture for Dio, the `http` package, and WebSocket clients. Requests and responses are paired by correlation ID.                                                                                                                                      |
+| HTTP composer     | Replay a captured request or build one from scratch and send it through your registered `Dio`/`http` client, reusing its base URL, auth interceptors, and retries. Opt in with `ISpect.registerSender`; redacted values are re-added by the client at send time, not resent. |
+| Database tracing  | One `dbTrace` extension wraps any storage call with timing, redaction, optional sampling, and a slow-query threshold.                                                                                                                                                        |
+| BLoC observer     | Events, transitions, state changes, errors, and create/close hooks routed through the log pipeline.                                                                                                                                                                          |
+| Riverpod observer | Provider add, update, dispose, and failure events routed through the log pipeline with the same redaction surface.                                                                                                                                                           |
+| Redaction         | Auth headers, tokens, passwords, PII, and financial data masked before they reach logs, exports, observers, or the cURL helper.                                                                                                                                              |
+| Observer hooks    | Forward selected log categories to your own sink through an `ISpectObserver` adapter.                                                                                                                                                                                        |
+| Localization      | 14 UI languages: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi, ckb, ku.                                                                                                                                                                                                    |
 
 ## Compared to the obvious alternatives
 
-| Tool | What it does well | Where ISpect fits |
-| --- | --- | --- |
-| Flutter DevTools | Profiling, memory, CPU, debugger, widget inspector when the IDE is attached. | DevTools needs an IDE connection. ISpect runs inside the app and lets a QA build export a session for offline inspection. |
-| Sentry, Crashlytics | Production crash reporting, release health, alerts, retention. | ISpect captures detail before the app ships. It is not a production telemetry replacement. |
-| Per-client interceptors | Logging request bodies to the console. | ISpect correlates network, logs, database calls, BLoC events, and navigation in one viewer that shares a single redaction pipeline. |
+| Tool                    | What it does well                                                            | Where ISpect fits                                                                                                                   |
+| ----------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Flutter DevTools        | Profiling, memory, CPU, debugger, widget inspector when the IDE is attached. | DevTools needs an IDE connection. ISpect runs inside the app and lets a QA build export a session for offline inspection.           |
+| Sentry, Crashlytics     | Production crash reporting, release health, alerts, retention.               | ISpect captures detail before the app ships. It is not a production telemetry replacement.                                          |
+| Per-client interceptors | Logging request bodies to the console.                                       | ISpect correlates network, logs, database calls, BLoC events, and navigation in one viewer that shares a single redaction pipeline. |
 
 ## Data handling
 
@@ -208,59 +302,17 @@ Linked policies:
 - [Quality gates](https://github.com/yelmuratoff/ispect/blob/main/docs/QUALITY.md)
 - [Performance scope](https://github.com/yelmuratoff/ispect/blob/main/docs/PERFORMANCE.md)
 - [Use cases](https://github.com/yelmuratoff/ispect/blob/main/docs/USE_CASES.md)
+- [Integration walkthroughs](https://github.com/yelmuratoff/ispect/blob/main/docs/INTEGRATION_GUIDES.md)
 - [Roadmap](https://github.com/yelmuratoff/ispect/blob/main/ROADMAP.md)
 
 ## Performance scope
 
-Disabled builds are inactive at compile time, so there is nothing to benchmark when the flag is omitted. When the toolkit is on, cost depends on what you turn on. Metadata logging is the lightest mode. Body capture and database tracing add per-call work proportional to payload size. High-volume BLoC or event streams may need filters or sampling. There are no published benchmark numbers yet, and there will not be any until they are reproducible against the SDK baseline.
-
-## Quick start
-
-> **Prefer to let an AI wire it up?** If you are unsure how to integrate ISpect, copy the ready-made prompt at [`docs/prompt.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/prompt.md) and paste it into any AI coding assistant (Claude Code, Cursor, Copilot, etc.). It instructs the agent to read the current sources and add ISpect correctly and efficiently — initialization, route observer, network/database/state-management tracing, settings, and the share/open-file callbacks — scoped to what your project actually uses.
-
-```yaml
-dependencies:
-  ispect: ^{{version}}
-```
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:ispect/ispect.dart';
-
-void main() {
-  ISpect.run(() => runApp(const MyApp()));
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: [
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        ...ISpectLocalizations.delegate(),
-      ],
-      navigatorObservers: ISpectNavigatorObserver.observers(),
-      builder: (_, child) => ISpectBuilder.wrap(child: child!),
-      home: const HomePage(),
-    );
-  }
-}
-```
-
-```bash
-# Internal build, toolkit active.
-flutter run --dart-define=ISPECT_ENABLED=true
-
-# Release build, toolkit inactive.
-flutter build apk
-```
-
-Per-client guides (Dio, `http`, WebSocket, DB, BLoC, Riverpod, layout inspector) live in the individual package READMEs linked in the table above.
+The latest reproducible AOT hot-path and Android release-footprint data is
+published in [`benchmark-data`](https://github.com/yelmuratoff/ispect/blob/benchmark-data/report.md).
+Startup and frame timing require a recorded physical-device profile pass and
+are not claimed by the current report. See [Performance
+scope](https://github.com/yelmuratoff/ispect/blob/main/docs/PERFORMANCE.md)
+for the measurement method and controls.
 
 <!-- partial:production_safety -->
 

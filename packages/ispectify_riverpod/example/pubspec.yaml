@@ -1,0 +1,17 @@
+name: ispectify_riverpod_example
+description: Minimal standalone Riverpod observer example for ISpect.
+publish_to: none
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+
+dependencies:
+  ispectify: ^6.1.1
+  ispectify_riverpod: ^6.1.1
+  riverpod: ^2.5.0
+
+dependency_overrides:
+  ispectify:
+    path: ../../ispectify
+  ispectify_riverpod:
+    path: ..

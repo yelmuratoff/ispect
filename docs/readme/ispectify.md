@@ -1,6 +1,6 @@
 <!-- partial:header -->
 
-`ispectify` is the logging core of the [ISpect toolkit](#the-ispect-toolkit). Pure Dart, no Flutter dependency. Use it in CLI tools, server-side Dart, and shared business-logic packages.
+`ispectify` is the logging core of the [ISpect toolkit](#the-ispect-toolkit). Pure Dart, no Flutter dependency. Use it in CLI tools, server-side Dart, and shared business-logic packages. You do not need `ispect` or the in-app panel to use it.
 
 - Typed log entries with explicit severity levels and log-type keys.
 - Filtering, bounded in-memory history, and configurable truncation.
@@ -15,7 +15,7 @@ dependencies:
   ispectify: ^{{version}}
 ```
 
-## Quick start
+## Logger-only quick start
 
 ```dart
 import 'package:ispectify/ispectify.dart';
@@ -26,6 +26,10 @@ logger.info('Application started');
 logger.warning('Cache miss, falling back to network');
 logger.error('Payment gateway returned 502', exception, stackTrace);
 ```
+
+For Flutter UI, navigator diagnostics, and session browsing, add `ispect` on
+top of this logger. Keep `ispectify` alone when logs are consumed by the
+console, an observer, or your own UI.
 
 Custom log types:
 

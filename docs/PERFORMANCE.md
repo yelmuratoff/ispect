@@ -26,12 +26,17 @@ When the toolkit is on, overhead depends on what you capture:
 
 ## Benchmarks
 
-There are no published benchmark numbers yet. They will appear when they are reproducible against the supported Flutter and Dart baseline. Until then, this document describes the performance model and the controls you can apply, not generic overhead numbers.
-
-The latest generated report is published by CI in the
+CI publishes the latest generated report to the
 [`benchmark-data`](https://github.com/yelmuratoff/ispect/blob/benchmark-data/report.md)
-branch. It is generated from the benchmark artifacts and must not be edited by
-hand.
+branch. It is generated from benchmark artifacts and must not be edited by
+hand. Measurements are comparison data for the recorded commit and machine,
+not universal performance claims.
+
+The current report covers AOT pure-Dart hot paths and Android arm64 release
+footprint: logging, history, redaction, JSON Lines export, database tracing,
+and Dio/http adapter overhead. Startup and high-volume frame measurements
+remain device-run scenarios; publish them only with the device model, refresh
+rate, OS, commit, and generated report.
 
 ## Reproducing measurements
 
@@ -54,9 +59,9 @@ distort the result.
 ./bash/run_benchmarks.sh
 ```
 
-The command writes `build/benchmarks/ispectify.json`. Its values are
-microseconds per operation and are intended for comparisons made under the
-same conditions, not as universal performance claims.
+The command writes `build/benchmarks/ispectify.json` and the generated report.
+Its values are microseconds per operation and are intended for comparisons
+made under the same conditions, not as universal performance claims.
 
 ### Release footprint
 
