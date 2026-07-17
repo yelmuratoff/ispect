@@ -5,6 +5,7 @@ This file is intentionally short. Public planning lives in [`ROADMAP.md`](ROADMA
 ## Open
 
 - Run and publish the remaining physical-Android measurements: disabled/enabled cold startup and the high-volume log viewer with filters off/on.
+- Repeat the physical-iOS startup and high-volume measurements with Simulator, unrelated builds, and other sustained CPU/I/O workloads stopped; treat the 2026-07-17 pass as provisional.
 - Add adoption notes or case studies to `docs/USE_CASES.md` only when they are real and attributable, with concrete numbers.
 
 ## Release Checks

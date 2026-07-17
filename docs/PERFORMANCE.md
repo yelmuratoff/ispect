@@ -40,9 +40,14 @@ rate, OS, commit, and generated report.
 
 ## Reproducing measurements
 
-Use Flutter `3.32.6` and record the machine, operating system, device, commit
-SHA, and date with every result. Warm up a device before comparing runs; never
-compare results from different machines as though they were a regression.
+Use Flutter `3.32.6` for the CI-aligned Android series. An iOS series may use a
+newer Flutter SDK required by the installed Xcode and generated iOS host, but
+must keep that SDK version fixed across every compared run. Record the Flutter
+SDK, machine, operating system, device, commit SHA, and date with every result.
+Warm up a device before comparing runs; never compare results from different
+SDKs, machines, or platforms as though they were a regression.
+Stop emulators, simulators, unrelated builds, and other sustained CPU or I/O
+workloads before warming up and measuring the device.
 
 ### Pure Dart hot paths
 
@@ -78,17 +83,23 @@ benchmark suite so that the published report remains complete.
 
 ### Startup and frame timing
 
-Run profile mode on the same physical Android device for each variant:
+Run profile mode on the same physical Android or iOS device for each variant:
 
 ```bash
 cd packages/ispect/example
-flutter run --profile --trace-startup
-flutter run --profile --trace-startup --dart-define=ISPECT_ENABLED=true
+flutter run --profile --trace-startup -d <device-id>
+flutter run --profile --trace-startup -d <device-id> \
+  --dart-define=ISPECT_ENABLED=true
 ```
 
-Record `timeToFirstFrameMicros` from each trace. The high-volume scenario
-collects both `FrameTiming.buildDuration` and `FrameTiming.rasterDuration`;
-build time alone cannot expose raster-thread jank.
+Each command overwrites `build/start_up_info.json`. Save the disabled and
+enabled files separately. Discard one warm-up run per variant, alternate which
+variant runs first, then measure each variant at least five times. Compare the
+median `timeToFirstFrameMicros` and publish the minimum and maximum alongside
+it; treat strongly overlapping ranges as inconclusive rather than claiming a
+regression or improvement. The high-volume scenario collects both
+`FrameTiming.buildDuration` and `FrameTiming.rasterDuration`; build time alone
+cannot expose raster-thread jank.
 
 The fixed high-volume scenario is an integration test. It runs only in profile
 mode and requires `ISPECT_ENABLED=true`. It seeds 2,000 deterministic entries
@@ -99,11 +110,14 @@ for filters off and filters on:
 
 ```bash
 cd packages/ispect/example
-flutter test integration_test/high_volume_profile_test.dart --profile -d <device-id> \
+flutter drive --profile --no-dds -d <device-id> \
+  --driver=test_driver/high_volume_profile_test.dart \
+  --target=integration_test/high_volume_profile_test.dart \
   --dart-define=ISPECT_ENABLED=true
 ```
 
-The integration report stores the two summaries under
+The command writes `build/integration_response_data.json`. The integration
+report stores the two summaries under
 `high-volume-filters-off` and `high-volume-filters-on`. Each contains average,
 p90, p99, and worst UI/raster durations, 16 ms frame-budget exceed counts,
 frame samples, GC counts, and layer/picture cache metrics. The accompanying
