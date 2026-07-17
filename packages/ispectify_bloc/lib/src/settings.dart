@@ -54,7 +54,7 @@ class ISpectBlocSettings {
   /// this preset is now equivalent to `ISpectBlocSettings()`.
   @Deprecated(
     'Default settings now capture full payloads; use ISpectBlocSettings(). '
-    'Will be removed in 6.0.0.',
+    'Will be removed in 7.0.0.',
   )
   static const ISpectBlocSettings verbose = ISpectBlocSettings();
 

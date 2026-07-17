@@ -50,11 +50,11 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   AnsiPen? responsePen;
   AnsiPen? errorPen;
 
-  @Deprecated('Use requestChain instead')
+  @Deprecated('Use requestChain instead. Will be removed in 7.0.0.')
   bool Function(TReq)? requestFilter;
-  @Deprecated('Use responseChain instead')
+  @Deprecated('Use responseChain instead. Will be removed in 7.0.0.')
   bool Function(TRes)? responseFilter;
-  @Deprecated('Use errorChain instead')
+  @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
   bool Function(TErr)? errorFilter;
 
   NetworkFilterChain<TReq>? requestChain;
@@ -64,9 +64,7 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   /// Returns `this` cast to the concrete builder type for fluent chaining.
   B get _self => this as B;
 
-  // ---------------------------------------------------------------------------
   // Enable / disable
-  // ---------------------------------------------------------------------------
 
   /// Enables the interceptor (enabled by default).
   B withEnabled() {
@@ -80,9 +78,7 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     return _self;
   }
 
-  // ---------------------------------------------------------------------------
   // Redaction
-  // ---------------------------------------------------------------------------
 
   /// Enables sensitive data redaction.
   B withRedaction() {
@@ -96,9 +92,7 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     return _self;
   }
 
-  // ---------------------------------------------------------------------------
   // Individual toggles
-  // ---------------------------------------------------------------------------
 
   /// Enables printing of response data.
   B withResponseData() {
@@ -148,9 +142,7 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     return _self;
   }
 
-  // ---------------------------------------------------------------------------
   // Bulk toggles
-  // ---------------------------------------------------------------------------
 
   /// Enables printing of all headers (request, response, error).
   B withAllHeaders() {
@@ -181,9 +173,7 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     return _self;
   }
 
-  // ---------------------------------------------------------------------------
   // Pens
-  // ---------------------------------------------------------------------------
 
   /// Sets custom color for request logs.
   B withRequestPen(AnsiPen pen) {
@@ -203,34 +193,30 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     return _self;
   }
 
-  // ---------------------------------------------------------------------------
   // Filters (legacy — prefer filter chains)
-  // ---------------------------------------------------------------------------
 
   /// Sets a custom request filter callback.
-  @Deprecated('Use withRequestChain instead')
+  @Deprecated('Use withRequestChain instead. Will be removed in 7.0.0.')
   B withRequestFilter(bool Function(TReq) filter) {
     requestFilter = filter;
     return _self;
   }
 
   /// Sets a custom response filter callback.
-  @Deprecated('Use withResponseChain instead')
+  @Deprecated('Use withResponseChain instead. Will be removed in 7.0.0.')
   B withResponseFilter(bool Function(TRes) filter) {
     responseFilter = filter;
     return _self;
   }
 
   /// Sets a custom error filter callback.
-  @Deprecated('Use withErrorChain instead')
+  @Deprecated('Use withErrorChain instead. Will be removed in 7.0.0.')
   B withErrorFilter(bool Function(TErr) filter) {
     errorFilter = filter;
     return _self;
   }
 
-  // ---------------------------------------------------------------------------
   // Filter chains
-  // ---------------------------------------------------------------------------
 
   /// Sets a [NetworkFilterChain] for request filtering.
   B withRequestChain(NetworkFilterChain<TReq> chain) {
@@ -250,9 +236,7 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     return _self;
   }
 
-  // ---------------------------------------------------------------------------
   // Environment presets
-  // ---------------------------------------------------------------------------
 
   /// Applies development preset: all headers, all data, redaction enabled.
   void applyDevelopmentDefaults() {

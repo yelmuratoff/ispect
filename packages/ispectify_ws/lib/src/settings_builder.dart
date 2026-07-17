@@ -27,14 +27,14 @@ class ISpectWSInterceptorSettingsBuilder
       ISpectWSInterceptorSettingsBuilder()..enabled = false;
 
   /// Alias for [withRequestFilter] using WS naming convention.
-  @Deprecated('Use withSentChain instead')
+  @Deprecated('Use withSentChain instead. Will be removed in 7.0.0.')
   ISpectWSInterceptorSettingsBuilder withSentFilter(
     bool Function(ISpectLogData data) filter,
   ) =>
       withRequestFilter(filter);
 
   /// Alias for [withResponseFilter] using WS naming convention.
-  @Deprecated('Use withReceivedChain instead')
+  @Deprecated('Use withReceivedChain instead. Will be removed in 7.0.0.')
   ISpectWSInterceptorSettingsBuilder withReceivedFilter(
     bool Function(ISpectLogData data) filter,
   ) =>

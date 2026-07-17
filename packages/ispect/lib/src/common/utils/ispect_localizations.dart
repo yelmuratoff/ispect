@@ -47,7 +47,7 @@ final class ISpectLocalizations {
     'helper should not mutate the localization stack, especially in release '
     'builds. Add the three Global*Localizations.delegate entries to your own '
     'localizationsDelegates list and spread ...ISpectLocalizations.delegate() '
-    'after them. Will be removed in 6.0.0.',
+    'after them. Will be removed in 7.0.0.',
   )
   static List<LocalizationsDelegate<Object>> delegates({
     List<LocalizationsDelegate<Object>> delegates = const [],

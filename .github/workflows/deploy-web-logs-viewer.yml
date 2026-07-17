@@ -48,7 +48,12 @@ jobs:
          - name: Analyze project
            run: |
               cd web_logs_viewer
-              flutter analyze
+              flutter analyze --fatal-infos
+
+         - name: Run tests
+           run: |
+              cd web_logs_viewer
+              flutter test --coverage
 
          - name: Build web app
            run: |

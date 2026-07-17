@@ -23,6 +23,7 @@ jobs:
         package:
           - ispectify
           - ispectify_db
+          - ispectify_riverpod
 
     steps:
       - name: Checkout

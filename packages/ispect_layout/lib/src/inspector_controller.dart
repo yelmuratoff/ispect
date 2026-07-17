@@ -58,19 +58,19 @@ class InspectorController {
 
   /// Deprecated. Use [widgetInspectorShortcutActivators] — it supports
   /// multi-key chords and the full [ShortcutActivator] API. Will be removed
-  /// in 5.1.0.
+  /// in 7.0.0.
   @Deprecated(
-      'Use widgetInspectorShortcutActivators. Will be removed in 5.1.0.')
+      'Use widgetInspectorShortcutActivators. Will be removed in 7.0.0.')
   final List<LogicalKeyboardKey>? widgetInspectorShortcuts;
 
   @Deprecated(
-      'Use widgetInspectAndCompareShortcutActivators. Will be removed in 5.1.0.')
+      'Use widgetInspectAndCompareShortcutActivators. Will be removed in 7.0.0.')
   final List<LogicalKeyboardKey>? widgetInspectAndCompareShortcuts;
 
-  @Deprecated('Use colorPickerShortcutActivators. Will be removed in 5.1.0.')
+  @Deprecated('Use colorPickerShortcutActivators. Will be removed in 7.0.0.')
   final List<LogicalKeyboardKey>? colorPickerShortcuts;
 
-  @Deprecated('Use zoomShortcutActivators. Will be removed in 5.1.0.')
+  @Deprecated('Use zoomShortcutActivators. Will be removed in 7.0.0.')
   final List<LogicalKeyboardKey>? zoomShortcuts;
 
   final List<ShortcutActivator>? widgetInspectorShortcutActivators;

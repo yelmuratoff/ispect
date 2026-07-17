@@ -11,7 +11,10 @@ const String defaultPlaceholder = '[REDACTED]';
 ///
 /// Kept so existing imports keep compiling; all redaction now emits the single
 /// [defaultPlaceholder] mask.
-@Deprecated('Use defaultPlaceholder; redaction now uses one unified mask.')
+@Deprecated(
+  'Use defaultPlaceholder; redaction now uses one unified mask. '
+  'Will be removed in 7.0.0.',
+)
 const String redactedMask = defaultPlaceholder;
 
 /// URI-safe form of [defaultPlaceholder] for redacted userInfo in URLs.

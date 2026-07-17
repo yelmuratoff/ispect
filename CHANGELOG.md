@@ -1,5 +1,20 @@
 # Changelog
 
+## 6.1.4
+
+### Bug Fixes
+
+- **Web/WASM log files:** Browser Blob validation now behaves consistently in JavaScript and WebAssembly builds.
+- **Web log imports:** Malformed structured text is no longer misclassified as JSON, and file stream failures stop processing without a second success callback.
+
+### Code Quality
+
+- **Deprecation schedule:** Compatibility APIs retained in 6.x now have a consistent `7.0.0` removal target and migration inventory.
+
+### CI
+
+- **Package gates:** `ispectify_riverpod` and the web logs viewer now run analyzer and test coverage checks in CI.
+
 ## 6.1.3
 
 ### Improvements

@@ -1,5 +1,11 @@
 # Rolling File Log History Implementation Plan
 
+Status: Completed in 6.1.0
+
+This is a historical execution plan. Its unchecked boxes preserve the original
+red-green-refactor sequence; they are not open backlog items. Current planning
+lives in `ROADMAP.md` and `TODO.md`.
+
 > Execute with `subagent-driven-development` only when the user explicitly
 > authorizes subagents/delegation; otherwise execute inline. Steps use `- [ ]`
 > for tracking.

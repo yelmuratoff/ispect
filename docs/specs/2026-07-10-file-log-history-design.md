@@ -1,7 +1,11 @@
 # File Log History Design
 
 Date: 2026-07-10
-Status: Approved design, pending implementation plan
+Status: Implemented in 6.1.0
+
+This document is the historical design record for `RollingFileLogHistory`.
+Current behavior is defined by the public API, tests, and generated package
+documentation.
 
 ## Context
 

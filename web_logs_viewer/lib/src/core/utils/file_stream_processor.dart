@@ -5,13 +5,29 @@ import 'dart:typed_data';
 /// Maximum allowed file size: 100 MB.
 const _maxFileSize = 100 * 1024 * 1024;
 
+final class FileSizeLimitException implements Exception {
+  const FileSizeLimitException({
+    required this.maxFileSize,
+    required this.actualSize,
+  });
+
+  final int maxFileSize;
+  final int actualSize;
+
+  @override
+  String toString() =>
+      'FileSizeLimitException(maxFileSize: $maxFileSize, '
+      'actualSize: $actualSize)';
+}
+
 /// Processes a file stream and decodes its content.
 StreamSubscription<Uint8List> processFileStream(
   dynamic file, {
   required void Function(String content) onSuccess,
   required void Function(Object error) onError,
+  int maxFileSize = _maxFileSize,
 }) {
-  final stream = file.getStream();
+  final stream = file.getStream() as Stream<Uint8List>;
   final chunks = <Uint8List>[];
   var totalSize = 0;
   var cancelled = false;
@@ -19,12 +35,15 @@ StreamSubscription<Uint8List> processFileStream(
   late final StreamSubscription<Uint8List> subscription;
   subscription = stream.listen(
     (chunk) {
-      totalSize += chunk.length as int;
-      if (totalSize > _maxFileSize) {
+      totalSize += chunk.length;
+      if (totalSize > maxFileSize) {
         cancelled = true;
-        subscription.cancel();
+        unawaited(subscription.cancel());
         onError(
-          Exception('File too large (max ${_maxFileSize ~/ (1024 * 1024)} MB)'),
+          FileSizeLimitException(
+            maxFileSize: maxFileSize,
+            actualSize: totalSize,
+          ),
         );
         return;
       }
@@ -40,7 +59,11 @@ StreamSubscription<Uint8List> processFileStream(
         onError(e);
       }
     },
-    onError: onError,
+    onError: (Object error) {
+      cancelled = true;
+      onError(error);
+    },
+    cancelOnError: true,
   );
 
   return subscription;

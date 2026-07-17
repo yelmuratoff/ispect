@@ -84,52 +84,42 @@ class WebLogsFile extends BaseLogsFile {
 
   @override
   String getFilePath(Object file) {
-    if (file is! Blob) {
-      throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
+    final blob = _requireBlob(file);
+
+    if (_objectUrls.containsKey(blob)) {
+      return _objectUrls[blob]!;
     }
 
-    // Return cached URL if it exists
-    if (_objectUrls.containsKey(file)) {
-      return _objectUrls[file]!;
-    }
-
-    // Create new URL and cache it
-    final url = URL.createObjectURL(file);
-    _objectUrls[file] = url;
+    final url = URL.createObjectURL(blob);
+    _objectUrls[blob] = url;
     return url;
   }
 
   @override
   Future<int> getFileSize(Object file) async {
-    if (file is! Blob) {
-      throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
-    }
-    return file.size;
+    final blob = _requireBlob(file);
+    return blob.size;
   }
 
   @override
   Future<String> readAsString(Object file) async {
-    if (file is! Blob) {
-      throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
-    }
-    final jsString = await file.text().toDart;
+    final blob = _requireBlob(file);
+    final jsString = await blob.text().toDart;
     return jsString.toDart;
   }
 
   @override
   Future<void> deleteFile(Object file) async {
-    if (file is! Blob) {
-      throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
-    }
+    final blob = _requireBlob(file);
 
     // Revoke cached URL if it exists
-    final url = _objectUrls[file];
+    final url = _objectUrls[blob];
     if (url != null) {
       URL.revokeObjectURL(url);
-      _objectUrls.remove(file);
+      _objectUrls.remove(blob);
     }
 
-    _fileNames.remove(file);
+    _fileNames.remove(blob);
   }
 
   @override
@@ -151,20 +141,24 @@ class WebLogsFile extends BaseLogsFile {
     String fileType = 'json',
     ISpectShareCallback? onShare,
   }) async {
-    if (file is! Blob) {
-      throw ArgumentError(
-        'Expected Blob instance for web download, got ${file.runtimeType}',
-      );
-    }
+    final blob = _requireBlob(file);
 
-    final finalFileName = _determineFinalFileName(file, fileName, fileType);
-    final url = URL.createObjectURL(file);
+    final finalFileName = _determineFinalFileName(blob, fileName, fileType);
+    final url = URL.createObjectURL(blob);
 
     _triggerBrowserDownload(url, finalFileName);
     URL.revokeObjectURL(url);
 
-    _objectUrls.remove(file);
-    _fileNames.remove(file);
+    _objectUrls.remove(blob);
+    _fileNames.remove(blob);
+  }
+
+  static Blob _requireBlob(Object file) {
+    final jsFile = file.jsify();
+    if (jsFile == null || !jsFile.isA<Blob>()) {
+      throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
+    }
+    return jsFile as Blob;
   }
 
   /// Determines final filename for download

@@ -27,8 +27,8 @@ final class ISpectErrorHandlerOptions {
 }
 
 /// Renamed to [ISpectErrorHandlerOptions] in 5.0.0 to disambiguate from
-/// [ISpectOptions] (UI configuration). Will be removed in 6.0.0.
+/// [ISpectOptions] (UI configuration). Will be removed in 7.0.0.
 @Deprecated(
-  'Use ISpectErrorHandlerOptions instead. Will be removed in 6.0.0.',
+  'Use ISpectErrorHandlerOptions instead. Will be removed in 7.0.0.',
 )
 typedef ISpectLogOptions = ISpectErrorHandlerOptions;

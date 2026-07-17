@@ -53,8 +53,8 @@ class ISpectBuilder extends StatefulWidget {
   @Deprecated(
     'Use ISpectBuilder.wrap. The wrap factory short-circuits before '
     'constructing the widget when kISpectEnabled is false, preserving '
-    'tree-shaking in release builds. The constructor is scheduled to be '
-    'made private in a stable 5.x release.',
+    'tree-shaking in release builds. The constructor will be made private '
+    'in 7.0.0.',
   )
   const ISpectBuilder({
     required this.child,

@@ -94,8 +94,8 @@ class ISpectScopeModel extends ChangeNotifier {
     }());
     final updatedTheme = value.copyWith(
       logIcons: {
-        ...ISpectConstants.typeIcons, // Default icons
-        ...value.logIcons, // Custom user-defined icons
+        ...ISpectConstants.typeIcons,
+        ...value.logIcons,
       },
     );
     _updateValue(_theme, updatedTheme, (v) => _theme = v);
@@ -147,7 +147,7 @@ class ISpectScopeController extends InheritedNotifier<ISpectScopeModel> {
   /// Retrieves the nearest `ISpectScopeModel` in the widget tree.
   ///
   /// Throws a [FlutterError] if no `ISpectScopeController` is found.
-  @Deprecated('Use ISpect.read(context) instead. Will be removed in 6.0.0.')
+  @Deprecated('Use ISpect.read(context) instead. Will be removed in 7.0.0.')
   static ISpectScopeModel of(BuildContext context) => ISpect.read(context);
 }
 

@@ -42,8 +42,8 @@ bool _isJsonContent(String trimmedContent) {
     try {
       jsonDecode(trimmedContent);
       return true;
-    } catch (e) {
-      return trimmedContent.startsWith('{') || trimmedContent.startsWith('[');
+    } on FormatException {
+      return false;
     }
   }
   return false;

@@ -204,7 +204,13 @@ class ISpectNavigatorObserver extends NavigatorObserver {
 
     addTransition(transition);
 
-    final logMessage = _buildLogMessage(type, route, previousRoute);
+    final logMessage = buildRouteLogMessage(
+      type: type,
+      route: route,
+      previousRoute: previousRoute,
+      enableArgumentRedaction: enableArgumentRedaction,
+      globalRedactionEnabled: ISpectRedaction.enabled,
+    );
     ISpect.logger.route(logMessage, transitionId: correlationId);
   }
 
@@ -267,44 +273,6 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     );
   }
 
-  /// Builds a structured log message for route transitions.
-  String _buildLogMessage(
-    TransitionType type,
-    Route<dynamic>? route,
-    Route<dynamic>? previousRoute,
-  ) {
-    final buffer = StringBuffer();
-    final routeName = route.routeName;
-    final routeType = route.routeType;
-    final previousRouteName = previousRoute.routeName;
-    final previousRouteType = previousRoute.routeType;
-
-    buffer.writeln(
-        '${type.title} | $previousRouteName ($previousRouteType) → $routeName ($routeType)');
-
-    // Arguments info — redacted by default (only type and key names). The
-    // global ISpectRedaction kill-switch overrides the per-observer flag.
-    final redactArguments = enableArgumentRedaction && ISpectRedaction.enabled;
-    switch (route?.settings.arguments) {
-      case null:
-        break;
-      case final Map<String, dynamic> args:
-        if (redactArguments) {
-          buffer.writeln('Arguments: {${args.keys.join(', ')}}');
-        } else {
-          buffer.writeln('Arguments: $args');
-        }
-      case final Object args:
-        if (redactArguments) {
-          buffer.writeln('Arguments: (${args.runtimeType})');
-        } else {
-          buffer.writeln('Arguments: $args');
-        }
-    }
-
-    return buffer.toString().trim();
-  }
-
   /// Determines whether arriving at [route] should be logged.
   ///
   /// The decision is driven by the *destination* route's kind, not by the
@@ -339,4 +307,43 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     final name = route?.settings.name;
     return name != null && name.startsWith(_internalRoutePrefix);
   }
+}
+
+String buildRouteLogMessage({
+  required TransitionType type,
+  required Route<dynamic>? route,
+  required Route<dynamic>? previousRoute,
+  required bool enableArgumentRedaction,
+  required bool globalRedactionEnabled,
+}) {
+  final buffer = StringBuffer();
+  final routeName = route.routeName;
+  final routeType = route.routeType;
+  final previousRouteName = previousRoute.routeName;
+  final previousRouteType = previousRoute.routeType;
+
+  buffer.writeln(
+    '${type.title} | $previousRouteName ($previousRouteType) '
+    '→ $routeName ($routeType)',
+  );
+
+  final redactArguments = enableArgumentRedaction && globalRedactionEnabled;
+  switch (route?.settings.arguments) {
+    case null:
+      break;
+    case final Map<String, dynamic> args:
+      if (redactArguments) {
+        buffer.writeln('Arguments: {${args.keys.join(', ')}}');
+      } else {
+        buffer.writeln('Arguments: $args');
+      }
+    case final Object args:
+      if (redactArguments) {
+        buffer.writeln('Arguments: (${args.runtimeType})');
+      } else {
+        buffer.writeln('Arguments: $args');
+      }
+  }
+
+  return buffer.toString().trim();
 }

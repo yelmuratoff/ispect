@@ -24,9 +24,12 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
     AnsiPen? sentPen,
     AnsiPen? receivedPen,
     super.errorPen,
-    @Deprecated('Use sentChain instead') this.sentFilter,
-    @Deprecated('Use receivedChain instead') this.receivedFilter,
-    @Deprecated('Use errorChain instead') this.errorFilter,
+    @Deprecated('Use sentChain instead. Will be removed in 7.0.0.')
+    this.sentFilter,
+    @Deprecated('Use receivedChain instead. Will be removed in 7.0.0.')
+    this.receivedFilter,
+    @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
+    this.errorFilter,
     this.sentChain,
     this.receivedChain,
     this.errorChain,
@@ -42,15 +45,15 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
         );
 
   /// Filter for sent messages. Return `false` to suppress logging.
-  @Deprecated('Use sentChain instead')
+  @Deprecated('Use sentChain instead. Will be removed in 7.0.0.')
   final bool Function(ISpectLogData data)? sentFilter;
 
   /// Filter for received messages. Return `false` to suppress logging.
-  @Deprecated('Use receivedChain instead')
+  @Deprecated('Use receivedChain instead. Will be removed in 7.0.0.')
   final bool Function(ISpectLogData data)? receivedFilter;
 
   /// Filter for error events. Return `false` to suppress logging.
-  @Deprecated('Use errorChain instead')
+  @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
   final bool Function(ISpectLogData data)? errorFilter;
 
   /// Filter chain for sent messages. Takes priority over [sentFilter].
@@ -123,11 +126,11 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
     // Accepted for interface compatibility; has no effect on WS.
     // ignore: avoid_unused_constructor_parameters
     bool? printErrorHeaders,
-    @Deprecated('Use sentChain instead')
+    @Deprecated('Use sentChain instead. Will be removed in 7.0.0.')
     bool Function(ISpectLogData data)? sentFilter,
-    @Deprecated('Use receivedChain instead')
+    @Deprecated('Use receivedChain instead. Will be removed in 7.0.0.')
     bool Function(ISpectLogData data)? receivedFilter,
-    @Deprecated('Use errorChain instead')
+    @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
     bool Function(ISpectLogData data)? errorFilter,
     NetworkFilterChain<ISpectLogData>? sentChain,
     NetworkFilterChain<ISpectLogData>? receivedChain,

@@ -66,7 +66,7 @@ navigation diagnostics.
 
 ```yaml
 dependencies:
-  ispect: ^6.1.3
+  ispect: ^6.1.4
 ```
 
 ```dart

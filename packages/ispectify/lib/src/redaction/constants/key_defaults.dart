@@ -241,7 +241,7 @@ const Set<String> defaultSensitiveKeys = <String>{
 };
 
 /// Backward-compatible alias for [defaultSensitiveKeys].
-@Deprecated('Use defaultSensitiveKeys instead')
+@Deprecated('Use defaultSensitiveKeys instead. Will be removed in 7.0.0.')
 const Set<String> kDefaultSensitiveKeys = defaultSensitiveKeys;
 
 /// Regex patterns that match sensitive key name fragments.
