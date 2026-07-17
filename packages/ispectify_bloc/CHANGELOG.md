@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.1.3
+
+### Improvements
+
+- **High-volume profiling:** The benchmark now exercises the real ISpect logger and log viewer, with isolated filters-off/on frame summaries and recorded display metadata.
+
 ## 6.1.2
 
 ### Bug Fixes

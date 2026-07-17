@@ -1,174 +1,96 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:ispect/ispect.dart';
 
-const _frameBudget = Duration(milliseconds: 16);
-const _eventCount = 2000;
+import 'support/high_volume_benchmark.dart';
+
+const _scrollOffset = Offset(0, -1200);
+const _scrollDuration = Duration(milliseconds: 1500);
 
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized()
+    ..framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
   testWidgets(
-    'records frame timings for fixed high-volume events with filters on and off',
+    'profiles the ISpect log viewer with filters off and on',
     (tester) async {
-      final timings = <FrameTiming>[];
-      void collectTimings(List<FrameTiming> values) {
-        timings.addAll(values);
-      }
-
-      SchedulerBinding.instance.addTimingsCallback(collectTimings);
-      addTearDown(
-        () => SchedulerBinding.instance.removeTimingsCallback(collectTimings),
+      expect(
+        kISpectEnabled,
+        isTrue,
+        reason: 'Run with --dart-define=ISPECT_ENABLED=true',
       );
 
-      await tester.pumpWidget(const _ProfileScenario());
+      final benchmarkKey = GlobalKey<HighVolumeBenchmarkState>();
+      await tester.pumpWidget(
+        HighVolumeBenchmarkApp(key: benchmarkKey),
+      );
       await tester.pumpAndSettle();
-      expect(find.text('Visible events: $_eventCount'), findsOneWidget);
 
-      await tester.tap(find.byKey(const ValueKey<String>('filter-toggle')));
+      final state = benchmarkKey.currentState!;
+      state.seedEvents();
       await tester.pumpAndSettle();
-      expect(find.text('Visible events: 200'), findsOneWidget);
+      expect(state.totalLogCount, highVolumeEventCount);
 
-      binding.reportData = <String, Object>{
-        'high-volume-profile': _FrameSummary.from(timings).toJson(),
+      state.showAllLogs();
+      await _warmUp(tester, state);
+      await binding.watchPerformance(
+        () => _exerciseScroll(tester),
+        reportKey: 'high-volume-filters-off',
+      );
+
+      state.showErrorsOnly();
+      await tester.pumpAndSettle();
+      expect(state.visibleLogCount, highVolumeErrorCount);
+      await _warmUp(tester, state);
+      await binding.watchPerformance(
+        () => _exerciseScroll(tester),
+        reportKey: 'high-volume-filters-on',
+      );
+
+      final physicalSize = state.physicalSize;
+      final devicePixelRatio = state.devicePixelRatio;
+      final reportData = binding.reportData ?? <String, dynamic>{};
+      reportData['high-volume-metadata'] = <String, Object>{
+        'event-count': highVolumeEventCount,
+        'filtered-event-count': highVolumeErrorCount,
+        'refresh-rate-hz': state.refreshRate,
+        'physical-width': physicalSize.width,
+        'physical-height': physicalSize.height,
+        'device-pixel-ratio': devicePixelRatio,
+        'logical-width': physicalSize.width / devicePixelRatio,
+        'logical-height': physicalSize.height / devicePixelRatio,
       };
+      binding.reportData = reportData;
     },
     skip: !kProfileMode,
   );
 }
 
-class _ProfileScenario extends StatefulWidget {
-  const _ProfileScenario();
-
-  @override
-  State<_ProfileScenario> createState() => _ProfileScenarioState();
+Future<void> _warmUp(
+  WidgetTester tester,
+  HighVolumeBenchmarkState state,
+) async {
+  state.resetScrollPosition();
+  await tester.pumpAndSettle();
+  await _exerciseScroll(tester);
+  state.resetScrollPosition();
+  await tester.pumpAndSettle();
 }
 
-class _ProfileScenarioState extends State<_ProfileScenario> {
-  final List<_ProfileEvent> _events = <_ProfileEvent>[];
-  late final StreamSubscription<List<_ProfileEvent>> _eventSubscription;
-  var _filtersEnabled = false;
+Future<void> _exerciseScroll(WidgetTester tester) async {
+  final scrollView = find.byType(CustomScrollView);
+  expect(scrollView, findsOneWidget);
 
-  @override
-  void initState() {
-    super.initState();
-    _eventSubscription = _fixedEventStream().listen((batch) {
-      if (!mounted) return;
-      setState(() => _events.addAll(batch));
-    });
-  }
-
-  @override
-  void dispose() {
-    unawaited(_eventSubscription.cancel());
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final visibleEvents = _filtersEnabled
-        ? _events.where((event) => event.isError).toList(growable: false)
-        : _events;
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('ISpect profile benchmark')),
-        body: Column(
-          children: <Widget>[
-            Text('Visible events: ${visibleEvents.length}'),
-            FilledButton(
-              key: const ValueKey<String>('filter-toggle'),
-              onPressed: () {
-                setState(() => _filtersEnabled = !_filtersEnabled);
-              },
-              child:
-                  Text(_filtersEnabled ? 'Disable filters' : 'Enable filters'),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemExtent: 36,
-                itemCount: visibleEvents.length,
-                itemBuilder: (context, index) {
-                  final event = visibleEvents[index];
-                  return ListTile(
-                    title: Text(event.message),
-                    trailing: Text(event.isError ? 'error' : 'info'),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  await tester.timedDrag(
+    scrollView,
+    _scrollOffset,
+    _scrollDuration,
+  );
+  await tester.timedDrag(
+    scrollView,
+    -_scrollOffset,
+    _scrollDuration,
+  );
 }
-
-Stream<List<_ProfileEvent>> _fixedEventStream() async* {
-  const batchSize = 100;
-  for (var firstIndex = 0; firstIndex < _eventCount; firstIndex += batchSize) {
-    yield List<_ProfileEvent>.generate(
-      batchSize,
-      (offset) {
-        final index = firstIndex + offset;
-        return _ProfileEvent(index, isError: index % 10 == 0);
-      },
-      growable: false,
-    );
-    await Future<void>.delayed(Duration.zero);
-  }
-}
-
-final class _ProfileEvent {
-  const _ProfileEvent(this.index, {required this.isError});
-
-  final int index;
-  final bool isError;
-
-  String get message => 'Synthetic benchmark event $index';
-}
-
-final class _FrameSummary {
-  const _FrameSummary({
-    required this.frameCount,
-    required this.missedFrameCount,
-    required this.maxBuildMicros,
-    required this.maxRasterMicros,
-  });
-
-  factory _FrameSummary.from(List<FrameTiming> timings) {
-    var maxBuildMicros = 0;
-    var maxRasterMicros = 0;
-    var missedFrameCount = 0;
-    for (final timing in timings) {
-      maxBuildMicros =
-          _max(maxBuildMicros, timing.buildDuration.inMicroseconds);
-      maxRasterMicros =
-          _max(maxRasterMicros, timing.rasterDuration.inMicroseconds);
-      if (timing.totalSpan > _frameBudget) missedFrameCount++;
-    }
-    return _FrameSummary(
-      frameCount: timings.length,
-      missedFrameCount: missedFrameCount,
-      maxBuildMicros: maxBuildMicros,
-      maxRasterMicros: maxRasterMicros,
-    );
-  }
-
-  final int frameCount;
-  final int missedFrameCount;
-  final int maxBuildMicros;
-  final int maxRasterMicros;
-
-  Map<String, int> toJson() => <String, int>{
-        'frame-count': frameCount,
-        'missed-frame-count': missedFrameCount,
-        'max-build-micros': maxBuildMicros,
-        'max-raster-micros': maxRasterMicros,
-      };
-}
-
-int _max(int left, int right) => left > right ? left : right;

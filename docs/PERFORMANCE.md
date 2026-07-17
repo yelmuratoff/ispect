@@ -91,9 +91,11 @@ collects both `FrameTiming.buildDuration` and `FrameTiming.rasterDuration`;
 build time alone cannot expose raster-thread jank.
 
 The fixed high-volume scenario is an integration test. It runs only in profile
-mode, renders the same 2,000 synthetic events with filters disabled and enabled,
-and places build/raster timing summaries plus missed-frame counts in the
-integration-test report data:
+mode and requires `ISPECT_ENABLED=true`. It seeds 2,000 deterministic entries
+(200 errors) through the real `ISpectLogger` history, filter controller, and log
+viewer. After an identical warm-up for each case, it records the same
+bidirectional scroll workload in separate `binding.watchPerformance` windows
+for filters off and filters on:
 
 ```bash
 cd packages/ispect/example
@@ -101,6 +103,15 @@ flutter test integration_test/high_volume_profile_test.dart --profile -d <device
   --dart-define=ISPECT_ENABLED=true
 ```
 
-Record the device model, refresh rate, OS, commit, and the generated report
-alongside any published comparison. The scenario is a measurement harness, not
-a CI regression threshold.
+The integration report stores the two summaries under
+`high-volume-filters-off` and `high-volume-filters-on`. Each contains average,
+p90, p99, and worst UI/raster durations, 16 ms frame-budget exceed counts,
+frame samples, GC counts, and layer/picture cache metrics. The accompanying
+`high-volume-metadata` records the event counts, refresh rate, physical size,
+and device-pixel ratio.
+
+Record the device model, OS, commit, and generated report alongside any
+published comparison. The 16 ms counters are a common comparison budget, not
+the actual missed-frame count on a high-refresh display; interpret them next to
+the recorded refresh rate. The scenario is a measurement harness, not a CI
+regression threshold.

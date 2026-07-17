@@ -4,7 +4,7 @@ This file is intentionally short. Public planning lives in [`ROADMAP.md`](ROADMA
 
 ## Open
 
-- Build a reproducible benchmark suite covering disabled release builds and enabled internal QA/staging builds, measuring logging/export/history behavior for representative event counts (`docs/PERFORMANCE.md` has no numbers yet).
+- Run and publish the remaining physical-Android measurements: disabled/enabled cold startup and the high-volume log viewer with filters off/on.
 - Add adoption notes or case studies to `docs/USE_CASES.md` only when they are real and attributable, with concrete numbers.
 
 ## Release Checks

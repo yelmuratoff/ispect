@@ -6,7 +6,7 @@ This roadmap is short on purpose. It describes the direction, not a promise that
 
 Not required to use ISpect on internal builds, but these help larger teams trust the project:
 
-- A reproducible benchmark suite and published results for startup cost, logging volume, export volume, history bounds, and payload capture on/off. **In progress:** CI publishes AOT hot-path and Android release-footprint results; startup and profile-frame measurements still need a physical-device pass.
+- A reproducible benchmark suite and published results for startup cost, logging volume, export volume, history bounds, and payload capture on/off. **In progress:** CI publishes AOT hot-path and Android release-footprint results, and the high-volume viewer harness is ready; startup and profile-frame measurements still need a physical-device pass.
 - At least two real internal QA or staging use cases, published with concrete numbers, not invented ones.
 
 The point of the numbers is to turn "ISpect is cheap" into evidence: the disabled build tree-shakes to a no-op, and the enabled build's cost is predictable and controllable. Current generated data lives in the `benchmark-data` branch; device-only startup and frame results will join it after reproducible physical-device passes.
@@ -19,7 +19,7 @@ need Flutter `3.32.6` and a recorded Android device.
 
 - **Disabled-build footprint** — APK `--analyze-size` runs are automated. Still record cold start with `flutter run --profile --trace-startup` (`timeToFirstFrameMicros`) for each variant.
 - **Per-log, redaction, export, DB, and adapter cost** — automated AOT cases cover metadata/payload logs, disabled/bounded history, 1/10/100 KB redaction, JSON Lines export, in-memory DB tracing, and Dio/http metadata/body capture.
-- **High-volume / FPS** — run the `integration_test` in profile mode, wrapped in `binding.traceAction` + `TimelineSummary`, to record build/raster timing and missed-frame count with filters on and off.
+- **High-volume / FPS** — the profile-only `integration_test` seeds 2,000 events through the real logger/history/viewer pipeline and uses separate `binding.watchPerformance` windows for filters off/on. Run it on the recorded device to publish build/raster percentiles, frame-budget misses, GC, and raster-cache metrics.
 
 Record the hardware next to every number, warm up before measuring, and run comparable passes on the same machine — otherwise the results are not reproducible.
 
