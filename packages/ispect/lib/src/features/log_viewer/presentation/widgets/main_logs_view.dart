@@ -52,10 +52,11 @@ class _MainLogsViewState extends State<MainLogsView> {
   late final LogsScreenController _controller;
   final _transactionService = NetworkTransactionService();
 
-  Map<String, int> _idToDataIndex = const {};
-  List<ISpectLogData>? _lastIdToDataIndexInput;
-  int _cachedSortedLength = 0;
-  bool _cachedIsReversed = false;
+  Map<String, int> _idToVisualIndex = const {};
+  List<ISpectLogData>? _lastVisualIndexInput;
+  int _lastVisualIndexGeneration = -1;
+  bool _lastVisualIndexGrouped = false;
+  bool _lastVisualIndexReversed = false;
 
   List<ISpectLogData>? _lastRawMatches;
   List<ISpectLogData> _reversedMatchesCache = const [];
@@ -101,11 +102,8 @@ class _MainLogsViewState extends State<MainLogsView> {
     final focusedId = widget.logsViewController.focusedMatchId;
     if (focusedId == null) return;
 
-    final dataIndex = _idToDataIndex[focusedId];
-    if (dataIndex == null) return;
-
-    final visualIndex =
-        _cachedIsReversed ? _cachedSortedLength - 1 - dataIndex : dataIndex;
+    final visualIndex = _idToVisualIndex[focusedId];
+    if (visualIndex == null) return;
 
     try {
       _controller.listController.animateToItem(
@@ -133,15 +131,23 @@ class _MainLogsViewState extends State<MainLogsView> {
 
     final sortedEntries = _controller.applySortingIfNeeded(filteredLogEntries);
 
-    _cachedIsReversed =
+    final isReversed =
         widget.logsViewController.sortColumn == LogSortColumn.time &&
             widget.logsViewController.isLogOrderReversed;
-    _cachedSortedLength = sortedEntries.length;
+
+    final shouldGroupLogs = widget.logsViewController.groupHttpLogs &&
+        widget.logsViewController.filter.logTypeKeys.isEmpty;
+    final groupedEntries = shouldGroupLogs
+        ? _transactionService.getGroupedEntries(
+            sortedEntries,
+            widget.logsViewController.outputGeneration,
+          )
+        : null;
 
     List<ISpectLogData>? matchesToCommit;
     if (isHighlightMode) {
       var matches = widget.logsViewController.findSearchMatches(sortedEntries);
-      if (_cachedIsReversed && matches.isNotEmpty) {
+      if (isReversed && matches.isNotEmpty) {
         if (!identical(matches, _lastRawMatches)) {
           _reversedMatchesCache = matches.reversed.toList();
           _lastRawMatches = matches;
@@ -150,17 +156,13 @@ class _MainLogsViewState extends State<MainLogsView> {
       }
       matchesToCommit = matches;
 
-      if (!identical(sortedEntries, _lastIdToDataIndexInput)) {
-        final map = <String, int>{};
-        for (var i = 0; i < sortedEntries.length; i++) {
-          map[sortedEntries[i].id] = i;
-        }
-        _idToDataIndex = map;
-        _lastIdToDataIndexInput = sortedEntries;
-      }
+      _updateSearchTargetVisualIndexes(
+        sortedEntries,
+        groupedEntries: groupedEntries?.entries,
+        isReversed: isReversed,
+      );
     } else {
-      _idToDataIndex = const {};
-      _lastIdToDataIndexInput = null;
+      _clearSearchTargetVisualIndexes();
     }
     final logTypeKeys =
         widget.logsViewController.getLogTypeKeys(widget.logsData);
@@ -254,9 +256,13 @@ class _MainLogsViewState extends State<MainLogsView> {
                 const SliverToBoxAdapter(
                   child: EmptyLogsWidget(),
                 ),
-              if (widget.logsViewController.groupHttpLogs &&
-                  widget.logsViewController.filter.logTypeKeys.isEmpty)
-                _buildGroupedList(sortedEntries, isDesktop, options)
+              if (groupedEntries != null)
+                _buildGroupedList(
+                  groupedEntries.entries,
+                  isReversed,
+                  isDesktop,
+                  options,
+                )
               else
                 _buildFlatList(sortedEntries, isDesktop, options),
               // Extra space for status bar on desktop
@@ -384,6 +390,61 @@ class _MainLogsViewState extends State<MainLogsView> {
     );
   }
 
+  void _updateSearchTargetVisualIndexes(
+    List<ISpectLogData> sortedEntries, {
+    required List<Object>? groupedEntries,
+    required bool isReversed,
+  }) {
+    final generation = widget.logsViewController.outputGeneration;
+    final isGrouped = groupedEntries != null;
+    if (identical(sortedEntries, _lastVisualIndexInput) &&
+        generation == _lastVisualIndexGeneration &&
+        isGrouped == _lastVisualIndexGrouped &&
+        isReversed == _lastVisualIndexReversed) {
+      return;
+    }
+
+    final visualIndexes = <String, int>{};
+    if (groupedEntries case final entries?) {
+      for (var visualIndex = 0; visualIndex < entries.length; visualIndex++) {
+        final dataIndex =
+            isReversed ? entries.length - 1 - visualIndex : visualIndex;
+        final entry = entries[dataIndex];
+        if (entry is ISpectLogData) {
+          visualIndexes[entry.id] = visualIndex;
+        } else if (entry is NetworkTransaction) {
+          visualIndexes[entry.request.id] = visualIndex;
+          if (entry.response case final response?) {
+            visualIndexes[response.id] = visualIndex;
+          }
+          if (entry.error case final error?) {
+            visualIndexes[error.id] = visualIndex;
+          }
+        }
+      }
+    } else {
+      for (var visualIndex = 0;
+          visualIndex < sortedEntries.length;
+          visualIndex++) {
+        final entry =
+            _controller.getEntryAtVisualIndex(sortedEntries, visualIndex);
+        visualIndexes[entry.id] = visualIndex;
+      }
+    }
+
+    _idToVisualIndex = visualIndexes;
+    _lastVisualIndexInput = sortedEntries;
+    _lastVisualIndexGeneration = generation;
+    _lastVisualIndexGrouped = isGrouped;
+    _lastVisualIndexReversed = isReversed;
+  }
+
+  void _clearSearchTargetVisualIndexes() {
+    _idToVisualIndex = const {};
+    _lastVisualIndexInput = null;
+    _lastVisualIndexGeneration = -1;
+  }
+
   Widget _buildFlatList(
     List<ISpectLogData> sortedEntries,
     bool isDesktop,
@@ -415,45 +476,33 @@ class _MainLogsViewState extends State<MainLogsView> {
       );
 
   Widget _buildGroupedList(
-    List<ISpectLogData> sortedEntries,
+    List<Object> entries,
+    bool isReversed,
     bool isDesktop,
     ISpectOptions options,
-  ) {
-    // Group from chronological order, then apply visual reversal.
-    // This prevents time ordering bugs where a transaction positioned
-    // at the response's slot shows the request's (older) time.
-    final grouped = _transactionService.getGroupedEntries(
-      sortedEntries,
-      widget.logsViewController.outputGeneration,
-    );
-    final entries = grouped.entries;
-    final isReversed =
-        widget.logsViewController.sortColumn == LogSortColumn.time &&
-            widget.logsViewController.isLogOrderReversed;
+  ) =>
+      SuperSliverList.builder(
+        listController: _controller.listController,
+        itemCount: entries.length,
+        itemBuilder: (context, index) {
+          final visualIndex = isReversed ? entries.length - 1 - index : index;
+          final entry = entries[visualIndex];
 
-    return SuperSliverList.builder(
-      listController: _controller.listController,
-      itemCount: entries.length,
-      itemBuilder: (context, index) {
-        final visualIndex = isReversed ? entries.length - 1 - index : index;
-        final entry = entries[visualIndex];
+          if (entry is NetworkTransaction) {
+            return _buildTransactionCard(entry, isDesktop: isDesktop);
+          }
 
-        if (entry is NetworkTransaction) {
-          return _buildTransactionCard(entry, isDesktop: isDesktop);
-        }
-
-        final logEntry = entry as ISpectLogData;
-        return _buildLogListItem(
-          context: context,
-          logEntry: logEntry,
-          index: index,
-          isDesktop: isDesktop,
-          options: options,
-          key: ObjectKey(logEntry),
-        );
-      },
-    );
-  }
+          final logEntry = entry as ISpectLogData;
+          return _buildLogListItem(
+            context: context,
+            logEntry: logEntry,
+            index: index,
+            isDesktop: isDesktop,
+            options: options,
+            key: ObjectKey(logEntry),
+          );
+        },
+      );
 
   Widget _buildTransactionCard(
     NetworkTransaction entry, {
