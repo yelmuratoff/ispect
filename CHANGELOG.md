@@ -4,6 +4,7 @@
 
 ### Bug Fixes
 
+- **Log detail panel:** Opening a log from search results now preserves the focused match and list position.
 - **Log search navigation:** Previous/next match arrows now scroll to the correct card when HTTP request and response logs are grouped into transactions.
 - **Web/WASM log files:** Browser Blob validation now behaves consistently in JavaScript and WebAssembly builds.
 - **Web log imports:** Malformed structured text is no longer misclassified as JSON, and file stream failures stop processing without a second success callback.

@@ -89,6 +89,59 @@ void main() {
       expect(find.text('needle beta'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'opening log details preserves the focused search match and scroll offset',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1400, 600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(appShell(const _ViewerHarness()));
+      await tester.pumpAndSettle();
+
+      final logs = <ISpectLogData>[
+        _plainLog('needle alpha', id: 'MATCH-ALPHA'),
+        ..._httpTransactions(0, 40),
+        _plainLog('needle beta', id: 'MATCH-BETA'),
+        ..._httpTransactions(40, 80),
+      ];
+      final harness = tester.state<_ViewerHarnessState>(
+        find.byType(_ViewerHarness),
+      )..showLogs(logs);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(SearchBar), 'needle');
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      harness.rebuildViewer();
+      await tester.pumpAndSettle();
+
+      final nextMatchButton = find.descendant(
+        of: find.byType(SearchBar),
+        matching: find.byIcon(Icons.keyboard_arrow_down_rounded),
+      );
+      await tester.tap(nextMatchButton);
+      await tester.pumpAndSettle();
+
+      final focusedMatchId = harness.logsViewController.focusedMatchId;
+      final focusedMatchPosition =
+          harness.logsViewController.focusedMatchPosition;
+      final scrollOffset = harness.logsScrollController.offset;
+      expect(focusedMatchId, 'MATCH-ALPHA');
+      expect(scrollOffset, greaterThan(0));
+
+      harness.logsViewController.openLogDetail(logs.first);
+      await tester.pumpAndSettle();
+
+      expect(harness.logsViewController.searchController.text, 'needle');
+      expect(harness.logsViewController.focusedMatchId, focusedMatchId);
+      expect(
+        harness.logsViewController.focusedMatchPosition,
+        focusedMatchPosition,
+      );
+      expect(harness.logsScrollController.offset, scrollOffset);
+    },
+  );
 }
 
 ISpectLogData _plainLog(String message, {required String id}) => ISpectLogData(

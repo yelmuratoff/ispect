@@ -64,6 +64,27 @@ void main() {
     );
 
     testWidgets(
+      'Given an ISpectAppBar title with or without a log counter, '
+      'When it is rendered, '
+      'Then the title keeps the compact font size',
+      (tester) async {
+        const title = '📅 Current: 21.07.2026';
+
+        await tester.pumpWidget(buildAppBar(title: title));
+        await tester.pumpAndSettle();
+
+        expect(tester.widget<Text>(find.text(title)).style?.fontSize, 18);
+
+        await tester.pumpWidget(
+          buildAppBar(title: title, totalCount: 2937),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.widget<Text>(find.text(title)).style?.fontSize, 18);
+      },
+    );
+
+    testWidgets(
       'Given an ISpectAppBar, '
       'When it is rendered, '
       'Then a search bar is displayed',

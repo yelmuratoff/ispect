@@ -42,6 +42,8 @@ class LogsViewerBody extends StatefulWidget {
 }
 
 class _LogsViewerBodyState extends State<LogsViewerBody> {
+  final _logsViewKey = GlobalKey();
+
   /// Persisted split ratio so it survives detail panel toggling.
   double _splitRatio = 0.4;
 
@@ -87,6 +89,7 @@ class _LogsViewerBodyState extends State<LogsViewerBody> {
         final showDetailPanel = hasDetail && !context.screenSize.isPhone;
 
         final logsView = MainLogsView(
+          key: _logsViewKey,
           logsData: widget.logsData,
           iSpectTheme: widget.iSpectTheme,
           titleFiltersController: widget.titleFiltersController,

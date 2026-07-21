@@ -284,8 +284,8 @@ class _AppBarTitle extends StatelessWidget {
               title ?? '',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: hasCounter ? 20 : 26,
+              style: const TextStyle(
+                fontSize: 18,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 0.5,
                 height: 1.1,
