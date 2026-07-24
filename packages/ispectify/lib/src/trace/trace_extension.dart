@@ -154,7 +154,10 @@ extension ISpectTrace on ISpectLogger {
         if (duration != null && cfg.slowThreshold != null)
           TraceKeys.slow: duration > cfg.slowThreshold!,
         TraceKeys.success: !isError,
-        if (error != null) TraceKeys.error: '$error',
+        if (error != null)
+          TraceKeys.error: cfg.redact
+              ? RedactionService.redactExportString('$error', cfg.redactKeys)
+              : '$error',
         if (zoneTxnId != null) TraceKeys.transactionId: zoneTxnId,
         if (correlationId != null) TraceKeys.correlationId: correlationId,
         if (safeMeta != null) TraceKeys.meta: safeMeta,

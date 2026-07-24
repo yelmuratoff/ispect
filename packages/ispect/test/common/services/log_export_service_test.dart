@@ -5,6 +5,7 @@ import 'package:ispect/src/common/services/log_export_service.dart';
 class _CapturingJsonService extends LogsJsonService {
   RedactionService? capturedRedactionService;
   bool capturedEnableRedaction = false;
+  Set<String>? capturedRedactKeys;
 
   @override
   Future<void> shareLogsAsJsonFile(
@@ -18,6 +19,23 @@ class _CapturingJsonService extends LogsJsonService {
   }) async {
     capturedRedactionService = redactionService;
     capturedEnableRedaction = enableRedaction;
+  }
+
+  @override
+  Future<void> shareFilteredLogsAsJsonFile(
+    List<ISpectLogData> logs,
+    List<ISpectLogData> filteredLogs,
+    ISpectFilter filter, {
+    required ISpectShareCallback onShare,
+    String fileName = 'ispect_filtered_logs',
+    String fileType = 'json',
+    RedactionService? redactionService,
+    bool enableRedaction = true,
+    Set<String>? redactKeys,
+    ISpectMetadata? metadata,
+  }) async {
+    capturedEnableRedaction = enableRedaction;
+    capturedRedactKeys = redactKeys;
   }
 }
 
@@ -46,6 +64,22 @@ void main() {
       await service.shareAllLogsAsJsonFile([]);
 
       expect(fake.capturedRedactionService, isNull);
+    });
+  });
+
+  group('LogExportService.shareFilteredLogsAsFile (M8)', () {
+    test('fails closed with default keys when redactKeys is null', () async {
+      final fake = _CapturingJsonService();
+      final service = LogExportService(
+        onShare: (_) async {},
+        logsJsonService: fake,
+      );
+      final logs = [ISpectLogData('entry')];
+
+      await service.shareFilteredLogsAsFile(logs, logs, ISpectFilter());
+
+      expect(fake.capturedEnableRedaction, isTrue);
+      expect(fake.capturedRedactKeys, defaultSensitiveKeys);
     });
   });
 }

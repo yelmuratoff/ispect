@@ -41,8 +41,7 @@ class LogExportService {
       fileName: '$fileNamePrefix${DateTime.now().millisecondsSinceEpoch}',
       fileType: fileType,
       onShare: shareCallback,
-      enableRedaction: redactKeys != null,
-      redactKeys: redactKeys,
+      redactKeys: redactKeys ?? defaultSensitiveKeys,
       metadata: metadata,
     );
   }
@@ -83,8 +82,7 @@ class LogExportService {
       filter,
       fileName: '$fileNamePrefix${DateTime.now().millisecondsSinceEpoch}',
       fileType: fileType,
-      enableRedaction: redactKeys != null,
-      redactKeys: redactKeys,
+      redactKeys: redactKeys ?? defaultSensitiveKeys,
       metadata: metadata,
     );
   }

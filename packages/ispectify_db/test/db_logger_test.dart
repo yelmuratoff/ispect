@@ -285,6 +285,18 @@ void main() {
       expect(meta['value'].toString(), contains('[REDACTED]'));
     });
 
+    test('masks an opaque result value when the key name is sensitive', () {
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        key: 'password',
+        value: 'hunter2plain',
+      );
+
+      final meta = (logger.history.last.additionalData ?? {})['meta'] as Map;
+      expect(meta['value'], '[REDACTED]');
+    });
+
     test('redacts credentials embedded in the db error message', () {
       logger.db(
         source: 'pg',

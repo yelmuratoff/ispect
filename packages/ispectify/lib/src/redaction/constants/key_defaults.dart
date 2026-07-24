@@ -16,7 +16,10 @@ const Set<String> defaultSensitiveKeys = <String>{
   'password',
   'passwd',
   'pwd',
+  'passphrase',
   'secret',
+  'credential',
+  'credentials',
   'client-secret',
   'client_secret',
   'private-key',
@@ -26,6 +29,7 @@ const Set<String> defaultSensitiveKeys = <String>{
   'set-cookie',
   'cookie',
   'bearer_token',
+  'session',
   'session_id',
   'session_token',
   'session-id',
@@ -47,6 +51,7 @@ const Set<String> defaultSensitiveKeys = <String>{
   'verification-code',
   'pin_code',
   'pin-code',
+  'pincode',
 
   // User Identity (context-dependent)
   'email',
@@ -322,6 +327,7 @@ const Set<String> defaultFullyMaskedKeys = <String>{
   'refresh_token',
   'id_token',
   'bearer_token',
+  'session',
   'session_token',
   'session-token',
   'session_id',
@@ -329,7 +335,10 @@ const Set<String> defaultFullyMaskedKeys = <String>{
   'password',
   'passwd',
   'pwd',
+  'passphrase',
   'secret',
+  'credential',
+  'credentials',
   'client-secret',
   'client_secret',
   'private-key',
@@ -353,6 +362,7 @@ const Set<String> defaultFullyMaskedKeys = <String>{
   'verification-code',
   'pin_code',
   'pin-code',
+  'pincode',
 
   // Device & push tokens
   'device_token',

@@ -9,10 +9,18 @@ import 'package:ispectify_http/ispectify_http.dart';
 void main() {
   final logger = ISpectFlutter.init();
   final navigatorObserver = ISpectNavigatorObserver();
-  final dio = Dio()..interceptors.add(ISpectDioInterceptor(logger: logger));
+
+  // Register capture only in ISpect-enabled builds so the interceptors and
+  // their in-memory diagnostics tree-shake away when ISPECT_ENABLED is omitted.
+  final dio = Dio();
   final client = http_interceptor.InterceptedClient.build(
-    interceptors: [ISpectHttpInterceptor(logger: logger)],
+    interceptors: [
+      if (kISpectEnabled) ISpectHttpInterceptor(logger: logger),
+    ],
   );
+  if (kISpectEnabled) {
+    dio.interceptors.add(ISpectDioInterceptor(logger: logger));
+  }
 
   ISpect.run(
     () => runApp(

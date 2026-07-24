@@ -77,6 +77,23 @@ void main() {
       expect(out['keep'], 'visible');
     });
 
+    test('redacts newly-added credential/session keys by default', () {
+      final service = RedactionService();
+      final out = service.redact({
+        'session': 'sess-abcdef123456',
+        'passphrase': 'correct horse battery',
+        'credentials': 'root:toor',
+        'pincode': '4821',
+        'keep': 'visible',
+      })! as Map<String, Object?>;
+
+      expect(out['session'], '[REDACTED]');
+      expect(out['passphrase'], '[REDACTED]');
+      expect(out['credentials'], '[REDACTED]');
+      expect(out['pincode'], '[REDACTED]');
+      expect(out['keep'], 'visible');
+    });
+
     test('does not redact ambiguous non-PII keys by default', () {
       final service = RedactionService();
       final out = service.redact({
@@ -323,6 +340,19 @@ void main() {
         )! as Map<String, Object?>;
 
         expect(result['Authorization'], '[REDACTED]');
+      });
+
+      test('fails closed with a placeholder past the depth limit', () {
+        Object? nested = {'password': 'secret'};
+        for (var i = 0; i < 3; i++) {
+          nested = {'level': nested};
+        }
+        final result = RedactionService.redactByKeys(
+          nested,
+          {'password'},
+          maxDepth: 2,
+        );
+        expect('$result', isNot(contains('secret')));
       });
     });
 

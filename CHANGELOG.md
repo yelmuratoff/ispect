@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.1.5
+
+### Security
+
+- **Redaction coverage:** Trace and database error strings, URL fragments, and numeric JSON fields are now redacted, and the default sensitive-key set covers `session`, `passphrase`, `credential(s)`, and `pincode`.
+- **Fail-closed defaults:** Depth-limited key redaction, filtered log file export, and JSON-tree value copy now redact by default instead of passing data through unredacted.
+
 ## 6.1.4
 
 ### Bug Fixes

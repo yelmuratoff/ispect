@@ -430,8 +430,9 @@ extension ISpectLoggerDb on ISpectLogger {
           )
         : null;
 
-    Object? redactData(Object? data) =>
-        data == null ? null : (redactor?.redact(data) ?? data);
+    Object? redactData(Object? data, {String? keyName}) => data == null
+        ? null
+        : (redactor?.redact(data, keyName: keyName) ?? data);
 
     final truncatedStmt = _truncateToString(
       input.statement,
@@ -455,7 +456,7 @@ extension ISpectLoggerDb on ISpectLogger {
     final digest = DbSqlDigest.compute(input.statement);
 
     final truncatedValue = ISpectDbCore.truncateValue(
-      redactData(input.value),
+      redactData(input.value, keyName: input.key),
       input.resolvedMaxValueLength,
     );
 

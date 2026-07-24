@@ -311,12 +311,14 @@ class RedactionService {
       _urlCredentialPattern,
       (m) => '://${ph.userInfoRedactedPlaceholder}@',
     );
-    if (result.contains('?') && redactKeys.isNotEmpty) {
+    if ((result.contains('?') || result.contains('#')) &&
+        redactKeys.isNotEmpty) {
       // Single alternation over all keys compiles one regex instead of one per
       // key — matters when [redactKeys] is the full default set (~200 entries).
+      // `#` covers OAuth implicit-grant fragments (`#access_token=…`).
       final keys = redactKeys.map(RegExp.escape).join('|');
       result = result.replaceAllMapped(
-        RegExp('([?&])($keys)=([^&\\s]*)', caseSensitive: false),
+        RegExp('([?&#])($keys)=([^&\\s]*)', caseSensitive: false),
         (m) => '${m[1]}${m[2]}=${ph.defaultPlaceholder}',
       );
     }
@@ -357,11 +359,18 @@ class RedactionService {
     final keys = redactKeys.map(RegExp.escape).join('|');
     return scrubbed
         .replaceAllMapped(
-          RegExp('([?&])($keys)=([^&\\s]*)', caseSensitive: false),
+          RegExp('([?&#])($keys)=([^&\\s]*)', caseSensitive: false),
           (m) => '${m[1]}${m[2]}=$mask',
         )
         .replaceAllMapped(
           RegExp('"($keys)"\\s*:\\s*"[^"]*"', caseSensitive: false),
+          (m) => '"${m[1]}": "$mask"',
+        )
+        .replaceAllMapped(
+          RegExp(
+            '"($keys)"\\s*:\\s*(-?\\d[\\d.eE+-]*|true|false|null)',
+            caseSensitive: false,
+          ),
           (m) => '"${m[1]}": "$mask"',
         );
   }
@@ -403,7 +412,12 @@ class RedactionService {
     int maxDepth,
     String placeholder,
   ) {
-    if (data == null || maxDepth <= 0) return data;
+    if (data == null) return null;
+    if (maxDepth <= 0) {
+      // Fail closed: a container past the depth limit may hide sensitive keys.
+      // Mirrors RedactionWalker, which returns the placeholder past maxDepth.
+      return data is Map || data is Iterable ? placeholder : data;
+    }
     if (data is Map) {
       final out = <String, Object?>{};
       data.forEach((k, v) {

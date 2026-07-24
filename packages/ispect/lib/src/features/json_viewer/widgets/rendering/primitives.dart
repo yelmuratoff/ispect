@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
@@ -26,9 +27,11 @@ class CopyButton extends StatelessWidget {
           excludeFromSemantics: true,
           borderRadius: const BorderRadius.all(Radius.circular(4)),
           onTap: () {
+            final safeValue =
+                defaultCurlRedactor.redact(node.rawValue, keyName: node.key);
             copyClipboard(
               context,
-              value: '${node.key}: ${JsonTruncator.pretty(node.rawValue)}',
+              value: '${node.key}: ${JsonTruncator.pretty(safeValue)}',
               redact: true,
             );
           },

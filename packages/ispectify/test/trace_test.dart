@@ -151,6 +151,18 @@ void main() {
       expect('$value', isNot(contains('hunter2')));
       expect('$value', contains('[REDACTED]'));
     });
+
+    test('redacts sensitive URL params in the error string by default', () {
+      logger.trace(
+        category: networkCategory,
+        source: 'ws',
+        operation: 'connect',
+        error: "WebSocketException: connection to 'wss://h/ws?token=SECRETTOK'",
+      );
+      final error = logger.traces.first.additionalData?[TraceKeys.error];
+      expect('$error', isNot(contains('SECRETTOK')));
+      expect('$error', contains('token=[REDACTED]'));
+    });
   });
 
   // ── traceAsync ───────────────────────────────────────────────────
@@ -632,6 +644,16 @@ void main() {
       expect(result, 'users');
     });
 
+    test('redactTarget masks sensitive URL fragment params', () {
+      final result = RedactionService.redactTarget(
+        'https://app/callback#access_token=abc123&id_token=xyz789',
+        defaultSensitiveKeys,
+      );
+      expect(result, contains('access_token=[REDACTED]'));
+      expect(result, isNot(contains('abc123')));
+      expect(result, isNot(contains('xyz789')));
+    });
+
     test('redactExportString masks Bearer tokens', () {
       final result = RedactionService.redactExportString(
         'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9',
@@ -664,6 +686,16 @@ void main() {
       expect(result, contains('"token": "[REDACTED]"'));
       expect(result, contains('"password": "[REDACTED]"'));
       expect(result, contains('"keep": "ok"'));
+    });
+
+    test('redactExportString redacts numeric JSON values for sensitive keys',
+        () {
+      final result = RedactionService.redactExportString(
+        '{"ssn": 123456789, "age": 42}',
+        const {'ssn'},
+      );
+      expect(result, isNot(contains('123456789')));
+      expect(result, contains('42'));
     });
 
     test('redactExportString leaves keys outside the set untouched', () {
