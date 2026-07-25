@@ -176,11 +176,15 @@ Map<String, dynamic> _redactAdditionalData(
 /// Keeps internal presentation hints (e.g. the network renderer's
 /// `_render-hints`) out of exported JSON / text / markdown — those keys are
 /// a private contract between log producers and the console renderer.
-Map<String, dynamic> _stripPrivateKeys(Map<String, dynamic> data) {
+Map<String, dynamic> _stripPrivateKeys(Map<String, dynamic> data) =>
+    _stripPrivateMap(data);
+
+Map<String, dynamic> _stripPrivateMap(Map<Object?, Object?> data) {
   final out = <String, dynamic>{};
   for (final entry in data.entries) {
-    if (entry.key.startsWith('_')) continue;
-    out[entry.key] = _stripPrivateValue(entry.value);
+    final key = entry.key.toString();
+    if (key.startsWith('_')) continue;
+    out[key] = _stripPrivateValue(entry.value);
   }
   return out;
 }
@@ -189,7 +193,7 @@ Map<String, dynamic> _stripPrivateKeys(Map<String, dynamic> data) {
 /// nested inside a list element.
 Object? _stripPrivateValue(Object? value) {
   if (value is Map<String, dynamic>) return _stripPrivateKeys(value);
-  if (value is Map) return _stripPrivateKeys(Map<String, dynamic>.from(value));
+  if (value is Map<Object?, Object?>) return _stripPrivateMap(value);
   if (value is List) return value.map(_stripPrivateValue).toList();
   return value;
 }

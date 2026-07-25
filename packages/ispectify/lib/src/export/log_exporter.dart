@@ -5,6 +5,7 @@ import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/metadata.dart';
 import 'package:ispectify/src/redaction/redaction_service.dart';
 import 'package:ispectify/src/trace/trace_keys.dart';
+import 'package:ispectify/src/utils/json_value_normalizer.dart';
 
 /// Utility class for batch export of log data.
 ///
@@ -25,7 +26,8 @@ abstract final class LogExporter {
         : null;
     return capped.map((log) {
       try {
-        final json = log.toJson();
+        final json = JsonValueNormalizer.normalize(log.toJson())!
+            as Map<String, Object?>;
         if (redactor != null) {
           final redacted = redactor.redact(json);
           return jsonEncode(redacted is Map ? redacted : json);

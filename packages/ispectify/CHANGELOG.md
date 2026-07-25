@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.1.7
+
+### Bug Fixes
+
+- **JSON Lines export:** Logs containing client-specific objects in nested diagnostic metadata are now exported without losing the original log fields.
+
 ## 6.1.6
 
 ### Security

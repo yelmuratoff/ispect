@@ -1,11 +1,16 @@
 // ignore_for_file: cascade_invocations, avoid_redundant_argument_values, prefer_const_declarations, prefer_int_literals
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/trace/trace_helpers.dart';
 import 'package:ispectify/src/trace/trace_message.dart';
 import 'package:test/test.dart';
+
+final class _CheckStatusAuthEvent {
+  const _CheckStatusAuthEvent();
+}
 
 void main() {
   // ── ISpectTraceCategory ──────────────────────────────────────────
@@ -789,6 +794,33 @@ void main() {
       expect(jsonl, isNot(contains('hunter2')));
       expect(jsonl, isNot(contains('super-secret-token')));
       expect(jsonl, contains('[REDACTED]'));
+    });
+
+    test('toJsonLines preserves logs with unsupported BLoC event objects', () {
+      final jsonl = LogExporter.toJsonLines(
+        [
+          ISpectLogData(
+            'authentication status check',
+            id: 'AUTH-EVENT',
+            additionalData: const {
+              TraceKeys.meta: {
+                'event': _CheckStatusAuthEvent(),
+                'authorization': 'Bearer secret-token',
+              },
+            },
+          ),
+        ],
+        redactKeys: const {'authorization'},
+      );
+
+      final decoded = jsonDecode(jsonl) as Map<String, dynamic>;
+      final additionalData = decoded['additional-data'] as Map<String, dynamic>;
+      final metadata = additionalData[TraceKeys.meta] as Map<String, dynamic>;
+
+      expect(decoded['id'], 'AUTH-EVENT');
+      expect(metadata['event'], "Instance of '_CheckStatusAuthEvent'");
+      expect(metadata['authorization'], isNot(contains('secret-token')));
+      expect(decoded, isNot(contains('export-error')));
     });
 
     test('toText leaves additionalData raw when redactKeys is null (opt-out)',

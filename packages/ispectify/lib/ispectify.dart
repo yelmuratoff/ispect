@@ -82,6 +82,7 @@ export 'src/utils/common_utils.dart';
 export 'src/utils/datetime_formatter.dart';
 export 'src/utils/error_handler.dart';
 export 'src/utils/json_truncator.dart';
+export 'src/utils/json_value_normalizer.dart';
 export 'src/utils/string_extension.dart';
 
 /// Compile-time constant to enable/disable ISpect via `--dart-define`.

@@ -10,6 +10,18 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/share_all_lo
 
 import '../../../../helpers/pump_ispect.dart';
 
+final class _CheckStatusAuthEvent {
+  const _CheckStatusAuthEvent();
+}
+
+final class _AuthenticateWithTokensAuthEvent {
+  const _AuthenticateWithTokensAuthEvent();
+
+  @override
+  String toString() =>
+      'AuthenticateWithTokensAuthEvent(Bearer embedded-secret-token)';
+}
+
 void main() {
   testWidgets(
     'independent logs use the same app bar and display defaults as live logs',
@@ -106,6 +118,12 @@ void main() {
           additionalData: {
             'timeout': const Duration(seconds: 1),
             'endpoint': Uri.parse('https://example.com/logs'),
+            TraceKeys.meta: const {
+              'event': _CheckStatusAuthEvent(),
+              'tokenEvent': _AuthenticateWithTokensAuthEvent(),
+              'authorization': 'Bearer secret-token',
+              'metrics': {1: double.nan},
+            },
           },
         ),
       ],
@@ -119,5 +137,13 @@ void main() {
 
     expect(additionalData['timeout'], '0:00:01.000000');
     expect(additionalData['endpoint'], 'https://example.com/logs');
+    final blocMetadata = additionalData[TraceKeys.meta] as Map<String, dynamic>;
+    expect(blocMetadata['event'], "Instance of '_CheckStatusAuthEvent'");
+    expect(
+      blocMetadata['tokenEvent'],
+      isNot(contains('embedded-secret-token')),
+    );
+    expect(blocMetadata['authorization'], isNot(contains('secret-token')));
+    expect(blocMetadata['metrics'], {'1': 'NaN'});
   });
 }

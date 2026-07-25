@@ -6,13 +6,6 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/chunking.dart';
 import 'package:meta/meta.dart';
 
-Object? _toEncodable(dynamic object) {
-  if (object is Uri) return object.toString();
-  if (object is DateTime) return object.toIso8601String();
-  if (object is Enum) return object.name;
-  return object.toString();
-}
-
 /// Service for managing JSON export/import operations for logs.
 ///
 /// - Parameters: None required for initialization
@@ -60,15 +53,19 @@ class LogsJsonService {
           _createExportMetadata(logs.length, metadata);
     }
 
-    final logsJson = await _processLogsInChunks(logs);
+    final logsJson = (await _processLogsInChunks(logs))
+        .map(
+          (log) => JsonValueNormalizer.normalize(log)! as Map<String, dynamic>,
+        )
+        .toList(growable: false);
     if (enableRedaction && redactionService != null) {
       exportData['logs'] = _redactLogsList(logsJson, redactionService);
     } else {
       exportData['logs'] = logsJson;
     }
 
-    const encoder = JsonEncoder.withIndent('  ', _toEncodable);
-    return encoder.convert(exportData);
+    const encoder = JsonEncoder.withIndent('  ');
+    return encoder.convert(JsonValueNormalizer.normalize(exportData));
   }
 
   /// Creates export metadata with current timestamp and version
@@ -401,8 +398,8 @@ class LogsJsonService {
             exportData['logs'] = _redactLogsList(logsData, effectiveService);
           }
         }
-        const encoder = JsonEncoder.withIndent('  ', _toEncodable);
-        return encoder.convert(exportData);
+        const encoder = JsonEncoder.withIndent('  ');
+        return encoder.convert(JsonValueNormalizer.normalize(exportData));
     }
   }
 
@@ -416,7 +413,12 @@ class LogsJsonService {
       {
         ISpectMetadata.exportKey:
             _createFilteredMetadata(logs, filteredLogs, filter, metadata),
-        'logs': filteredLogs.map((log) => log.toJson()).toList(growable: false),
+        'logs': filteredLogs
+            .map(
+              (log) => JsonValueNormalizer.normalize(log.toJson())!
+                  as Map<String, dynamic>,
+            )
+            .toList(growable: false),
       };
 
   /// Creates metadata for filtered export including filter information
