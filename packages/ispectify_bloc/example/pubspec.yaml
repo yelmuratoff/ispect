@@ -7,8 +7,8 @@ environment:
 
 dependencies:
   bloc: ^9.1.0
-  ispectify: ^6.1.5
-  ispectify_bloc: ^6.1.5
+  ispectify: ^6.1.6
+  ispectify_bloc: ^6.1.6
 
 dependency_overrides:
   ispectify:
