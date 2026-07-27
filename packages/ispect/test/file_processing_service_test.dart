@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/file_format.dart';
+import 'package:ispect/src/features/log_viewer/domain/models/file_processing_result.dart';
 import 'package:ispect/src/features/log_viewer/services/file_processing_service.dart';
 
 void main() {
@@ -61,6 +63,74 @@ void main() {
 
       expect(result.success, false);
       expect(result.error, 'Content is empty');
+    });
+
+    test('rejects oversized JSON before decoding', () {
+      final oversizedPrefix = '{"value":"'.padRight(
+        JsonInputPreflight.maxCharacters,
+        'x',
+      );
+      final content = '$oversizedPrefix"}';
+
+      final result = service.processPastedContent(content);
+
+      expect(result.success, false);
+      expect(result.format, FileFormat.json);
+      expect(result.error, contains('safe character limit'));
+      expect(service.isValidJson(content), false);
+    });
+
+    test('rejects deeply nested JSON before decoding', () {
+      final openings = List<String>.filled(
+        JsonInputPreflight.maxNestingDepth + 1,
+        '[',
+      ).join();
+      final closings = List<String>.filled(
+        JsonInputPreflight.maxNestingDepth + 1,
+        ']',
+      ).join();
+      final content = '$openings$closings';
+
+      final result = service.processPastedContent(content);
+
+      expect(result.success, false);
+      expect(result.format, FileFormat.json);
+      expect(result.error, contains('safe depth limit'));
+      expect(service.isValidJson(content), false);
+    });
+
+    test('rejects wide JSON before decoding', () {
+      final values = List<String>.filled(
+        JsonInputPreflight.maxViewerNodes,
+        'null',
+      ).join(',');
+      final content = '[$values]';
+
+      final result = service.processPastedContent(content);
+
+      expect(result.success, false);
+      expect(result.format, FileFormat.json);
+      expect(result.error, contains('safe node limit'));
+      expect(service.isValidJson(content), false);
+    });
+
+    test('offers an asynchronous path for large JSON content', () async {
+      final payload = List<String>.filled(300 * 1024, 'x').join();
+      final content = '{"payload":"$payload"}';
+      final dynamic dynamicService = service;
+      Object? operation;
+      try {
+        operation = dynamicService.processPastedContentAsync(content);
+      } on NoSuchMethodError {
+        operation = null;
+      }
+
+      expect(operation, isA<Future<FileProcessingResult>>());
+      final result = await (operation! as Future<FileProcessingResult>);
+
+      expect(result.success, true);
+      expect(result.format, FileFormat.json);
+      expect(result.displayName, 'JSON');
     });
   });
 }

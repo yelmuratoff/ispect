@@ -12,13 +12,15 @@ abstract class BaseNetworkInterceptorSettings
   const BaseNetworkInterceptorSettings({
     this.enabled = true,
     this.enableRedaction = true,
-    this.printResponseData = true,
+    this.logRequests = true,
+    this.logResponses = true,
+    this.printResponseData = false,
     this.printResponseHeaders = false,
     this.printResponseMessage = true,
-    this.printErrorData = true,
-    this.printErrorHeaders = true,
+    this.printErrorData = false,
+    this.printErrorHeaders = false,
     this.printErrorMessage = true,
-    this.printRequestData = true,
+    this.printRequestData = false,
     this.printRequestHeaders = false,
     this.requestPen,
     this.responsePen,
@@ -30,6 +32,12 @@ abstract class BaseNetworkInterceptorSettings
 
   /// Enable sensitive data redaction when `true` (default: `true`).
   final bool enableRedaction;
+
+  /// Retain normal request diagnostics.
+  final bool logRequests;
+
+  /// Retain normal response diagnostics.
+  final bool logResponses;
 
   /// Print response body in the log message.
   @override

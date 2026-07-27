@@ -1,12 +1,4 @@
 #!/usr/bin/env bash
-# update_versions.sh - Robust multi-package version & internal dependency updater.
-# Features:
-#   - Reads VERSION from version.config
-#   - --bump (patch|minor|major) auto-calculates next version & writes version.config
-#   - Updates internal dependency constraints (^VERSION)
-#   - Updates examples
-#   - Dry-run mode
-#   - Summary output
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -20,13 +12,15 @@ if [[ ! -f $VERSION_FILE ]]; then
   echo "[ERR] $VERSION_FILE not found" >&2; exit 1
 fi
 
-source "$VERSION_FILE" || { echo "[ERR] Failed to source $VERSION_FILE" >&2; exit 1; }
+VERSION=$(awk -F= '$1 == "VERSION" { print substr($0, index($0, "=") + 1); exit }' "$VERSION_FILE")
 if [[ -z ${VERSION:-} ]]; then
   echo "[ERR] VERSION not defined in $VERSION_FILE" >&2; exit 1
 fi
 
 DRY_RUN=0
 BUMP_KIND=""
+FLUTTER_BIN="${FLUTTER_BIN:-flutter}"
+PINNED_FLUTTER_VERSION="3.32.6"
 
 usage() {
   cat <<USAGE
@@ -42,7 +36,7 @@ Current VERSION: $VERSION
 USAGE
 }
 
-semver_bump() { # $1=version $2=kind
+semver_bump() {
   local v=$1 kind=$2
   local core pre=""
   if [[ $v == *-* ]]; then
@@ -113,7 +107,7 @@ echo "[INFO] Packages: ${PACKAGE_NAMES[*]}"
 
 change_files=()
 
-replace_version_line() { # $1=file
+replace_version_line() {
   local file="$1"
   local current
   current=$(grep -E '^version:' "$file" | awk '{print $2}') || true
@@ -128,15 +122,13 @@ replace_version_line() { # $1=file
   fi
 }
 
-update_internal_refs() { # $1=file
+update_internal_refs() {
   local file="$1" updated=0
   for pkg in "${PACKAGE_NAMES[@]}"; do
-    # Only adjust lines inside dependencies or dev_dependencies
     if grep -q "^  $pkg: \^" "$file"; then
       if ! grep -q "^  $pkg: \^${VERSION}$" "$file"; then
         echo "[CHG] $file -> $pkg ^$VERSION"
         if [[ $DRY_RUN -eq 0 ]]; then
-          # Use awk to scope modifications
           awk -v pkg="$pkg" -v ver="$VERSION" '
             BEGIN { in_section=0 }
             /^[a-z]/ { in_section=0 }
@@ -181,20 +173,68 @@ update_readme_versions() {
   fi
 }
 
-# Process each package
+sync_web_lockfile() {
+  local viewer_dir="$ROOT_DIR/web_logs_viewer"
+  local lockfile="$viewer_dir/pubspec.lock"
+  [[ -f "$viewer_dir/pubspec.yaml" ]] || return 0
+
+  if [[ $DRY_RUN -eq 1 ]]; then
+    echo "[INFO] Would regenerate $lockfile"
+    return 0
+  fi
+  if ! command -v "$FLUTTER_BIN" >/dev/null 2>&1; then
+    echo "[ERR] Flutter is required to regenerate $lockfile" >&2
+    exit 1
+  fi
+  local flutter_details
+  if ! flutter_details=$("$FLUTTER_BIN" --version --machine); then
+    echo "[ERR] Failed to inspect Flutter at $FLUTTER_BIN" >&2
+    exit 1
+  fi
+  if [[ $flutter_details != *"\"frameworkVersion\": \"$PINNED_FLUTTER_VERSION\""* ]]; then
+    echo "[ERR] Flutter $PINNED_FLUTTER_VERSION is required to regenerate $lockfile" >&2
+    echo "[ERR] Set FLUTTER_BIN to the pinned Flutter executable" >&2
+    exit 1
+  fi
+
+  local before=""
+  if [[ -f $lockfile ]]; then
+    before=$(cksum "$lockfile")
+  fi
+  echo "[INFO] Regenerating $lockfile"
+  (
+    cd "$viewer_dir"
+    "$FLUTTER_BIN" pub get
+  )
+  local after
+  after=$(cksum "$lockfile")
+  if [[ $before != "$after" ]]; then
+    change_files+=("web_logs_viewer/pubspec.lock")
+  fi
+}
+
 for dir in "${PACKAGE_DIRS[@]}"; do
   ps="$dir/pubspec.yaml"
   [[ -f $ps ]] || continue
   replace_version_line "$ps"
   update_internal_refs "$ps"
 
-  # Example project
   ex_ps="$dir/example/pubspec.yaml"
   if [[ -f $ex_ps ]]; then
     update_internal_refs "$ex_ps"
   fi
 done
 
+# Local path overrides do not replace published-style version constraints.
+STANDALONE_PUBSPECS=(
+  "web_logs_viewer/pubspec.yaml"
+)
+for ps in "${STANDALONE_PUBSPECS[@]}"; do
+  [[ -f $ps ]] || continue
+  update_internal_refs "$ps"
+done
+
+sync_web_lockfile
 update_readme_versions
 
 echo "[INFO] Summary:" 

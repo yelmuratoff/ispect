@@ -42,4 +42,20 @@ abstract final class LogId {
 
     return buffer.toString();
   }
+
+  /// Whether [value] has the exact shape emitted by [generate].
+  ///
+  /// This is a structural trust check for identifiers read from diagnostic
+  /// files. It intentionally does not accept aliases or lowercase text.
+  static bool isValid(String value) {
+    if (value.length != 26) return false;
+    // A 48-bit ULID timestamp occupies at most the low three bits of the first
+    // base32 character.
+    final first = _alphabet.indexOf(value[0]);
+    if (first < 0 || first > 7) return false;
+    for (var index = 1; index < value.length; index++) {
+      if (!_alphabet.contains(value[index])) return false;
+    }
+    return true;
+  }
 }

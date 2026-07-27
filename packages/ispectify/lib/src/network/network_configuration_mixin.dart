@@ -24,6 +24,11 @@ mixin NetworkConfigurationMixin {
   ///
   /// Only fields provided (non-null) are updated; omitted fields retain their
   /// current values. Has no effect when [configurableSettings] returns `null`.
+  ///
+  /// Adapter capture controls such as `logRequests` and `logResponses` remain
+  /// concrete-settings options and cannot be changed through this legacy
+  /// compatibility API. Select them with the adapter constructor, builder, or
+  /// concrete `copyWith`.
   void configure({
     bool? printResponseData,
     bool? printResponseHeaders,

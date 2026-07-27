@@ -67,6 +67,25 @@ void main() {
       expect((out! as Uint8List).length, 4);
     });
 
+    test('redacts all supported typed binary containers by byte length', () {
+      final values = <Object>[
+        Int8List.fromList([-1, 2, 3]),
+        Uint16List.fromList([256, 512]),
+        ByteData(4)..setUint32(0, 0x01020304),
+        Uint8List.fromList([4, 5, 6, 7, 8]).buffer,
+      ];
+
+      for (final value in values) {
+        final expectedLength = value is ByteBuffer
+            ? value.lengthInBytes
+            : (value as TypedData).lengthInBytes;
+        final out = strategy.tryRedact(value, context: context());
+
+        expect(out, isA<Uint8List>());
+        expect((out! as Uint8List).length, expectedLength);
+      }
+    });
+
     test('returns null for Uint8List when redactBinary is false', () {
       final data = Uint8List.fromList([1, 2, 3, 4]);
       final out = strategy.tryRedact(
@@ -74,6 +93,23 @@ void main() {
         context: context(binary: false),
       );
       expect(out, isNull);
+    });
+
+    test('leaves supported typed binary containers to fallback when disabled',
+        () {
+      final values = <Object>[
+        Int8List.fromList([-1, 2, 3]),
+        Uint16List.fromList([256, 512]),
+        ByteData(4)..setUint32(0, 0x01020304),
+        Uint8List.fromList([4, 5, 6]).buffer,
+      ];
+
+      for (final value in values) {
+        expect(
+          strategy.tryRedact(value, context: context(binary: false)),
+          isNull,
+        );
+      }
     });
 
     test('returns null for non-string non-binary nodes', () {

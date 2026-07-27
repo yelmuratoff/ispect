@@ -25,6 +25,22 @@ class _FakeSender implements NetworkRequestSender {
   }
 }
 
+final class _HostileReplayError implements Exception {
+  int toJsonCalls = 0;
+  int toStringCalls = 0;
+
+  Map<String, Object?> toJson() {
+    toJsonCalls++;
+    throw StateError('REPLAY_SCREEN_JSON_SECRET');
+  }
+
+  @override
+  String toString() {
+    toStringCalls++;
+    throw StateError('REPLAY_SCREEN_TEXT_SECRET');
+  }
+}
+
 void main() {
   group('HttpComposerScreen', () {
     testWidgets('sends the composed request and shows the response status',
@@ -140,6 +156,30 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('200'), findsOneWidget);
+    });
+
+    testWidgets('renders a hostile sender error without invoking formatters',
+        (tester) async {
+      final error = _HostileReplayError();
+      final sender = _FakeSender(
+        result: NetworkReplayResult(error: error),
+      );
+      await tester.pumpWidget(
+        appShell(HttpComposerScreen(senders: [sender])),
+      );
+
+      await tester.enterText(
+        find.byType(TextField).first,
+        'https://api.test/ping',
+      );
+      await tester.tap(find.byIcon(Icons.send_rounded));
+      await tester.pumpAndSettle();
+
+      expect(error.toJsonCalls, 0);
+      expect(error.toStringCalls, 0);
+      expect(find.text('ERR'), findsOneWidget);
+      expect(find.textContaining('REPLAY_SCREEN_'), findsNothing);
+      expect(tester.takeException(), isNull);
     });
   });
 }

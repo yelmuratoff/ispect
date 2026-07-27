@@ -7,15 +7,16 @@
 #      (inserts an empty stub near the top if missing).
 #   3. Propagate root CHANGELOG.md to every package.
 #   4. Rebuild per-package READMEs from docs/readme/.
-#   5. Run `dart format .` on the tree.
+#   5. Regenerate the repo-root llms.txt navigation index.
+#   6. Run `dart format .` on the tree.
 #
 # Typical flow:
 #   ./bash/release_prep.sh
-#       bump patch + stub + propagate + README + format
+#       bump patch + stub + propagate + README + llms.txt + format
 #   ... edit CHANGELOG.md, fill in the stub with real entries ...
 #   ./bash/release_prep.sh --skip-bump
 #       sync current version across packages/README + re-propagate
-#       CHANGELOG + rebuild READMEs + format (no version bump)
+#       CHANGELOG + rebuild generated docs + format (no version bump)
 #   ./bash/release_prep.sh --carry-changelog
 #       bump version and rename current CHANGELOG section
 #       to the new version instead of inserting a fresh stub
@@ -33,6 +34,7 @@
 #   ./bash/update_versions.sh --bump patch
 #   ./bash/update_changelog.sh --full-copy --yes
 #   ./bash/build_readme.sh
+#   ./bash/build_llms.sh
 #   dart format .
 
 set -euo pipefail
@@ -46,7 +48,7 @@ OPEN_EDITOR=0
 CARRY_CHANGELOG=0
 
 usage() {
-  sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 for arg in "$@"; do
@@ -176,7 +178,9 @@ echo "==> Propagating CHANGELOG to packages"
 echo "==> Rebuilding READMEs"
 ./bash/build_readme.sh
 
-# 5. Format
+echo "==> Rebuilding llms.txt"
+./bash/build_llms.sh
+
 echo "==> Formatting Dart sources"
 dart format .
 

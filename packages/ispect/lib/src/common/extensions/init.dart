@@ -33,6 +33,7 @@ extension ISpectFlutter on ISpectLogger {
     ILogHistory? history,
     FileLogHistoryOptions? fileHistory,
   }) {
+    if (!kISpectEnabled) return ISpectLogger();
     if (history != null && fileHistory != null) {
       throw ArgumentError(
         'history and fileHistory cannot be provided together',

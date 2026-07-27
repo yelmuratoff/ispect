@@ -11,28 +11,32 @@ http_binary="${output_dir}/ispectify_http_benchmarks"
 mkdir -p "${output_dir}"
 pushd "${root_dir}/packages/ispectify" >/dev/null
 dart pub get
-dart compile exe benchmark/ispectify_benchmarks.dart -o "${binary}"
+dart compile exe -DISPECT_ENABLED=true benchmark/ispectify_benchmarks.dart \
+  -o "${binary}"
 popd >/dev/null
 
 "${binary}" --output "${output_dir}/ispectify.json"
 
 pushd "${root_dir}/packages/ispectify_db" >/dev/null
 dart pub get --no-example
-dart compile exe benchmark/db_benchmarks.dart -o "${db_binary}"
+dart compile exe -DISPECT_ENABLED=true benchmark/db_benchmarks.dart \
+  -o "${db_binary}"
 popd >/dev/null
 
 "${db_binary}" --output "${output_dir}/ispectify_db.json"
 
 pushd "${root_dir}/packages/ispectify_dio" >/dev/null
 dart pub get
-dart compile exe benchmark/dio_benchmarks.dart -o "${dio_binary}"
+dart compile exe -DISPECT_ENABLED=true benchmark/dio_benchmarks.dart \
+  -o "${dio_binary}"
 popd >/dev/null
 
 "${dio_binary}" --output "${output_dir}/ispectify_dio.json"
 
 pushd "${root_dir}/packages/ispectify_http" >/dev/null
 dart pub get
-dart compile exe benchmark/http_benchmarks.dart -o "${http_binary}"
+dart compile exe -DISPECT_ENABLED=true benchmark/http_benchmarks.dart \
+  -o "${http_binary}"
 popd >/dev/null
 
 "${http_binary}" --output "${output_dir}/ispectify_http.json"

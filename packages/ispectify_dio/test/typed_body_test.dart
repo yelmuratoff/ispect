@@ -6,31 +6,55 @@ import 'package:test/test.dart';
 /// Mimics a freezed/json_serializable DTO that Retrofit passes through
 /// without serializing (Dio encodes it only at transform time).
 class _TypedBody {
-  const _TypedBody(this.code);
+  _TypedBody(this.code);
 
   final String code;
+  int toJsonCalls = 0;
+  int toStringCalls = 0;
 
-  Map<String, dynamic> toJson() => <String, dynamic>{'referralCode': code};
+  Map<String, dynamic> toJson() {
+    toJsonCalls++;
+    return <String, dynamic>{'referralCode': code};
+  }
 
   @override
-  String toString() => '_TypedBody(code: $code)';
+  String toString() {
+    toStringCalls++;
+    return '_TypedBody(code: $code)';
+  }
 }
 
 class _OpaqueBody {
+  int toStringCalls = 0;
+
   @override
-  String toString() => 'opaque-body';
+  String toString() {
+    toStringCalls++;
+    return 'opaque-body';
+  }
 }
 
 class _AuthBody {
-  const _AuthBody(this.provider, this.profile);
+  _AuthBody(this.provider, this.profile);
 
   final String provider;
   final _TypedBody profile;
+  int toJsonCalls = 0;
+  int toStringCalls = 0;
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'provider': provider,
-        'profile': profile,
-      };
+  Map<String, dynamic> toJson() {
+    toJsonCalls++;
+    return <String, dynamic>{
+      'provider': provider,
+      'profile': profile,
+    };
+  }
+
+  @override
+  String toString() {
+    toStringCalls++;
+    return '_AuthBody(provider: $provider, profile: $profile)';
+  }
 }
 
 void main() {
@@ -39,17 +63,19 @@ void main() {
         logger: logger,
         settings: const ISpectDioInterceptorSettings(
           enableRedaction: false,
+          printRequestData: true,
         ),
       );
 
-  test('typed body with toJson is logged as its JSON map', () {
+  test('typed body is logged as a non-executing descriptor', () {
     final logger = ISpectLogger(
       options: ISpectLoggerOptions(useConsoleLogs: false),
     );
     final interceptor = buildInterceptor(logger);
+    final body = _TypedBody('ABC123');
 
     final options = RequestOptions(path: 'https://api.example.com/apply')
-      ..data = const _TypedBody('ABC123');
+      ..data = body;
 
     interceptor.onRequest(options, RequestInterceptorHandler());
 
@@ -57,64 +83,83 @@ void main() {
     expect(log.key, ISpectLogType.httpRequest.key);
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
     final requestData = meta?['request-data'] as Map?;
-    expect(requestData?['data'], <String, dynamic>{'referralCode': 'ABC123'});
+    expect(requestData?['data'], isA<String>());
+    expect(requestData?['data'], isNot(contains('ABC123')));
+    expect(body.toJsonCalls, 0);
+    expect(body.toStringCalls, 0);
   });
 
-  test('body without toJson is logged as the raw value', () {
+  test('body without toJson fails closed without stringification', () {
     final logger = ISpectLogger(
       options: ISpectLoggerOptions(useConsoleLogs: false),
     );
     final interceptor = buildInterceptor(logger);
-
-    final options = RequestOptions(path: 'https://api.example.com/apply');
     final body = _OpaqueBody();
-    options.data = body;
+
+    final options = RequestOptions(path: 'https://api.example.com/apply')
+      ..data = body;
 
     interceptor.onRequest(options, RequestInterceptorHandler());
 
     final log = logger.history.last;
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
     final requestData = meta?['request-data'] as Map?;
-    expect(requestData?['data'], same(body));
+    expect(requestData?['data'], isA<String>());
+    expect(requestData?['data'], isNot(contains('opaque-body')));
+    expect(body.toStringCalls, 0);
   });
 
-  test('DTO nested inside a map body is logged as its JSON map', () {
+  test('nested DTO graph is not traversed through toJson', () {
     final logger = ISpectLogger(
       options: ISpectLoggerOptions(useConsoleLogs: false),
     );
     final interceptor = buildInterceptor(logger);
+    final profile = _TypedBody('ABC123');
+    final body = _AuthBody('APPLE', profile);
 
     final options = RequestOptions(path: 'https://api.example.com/signin')
-      ..data = const _AuthBody('APPLE', _TypedBody('ABC123'));
+      ..data = body;
 
     interceptor.onRequest(options, RequestInterceptorHandler());
 
     final log = logger.history.last;
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
     final requestData = meta?['request-data'] as Map?;
-    expect(requestData?['data'], <String, dynamic>{
-      'provider': 'APPLE',
-      'profile': <String, dynamic>{'referralCode': 'ABC123'},
-    });
+    expect(requestData?['data'], isA<String>());
+    expect(requestData?['data'], isNot(contains('APPLE')));
+    expect(requestData?['data'], isNot(contains('ABC123')));
+    expect(body.toJsonCalls, 0);
+    expect(body.toStringCalls, 0);
+    expect(profile.toJsonCalls, 0);
+    expect(profile.toStringCalls, 0);
   });
 
-  test('nested DTO is rendered when redaction is enabled', () {
+  test('nested DTO remains non-executing when redaction is enabled', () {
     final logger = ISpectLogger(
       options: ISpectLoggerOptions(useConsoleLogs: false),
     );
-    final interceptor = ISpectDioInterceptor(logger: logger);
+    final interceptor = ISpectDioInterceptor(
+      logger: logger,
+      settings: const ISpectDioInterceptorSettings(printRequestData: true),
+    );
+    final profile = _TypedBody('ABC123');
+    final body = _AuthBody('APPLE', profile);
 
     final options = RequestOptions(path: 'https://api.example.com/signin')
-      ..data = const _AuthBody('APPLE', _TypedBody('ABC123'));
+      ..data = body;
 
     interceptor.onRequest(options, RequestInterceptorHandler());
 
     final log = logger.history.last;
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
     final requestData = meta?['request-data'] as Map?;
-    final data = requestData?['data'] as Map?;
-    expect(data?['provider'], 'APPLE');
-    expect(data?['profile'], isA<Map<String, dynamic>>());
+    expect(requestData?['data'], isA<String>());
+    expect(requestData?['data'], isNot(contains('APPLE')));
+    expect(requestData?['data'], isNot(contains('ABC123')));
+    expect(body.toJsonCalls, 0);
+    expect(body.toStringCalls, 0);
+    expect(profile.toJsonCalls, 0);
+    expect(profile.toStringCalls, 0);
   });
 
   test('map, string and list bodies are passed through untouched', () {

@@ -1,3 +1,4 @@
+import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/src/config.dart';
 
 /// Bundles all parameters for DB meta preprocessing.
@@ -51,11 +52,14 @@ class DbPreprocessInput {
   final int? maxArgsLength;
   final int? maxStatementLength;
 
-  /// Whether redaction is enabled (override or cfg default).
-  bool get shouldRedact => redact ?? cfg.redact;
+  /// Whether redaction is enabled (global switch, override, then cfg default).
+  bool get shouldRedact => ISpectRedaction.enabled && (redact ?? cfg.redact);
 
   /// Sensitive keys to redact (override or cfg default).
   Iterable<String> get sensitiveKeys => redactKeys ?? cfg.redactKeys;
+
+  bool get hasExplicitRedactKeys =>
+      redactKeys != null || !identical(cfg.redactKeys, defaultSensitiveKeys);
 
   /// Resolved max length for positional/named args.
   int get resolvedMaxArgsLength => maxArgsLength ?? cfg.maxArgsLength;

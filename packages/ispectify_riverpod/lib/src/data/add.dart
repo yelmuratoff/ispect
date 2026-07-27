@@ -1,5 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_riverpod/src/data/riverpod_json_keys.dart';
+import 'package:ispectify_riverpod/src/safe_type_label.dart';
 import 'package:riverpod/riverpod.dart';
 
 /// Snapshot of a Riverpod `didAddProvider` event.
@@ -14,11 +15,12 @@ class RiverpodAddData {
   final Object? value;
 
   /// Whether [value] should be surfaced in [toJson] or reduced to its
-  /// runtime type. Mirrors `ISpectRiverpodSettings.printValues`.
+  /// coarse type label. Mirrors `ISpectRiverpodSettings.printValues`.
   final bool includeValue;
 
   /// Human-readable provider label.
-  String get providerName => provider.name ?? provider.runtimeType.toString();
+  String get providerName =>
+      provider.name ?? safeRiverpodProviderTypeLabel(provider);
 
   /// Returns a raw, JSON-compatible map of the event.
   ///
@@ -26,12 +28,14 @@ class RiverpodAddData {
   /// is required.
   Map<String, dynamic> toJson() => <String, dynamic>{
         RiverpodJsonKeys.providerName: providerName,
-        RiverpodJsonKeys.providerType: provider.runtimeType.toString(),
+        RiverpodJsonKeys.providerType: safeRiverpodProviderTypeLabel(provider),
         if (provider.argument != null)
-          RiverpodJsonKeys.argument: '${provider.argument}',
+          RiverpodJsonKeys.argument: includeValue
+              ? provider.argument
+              : safeRiverpodValueTypeLabel(provider.argument),
         if (includeValue) RiverpodJsonKeys.value: value,
         if (!includeValue)
-          RiverpodJsonKeys.valueType: value?.runtimeType.toString() ?? 'null',
+          RiverpodJsonKeys.valueType: safeRiverpodValueTypeLabel(value),
       };
 
   /// Applies in-place redaction to a map produced by [toJson].

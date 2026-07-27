@@ -14,21 +14,24 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectWSInterceptorSettings({
     super.enabled,
     super.enableRedaction,
-    bool printReceivedData = true,
+    super.logRequests,
+    super.logResponses,
+    bool printReceivedData = false,
     bool printReceivedMessage = true,
     super.printErrorData,
     super.printErrorMessage,
-    bool printSentData = true,
+    bool printSentData = false,
+    this.printStateData = false,
     bool printReceivedHeaders = false,
     bool printSentHeaders = false,
     AnsiPen? sentPen,
     AnsiPen? receivedPen,
     super.errorPen,
-    @Deprecated('Use sentChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use sentChain instead. Will be removed in 8.0.0.')
     this.sentFilter,
-    @Deprecated('Use receivedChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use receivedChain instead. Will be removed in 8.0.0.')
     this.receivedFilter,
-    @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use errorChain instead. Will be removed in 8.0.0.')
     this.errorFilter,
     this.sentChain,
     this.receivedChain,
@@ -45,15 +48,15 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
         );
 
   /// Filter for sent messages. Return `false` to suppress logging.
-  @Deprecated('Use sentChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use sentChain instead. Will be removed in 8.0.0.')
   final bool Function(ISpectLogData data)? sentFilter;
 
   /// Filter for received messages. Return `false` to suppress logging.
-  @Deprecated('Use receivedChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use receivedChain instead. Will be removed in 8.0.0.')
   final bool Function(ISpectLogData data)? receivedFilter;
 
   /// Filter for error events. Return `false` to suppress logging.
-  @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use errorChain instead. Will be removed in 8.0.0.')
   final bool Function(ISpectLogData data)? errorFilter;
 
   /// Filter chain for sent messages. Takes priority over [sentFilter].
@@ -64,6 +67,12 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
 
   /// Filter chain for errors. Takes priority over [errorFilter].
   final NetworkFilterChain<ISpectLogData>? errorChain;
+
+  /// Whether raw client connection-state details are retained.
+  ///
+  /// Disabled by default because disconnect reasons and adapter state objects
+  /// can contain application data.
+  final bool printStateData;
 
   /// Returns `true` when the sent message should be logged.
   bool shouldProcessSent(ISpectLogData value) {
@@ -104,6 +113,8 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
   ISpectWSInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,
+    bool? logRequests,
+    bool? logResponses,
     // WS-specific names (preferred)
     bool? printSentData,
     bool? printSentHeaders,
@@ -112,6 +123,7 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
     bool? printReceivedMessage,
     bool? printErrorData,
     bool? printErrorMessage,
+    bool? printStateData,
     AnsiPen? sentPen,
     AnsiPen? receivedPen,
     AnsiPen? errorPen,
@@ -126,11 +138,11 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
     // Accepted for interface compatibility; has no effect on WS.
     // ignore: avoid_unused_constructor_parameters
     bool? printErrorHeaders,
-    @Deprecated('Use sentChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use sentChain instead. Will be removed in 8.0.0.')
     bool Function(ISpectLogData data)? sentFilter,
-    @Deprecated('Use receivedChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use receivedChain instead. Will be removed in 8.0.0.')
     bool Function(ISpectLogData data)? receivedFilter,
-    @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use errorChain instead. Will be removed in 8.0.0.')
     bool Function(ISpectLogData data)? errorFilter,
     NetworkFilterChain<ISpectLogData>? sentChain,
     NetworkFilterChain<ISpectLogData>? receivedChain,
@@ -139,6 +151,8 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
       ISpectWSInterceptorSettings(
         enabled: enabled ?? this.enabled,
         enableRedaction: enableRedaction ?? this.enableRedaction,
+        logRequests: logRequests ?? this.logRequests,
+        logResponses: logResponses ?? this.logResponses,
         printSentData: printSentData ?? printRequestData ?? this.printSentData,
         printSentHeaders:
             printSentHeaders ?? printRequestHeaders ?? this.printSentHeaders,
@@ -152,6 +166,7 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
             this.printReceivedMessage,
         printErrorData: printErrorData ?? this.printErrorData,
         printErrorMessage: printErrorMessage ?? this.printErrorMessage,
+        printStateData: printStateData ?? this.printStateData,
         sentPen: sentPen ?? requestPen ?? this.sentPen,
         receivedPen: receivedPen ?? responsePen ?? this.receivedPen,
         errorPen: errorPen ?? this.errorPen,

@@ -12,6 +12,9 @@ on:
       - "packages/**"
       - ".github/workflows/test.yml"
 
+permissions:
+  contents: read
+
 jobs:
   # Pure Dart packages (no Flutter dependency)
   test-dart:
@@ -23,16 +26,17 @@ jobs:
         package:
           - ispectify
           - ispectify_db
-          - ispectify_riverpod
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Setup Dart
-        uses: dart-lang/setup-dart@v1
+      - name: Setup Flutter test runner
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          sdk: stable
+          flutter-version: "3.32.6"
+          channel: stable
+          cache: true
 
       - name: Install dependencies
         run: |
@@ -47,20 +51,28 @@ jobs:
       - name: Run tests
         run: |
           cd packages/${{ matrix.package }}
-          dart test --coverage=coverage
+          flutter test --dart-define=ISPECT_ENABLED=true --coverage
+
+      - name: Verify disabled production API
+        if: hashFiles(format('packages/{0}/test/production_safety_test.dart', matrix.package)) != ''
+        run: |
+          cd packages/${{ matrix.package }}
+          dart test --run-skipped test/production_safety_test.dart
 
       - name: Convert coverage to lcov
         if: always()
         run: |
           cd packages/${{ matrix.package }}
+          if [[ -s coverage/lcov.info ]]; then
+            exit 0
+          fi
           if ! find coverage -type f \( -name '*.vm.json' -o -name '*.json' \) -print -quit | grep -q .; then
             echo "::warning::No coverage data found in packages/${{ matrix.package }}/coverage — skipping lcov conversion."
             mkdir -p coverage
             : > coverage/lcov.info
             exit 0
           fi
-          dart pub global activate coverage
-          dart pub global run coverage:format_coverage \
+          dart run coverage:format_coverage \
             --lcov \
             --in=coverage \
             --out=coverage/lcov.info \
@@ -69,14 +81,14 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-dart-${{ matrix.package }}
           path: packages/${{ matrix.package }}/coverage/lcov.info
 
       - name: Upload to Codecov
         if: always()
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: packages/${{ matrix.package }}/coverage/lcov.info
           flags: ${{ matrix.package }}
@@ -98,6 +110,7 @@ jobs:
           - ispectify_http
           - ispectify_ws
           - ispectify_bloc
+          - ispectify_riverpod
         flutter:
           - version: "3.32.6"
             channel_signal: required
@@ -106,11 +119,11 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Flutter (pinned ${{ matrix.flutter.version }})
         if: matrix.flutter.version != 'stable'
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: ${{ matrix.flutter.version }}
           channel: stable
@@ -118,7 +131,7 @@ jobs:
 
       - name: Setup Flutter (latest stable)
         if: matrix.flutter.version == 'stable'
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           cache: true
@@ -136,18 +149,24 @@ jobs:
       - name: Run tests
         run: |
           cd packages/${{ matrix.package }}
-          flutter test --coverage
+          flutter test --dart-define=ISPECT_ENABLED=true --coverage
+
+      - name: Verify disabled production API
+        if: matrix.flutter.version == '3.32.6' && hashFiles(format('packages/{0}/test/production_safety_test.dart', matrix.package)) != ''
+        run: |
+          cd packages/${{ matrix.package }}
+          flutter test --run-skipped test/production_safety_test.dart
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-flutter-${{ matrix.package }}-${{ matrix.flutter.version }}
           path: packages/${{ matrix.package }}/coverage/lcov.info
 
       - name: Upload to Codecov
         if: always() && matrix.flutter.version == '3.32.6'
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: packages/${{ matrix.package }}/coverage/lcov.info
           flags: ${{ matrix.package }}

@@ -3,13 +3,15 @@ import 'dart:math';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/history/file_log/file_log_codec.dart';
+import 'package:ispectify/src/history/file_log/rolling_file_log_history_io.dart'
+    as file_io;
 import 'package:test/test.dart';
 
 void main() {
   test('keeps only the newest configured number of dates', () async {
     final root = await Directory.systemTemp.createTemp('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
-    final history = RollingFileLogHistory.testing(
+    final history = file_io.RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
       directoryProvider: () async => root.path,
       options: const FileLogHistoryOptions(
@@ -39,7 +41,7 @@ void main() {
   test('deleteBySize uses age to break equal-size ties', () async {
     final root = await Directory.systemTemp.createTemp('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
-    final history = RollingFileLogHistory.testing(
+    final history = file_io.RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
       directoryProvider: () async => root.path,
       options: const FileLogHistoryOptions(
@@ -87,17 +89,23 @@ void main() {
     final today = DateTime.now();
     final currentDate = DateTime(today.year, today.month, today.day);
     final oldDate = currentDate.subtract(const Duration(days: 1));
+    final oldMessageA =
+        List<String>.generate(300, (index) => 'alpha-$index').join(',');
+    final oldMessageB =
+        List<String>.generate(300, (index) => 'bravo-$index').join(',');
+    final laterMessage =
+        List<String>.generate(550, (index) => 'charlie-$index').join(',');
     final oldBytes = <int>[
       ...codec
           .encode(
-            ISpectLogData('a' * 80, id: 'A', time: oldDate),
+            ISpectLogData(oldMessageA, id: 'A', time: oldDate),
             sessionId: 'IMPORT-SESSION',
             maxBytes: 4096,
           )
           .bytes,
       ...codec
           .encode(
-            ISpectLogData('b' * 80, id: 'B', time: oldDate),
+            ISpectLogData(oldMessageB, id: 'B', time: oldDate),
             sessionId: 'IMPORT-SESSION',
             maxBytes: 4096,
           )
@@ -114,11 +122,17 @@ void main() {
           maxBytes: 4096,
         )
         .bytes;
-    final maxFileSize = max(oldBytes.length, activeBytes.length);
-    final maxTotalSize = max(
-      maxFileSize,
-      gzip.encode(oldBytes).length + activeBytes.length + 16,
-    );
+    final laterBytes = codec
+        .encode(
+          ISpectLogData(laterMessage, id: 'LATER', time: oldDate),
+          sessionId: 'IMPORT-SESSION',
+          maxBytes: 4096,
+        )
+        .bytes;
+    final maxFileSize =
+        max(oldBytes.length, max(activeBytes.length, laterBytes.length));
+    final maxTotalSize = maxFileSize;
+    expect(oldBytes.length + activeBytes.length, greaterThan(maxTotalSize));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
       directoryProvider: () async => root.path,
@@ -157,6 +171,20 @@ void main() {
     expect(
       (await history.getLogsByDate(oldDate)).map((log) => log.id),
       ['A', 'B'],
+    );
+
+    history.add(
+      ISpectLogData(laterMessage, id: 'LATER', time: oldDate),
+    );
+    await history.saveToDailyFile();
+
+    final laterSegment = File(
+      '${oldDirectory.path}${Platform.pathSeparator}000001.jsonl',
+    );
+    expect(laterSegment.existsSync(), isTrue);
+    expect(
+      (await history.getLogsByDate(oldDate)).map((log) => log.id),
+      ['LATER'],
     );
   });
 
@@ -238,6 +266,209 @@ void main() {
 
     expect(await history.getAvailableLogDates(), isEmpty);
     expect(await history.getLogPathByDate(date), isEmpty);
+  });
+
+  test('many flushes are not capped by the in-memory history setting',
+      () async {
+    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    addTearDown(() => root.delete(recursive: true));
+    final date = DateTime(2026, 7, 10, 9);
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false, maxHistoryItems: 1),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(
+        maxFileSize: 256,
+        maxTotalSize: 4096,
+        enableAutoSave: false,
+      ),
+    );
+    addTearDown(history.dispose);
+    for (var index = 0; index < 12; index++) {
+      history.add(ISpectLogData('entry-$index', id: 'ID-$index', time: date));
+      await history.saveToDailyFile();
+    }
+
+    final directory = Directory(await history.getLogPathByDate(date));
+    final segments = await directory
+        .list()
+        .where((entity) => entity.path.endsWith('.jsonl'))
+        .toList();
+    expect(segments.length, greaterThan(9));
+    expect(await history.getLogsByDate(date), hasLength(12));
+  });
+
+  test('archive rejects an oversized source and leaves it recoverable',
+      () async {
+    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    addTearDown(() => root.delete(recursive: true));
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(
+        maxFileSize: 512,
+        maxTotalSize: 512,
+        enableAutoSave: false,
+        cleanupStrategy: SessionCleanupStrategy.archiveOldest,
+      ),
+    );
+    addTearDown(history.dispose);
+    await history.getAvailableLogDates();
+    final oldDate = DateTime.now().subtract(const Duration(days: 1));
+    final directory = Directory(
+      '${history.sessionDirectory}${Platform.pathSeparator}'
+      '${oldDate.toIso8601String().substring(0, 10)}',
+    );
+    await directory.create();
+    final source =
+        File('${directory.path}${Platform.pathSeparator}000000.jsonl');
+    await source.writeAsBytes(List<int>.filled(513, 65));
+    history.add(ISpectLogData('active', time: DateTime.now()));
+
+    await expectLater(
+      history.saveToDailyFile(),
+      throwsA(isA<FileLogLimitException>()),
+    );
+    expect(await source.exists(), isTrue);
+    expect(await File('${source.path}.gz').exists(), isFalse);
+  });
+
+  test('archive bounds compressed output and cleans its temporary', () async {
+    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    addTearDown(() => root.delete(recursive: true));
+    final history = file_io.RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(
+        maxFileSize: 512,
+        maxTotalSize: 512,
+        enableAutoSave: false,
+        cleanupStrategy: SessionCleanupStrategy.archiveOldest,
+      ),
+      archiveCompressedByteLimit: 16,
+    );
+    addTearDown(history.dispose);
+    await history.getAvailableLogDates();
+    final oldDate = DateTime.now().subtract(const Duration(days: 1));
+    final directory = Directory(
+      '${history.sessionDirectory}${Platform.pathSeparator}'
+      '${oldDate.toIso8601String().substring(0, 10)}',
+    );
+    await directory.create();
+    final source =
+        File('${directory.path}${Platform.pathSeparator}000000.jsonl');
+    await source.writeAsBytes(List<int>.filled(400, 65));
+    history.add(ISpectLogData('active', time: DateTime.now()));
+
+    await expectLater(
+      history.saveToDailyFile(),
+      throwsA(isA<FileLogLimitException>()),
+    );
+    expect(await source.exists(), isTrue);
+    expect(await File('${source.path}.gz').exists(), isFalse);
+    expect(
+      await directory
+          .list()
+          .where((entity) => entity.path.endsWith('.tmp'))
+          .isEmpty,
+      isTrue,
+    );
+  });
+
+  test('archives incompressible input near the configured upper boundary',
+      () async {
+    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    addTearDown(() => root.delete(recursive: true));
+    const maxFileSize = 64 * 1024;
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(
+        maxFileSize: maxFileSize,
+        maxTotalSize: maxFileSize,
+        enableAutoSave: false,
+        cleanupStrategy: SessionCleanupStrategy.archiveOldest,
+      ),
+    );
+    addTearDown(history.dispose);
+    await history.getAvailableLogDates();
+    final oldDate = DateTime.now().subtract(const Duration(days: 1));
+    final directory = Directory(
+      '${history.sessionDirectory}${Platform.pathSeparator}'
+      '${oldDate.toIso8601String().substring(0, 10)}',
+    );
+    await directory.create();
+    final source =
+        File('${directory.path}${Platform.pathSeparator}000000.jsonl');
+    final random = Random(7);
+    await source.writeAsBytes(
+      List<int>.generate(maxFileSize - 64, (_) => random.nextInt(256)),
+    );
+    history.add(ISpectLogData('active', time: DateTime.now()));
+
+    await history.saveToDailyFile();
+
+    expect(await source.exists(), isFalse);
+  });
+
+  test('recovers a completed archive left beside its source', () async {
+    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    addTearDown(() => root.delete(recursive: true));
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(
+        maxFileSize: 512,
+        maxTotalSize: 512,
+        enableAutoSave: false,
+        cleanupStrategy: SessionCleanupStrategy.archiveOldest,
+      ),
+    );
+    addTearDown(history.dispose);
+    await history.getAvailableLogDates();
+    final oldDate = DateTime.now().subtract(const Duration(days: 1));
+    final directory = Directory(
+      '${history.sessionDirectory}${Platform.pathSeparator}'
+      '${oldDate.toIso8601String().substring(0, 10)}',
+    );
+    await directory.create();
+    final source =
+        File('${directory.path}${Platform.pathSeparator}000000.jsonl');
+    final bytes = List<int>.filled(400, 65);
+    await source.writeAsBytes(bytes);
+    final archive = File('${source.path}.gz');
+    await archive.writeAsBytes(gzip.encode(bytes));
+    history.add(ISpectLogData('active', time: DateTime.now()));
+
+    await history.saveToDailyFile();
+
+    expect(await source.exists(), isFalse);
+    expect(await archive.exists(), isTrue);
+  });
+
+  test('retention cleans legacy predictable archive temporaries', () async {
+    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    addTearDown(() => root.delete(recursive: true));
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+    );
+    addTearDown(history.dispose);
+    await history.getAvailableLogDates();
+    final date = DateTime(2026, 7, 10, 9);
+    final directory = Directory(
+      '${history.sessionDirectory}${Platform.pathSeparator}2026-07-10',
+    );
+    await directory.create();
+    final legacyTemporary = File(
+      '${directory.path}${Platform.pathSeparator}000000.jsonl.gz.tmp',
+    );
+    await legacyTemporary.writeAsBytes(const [1, 2, 3]);
+    history.add(ISpectLogData('entry', time: date));
+
+    await history.saveToDailyFile();
+
+    expect(await legacyTemporary.exists(), isFalse);
   });
 }
 

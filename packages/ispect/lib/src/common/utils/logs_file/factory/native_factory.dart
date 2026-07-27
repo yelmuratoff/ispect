@@ -3,3 +3,6 @@ import 'package:ispect/src/common/utils/logs_file/implementations/native_logs_fi
 
 /// Native-specific factory implementation.
 BaseLogsFile createPlatformLogsFile() => NativeLogsFile();
+
+Future<void> cleanupPlatformShareFiles() =>
+    NativeLogsFile.cleanupStaleShareFiles();

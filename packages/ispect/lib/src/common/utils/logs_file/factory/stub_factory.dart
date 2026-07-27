@@ -6,3 +6,5 @@ import 'package:ispect/src/common/utils/logs_file/base/base_logs_file.dart';
 BaseLogsFile createPlatformLogsFile() => throw UnsupportedError(
       'No platform implementation of LogsFile is available for this runtime.',
     );
+
+Future<void> cleanupPlatformShareFiles() => Future<void>.value();

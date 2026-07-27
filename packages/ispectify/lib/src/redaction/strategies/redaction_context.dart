@@ -47,21 +47,37 @@ final class RedactionContext {
   /// trim/lowercase/canonicalize across separate [isSensitiveKey] and
   /// [isFullyMaskedKey] calls.
   ///
-  /// Matching is case-insensitive, whitespace-trimmed, and camelCase-aware:
-  /// `accessToken` is normalized to `access_token` before matching, so the
-  /// default snake/kebab key set and patterns also cover the camelCase keys
-  /// that dominate Dart/JS JSON payloads.
+  /// Matching is case-insensitive, whitespace-trimmed, camelCase-aware, and
+  /// treats dotted or bracketed path segments like snake-case segments.
   ({bool fullyMasked, bool sensitive}) classifyKey(String? keyName) {
     if (keyName == null) return _noMatch;
     final trimmed = keyName.trim();
     final lower = trimmed.toLowerCase();
     if (isIgnoredKey(lower)) return _noMatch;
-    final canonical = trimmed == lower ? null : _canonicalizeKey(trimmed);
-    return (
-      fullyMasked: fullyMaskedKeyNamesLower.contains(lower) ||
-          (canonical != null && fullyMaskedKeyNamesLower.contains(canonical)),
-      sensitive: _matchesSensitive(lower) ||
-          (canonical != null && _matchesSensitive(canonical)),
+    var fullyMasked = fullyMaskedKeyNamesLower.contains(lower);
+    var sensitive = _matchesSensitive(lower);
+    final needsCanonicalization = trimmed != lower ||
+        trimmed.contains('.') ||
+        trimmed.contains('-') ||
+        trimmed.contains('[');
+    if (!needsCanonicalization && !lower.contains('_')) {
+      return (fullyMasked: fullyMasked, sensitive: sensitive);
+    }
+
+    final canonical =
+        needsCanonicalization ? _canonicalizeKey(trimmed) : lower;
+    if (canonical != lower) {
+      fullyMasked =
+          fullyMasked || fullyMaskedKeyNamesLower.contains(canonical);
+      sensitive = sensitive || _matchesSensitive(canonical);
+    }
+    if ((fullyMasked && sensitive) || !canonical.contains('_')) {
+      return (fullyMasked: fullyMasked, sensitive: sensitive);
+    }
+    return _classifyCanonicalSegments(
+      canonical,
+      fullyMasked: fullyMasked,
+      sensitive: sensitive,
     );
   }
 
@@ -93,14 +109,46 @@ final class RedactionContext {
     return false;
   }
 
-  /// Normalizes camelCase / PascalCase boundaries to `_`, then lowercases.
-  /// `accessToken`, `AccessToken`, and `XMLHttpToken` → `access_token` /
-  /// `xml_http_token`.
+  ({bool fullyMasked, bool sensitive}) _classifyCanonicalSegments(
+    String canonical, {
+    required bool fullyMasked,
+    required bool sensitive,
+  }) {
+    final tokens = canonical
+        .split('_')
+        .where((token) => token.isNotEmpty)
+        .toList(growable: false);
+    for (var start = 0; start < tokens.length; start++) {
+      final candidate = StringBuffer();
+      for (var end = start; end < tokens.length; end++) {
+        if (candidate.isNotEmpty) candidate.write('_');
+        candidate.write(tokens[end]);
+        final value = candidate.toString();
+        if (!fullyMasked && fullyMaskedKeyNamesLower.contains(value)) {
+          fullyMasked = true;
+        }
+        if (!sensitive && _matchesSensitive(value)) sensitive = true;
+        if (fullyMasked && sensitive) {
+          return (fullyMasked: true, sensitive: true);
+        }
+      }
+    }
+    return (fullyMasked: fullyMasked, sensitive: sensitive);
+  }
+
+  /// Normalizes camelCase / PascalCase and dotted/bracketed boundaries to `_`.
   static String _canonicalizeKey(String key) => key
       .replaceAllMapped(_acronymBoundary, (m) => '${m[1]}_${m[2]}')
       .replaceAllMapped(_camelBoundary, (m) => '${m[1]}_${m[2]}')
+      .replaceAllMapped(
+        _bracketBoundary,
+        (m) => m[1]!.isEmpty ? '' : '_${m[1]}',
+      )
+      .replaceAll('.', '_')
+      .replaceAll('-', '_')
       .toLowerCase();
 
   static final RegExp _camelBoundary = RegExp('([a-z0-9])([A-Z])');
   static final RegExp _acronymBoundary = RegExp('([A-Z]+)([A-Z][a-z])');
+  static final RegExp _bracketBoundary = RegExp(r'\[([^\[\]]*)\]');
 }

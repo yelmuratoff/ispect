@@ -17,7 +17,7 @@ void main() {
       final jsonData = requestData.toJson();
 
       expect(jsonData['url'], isA<String>());
-      expect(jsonData['url'], equals('https://example.com/test'));
+      expect(jsonData['url'], JsonValueNormalizer.unprintableValue);
       expect(() => jsonEncode(jsonData), returnsNormally);
     });
 
@@ -42,7 +42,7 @@ void main() {
       final jsonData = responseData.toJson();
 
       expect(jsonData['url'], isA<String>());
-      expect(jsonData['url'], equals('https://example.com/test'));
+      expect(jsonData['url'], JsonValueNormalizer.unprintableValue);
       expect(() => jsonEncode(jsonData), returnsNormally);
     });
 

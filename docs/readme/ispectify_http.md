@@ -46,10 +46,13 @@ ISpect.run(
 
 ## Settings
 
-`ISpectHttpInterceptorSettings` mirrors the Dio version. Headers and body capture toggles, with `enableRedaction: true` by default.
+`ISpectHttpInterceptorSettings` mirrors the Dio version. Headers and bodies are
+omitted by default, and `enableRedaction` defaults to `true`.
 
 ```dart
 const settings = ISpectHttpInterceptorSettings(
+  logRequests: true,
+  logResponses: true,
   printRequestHeaders: true,
   printRequestData: true,
   printResponseHeaders: false,
@@ -60,6 +63,14 @@ const settings = ISpectHttpInterceptorSettings(
 
 Preset factories and a builder are also available. See `ISpectHttpInterceptorSettingsBuilder` for the `development()`, `staging()`, and `production()` presets.
 
+`logRequests` and `logResponses` control whether routine records are retained;
+the production preset disables both and keeps redacted errors. The `print*`
+flags explicitly opt bodies, headers, or messages into retained console and
+metadata fields. The development preset enables verbose payload capture while
+keeping redaction on. Use the concrete settings `copyWith` or builder for these
+retention controls; the shared base `configure` helper retains its
+legacy-compatible field set.
+
 <!-- partial:redaction -->
 
 Custom redactor:
@@ -68,7 +79,7 @@ Custom redactor:
 ISpectHttpInterceptor(
   logger: logger,
   redactor: RedactionService(
-    sensitiveKeys: {...defaultSensitiveKeys, 'x-internal-token'},
+    additionalSensitiveKeys: {'x-internal-token'},
   ),
 );
 ```

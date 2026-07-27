@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
@@ -19,27 +20,88 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bo
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 class JsonScreen extends StatefulWidget {
-  const JsonScreen({
-    required this.data,
-    this.truncatedData,
-    this.onClose,
-    this.correlatedLogData,
-    this.correlatedLogLabel,
-    this.correlationDuration,
+  /// Creates a viewer after eagerly detaching and bounding caller-owned data.
+  ///
+  /// This constructor is intentionally non-const so no caller-owned graph is
+  /// retained by the widget. Existing call sites should remove `const`.
+  factory JsonScreen({
+    required Map<String, dynamic> data,
+    Map<String, dynamic>? truncatedData,
+    VoidCallback? onClose,
+    Map<String, dynamic>? correlatedLogData,
+    String? correlatedLogLabel,
+    Duration? correlationDuration,
+    Key? key,
+  }) {
+    final dataSnapshot = JsonInputPreflight.snapshotForViewer(data);
+    final truncatedDataSnapshot = truncatedData == null
+        ? null
+        : identical(truncatedData, data)
+            ? dataSnapshot
+            : JsonInputPreflight.snapshotForViewer(truncatedData);
+    final correlatedLogDataSnapshot = correlatedLogData == null
+        ? null
+        : identical(correlatedLogData, data)
+            ? dataSnapshot
+            : identical(correlatedLogData, truncatedData)
+                ? truncatedDataSnapshot
+                : JsonInputPreflight.snapshotForViewer(correlatedLogData);
+
+    return JsonScreen._(
+      dataSnapshot: dataSnapshot,
+      truncatedDataSnapshot: truncatedDataSnapshot,
+      onClose: onClose,
+      correlatedLogDataSnapshot: correlatedLogDataSnapshot,
+      correlatedLogLabel: correlatedLogLabel,
+      correlationDuration: correlationDuration,
+      key: key,
+    );
+  }
+
+  const JsonScreen._({
+    required JsonInputSnapshot dataSnapshot,
+    required JsonInputSnapshot? truncatedDataSnapshot,
+    required JsonInputSnapshot? correlatedLogDataSnapshot,
+    required this.onClose,
+    required this.correlatedLogLabel,
+    required this.correlationDuration,
     super.key,
-  });
-  final Map<String, dynamic> data;
-  final Map<String, dynamic>? truncatedData;
+  })  : _dataSnapshot = dataSnapshot,
+        _truncatedDataSnapshot = truncatedDataSnapshot,
+        _correlatedLogDataSnapshot = correlatedLogDataSnapshot;
+
+  final JsonInputSnapshot _dataSnapshot;
+  final JsonInputSnapshot? _truncatedDataSnapshot;
+  final JsonInputSnapshot? _correlatedLogDataSnapshot;
+
+  /// Bounded JSON-compatible snapshot owned by this viewer.
+  Map<String, dynamic> get data => _mapFromSnapshot(_dataSnapshot);
+
+  /// Bounded snapshot used by sharing when provided.
+  Map<String, dynamic>? get truncatedData => _truncatedDataSnapshot == null
+      ? null
+      : _mapFromSnapshot(_truncatedDataSnapshot);
+
   final VoidCallback? onClose;
 
   /// Optional correlated log data for cross-navigation (e.g. request ↔ response).
-  final Map<String, dynamic>? correlatedLogData;
+  Map<String, dynamic>? get correlatedLogData =>
+      _correlatedLogDataSnapshot == null
+          ? null
+          : _mapFromSnapshot(_correlatedLogDataSnapshot);
 
   /// Label for the navigation chip (e.g. "Request" or "Response").
   final String? correlatedLogLabel;
 
   /// Duration between request and response/error.
   final Duration? correlationDuration;
+
+  static Map<String, dynamic> _mapFromSnapshot(JsonInputSnapshot? snapshot) {
+    final value = snapshot?.value;
+    return value is Map<String, dynamic>
+        ? value
+        : Map<String, dynamic>.unmodifiable(<String, dynamic>{'data': value});
+  }
 
   void push(BuildContext context) {
     Navigator.of(context).push(
@@ -67,7 +129,7 @@ class _JsonScreenState extends State<JsonScreen> {
   @override
   void initState() {
     super.initState();
-    _store.buildNodes(widget.data);
+    _store.buildNodes(widget._dataSnapshot);
   }
 
   @override
@@ -75,7 +137,7 @@ class _JsonScreenState extends State<JsonScreen> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.data['id'] != widget.data['id']) {
-      _store.buildNodes(widget.data);
+      _store.buildNodes(widget._dataSnapshot);
     }
   }
 

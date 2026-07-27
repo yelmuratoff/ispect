@@ -7,6 +7,8 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectHttpInterceptorSettings({
     super.enabled,
     super.enableRedaction,
+    super.logRequests,
+    super.logResponses,
     super.printResponseData,
     super.printResponseHeaders,
     super.printResponseMessage,
@@ -18,11 +20,11 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
     super.requestPen,
     super.responsePen,
     super.errorPen,
-    @Deprecated('Use requestChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use requestChain instead. Will be removed in 8.0.0.')
     this.requestFilter,
-    @Deprecated('Use responseChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use responseChain instead. Will be removed in 8.0.0.')
     this.responseFilter,
-    @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use errorChain instead. Will be removed in 8.0.0.')
     this.errorFilter,
     this.requestChain,
     this.responseChain,
@@ -31,17 +33,17 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
 
   /// For request filtering.
   /// You can add your custom logic to log only specific HTTP requests.
-  @Deprecated('Use requestChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use requestChain instead. Will be removed in 8.0.0.')
   final bool Function(BaseRequest request)? requestFilter;
 
   /// For response filtering.
   /// You can add your custom logic to log only specific HTTP responses.
-  @Deprecated('Use responseChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use responseChain instead. Will be removed in 8.0.0.')
   final bool Function(BaseResponse response)? responseFilter;
 
   /// For error filtering.
   /// You can add your custom logic to log only specific HTTP errors.
-  @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use errorChain instead. Will be removed in 8.0.0.')
   final bool Function(BaseResponse response)? errorFilter;
 
   /// Filter chain for requests. Takes priority over [requestFilter].
@@ -75,6 +77,8 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
   ISpectHttpInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,
+    bool? logRequests,
+    bool? logResponses,
     bool? printResponseData,
     bool? printResponseHeaders,
     bool? printResponseMessage,
@@ -86,11 +90,11 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
     AnsiPen? requestPen,
     AnsiPen? responsePen,
     AnsiPen? errorPen,
-    @Deprecated('Use requestChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use requestChain instead. Will be removed in 8.0.0.')
     bool Function(BaseRequest request)? requestFilter,
-    @Deprecated('Use responseChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use responseChain instead. Will be removed in 8.0.0.')
     bool Function(BaseResponse response)? responseFilter,
-    @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use errorChain instead. Will be removed in 8.0.0.')
     bool Function(BaseResponse response)? errorFilter,
     NetworkFilterChain<BaseRequest>? requestChain,
     NetworkFilterChain<BaseResponse>? responseChain,
@@ -99,6 +103,8 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
       ISpectHttpInterceptorSettings(
         enabled: enabled ?? this.enabled,
         enableRedaction: enableRedaction ?? this.enableRedaction,
+        logRequests: logRequests ?? this.logRequests,
+        logResponses: logResponses ?? this.logResponses,
         printResponseData: printResponseData ?? this.printResponseData,
         printResponseHeaders: printResponseHeaders ?? this.printResponseHeaders,
         printResponseMessage: printResponseMessage ?? this.printResponseMessage,

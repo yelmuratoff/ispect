@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_bloc/src/safe_type_label.dart';
 import 'package:meta/meta.dart';
 
 typedef ISpectBlocTransitionFilter = bool Function(
@@ -30,8 +31,8 @@ class ISpectBlocSettings {
     this.printCreations = true,
     this.printClosings = true,
     this.printErrors = true,
-    this.printEventFullData = true,
-    this.printStateFullData = true,
+    this.printEventFullData = false,
+    this.printStateFullData = false,
     this.transitionFilter,
     this.eventFilter,
     this.changeFilter,
@@ -49,14 +50,13 @@ class ISpectBlocSettings {
   );
 
   /// Logs every lifecycle event with full payloads.
-  ///
-  /// The default settings already capture full event and state payloads, so
-  /// this preset is now equivalent to `ISpectBlocSettings()`.
-  @Deprecated(
-    'Default settings now capture full payloads; use ISpectBlocSettings(). '
-    'Will be removed in 7.0.0.',
-  )
-  static const ISpectBlocSettings verbose = ISpectBlocSettings();
+  static const ISpectBlocSettings verbose = ISpectBlocSettings(
+    printEventFullData: true,
+    printStateFullData: true,
+  );
+
+  /// Alias for [verbose] for development-only diagnostics.
+  static const ISpectBlocSettings development = verbose;
 
   /// Whether logging is enabled.
   final bool enabled;
@@ -82,10 +82,10 @@ class ISpectBlocSettings {
   /// Whether to log Bloc errors.
   final bool printErrors;
 
-  /// Whether to log full event payloads instead of only the runtime type.
+  /// Whether to log full event payloads instead of a coarse type label.
   final bool printEventFullData;
 
-  /// Whether to log full state payloads instead of only the runtime type.
+  /// Whether to log full state payloads instead of a coarse type label.
   final bool printStateFullData;
 
   /// A filter function for state transitions.
@@ -108,51 +108,46 @@ class ISpectBlocSettings {
 
   /// Whether to apply redaction to sensitive data in log payloads.
   ///
-  /// Redaction is only applied when this is `true` AND [redactor] is not null.
+  /// When `true`, [redactor] is used when provided; otherwise
+  /// [ISpectRedaction.service] is resolved when an operation runs.
   final bool enableRedaction;
 
   /// Optional redaction service for masking sensitive data in bloc state/event
   /// payloads before they are logged.
   ///
-  /// When provided together with [enableRedaction] set to `true`, all
-  /// `additionalData` maps in log entries will have their values redacted.
+  /// Leave this `null` to follow [ISpectRedaction.service].
   final RedactionService? redactor;
 
   /// Whether redaction is active for this configuration.
-  ///
-  /// Returns `true` only when [enableRedaction] is `true` and a [redactor]
-  /// instance is provided.
-  bool get isRedactionActive => enableRedaction && redactor != null;
+  bool get isRedactionActive => enableRedaction && ISpectRedaction.enabled;
 
   /// Applies redaction to an additionalData map if redaction is active.
   ///
-  /// Returns the original map unchanged when redaction is not active.
+  /// Returns a bounded, non-executing copy. When redaction is disabled, values
+  /// remain unmasked but still cannot bypass outbound byte and traversal
+  /// limits. A redaction failure returns an empty map.
   Map<String, dynamic>? redactAdditionalData(
     Map<String, dynamic>? data,
   ) {
-    final redactorInstance = redactor;
-    if (data == null || !isRedactionActive || redactorInstance == null) {
-      return data;
-    }
-    return data.map(
-      (key, value) => MapEntry(
-        key,
-        redactorInstance.redact(value, keyName: key),
-      ),
+    if (data == null) return null;
+    return _prepareAdditionalData(
+      data,
+      enableRedaction: isRedactionActive,
+      redactor: redactor,
     );
   }
 
   /// Formats an event payload for display based on [printEventFullData].
   ///
-  /// Returns the full object when verbose, otherwise its runtime type.
+  /// Returns the full object when verbose, otherwise a coarse type label.
   Object formatEvent(Object? event) =>
-      printEventFullData ? (event ?? 'null') : (event?.runtimeType ?? 'null');
+      printEventFullData ? (event ?? 'null') : safeBlocValueTypeLabel(event);
 
   /// Formats a state payload for display based on [printStateFullData].
   ///
-  /// Returns the full object when verbose, otherwise its runtime type.
+  /// Returns the full object when verbose, otherwise a coarse type label.
   Object formatState(Object? state) =>
-      printStateFullData ? (state ?? 'null') : (state?.runtimeType ?? 'null');
+      printStateFullData ? (state ?? 'null') : safeBlocValueTypeLabel(state);
 
   /// Returns a copy with the provided overrides.
   ISpectBlocSettings copyWith({
@@ -189,4 +184,38 @@ class ISpectBlocSettings {
         enableRedaction: enableRedaction ?? this.enableRedaction,
         redactor: redactor ?? this.redactor,
       );
+}
+
+Map<String, dynamic> _prepareAdditionalData(
+  Map<String, dynamic> data, {
+  required bool enableRedaction,
+  required RedactionService? redactor,
+}) {
+  final redactionActive = enableRedaction && ISpectRedaction.enabled;
+  try {
+    final prepared = LogExportOutput.boundJsonValue(
+      data,
+      preserveTypes: redactionActive,
+      replaceOversizedStrings: redactionActive,
+    );
+    final Object? output;
+    if (redactionActive) {
+      output = ISpectRedaction.resolveService(
+        service: redactor,
+      ).redactForExport(prepared);
+    } else {
+      output = prepared;
+    }
+    final bounded = LogExportOutput.boundJsonValue(
+      output,
+      replaceOversizedStrings: redactionActive,
+    );
+    if (bounded is Map) {
+      return <String, dynamic>{
+        for (final entry in bounded.entries)
+          if (entry.key case final String key) key: entry.value,
+      };
+    }
+  } catch (_) {}
+  return <String, dynamic>{};
 }

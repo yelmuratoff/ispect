@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/widgets.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
@@ -46,11 +48,6 @@ class ExportController extends ChangeNotifier {
   }
 
   // ── Export actions ────────────────────────────────────────────────────
-
-  // Network/db interceptors already redact at capture time. This is a
-  // defense-in-depth pass for plain string log entries that bypass the
-  // interceptors.
-  Set<String> get _effectiveRedactKeys => defaultSensitiveKeys;
 
   /// Shares the content via the platform share dialog.
   ///
@@ -109,11 +106,11 @@ class ExportController extends ChangeNotifier {
     // Yield to let the UI rebuild and show loading indicator.
     await Future<void>.delayed(Duration.zero);
     try {
-      final content = await contentBuilder(
+      final builtContent = await contentBuilder(
         _selectedFormat,
-        redactKeys: _effectiveRedactKeys,
         action: action,
       );
+      final content = _boundContent(builtContent);
       if (content.isEmpty) {
         _state = ExportState.idle;
         notifyListeners();
@@ -122,7 +119,12 @@ class ExportController extends ChangeNotifier {
       await execute(content);
       _state = ExportState.done;
     } catch (e, st) {
-      ISpect.logger.error('Export failed: $e', stackTrace: st);
+      final safeError = _safeFailureText(e);
+      final safeStack = _safeFailureText(st);
+      ISpect.logger.error(
+        'Export failed: $safeError',
+        stackTrace: StackTrace.fromString(safeStack),
+      );
       _state = ExportState.error;
     }
     notifyListeners();
@@ -133,5 +135,46 @@ class ExportController extends ChangeNotifier {
       _state = ExportState.idle;
       notifyListeners();
     }
+  }
+
+  static String _safeFailureText(Object value) {
+    try {
+      final prepared = LogExportOutput.boundJsonValue(
+        value,
+        replaceOversizedStrings: true,
+      );
+      final redacted = ISpectRedaction.service.redactForExport(prepared);
+      final bounded = LogExportOutput.boundJsonValue(
+        redacted,
+        replaceOversizedStrings: true,
+      );
+      return switch (bounded) {
+        null => defaultPlaceholder,
+        final String text => text,
+        final bool value => value.toString(),
+        final num value => value.toString(),
+        _ => jsonEncode(bounded),
+      };
+    } on Object {
+      return defaultPlaceholder;
+    }
+  }
+
+  String _boundContent(String value) {
+    if (LogExportOutput.utf8Length(
+          value,
+          limit: LogExportOutput.maxDocumentBytes,
+        ) <=
+        LogExportOutput.maxDocumentBytes) {
+      return value;
+    }
+    return switch (_selectedFormat) {
+      ExportFormat.json => '{"message":"${LogExportOutput.truncatedMarker}",'
+          '"export-error":"${LogExportOutput.truncatedMarker}"}',
+      ExportFormat.csv => 'message\n"${LogExportOutput.truncatedMarker}"\n',
+      ExportFormat.markdown =>
+        '````text\n${LogExportOutput.truncatedMarker}\n````\n',
+      ExportFormat.text => LogExportOutput.truncatedMarker,
+    };
   }
 }

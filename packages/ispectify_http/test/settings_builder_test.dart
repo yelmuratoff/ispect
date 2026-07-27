@@ -3,16 +3,19 @@ import 'package:test/test.dart';
 
 void main() {
   group('ISpectHttpInterceptorSettingsBuilder', () {
-    test('default constructor creates moderate verbosity settings', () {
+    test('default constructor keeps payload capture disabled', () {
       final settings = ISpectHttpInterceptorSettingsBuilder().build();
 
       expect(settings.enabled, true);
       expect(settings.enableRedaction, true);
-      expect(settings.printResponseData, true);
+      expect(settings.logRequests, true);
+      expect(settings.logResponses, true);
+      expect(settings.printResponseData, false);
       expect(settings.printResponseHeaders, false);
-      expect(settings.printRequestData, true);
+      expect(settings.printRequestData, false);
       expect(settings.printRequestHeaders, false);
-      expect(settings.printErrorData, true);
+      expect(settings.printErrorData, false);
+      expect(settings.printErrorHeaders, false);
     });
 
     test('development() creates verbose settings with redaction', () {
@@ -21,6 +24,8 @@ void main() {
 
       expect(settings.enabled, true);
       expect(settings.enableRedaction, true);
+      expect(settings.logRequests, true);
+      expect(settings.logResponses, true);
       expect(settings.printResponseHeaders, true);
       expect(settings.printRequestHeaders, true);
       expect(settings.printErrorHeaders, true);
@@ -37,8 +42,10 @@ void main() {
       expect(settings.enableRedaction, true);
       expect(settings.printRequestData, false);
       expect(settings.printResponseData, false);
-      expect(settings.printErrorData, true);
-      expect(settings.printErrorHeaders, true);
+      expect(settings.logRequests, false);
+      expect(settings.logResponses, false);
+      expect(settings.printErrorData, false);
+      expect(settings.printErrorHeaders, false);
       expect(settings.printErrorMessage, true);
     });
 
@@ -47,6 +54,8 @@ void main() {
 
       expect(settings.enabled, true);
       expect(settings.enableRedaction, true);
+      expect(settings.logRequests, true);
+      expect(settings.logResponses, false);
       expect(settings.printRequestData, true);
       expect(settings.printErrorData, true);
     });
@@ -72,6 +81,8 @@ void main() {
 
       expect(settings.printRequestData, false);
       expect(settings.printResponseData, false);
+      expect(settings.logRequests, false);
+      expect(settings.logResponses, false);
       expect(settings.printErrorData, true);
     });
 
@@ -85,7 +96,7 @@ void main() {
 
       expect(settings.enableRedaction, true);
       expect(settings.printErrorData, true);
-      expect(settings.printRequestData, false); // overridden by withErrorsOnly
+      expect(settings.printRequestData, false);
     });
   });
 }

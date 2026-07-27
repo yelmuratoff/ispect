@@ -11,52 +11,52 @@ extension ISpectLogDataX on ISpectLogData {
   // ── Structured trace field access ──────────────────────────────────
 
   String? get traceCategory {
-    final v = additionalData?[TraceKeys.category];
+    final v = _capturedAdditionalData?[TraceKeys.category];
     return v is String ? v : null;
   }
 
   String? get traceSource {
-    final v = additionalData?[TraceKeys.source];
+    final v = _capturedAdditionalData?[TraceKeys.source];
     return v is String ? v : null;
   }
 
   String? get traceOperation {
-    final v = additionalData?[TraceKeys.operation];
+    final v = _capturedAdditionalData?[TraceKeys.operation];
     return v is String ? v : null;
   }
 
   String? get traceTarget {
-    final v = additionalData?[TraceKeys.target];
+    final v = _capturedAdditionalData?[TraceKeys.target];
     return v is String ? v : null;
   }
 
   Map<String, dynamic>? get traceMeta {
-    final v = additionalData?[TraceKeys.meta];
+    final v = _capturedAdditionalData?[TraceKeys.meta];
     return v is Map<String, dynamic> ? v : null;
   }
 
   int? get traceDurationMs {
-    final v = additionalData?[TraceKeys.durationMs];
+    final v = _capturedAdditionalData?[TraceKeys.durationMs];
     return v is int ? v : null;
   }
 
   bool? get traceSuccess {
-    final v = additionalData?[TraceKeys.success];
+    final v = _capturedAdditionalData?[TraceKeys.success];
     return v is bool ? v : null;
   }
 
   bool? get traceSlow {
-    final v = additionalData?[TraceKeys.slow];
+    final v = _capturedAdditionalData?[TraceKeys.slow];
     return v is bool ? v : null;
   }
 
   String? get traceTransactionId {
-    final v = additionalData?[TraceKeys.transactionId];
+    final v = _capturedAdditionalData?[TraceKeys.transactionId];
     return v is String ? v : null;
   }
 
   String? get traceCorrelationId {
-    final v = additionalData?[TraceKeys.correlationId];
+    final v = _capturedAdditionalData?[TraceKeys.correlationId];
     return v is String ? v : null;
   }
 
@@ -170,4 +170,7 @@ extension ISpectLogDataX on ISpectLogData {
 
   /// Check any custom category: `log.hasCategory('my-service')`
   bool hasCategory(String categoryId) => traceCategory == categoryId;
+
+  Map<String, dynamic>? get _capturedAdditionalData =>
+      captureISpectLogDataForEgress(this).additionalData;
 }

@@ -16,7 +16,7 @@ class ISpectDynamicColor {
   factory ISpectDynamicColor.fromMap(Map<String, dynamic> map) {
     T cast<T>(String k) => map[k] is T
         ? map[k] as T
-        : throw ArgumentError.value(map[k], k, '$T ← ${map[k].runtimeType}');
+        : throw ArgumentError('Invalid $k: expected $T.');
     return ISpectDynamicColor(
       dark: map['dark'] != null ? Color(cast<int>('dark')) : null,
       light: map['light'] != null ? Color(cast<int>('light')) : null,
@@ -26,9 +26,7 @@ class ISpectDynamicColor {
   factory ISpectDynamicColor.fromJson(String source) {
     final decoded = json.decode(source);
     if (decoded is! Map<String, dynamic>) {
-      throw FormatException(
-        'Expected Map<String, dynamic>, got ${decoded.runtimeType}',
-      );
+      throw const FormatException('Expected Map<String, dynamic>.');
     }
     return ISpectDynamicColor.fromMap(decoded);
   }
@@ -126,9 +124,7 @@ class ISpectTheme {
   factory ISpectTheme.fromJson(String source) {
     final decoded = json.decode(source);
     if (decoded is! Map<String, dynamic>) {
-      throw FormatException(
-        'Expected Map<String, dynamic>, got ${decoded.runtimeType}',
-      );
+      throw const FormatException('Expected Map<String, dynamic>.');
     }
     return ISpectTheme.fromMap(decoded);
   }
@@ -136,7 +132,7 @@ class ISpectTheme {
   factory ISpectTheme.fromMap(Map<String, dynamic> map) {
     T cast<T>(String k) => map[k] is T
         ? map[k] as T
-        : throw ArgumentError.value(map[k], k, '$T ← ${map[k].runtimeType}');
+        : throw ArgumentError('Invalid $k: expected $T.');
 
     Map<String, Color> parseColors(Map<String, dynamic>? raw) {
       if (raw == null) return const {};
@@ -144,10 +140,8 @@ class ISpectTheme {
       for (final e in raw.entries) {
         if (e.value == null) continue;
         if (e.value is! num) {
-          throw ArgumentError.value(
-            e.value,
-            'log_colors[${e.key}]',
-            'Expected int color value, got ${e.value.runtimeType}',
+          throw ArgumentError(
+            'Invalid log_colors[${e.key}]: expected a numeric color value.',
           );
         }
         result[e.key] = Color((e.value as num).toInt());

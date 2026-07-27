@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/inspector_controller.dart';
+import 'package:ispect_layout/src/ispect_layout_enabled.dart';
 import 'package:ispect_layout/src/theme.dart';
 import 'package:ispect_layout/src/widgets/ignore_tap_gesture.dart';
 import 'package:ispect_layout/src/widgets/zoom/zoom_overlay.dart';
@@ -21,8 +22,10 @@ import 'widgets/multi_value_listenable.dart';
 /// You should use [Inspector] as a wrapper to [WidgetsApp.builder] or
 /// [MaterialApp.builder].
 ///
-/// If [isEnabled] is [null], then [Inspector] is automatically disabled on
-/// production builds (i.e. [kReleaseMode] is [true]).
+/// The compile-time [kISpectLayoutEnabled] gate must be enabled first.
+/// [isEnabled] is an additional runtime switch and cannot bypass an omitted
+/// `ISPECT_ENABLED` build flag. When the flag is present and [isEnabled] is
+/// [null], the inspector defaults to enabled outside release mode.
 ///
 /// [isPanelVisible] controls the visibility of the control panel - setting it
 /// to [false] will hide the panel, but the other functionality can still be
@@ -70,8 +73,10 @@ class InspectorState extends State<Inspector> {
 
   bool get isPanelVisible => _isPanelVisible;
 
-  void togglePanelVisibility() =>
-      setState(() => _isPanelVisible = !_isPanelVisible);
+  void togglePanelVisibility() {
+    if (!_isEnabled) return;
+    setState(() => _isPanelVisible = !_isPanelVisible);
+  }
 
   late InspectorController _controller;
   InspectorController get controller => _controller;
@@ -85,7 +90,6 @@ class InspectorState extends State<Inspector> {
   static const double _overlayOffsetY = 16;
 
   // Approximate HUD chip footprint and the gap it sits at from the disc.
-  // Used to test fit-on-screen for each candidate placement.
   // Gap includes the +20 px ring stack drawn outside the disc canvas, so the
   // fit-test mirrors what _hudPositioned actually does in the overlay.
   static const double _hudWidth = 168;
@@ -166,12 +170,12 @@ class InspectorState extends State<Inspector> {
     }
   }
 
-  /// The inspector is enabled if:
-  /// 1. [widget.isEnabled] is [null] and we're running in debug mode, or
-  /// 2. [widget.isEnabled] is [true]
+  /// The compile-time gate is absolute. [widget.isEnabled] can only further
+  /// restrict an enabled diagnostics build.
   bool get _isEnabled =>
-      (widget.isEnabled == null && !kReleaseMode) ||
-      (widget.isEnabled != null && widget.isEnabled!);
+      kISpectLayoutEnabled &&
+      ((widget.isEnabled == null && !kReleaseMode) ||
+          (widget.isEnabled != null && widget.isEnabled!));
 
   @override
   Widget build(BuildContext context) {

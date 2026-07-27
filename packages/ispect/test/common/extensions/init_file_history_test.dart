@@ -3,21 +3,25 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/history/flutter_file_log_history_factory.dart';
 
 void main() {
-  test('disabled factory does not call the directory provider', () {
-    var called = false;
+  test(
+    'disabled factory does not call the directory provider',
+    () {
+      var called = false;
 
-    final history = createFlutterFileLogHistory(
-      loggerOptions: ISpectLoggerOptions(),
-      fileHistoryOptions: const FileLogHistoryOptions(),
-      directoryProvider: () async {
-        called = true;
-        return '/unused';
-      },
-    );
+      final history = createFlutterFileLogHistory(
+        loggerOptions: ISpectLoggerOptions(),
+        fileHistoryOptions: const FileLogHistoryOptions(),
+        directoryProvider: () async {
+          called = true;
+          return '/unused';
+        },
+      );
 
-    expect(history, isNull);
-    expect(called, isFalse);
-  });
+      expect(history, isNull);
+      expect(called, isFalse);
+    },
+    skip: kISpectEnabled,
+  );
 
   test('web factory falls back without calling the directory provider', () {
     var called = false;
@@ -65,11 +69,15 @@ void main() {
     );
   });
 
-  test('disabled init keeps file history hidden', () {
-    final logger = ISpectFlutter.init(
-      fileHistory: const FileLogHistoryOptions(),
-    );
+  test(
+    'disabled init keeps file history hidden',
+    () {
+      final logger = ISpectFlutter.init(
+        fileHistory: const FileLogHistoryOptions(),
+      );
 
-    expect(logger.fileLogHistory, isNull);
-  });
+      expect(logger.fileLogHistory, isNull);
+    },
+    skip: kISpectEnabled,
+  );
 }

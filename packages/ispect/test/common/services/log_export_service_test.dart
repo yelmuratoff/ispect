@@ -41,7 +41,7 @@ class _CapturingJsonService extends LogsJsonService {
 
 void main() {
   group('LogExportService.shareAllLogsAsJsonFile (L1)', () {
-    test('redacts by default by supplying a redaction service', () async {
+    test('defers the default policy to the global SSOT', () async {
       final fake = _CapturingJsonService();
       final service = LogExportService(
         onShare: (_) async {},
@@ -50,7 +50,7 @@ void main() {
 
       await service.shareAllLogsAsJsonFile([ISpectLogData('entry')]);
 
-      expect(fake.capturedRedactionService, isNotNull);
+      expect(fake.capturedRedactionService, isNull);
       expect(fake.capturedEnableRedaction, isTrue);
     });
 
@@ -68,7 +68,7 @@ void main() {
   });
 
   group('LogExportService.shareFilteredLogsAsFile (M8)', () {
-    test('fails closed with default keys when redactKeys is null', () async {
+    test('defers null redactKeys to the global SSOT', () async {
       final fake = _CapturingJsonService();
       final service = LogExportService(
         onShare: (_) async {},
@@ -79,7 +79,25 @@ void main() {
       await service.shareFilteredLogsAsFile(logs, logs, ISpectFilter());
 
       expect(fake.capturedEnableRedaction, isTrue);
-      expect(fake.capturedRedactKeys, defaultSensitiveKeys);
+      expect(fake.capturedRedactKeys, isNull);
+    });
+
+    test('forwards explicit local keys unchanged', () async {
+      final fake = _CapturingJsonService();
+      final service = LogExportService(
+        onShare: (_) async {},
+        logsJsonService: fake,
+      );
+      final logs = [ISpectLogData('entry')];
+
+      await service.shareFilteredLogsAsFile(
+        logs,
+        logs,
+        ISpectFilter(),
+        redactKeys: const {'local_field'},
+      );
+
+      expect(fake.capturedRedactKeys, const {'local_field'});
     });
   });
 }

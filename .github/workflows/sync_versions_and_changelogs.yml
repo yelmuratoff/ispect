@@ -1,4 +1,4 @@
-name: Sync Versions, Changelogs, and READMEs
+name: Sync Versions, Changelogs, READMEs, and llms.txt
 
 on:
    push:
@@ -10,12 +10,15 @@ on:
          - "ROADMAP.md"
          - "SECURITY.md"
          - "version.config"
+         - "llms.txt"
+         - "web_logs_viewer/pubspec.lock"
          - "docs/readme/**"
          - "docs/*.md"
          - ".github/workflows/sync_versions_and_changelogs.yml"
          - "bash/update_versions.sh"
          - "bash/update_changelog.sh"
          - "bash/build_readme.sh"
+         - "bash/build_llms.sh"
 
 jobs:
    update-versions-changelogs-readmes:
@@ -26,7 +29,7 @@ jobs:
 
       steps:
          - name: Checkout code
-           uses: actions/checkout@v7
+           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
            with:
               fetch-depth: 0
 
@@ -34,6 +37,13 @@ jobs:
            run: |
               git config --global user.name "GitHub Actions"
               git config --global user.email "actions@github.com"
+
+         - name: Setup Flutter
+           uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+           with:
+              flutter-version: "3.32.6"
+              channel: stable
+              cache: true
 
          - name: Update package versions and CHANGELOGs
            run: |
@@ -45,10 +55,26 @@ jobs:
               chmod +x bash/build_readme.sh
               ./bash/build_readme.sh
 
-         - name: Verify Dependencies
+         - name: Build llms.txt
+           run: |
+              chmod +x bash/build_llms.sh
+              ./bash/build_llms.sh
+
+         - name: Verify package versions
+           run: |
+              chmod +x bash/check_version_sync.sh
+              ./bash/check_version_sync.sh
+
+         - name: Verify dependencies
            run: |
               chmod +x bash/check_dependencies.sh
-              ./bash/check_dependencies.sh || echo "Dependency check found issues, but continuing with commit as update_versions.sh should have fixed them"
+              ./bash/check_dependencies.sh
+
+         - name: Verify generated READMEs
+           run: ./bash/build_readme.sh --check
+
+         - name: Verify generated llms.txt
+           run: ./bash/build_llms.sh --check
 
          - name: Prepare changes for PR
            id: prepare_diff
@@ -71,7 +97,7 @@ jobs:
 
          - name: Create Pull Request (if changes)
            id: create_pr
-           uses: peter-evans/create-pull-request@v8
+           uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
            with:
               token: ${{ secrets.GITHUB_TOKEN }}
               commit-message: "chore: sync package versions, changelogs, and READMEs with dependencies"
@@ -86,7 +112,7 @@ jobs:
 
          - name: Comment PR with summary
            if: ${{ steps.create_pr.outputs.pull-request-number != '' }}
-           uses: peter-evans/create-or-update-comment@v5
+           uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
            with:
               token: ${{ secrets.GITHUB_TOKEN }}
               issue-number: ${{ steps.create_pr.outputs.pull-request-number }}

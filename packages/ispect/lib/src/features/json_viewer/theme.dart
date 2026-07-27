@@ -147,14 +147,13 @@ class JsonExplorerTheme {
 
     // Secondary matches: warm amber bg, dark text — visible on both themes
     final highlightBg = isDark
-        ? const Color.fromARGB(200, 255, 193, 7) // amber, bright on dark bg
-        : const Color.fromARGB(228, 255, 235, 59); // yellow
+        ? const Color.fromARGB(200, 255, 193, 7)
+        : const Color.fromARGB(228, 255, 235, 59);
     const highlightFg = Colors.black87;
 
     // Focused match: more saturated, bolder — stands out from secondary
-    final focusedBg = isDark
-        ? const Color.fromARGB(240, 255, 160, 0) // deep orange-amber
-        : Colors.yellow;
+    final focusedBg =
+        isDark ? const Color.fromARGB(240, 255, 160, 0) : Colors.yellow;
     const focusedFg = Colors.black;
 
     final keyColor = context.ispectPrimaryColor;
@@ -230,9 +229,6 @@ class JsonExplorerTheme {
   bool operator ==(Object other) {
     if (identical(this, other)) {
       return true;
-    }
-    if (other.runtimeType != runtimeType) {
-      return false;
     }
     return other is JsonExplorerTheme &&
         rootKeyTextStyle == other.rootKeyTextStyle &&

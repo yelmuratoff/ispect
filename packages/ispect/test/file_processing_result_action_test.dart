@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/file_format.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/file_processing_result.dart';
 
@@ -24,6 +25,36 @@ void main() {
           ),
         ),
       );
+
+  Future<void> expectRejectedContent(
+    WidgetTester tester,
+    String content,
+  ) async {
+    final result = FileProcessingResult.success(
+      content: content,
+      displayName: 'test',
+      mimeType: 'application/json',
+      fileName: 'hostile.json',
+      format: FileFormat.json,
+    );
+
+    await tester.pumpWidget(
+      appShell(
+        () => result.action(
+          tester.element(find.byType(ElevatedButton)),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('go'));
+    await tester.pumpAndSettle();
+
+    final screen = tester.widget<JsonScreen>(find.byType(JsonScreen));
+    expect(
+      screen.data,
+      const {'content': JsonInputPreflight.rejectedContent},
+    );
+  }
 
   group('FileProcessingResult.action JSON handling', () {
     testWidgets('opens JsonScreen with array wrapped under data',
@@ -117,6 +148,39 @@ void main() {
       final screen = tester.widget<JsonScreen>(finder);
       expect(screen.data.containsKey('content'), isTrue);
       expect(screen.data['content'], content);
+    });
+
+    testWidgets('does not decode oversized JSON', (tester) async {
+      final oversizedPrefix = '{"value":"'.padRight(
+        JsonInputPreflight.maxCharacters,
+        'x',
+      );
+      final content = '$oversizedPrefix"}';
+
+      await expectRejectedContent(tester, content);
+    });
+
+    testWidgets('does not decode deeply nested JSON', (tester) async {
+      final openings = List<String>.filled(
+        JsonInputPreflight.maxNestingDepth + 1,
+        '[',
+      ).join();
+      final closings = List<String>.filled(
+        JsonInputPreflight.maxNestingDepth + 1,
+        ']',
+      ).join();
+
+      await expectRejectedContent(tester, '$openings$closings');
+    });
+
+    testWidgets('does not decode JSON wider than the viewer budget',
+        (tester) async {
+      final values = List<String>.filled(
+        JsonInputPreflight.maxViewerNodes,
+        'null',
+      ).join(',');
+
+      await expectRejectedContent(tester, '[$values]');
     });
   });
 }

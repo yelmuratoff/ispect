@@ -18,17 +18,82 @@ on:
             - "SECURITY.md"
             - ".github/workflows/production_safety.yml"
 
+permissions:
+    contents: read
+
 jobs:
+    disabled-api-behavior:
+        name: "Disabled APIs (${{ matrix.package }})"
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - package: ispectify
+                      runtime: dart
+                    - package: ispectify_db
+                      runtime: dart
+                    - package: ispectify_riverpod
+                      runtime: dart
+                    - package: ispect
+                      runtime: flutter
+                    - package: ispect_layout
+                      runtime: flutter
+                    - package: ispectify_bloc
+                      runtime: flutter
+                    - package: ispectify_dio
+                      runtime: flutter
+                    - package: ispectify_http
+                      runtime: flutter
+                    - package: ispectify_ws
+                      runtime: flutter
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Setup Dart
+              if: matrix.runtime == 'dart'
+              uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
+              with:
+                  sdk: stable
+
+            - name: Setup Flutter
+              if: matrix.runtime == 'flutter'
+              uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+              with:
+                  flutter-version: "3.32.6"
+                  channel: stable
+                  cache: true
+
+            - name: Install dependencies
+              working-directory: packages/${{ matrix.package }}
+              run: |
+                  if [[ "${{ matrix.runtime }}" == "dart" ]]; then
+                    dart pub get --no-example
+                  else
+                    flutter pub get
+                  fi
+
+            - name: Verify direct APIs are disabled without ISPECT_ENABLED
+              working-directory: packages/${{ matrix.package }}
+              run: |
+                  if [[ "${{ matrix.runtime }}" == "dart" ]]; then
+                    dart test --run-skipped test/production_safety_test.dart
+                  else
+                    flutter test --run-skipped test/production_safety_test.dart
+                  fi
+
     release-footprint:
-        name: "Release footprint without ISPECT_ENABLED"
+        name: "Release AOT footprint comparison"
         runs-on: ubuntu-latest
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
             - name: Setup Flutter
-              uses: subosito/flutter-action@v2
+              uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
               with:
                   flutter-version: "3.32.6"
                   channel: stable
@@ -46,51 +111,115 @@ jobs:
               working-directory: packages/ispect/example
               run: flutter pub get
 
-            - name: Build release APK without ISPECT_ENABLED
+            - name: Build release probes
               working-directory: packages/ispect/example
               run: |
+                  set -euo pipefail
+
+                  target="lib/production_safety_probe.dart"
+                  artifacts="artifacts/production-safety"
+                  mkdir -p "$artifacts"
+
                   flutter build apk \
                     --release \
+                    --target="$target" \
+                    --target-platform=android-arm64 \
                     --obfuscate \
-                    --split-debug-info=build/symbols \
+                    --split-debug-info=build/production-safety/disabled-symbols \
                     --no-tree-shake-icons
 
-            - name: Check residual ISpect strings
+                  cp \
+                    build/app/outputs/flutter-apk/app-release.apk \
+                    "$artifacts/disabled.apk"
+
+                  flutter build apk \
+                    --release \
+                    --target="$target" \
+                    --target-platform=android-arm64 \
+                    --dart-define=ISPECT_ENABLED=true \
+                    --obfuscate \
+                    --split-debug-info=build/production-safety/enabled-symbols \
+                    --no-tree-shake-icons
+
+                  cp \
+                    build/app/outputs/flutter-apk/app-release.apk \
+                    "$artifacts/enabled.apk"
+
+            - name: Compare extracted AOT implementation sentinels
               id: footprint
               working-directory: packages/ispect/example
               run: |
                   set -euo pipefail
 
-                  apk="build/app/outputs/flutter-apk/app-release.apk"
-                  if [[ ! -f "$apk" ]]; then
-                    echo "Release APK not found at $apk" >&2
-                    exit 1
-                  fi
+                  artifacts="artifacts/production-safety"
+                  scratch="$(mktemp -d)"
+                  trap 'rm -rf "$scratch"' EXIT
 
-                  count="$(strings "$apk" | grep -i -c "ispect" || true)"
-                  max_allowed=20
+                  for variant in disabled enabled; do
+                    apk="$artifacts/$variant.apk"
+                    if [[ ! -f "$apk" ]]; then
+                      echo "Release APK not found at $apk" >&2
+                      exit 1
+                    fi
+                    unzip -p "$apk" \
+                      "lib/arm64-v8a/libapp.so" \
+                      > "$scratch/$variant-libapp.so"
+                    if [[ ! -s "$scratch/$variant-libapp.so" ]]; then
+                      echo "arm64 libapp.so missing from $apk" >&2
+                      exit 1
+                    fi
+                    strings "$scratch/$variant-libapp.so" \
+                      > "$scratch/$variant-strings.txt"
+                  done
+
+                  sentinels=(
+                    "ISpect Log Screen"
+                    "ISpectScopeNotFoundError"
+                    "[ISpect] Console logging failed safely."
+                    "Select a widget first, then press Compare."
+                    "statementDigest"
+                    "_ispect_started_at"
+                    "ispect_sw"
+                    "ISpect WebSocket frame capture failed safely."
+                    "bloc_event_ids"
+                    "provider-name"
+                  )
+                  for sentinel in "${sentinels[@]}"; do
+                    if grep -Fq "$sentinel" "$scratch/disabled-strings.txt"; then
+                      echo "Disabled AOT retained ISpect sentinel: $sentinel" >&2
+                      exit 1
+                    fi
+                    if ! grep -Fq "$sentinel" "$scratch/enabled-strings.txt"; then
+                      echo "Enabled control is missing ISpect sentinel: $sentinel" >&2
+                      exit 1
+                    fi
+                  done
+
+                  disabled_count="$(
+                    grep -i -c "ispect" "$scratch/disabled-strings.txt" || true
+                  )"
+                  enabled_count="$(
+                    grep -i -c "ispect" "$scratch/enabled-strings.txt" || true
+                  )"
 
                   {
                     echo "## Production safety"
                     echo ""
-                    echo "- Build: release APK"
-                    echo "- ISPECT_ENABLED: omitted"
-                    echo "- Residual case-insensitive \`ispect\` strings: \`$count\`"
-                    echo "- Maximum allowed: \`$max_allowed\`"
+                    echo "- Target: minimal arm64 release probe"
+                    echo "- Disabled extracted-AOT \`ispect\` strings: \`$disabled_count\`"
+                    echo "- Enabled extracted-AOT \`ispect\` strings: \`$enabled_count\`"
+                    echo "- Implementation sentinels absent while disabled: yes"
+                    echo "- Same sentinels present in enabled control: yes"
                   } >> "$GITHUB_STEP_SUMMARY"
 
-                  echo "residual_strings=$count" >> "$GITHUB_OUTPUT"
-
-                  if (( count > max_allowed )); then
-                    echo "Residual ISpect string count ($count) exceeded max allowed ($max_allowed)." >&2
-                    exit 1
-                  fi
+                  echo "disabled_ispect_strings=$disabled_count" >> "$GITHUB_OUTPUT"
+                  echo "enabled_ispect_strings=$enabled_count" >> "$GITHUB_OUTPUT"
 
             - name: Upload APK and symbols
               if: always()
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: production-safety-release-artifacts
                   path: |
-                      packages/ispect/example/build/app/outputs/flutter-apk/app-release.apk
-                      packages/ispect/example/build/symbols/
+                      packages/ispect/example/artifacts/production-safety/
+                      packages/ispect/example/build/production-safety/

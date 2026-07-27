@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('ISpectLogger.configure', () {
     test('updates filter for subsequent logs', () {
-      final logger = ISpectLogger(
+      final logger = ISpectLogger.testing(
         options: ISpectLoggerOptions(
           useConsoleLogs: false,
         ),
@@ -25,7 +25,7 @@ void main() {
         output: (msg, {logLevel, error, stackTrace, time}) => captured.add(msg),
       );
 
-      final sut = ISpectLogger(
+      final sut = ISpectLogger.testing(
         logger: firstLogger,
         options: ISpectLoggerOptions(useHistory: false),
       )..info('initial');

@@ -2,9 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/error_boundary.dart';
-import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/core/res/ispect_default_palette.dart';
 import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/features/log_viewer/controllers/log_page_controller.dart';
@@ -54,7 +52,7 @@ class ISpectBuilder extends StatefulWidget {
     'Use ISpectBuilder.wrap. The wrap factory short-circuits before '
     'constructing the widget when kISpectEnabled is false, preserving '
     'tree-shaking in release builds. The constructor will be made private '
-    'in 7.0.0.',
+    'in 8.0.0.',
   )
   const ISpectBuilder({
     required this.child,
@@ -116,21 +114,25 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   late final DraggablePanelController _panelController;
 
   /// Navigator that hosts ISpect's own screens, decoupled from the host router.
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  late final GlobalKey<NavigatorState> _navigatorKey;
 
   /// Drives pointer passthrough: `false` keeps the navigator transparent and
   /// non-interactive so the app below stays usable while no ISpect route is open.
-  final ValueNotifier<bool> _hasOverlayRoute = ValueNotifier<bool>(false);
+  late final ValueNotifier<bool> _hasOverlayRoute;
+  bool _isInitialized = false;
   int _overlayDepth = 0;
-
-  ErrorWidgetBuilder? _originalErrorWidgetBuilder;
 
   @override
   void initState() {
     super.initState();
+    if (!kISpectEnabled) return;
+
     model = ISpectScopeModel();
     _logPageController = ISpectLogPageController();
     _panelController = widget.controller ?? DraggablePanelController();
+    _navigatorKey = GlobalKey<NavigatorState>();
+    _hasOverlayRoute = ValueNotifier<bool>(false);
+    _isInitialized = true;
 
     model
       ..isISpectEnabled = widget.isISpectEnabled
@@ -151,10 +153,6 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     for (final plugin in widget.options?.plugins ?? <InspectorPlugin>[]) {
       plugin.onInit();
     }
-
-    // Override ErrorWidget.builder to show a styled fallback for ISpect routes
-    _originalErrorWidgetBuilder = ErrorWidget.builder;
-    ErrorWidget.builder = _buildErrorWidget;
   }
 
   void _applyInitialSettings() {
@@ -185,9 +183,9 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
   @override
   void dispose() {
-    // Restore original ErrorWidget.builder
-    if (_originalErrorWidgetBuilder != null) {
-      ErrorWidget.builder = _originalErrorWidgetBuilder!;
+    if (!_isInitialized) {
+      super.dispose();
+      return;
     }
 
     // Dispose plugins
@@ -203,9 +201,6 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     model.dispose();
     super.dispose();
   }
-
-  Widget _buildErrorWidget(FlutterErrorDetails details) =>
-      _ISpectRenderErrorFallback(details: details);
 
   @override
   Widget build(BuildContext context) {
@@ -557,79 +552,6 @@ class _ISpectNavigationHost extends StatelessWidget {
         child,
         Positioned.fill(child: overlay),
       ],
-    );
-  }
-}
-
-/// Minimal fallback widget for layout/paint errors caught by
-/// [ErrorWidget.builder] on ISpect routes.
-///
-/// Uses only base Material widgets and [Theme.of] colors to avoid
-/// recursive failures if ISpect theming is broken.
-class _ISpectRenderErrorFallback extends StatelessWidget {
-  const _ISpectRenderErrorFallback({required this.details});
-
-  final FlutterErrorDetails details;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final errorMessage = details.exceptionAsString().split('\n').first;
-
-    return Material(
-      color: colorScheme.surface,
-      child: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: colorScheme.error,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Render error',
-                  style: textTheme.titleLarge,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  errorMessage,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                if (kDebugMode && details.stack != null) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: ISpectSquircle.decoration(
-                      color: colorScheme.surfaceContainerHighest,
-                      radius: ISpectConstants.standardBorderRadius,
-                    ),
-                    constraints: const BoxConstraints(maxHeight: 200),
-                    child: SingleChildScrollView(
-                      child: SelectableText(
-                        details.stack.toString(),
-                        style: textTheme.bodySmall?.copyWith(
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

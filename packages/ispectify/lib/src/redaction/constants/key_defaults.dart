@@ -7,7 +7,9 @@ const Set<String> defaultSensitiveKeys = <String>{
   'authorization',
   'proxy-authorization',
   'x-api-key',
+  'x_api_key',
   'api-key',
+  'api_key',
   'apikey',
   'token',
   'access_token',
@@ -31,6 +33,7 @@ const Set<String> defaultSensitiveKeys = <String>{
   'bearer_token',
   'session',
   'session_id',
+  'session.id',
   'session_token',
   'session-id',
   'session-token',
@@ -246,7 +249,7 @@ const Set<String> defaultSensitiveKeys = <String>{
 };
 
 /// Backward-compatible alias for [defaultSensitiveKeys].
-@Deprecated('Use defaultSensitiveKeys instead. Will be removed in 7.0.0.')
+@Deprecated('Use defaultSensitiveKeys instead. Will be removed in 8.0.0.')
 const Set<String> kDefaultSensitiveKeys = defaultSensitiveKeys;
 
 /// Regex patterns that match sensitive key name fragments.
@@ -320,7 +323,9 @@ const Set<String> defaultFullyMaskedKeys = <String>{
 
   // Credentials & secrets
   'x-api-key',
+  'x_api_key',
   'api-key',
+  'api_key',
   'apikey',
   'token',
   'access_token',
@@ -331,6 +336,7 @@ const Set<String> defaultFullyMaskedKeys = <String>{
   'session_token',
   'session-token',
   'session_id',
+  'session.id',
   'session-id',
   'password',
   'passwd',

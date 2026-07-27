@@ -80,10 +80,16 @@ A standalone package. It works on its own, without the rest of the [ISpect toolk
 
 ```yaml
 dependencies:
-  ispect_layout: ^6.1.7
+  ispect_layout: ^7.0.0
 ```
 
 ## Quick start
+
+Enable diagnostics explicitly in internal builds:
+
+```bash
+flutter run --dart-define=ISPECT_ENABLED=true
+```
 
 ```dart
 import 'package:flutter/material.dart';
@@ -94,13 +100,17 @@ void main() {
     MaterialApp(
       home: const MyApp(),
       builder: (context, child) => Inspector(
-        isEnabled: true, // typically `kDebugMode`.
+        isEnabled: true,
         child: child!,
       ),
     ),
   );
 }
 ```
+
+`ISPECT_ENABLED` is the absolute compile-time gate. `isEnabled` is only an
+additional runtime switch and cannot turn the inspector on when the build flag
+is omitted.
 
 Tap the widget-inspector FAB to start selecting. Tap the Compare icon (or press `Alt+Y`) to lock the current selection, then tap a second widget to see the pixel distance.
 

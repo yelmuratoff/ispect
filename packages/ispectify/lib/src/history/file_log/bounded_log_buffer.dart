@@ -16,17 +16,18 @@ final class BoundedLogBuffer {
 
   bool add(ISpectLogData data) {
     final maxItems = options.maxHistoryItems;
-    if (!options.useHistory || maxItems == 0 || _ids.contains(data.id)) {
+    final id = captureISpectLogDataForEgress(data).id;
+    if (!options.useHistory || maxItems == 0 || _ids.contains(id)) {
       return false;
     }
 
     if (_entries.length == maxItems) {
       final removed = _entries.removeFirst();
-      _ids.remove(removed.id);
+      _ids.remove(captureISpectLogDataForEgress(removed).id);
     }
 
     _entries.addLast(data);
-    _ids.add(data.id);
+    _ids.add(id);
     _cachedHistory = null;
     return true;
   }

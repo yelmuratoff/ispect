@@ -9,12 +9,16 @@ void main() {
     test('copyWith should create a new instance with the provided values', () {
       const originalSettings = ISpectHttpInterceptorSettings();
       final updatedSettings = originalSettings.copyWith(
+        logRequests: false,
+        logResponses: false,
         printResponseData: false,
         printRequestHeaders: true,
         printErrorHeaders: false,
         requestPen: AnsiPen()..yellow(),
       );
 
+      expect(updatedSettings.logRequests, isFalse);
+      expect(updatedSettings.logResponses, isFalse);
       expect(updatedSettings.printResponseData, equals(false));
       expect(updatedSettings.printRequestHeaders, equals(true));
       expect(updatedSettings.printErrorHeaders, equals(false));

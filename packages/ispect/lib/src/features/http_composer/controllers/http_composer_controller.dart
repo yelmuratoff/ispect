@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:ispectify/ispectify.dart';
 
@@ -155,7 +156,7 @@ final class HttpComposerController extends ChangeNotifier {
           body = null;
         } else {
           try {
-            body = JsonReplayBody(jsonDecode(_bodyText));
+            body = JsonReplayBody(JsonInputPreflight.decode(_bodyText));
           } on FormatException {
             _validationError = ComposerValidation.jsonInvalid;
             return null;
@@ -204,11 +205,14 @@ final class HttpComposerController extends ChangeNotifier {
     _result = null;
     notifyListeners();
 
-    final result = await sender.send(request);
-
-    _isSending = false;
-    _result = result;
-    notifyListeners();
+    try {
+      _result = (await sender.send(request)).safeSnapshot();
+    } catch (error) {
+      _result = NetworkReplayResult(error: error).safeSnapshot();
+    } finally {
+      _isSending = false;
+      notifyListeners();
+    }
   }
 
   NetworkRequestSender? _resolveSender() {

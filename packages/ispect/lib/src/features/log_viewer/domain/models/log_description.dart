@@ -48,7 +48,7 @@ final class LogDescription {
   factory LogDescription.fromMap(Map<String, dynamic> map) {
     T cast<T>(String k) => map[k] is T
         ? map[k] as T
-        : throw ArgumentError.value(map[k], k, '$T ← ${map[k].runtimeType}');
+        : throw ArgumentError('Invalid $k: expected $T.');
     return LogDescription(
       key: cast<String?>('key') ?? '',
       title: cast<String?>('title'),

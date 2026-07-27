@@ -1,9 +1,9 @@
 // ignore_for_file: type=lint
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/models.dart';
 
 /// Result of file processing operation
@@ -42,7 +42,20 @@ sealed class FileProcessingResult {
     required String mimeType,
     required String fileName,
     required FileFormat format,
-  }) = _SuccessFileProcessingResult;
+    Object? decodedJson,
+    bool jsonDecodeAttempted = false,
+    bool jsonDecodeSucceeded = false,
+  }) =>
+      _SuccessFileProcessingResult(
+        content: content,
+        displayName: displayName,
+        mimeType: mimeType,
+        fileName: fileName,
+        format: format,
+        decodedJson: decodedJson,
+        jsonDecodeAttempted: jsonDecodeAttempted,
+        jsonDecodeSucceeded: jsonDecodeSucceeded,
+      );
 
   /// Create a failed result
   factory FileProcessingResult.failure({
@@ -57,21 +70,42 @@ sealed class FileProcessingResult {
     switch (this) {
       case _SuccessFileProcessingResult(:final content, :final format):
         if (format == FileFormat.json) {
-          try {
-            final decoded = jsonDecode(content);
-            final data = switch (decoded) {
-              Map<String, dynamic> map => map,
-              List<Object?> list => {'data': list},
-              _ => {'value': decoded},
-            };
-            if (!context.mounted) return;
-            JsonScreen(data: data).push(context);
-            return;
-          } catch (_) {
-            if (!context.mounted) return;
-            JsonScreen(data: {'content': content}).push(context);
-            return;
+          final result = this as _SuccessFileProcessingResult;
+          Object? decoded;
+          if (result._jsonDecodeAttempted) {
+            if (!result._jsonDecodeSucceeded) {
+              if (!context.mounted) return;
+              JsonScreen(data: {'content': content}).push(context);
+              return;
+            }
+            decoded = result._decodedJson;
+          } else {
+            try {
+              decoded = JsonInputPreflight.decode(
+                content,
+                approximateNodeLimit: JsonInputPreflight.maxViewerNodes,
+              );
+            } on JsonInputLimitException {
+              if (!context.mounted) return;
+              JsonScreen(
+                data: const {'content': JsonInputPreflight.rejectedContent},
+              ).push(context);
+              return;
+            } on FormatException {
+              if (!context.mounted) return;
+              JsonScreen(data: {'content': content}).push(context);
+              return;
+            }
           }
+
+          final data = switch (decoded) {
+            Map<String, dynamic> map => map,
+            List<Object?> list => {'data': list},
+            _ => {'value': decoded},
+          };
+          if (!context.mounted) return;
+          JsonScreen(data: data).push(context);
+          return;
         }
         if (!context.mounted) return;
         JsonScreen(data: {'content': content}).push(context);
@@ -97,7 +131,18 @@ final class _SuccessFileProcessingResult extends FileProcessingResult {
     required this.mimeType,
     required super.fileName,
     required super.format,
-  }) : super();
+    Object? decodedJson,
+    bool jsonDecodeAttempted = false,
+    bool jsonDecodeSucceeded = false,
+  })  : _decodedJson = decodedJson,
+        _jsonDecodeAttempted = jsonDecodeAttempted,
+        _jsonDecodeSucceeded = jsonDecodeSucceeded,
+        assert(!jsonDecodeSucceeded || jsonDecodeAttempted),
+        super();
+
+  final Object? _decodedJson;
+  final bool _jsonDecodeAttempted;
+  final bool _jsonDecodeSucceeded;
 
   @override
   bool get success => true;

@@ -2,6 +2,7 @@ import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
+import 'package:ispectify/src/trace/trace_helpers.dart';
 
 /// Trace helpers for push / remote notifications.
 extension ISpectLoggerPush on ISpectLogger {
@@ -19,19 +20,23 @@ extension ISpectLoggerPush on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) =>
-      traceCategory(
-        category: pushCategory,
-        source: source,
-        operation: operation,
-        key: messageId,
-        meta: {
+  }) {
+    if (!isEnabled) return;
+    traceCategory(
+      category: pushCategory,
+      source: source,
+      operation: operation,
+      key: messageId,
+      meta: boundedTraceMeta(
+        fields: {
           if (title != null) 'title': title,
           if (topic != null) 'topic': topic,
           if (data != null) 'data': data,
-          ...?meta,
         },
-        config: config,
-        correlationId: correlationId ?? messageId,
-      );
+        overrides: meta,
+      ),
+      config: config,
+      correlationId: correlationId ?? messageId,
+    );
+  }
 }

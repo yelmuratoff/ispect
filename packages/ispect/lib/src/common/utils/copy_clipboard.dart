@@ -12,11 +12,10 @@ import 'package:ispect/src/common/extensions/context.dart';
 ///
 /// **Redaction.** Pass `redact: true` for values that may contain sensitive
 /// data (HTTP bodies, headers, full log JSON). The string is then run through
-/// [RedactionService.redactExportString] using [redactKeys] — URL credentials,
-/// `Bearer`/`Basic`/`Token` prefixes, query params and JSON fields whose keys
-/// match any of [redactKeys] are replaced with `[REDACTED]`. When [redact] is `false`
-/// (the default) the value is copied verbatim; use this only for safe values
-/// (paths, IDs, already-redacted curl strings).
+/// the resolved [RedactionService]. An explicit [redactionService] takes
+/// precedence over [redactKeys], which take precedence over the global policy.
+/// When [redact] is `false` (the default) the bounded value is copied verbatim;
+/// use this only for safe values (paths, IDs, already-redacted curl strings).
 ///
 /// ### Example:
 /// ```dart
@@ -37,7 +36,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 /// );
 /// ```
 
-const int _maxClipboardLength = 100000;
+const int _maxClipboardBytes = 100000;
 
 void copyClipboard(
   BuildContext? context, {
@@ -46,29 +45,29 @@ void copyClipboard(
   bool showValue = true,
   bool redact = false,
   Set<String>? redactKeys,
+  RedactionService? redactionService,
   ISpectGeneratedLocalization? l10n,
   ScaffoldMessengerState? messenger,
 }) {
+  final prepared = LogExportOutput.boundJsonValue(
+    value,
+    maxBytes: _maxClipboardBytes,
+    replaceOversizedStrings: redact,
+  );
+  final boundedInput =
+      prepared is String ? prepared : LogExportOutput.truncatedMarker;
   final sanitized = redact
-      ? RedactionService.redactExportString(
-          value,
-          redactKeys ?? defaultSensitiveKeys,
+      ? _redactClipboardValue(
+          boundedInput,
+          redactionService: redactionService,
+          redactKeys: redactKeys,
         )
-      : value;
-
-  final String truncatedValue;
-  if (sanitized.length > _maxClipboardLength) {
-    // Avoid splitting a surrogate pair at the truncation boundary.
-    var end = _maxClipboardLength;
-    if (end > 0 &&
-        sanitized.codeUnitAt(end - 1) >= 0xD800 &&
-        sanitized.codeUnitAt(end - 1) <= 0xDBFF) {
-      end--;
-    }
-    truncatedValue = '${sanitized.substring(0, end)}\n... [truncated]';
-  } else {
-    truncatedValue = sanitized;
-  }
+      : boundedInput;
+  final truncatedValue = LogExportOutput.truncateUtf8(
+    sanitized,
+    maxBytes: _maxClipboardBytes,
+    marker: '\n... [truncated]',
+  );
 
   final capturedL10n = l10n ?? context?.ispectL10n;
   final capturedMessenger = messenger ??
@@ -94,4 +93,20 @@ void copyClipboard(
       }
     }),
   );
+}
+
+String _redactClipboardValue(
+  String value, {
+  required RedactionService? redactionService,
+  required Set<String>? redactKeys,
+}) {
+  try {
+    final redacted = ISpectRedaction.resolveService(
+      service: redactionService,
+      sensitiveKeys: redactKeys,
+    ).redactForExport(value);
+    return redacted is String ? redacted : defaultPlaceholder;
+  } on Object {
+    return defaultPlaceholder;
+  }
 }

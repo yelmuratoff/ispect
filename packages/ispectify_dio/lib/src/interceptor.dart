@@ -18,16 +18,25 @@ class ISpectDioInterceptor extends Interceptor
     RedactionService? redactor,
   })  : _settings = settings,
         _logger = logger ?? ISpectLogger(),
-        _redactor = redactor ?? RedactionService();
+        _explicitRedactor = redactor;
+
+  static const _preserveResolvedRedaction =
+      BaseNetworkInterceptor.noRedactConfig;
 
   final ISpectLogger _logger;
-  final RedactionService _redactor;
+  final RedactionService? _explicitRedactor;
 
   @override
   ISpectLogger get logger => _logger;
 
   @override
-  RedactionService get redactor => _redactor;
+  RedactionService get redactor =>
+      ISpectRedaction.resolveService(service: _explicitRedactor);
+
+  bool get _captureEnabled =>
+      _logger.hasActiveConsumers && settings.enabled;
+  bool get _requestCaptureEnabled => _captureEnabled && settings.logRequests;
+  bool get _responseCaptureEnabled => _captureEnabled && settings.logResponses;
 
   ISpectDioInterceptorSettings get settings => _settings;
   ISpectDioInterceptorSettings _settings;
@@ -50,34 +59,72 @@ class ISpectDioInterceptor extends Interceptor
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) {
-    if (!settings.enabled || !settings.shouldProcessRequest(options)) {
+    if (!_captureEnabled) {
+      super.onRequest(options, handler);
+      return;
+    }
+
+    final logRequest =
+        settings.logRequests && settings.shouldProcessRequest(options);
+    if (!_captureEnabled) {
       super.onRequest(options, handler);
       return;
     }
 
     final requestId = generateTraceId();
-    // Park trace state in extra (not an Expando) so it survives the fresh
-    // RequestOptions a downstream copyWith allocates; write it before forwarding
-    // so that copy carries it.
+    // RequestOptions copies carry extra, unlike Expando state.
     options.extra[NetworkJsonKeys.ispectRequestId] = requestId;
     options.extra[NetworkJsonKeys.ispectRequestStartedAt] =
         DateTime.now().microsecondsSinceEpoch;
 
-    final useRedaction = settings.enableRedaction;
-    final (:url, path: _) = redactUrlAndPath(
-      options.uri,
-      useRedaction: useRedaction,
+    if (!logRequest || !_requestCaptureEnabled) {
+      super.onRequest(options, handler);
+      return;
+    }
+
+    final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
+    final operation = redactDiagnosticText(
+      options.method,
+      useRedaction: redactionActive,
     );
+    if (!_requestCaptureEnabled) {
+      super.onRequest(options, handler);
+      return;
+    }
 
-    final requestDataJson = DioRequestData(options).toJson();
-    if (useRedaction) DioRequestData.redact(requestDataJson, redactor);
+    final requestData = DioRequestData(options);
+    final uriSnapshot = requestData.uriSnapshot;
+    final url = uriSnapshot.isTrusted
+        ? redactUrl(uriSnapshot.url, useRedaction: redactionActive)
+        : uriSnapshot.url;
+    if (!_requestCaptureEnabled) {
+      super.onRequest(options, handler);
+      return;
+    }
 
+    final requestDataJson = requestData.toJson(
+      includeData: settings.printRequestData,
+      includeHeaders: settings.printRequestHeaders,
+      redactionActive: redactionActive,
+    );
+    if (!_requestCaptureEnabled) {
+      super.onRequest(options, handler);
+      return;
+    }
+    if (redactionActive) {
+      DioRequestData.redact(requestDataJson, redactor);
+    }
+
+    if (!_requestCaptureEnabled) {
+      super.onRequest(options, handler);
+      return;
+    }
     _logger.httpRequest(
       source: 'dio',
-      operation: options.method,
+      operation: operation,
       target: url,
       correlationId: requestId,
-      config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+      config: _preserveResolvedRedaction,
       meta: {
         NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.requestData: requestDataJson,
@@ -97,33 +144,52 @@ class ISpectDioInterceptor extends Interceptor
     ResponseInterceptorHandler handler,
   ) {
     super.onResponse(response, handler);
-    if (!settings.enabled || !settings.shouldProcessResponse(response)) {
-      return;
-    }
+    if (!_responseCaptureEnabled) return;
+    if (!settings.shouldProcessResponse(response)) return;
+    if (!_responseCaptureEnabled) return;
 
     final requestOptions = response.requestOptions;
     final requestId = _requestIdOf(requestOptions);
     final duration = _elapsedSince(requestOptions);
 
-    final useRedaction = settings.enableRedaction;
-    final (:url, path: _) = redactUrlAndPath(
-      requestOptions.uri,
-      useRedaction: useRedaction,
+    final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
+    final operation = redactDiagnosticText(
+      requestOptions.method,
+      useRedaction: redactionActive,
     );
+    if (!_responseCaptureEnabled) return;
+
     final requestData = DioRequestData(requestOptions);
+    final uriSnapshot = requestData.uriSnapshot;
+    final url = uriSnapshot.isTrusted
+        ? redactUrl(uriSnapshot.url, useRedaction: redactionActive)
+        : uriSnapshot.url;
+    if (!_responseCaptureEnabled) return;
+
     final responseDataJson = DioResponseData(
       response: response,
       requestData: requestData,
-    ).toJson();
-    if (useRedaction) DioResponseData.redact(responseDataJson, redactor);
+    ).toJson(
+      includeData: settings.printResponseData,
+      includeHeaders: settings.printResponseHeaders,
+      includeMessage: settings.printResponseMessage,
+      includeRequestData: settings.printRequestData,
+      includeRequestHeaders: settings.printRequestHeaders,
+      redactionActive: redactionActive,
+    );
+    if (!_responseCaptureEnabled) return;
+    if (redactionActive) {
+      DioResponseData.redact(responseDataJson, redactor);
+    }
 
+    if (!_responseCaptureEnabled) return;
     _logger.httpResponse(
       source: 'dio',
-      operation: requestOptions.method,
+      operation: operation,
       target: url,
       correlationId: requestId,
       duration: duration,
-      config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+      config: _preserveResolvedRedaction,
       meta: {
         if (requestId != null) NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.statusCode: response.statusCode,
@@ -140,20 +206,29 @@ class ISpectDioInterceptor extends Interceptor
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     super.onError(err, handler);
-    if (!settings.enabled || !settings.shouldProcessError(err)) {
+    if (!_captureEnabled || !settings.shouldProcessError(err)) {
       return;
     }
+    if (!_captureEnabled) return;
 
     final requestOptions = err.requestOptions;
     final requestId = _requestIdOf(requestOptions);
     final duration = _elapsedSince(requestOptions);
 
-    final useRedaction = settings.enableRedaction;
-    final (:url, path: _) = redactUrlAndPath(
-      requestOptions.uri,
-      useRedaction: useRedaction,
+    final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
+    final operation = redactDiagnosticText(
+      requestOptions.method,
+      useRedaction: redactionActive,
     );
+    if (!_captureEnabled) return;
+
     final requestData = DioRequestData(requestOptions);
+    final uriSnapshot = requestData.uriSnapshot;
+    final url = uriSnapshot.isTrusted
+        ? redactUrl(uriSnapshot.url, useRedaction: redactionActive)
+        : uriSnapshot.url;
+    if (!_captureEnabled) return;
+
     final errorDataJson = DioErrorData(
       exception: err,
       requestData: requestData,
@@ -161,18 +236,48 @@ class ISpectDioInterceptor extends Interceptor
         response: err.response,
         requestData: requestData,
       ),
-    ).toJson();
-    if (useRedaction) DioErrorData.redact(errorDataJson, redactor);
+    ).toJson(
+      includeData: settings.printErrorData,
+      includeHeaders: settings.printErrorHeaders,
+      includeMessage: settings.printErrorMessage,
+      includeRequestData: settings.printRequestData,
+      includeRequestHeaders: settings.printRequestHeaders,
+      redactionActive: redactionActive,
+    );
+    if (!_captureEnabled) return;
+    if (redactionActive) {
+      DioErrorData.redact(errorDataJson, redactor);
+    }
 
+    if (!_captureEnabled) return;
+    Object? logError;
+    StackTrace? logStackTrace;
+    if (settings.printErrorMessage) {
+      if (redactionActive) {
+        logError = NetworkMapRedactor.redactFreeTextValue(err, redactor);
+        if (!_captureEnabled) return;
+        final redactedStackTrace = NetworkMapRedactor.redactFreeTextValue(
+          err.stackTrace,
+          redactor,
+        );
+        if (!_captureEnabled) return;
+        logStackTrace = StackTrace.fromString(redactedStackTrace);
+      } else {
+        logError = err;
+        logStackTrace = err.stackTrace;
+      }
+    }
+
+    if (!_captureEnabled) return;
     _logger.httpError(
       source: 'dio',
-      operation: requestOptions.method,
+      operation: operation,
       target: url,
-      error: err,
-      errorStackTrace: err.stackTrace,
+      error: logError,
+      errorStackTrace: logStackTrace,
       correlationId: requestId,
       duration: duration,
-      config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+      config: _preserveResolvedRedaction,
       meta: {
         if (requestId != null) NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.statusCode: err.response?.statusCode,

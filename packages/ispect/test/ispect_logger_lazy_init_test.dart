@@ -28,18 +28,21 @@ void main() {
       expect(identical(first, second), isTrue);
     });
 
-    test('lazy logger is disabled and retains no history when gated off',
-        () async {
-      await ISpect.dispose();
+    test(
+      'lazy logger is disabled and retains no history when gated off',
+      () async {
+        await ISpect.dispose();
 
-      final logger = ISpect.logger;
+        final logger = ISpect.logger;
 
-      expect(logger.options.enabled, isFalse);
+        expect(logger.options.enabled, isFalse);
 
-      logger.info('diagnostic that must not be retained in production');
+        logger.info('diagnostic that must not be retained in production');
 
-      expect(logger.history, isEmpty);
-    });
+        expect(logger.history, isEmpty);
+      },
+      skip: kISpectEnabled,
+    );
 
     test('dispose() resets state and allows a fresh lazy logger', () async {
       await ISpect.dispose();
@@ -52,24 +55,100 @@ void main() {
       expect(replacement.isDisposed, isFalse);
     });
 
-    test('explicit initialize() replaces the lazy logger', () async {
-      await ISpect.dispose();
+    test(
+      'explicit initialize() replaces and retires the lazy logger',
+      () async {
+        await ISpect.dispose();
+        final lazy = ISpect.logger;
+        final custom = ISpectLogger(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
+        );
 
-      // Trigger lazy creation first.
-      ISpect.logger;
+        expect(ISpect.initialize(custom), isTrue);
 
-      final custom = ISpectLogger(
-        options: ISpectLoggerOptions(useConsoleLogs: false),
-      );
+        expect(lazy.isDisposed, isTrue);
+        expect(ISpect.logger, same(custom));
+        expect(ISpect.loggerIfInitialized, same(custom));
+      },
+      skip: !kISpectEnabled,
+    );
 
-      // `initialize` is a no-op when kISpectEnabled is false (test env),
-      // but with force=true it still rewires the static field.
-      ISpect.initialize(custom, force: true);
+    test(
+      'forced initialization disposes the replaced logger',
+      () async {
+        await ISpect.dispose();
+        final original = ISpectLogger(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
+        );
+        final replacement = ISpectLogger(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
+        );
 
-      // When kISpectEnabled is false, initialize() short-circuits — the
-      // lazy instance stays. Either way, the logger must remain a valid
-      // ISpectLogger; this keeps the test correct under both compile flags.
-      expect(ISpect.logger, isA<ISpectLogger>());
-    });
+        expect(ISpect.initialize(original), isTrue);
+        expect(ISpect.initialize(replacement, force: true), isTrue);
+
+        expect(original.isDisposed, isTrue);
+        expect(replacement.isDisposed, isFalse);
+        expect(ISpect.logger, same(replacement));
+      },
+      skip: !kISpectEnabled,
+    );
+
+    test(
+      'forced initialization keeps the same logger active',
+      () async {
+        await ISpect.dispose();
+        final logger = ISpectLogger(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
+        );
+
+        expect(ISpect.initialize(logger), isTrue);
+        expect(ISpect.initialize(logger, force: true), isTrue);
+
+        expect(logger.isDisposed, isFalse);
+        expect(ISpect.logger, same(logger));
+      },
+      skip: !kISpectEnabled,
+    );
+
+    test(
+      'initialization rejects an already disposed logger',
+      () async {
+        await ISpect.dispose();
+        final disposed = ISpectLogger(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
+        );
+        await disposed.dispose();
+
+        expect(ISpect.initialize(disposed), isFalse);
+        expect(
+          () => ISpect.run(() {}, logger: disposed),
+          throwsStateError,
+        );
+        expect(ISpect.loggerIfInitialized, isNull);
+      },
+      skip: !kISpectEnabled,
+    );
+
+    test(
+      'a retired logger cannot be installed again',
+      () async {
+        await ISpect.dispose();
+        final original = ISpectLogger(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
+        );
+        final replacement = ISpectLogger(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
+        );
+
+        expect(ISpect.initialize(original), isTrue);
+        expect(ISpect.initialize(replacement, force: true), isTrue);
+        expect(original.isDisposed, isTrue);
+
+        expect(ISpect.initialize(original, force: true), isFalse);
+        expect(ISpect.logger, same(replacement));
+      },
+      skip: !kISpectEnabled,
+    );
   });
 }

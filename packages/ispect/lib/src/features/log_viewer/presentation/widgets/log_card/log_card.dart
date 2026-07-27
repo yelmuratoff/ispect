@@ -130,7 +130,6 @@ class _LogCardHeader extends StatelessWidget {
         context: context,
         position: position,
         data: data,
-        message: _message,
         onShareTap: onShareTap,
         onOpenDetail: openDetail,
         onNavigationFlowTap: data.isRouteLog && observer != null
@@ -194,7 +193,8 @@ class _LogCardHeader extends StatelessWidget {
 /// Builds the subtitle line shown beneath the title row when a log card is
 /// expanded.
 String? _buildSubtitle(ISpectLogData data) {
-  final parts = <String>['#${_shortId(data.id)}'];
+  final captured = captureISpectLogDataForEgress(data);
+  final parts = <String>['#${_shortId(captured.id)}'];
 
   final source = data.traceSource;
   if (source != null && source.isNotEmpty) parts.add(source);
@@ -212,20 +212,18 @@ String? _buildSubtitle(ISpectLogData data) {
   final ms = data.traceDurationMs;
   if (ms != null) parts.add(_formatTraceDuration(ms));
 
-  final raised = data.exception ?? data.error;
-  if (raised != null) {
-    final typeName = raised.runtimeType.toString();
-    if (typeName.isNotEmpty && typeName != 'Null') {
-      final clean = typeName.startsWith('_') ? typeName.substring(1) : typeName;
-      parts.add(clean);
-    }
+  if (captured.exception != null) {
+    parts.add('Exception');
+  } else if (captured.error != null) {
+    parts.add('Error');
   }
 
   if (parts.length == 1) {
-    final levelName = data.logLevel?.name;
+    final levelName = captured.logLevel?.name;
     if (levelName != null) {
-      final title =
-          ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? '';
+      final title = ISpectLogType.fromKey(captured.key ?? '')?.displayTitle ??
+          captured.key ??
+          '';
       if (title.toLowerCase() != levelName.toLowerCase()) {
         parts.add(levelName.toUpperCase());
       }

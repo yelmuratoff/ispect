@@ -3,6 +3,11 @@ import 'package:ispectify/src/models/data.dart';
 /// Observer for monitoring ISpectLogger events.
 ///
 /// Subclass and override only the methods you need.
+///
+/// With redaction enabled, callbacks receive sanitized immutable snapshots.
+/// Built-in error and exception entry types are retained. Unknown custom
+/// [ISpectLogData] subtypes are represented as base snapshots, while their
+/// original callback routing is preserved.
 abstract class ISpectObserver {
   const ISpectObserver();
 

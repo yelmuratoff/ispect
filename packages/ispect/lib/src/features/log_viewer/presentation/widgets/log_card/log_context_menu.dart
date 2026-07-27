@@ -28,7 +28,6 @@ Future<void> showLogContextMenu({
   required BuildContext context,
   required Offset position,
   required ISpectLogData data,
-  required String message,
   VoidCallback? onShareTap,
   VoidCallback? onOpenDetail,
   VoidCallback? onNavigationFlowTap,
@@ -80,7 +79,10 @@ Future<void> showLogContextMenu({
 
   switch (action) {
     case LogContextAction.copyMessage:
-      copyClipboard(context, value: message, redact: true);
+      copyClipboard(
+        context,
+        value: data.toExportMessageText(),
+      );
     case LogContextAction.share:
       onShareTap?.call();
     case LogContextAction.copyCurl:

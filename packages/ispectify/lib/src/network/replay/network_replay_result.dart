@@ -1,3 +1,7 @@
+import 'package:ispectify/src/history/serialization.dart';
+import 'package:ispectify/src/redaction/constants/placeholders.dart';
+import 'package:ispectify/src/redaction/redaction_service.dart';
+import 'package:ispectify/src/redaction/redaction_toggle.dart';
 import 'package:meta/meta.dart';
 
 /// Outcome of sending a [NetworkReplayRequest] through a [NetworkRequestSender].
@@ -30,5 +34,68 @@ final class NetworkReplayResult {
   /// exception by the underlying client).
   final Object? error;
 
-  bool get isError => error != null;
+  bool get isError => !identical(error, null);
+
+  /// Creates a detached, bounded snapshot suitable for controller and UI state.
+  ///
+  /// Caller-owned maps, iterables, errors, and unknown objects never cross the
+  /// boundary by identity. The global redaction switch remains authoritative;
+  /// when active, the supplied [redactor] or the safe default redactor masks
+  /// sensitive response content before the final bounded snapshot is retained.
+  NetworkReplayResult safeSnapshot({RedactionService? redactor}) {
+    final redactionActive = ISpectRedaction.enabled;
+    final prepared = LogExportOutput.boundJsonValue(
+      <String, Object?>{
+        'body': body,
+        'error': error,
+        'headers': headers,
+      },
+      preserveTypes: redactionActive,
+      replaceOversizedStrings: redactionActive,
+    );
+    final Object? sanitized;
+    if (redactionActive) {
+      try {
+        sanitized = ISpectRedaction.resolveService(service: redactor)
+            .redactForExport(prepared);
+      } catch (_) {
+        return _redactionFailureSnapshot();
+      }
+    } else {
+      sanitized = prepared;
+    }
+    final bounded = LogExportOutput.boundJsonValue(
+      sanitized,
+      replaceOversizedStrings: redactionActive,
+    );
+    if (bounded is! Map<String, Object?>) {
+      return _redactionFailureSnapshot();
+    }
+
+    return NetworkReplayResult(
+      statusCode: statusCode,
+      headers: _safeHeaders(bounded['headers']),
+      body: bounded['body'],
+      durationMs: durationMs,
+      error: bounded['error'],
+    );
+  }
+
+  NetworkReplayResult _redactionFailureSnapshot() => NetworkReplayResult(
+        statusCode: statusCode,
+        body: identical(body, null) ? null : redactionFailedPlaceholder,
+        durationMs: durationMs,
+        error: identical(error, null) ? null : redactionFailedPlaceholder,
+      );
+
+  static Map<String, String> _safeHeaders(Object? value) {
+    if (value is! Map<String, Object?>) return const <String, String>{};
+    final result = <String, String>{};
+    for (final entry in value.entries) {
+      if (entry.value case final String headerValue) {
+        result[entry.key] = headerValue;
+      }
+    }
+    return Map<String, String>.unmodifiable(result);
+  }
 }

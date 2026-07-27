@@ -60,7 +60,7 @@
 
 ```yaml
 dependencies:
-  ispectify: ^6.1.7
+  ispectify: ^7.0.0
 ```
 
 ## Logger-only quick start
@@ -74,6 +74,17 @@ logger.info('Application started');
 logger.warning('Cache miss, falling back to network');
 logger.error('Payment gateway returned 502', exception, stackTrace);
 ```
+
+ISpect is compile-time gated. Enable diagnostics explicitly when running or
+compiling a pure-Dart program:
+
+```bash
+dart run -DISPECT_ENABLED=true bin/main.dart
+dart compile exe -DISPECT_ENABLED=true bin/main.dart
+```
+
+Without `ISPECT_ENABLED=true`, logger APIs are inert and retain no diagnostics.
+Do not add the flag to public production release commands.
 
 For Flutter UI, navigator diagnostics, and session browsing, add `ispect` on
 top of this logger. Keep `ispectify` alone when logs are consumed by the
@@ -151,6 +162,18 @@ Records are redacted before they reach disk, grouped into daily rolling segments
 
 Disabling the global `ISpectRedaction.enabled` switch is an explicit opt-out that also disables redaction before file persistence and JSON export.
 
+The directory provider must return an existing app-private directory. On
+POSIX, the provider must be owner-only so its traversal permissions protect
+all child artifacts; managed session/date directories must not be group- or
+world-writable. Symbolic links and paths outside the managed root are rejected.
+An active process running as the same OS principal is outside the `dart:io`
+rolling-history threat model; use in-memory history or a platform-native
+storage service when that attacker is in scope.
+
+Persistence does not invoke supplied `Exception`, `Error`, or `StackTrace`
+formatting methods. Exceptions and errors use a bounded safe type descriptor;
+stack traces use a fail-closed marker.
+
 ## Console output
 
 Console entries use a compact, single-line format by default. Switch to a boxed format — each entry framed for visual separation in a busy console — by setting `ConsoleSettings.formatter`:
@@ -210,7 +233,10 @@ final users = await logger.traceAsync<List<User>>(
 
 ## Observers
 
-Observers receive every log event in real time. Attach one per external sink.
+Observers receive a redacted copy of every log event in real time. Attach one
+per external sink. The local history keeps the original diagnostic entry;
+setting `ISpectRedaction.enabled = false` is the explicit opt-out that also
+makes observer delivery raw.
 
 ```dart
 class GrafanaObserver extends ISpectObserver {
@@ -229,42 +255,59 @@ class GrafanaObserver extends ISpectObserver {
 logger.addObserver(const GrafanaObserver());
 ```
 
+HTTP log entries expose `curlCommand`/`curlCommandWith()`. Generated commands
+redact URLs, headers, and bodies by default and use `--data-raw`. Pass
+`enableRedaction: false` only for isolated local debugging.
+
 ## Data redaction
 
 Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.
 
-The same redactor runs beyond the initial capture. Supported exports, clipboard helpers, cURL generation, and observer payloads all pass through the same pipeline before data leaves the debug session.
+The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
 
 Redaction works best paired with focused capture. Keep body and header logging off unless you actually need the payload, and register project-specific keys for the business identifiers only your application understands.
 
-### Custom keys and patterns
+### Global configuration
 
 ```dart
 import 'package:ispectify/ispectify.dart';
 
-final redactor = RedactionService(
+ISpectRedaction.configure(
+  service: RedactionService(
+    additionalSensitiveKeys: {
+      'x-custom-secret',
+      'internal_token',
+    },
+    additionalSensitiveKeyPatterns: [
+      RegExp(r'my_app_secret_\w+', caseSensitive: false),
+    ],
+    fullyMaskedKeys: {'filename'},
+    placeholder: '***',
+    visibleEdgeLength: 3,
+  ),
+);
+```
+
+`additionalSensitiveKeys` and `additionalSensitiveKeyPatterns` extend the built-in policy. Use `sensitiveKeys` or `sensitiveKeyPatterns` only when you intentionally want to replace the corresponding defaults:
+
+```dart
+final replacementPolicy = RedactionService(
   sensitiveKeys: {
-    ...defaultSensitiveKeys,
     'x-custom-secret',
     'internal_token',
   },
   sensitiveKeyPatterns: [
     RegExp(r'my_app_secret_\w+', caseSensitive: false),
   ],
-  // Keys where the value is replaced entirely instead of edge-masked.
-  fullyMaskedKeys: {'filename'},
-  placeholder: '***',
-  visibleEdgeLength: 3,
-  redactBinary: true,
-  redactBase64: true,
 );
 ```
 
-### Ignoring defaults
+Flutter apps can pass the same policy as `ISpect.run(redactionService: ...)`; `ISpect.dispose()` restores the policy that was active before that run. An explicit `RedactionService` supplied to one integration stays local and takes precedence over the global policy. Existing integrations without an explicit service pick up later global reconfiguration. The policy is scoped to the current Dart isolate.
+
+### Local exceptions
 
 ```dart
 final redactor = RedactionService(
-  // `?mobile=true` is a platform flag, not a phone number.
   ignoredKeys: {'mobile', 'platform_token'},
   ignoredValues: {'<test-token>', 'public-api-key'},
 );
@@ -272,7 +315,7 @@ final redactor = RedactionService(
 
 ### Disabling
 
-Each interceptor accepts `enableRedaction: false` on its settings object. See the per-package README for the exact settings type.
+`ISpectRedaction.configure(enabled: false)` is the global content-masking opt-out. Each interceptor also accepts `enableRedaction: false` on its settings object for a local opt-out. Size limits, non-executing snapshots, private-storage checks, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 

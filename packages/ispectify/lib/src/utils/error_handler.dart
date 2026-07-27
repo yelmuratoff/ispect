@@ -17,7 +17,7 @@ class ISpectErrorHandler {
   ISpectLogData handle(
     Object exception, [
     StackTrace? stackTrace,
-    String? msg,
+    Object? msg,
   ]) =>
       switch (exception) {
         final ISpectLogError logError => logError,
@@ -33,7 +33,7 @@ class ISpectErrorHandler {
             stackTrace: stackTrace,
           ),
         _ => ISpectLogData(
-            exception.toString(),
+            msg ?? exception,
             key: ISpectLogType.error.key,
             logLevel: LogLevel.error,
             stackTrace: stackTrace,

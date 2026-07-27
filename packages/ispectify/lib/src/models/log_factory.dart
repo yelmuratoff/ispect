@@ -16,7 +16,7 @@ abstract final class LogFactory {
   }) {
     final resolvedLevel = level ?? type.level;
     return ISpectLogData(
-      message?.toString() ?? '',
+      message ?? '',
       key: type.key,
       exception: exception,
       stackTrace: stackTrace,

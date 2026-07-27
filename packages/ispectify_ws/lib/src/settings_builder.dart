@@ -15,7 +15,12 @@ class ISpectWSInterceptorSettingsBuilder
   ISpectWSInterceptorSettingsBuilder();
 
   factory ISpectWSInterceptorSettingsBuilder.development() =>
-      ISpectWSInterceptorSettingsBuilder()..applyDevelopmentDefaults();
+      ISpectWSInterceptorSettingsBuilder()
+        ..applyDevelopmentDefaults()
+        ..printRequestHeaders = false
+        ..printResponseHeaders = false
+        ..printErrorHeaders = false
+        ..printStateData = true;
 
   factory ISpectWSInterceptorSettingsBuilder.production() =>
       ISpectWSInterceptorSettingsBuilder()..applyProductionDefaults();
@@ -26,15 +31,29 @@ class ISpectWSInterceptorSettingsBuilder
   factory ISpectWSInterceptorSettingsBuilder.disabled() =>
       ISpectWSInterceptorSettingsBuilder()..enabled = false;
 
+  bool printStateData = false;
+
+  /// Retains raw adapter connection-state details.
+  ISpectWSInterceptorSettingsBuilder withStateData() {
+    printStateData = true;
+    return this;
+  }
+
+  /// Omits raw adapter connection-state details.
+  ISpectWSInterceptorSettingsBuilder withoutStateData() {
+    printStateData = false;
+    return this;
+  }
+
   /// Alias for [withRequestFilter] using WS naming convention.
-  @Deprecated('Use withSentChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use withSentChain instead. Will be removed in 8.0.0.')
   ISpectWSInterceptorSettingsBuilder withSentFilter(
     bool Function(ISpectLogData data) filter,
   ) =>
       withRequestFilter(filter);
 
   /// Alias for [withResponseFilter] using WS naming convention.
-  @Deprecated('Use withReceivedChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use withReceivedChain instead. Will be removed in 8.0.0.')
   ISpectWSInterceptorSettingsBuilder withReceivedFilter(
     bool Function(ISpectLogData data) filter,
   ) =>
@@ -56,11 +75,14 @@ class ISpectWSInterceptorSettingsBuilder
   ISpectWSInterceptorSettings build() => ISpectWSInterceptorSettings(
         enabled: enabled,
         enableRedaction: enableRedaction,
+        logRequests: logRequests,
+        logResponses: logResponses,
         printReceivedData: printResponseData,
         printReceivedHeaders: printResponseHeaders,
         printReceivedMessage: printResponseMessage,
         printErrorData: printErrorData,
         printErrorMessage: printErrorMessage,
+        printStateData: printStateData,
         printSentData: printRequestData,
         printSentHeaders: printRequestHeaders,
         sentPen: requestPen,

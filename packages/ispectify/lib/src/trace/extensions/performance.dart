@@ -2,6 +2,7 @@ import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
+import 'package:ispectify/src/trace/trace_helpers.dart';
 
 /// Trace helpers for runtime performance signals (frame jank, slow work).
 extension ISpectLoggerPerformance on ISpectLogger {
@@ -28,6 +29,7 @@ extension ISpectLoggerPerformance on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
   }) {
+    if (!isEnabled) return;
     final targetMs = _formatMs(targetFrameTime);
     final buildMs = _formatMs(buildDuration);
     final rasterMs = _formatMs(rasterDuration);
@@ -37,14 +39,16 @@ extension ISpectLoggerPerformance on ISpectLogger {
       source: source,
       operation: 'jank',
       duration: totalSpan,
-      meta: <String, Object?>{
-        'ui_ms': buildMs,
-        'raster_ms': rasterMs,
-        'total_ms': totalMs,
-        'target_ms': targetMs,
-        if (stackTrace != null) 'stack_trace': stackTrace.toString(),
-        ...?meta,
-      },
+      meta: boundedTraceMeta(
+        fields: <String, Object?>{
+          'ui_ms': buildMs,
+          'raster_ms': rasterMs,
+          'total_ms': totalMs,
+          'target_ms': targetMs,
+          if (stackTrace != null) 'stack_trace': stackTrace,
+        },
+        overrides: meta,
+      ),
       config: config,
       correlationId: correlationId,
       consoleMessage: 'Performance jank: total ${totalMs}ms '

@@ -60,8 +60,8 @@
 dependencies:
   http: ^1.0.0
   http_interceptor: ^2.0.0
-  ispectify: ^6.1.7
-  ispectify_http: ^6.1.7
+  ispectify: ^7.0.0
+  ispectify_http: ^7.0.0
 ```
 
 ## Quick start
@@ -94,10 +94,13 @@ ISpect.run(
 
 ## Settings
 
-`ISpectHttpInterceptorSettings` mirrors the Dio version. Headers and body capture toggles, with `enableRedaction: true` by default.
+`ISpectHttpInterceptorSettings` mirrors the Dio version. Headers and bodies are
+omitted by default, and `enableRedaction` defaults to `true`.
 
 ```dart
 const settings = ISpectHttpInterceptorSettings(
+  logRequests: true,
+  logResponses: true,
   printRequestHeaders: true,
   printRequestData: true,
   printResponseHeaders: false,
@@ -108,42 +111,63 @@ const settings = ISpectHttpInterceptorSettings(
 
 Preset factories and a builder are also available. See `ISpectHttpInterceptorSettingsBuilder` for the `development()`, `staging()`, and `production()` presets.
 
+`logRequests` and `logResponses` control whether routine records are retained;
+the production preset disables both and keeps redacted errors. The `print*`
+flags explicitly opt bodies, headers, or messages into retained console and
+metadata fields. The development preset enables verbose payload capture while
+keeping redaction on. Use the concrete settings `copyWith` or builder for these
+retention controls; the shared base `configure` helper retains its
+legacy-compatible field set.
+
 ## Data redaction
 
 Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.
 
-The same redactor runs beyond the initial capture. Supported exports, clipboard helpers, cURL generation, and observer payloads all pass through the same pipeline before data leaves the debug session.
+The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
 
 Redaction works best paired with focused capture. Keep body and header logging off unless you actually need the payload, and register project-specific keys for the business identifiers only your application understands.
 
-### Custom keys and patterns
+### Global configuration
 
 ```dart
 import 'package:ispectify/ispectify.dart';
 
-final redactor = RedactionService(
+ISpectRedaction.configure(
+  service: RedactionService(
+    additionalSensitiveKeys: {
+      'x-custom-secret',
+      'internal_token',
+    },
+    additionalSensitiveKeyPatterns: [
+      RegExp(r'my_app_secret_\w+', caseSensitive: false),
+    ],
+    fullyMaskedKeys: {'filename'},
+    placeholder: '***',
+    visibleEdgeLength: 3,
+  ),
+);
+```
+
+`additionalSensitiveKeys` and `additionalSensitiveKeyPatterns` extend the built-in policy. Use `sensitiveKeys` or `sensitiveKeyPatterns` only when you intentionally want to replace the corresponding defaults:
+
+```dart
+final replacementPolicy = RedactionService(
   sensitiveKeys: {
-    ...defaultSensitiveKeys,
     'x-custom-secret',
     'internal_token',
   },
   sensitiveKeyPatterns: [
     RegExp(r'my_app_secret_\w+', caseSensitive: false),
   ],
-  // Keys where the value is replaced entirely instead of edge-masked.
-  fullyMaskedKeys: {'filename'},
-  placeholder: '***',
-  visibleEdgeLength: 3,
-  redactBinary: true,
-  redactBase64: true,
 );
 ```
 
-### Ignoring defaults
+Flutter apps can pass the same policy as `ISpect.run(redactionService: ...)`; `ISpect.dispose()` restores the policy that was active before that run. An explicit `RedactionService` supplied to one integration stays local and takes precedence over the global policy. Existing integrations without an explicit service pick up later global reconfiguration. The policy is scoped to the current Dart isolate.
+
+### Local exceptions
 
 ```dart
 final redactor = RedactionService(
-  // `?mobile=true` is a platform flag, not a phone number.
   ignoredKeys: {'mobile', 'platform_token'},
   ignoredValues: {'<test-token>', 'public-api-key'},
 );
@@ -151,7 +175,7 @@ final redactor = RedactionService(
 
 ### Disabling
 
-Each interceptor accepts `enableRedaction: false` on its settings object. See the per-package README for the exact settings type.
+`ISpectRedaction.configure(enabled: false)` is the global content-masking opt-out. Each interceptor also accepts `enableRedaction: false` on its settings object for a local opt-out. Size limits, non-executing snapshots, private-storage checks, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 
@@ -162,7 +186,7 @@ Custom redactor:
 ISpectHttpInterceptor(
   logger: logger,
   redactor: RedactionService(
-    sensitiveKeys: {...defaultSensitiveKeys, 'x-internal-token'},
+    additionalSensitiveKeys: {'x-internal-token'},
   ),
 );
 ```

@@ -50,6 +50,32 @@ void main() {
       expect((result.body! as Map)['error'], 'missing');
     });
 
+    test('preserves malformed and bounds over-budget response bodies',
+        () async {
+      const malformed = '{"remote":"malformed",}';
+      final oversized = '"${List.filled(1024 * 1024, 'x').join()}"';
+      var responseBody = malformed;
+      final client = MockClient((_) async => http.Response(responseBody, 200));
+      final sender = HttpClientRequestSender(client);
+      final request = NetworkReplayRequest(
+        method: 'GET',
+        uri: Uri.parse('https://api.test/raw'),
+      );
+
+      final malformedResult = await sender.send(request);
+      responseBody = oversized;
+      final oversizedResult = await sender.send(request);
+
+      expect(malformedResult.body, malformed);
+      final bounded = oversizedResult.body! as String;
+      expect(bounded, startsWith('"xxx'));
+      expect(bounded, endsWith(LogExportOutput.truncatedMarker));
+      expect(
+        LogExportOutput.utf8Length(bounded),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
+      );
+    });
+
     test('reports a transport failure via result.error with no status',
         () async {
       final client = MockClient(

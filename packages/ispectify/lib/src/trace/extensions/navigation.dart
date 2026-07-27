@@ -2,6 +2,7 @@ import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
+import 'package:ispectify/src/trace/trace_helpers.dart';
 
 /// Trace helpers for Navigator / router transitions.
 extension ISpectLoggerNavigation on ISpectLogger {
@@ -18,19 +19,23 @@ extension ISpectLoggerNavigation on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) =>
-      traceCategory(
-        category: navigationCategory,
-        source: source,
-        operation: operation,
-        target: routeName,
-        success: true,
-        meta: {
+  }) {
+    if (!isEnabled) return;
+    traceCategory(
+      category: navigationCategory,
+      source: source,
+      operation: operation,
+      target: routeName,
+      success: true,
+      meta: boundedTraceMeta(
+        fields: {
           if (fromRoute != null) 'from': fromRoute,
-          if (arguments != null) 'arguments': '$arguments',
-          ...?meta,
+          if (arguments != null) 'arguments': arguments,
         },
-        config: config,
-        correlationId: correlationId,
-      );
+        overrides: meta,
+      ),
+      config: config,
+      correlationId: correlationId,
+    );
+  }
 }

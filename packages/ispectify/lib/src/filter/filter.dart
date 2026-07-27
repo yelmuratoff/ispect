@@ -24,22 +24,32 @@ class LogTypeKeyFilter implements Filter<ISpectLogData> {
 
   @override
   bool apply(ISpectLogData item) {
-    final key = item.key;
+    final key = captureISpectLogDataForEgress(item).key;
     return key != null && keys.contains(key);
   }
 }
 
-/// Matches [ISpectLogData] items whose runtime type is in [types].
+/// Matches core log kinds in [types] without reading an overridable
+/// `runtimeType` getter.
+///
+/// Custom and adapter subtypes are classified as [ISpectLogData]. Filter
+/// those entries by their stable log key instead.
 class TypeFilter implements Filter<ISpectLogData> {
-  /// Creates a filter matching any log whose runtime type is in [types].
+  /// Creates a filter matching any trusted core log kind in [types].
   TypeFilter(List<Type> types) : types = types.toSet();
 
   /// Creates a filter from an existing [Set] (no copy).
   const TypeFilter.fromSet(this.types);
 
-  /// Runtime types that this filter matches.
+  /// Core log kinds that this filter matches.
   final Set<Type> types;
 
   @override
-  bool apply(ISpectLogData item) => types.contains(item.runtimeType);
+  bool apply(ISpectLogData item) => types.contains(
+        switch (item) {
+          ISpectLogException() => ISpectLogException,
+          ISpectLogError() => ISpectLogError,
+          _ => ISpectLogData,
+        },
+      );
 }

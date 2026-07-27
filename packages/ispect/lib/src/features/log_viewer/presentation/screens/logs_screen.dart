@@ -309,7 +309,7 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   Future<void> _handleRawContent(String content) async {
-    final result = _fileService.processPastedContent(content);
+    final result = await _fileService.processPastedContentAsync(content);
 
     if (!mounted) {
       return;

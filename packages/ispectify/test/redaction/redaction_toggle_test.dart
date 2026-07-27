@@ -2,11 +2,112 @@ import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('ISpectRedaction global kill-switch', () {
-    tearDown(() => ISpectRedaction.enabled = true);
+  group('ISpectRedaction global policy', () {
+    tearDown(ISpectRedaction.reset);
 
     test('defaults to enabled so redaction is on out of the box', () {
       expect(ISpectRedaction.enabled, isTrue);
+    });
+
+    test('configures one redaction service for every default consumer', () {
+      final service = RedactionService(
+        sensitiveKeys: const {'business_marker'},
+        placeholder: '<hidden>',
+      );
+
+      ISpectRedaction.configure(service: service);
+
+      expect(ISpectRedaction.service, same(service));
+      final result = ISpectRedaction.service.redact(
+        const {'business_marker': 'tenant-secret'},
+      )! as Map<String, Object?>;
+      expect(result['business_marker'], contains('<hidden>'));
+      expect(result['business_marker'], isNot(contains('tenant-secret')));
+    });
+
+    test('changing enabled preserves the configured service', () {
+      final service = RedactionService(
+        sensitiveKeys: const {'business_marker'},
+      );
+      ISpectRedaction.configure(service: service);
+
+      ISpectRedaction.enabled = false;
+      ISpectRedaction.enabled = true;
+
+      expect(ISpectRedaction.service, same(service));
+    });
+
+    test('partial configuration preserves values that were not supplied', () {
+      final service = RedactionService(
+        sensitiveKeys: const {'business_marker'},
+      );
+      ISpectRedaction.configure(enabled: false, service: service);
+
+      ISpectRedaction.configure(enabled: true);
+
+      expect(ISpectRedaction.enabled, isTrue);
+      expect(ISpectRedaction.service, same(service));
+    });
+
+    test('reset restores enabled and a fresh default service', () {
+      final service = RedactionService(
+        sensitiveKeys: const {'business_marker'},
+      );
+      ISpectRedaction.configure(enabled: false, service: service);
+
+      ISpectRedaction.reset();
+
+      expect(ISpectRedaction.enabled, isTrue);
+      expect(ISpectRedaction.service, isNot(same(service)));
+      expect(
+        ISpectRedaction.service.redact(const {'password': 'secret'}),
+        const {'password': defaultPlaceholder},
+      );
+    });
+
+    group('service resolution', () {
+      test('uses the global service when no local override is supplied', () {
+        final global = RedactionService(
+          sensitiveKeys: const {'business_marker'},
+        );
+        ISpectRedaction.configure(service: global);
+
+        expect(ISpectRedaction.resolveService(), same(global));
+      });
+
+      test('uses explicit sensitive keys instead of the global service', () {
+        ISpectRedaction.configure(
+          service: RedactionService(
+            sensitiveKeys: const {'business_marker'},
+          ),
+        );
+
+        final resolved = ISpectRedaction.resolveService(
+          sensitiveKeys: const {'local_secret'},
+        );
+        final result = resolved.redact(
+          const {
+            'business_marker': 'visible',
+            'local_secret': 'hidden',
+          },
+        )! as Map<String, Object?>;
+
+        expect(result['business_marker'], 'visible');
+        expect(result['local_secret'], defaultPlaceholder);
+      });
+
+      test('uses an explicit service before explicit sensitive keys', () {
+        final local = RedactionService(
+          sensitiveKeys: const {'local_service_secret'},
+        );
+
+        final resolved = ISpectRedaction.resolveService(
+          service: local,
+          sensitiveKeys: const {'local_key_secret'},
+        );
+
+        expect(resolved, same(local));
+      });
     });
 
     group('when disabled, RedactionService passes data through unchanged', () {

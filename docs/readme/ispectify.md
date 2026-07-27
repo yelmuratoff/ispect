@@ -27,6 +27,17 @@ logger.warning('Cache miss, falling back to network');
 logger.error('Payment gateway returned 502', exception, stackTrace);
 ```
 
+ISpect is compile-time gated. Enable diagnostics explicitly when running or
+compiling a pure-Dart program:
+
+```bash
+dart run -DISPECT_ENABLED=true bin/main.dart
+dart compile exe -DISPECT_ENABLED=true bin/main.dart
+```
+
+Without `ISPECT_ENABLED=true`, logger APIs are inert and retain no diagnostics.
+Do not add the flag to public production release commands.
+
 For Flutter UI, navigator diagnostics, and session browsing, add `ispect` on
 top of this logger. Keep `ispectify` alone when logs are consumed by the
 console, an observer, or your own UI.
@@ -103,6 +114,18 @@ Records are redacted before they reach disk, grouped into daily rolling segments
 
 Disabling the global `ISpectRedaction.enabled` switch is an explicit opt-out that also disables redaction before file persistence and JSON export.
 
+The directory provider must return an existing app-private directory. On
+POSIX, the provider must be owner-only so its traversal permissions protect
+all child artifacts; managed session/date directories must not be group- or
+world-writable. Symbolic links and paths outside the managed root are rejected.
+An active process running as the same OS principal is outside the `dart:io`
+rolling-history threat model; use in-memory history or a platform-native
+storage service when that attacker is in scope.
+
+Persistence does not invoke supplied `Exception`, `Error`, or `StackTrace`
+formatting methods. Exceptions and errors use a bounded safe type descriptor;
+stack traces use a fail-closed marker.
+
 ## Console output
 
 Console entries use a compact, single-line format by default. Switch to a boxed format — each entry framed for visual separation in a busy console — by setting `ConsoleSettings.formatter`:
@@ -162,7 +185,10 @@ final users = await logger.traceAsync<List<User>>(
 
 ## Observers
 
-Observers receive every log event in real time. Attach one per external sink.
+Observers receive a redacted copy of every log event in real time. Attach one
+per external sink. The local history keeps the original diagnostic entry;
+setting `ISpectRedaction.enabled = false` is the explicit opt-out that also
+makes observer delivery raw.
 
 ```dart
 class GrafanaObserver extends ISpectObserver {
@@ -180,6 +206,10 @@ class GrafanaObserver extends ISpectObserver {
 
 logger.addObserver(const GrafanaObserver());
 ```
+
+HTTP log entries expose `curlCommand`/`curlCommandWith()`. Generated commands
+redact URLs, headers, and bodies by default and use `--data-raw`. Pass
+`enableRedaction: false` only for isolated local debugging.
 
 <!-- partial:redaction -->
 

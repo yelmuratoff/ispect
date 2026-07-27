@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'inspector_state.dart';
+import 'ispect_layout_enabled.dart';
 import 'pixel_capture.dart';
 import 'shortcut_registry.dart';
 import 'theme.dart';
@@ -22,7 +23,7 @@ part 'inspector_controller_capture.dart';
 
 class InspectorController {
   InspectorController({
-    this.isEnabled = true,
+    bool isEnabled = true,
     this.isWidgetInspectorEnabled = true,
     this.isWidgetInspectAndCompareEnabled = true,
     this.isColorPickerEnabled = true,
@@ -38,7 +39,8 @@ class InspectorController {
     this.widgetInspectAndCompareShortcutActivators,
     this.colorPickerShortcutActivators,
     this.zoomShortcutActivators,
-  }) : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0') {
+  })  : isEnabled = kISpectLayoutEnabled && isEnabled,
+        assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0') {
     // Keep the sealed `stateNotifier` in sync with the legacy granular
     // notifiers. Legacy notifiers remain the mutation surface — internal
     // logic writes to them, and we recompute the union state here.
@@ -58,19 +60,19 @@ class InspectorController {
 
   /// Deprecated. Use [widgetInspectorShortcutActivators] — it supports
   /// multi-key chords and the full [ShortcutActivator] API. Will be removed
-  /// in 7.0.0.
+  /// in 8.0.0.
   @Deprecated(
-      'Use widgetInspectorShortcutActivators. Will be removed in 7.0.0.')
+      'Use widgetInspectorShortcutActivators. Will be removed in 8.0.0.')
   final List<LogicalKeyboardKey>? widgetInspectorShortcuts;
 
   @Deprecated(
-      'Use widgetInspectAndCompareShortcutActivators. Will be removed in 7.0.0.')
+      'Use widgetInspectAndCompareShortcutActivators. Will be removed in 8.0.0.')
   final List<LogicalKeyboardKey>? widgetInspectAndCompareShortcuts;
 
-  @Deprecated('Use colorPickerShortcutActivators. Will be removed in 7.0.0.')
+  @Deprecated('Use colorPickerShortcutActivators. Will be removed in 8.0.0.')
   final List<LogicalKeyboardKey>? colorPickerShortcuts;
 
-  @Deprecated('Use zoomShortcutActivators. Will be removed in 7.0.0.')
+  @Deprecated('Use zoomShortcutActivators. Will be removed in 8.0.0.')
   final List<LogicalKeyboardKey>? zoomShortcuts;
 
   final List<ShortcutActivator>? widgetInspectorShortcutActivators;
@@ -120,7 +122,11 @@ class InspectorController {
 
   void _recomputeStateNotifier() {
     if (_isDisposed) return;
-    stateNotifier.value = _computeStateSnapshot();
+    if (_stateMutationDepth > 0) {
+      _stateRefreshPending = true;
+      return;
+    }
+    _publishStateSnapshot();
   }
 
   InspectorUiState _computeStateSnapshot() {
@@ -159,7 +165,27 @@ class InspectorController {
   ui.Image? get image => _image;
   Offset? _pointerHoverPosition;
   bool _isDisposed = false;
+  int _stateMutationDepth = 0;
+  bool _stateRefreshPending = false;
   int _imageCaptureEpoch = 0;
+
+  void _batchStateUpdates(VoidCallback update) {
+    _stateMutationDepth++;
+    try {
+      update();
+    } finally {
+      _stateMutationDepth--;
+      if (_stateMutationDepth == 0 && _stateRefreshPending) {
+        _stateRefreshPending = false;
+        _publishStateSnapshot();
+      }
+    }
+  }
+
+  void _publishStateSnapshot() {
+    if (_isDisposed) return;
+    stateNotifier.value = _computeStateSnapshot();
+  }
 
   /// Shortcut configuration + accept/isPressed logic. Forwarding accessors
   /// live in `inspector_controller_shortcuts.dart`.

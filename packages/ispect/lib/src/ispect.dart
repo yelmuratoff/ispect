@@ -7,6 +7,7 @@ import 'package:ispect/src/common/extensions/init.dart';
 import 'package:ispect/src/common/observers/route_observer.dart';
 import 'package:ispect/src/common/services/error_handler_options.dart';
 import 'package:ispect/src/common/services/error_handler_service.dart';
+import 'package:ispect/src/common/utils/logs_file/factory/logs_file_factory.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// The main entry point for initializing and managing logging/error handling.
@@ -15,7 +16,13 @@ final class ISpect {
 
   static ISpectLogger? _logger;
   static bool _isInitialized = false;
+  static bool _shareCleanupCompleted = false;
+  static Future<void>? _shareCleanupFuture;
+  static Future<void>? _disposeFuture;
   static ErrorHandlerService? _errorHandler;
+  static ({bool enabled, RedactionService service})? _redactionBeforeRun;
+  static final Map<ISpectLogger, Future<(Object, StackTrace)?>> _retirements =
+      Map<ISpectLogger, Future<(Object, StackTrace)?>>.identity();
   static final NetworkSenderRegistry _senders = NetworkSenderRegistry();
 
   /// Returns the global logger instance.
@@ -32,27 +39,109 @@ final class ISpect {
   /// output, so logging through it is a no-op. This keeps diagnostics from
   /// accumulating in memory in production builds where ISpect is gated off.
   static ISpectLogger get logger {
-    if (!_isInitialized) {
+    if (_logger == null) {
+      if (kISpectEnabled) _scheduleShareCleanup();
       _logger = kISpectEnabled
           ? ISpectLogger()
           : ISpectLogger(options: ISpectLoggerOptions(enabled: false));
-      _isInitialized = true;
     }
     return _logger!;
+  }
+
+  /// Returns the current logger without lazily creating a fallback.
+  ///
+  /// Lifecycle integrations should use this accessor when capture must remain
+  /// inactive before initialization or after [dispose].
+  static ISpectLogger? get loggerIfInitialized {
+    if (!_isInitialized || _disposeFuture != null) return null;
+    return _logger;
   }
 
   /// Initializes the logger instance once.
   /// Returns `true` if initialization was successful.
   ///
+  /// With [force], replacing a different logger starts retiring the previous
+  /// instance. [dispose] joins every retirement and surfaces flush failures.
+  ///
   /// When `kISpectEnabled` is `false`, this method does nothing and returns false.
-  static bool initialize(ISpectLogger logger, {bool force = false}) {
-    if (!kISpectEnabled) return false;
+  static bool initialize(ISpectLogger logger, {bool force = false}) =>
+      _initialize(logger, force: force);
 
+  static bool _initialize(
+    ISpectLogger logger, {
+    required bool force,
+    bool retirePrevious = true,
+  }) {
+    if (!kISpectEnabled || _disposeFuture != null || logger.isDisposed) {
+      return false;
+    }
+
+    _scheduleShareCleanup(retryAfterFailure: true);
     if (_isInitialized && !force) return false;
+    final previousLogger = _logger;
     _logger = logger;
     _isInitialized = true;
+    if (retirePrevious &&
+        previousLogger != null &&
+        !identical(previousLogger, logger)) {
+      _retireLogger(previousLogger);
+    }
     logger.info('🚀 ISpect: Successfully initialized.');
     return true;
+  }
+
+  static void _retireLogger(ISpectLogger logger) {
+    _retirements.putIfAbsent(
+      logger,
+      () => logger.dispose().then<(Object, StackTrace)?>(
+            (_) => null,
+            onError: (Object error, StackTrace stackTrace) =>
+                (error, stackTrace),
+          ),
+    );
+  }
+
+  static void _scheduleShareCleanup({bool retryAfterFailure = false}) {
+    if (!kISpectEnabled || _shareCleanupCompleted) return;
+
+    final pending = _shareCleanupFuture;
+    if (pending != null) {
+      if (retryAfterFailure) {
+        unawaited(
+          pending.then<void>(
+            (_) {},
+            onError: (Object _, StackTrace __) {
+              if (identical(_shareCleanupFuture, pending)) {
+                _shareCleanupFuture = null;
+              }
+              _scheduleShareCleanup();
+            },
+          ),
+        );
+      }
+      return;
+    }
+
+    late final Future<void> cleanup;
+    cleanup = Future<void>(
+      LogsFileFactory.cleanupStaleShareFiles,
+    );
+    _shareCleanupFuture = cleanup;
+    unawaited(
+      cleanup.then<void>(
+        (_) {
+          _shareCleanupCompleted = true;
+          if (identical(_shareCleanupFuture, cleanup)) {
+            _shareCleanupFuture = null;
+          }
+        },
+        onError: (Object _, StackTrace __) {
+          if (identical(_shareCleanupFuture, cleanup)) {
+            _shareCleanupFuture = null;
+          }
+        },
+      ),
+    );
   }
 
   /// Clients registered for request replay/compose (the in-app HTTP composer).
@@ -76,13 +165,80 @@ final class ISpect {
   static void unregisterSender(String id) => _senders.unregister(id);
 
   /// Disposes current ISpect state (useful for testing or hot restart).
-  static Future<void> dispose() async {
-    await _logger?.dispose();
-    _isInitialized = false;
-    _logger = null;
+  ///
+  /// Concurrent calls join the same operation. Await completion before
+  /// initializing or running ISpect again.
+  static Future<void> dispose() {
+    final pending = _disposeFuture;
+    if (pending != null) return pending;
+
+    final completer = Completer<void>();
+    final operation = completer.future;
+    _disposeFuture = operation;
+    void clearPending() {
+      if (identical(_disposeFuture, operation)) {
+        _disposeFuture = null;
+      }
+    }
+
+    late final Future<void> lifecycle;
+    try {
+      lifecycle = _disposeLifecycle();
+    } catch (error, stackTrace) {
+      clearPending();
+      completer.completeError(error, stackTrace);
+      return operation;
+    }
+    unawaited(
+      lifecycle.then<void>(
+        (_) {
+          clearPending();
+          completer.complete();
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          clearPending();
+          completer.completeError(error, stackTrace);
+        },
+      ),
+    );
+    return operation;
+  }
+
+  static Future<void> _disposeLifecycle() async {
+    final errorHandler = _errorHandler;
+    final logger = _logger;
+    final retirements = _retirements.values.toList(growable: false);
+    _retirements.clear();
     _errorHandler = null;
-    _senders.clear();
-    ISpectNavigatorObserver.resetCurrent();
+
+    (Object, StackTrace)? firstFailure;
+    try {
+      try {
+        errorHandler?.dispose();
+      } catch (error, stackTrace) {
+        firstFailure = (error, stackTrace);
+      }
+      try {
+        await logger?.dispose();
+      } catch (error, stackTrace) {
+        firstFailure ??= (error, stackTrace);
+      }
+      for (final retirement in retirements) {
+        final failure = await retirement;
+        firstFailure ??= failure;
+      }
+    } finally {
+      _restoreRedactionOverride();
+      _isInitialized = false;
+      _logger = null;
+      _senders.clear();
+      ISpectNavigatorObserver.resetCurrent();
+    }
+
+    final failure = firstFailure;
+    if (failure != null) {
+      Error.throwWithStackTrace(failure.$1, failure.$2);
+    }
   }
 
   /// Reads the nearest [ISpectScopeModel] from the widget tree.
@@ -144,11 +300,10 @@ final class ISpect {
   /// flutter build apk
   /// ```
   ///
-  /// Pass [redactionEnabled] to flip the global redaction kill-switch
-  /// ([ISpectRedaction.enabled]) for the whole app — network, database,
-  /// BLoC/Riverpod, navigation, and every export path. Defaults to `null`,
-  /// which leaves redaction on (the safe default). Set it to `false` only for
-  /// builds that genuinely need raw payloads.
+  /// Pass [redactionEnabled] or [redactionService] to override the global
+  /// redaction policy for this run. [dispose] restores the policy that was
+  /// active before [run]. Set [redactionEnabled] to `false` only for builds
+  /// that genuinely need raw payloads.
   static void run<T>(
     T Function() callback, {
     ISpectLogger? logger,
@@ -165,18 +320,48 @@ final class ISpect {
     ISpectErrorHandlerOptions options = const ISpectErrorHandlerOptions(),
     List<String> filters = const [],
     bool? redactionEnabled,
+    RedactionService? redactionService,
   }) {
     if (!kISpectEnabled) {
       callback();
       return;
     }
-
-    if (redactionEnabled != null) {
-      ISpectRedaction.enabled = redactionEnabled;
+    if (_disposeFuture != null) {
+      throw StateError(
+        'Cannot run ISpect while disposal is in progress. '
+        'Await ISpect.dispose() before starting a new run.',
+      );
     }
 
     final effectiveLogger = logger ?? ISpectFlutter.init();
-    initialize(effectiveLogger, force: true);
+    if (effectiveLogger.isDisposed) {
+      throw StateError('Cannot run ISpect with a disposed logger.');
+    }
+    final previousLogger = _logger;
+    if (previousLogger != null && !identical(previousLogger, effectiveLogger)) {
+      _retireLogger(previousLogger);
+    }
+    _restoreRedactionOverride();
+    if (redactionEnabled != null || redactionService != null) {
+      _redactionBeforeRun = (
+        enabled: ISpectRedaction.enabled,
+        service: ISpectRedaction.service,
+      );
+      ISpectRedaction.configure(
+        enabled: redactionEnabled,
+        service: redactionService,
+      );
+    }
+
+    final initialized = _initialize(
+      effectiveLogger,
+      force: true,
+      retirePrevious: false,
+    );
+    if (!initialized) {
+      throw StateError('ISpect initialization failed.');
+    }
+    _errorHandler?.dispose();
     _errorHandler =
         ErrorHandlerService(logger: effectiveLogger, filters: filters);
 
@@ -221,29 +406,50 @@ final class ISpect {
     void Function(Object, StackTrace)? onZonedError,
     void Function(Object error, StackTrace? stack)? onUncaughtError,
   }) {
+    final parentZone = Zone.current;
     runZonedGuarded(
       callback,
       (error, stackTrace) {
-        _errorHandler?.handleZoneError(
-          error,
-          stackTrace,
-          onZonedError: onZonedError,
-          onUncaughtError: onUncaughtError,
-          isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
-        );
+        final errorHandler = _errorHandler;
+        if (errorHandler != null) {
+          errorHandler.handleZoneError(
+            error,
+            stackTrace,
+            onZonedError: onZonedError,
+            onUncaughtError: onUncaughtError,
+            isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
+          );
+        } else {
+          parentZone.handleUncaughtError(error, stackTrace);
+        }
       },
       zoneSpecification: ZoneSpecification(
         print: (parent, zoneDelegate, zone, line) {
-          _errorHandler?.handleZonePrint(
-            parent,
-            zoneDelegate,
-            zone,
-            line,
-            isPrintLoggingEnabled: isPrintLoggingEnabled,
-            isFlutterPrintEnabled: isFlutterPrintEnabled,
-          );
+          final errorHandler = _errorHandler;
+          if (errorHandler != null) {
+            errorHandler.handleZonePrint(
+              parent,
+              zoneDelegate,
+              zone,
+              line,
+              isPrintLoggingEnabled: isPrintLoggingEnabled,
+              isFlutterPrintEnabled: isFlutterPrintEnabled,
+            );
+          } else {
+            zoneDelegate.print(parent, line);
+          }
         },
       ),
     );
+  }
+
+  static void _restoreRedactionOverride() {
+    final previous = _redactionBeforeRun;
+    if (previous == null) return;
+    ISpectRedaction.configure(
+      enabled: previous.enabled,
+      service: previous.service,
+    );
+    _redactionBeforeRun = null;
   }
 }

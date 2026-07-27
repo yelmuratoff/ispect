@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify/src/history/file_log/file_log_codec.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -97,6 +98,43 @@ void main() {
     };
     expect(sessions['A'], sessions['B']);
     expect(sessions['A'], isNot(sessions['CURRENT']));
+  });
+
+  test('round trips an export above 1000 records at the configured cap',
+      () async {
+    const recordCount = 1200;
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    final loggerOptions = ISpectLoggerOptions(
+      useConsoleLogs: false,
+      maxHistoryItems: recordCount,
+    );
+    const historyOptions = FileLogHistoryOptions(
+      maxFileSize: 1024,
+      maxTotalSize: 4 * 1024 * 1024,
+      enableAutoSave: false,
+    );
+    final source = RollingFileLogHistory.testing(
+      loggerOptions,
+      directoryProvider: () async => root.path,
+      options: historyOptions,
+    );
+    final imported = RollingFileLogHistory.testing(
+      loggerOptions,
+      directoryProvider: () async => root.path,
+      options: historyOptions,
+    );
+    addTearDown(source.dispose);
+    addTearDown(imported.dispose);
+    for (var index = 0; index < recordCount; index++) {
+      source.add(ISpectLogData('m', id: 'ID-$index'));
+    }
+
+    await imported.importFromJson(await source.exportToJson());
+
+    expect(imported.history, hasLength(recordCount));
+    expect(imported.history.first.id, 'ID-0');
+    expect(imported.history.last.id, 'ID-${recordCount - 1}');
   });
 
   test('loading a date does not enqueue persisted entries again', () async {
@@ -294,7 +332,7 @@ void main() {
     );
   });
 
-  test('export preserves an imported session ID', () async {
+  test('export replaces an untrusted imported session ID', () async {
     final root = await Directory.systemTemp.createTemp('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
@@ -317,7 +355,9 @@ void main() {
     final record = exported.single as Map<String, dynamic>;
     final additionalData = record['additional-data'] as Map<String, dynamic>;
 
-    expect(additionalData[TraceKeys.sessionId], 'ORIGINAL-SESSION');
+    final sessionId = additionalData[TraceKeys.sessionId] as String;
+    expect(sessionId, isNot('ORIGINAL-SESSION'));
+    expect(sessionId, hasLength(26));
   });
 
   test('clear cancels the pending auto-save timer', () async {
@@ -373,6 +413,101 @@ void main() {
     expect(errors.whereType<FileLogFormatException>(), hasLength(1));
   });
 
+  test('sanitizes storage paths before reporting file-history errors',
+      () async {
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    final errors = <FileLogHistoryException>[];
+    final date = DateTime(2026, 7, 10, 9);
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: FileLogHistoryOptions(
+        enableAutoSave: false,
+        onError: errors.add,
+      ),
+    )..add(ISpectLogData('entry', id: 'A', time: date));
+    addTearDown(history.dispose);
+    await history.saveToDailyFile();
+    final datePath = await history.getLogPathByDate(date);
+    final invalidArchive = File(
+      '$datePath${Platform.pathSeparator}000001.jsonl.gz',
+    );
+    await invalidArchive.writeAsString('not a gzip stream');
+
+    await history.getLogsByDate(date);
+
+    final error = errors.whereType<FileLogFormatException>().single;
+    expect(error.path, defaultPlaceholder);
+    expect(error.cause, defaultPlaceholder);
+    expect('${error.stackTrace}', isNot(contains(root.path)));
+    expect(error.toString(), isNot(contains(root.path)));
+  });
+
+  test('reports a gzip expansion beyond one segment as a typed limit error',
+      () async {
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    final errors = <FileLogHistoryException>[];
+    final date = DateTime(2026, 7, 10, 9);
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: FileLogHistoryOptions(
+        maxFileSize: 512,
+        maxTotalSize: 4096,
+        enableAutoSave: false,
+        onError: errors.add,
+      ),
+    );
+    addTearDown(history.dispose);
+    await history.getAvailableLogDates();
+    final dateDirectory = Directory(
+      '${history.sessionDirectory}${Platform.pathSeparator}2026-07-10',
+    );
+    await dateDirectory.create();
+    final archive = File(
+      '${dateDirectory.path}${Platform.pathSeparator}000000.jsonl.gz',
+    );
+    await archive.writeAsBytes(gzip.encode(List<int>.filled(4096, 65)));
+
+    expect(await history.getLogsByDate(date), isEmpty);
+    expect(errors, contains(isA<FileLogLimitException>()));
+  });
+
+  test('reports an oversized compressed artifact as a typed limit error',
+      () async {
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    final errors = <FileLogHistoryException>[];
+    final date = DateTime(2026, 7, 10, 9);
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: FileLogHistoryOptions(
+        maxFileSize: 512,
+        maxTotalSize: 4096,
+        enableAutoSave: false,
+        onError: errors.add,
+      ),
+    );
+    addTearDown(history.dispose);
+    await history.getAvailableLogDates();
+    final dateDirectory = Directory(
+      '${history.sessionDirectory}${Platform.pathSeparator}2026-07-10',
+    );
+    await dateDirectory.create();
+    final archive = File(
+      '${dateDirectory.path}${Platform.pathSeparator}000000.jsonl.gz',
+    );
+    await archive.writeAsBytes(
+      List<int>.filled(512 + 64 * 1024 + 1, 0),
+    );
+
+    expect(await history.getLogsByDate(date), isEmpty);
+    expect(errors, contains(isA<FileLogLimitException>()));
+  });
+
   test('background auto-save reports failure and retains its batch', () async {
     final root = await Directory.systemTemp.createTemp('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
@@ -403,6 +538,157 @@ void main() {
     unavailable = false;
     await history.saveToDailyFile();
     expect((await history.getLogsByDate(date)).map((log) => log.id), ['A']);
+  });
+
+  test('reads a newline-dense segment without materializing a line list',
+      () async {
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    final date = DateTime(2026, 7, 10, 9);
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(
+        maxFileSize: 32 * 1024,
+        maxTotalSize: 32 * 1024,
+        enableAutoSave: false,
+      ),
+    );
+    addTearDown(history.dispose);
+    await history.getAvailableLogDates();
+    final directory = Directory(
+      '${history.sessionDirectory}${Platform.pathSeparator}2026-07-10',
+    );
+    await directory.create();
+    await File('${directory.path}${Platform.pathSeparator}000000.jsonl')
+        .writeAsString('\n' * (32 * 1024));
+
+    expect(await history.getLogsByDate(date), isEmpty);
+    expect((await history.getSessionStatistics()).totalEntries, 0);
+  });
+
+  test('caps cumulative expansion across multiple gzip archives', () async {
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    final errors = <FileLogHistoryException>[];
+    final date = DateTime(2026, 7, 10, 9);
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: FileLogHistoryOptions(
+        maxFileSize: 512,
+        maxTotalSize: 1024,
+        enableAutoSave: false,
+        onError: errors.add,
+      ),
+    );
+    addTearDown(history.dispose);
+    await history.getAvailableLogDates();
+    final directory = Directory(
+      '${history.sessionDirectory}${Platform.pathSeparator}2026-07-10',
+    );
+    await directory.create();
+    final codec = FileLogCodec(redactor: RedactionService());
+    final line = codec
+        .encode(
+          ISpectLogData('payload', id: 'A', time: date),
+          sessionId: 'S',
+          maxBytes: 512,
+        )
+        .bytes;
+    final expanded = <int>[...line, ...line, ...line];
+    expect(expanded.length, lessThanOrEqualTo(512));
+    for (var index = 0; index < 4; index++) {
+      await File(
+        '${directory.path}${Platform.pathSeparator}'
+        '${index.toString().padLeft(6, '0')}.jsonl.gz',
+      ).writeAsBytes(gzip.encode(expanded));
+    }
+
+    expect((await history.getLogsByDate(date)).map((log) => log.id), ['A']);
+    expect(
+      errors.whereType<FileLogLimitException>(),
+      isNotEmpty,
+    );
+  });
+
+  test('public reads stay comprehensive while load retains the newest tail',
+      () async {
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    final date = DateTime(2026, 7, 10, 9);
+    final options = ISpectLoggerOptions(
+      useConsoleLogs: false,
+      maxHistoryItems: 2,
+    );
+    final writer = RollingFileLogHistory.testing(
+      options,
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+    );
+    final loader = RollingFileLogHistory.testing(
+      options,
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+    );
+    addTearDown(writer.dispose);
+    addTearDown(loader.dispose);
+    final codec = FileLogCodec(redactor: RedactionService());
+    await writer.getAvailableLogDates();
+    final directory = Directory(
+      '${writer.sessionDirectory}${Platform.pathSeparator}2026-07-10',
+    );
+    await directory.create();
+    final bytes = <int>[
+      for (final id in const ['A', 'B', 'C', 'D'])
+        ...codec
+            .encode(
+              ISpectLogData(id, id: id, time: date),
+              sessionId: 'S',
+              maxBytes: 1024,
+            )
+            .bytes,
+    ];
+    await File('${directory.path}${Platform.pathSeparator}000000.jsonl')
+        .writeAsBytes(bytes);
+
+    expect(
+      (await loader.getLogsByDate(date)).map((log) => log.id),
+      ['A', 'B', 'C', 'D'],
+    );
+    await loader.loadFromDate(date);
+    expect(loader.history.map((log) => log.id), ['C', 'D']);
+  });
+
+  test('export fails before retaining records beyond maxTotalSize', () async {
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    final payload =
+        List<String>.generate(100, (index) => 'value-$index').join(',');
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false, maxHistoryItems: 8),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(
+        maxFileSize: 1024,
+        maxTotalSize: 1024,
+        enableAutoSave: false,
+      ),
+    );
+    addTearDown(history.dispose);
+    for (var index = 0; index < 8; index++) {
+      history.add(
+        ISpectLogData(
+          'entry-$index',
+          id: 'ID-$index',
+          additionalData: {'payload': payload},
+        ),
+      );
+    }
+
+    await expectLater(
+      history.exportToJson(),
+      throwsA(isA<FileLogLimitException>()),
+    );
   });
 }
 

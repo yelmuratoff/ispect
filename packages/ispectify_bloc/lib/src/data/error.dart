@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/src/data/bloc_json_keys.dart';
+import 'package:ispectify_bloc/src/safe_type_label.dart';
 
 /// Snapshot of a BLoC / Cubit `onError` invocation.
 class BlocErrorData {
@@ -14,7 +15,7 @@ class BlocErrorData {
   final Object error;
   final StackTrace stackTrace;
 
-  String get blocType => bloc.runtimeType.toString();
+  String get blocType => safeBlocTypeLabel(bloc);
 
   /// Returns a raw, JSON-compatible map of the error event.
   ///

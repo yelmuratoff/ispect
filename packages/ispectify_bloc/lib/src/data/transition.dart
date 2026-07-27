@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/src/data/bloc_json_keys.dart';
+import 'package:ispectify_bloc/src/safe_type_label.dart';
 
 /// Snapshot of a BLoC `onTransition` invocation.
 class BlocTransitionData {
@@ -23,8 +24,8 @@ class BlocTransitionData {
   final Object formattedCurrentState;
   final Object formattedNextState;
 
-  String get blocType => bloc.runtimeType.toString();
-  String get eventType => transition.event.runtimeType.toString();
+  String get blocType => safeBlocTypeLabel(bloc);
+  String get eventType => safeBlocValueTypeLabel(transition.event);
 
   /// Returns a raw, JSON-compatible map of the transition.
   Map<String, dynamic> toJson() => <String, dynamic>{

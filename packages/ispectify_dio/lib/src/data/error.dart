@@ -17,19 +17,37 @@ class DioErrorData {
   ///
   /// No redaction is applied. Call [redact] on the result when redaction
   /// is required.
-  Map<String, dynamic> toJson() => {
-        // --- Error summary: what went wrong ---
-        NetworkJsonKeys.type: exception?.type,
-        NetworkJsonKeys.message: exception?.message,
-        NetworkJsonKeys.error: exception?.error,
-        NetworkJsonKeys.stackTrace: exception?.stackTrace,
+  Map<String, dynamic> toJson({
+    bool includeData = true,
+    bool includeHeaders = true,
+    bool includeMessage = true,
+    bool? includeRequestData,
+    bool? includeRequestHeaders,
+    bool redactionActive = false,
+  }) {
+    final shouldIncludeRequestData = includeRequestData ?? includeData;
+    final shouldIncludeRequestHeaders = includeRequestHeaders ?? includeHeaders;
 
-        // --- Response (if any) ---
-        NetworkJsonKeys.response: responseData.toJson(),
-
-        // --- Original request (reference) ---
-        NetworkJsonKeys.request: requestData.toJson(),
-      };
+    return {
+      NetworkJsonKeys.type: exception?.type,
+      if (includeMessage) NetworkJsonKeys.message: exception?.message,
+      if (includeMessage) NetworkJsonKeys.error: exception?.error,
+      if (includeMessage) NetworkJsonKeys.stackTrace: exception?.stackTrace,
+      NetworkJsonKeys.response: responseData.toJson(
+        includeData: includeData,
+        includeHeaders: includeHeaders,
+        includeMessage: includeMessage,
+        includeRequestData: shouldIncludeRequestData,
+        includeRequestHeaders: shouldIncludeRequestHeaders,
+        redactionActive: redactionActive,
+      ),
+      NetworkJsonKeys.request: requestData.toJson(
+        includeData: shouldIncludeRequestData,
+        includeHeaders: shouldIncludeRequestHeaders,
+        redactionActive: redactionActive,
+      ),
+    };
+  }
 
   /// Applies in-place redaction to a map produced by [toJson].
   ///
@@ -41,19 +59,15 @@ class DioErrorData {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
   }) {
-    // Redact free-text fields
-    final msg = map[NetworkJsonKeys.message];
-    if (msg != null) {
-      map[NetworkJsonKeys.message] = redactor.redact(
-        msg,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-    }
-    final err = map[NetworkJsonKeys.error];
-    if (err != null) {
-      map[NetworkJsonKeys.error] = redactor.redact(
-        err,
+    for (final key in const [
+      NetworkJsonKeys.message,
+      NetworkJsonKeys.error,
+      NetworkJsonKeys.stackTrace,
+    ]) {
+      NetworkMapRedactor.redactFreeText(
+        map,
+        redactor,
+        key: key,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );

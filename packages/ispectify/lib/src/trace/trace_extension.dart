@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:ispectify/src/history/serialization.dart';
 import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/log_level.dart';
+import 'package:ispectify/src/redaction/constants/placeholders.dart';
 import 'package:ispectify/src/redaction/redaction_service.dart';
+import 'package:ispectify/src/redaction/redaction_toggle.dart';
 import 'package:ispectify/src/trace/trace_category.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_helpers.dart';
@@ -22,7 +26,8 @@ extension ISpectTrace on ISpectLogger {
   // These wrap [trace] / [traceAsync] with the enabled-check so that
   // domain extensions (auth, storage, push …) don't repeat the guard.
 
-  /// Convenience wrapper: checks `options.enabled`, then delegates to [trace].
+  /// Convenience wrapper: checks [ISpectLogger.isEnabled], then delegates to
+  /// [trace].
   void traceCategory({
     required ISpectTraceCategory category,
     required String source,
@@ -39,7 +44,7 @@ extension ISpectTrace on ISpectLogger {
     String? correlationId,
     String? consoleMessage,
   }) {
-    if (!options.enabled) return;
+    if (!isEnabled) return;
     trace(
       category: category,
       source: source,
@@ -58,7 +63,7 @@ extension ISpectTrace on ISpectLogger {
     );
   }
 
-  /// Convenience wrapper: checks `options.enabled`, then delegates to
+  /// Convenience wrapper: checks [ISpectLogger.isEnabled], then delegates to
   /// [traceAsync].
   Future<T> traceCategoryAsync<T>({
     required ISpectTraceCategory category,
@@ -71,7 +76,7 @@ extension ISpectTrace on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
   }) {
-    if (!options.enabled) return run();
+    if (!isEnabled) return run();
     return traceAsync(
       category: category,
       source: source,
@@ -106,7 +111,7 @@ extension ISpectTrace on ISpectLogger {
     LogLevel? logLevel,
     String? consoleMessage,
   }) {
-    if (!options.enabled) return;
+    if (!isEnabled) return;
 
     final cfg = config ?? const ISpectTraceConfig();
     final isError = error != null || success == false;
@@ -116,63 +121,89 @@ extension ISpectTrace on ISpectLogger {
     final resolvedLogKey =
         logKey ?? category.pickLogKey(isError: isError, operation: operation);
 
-    safeTrace(this, () {
-      final safeTarget = cfg.redact && target != null
-          ? RedactionService.redactTarget(target, cfg.redactKeys)
-          : target;
+    safeTrace(
+      this,
+      () {
+        final redactor = _traceRedactor(cfg);
+        String prepareText(Object? value) => _tracePayloadText(
+              _prepareTracePayload(value, redactor),
+            );
 
-      final message = consoleMessage ??
-          buildTraceMessage(
-            operation: operation,
-            source: source,
-            target: safeTarget,
-            key: key,
-            duration: duration,
-            success: !isError,
-          );
+        final safeCategoryId = prepareText(category.id);
+        final safeSource = prepareText(source);
+        final safeOperation = prepareText(operation);
+        final safeTarget = target == null ? null : prepareText(target);
+        final safeKey = key == null ? null : prepareText(key);
+        final safeLogKey = prepareText(resolvedLogKey);
 
-      final safeMeta = cfg.redact
-          ? RedactionService.redactByKeys(meta, cfg.redactKeys)
-          : meta;
+        final rawMessage = consoleMessage ??
+            buildTraceMessage(
+              operation: safeOperation,
+              source: safeSource,
+              target: safeTarget,
+              key: safeKey,
+              duration: duration,
+              success: !isError,
+            );
+        final message = prepareText(rawMessage);
 
-      final safeValue = cfg.redact
-          ? RedactionService.redactByKeys(value, cfg.redactKeys)
-          : value;
+        final safeMetaValue = _prepareTracePayload(meta, redactor);
+        final safeMeta = safeMetaValue is Map<String, Object?>
+            ? safeMetaValue
+            : safeMetaValue is Map
+                ? Map<String, Object?>.from(safeMetaValue)
+                : null;
 
-      final rawTxnId = Zone.current[_txnZoneKey];
-      final zoneTxnId = rawTxnId is String ? rawTxnId : null;
+        final safeValue = _prepareTracePayload(value, redactor);
+        final safeErrorText = error == null ? null : prepareText(error);
+        final safeStackTrace = errorStackTrace == null
+            ? null
+            : StackTrace.fromString(
+                prepareText(errorStackTrace),
+              );
+        final safeCorrelationId = correlationId == null
+            ? null
+            : _tracePayloadText(
+                _prepareTracePayload(correlationId, redactor),
+              );
 
-      final additionalData = <String, Object?>{
-        TraceKeys.category: category.id,
-        TraceKeys.source: source,
-        TraceKeys.operation: operation,
-        if (safeTarget != null) TraceKeys.target: safeTarget,
-        if (key != null) TraceKeys.key: key,
-        if (value != null)
-          TraceKeys.value: truncateValue(safeValue, cfg.maxValueLength),
-        if (duration != null) TraceKeys.durationMs: duration.inMilliseconds,
-        if (duration != null && cfg.slowThreshold != null)
-          TraceKeys.slow: duration > cfg.slowThreshold!,
-        TraceKeys.success: !isError,
-        if (error != null)
-          TraceKeys.error: cfg.redact
-              ? RedactionService.redactExportString('$error', cfg.redactKeys)
-              : '$error',
-        if (zoneTxnId != null) TraceKeys.transactionId: zoneTxnId,
-        if (correlationId != null) TraceKeys.correlationId: correlationId,
-        if (safeMeta != null) TraceKeys.meta: safeMeta,
-      };
+        final rawTxnId = Zone.current[_txnZoneKey];
+        final zoneTxnId = rawTxnId is String ? rawTxnId : null;
 
-      return ISpectLogData(
-        message,
-        key: resolvedLogKey,
-        logLevel: logLevel ?? (isError ? LogLevel.error : LogLevel.info),
-        additionalData: additionalData,
-        exception: error is Exception ? error : null,
-        error: error is Error ? error : null,
-        stackTrace: isError && cfg.attachStackOnError ? errorStackTrace : null,
-      );
-    });
+        final additionalData = <String, Object?>{
+          TraceKeys.category: safeCategoryId,
+          TraceKeys.source: safeSource,
+          TraceKeys.operation: safeOperation,
+          if (safeTarget != null) TraceKeys.target: safeTarget,
+          if (safeKey != null) TraceKeys.key: safeKey,
+          if (value != null)
+            TraceKeys.value: truncateValue(safeValue, cfg.maxValueLength),
+          if (duration != null) TraceKeys.durationMs: duration.inMilliseconds,
+          if (duration != null && cfg.slowThreshold != null)
+            TraceKeys.slow: duration > cfg.slowThreshold!,
+          TraceKeys.success: !isError,
+          if (safeErrorText != null) TraceKeys.error: safeErrorText,
+          if (zoneTxnId != null) TraceKeys.transactionId: zoneTxnId,
+          if (safeCorrelationId != null)
+            TraceKeys.correlationId: safeCorrelationId,
+          if (safeMeta != null) TraceKeys.meta: safeMeta,
+        };
+
+        return ISpectLogData(
+          message,
+          key: safeLogKey,
+          logLevel: logLevel ?? (isError ? LogLevel.error : LogLevel.info),
+          additionalData: additionalData,
+          exception:
+              error is Exception ? const _PreparedTraceException() : null,
+          error: error is Error ? _PreparedTraceError() : null,
+          stackTrace: isError && cfg.attachStackOnError ? safeStackTrace : null,
+        );
+      },
+      // The snapshot already used cfg's resolved policy; a second pass would
+      // overwrite an explicit trace policy with the global default.
+      redact: false,
+    );
   }
 
   // ── Async wrapper with auto-timing ──────────────────────────────────
@@ -192,19 +223,23 @@ extension ISpectTrace on ISpectLogger {
     LogLevel? logLevel,
     String? correlationId,
   }) async {
-    if (!options.enabled) return run();
+    if (!isEnabled) return run();
 
+    final cfg = config ?? const ISpectTraceConfig();
     final sw = Stopwatch()..start();
     try {
       final result = await run();
       sw.stop();
 
+      if (!isEnabled) return result;
+      if (!cfg.shouldLog(localSample: sample, isError: false)) return result;
+
       Object? projected;
       if (projectResult != null) {
         try {
           projected = projectResult(result);
-        } catch (e, st) {
-          _logProjectionFailure('traceAsync', e, st);
+        } catch (_) {
+          _logProjectionFailure('traceAsync');
         }
       }
 
@@ -218,8 +253,8 @@ extension ISpectTrace on ISpectLogger {
         success: true,
         duration: sw.elapsed,
         meta: meta,
-        config: config,
-        sample: sample,
+        config: cfg,
+        sample: 1,
         logKey: logKey,
         correlationId: correlationId,
         logLevel: logLevel,
@@ -251,11 +286,10 @@ extension ISpectTrace on ISpectLogger {
   /// A projection callback (`projectResult`/`projectEvent`) threw — the traced
   /// operation itself succeeded, so this is reported as a warning (not routed
   /// through the error handler) and never swallowed silently.
-  void _logProjectionFailure(String wrapper, Object error, StackTrace st) {
+  void _logProjectionFailure(String wrapper) {
     log(
-      '$wrapper: projection callback threw unexpectedly — $error',
+      '$wrapper: projection callback failed safely.',
       logLevel: LogLevel.warning,
-      stackTrace: st,
     );
   }
 
@@ -276,19 +310,23 @@ extension ISpectTrace on ISpectLogger {
     String? correlationId,
     LogLevel? logLevel,
   }) {
-    if (!options.enabled) return run();
+    if (!isEnabled) return run();
 
+    final cfg = config ?? const ISpectTraceConfig();
     final sw = Stopwatch()..start();
     try {
       final result = run();
       sw.stop();
 
+      if (!isEnabled) return result;
+      if (!cfg.shouldLog(localSample: sample, isError: false)) return result;
+
       Object? projected;
       if (projectResult != null) {
         try {
           projected = projectResult(result);
-        } catch (e, st) {
-          _logProjectionFailure('traceSync', e, st);
+        } catch (_) {
+          _logProjectionFailure('traceSync');
         }
       }
 
@@ -302,8 +340,8 @@ extension ISpectTrace on ISpectLogger {
         success: true,
         duration: sw.elapsed,
         meta: meta,
-        config: config,
-        sample: sample,
+        config: cfg,
+        sample: 1,
         logKey: logKey,
         correlationId: correlationId,
         logLevel: logLevel,
@@ -345,17 +383,27 @@ extension ISpectTrace on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
   }) {
-    if (!options.enabled) return null;
+    if (!isEnabled) return null;
+    final cfg = config ?? const ISpectTraceConfig();
+    final redactor = _traceRedactor(cfg);
+    String prepareText(Object? value) => _tracePayloadText(
+          _prepareTracePayload(value, redactor),
+        );
+    final preparedMeta = _prepareTracePayload(meta, redactor);
     return ISpectTraceToken(
       stopwatch: Stopwatch()..start(),
       category: category,
-      source: source,
-      operation: operation,
-      target: target,
-      key: key,
-      meta: meta,
-      config: config,
-      correlationId: correlationId,
+      source: prepareText(source),
+      operation: prepareText(operation),
+      target: target == null ? null : prepareText(target),
+      key: key == null ? null : prepareText(key),
+      meta: preparedMeta is Map<String, Object?>
+          ? preparedMeta
+          : preparedMeta is Map
+              ? Map<String, Object?>.from(preparedMeta)
+              : null,
+      config: cfg,
+      correlationId: correlationId == null ? null : prepareText(correlationId),
     );
   }
 
@@ -371,6 +419,8 @@ extension ISpectTrace on ISpectLogger {
   }) {
     if (token == null) return;
     token.stopTiming();
+    if (!isEnabled) return;
+    final cfg = token.config ?? const ISpectTraceConfig();
     trace(
       category: token.category,
       source: token.source,
@@ -382,7 +432,11 @@ extension ISpectTrace on ISpectLogger {
       error: error,
       errorStackTrace: errorStackTrace,
       duration: token.elapsed,
-      meta: {...?token.meta, ...?meta},
+      meta: _mergeTraceMeta(
+        token.meta,
+        meta,
+        redactionActive: cfg.redact && ISpectRedaction.enabled,
+      ),
       config: token.config,
       correlationId: token.correlationId,
     );
@@ -403,9 +457,10 @@ extension ISpectTrace on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
   }) {
-    if (!options.enabled) return stream;
+    if (!isEnabled) return stream;
 
     final corrId = correlationId ?? generateTraceId();
+    final cfg = config ?? const ISpectTraceConfig();
 
     return stream.transform(
       TraceStreamTransformer<T>(
@@ -419,12 +474,14 @@ extension ISpectTrace on ISpectLogger {
           correlationId: corrId,
         ),
         onData: (data) {
+          if (!isEnabled) return;
+          if (!cfg.shouldLog(localSample: sample, isError: false)) return;
           Object? projected;
           if (projectEvent != null) {
             try {
               projected = projectEvent(data);
-            } catch (e, st) {
-              _logProjectionFailure('traceStream', e, st);
+            } catch (_) {
+              _logProjectionFailure('traceStream');
             }
           }
           trace(
@@ -434,8 +491,8 @@ extension ISpectTrace on ISpectLogger {
             target: target,
             value: projected,
             success: true,
-            sample: sample,
-            config: config,
+            sample: 1,
+            config: cfg,
             correlationId: corrId,
           );
         },
@@ -477,6 +534,8 @@ extension ISpectTrace on ISpectLogger {
     required Future<T> Function() run,
     bool logMarkers = false,
   }) async {
+    if (!isEnabled) return run();
+
     final txnId = generateTraceId();
     return runZoned(
       () async {
@@ -515,5 +574,81 @@ extension ISpectTrace on ISpectLogger {
       },
       zoneValues: {_txnZoneKey: txnId},
     );
+  }
+}
+
+RedactionService? _traceRedactor(ISpectTraceConfig config) {
+  if (!config.redact || !ISpectRedaction.enabled) return null;
+  final sensitiveKeys = identical(config.redactKeys, defaultSensitiveKeys)
+      ? null
+      : config.redactKeys;
+  return ISpectRedaction.resolveService(sensitiveKeys: sensitiveKeys);
+}
+
+Object? _prepareTracePayload(
+  Object? value,
+  RedactionService? redactor,
+) {
+  final redactionActive = redactor != null;
+  final prepared = LogExportOutput.boundJsonValue(
+    value,
+    preserveTypes: redactionActive,
+    replaceOversizedStrings: redactionActive,
+  );
+  if (!redactionActive) return prepared;
+  final redacted = redactor.redactForExport(prepared);
+  return LogExportOutput.boundJsonValue(
+    redacted,
+    replaceOversizedStrings: true,
+  );
+}
+
+final class _PreparedTraceException implements Exception {
+  const _PreparedTraceException();
+}
+
+final class _PreparedTraceError extends Error {}
+
+Map<String, Object?>? _mergeTraceMeta(
+  Map<String, Object?>? start,
+  Map<String, Object?>? end, {
+  required bool redactionActive,
+}) {
+  if (start == null && end == null) return null;
+  final bounded = LogExportOutput.boundJsonValue(
+    <String, Object?>{
+      if (end != null) 'end': end,
+      if (start != null) 'start': start,
+    },
+    preserveTypes: redactionActive,
+    replaceOversizedStrings: redactionActive,
+  );
+  if (bounded is! Map) return null;
+
+  final result = <String, Object?>{};
+  void addBounded(Object? value) {
+    if (value is Map<String, Object?>) {
+      result.addAll(value);
+    } else if (value is Map) {
+      result.addAll(Map<String, Object?>.from(value));
+    }
+  }
+
+  addBounded(bounded['start']);
+  addBounded(bounded['end']);
+  return result;
+}
+
+String _tracePayloadText(Object? value) {
+  if (value == null) return defaultPlaceholder;
+  if (value is String) return value;
+  if (value is bool || value is num) return value.toString();
+  try {
+    return LogExportOutput.truncateUtf8(
+      jsonEncode(value),
+      maxBytes: LogExportOutput.maxPreparedValueBytes,
+    );
+  } catch (_) {
+    return defaultPlaceholder;
   }
 }

@@ -3,6 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/common/widgets/error_boundary.dart';
 
+final class _HostilePluginException implements Exception {
+  int calls = 0;
+
+  @override
+  String toString() {
+    calls++;
+    return 'token=HOSTILE-PLUGIN-SECRET${'x' * (4 * 1024 * 1024)}';
+  }
+}
+
 void main() {
   group('SafePluginScreen', () {
     testWidgets(
@@ -36,8 +46,49 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Failed to render plugin screen'), findsOneWidget);
-        expect(find.textContaining('boom'), findsOneWidget);
+        expect(find.textContaining('Exception'), findsOneWidget);
         expect(find.text('Plugin Error: broken-plugin'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'fallback masks strings and never executes hostile formatters',
+      (tester) async {
+        final hostile = _HostilePluginException();
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Column(
+              children: [
+                Expanded(
+                  child: SafePluginScreen(
+                    pluginBuilder: (_) => throw hostile,
+                    pluginId: 'hostile-plugin',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(hostile.calls, 0);
+        expect(find.textContaining('HOSTILE-PLUGIN-SECRET'), findsNothing);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: SafePluginScreen(
+              // Exercises defensive handling of non-Error Dart throws.
+              // ignore: only_throw_errors
+              pluginBuilder: (_) => throw 'token=STRING-PLUGIN-SECRET',
+              pluginId: 'string-plugin',
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('STRING-PLUGIN-SECRET'), findsNothing);
+        expect(find.textContaining('[REDACTED]'), findsOneWidget);
       },
     );
 

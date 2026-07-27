@@ -40,7 +40,8 @@ Package versions and internal dependencies must stay synchronized:
 | Flutter package analyze and tests, latest stable | Advisory | Tracks future breakage without blocking unrelated work.                   |
 | README generation check                         | Yes      | Catches drift in generated READMEs.                                       |
 | Version and dependency sync                     | Yes      | Keeps monorepo package versions aligned.                                  |
-| Production-safety APK check                     | Yes      | Builds a release APK without `ISPECT_ENABLED` and checks residual strings. |
+| Production-safety API matrix                    | Yes      | Calls every package's public diagnostics entry points with `ISPECT_ENABLED` omitted. |
+| Production-safety AOT check                     | Yes      | Requires exact implementation sentinels to be absent when disabled and present in an enabled control build. |
 
 ## Coverage policy
 

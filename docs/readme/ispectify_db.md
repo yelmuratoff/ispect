@@ -68,6 +68,10 @@ const dbConfig = ISpectDbConfig(
 );
 ```
 
+`redactKeys` is an explicit local replacement for this trace. Omit it to use the current global `ISpectRedaction.service`.
+
+<!-- partial:redaction -->
+
 <!-- partial:install_matrix -->
 
 <!-- partial:footer -->

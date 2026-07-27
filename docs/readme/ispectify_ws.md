@@ -56,8 +56,11 @@ The package example ships thin adapters that wire a concrete client to `WsDiagno
 ```dart
 const settings = ISpectWSInterceptorSettings(
   enabled: true,
+  logRequests: true,  // sent frames
+  logResponses: true, // received frames
   printSentData: true,
   printReceivedData: true,
+  printStateData: true,
   printReceivedMessage: true,
   printErrorData: true,
   printErrorMessage: true,
@@ -66,6 +69,15 @@ const settings = ISpectWSInterceptorSettings(
 
 final diagnostics = WsDiagnostics(logger: ISpect.logger, settings: settings);
 ```
+
+Frame bodies and raw connection-state details are omitted by default. The
+explicit development builder preset enables verbose sent/received/state
+payload capture while keeping redaction on. The
+production preset disables sent/received frame retention and keeps redacted
+error diagnostics. `print*` fields shape retained records but do not re-enable
+a suppressed frame. Use the concrete settings `copyWith` or builder for
+retention controls; the shared base `configure` helper retains its
+legacy-compatible field set.
 
 <!-- partial:redaction -->
 

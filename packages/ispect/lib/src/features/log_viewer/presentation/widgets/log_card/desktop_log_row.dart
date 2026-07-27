@@ -366,7 +366,6 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
         context: context,
         position: position,
         data: widget.data,
-        message: _message,
         onShareTap: widget.onShareTap,
         onOpenDetail: widget.onOpenDetail ?? widget.onTap,
         onTypeFilterTap: widget.onTypeFilterTap,

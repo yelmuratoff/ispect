@@ -35,9 +35,13 @@ class NetworkTransaction {
       return Duration(milliseconds: respDurationMs);
     }
     // Fallback: time difference
-    final end = response?.time ?? error?.time;
+    final responseTime =
+        response == null ? null : captureISpectLogDataForEgress(response!).time;
+    final errorTime =
+        error == null ? null : captureISpectLogDataForEgress(error!).time;
+    final end = responseTime ?? errorTime;
     if (end == null) return null;
-    return end.difference(request.time);
+    return end.difference(captureISpectLogDataForEgress(request).time);
   }
 
   /// Whether no response or error has been received yet.
@@ -55,8 +59,16 @@ class NetworkTransaction {
         _traceMeta(error)?[NetworkJsonKeys.statusCode];
     if (code is int) return code;
     // v4 fallback: flat additionalData
-    return response?.additionalData?['statusCode'] as int? ??
-        error?.additionalData?['statusCode'] as int?;
+    final responseData = response == null
+        ? null
+        : captureISpectLogDataForEgress(response!).additionalData;
+    final errorData = error == null
+        ? null
+        : captureISpectLogDataForEgress(error!).additionalData;
+    final responseCode = responseData?['statusCode'];
+    if (responseCode is int) return responseCode;
+    final errorCode = errorData?['statusCode'];
+    return errorCode is int ? errorCode : null;
   }
 
   /// HTTP status reason phrase (e.g. `No Content`), if reported.
@@ -78,20 +90,26 @@ class NetworkTransaction {
 
   /// HTTP method from the request.
   String? get method {
+    final additionalData =
+        captureISpectLogDataForEgress(request).additionalData;
     // v5: trace operation field
-    final op = request.additionalData?[TraceKeys.operation];
+    final op = additionalData?[TraceKeys.operation];
     if (op is String) return op;
     // v4 fallback
-    return request.additionalData?['method'] as String?;
+    final method = additionalData?['method'];
+    return method is String ? method : null;
   }
 
   /// Request URL.
   String? get url {
+    final additionalData =
+        captureISpectLogDataForEgress(request).additionalData;
     // v5: trace target field
-    final target = request.additionalData?[TraceKeys.target];
+    final target = additionalData?[TraceKeys.target];
     if (target is String) return target;
     // v4 fallback
-    return request.additionalData?['url'] as String?;
+    final url = additionalData?['url'];
+    return url is String ? url : null;
   }
 
   /// Returns a copy with updated response or error.
@@ -115,7 +133,9 @@ class NetworkTransaction {
 
   /// Extract trace meta map from a log entry.
   static Map<String, dynamic>? _traceMeta(ISpectLogData? log) {
-    final meta = log?.additionalData?[TraceKeys.meta];
+    final meta = log == null
+        ? null
+        : captureISpectLogDataForEgress(log).additionalData?[TraceKeys.meta];
     return meta is Map<String, dynamic> ? meta : null;
   }
 
@@ -134,7 +154,9 @@ class NetworkTransaction {
 
   /// Extract int from trace envelope.
   static int? _metaInt(ISpectLogData? log, String key) {
-    final v = log?.additionalData?[key];
+    final v = log == null
+        ? null
+        : captureISpectLogDataForEgress(log).additionalData?[key];
     return v is int ? v : null;
   }
 

@@ -47,10 +47,10 @@ final class ObserverRegistry {
     for (final observer in List<ISpectObserver>.of(_observers)) {
       try {
         notify(observer);
-      } catch (e, st) {
+      } catch (_) {
         try {
           consoleLogger.log(
-            'Observer error: $e\n$st',
+            'Observer callback failed safely.',
             level: LogLevel.error,
           );
         } catch (_) {

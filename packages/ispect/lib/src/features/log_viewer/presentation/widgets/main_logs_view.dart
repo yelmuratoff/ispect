@@ -369,8 +369,11 @@ class _MainLogsViewState extends State<MainLogsView> {
       searchMatchState: widget.logsViewController.matchStateFor(logEntry),
       observer: observer,
       onSharePressed: () => ISpectShareLogBottomSheet(
-        data: logEntry.toJson(),
-        truncatedData: logEntry.toJson(truncated: true),
+        data: logEntry.toExportJson(redactionActive: true),
+        truncatedData: logEntry.toExportJson(
+          redactionActive: true,
+          truncated: true,
+        ),
       ).show(context),
       onItemTapped: isDesktop
           ? () => widget.logsViewController.selectLog(logEntry)

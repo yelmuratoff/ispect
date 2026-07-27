@@ -10,7 +10,7 @@ extension ISpectRouteExtension on Route<dynamic>? {
   ///
   /// - Returns explicit name from `RouteSettings` if available.
   /// - Otherwise, returns a label based on route type (`PageRoute`, `ModalRoute`, `PopupRoute`).
-  /// - Returns `runtimeType` or 'Unknown' as a last resort.
+  /// - Returns a generic label for other route implementations.
   String get routeName => switch (this) {
         null => 'Unknown',
         final Route<dynamic> route => switch ((
@@ -21,17 +21,17 @@ extension ISpectRouteExtension on Route<dynamic>? {
             (_, PageRoute()) => 'Unnamed Page',
             (_, PopupRoute()) => 'Unnamed Popup',
             (_, ModalRoute()) => 'Unnamed Modal',
-            _ => route.runtimeType.toString(),
+            _ => 'Unnamed Route',
           },
       };
 
-  /// Returns the runtime type of the route or 'Null' if the route is null.
+  /// Returns a bounded route family or 'Null' if the route is null.
   String get routeType => switch (this) {
         null => 'Null',
         PageRoute() => 'Page',
         PopupRoute() => 'Popup',
         ModalRoute() => 'Modal',
-        _ => runtimeType.toString(),
+        _ => 'Other',
       };
 }
 

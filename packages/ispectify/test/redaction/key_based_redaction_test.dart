@@ -62,6 +62,30 @@ void main() {
       expect(out, '[REDACTED]');
     });
 
+    test('fully masks scalar, structured, and binary values', () {
+      final ctx = context(
+        sensitive: const {},
+        fullyMasked: const {'opaque'},
+      );
+
+      for (final value in <Object?>[
+        12345,
+        const {'nested': 'value'},
+        const ['value'],
+        Uint8List.fromList([1, 2, 3]),
+      ]) {
+        expect(
+          strategy.tryRedact(
+            value,
+            context: ctx,
+            keyName: 'opaque',
+          ),
+          '[REDACTED]',
+          reason: value.runtimeType.toString(),
+        );
+      }
+    });
+
     test('redacts binary Uint8List when enabled', () {
       final data = Uint8List.fromList([1, 2, 3]);
       final out = strategy.tryRedact(
@@ -108,6 +132,45 @@ void main() {
       );
       expect(ctx.classifyKey('accessToken').sensitive, isTrue);
       expect(ctx.classifyKey('apiKey').fullyMasked, isTrue);
+    });
+
+    test('classifyKey normalizes bracketed structural keys', () {
+      final ctx = context(
+        sensitive: const {'auth_token', 'user_password', 'access_token'},
+        fullyMasked: const {'token', 'password'},
+      );
+
+      expect(ctx.classifyKey('auth[token]').sensitive, isTrue);
+      expect(ctx.classifyKey('user[password]').sensitive, isTrue);
+      expect(ctx.classifyKey('access_token[]').sensitive, isTrue);
+      expect(ctx.classifyKey('auth[token]').fullyMasked, isTrue);
+      expect(ctx.classifyKey('user[password]').fullyMasked, isTrue);
+    });
+
+    test('classifyKey matches contiguous composite key segments', () {
+      final ctx = context(
+        sensitive: const {
+          'authorization',
+          'cookie',
+          'first_name',
+          'passport_number',
+          'billing_address',
+        },
+        fullyMasked: const {
+          'first_name',
+          'passport_number',
+          'billing_address',
+        },
+      );
+
+      expect(ctx.classifyKey('headers[Authorization]').sensitive, isTrue);
+      expect(ctx.classifyKey('requestCookie').sensitive, isTrue);
+      expect(ctx.classifyKey('customerFirstName').fullyMasked, isTrue);
+      expect(ctx.classifyKey('accountPassportNumber').fullyMasked, isTrue);
+      expect(
+        ctx.classifyKey('checkoutBillingAddressLine1').fullyMasked,
+        isTrue,
+      );
     });
 
     test('classifyKey agrees with isSensitiveKey and isFullyMaskedKey', () {

@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:ispectify/src/history/history.dart';
 import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/log_level.dart';
@@ -10,31 +11,31 @@ import 'package:ispectify/src/trace/trace_keys.dart';
 ///
 /// Uses [Queue] (O(1) removeFirst) for FIFO rotation with [maxTraces].
 class FakeISpectLogger extends ISpectLogger {
-  FakeISpectLogger({
-    this.maxTraces = 10000,
-  }) : super(
+  factory FakeISpectLogger({
+    int maxTraces = 10000,
+  }) {
+    final history = _FakeLogHistory(maxTraces);
+    return FakeISpectLogger._(maxTraces, history);
+  }
+
+  FakeISpectLogger._(
+    this.maxTraces,
+    this._captureHistory,
+  ) : super.testing(
           options: ISpectLoggerOptions(
             useConsoleLogs: false,
-            maxHistoryItems: 0,
+            maxHistoryItems: maxTraces,
           ),
+          history: _captureHistory,
         );
 
   final int maxTraces;
-  final _queue = Queue<ISpectLogData>();
+  final _FakeLogHistory _captureHistory;
 
   /// Read-only snapshot as List.
-  List<ISpectLogData> get traces => _queue.toList();
+  List<ISpectLogData> get traces => _captureHistory.history;
 
-  Iterable<ISpectLogData> get _traces => _queue;
-
-  @override
-  void logData(ISpectLogData log) {
-    _queue.add(log);
-    while (_queue.length > maxTraces) {
-      _queue.removeFirst();
-    }
-    super.logData(log);
-  }
+  Iterable<ISpectLogData> get _traces => _captureHistory.history;
 
   // ── Query by structured trace fields ───────────────────────────────
 
@@ -80,9 +81,39 @@ class FakeISpectLogger extends ISpectLogger {
     return list.isEmpty ? null : list.last;
   }
 
-  ISpectLogData? get lastTrace => _queue.isEmpty ? null : _queue.last;
+  ISpectLogData? get lastTrace =>
+      _captureHistory.history.isEmpty ? null : _captureHistory.history.last;
 
   // ── Lifecycle ──────────────────────────────────────────────────────
 
-  void reset() => _queue.clear();
+  void reset() => _captureHistory.clear();
+}
+
+final class _FakeLogHistory implements ILogHistory {
+  _FakeLogHistory(this.capacity) {
+    if (capacity < 0) {
+      throw RangeError.range(capacity, 0, null, 'capacity');
+    }
+  }
+
+  final int capacity;
+  final Queue<ISpectLogData> _entries = Queue<ISpectLogData>();
+
+  @override
+  List<ISpectLogData> get history => List<ISpectLogData>.unmodifiable(_entries);
+
+  @override
+  void add(ISpectLogData data) {
+    if (capacity == 0) return;
+    while (_entries.length >= capacity) {
+      _entries.removeFirst();
+    }
+    _entries.addLast(data);
+  }
+
+  @override
+  void clear() => _entries.clear();
+
+  @override
+  void dispose() => _entries.clear();
 }

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:collection';
+import 'dart:convert';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/ispectify_db.dart';
@@ -15,14 +17,154 @@ const _cfg = ISpectDbConfig(
   slowThreshold: Duration(milliseconds: 1),
 );
 
+final class _HostileDto {
+  _HostileDto(this.secret);
+
+  final String secret;
+  int toJsonCalls = 0;
+  int toStringCalls = 0;
+
+  Map<String, Object?> toJson() {
+    toJsonCalls++;
+    return <String, Object?>{'password': secret};
+  }
+
+  @override
+  String toString() {
+    toStringCalls++;
+    return secret;
+  }
+}
+
+final class _HostileException implements Exception {
+  _HostileException(this.secret);
+
+  final String secret;
+  int calls = 0;
+
+  @override
+  String toString() {
+    calls++;
+    return secret;
+  }
+}
+
+final class _HostileError extends Error {
+  _HostileError(this.secret);
+
+  final String secret;
+  int calls = 0;
+
+  @override
+  String toString() {
+    calls++;
+    return secret;
+  }
+}
+
+final class _HostileStackTrace implements StackTrace {
+  _HostileStackTrace(this.secret);
+
+  final String secret;
+  int calls = 0;
+
+  @override
+  String toString() {
+    calls++;
+    return secret;
+  }
+}
+
+final class _HostileKey {
+  _HostileKey(this.secret);
+
+  final String secret;
+  int calls = 0;
+
+  @override
+  String toString() {
+    calls++;
+    return secret;
+  }
+}
+
+final class _ThrowingLengthList<E> extends ListBase<E> {
+  _ThrowingLengthList(Iterable<E> values) : _values = List<E>.of(values);
+
+  final List<E> _values;
+  int lengthCalls = 0;
+
+  @override
+  int get length {
+    lengthCalls++;
+    throw StateError('hostile length');
+  }
+
+  @override
+  set length(int value) => _values.length = value;
+
+  @override
+  E operator [](int index) => _values[index];
+
+  @override
+  void operator []=(int index, E value) => _values[index] = value;
+}
+
+final class _DisablingLengthList<E> extends ListBase<E> {
+  _DisablingLengthList(Iterable<E> values, this._disable)
+      : _values = List<E>.of(values);
+
+  final List<E> _values;
+  final void Function() _disable;
+  int lengthCalls = 0;
+
+  @override
+  int get length {
+    lengthCalls++;
+    _disable();
+    return _values.length;
+  }
+
+  @override
+  set length(int value) => _values.length = value;
+
+  @override
+  E operator [](int index) => _values[index];
+
+  @override
+  void operator []=(int index, E value) => _values[index] = value;
+}
+
 void main() {
   late ISpectLogger logger;
 
   setUp(() {
-    logger = ISpectLogger();
+    ISpectRedaction.reset();
+    logger = ISpectLogger.testing();
   });
+  tearDown(ISpectRedaction.reset);
 
   group('db()', () {
+    test('enabled logger without consumers bypasses preprocessing', () {
+      final sinklessLogger = ISpectLogger(
+        options: ISpectLoggerOptions(
+          useConsoleLogs: false,
+          useHistory: false,
+        ),
+      );
+      addTearDown(sinklessLogger.dispose);
+      final args = _ThrowingLengthList<Object?>(const ['secret']);
+
+      sinklessLogger.db(
+        source: 'sqflite',
+        operation: 'query',
+        args: args,
+      );
+
+      expect(args.lengthCalls, 0);
+      expect(sinklessLogger.history, isEmpty);
+    });
+
     test('logs fields and digest/truncation', () {
       logger.db(
         source: 'sqflite',
@@ -54,10 +196,7 @@ void main() {
       final meta = add['meta'] as Map<String, dynamic>;
       expect(meta['statement'], isA<String>());
       expect(meta['statementDigest'], isA<String>());
-      expect(
-        (meta['args'] as List).first.toString().contains('...'),
-        isTrue,
-      );
+      expect((meta['args'] as List).first, defaultPlaceholder);
       expect((meta['namedArgs'] as Map)['password'], '[REDACTED]');
     });
 
@@ -85,8 +224,8 @@ void main() {
 
       expect(logger.history, isNotEmpty);
       final add = logger.history.last.additionalData ?? {};
-      // key is in the trace envelope.
-      expect(add['key'], 'myKey');
+      // Database keys are identifiers and are redacted in the trace envelope.
+      expect(add['key'], defaultPlaceholder);
       // DB-specific meta should not contain statement/statementDigest.
       final meta = add['meta'] as Map<String, dynamic>?;
       expect(meta?.containsKey('statement') ?? false, isFalse);
@@ -112,8 +251,7 @@ void main() {
       expect((meta['namedArgs'] as Map)['password'], 'secret123');
     });
 
-    test('preserves positional args when statement has no sensitive columns',
-        () {
+    test('masks every positional arg when redaction is enabled', () {
       logger.db(
         source: 'sqflite',
         operation: 'query',
@@ -124,7 +262,7 @@ void main() {
       final add = logger.history.last.additionalData ?? {};
       final meta = add['meta'] as Map<String, dynamic>;
       final args = meta['args'] as List;
-      expect(args, containsAll([100, 'visible']));
+      expect(args, [defaultPlaceholder, defaultPlaceholder]);
     });
 
     test('redacts positional args when statement mentions sensitive column',
@@ -157,12 +295,31 @@ void main() {
       expect(meta['value'], contains('projected-value'));
     });
 
+    test('explicit null projection omits the raw value', () {
+      const secret = 'NULL_PROJECTION_RAW_SECRET';
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        key: 'record',
+        value: secret,
+        projection: null,
+      );
+
+      final log = logger.history.last;
+      final meta = log.additionalData?['meta'] as Map<String, dynamic>;
+      expect(meta, isNot(containsPair('value', secret)));
+      expect(log.textMessage, isNot(contains(secret)));
+    });
+
     test('pickLogKey returns db-query for read operations', () {
-      // Only operations listed in dbCategory.secondaryOperations
-      // get classified as db-query.
       for (final op in [
-        'query', 'select', 'get', // SQL / KV
-        'find', 'list', 'count', // NoSQL / search
+        'query',
+        'select',
+        'get',
+        'find',
+        'list',
+        'count',
       ]) {
         logger.db(source: 'test', operation: op, success: true);
         expect(logger.history.last.key, 'db-query', reason: 'op=$op');
@@ -242,6 +399,169 @@ void main() {
 
   group('redaction (H4/M4)', () {
     const token = 'ghp_1234567890abcdefghij';
+    const databaseKey = 'customer@example.invalid';
+
+    test('default path resolves the global service for every operation', () {
+      ISpectRedaction.configure(
+        service: RedactionService(
+          sensitiveKeys: const {'business_marker'},
+          placeholder: '<GLOBAL_DB>',
+        ),
+      );
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        value: const <String, Object?>{
+          'business_marker': 'database-secret',
+        },
+      );
+
+      final meta = (logger.history.single.additionalData ?? const {})['meta']
+          as Map<String, dynamic>;
+      expect(
+        (meta['value'] as Map)['business_marker'],
+        contains('<GLOBAL_DB>'),
+      );
+      expect(
+        (meta['value'] as Map)['business_marker'],
+        isNot(contains('database-secret')),
+      );
+
+      ISpectRedaction.configure(
+        service: RedactionService(
+          sensitiveKeys: const {'business_marker'},
+          placeholder: '<UPDATED_DB>',
+        ),
+      );
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        value: const <String, Object?>{
+          'business_marker': 'updated-database-secret',
+        },
+      );
+      final updatedMeta = (logger.history.last.additionalData ??
+          const {})['meta'] as Map<String, dynamic>;
+
+      expect(
+        (updatedMeta['value'] as Map)['business_marker'],
+        contains('<UPDATED_DB>'),
+      );
+      expect(
+        (updatedMeta['value'] as Map)['business_marker'],
+        isNot(contains('updated-database-secret')),
+      );
+    });
+
+    test('per-call redactKeys take precedence over the global service', () {
+      ISpectRedaction.configure(
+        service: RedactionService(
+          sensitiveKeys: const {'global_marker'},
+          placeholder: '<GLOBAL_DB>',
+        ),
+      );
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        value: const <String, Object?>{
+          'local_marker': 'local-value',
+          'global_marker': 'global-value',
+        },
+        redactKeys: const ['local_marker'],
+      );
+
+      final meta = (logger.history.single.additionalData ?? const {})['meta']
+          as Map<String, dynamic>;
+      final value = meta['value'] as Map;
+      expect(value['local_marker'], contains(defaultPlaceholder));
+      expect(value['global_marker'], 'global-value');
+    });
+
+    test('config redactKeys take precedence over the global service', () {
+      ISpectRedaction.configure(
+        service: RedactionService(
+          sensitiveKeys: const {'global_marker'},
+          placeholder: '<GLOBAL_DB>',
+        ),
+      );
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        value: const <String, Object?>{
+          'config_marker': 'config-value',
+          'global_marker': 'global-value',
+        },
+        config: const ISpectDbConfig(
+          redactKeys: {'config_marker'},
+        ),
+      );
+
+      final meta = (logger.history.single.additionalData ?? const {})['meta']
+          as Map<String, dynamic>;
+      final value = meta['value'] as Map;
+      expect(value['config_marker'], contains(defaultPlaceholder));
+      expect(value['global_marker'], 'global-value');
+    });
+
+    test('removes database keys from successful log messages and metadata', () {
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        key: databaseKey,
+        transactionId: 'transaction-audit',
+      );
+
+      final entry = logger.history.last;
+      final additionalData = entry.additionalData ?? {};
+      final meta = additionalData['meta'] as Map;
+
+      expect(entry.message.toString(), isNot(contains(databaseKey)));
+      expect(additionalData['key'], defaultPlaceholder);
+      expect(meta['key'], defaultPlaceholder);
+      expect(additionalData['correlationId'], 'transaction-audit');
+    });
+
+    test('removes database keys from failed traced operations', () async {
+      await expectLater(
+        logger.dbTrace<void>(
+          source: 'kv',
+          operation: 'read',
+          key: databaseKey,
+          transactionId: 'transaction-audit',
+          run: () async => throw StateError('synthetic failure'),
+        ),
+        throwsA(isA<StateError>()),
+      );
+
+      final entry = logger.history.last;
+      final additionalData = entry.additionalData ?? {};
+      final meta = additionalData['meta'] as Map;
+
+      expect(entry.message.toString(), isNot(contains(databaseKey)));
+      expect(additionalData['key'], defaultPlaceholder);
+      expect(meta['key'], defaultPlaceholder);
+      expect(additionalData['correlationId'], 'transaction-audit');
+    });
+
+    test('keeps database keys raw when redaction is explicitly disabled', () {
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        key: databaseKey,
+        redact: false,
+      );
+
+      final entry = logger.history.last;
+      final additionalData = entry.additionalData ?? {};
+      final meta = additionalData['meta'] as Map;
+
+      expect(entry.message.toString(), contains(databaseKey));
+      expect(additionalData['key'], databaseKey);
+      expect(meta['key'], databaseKey);
+    });
 
     test('masks token-shaped positional args even when no column is sensitive',
         () {
@@ -333,6 +653,383 @@ void main() {
       expect((meta['args'] as List).first, token);
       expect(meta['dbError'], 'Bearer sk-live-abcdef1234567890');
     });
+
+    test('global opt-out keeps every database diagnostic field raw', () {
+      ISpectRedaction.enabled = false;
+      addTearDown(() => ISpectRedaction.enabled = true);
+      const statement = 'SELECT * FROM users WHERE password = ?';
+      const rawError = 'Bearer sk-live-global-opt-out';
+
+      logger.db(
+        source: 'pg',
+        operation: 'query',
+        statement: statement,
+        key: databaseKey,
+        args: const [token],
+        namedArgs: const {'password': token},
+        value: const {'password': token},
+        success: false,
+        error: rawError,
+      );
+
+      final entry = logger.history.last;
+      final additionalData = entry.additionalData ?? {};
+      final meta = additionalData['meta'] as Map;
+      expect(entry.message, contains(databaseKey));
+      expect(additionalData['key'], databaseKey);
+      expect(meta['statement'], statement);
+      expect(meta['key'], databaseKey);
+      expect((meta['args'] as List).single, token);
+      expect((meta['namedArgs'] as Map)['password'], token);
+      expect((meta['value'] as Map)['password'], token);
+      expect(meta['dbError'], rawError);
+    });
+
+    test('never executes DTO conversion in database diagnostics', () {
+      const secret = 'violet-db-payload';
+      final dto = _HostileDto(secret);
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        namedArgs: <String, Object?>{'payload': dto},
+        value: dto,
+        meta: <String, Object?>{'payload': dto},
+      );
+
+      final meta = (logger.history.last.additionalData ?? {})['meta'] as Map;
+      final namedArgs = meta['namedArgs'] as Map;
+      final userMeta = meta['userMeta'] as Map;
+      expect(namedArgs['payload'], JsonValueNormalizer.unprintableValue);
+      expect(meta['value'], JsonValueNormalizer.unprintableValue);
+      expect(userMeta['payload'], JsonValueNormalizer.unprintableValue);
+      expect(dto.toJsonCalls, 0);
+      expect(dto.toStringCalls, 0);
+      expect(meta.toString(), isNot(contains(secret)));
+    });
+
+    test('never formats hostile errors, exceptions, or stack traces', () {
+      const secret = 'HOSTILE_DB_DIAGNOSTIC_SECRET';
+      final error = _HostileError(secret);
+      final exception = _HostileException(secret);
+      final stackTrace = _HostileStackTrace(secret);
+
+      logger
+        ..db(
+          source: 'kv',
+          operation: 'write',
+          success: false,
+          error: error,
+          errorStackTrace: stackTrace,
+          config: _cfg,
+        )
+        ..db(
+          source: 'kv',
+          operation: 'write',
+          success: false,
+          error: exception,
+        );
+
+      expect(error.calls, 0);
+      expect(exception.calls, 0);
+      expect(stackTrace.calls, 0);
+      for (final entry in logger.history) {
+        final encoded = entry.toText(enableRedaction: false);
+        expect(encoded, isNot(contains(secret)));
+      }
+      expect(
+        logger.history.first.stackTrace.toString(),
+        JsonValueNormalizer.unprintableValue,
+      );
+    });
+
+    test('redaction opt-out still snapshots unknown objects safely', () {
+      const secret = 'violet-raw-db-payload';
+      final dto = _HostileDto(secret);
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        namedArgs: <String, Object?>{'payload': dto},
+        value: dto,
+        meta: <String, Object?>{'payload': dto},
+        redact: false,
+        config: const ISpectDbConfig(redact: false),
+      );
+
+      final meta = (logger.history.last.additionalData ?? {})['meta'] as Map;
+      final namedArgs = meta['namedArgs'] as Map;
+      final userMeta = meta['userMeta'] as Map;
+      expect(namedArgs['payload'], JsonValueNormalizer.unprintableValue);
+      expect(meta['value'], JsonValueNormalizer.unprintableValue);
+      expect(userMeta['payload'], JsonValueNormalizer.unprintableValue);
+      expect(dto.toJsonCalls, 0);
+      expect(dto.toStringCalls, 0);
+      expect(meta.toString(), isNot(contains(secret)));
+    });
+
+    test('never formats hostile structured keys', () {
+      const secret = 'HOSTILE_DB_KEY_SECRET';
+      final key = _HostileKey(secret);
+      final hostileMap = <Object?, Object?>{key: secret};
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        args: <Object?>[hostileMap],
+        namedArgs: <String, Object?>{'payload': hostileMap},
+        value: hostileMap,
+        meta: <String, Object?>{'payload': hostileMap},
+      );
+
+      final entry = logger.history.last;
+      final encoded = jsonEncode(
+        entry.toExportJson(redactionActive: false),
+      );
+      expect(key.calls, 0);
+      expect(encoded, isNot(contains(secret)));
+      expect(encoded, contains(JsonValueNormalizer.unprintableValue));
+    });
+
+    test('replaces multi-megabyte fields before active redaction', () {
+      final huge = 'ACTIVE_DB_SECRET_${'x' * (3 * 1024 * 1024)}';
+
+      logger.db(
+        source: 'kv',
+        operation: 'write',
+        args: <Object?>[huge],
+        namedArgs: <String, Object?>{'payload': huge},
+        value: huge,
+        meta: <String, Object?>{'payload': huge},
+        success: false,
+        error: huge,
+      );
+
+      final entry = logger.history.last;
+      final additionalData = entry.additionalData ?? const {};
+      final meta = additionalData['meta'] as Map;
+      expect((meta['args'] as List).single, defaultPlaceholder);
+      expect(
+        (meta['namedArgs'] as Map)['payload'],
+        LogExportOutput.truncatedMarker,
+      );
+      expect(meta['value'], LogExportOutput.truncatedMarker);
+      expect(
+        (meta['userMeta'] as Map)['payload'],
+        LogExportOutput.truncatedMarker,
+      );
+      expect(meta['dbError'], LogExportOutput.truncatedMarker);
+      final encoded = jsonEncode(
+        entry.toExportJson(redactionActive: false),
+      );
+      expect(
+        LogExportOutput.utf8Length(encoded),
+        lessThan(LogExportOutput.maxRecordBytes),
+      );
+      expect(encoded, isNot(contains('ACTIVE_DB_SECRET_')));
+    });
+
+    test('bounds but preserves ordinary fields with explicit opt-out', () {
+      final huge = 'ordinary-db-prefix-${'x' * (3 * 1024 * 1024)}';
+      const config = ISpectDbConfig(
+        redact: false,
+        maxValueLength: LogExportOutput.maxPreparedValueBytes,
+        maxArgsLength: LogExportOutput.maxPreparedValueBytes,
+      );
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        value: huge,
+        redact: false,
+        config: config,
+      );
+
+      final meta =
+          (logger.history.last.additionalData ?? const {})['meta'] as Map;
+      final value = meta['value'] as String;
+      expect(value, startsWith('ordinary-db-prefix-'));
+      expect(value, endsWith(LogExportOutput.truncatedMarker));
+      expect(
+        LogExportOutput.utf8Length(value),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
+      );
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        args: <Object?>[huge],
+        redact: false,
+        config: config,
+      );
+      final argsMeta =
+          (logger.history.last.additionalData ?? const {})['meta'] as Map;
+      final arg = (argsMeta['args'] as List).first as String;
+      expect(arg, startsWith('ordinary-db-prefix-'));
+      expect(
+        LogExportOutput.utf8Length(arg),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
+      );
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        namedArgs: <String, Object?>{'payload': huge},
+        redact: false,
+        config: config,
+      );
+      final namedMeta =
+          (logger.history.last.additionalData ?? const {})['meta'] as Map;
+      final namedArg = (namedMeta['namedArgs'] as Map)['payload'] as String;
+      expect(namedArg, startsWith('ordinary-db-prefix-'));
+      expect(
+        LogExportOutput.utf8Length(namedArg),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
+      );
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        meta: <String, Object?>{'payload': huge},
+        redact: false,
+        config: config,
+      );
+      final userMeta =
+          (logger.history.last.additionalData ?? const {})['meta'] as Map;
+      final metaValue = (userMeta['userMeta'] as Map)['payload'] as String;
+      expect(metaValue, startsWith('ordinary-db-prefix-'));
+      expect(
+        LogExportOutput.utf8Length(metaValue),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
+      );
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        success: false,
+        error: huge,
+        redact: false,
+        config: config,
+      );
+      final errorData = logger.history.last.additionalData ?? const {};
+      final errorText = errorData['error'] as String;
+      expect(errorText, startsWith('ordinary-db-prefix-'));
+      expect(
+        LogExportOutput.utf8Length(errorText),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
+      );
+    });
+
+    test('caps large node graphs before database redaction', () {
+      final graph = List<Object?>.generate(
+        JsonValueNormalizer.defaultMaxNodes * 2,
+        (index) => <String, Object?>{'index': index},
+      );
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        meta: <String, Object?>{'graph': graph},
+        redact: false,
+        config: const ISpectDbConfig(redact: false),
+      );
+
+      final entry = logger.history.last;
+      final encoded = jsonEncode(
+        entry.toExportJson(redactionActive: false),
+      );
+      expect(
+        encoded,
+        anyOf(
+          contains(JsonValueNormalizer.maxNodesReached),
+          contains(JsonValueNormalizer.maxCollectionItemsReached),
+        ),
+      );
+      expect(
+        LogExportOutput.utf8Length(encoded),
+        lessThan(LogExportOutput.maxRecordBytes),
+      );
+    });
+
+    test('bounds a custom projection before custom-key redaction', () {
+      const secretKey = 'tenantSecret';
+      final huge = 'CUSTOM_PROJECTION_SECRET_${'x' * (3 * 1024 * 1024)}';
+      var projectionCalls = 0;
+
+      final result = logger.dbTraceSync<int>(
+        source: 'kv',
+        operation: 'read',
+        run: () => 7,
+        projectResult: (value) {
+          projectionCalls++;
+          return <String, Object?>{
+            secretKey: huge,
+            'visible': value,
+          };
+        },
+        redactKeys: const [secretKey],
+      );
+
+      expect(result, 7);
+      expect(projectionCalls, 1);
+      final meta =
+          (logger.history.last.additionalData ?? const {})['meta'] as Map;
+      final value = meta['value'] as Map;
+      expect(value[secretKey], defaultPlaceholder);
+      expect(value['visible'], 7);
+      expect(
+        jsonEncode(value),
+        isNot(contains('CUSTOM_PROJECTION_SECRET_')),
+      );
+    });
+
+    test('replaces oversized SQL before redaction or digesting', () {
+      const secret = 'ACTIVE_OVERSIZED_SQL_SECRET';
+      final statement = 'SELECT $secret ${'x' * (3 * 1024 * 1024)}';
+
+      logger.db(
+        source: 'pg',
+        operation: 'query',
+        statement: statement,
+      );
+
+      final meta =
+          (logger.history.single.additionalData ?? const {})['meta'] as Map;
+      final encoded = jsonEncode(meta);
+      expect(meta['statement'], startsWith('sql:'));
+      expect(meta['statementDigest'], startsWith('sql:'));
+      expect(encoded, isNot(contains(secret)));
+      expect(encoded, isNot(contains('SELECT')));
+      expect(
+        LogExportOutput.utf8Length(encoded),
+        lessThan(LogExportOutput.maxPreparedValueBytes),
+      );
+    });
+
+    test('keeps only a bounded SQL prefix with explicit opt-out', () {
+      const prefix = 'SELECT OPT_OUT_SQL_PREFIX ';
+      final statement = '$prefix${'x' * (3 * 1024 * 1024)}';
+
+      logger.db(
+        source: 'pg',
+        operation: 'query',
+        statement: statement,
+        redact: false,
+        config: const ISpectDbConfig(
+          redact: false,
+          maxStatementLength: LogExportOutput.maxPreparedValueBytes,
+        ),
+      );
+
+      final meta =
+          (logger.history.single.additionalData ?? const {})['meta'] as Map;
+      final retained = meta['statement'] as String;
+      expect(retained, startsWith(prefix));
+      expect(retained, endsWith(LogExportOutput.truncatedMarker));
+      expect(
+        LogExportOutput.utf8Length(retained),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
+      );
+      expect(meta['statementDigest'], startsWith('sql:'));
+    });
   });
 
   group('sqlDigest', () {
@@ -341,24 +1038,120 @@ void main() {
       expect(DbSqlDigest.compute(''), isNull);
     });
 
-    test('normalizes single-quoted strings to ?', () {
+    test('does not expose normalized single-quoted strings', () {
       final digest = DbSqlDigest.compute("SELECT * FROM t WHERE a = 'foo'");
       expect(digest, isNotNull);
-      expect(digest, contains('?'));
+      expect(digest, startsWith('sql:'));
       expect(digest, isNot(contains('foo')));
+      expect(digest, isNot(contains('select')));
     });
 
-    test('normalizes double-quoted strings to ?', () {
+    test('does not expose normalized double-quoted strings', () {
       final digest = DbSqlDigest.compute('SELECT * FROM t WHERE a = "bar"');
       expect(digest, isNotNull);
-      expect(digest, contains('?'));
+      expect(digest, startsWith('sql:'));
       expect(digest, isNot(contains('bar')));
+    });
+
+    test('normalizes backslash and doubled-quote escapes without leaking', () {
+      final digest = DbSqlDigest.compute(
+        r"""SELECT 'first\'secret', 'second''secret',
+        "third\"secret", "fourth""secret",
+        `fifth\`secret`, `sixth``secret` FROM t""",
+      );
+
+      expect(digest, isNotNull);
+      for (final secret in const [
+        'first',
+        'second',
+        'third',
+        'fourth',
+        'fifth',
+        'sixth',
+        'secret',
+      ]) {
+        expect(digest, isNot(contains(secret)));
+      }
+    });
+
+    test('strips line and block comments before building the digest', () {
+      final digest = DbSqlDigest.compute(
+        '''
+SELECT * FROM users -- tenantSecret=LINE_SECRET
+WHERE id = 1 # tenantSecret=HASH_SECRET
+/* tenantSecret=BLOCK_SECRET */
+AND active = 1
+''',
+      );
+
+      expect(digest, isNotNull);
+      expect(digest, isNot(contains('tenantsecret')));
+      expect(digest, isNot(contains('line_secret')));
+      expect(digest, isNot(contains('hash_secret')));
+      expect(digest, isNot(contains('block_secret')));
+    });
+
+    test('strips nested and unterminated block comments fail closed', () {
+      final nested = DbSqlDigest.compute(
+        'SELECT 1 /* outer BLOCK_SECRET /* inner INNER_SECRET */ tail */',
+      );
+      final unterminated = DbSqlDigest.compute(
+        'SELECT 1 /* tenantSecret=UNTERMINATED_SECRET',
+      );
+
+      expect(nested, isNot(contains('block_secret')));
+      expect(nested, isNot(contains('inner_secret')));
+      expect(unterminated, isNot(contains('unterminated_secret')));
+    });
+
+    test('unterminated quoted values fail closed', () {
+      final single = DbSqlDigest.compute("SELECT 'SINGLE_SECRET");
+      final dollar = DbSqlDigest.compute(
+        r'SELECT $audit$DOLLAR_SECRET',
+      );
+
+      expect(single, isNot(contains('single_secret')));
+      expect(dollar, isNot(contains('dollar_secret')));
+    });
+
+    test('normalizes untagged PostgreSQL dollar-quoted strings opaquely', () {
+      final digest = DbSqlDigest.compute(
+        r'SELECT * FROM t WHERE payload = $$synthetic-dollar-secret$$',
+      );
+
+      expect(digest, isNotNull);
+      expect(digest, startsWith('sql:'));
+      expect(digest, isNot(contains('synthetic-dollar-secret')));
+    });
+
+    test('normalizes tagged multiline PostgreSQL dollar-quoted strings', () {
+      final digest = DbSqlDigest.compute(
+        r'''SELECT * FROM t
+WHERE payload = $audit$synthetic
+dollar-secret$audit$''',
+      );
+
+      expect(digest, isNotNull);
+      expect(digest, startsWith('sql:'));
+      expect(digest, isNot(contains('synthetic')));
+      expect(digest, isNot(contains('dollar-secret')));
+    });
+
+    test('produces a stable hash across PostgreSQL dollar-quoted values', () {
+      final digest1 = DbSqlDigest.compute(
+        r'SELECT * FROM t WHERE payload = $audit$first-value$audit$',
+      );
+      final digest2 = DbSqlDigest.compute(
+        r'SELECT * FROM t WHERE payload = $audit$second-value$audit$',
+      );
+
+      expect(digest1, digest2);
     });
 
     test('normalizes digits to ?', () {
       final digest = DbSqlDigest.compute('SELECT * FROM t WHERE id = 42');
       expect(digest, isNotNull);
-      expect(digest, contains('?'));
+      expect(digest, startsWith('sql:'));
       expect(digest, isNot(contains('42')));
     });
 
@@ -374,11 +1167,33 @@ void main() {
       expect(digest1, isNot(equals(digest2)));
     });
 
-    test('truncates long statements to 80 chars before hash', () {
+    test('returns an opaque fixed-width fingerprint for long statements', () {
       final longStmt = 'SELECT ${'a, ' * 100}FROM t';
       final digest = DbSqlDigest.compute(longStmt)!;
-      final prefix = digest.split('|').first;
-      expect(prefix.length, 80);
+      expect(digest, matches(RegExp(r'^sql:[0-9a-f]{1,8}$')));
+      expect(digest, isNot(contains('SELECT')));
+    });
+
+    test('does not expose unquoted hexadecimal database keys', () {
+      const secret = 'DEADBEEF';
+      final digest = DbSqlDigest.compute('PRAGMA key=0x$secret');
+
+      expect(digest, startsWith('sql:'));
+      expect(digest, isNot(contains(secret.toLowerCase())));
+      expect(digest, isNot(contains('pragma')));
+    });
+
+    test('fails closed before digesting multi-megabyte direct input', () {
+      final first = DbSqlDigest.compute(
+        'DIRECT_DIGEST_SECRET_A_${'a' * (3 * 1024 * 1024)}',
+      );
+      final second = DbSqlDigest.compute(
+        'DIRECT_DIGEST_SECRET_B_${'b' * (3 * 1024 * 1024)}',
+      );
+
+      expect(first, startsWith('sql:'));
+      expect(first, second);
+      expect(first, isNot(contains('direct_digest_secret')));
     });
   });
 
@@ -456,7 +1271,7 @@ void main() {
       expect(entry.stackTrace, isNotNull);
       final add = entry.additionalData ?? {};
       expect(add['success'], isFalse);
-      expect(add['key'], 'a');
+      expect(add['key'], defaultPlaceholder);
     });
 
     test('projects result and sets items count', () async {
@@ -478,6 +1293,125 @@ void main() {
       // Projected value is stored as-is (Map) in meta, not stringified.
       final projectedValue = meta['value'] as Map<String, dynamic>;
       expect(projectedValue['rows'], 2);
+    });
+
+    test('contains a hostile async result length getter', () async {
+      final hostile = _ThrowingLengthList<int>([1, 2]);
+
+      final result = await logger.dbTrace<_ThrowingLengthList<int>>(
+        source: 'sqflite',
+        operation: 'query',
+        run: () async => hostile,
+      );
+
+      expect(identical(result, hostile), isTrue);
+      expect(hostile.lengthCalls, 1);
+      expect(logger.history, hasLength(1));
+    });
+
+    test('contains a hostile sync result length getter', () {
+      final hostile = _ThrowingLengthList<int>([1, 2]);
+
+      final result = logger.dbTraceSync<_ThrowingLengthList<int>>(
+        source: 'sqflite',
+        operation: 'query',
+        run: () => hostile,
+      );
+
+      expect(identical(result, hostile), isTrue);
+      expect(hostile.lengthCalls, 1);
+      expect(logger.history, hasLength(1));
+    });
+
+    test('runtime disablement skips async projection and item inspection',
+        () async {
+      final hostile = _ThrowingLengthList<int>([1, 2]);
+      var projectionCalls = 0;
+
+      final result = await logger.dbTrace<_ThrowingLengthList<int>>(
+        source: 'sqflite',
+        operation: 'query',
+        run: () async {
+          logger.disable();
+          return hostile;
+        },
+        projectResult: (value) {
+          projectionCalls++;
+          return value;
+        },
+      );
+
+      expect(identical(result, hostile), isTrue);
+      expect(hostile.lengthCalls, 0);
+      expect(projectionCalls, 0);
+      expect(logger.history, isEmpty);
+    });
+
+    test('runtime disposal skips sync projection and item inspection',
+        () async {
+      final hostile = _ThrowingLengthList<int>([1, 2]);
+      var projectionCalls = 0;
+      late Future<void> disposal;
+
+      final result = logger.dbTraceSync<_ThrowingLengthList<int>>(
+        source: 'sqflite',
+        operation: 'query',
+        run: () {
+          disposal = logger.dispose();
+          return hostile;
+        },
+        projectResult: (value) {
+          projectionCalls++;
+          return value;
+        },
+      );
+      await disposal;
+
+      expect(identical(result, hostile), isTrue);
+      expect(hostile.lengthCalls, 0);
+      expect(projectionCalls, 0);
+      expect(logger.history, isEmpty);
+    });
+
+    test('length-triggered disablement skips async result projection',
+        () async {
+      final hostile = _DisablingLengthList<int>([1, 2], logger.disable);
+      var projectionCalls = 0;
+
+      final result = await logger.dbTrace<_DisablingLengthList<int>>(
+        source: 'sqflite',
+        operation: 'query',
+        run: () async => hostile,
+        projectResult: (value) {
+          projectionCalls++;
+          return value;
+        },
+      );
+
+      expect(identical(result, hostile), isTrue);
+      expect(hostile.lengthCalls, 1);
+      expect(projectionCalls, 0);
+      expect(logger.history, isEmpty);
+    });
+
+    test('length-triggered disablement skips sync result projection', () {
+      final hostile = _DisablingLengthList<int>([1, 2], logger.disable);
+      var projectionCalls = 0;
+
+      final result = logger.dbTraceSync<_DisablingLengthList<int>>(
+        source: 'sqflite',
+        operation: 'query',
+        run: () => hostile,
+        projectResult: (value) {
+          projectionCalls++;
+          return value;
+        },
+      );
+
+      expect(identical(result, hostile), isTrue);
+      expect(hostile.lengthCalls, 1);
+      expect(projectionCalls, 0);
+      expect(logger.history, isEmpty);
     });
 
     test('records duration', () async {
@@ -502,15 +1436,17 @@ void main() {
         projectResult: (_) => throw const FormatException('bad projection'),
       );
 
-      // The operation result is still returned.
       expect(result, 42);
+      expect(logger.history, hasLength(1));
+      final trace = logger.history.single.additionalData!;
+      expect(trace[TraceKeys.operation], 'query');
+      expect(
+        (trace[TraceKeys.meta] as Map<String, Object?>)['value'],
+        isNull,
+      );
 
-      // The logging failure is swallowed — no log entry is produced for
-      // the successful call because the projection error occurs inside
-      // the finally catch block.
-      // Verify that the logger did NOT crash and is still usable.
       logger.db(source: 'test', operation: 'get');
-      expect(logger.history, isNotEmpty);
+      expect(logger.history, hasLength(2));
     });
 
     test('captures synchronous exception in run callback', () async {
@@ -528,7 +1464,8 @@ void main() {
       final entry = logger.history.last;
       expect(entry.key, 'db-error');
       final add = entry.additionalData ?? {};
-      expect(add['error'], contains('sync-boom'));
+      expect(add['error'], contains('StateError'));
+      expect(add['error'], isNot(contains('sync-boom')));
     });
 
     test('passes sizeBytes and cacheHit through', () async {
@@ -549,6 +1486,38 @@ void main() {
   });
 
   group('dbStart / dbEnd', () {
+    test('disabled logger returns an inert token without retaining inputs', () {
+      logger.configure(options: ISpectLoggerOptions(enabled: false));
+
+      final token = logger.dbStart(
+        source: 'tenantSecret=SOURCE_SECRET',
+        operation: 'tenantSecret=OPERATION_SECRET',
+        statement: 'tenantSecret=STATEMENT_SECRET',
+        target: 'tenantSecret=TARGET_SECRET',
+        table: 'tenantSecret=TABLE_SECRET',
+        key: 'tenantSecret=KEY_SECRET',
+        args: const ['tenantSecret=ARG_SECRET'],
+        namedArgs: const {'tenantSecret': 'NAMED_SECRET'},
+        meta: const {'tenantSecret': 'META_SECRET'},
+        transactionId: 'tenantSecret=TRANSACTION_SECRET',
+      );
+
+      expect(token.source, isNull);
+      expect(token.operation, isNull);
+      expect(token.statement, isNull);
+      expect(token.target, isNull);
+      expect(token.table, isNull);
+      expect(token.key, isNull);
+      expect(token.args, isNull);
+      expect(token.namedArgs, isNull);
+      expect(token.meta, isNull);
+      expect(token.transactionId, isNull);
+      expect(token.elapsed, Duration.zero);
+
+      logger.dbEnd(token);
+      expect(logger.history, isEmpty);
+    });
+
     test('logs with measured duration', () async {
       final token = logger.dbStart(
         source: 'sqflite',
@@ -568,13 +1537,11 @@ void main() {
 
       expect(logger.history, isNotEmpty);
       final add = logger.history.last.additionalData ?? {};
-      // Envelope fields.
       expect(add['source'], 'sqflite');
       expect(add['operation'], 'query');
-      expect(add['target'], 'users'); // table becomes target in trace()
+      expect(add['target'], 'users');
       expect(add['durationMs'], isA<int>());
       expect(add['durationMs'] as int, greaterThanOrEqualTo(1));
-      // DB-specific fields in meta.
       final meta = add['meta'] as Map<String, dynamic>;
       expect(meta['items'], 1);
     });
@@ -604,6 +1571,29 @@ void main() {
       final userMeta = meta['userMeta'] as Map<String, dynamic>;
       expect(userMeta['a'], '1');
       expect(userMeta['b'], '2');
+    });
+
+    test('bounds merged metadata without formatting hostile keys', () {
+      const secret = 'HOSTILE_DB_END_KEY_SECRET';
+      final key = _HostileKey(secret);
+      final hostileMap = <Object?, Object?>{key: secret};
+      final token = logger.dbStart(
+        source: 'kv',
+        operation: 'write',
+        meta: <String, Object?>{'start': hostileMap},
+      );
+
+      logger.dbEnd(
+        token,
+        meta: <String, Object?>{'end': hostileMap},
+      );
+
+      final encoded = jsonEncode(
+        logger.history.last.toExportJson(redactionActive: false),
+      );
+      expect(key.calls, 0);
+      expect(encoded, isNot(contains(secret)));
+      expect(encoded, contains(JsonValueNormalizer.unprintableValue));
     });
 
     test('infers error from error parameter', () {
@@ -640,6 +1630,25 @@ void main() {
       final meta = add['meta'] as Map<String, dynamic>;
       expect(meta['sizeBytes'], 4096);
       expect(meta['cacheHit'], isFalse);
+    });
+
+    test('runtime disablement still stops manual span timing', () async {
+      final token = logger.dbStart(source: 'db', operation: 'read');
+      await Future<void>.delayed(const Duration(milliseconds: 2));
+
+      logger
+        ..disable()
+        ..dbEnd(token);
+      final stoppedAt = token.elapsed;
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+
+      expect(token.elapsed, stoppedAt);
+      expect(logger.history, isEmpty);
+
+      logger
+        ..enable()
+        ..dbEnd(token);
+      expect(logger.history, hasLength(1));
     });
   });
 
@@ -1001,13 +2010,13 @@ void main() {
   });
 
   group('redactPositionalArgs (direct)', () {
-    test('returns args unchanged when statement has no sensitive columns', () {
+    test('redacts args even when statement has no sensitive columns', () {
       final args = ISpectDbCore.redactPositionalArgs(
         [1, 'visible', true],
         ['password', 'token'],
         'SELECT * FROM orders WHERE total > ?',
       );
-      expect(args, [1, 'visible', true]);
+      expect(args, ['[REDACTED]', '[REDACTED]', '[REDACTED]']);
     });
 
     test('redacts all args when statement mentions a sensitive column', () {

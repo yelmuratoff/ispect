@@ -47,7 +47,10 @@ class ISpectTraceConfig {
   /// Sampling rate for error operations (default: 1.0 = log all errors).
   final double errorSampleRate;
 
-  /// Whether to auto-redact sensitive data.
+  /// Whether to apply this trace's [redactKeys] and egress masking.
+  ///
+  /// Set this to `false` only for a deliberate local-debugging opt-out.
+  /// Non-executing snapshots and byte/traversal limits remain enforced.
   final bool redact;
 
   /// Keys to redact in meta maps and URL query params.

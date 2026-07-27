@@ -5,36 +5,36 @@ on:
       branches: [main]
       paths:
          - "web_logs_viewer/**"
+         - "packages/**"
          - ".github/workflows/deploy-web-logs-viewer.yml"
    pull_request:
       branches: [main]
       paths:
          - "web_logs_viewer/**"
+         - "packages/**"
          - ".github/workflows/deploy-web-logs-viewer.yml"
    workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
    contents: read
-   pages: write
-   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-   group: "pages"
+   group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.event.pull_request.number) || 'pages-production' }}
    cancel-in-progress: false
 
 jobs:
    # Build job
    build:
+      permissions:
+         contents: read
+         pages: read
       runs-on: ubuntu-latest
       steps:
          - name: Checkout
-           uses: actions/checkout@v7
+           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Setup Flutter
-           uses: subosito/flutter-action@v2
+           uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
            with:
               flutter-version: "3.32.6"
               channel: "stable"
@@ -43,7 +43,7 @@ jobs:
          - name: Install dependencies
            run: |
               cd web_logs_viewer
-              flutter pub get
+              flutter pub get --enforce-lockfile
 
          - name: Analyze project
            run: |
@@ -58,18 +58,22 @@ jobs:
          - name: Build web app
            run: |
               cd web_logs_viewer
-              flutter build web --release --no-tree-shake-icons --dart-define=ISPECT_ENABLED=true
+              flutter build web --release --no-tree-shake-icons
 
          - name: Setup Pages
-           uses: actions/configure-pages@v6
+           uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
          - name: Upload artifact
-           uses: actions/upload-pages-artifact@v5
+           uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
            with:
               path: "web_logs_viewer/build/web"
 
    # Deployment job
    deploy:
+      permissions:
+         contents: read
+         pages: write
+         id-token: write
       environment:
          name: github-pages
          url: ${{ steps.deployment.outputs.page_url }}
@@ -79,4 +83,4 @@ jobs:
       steps:
          - name: Deploy to GitHub Pages
            id: deployment
-           uses: actions/deploy-pages@v5
+           uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0

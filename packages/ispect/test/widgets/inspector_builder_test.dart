@@ -36,7 +36,10 @@ class _TestPlugin extends InspectorPlugin {
   }
 }
 
-const _emptyApp = MaterialApp(home: SizedBox.shrink());
+final _emptyApp = MaterialApp(
+  localizationsDelegates: ISpectLocalizations.delegate(),
+  home: const SizedBox.shrink(),
+);
 
 void main() {
   group('ISpectBuilder', () {
@@ -49,6 +52,7 @@ void main() {
 
           await tester.pumpWidget(
             MaterialApp(
+              localizationsDelegates: ISpectLocalizations.delegate(),
               home: ISpectBuilder(
                 options: ISpectOptions(plugins: [plugin]),
                 child: const SizedBox.shrink(),
@@ -68,6 +72,7 @@ void main() {
 
           await tester.pumpWidget(
             MaterialApp(
+              localizationsDelegates: ISpectLocalizations.delegate(),
               home: ISpectBuilder(
                 options: ISpectOptions(plugins: [plugin]),
                 child: const SizedBox.shrink(),
@@ -90,6 +95,7 @@ void main() {
 
           await tester.pumpWidget(
             MaterialApp(
+              localizationsDelegates: ISpectLocalizations.delegate(),
               home: ISpectBuilder(
                 options: ISpectOptions(plugins: [p1, p2]),
                 child: const SizedBox.shrink(),
@@ -105,23 +111,45 @@ void main() {
 
     group('ErrorWidget.builder ownership', () {
       testWidgets(
-        'ErrorWidget.builder is overridden while mounted and restored '
-        'after removal',
+        'ISpectBuilder never mutates the process-global ErrorWidget builder',
         (tester) async {
           final original = ErrorWidget.builder;
 
           await tester.pumpWidget(
-            const MaterialApp(
-              home: ISpectBuilder(
+            MaterialApp(
+              localizationsDelegates: ISpectLocalizations.delegate(),
+              home: const ISpectBuilder(
                 options: ISpectOptions(),
                 child: SizedBox.shrink(),
               ),
             ),
           );
 
-          expect(ErrorWidget.builder, isNot(same(original)));
+          expect(ErrorWidget.builder, same(original));
 
           await tester.pumpWidget(_emptyApp);
+
+          expect(ErrorWidget.builder, same(original));
+        },
+      );
+
+      testWidgets(
+        'runtime-disabled ISpect leaves host error rendering untouched',
+        (tester) async {
+          final original = ErrorWidget.builder;
+
+          await tester.pumpWidget(
+            const MaterialApp(
+              home: ISpectBuilder(
+                // Analyzer runs without the compile-time enable flag, while
+                // this case also runs in the enabled security test matrix.
+                // ignore: avoid_redundant_argument_values
+                isISpectEnabled: false,
+                options: ISpectOptions(),
+                child: SizedBox.shrink(),
+              ),
+            ),
+          );
 
           expect(ErrorWidget.builder, same(original));
         },
@@ -136,6 +164,7 @@ void main() {
 
           await tester.pumpWidget(
             MaterialApp(
+              localizationsDelegates: ISpectLocalizations.delegate(),
               home: ISpectBuilder(
                 options: const ISpectOptions(),
                 controller: external,
@@ -158,8 +187,9 @@ void main() {
         'internal controller is created and disposed without errors',
         (tester) async {
           await tester.pumpWidget(
-            const MaterialApp(
-              home: ISpectBuilder(
+            MaterialApp(
+              localizationsDelegates: ISpectLocalizations.delegate(),
+              home: const ISpectBuilder(
                 options: ISpectOptions(),
                 child: SizedBox.shrink(),
               ),
@@ -227,6 +257,7 @@ void main() {
 
           await tester.pumpWidget(
             MaterialApp(
+              localizationsDelegates: ISpectLocalizations.delegate(),
               home: ISpectBuilder(
                 options: const ISpectOptions(),
                 child: Builder(
@@ -256,6 +287,7 @@ void main() {
 
           await tester.pumpWidget(
             MaterialApp(
+              localizationsDelegates: ISpectLocalizations.delegate(),
               home: ISpectBuilder(
                 options: ISpectOptions(observer: explicit),
                 child: Builder(
@@ -281,6 +313,7 @@ void main() {
 
           await tester.pumpWidget(
             MaterialApp(
+              localizationsDelegates: ISpectLocalizations.delegate(),
               home: ISpectBuilder(
                 options: const ISpectOptions(),
                 child: Builder(
@@ -296,8 +329,6 @@ void main() {
 
           expect(find.text('child'), findsOneWidget);
 
-          // build() short-circuits and skips injecting ISpectScopeController
-          // when kISpectEnabled is false, so the scope is unreachable there.
           if (kISpectEnabled) {
             expect(foundScope, isNotNull);
           } else {

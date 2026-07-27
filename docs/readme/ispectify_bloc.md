@@ -3,7 +3,7 @@
 `ispectify_bloc` plugs the [`bloc`](https://pub.dev/packages/bloc) and [`flutter_bloc`](https://pub.dev/packages/flutter_bloc) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `BlocObserver` forwards every event, state change, transition, and error through the log pipeline, so the whole state-management timeline shows up in the log viewer.
 
 - Events, transitions, errors, and create/close lifecycle hooks.
-- Per-type filtering. Mute specific `Bloc` or `Cubit` classes without touching their code.
+- Family and typed-predicate filtering. Mute BLoCs without formatting caller-owned objects.
 - Zero configuration. Set `Bloc.observer` and the rest is done.
 
 ## Install
@@ -34,7 +34,7 @@ The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-state`,
 
 ## Settings
 
-`ISpectBlocSettings` controls which lifecycle events are captured and whether raw event/state payloads are written to trace meta. Payload capture is off by default — runtime types are emitted instead, so it is safe to leave the observer enabled in shared environments.
+`ISpectBlocSettings` controls which lifecycle events are captured and whether raw event/state payloads are written to trace meta. Payload capture is off by default. BLoCs use the coarse family labels `Bloc`, `Cubit`, or `BlocBase`; common event/state shapes use structural labels such as `String`, `int`, `List`, or `Map`, and other caller-owned objects use `Object`. These labels do not invoke application `runtimeType` or `toString()` methods.
 
 ```dart
 const settings = ISpectBlocSettings(
@@ -45,8 +45,8 @@ const settings = ISpectBlocSettings(
   printClosings: true,
   printCompletions: true,
   printErrors: true,
-  printEventFullData: true,  // raw event payloads on by default
-  printStateFullData: true,  // raw state payloads on by default
+  printEventFullData: false, // coarse structural label — default
+  printStateFullData: false, // coarse structural label — default
   enableRedaction: true,     // route meta values through RedactionService when set
 );
 ```
@@ -60,13 +60,9 @@ ISpectBlocObserver(settings: ISpectBlocSettings.silent);
 // Skip per-change / per-completion noise — keeps creations, transitions, errors.
 ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
 
-// Full event and state payloads are captured by default. Opt out per flag to
-// log only the runtime type:
+// Explicit local-development payload capture; redaction remains enabled.
 ISpectBlocObserver(
-  settings: ISpectBlocSettings(
-    printEventFullData: false,
-    printStateFullData: false,
-  ),
+  settings: ISpectBlocSettings.development,
 );
 ```
 
@@ -74,14 +70,21 @@ ISpectBlocObserver(
 
 ```dart
 ISpectBlocObserver(
-  // Drop everything for blocs whose runtime type matches one of these patterns.
-  filters: [RegExp(r'AnalyticsBloc'), 'MetricsCubit'],
+  // Pattern filters see only Bloc, Cubit, or BlocBase.
+  filters: ['Cubit'],
+
+  // Use explicit type checks when an exact application class must be muted.
+  filterPredicate: (candidate) =>
+      candidate is AnalyticsBloc || candidate is MetricsCubit,
+
   settings: ISpectBlocSettings(
     // Or skip individual events / transitions / changes by inspecting them.
     eventFilter: (bloc, event) => event is! HeartbeatEvent,
   ),
 );
 ```
+
+<!-- partial:redaction -->
 
 <!-- partial:install_matrix -->
 

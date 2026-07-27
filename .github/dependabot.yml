@@ -46,6 +46,16 @@ updates:
       interval: "weekly"
 
   - package-ecosystem: "pub"
+    directory: "/packages/ispectify_riverpod"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pub"
     directory: "/packages/ispectify_ws"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pub"
+    directory: "/web_logs_viewer"
     schedule:
       interval: "weekly"

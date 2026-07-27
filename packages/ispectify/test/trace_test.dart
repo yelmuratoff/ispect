@@ -1,6 +1,7 @@
 // ignore_for_file: cascade_invocations, avoid_redundant_argument_values, prefer_const_declarations, prefer_int_literals
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:ispectify/ispectify.dart';
@@ -10,6 +11,77 @@ import 'package:test/test.dart';
 
 final class _CheckStatusAuthEvent {
   const _CheckStatusAuthEvent();
+}
+
+final class _RecordingObserver implements ISpectObserver {
+  ISpectLogData? lastLog;
+
+  @override
+  void onError(ISpectLogData data) => lastLog = data;
+
+  @override
+  void onException(ISpectLogData data) => lastLog = data;
+
+  @override
+  void onLog(ISpectLogData data) => lastLog = data;
+}
+
+final class _HostileTraceException implements Exception {
+  int calls = 0;
+
+  @override
+  String toString() {
+    calls++;
+    throw StateError('HOSTILE_TRACE_EXCEPTION');
+  }
+}
+
+final class _HostileTraceStack implements StackTrace {
+  int calls = 0;
+
+  @override
+  String toString() {
+    calls++;
+    throw StateError('HOSTILE_TRACE_STACK');
+  }
+}
+
+final class _HostileTraceValue {
+  int toJsonCalls = 0;
+  int toStringCalls = 0;
+
+  Object? toJson() {
+    toJsonCalls++;
+    throw StateError('HOSTILE_TRACE_TO_JSON');
+  }
+
+  @override
+  String toString() {
+    toStringCalls++;
+    throw StateError('HOSTILE_TRACE_TO_STRING');
+  }
+}
+
+final class _ThrowingTraceMeta extends MapBase<String, Object?> {
+  int keyReads = 0;
+
+  @override
+  Object? operator [](Object? key) => null;
+
+  @override
+  void operator []=(String key, Object? value) {}
+
+  @override
+  void clear() {}
+
+  @override
+  Iterable<String> get keys {
+    keyReads++;
+    throw StateError('HOSTILE_TRACE_META_ITERATOR');
+  }
+
+  @override
+  Object? remove(Object? key) => null;
 }
 
 void main() {
@@ -102,6 +174,7 @@ void main() {
     late FakeISpectLogger logger;
 
     setUp(() => logger = FakeISpectLogger());
+    tearDown(ISpectRedaction.reset);
 
     test('creates log with correct structure', () {
       logger.trace(
@@ -135,6 +208,22 @@ void main() {
       expect(disabled.traces, isEmpty);
     });
 
+    test('disposed logger does not inspect trace metadata', () async {
+      final disposed = FakeISpectLogger();
+      final meta = _ThrowingTraceMeta();
+      await disposed.dispose();
+
+      disposed.trace(
+        category: networkCategory,
+        source: 'dio',
+        operation: 'GET',
+        meta: meta,
+      );
+
+      expect(meta.keyReads, 0);
+      expect(disposed.traces, isEmpty);
+    });
+
     test('logKey override works', () {
       logger.trace(
         category: networkCategory,
@@ -157,6 +246,54 @@ void main() {
       expect('$value', contains('[REDACTED]'));
     });
 
+    test('uses the configured global service by default', () {
+      ISpectRedaction.configure(
+        service: RedactionService(
+          sensitiveKeys: const {'business_marker'},
+          placeholder: '<GLOBAL_POLICY>',
+        ),
+      );
+
+      logger.trace(
+        category: dbCategory,
+        source: 'test',
+        operation: 'get',
+        value: const {'business_marker': 'trace-secret'},
+      );
+
+      final value = logger.traces.first.additionalData?[TraceKeys.value];
+      expect('$value', isNot(contains('trace-secret')));
+      expect('$value', contains('<GLOBAL_POLICY>'));
+    });
+
+    test('explicit trace keys take precedence over the global service', () {
+      ISpectRedaction.configure(
+        service: RedactionService(
+          sensitiveKeys: const {'global_marker'},
+          placeholder: '<GLOBAL_POLICY>',
+        ),
+      );
+
+      logger.trace(
+        category: dbCategory,
+        source: 'test',
+        operation: 'get',
+        value: const {
+          'local_marker': 'local-secret',
+          'global_marker': 'global-visible',
+        },
+        config: const ISpectTraceConfig(
+          redactKeys: {'local_marker'},
+        ),
+      );
+
+      final value = logger.traces.first.additionalData?[TraceKeys.value];
+      expect('$value', isNot(contains('local-secret')));
+      expect('$value', contains(defaultPlaceholder));
+      expect('$value', contains('global-visible'));
+      expect('$value', isNot(contains('<GLOBAL_POLICY>')));
+    });
+
     test('redacts sensitive URL params in the error string by default', () {
       logger.trace(
         category: networkCategory,
@@ -167,6 +304,199 @@ void main() {
       final error = logger.traces.first.additionalData?[TraceKeys.error];
       expect('$error', isNot(contains('SECRETTOK')));
       expect('$error', contains('token=[REDACTED]'));
+    });
+
+    test('keeps pre-redacted tokens stable in colon-form error prose', () {
+      logger.trace(
+        category: dbCategory,
+        source: 'postgres',
+        operation: 'query',
+        error: 'auth failed: Bearer [REDACTED] '
+            'via postgres://REDACTED@db.example.com',
+      );
+
+      final error = '${logger.traces.first.additionalData?[TraceKeys.error]}';
+      expect(error, contains('Bearer [REDACTED]'));
+      expect(error, isNot(contains('[R…ED ([REDACTED])]')));
+    });
+
+    test('still redacts sensitive colon-form assignments', () {
+      logger.trace(
+        category: dbCategory,
+        source: 'postgres',
+        operation: 'query',
+        meta: const {'detail': 'password: hunter2, safe: visible'},
+      );
+
+      final detail = logger.traces.first.traceMeta?['detail'].toString();
+      expect(detail, contains('password: [REDACTED]'));
+      expect(detail, isNot(contains('hunter2')));
+      expect(detail, contains('safe: visible'));
+    });
+
+    test('does not retain the raw exception when redaction is enabled', () {
+      logger.trace(
+        category: networkCategory,
+        source: 'dio',
+        operation: 'GET',
+        error: Exception(
+          'failed https://api.example.test/users?token=TRACE_SECRET',
+        ),
+      );
+
+      final log = logger.traces.single;
+
+      expect(
+        '${log.additionalData?[TraceKeys.error]}',
+        isNot(contains('TRACE_SECRET')),
+      );
+      expect('${log.exception}', isNot(contains('TRACE_SECRET')));
+      expect(log.textMessage, isNot(contains('TRACE_SECRET')));
+    });
+
+    test('sanitizes caller-controlled structured fields before observers', () {
+      const correlationId = 'tenantSecret=CORRELATION_IDENTIFIER';
+      final observer = _RecordingObserver();
+      final historyLogger = ISpectLogger.testing(
+        observer: observer,
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+
+      historyLogger.trace(
+        category: dbCategory,
+        source: 'client?token=SOURCE_SECRET',
+        operation: 'tenantSecret=OPERATION_SECRET',
+        key: 'tenantSecret=KEY_SECRET',
+        logKey: 'custom?token=LOG_KEY_SECRET',
+        correlationId: correlationId,
+        error: Exception('tenantSecret=ERROR_SECRET'),
+        errorStackTrace: StackTrace.fromString(
+          'tenantSecret=STACK_SECRET',
+        ),
+        config: const ISpectTraceConfig(
+          redactKeys: {'token', 'tenantSecret'},
+          attachStackOnError: true,
+        ),
+      );
+
+      final log = historyLogger.history.single;
+      final serialized = <Object?>[
+        log.key,
+        log.message,
+        log.additionalData,
+        log.exception,
+        log.error,
+        log.stackTrace,
+      ].join('\n');
+
+      expect(serialized, isNot(contains('SOURCE_SECRET')));
+      expect(serialized, isNot(contains('OPERATION_SECRET')));
+      expect(serialized, isNot(contains('KEY_SECRET')));
+      expect(serialized, isNot(contains('LOG_KEY_SECRET')));
+      expect(serialized, isNot(contains('ERROR_SECRET')));
+      expect(serialized, isNot(contains('STACK_SECRET')));
+      expect(
+        log.additionalData?[TraceKeys.correlationId],
+        'tenantSecret=[REDACTED]',
+        reason: 'Caller-controlled grouping identifiers follow trace policy.',
+      );
+      expect(observer.lastLog, same(log));
+    });
+
+    test('sanitizes a caller-defined category identifier', () {
+      const category = ISpectTraceCategory(
+        id: 'tenantSecret=CATEGORY_SECRET',
+        successKey: 'custom-success',
+        errorKey: 'custom-error',
+      );
+
+      logger.trace(
+        category: category,
+        source: 'test',
+        operation: 'run',
+        config: const ISpectTraceConfig(
+          redactKeys: {'tenantSecret'},
+        ),
+      );
+
+      expect(
+        logger.traces.single.additionalData?[TraceKeys.category],
+        'tenantSecret=[REDACTED]',
+      );
+    });
+
+    test('retains bounded ordinary error text for an explicit opt-out', () {
+      logger.trace(
+        category: networkCategory,
+        source: 'dio',
+        operation: 'GET',
+        error: 'token=TRACE_RAW',
+        config: const ISpectTraceConfig(redact: false),
+      );
+
+      expect(
+        logger.traces.single.additionalData?[TraceKeys.error],
+        'token=TRACE_RAW',
+      );
+    });
+
+    test('bounds opt-out diagnostics without executing their formatters', () {
+      final exception = _HostileTraceException();
+      final stack = _HostileTraceStack();
+
+      logger.trace(
+        category: networkCategory,
+        source: 's' * (4 * 1024 * 1024),
+        operation: 'GET',
+        error: exception,
+        errorStackTrace: stack,
+        config: const ISpectTraceConfig(
+          redact: false,
+          attachStackOnError: true,
+        ),
+      );
+
+      final log = logger.traces.single;
+      expect(exception.calls, 0);
+      expect(stack.calls, 0);
+      expect(
+        LogExportOutput.utf8Length(
+          '${log.additionalData?[TraceKeys.source]}',
+        ),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
+      );
+      expect('${log.exception}', isNot(contains('HOSTILE_')));
+    });
+
+    test('bounds diagnostics before redaction without executing formatters',
+        () {
+      final exception = _HostileTraceException();
+      final stack = _HostileTraceStack();
+      final value = _HostileTraceValue();
+
+      logger.trace(
+        category: networkCategory,
+        source: 'dio',
+        operation: 'GET',
+        value: value,
+        error: exception,
+        errorStackTrace: stack,
+        meta: {'payload': 'p' * (4 * 1024 * 1024)},
+        config: const ISpectTraceConfig(attachStackOnError: true),
+      );
+
+      final log = logger.traces.single;
+      expect(
+        LogExportOutput.utf8Length(
+          log.additionalData.toString(),
+          limit: LogExportOutput.maxRecordBytes,
+        ),
+        lessThanOrEqualTo(LogExportOutput.maxRecordBytes),
+      );
+      expect(exception.calls, 0);
+      expect(stack.calls, 0);
+      expect(value.toJsonCalls, 0);
+      expect(value.toStringCalls, 0);
     });
   });
 
@@ -213,18 +543,66 @@ void main() {
         projectResult: (_) => throw Exception('bad projection'),
       );
       expect(result, 'data');
-      expect(logger.traces, hasLength(1));
+      expect(logger.byCategory(dbCategory.id), hasLength(1));
+    });
+
+    test('projection failure diagnostics do not retain exception text or stack',
+        () async {
+      const secret = 'tenantSecret=PROJECTION_SECRET';
+      final historyLogger = ISpectLogger.testing(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+
+      await historyLogger.traceAsync(
+        category: dbCategory,
+        source: 'test',
+        operation: 'get',
+        run: () async => 'data',
+        projectResult: (_) => throw StateError(secret),
+      );
+
+      final diagnostics = historyLogger.history.join('\n');
+      expect(diagnostics, isNot(contains('PROJECTION_SECRET')));
+      expect(diagnostics, isNot(contains('trace_test.dart')));
     });
 
     test('sampling 0.0 executes run but skips log', () async {
+      var projectionCalls = 0;
       final result = await logger.traceAsync(
         category: dbCategory,
         source: 'test',
         operation: 'get',
         run: () async => 'ok',
         sample: 0,
+        projectResult: (value) {
+          projectionCalls++;
+          return value;
+        },
       );
       expect(result, 'ok');
+      expect(logger.traces, isEmpty);
+      expect(projectionCalls, 0);
+    });
+
+    test('runtime disablement skips an in-flight result projection', () async {
+      var projectionCalls = 0;
+
+      final result = await logger.traceAsync(
+        category: dbCategory,
+        source: 'test',
+        operation: 'get',
+        run: () async {
+          logger.disable();
+          return 'business-result';
+        },
+        projectResult: (value) {
+          projectionCalls++;
+          return value;
+        },
+      );
+
+      expect(result, 'business-result');
+      expect(projectionCalls, 0);
       expect(logger.traces, isEmpty);
     });
   });
@@ -258,6 +636,48 @@ void main() {
       );
       expect(logger.traces, hasLength(1));
     });
+
+    test('sampling 0.0 skips the result projection', () {
+      var projectionCalls = 0;
+
+      final result = logger.traceSync(
+        category: dbCategory,
+        source: 'hive',
+        operation: 'get',
+        run: () => 'value',
+        sample: 0,
+        projectResult: (value) {
+          projectionCalls++;
+          return value;
+        },
+      );
+
+      expect(result, 'value');
+      expect(logger.traces, isEmpty);
+      expect(projectionCalls, 0);
+    });
+
+    test('runtime disablement skips an in-flight result projection', () {
+      var projectionCalls = 0;
+
+      final result = logger.traceSync(
+        category: dbCategory,
+        source: 'test',
+        operation: 'get',
+        run: () {
+          logger.disable();
+          return 'business-result';
+        },
+        projectResult: (value) {
+          projectionCalls++;
+          return value;
+        },
+      );
+
+      expect(result, 'business-result');
+      expect(projectionCalls, 0);
+      expect(logger.traces, isEmpty);
+    });
   });
 
   // ── traceStart / traceEnd ────────────────────────────────────────
@@ -271,13 +691,133 @@ void main() {
         source: 'grpc',
         operation: 'unary',
         target: 'UserService/GetUser',
+        meta: const {'shared': 'start', 'base': true},
       );
       expect(token, isNotNull);
 
-      logger.traceEnd(token, value: 'ok', success: true);
+      logger.traceEnd(
+        token,
+        value: 'ok',
+        success: true,
+        meta: const {'shared': 'end'},
+      );
       expect(logger.traces, hasLength(1));
       final log = logger.traces.first;
       expect(log.additionalData?[TraceKeys.durationMs], isNotNull);
+      expect(
+        log.additionalData?[TraceKeys.meta],
+        {'shared': 'end', 'base': true},
+      );
+    });
+
+    test('sanitizes every retained token field at traceStart', () {
+      final token = logger.traceStart(
+        category: grpcCategory,
+        source: 'password=SOURCE_SECRET',
+        operation: 'token=OPERATION_SECRET',
+        target:
+            'https://user:TARGET_SECRET@example.test/rpc?token=QUERY_SECRET',
+        key: 'password=KEY_SECRET',
+        meta: const {'password': 'META_SECRET'},
+        correlationId: 'token=CORRELATION_SECRET',
+      );
+
+      final retained = <Object?>[
+        token?.source,
+        token?.operation,
+        token?.target,
+        token?.key,
+        token?.meta,
+        token?.correlationId,
+      ].join('\n');
+      for (final secret in const [
+        'SOURCE_SECRET',
+        'OPERATION_SECRET',
+        'TARGET_SECRET',
+        'QUERY_SECRET',
+        'KEY_SECRET',
+        'META_SECRET',
+        'CORRELATION_SECRET',
+      ]) {
+        expect(retained, isNot(contains(secret)));
+      }
+    });
+
+    test('explicit opt-out retains only a bounded token prefix', () {
+      final token = logger.traceStart(
+        category: grpcCategory,
+        source: 'raw-source',
+        operation: 'raw-operation',
+        target: 'RAW_TARGET_${'x' * (4 * 1024 * 1024)}',
+        config: const ISpectTraceConfig(redact: false),
+      );
+
+      expect(token?.target, startsWith('RAW_TARGET_'));
+      expect(
+        LogExportOutput.utf8Length(token?.target ?? ''),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
+      );
+    });
+
+    test('bounds start metadata and tolerates a throwing end map', () {
+      final hostile = _ThrowingTraceMeta();
+      final token = logger.traceStart(
+        category: grpcCategory,
+        source: 'grpc',
+        operation: 'unary',
+        meta: {'oversized': 's' * (4 * 1024 * 1024)},
+      );
+
+      expect(
+        token?.meta?['oversized'],
+        LogExportOutput.truncatedMarker,
+      );
+      expect(
+        () => logger.traceEnd(token, meta: hostile),
+        returnsNormally,
+      );
+      expect(hostile.keyReads, greaterThan(0));
+      expect(logger.traces, hasLength(1));
+      expect(
+        jsonEncode(logger.traces.single.additionalData?[TraceKeys.meta]),
+        isNot(contains('HOSTILE_TRACE_META_ITERATOR')),
+      );
+    });
+
+    test('does not inspect end metadata after runtime disablement', () {
+      final token = logger.traceStart(
+        category: grpcCategory,
+        source: 'grpc',
+        operation: 'unary',
+      );
+      final hostile = _ThrowingTraceMeta();
+      logger.configure(options: ISpectLoggerOptions(enabled: false));
+
+      logger.traceEnd(token, meta: hostile);
+
+      expect(hostile.keyReads, 0);
+      expect(logger.traces, isEmpty);
+    });
+
+    test('runtime disablement still stops manual span timing', () async {
+      final token = logger.traceStart(
+        category: grpcCategory,
+        source: 'grpc',
+        operation: 'unary',
+      )!;
+      await Future<void>.delayed(const Duration(milliseconds: 2));
+
+      logger.disable();
+      logger.traceEnd(token);
+      final stoppedAt = token.elapsed;
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+
+      expect(token.elapsed, stoppedAt);
+      expect(logger.traces, isEmpty);
+
+      logger.enable();
+      logger.traceEnd(token);
+      expect(logger.traces, hasLength(1));
     });
 
     test('returns null when disabled', () {
@@ -327,6 +867,64 @@ void main() {
           .toSet();
       expect(corrIds, hasLength(1));
     });
+
+    test('sampling 0.0 skips event projections', () async {
+      var projectionCalls = 0;
+      final traced = logger.traceStream(
+        category: wsCategory,
+        source: 'ws',
+        operation: 'messages',
+        stream: Stream<int>.value(1),
+        sample: 0,
+        projectEvent: (value) {
+          projectionCalls++;
+          return value;
+        },
+      );
+
+      await traced.drain<void>();
+
+      expect(projectionCalls, 0);
+      expect(
+        logger.traces.where(
+          (log) => log.traceOperation == 'messages.event',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('runtime disablement skips event projection but preserves data',
+        () async {
+      final controller = StreamController<int>();
+      var projectionCalls = 0;
+      final collected = <int>[];
+      final traced = logger.traceStream(
+        category: wsCategory,
+        source: 'ws',
+        operation: 'messages',
+        stream: controller.stream,
+        projectEvent: (value) {
+          projectionCalls++;
+          return value;
+        },
+      );
+      final subscription = traced.listen(collected.add);
+
+      logger.disable();
+      controller.add(7);
+      await Future<void>.delayed(Duration.zero);
+      await subscription.cancel();
+      await controller.close();
+
+      expect(collected, [7]);
+      expect(projectionCalls, 0);
+      expect(
+        logger.traces.where(
+          (log) => log.traceOperation == 'messages.event',
+        ),
+        isEmpty,
+      );
+    });
   });
 
   // ── traceTransaction ─────────────────────────────────────────────
@@ -358,6 +956,25 @@ void main() {
           .toSet();
       expect(txnIds, hasLength(1));
       expect(txnIds.first, isNotNull);
+    });
+
+    test('disabled transaction executes directly in the caller zone', () async {
+      logger.configure(options: ISpectLoggerOptions(enabled: false));
+      final callerZone = Zone.current;
+      Zone? runZone;
+
+      final result = await logger.traceTransaction(
+        category: dbCategory,
+        source: 'drift',
+        run: () async {
+          runZone = Zone.current;
+          return 42;
+        },
+      );
+
+      expect(result, 42);
+      expect(identical(runZone, callerZone), isTrue);
+      expect(logger.traces, isEmpty);
     });
   });
 
@@ -578,12 +1195,193 @@ void main() {
       logger.reset();
       expect(logger.traces, isEmpty);
     });
+
+    test('direct logData does not queue while disabled', () {
+      final logger = FakeISpectLogger()
+        ..configure(options: ISpectLoggerOptions(enabled: false))
+        ..logData(ISpectLogData('must not be retained'));
+
+      expect(logger.traces, isEmpty);
+    });
+
+    test('direct logData does not queue after disposal', () async {
+      final logger = FakeISpectLogger();
+      await logger.dispose();
+
+      logger.logData(ISpectLogData('must not be retained'));
+
+      expect(logger.traces, isEmpty);
+    });
+  });
+
+  test('safeTrace emits a constant failure diagnostic without stack details',
+      () {
+    final logger = ISpectLogger.testing(
+      options: ISpectLoggerOptions(useConsoleLogs: false),
+    );
+
+    safeTrace(
+      logger,
+      () => throw StateError('tenantSecret=TRACE_BUILDER_SECRET'),
+    );
+
+    expect(logger.history, hasLength(1));
+    expect(logger.history.single.message, 'Trace builder failed safely.');
+    expect(logger.history.single.message, isNot(contains('trace_test.dart')));
   });
 
   // ── Domain extensions ────────────────────────────────────────────
   group('Domain extensions', () {
     late FakeISpectLogger logger;
     setUp(() => logger = FakeISpectLogger());
+
+    test('disabled helpers do not inspect caller metadata or format values',
+        () async {
+      logger.configure(options: ISpectLoggerOptions(enabled: false));
+      final meta = _ThrowingTraceMeta();
+      final value = _HostileTraceValue();
+      final stack = _HostileTraceStack();
+      var runCalls = 0;
+
+      logger
+        ..auth(source: 'auth', operation: 'event', meta: meta)
+        ..navigationTrace(
+          source: 'router',
+          operation: 'push',
+          routeName: '/next',
+          arguments: value,
+          meta: meta,
+        )
+        ..performanceJank(
+          source: 'frame',
+          buildDuration: Duration.zero,
+          rasterDuration: Duration.zero,
+          totalSpan: Duration.zero,
+          targetFrameTime: Duration.zero,
+          stackTrace: stack,
+          meta: meta,
+        )
+        ..push(source: 'push', operation: 'receive', meta: meta)
+        ..sse(source: 'sse', operation: 'receive', meta: meta)
+        ..stateChange(
+          source: 'state',
+          operation: 'change',
+          fromState: value,
+          toState: value,
+          meta: meta,
+        )
+        ..storage(source: 'storage', operation: 'read', meta: meta)
+        ..wsSend(source: 'ws', operation: 'send', meta: meta)
+        ..wsReceive(source: 'ws', operation: 'receive', meta: meta)
+        ..wsState(source: 'ws', state: 'open', meta: meta);
+
+      Future<int> run() async => ++runCalls;
+
+      await logger.authTrace(
+        source: 'auth',
+        operation: 'refresh',
+        meta: meta,
+        run: run,
+      );
+      await logger.graphqlTrace(
+        source: 'graphql',
+        operation: 'query',
+        meta: meta,
+        run: run,
+      );
+      await logger.paymentTrace(
+        source: 'payments',
+        operation: 'purchase',
+        meta: meta,
+        run: run,
+      );
+      await logger.storageTrace(
+        source: 'storage',
+        operation: 'write',
+        meta: meta,
+        run: run,
+      );
+
+      expect(runCalls, 4);
+      expect(meta.keyReads, 0);
+      expect(value.toJsonCalls, 0);
+      expect(value.toStringCalls, 0);
+      expect(stack.calls, 0);
+      expect(logger.traces, isEmpty);
+    });
+
+    test('disposed helpers do not inspect caller metadata', () async {
+      final meta = _ThrowingTraceMeta();
+      final value = _HostileTraceValue();
+      var runCalls = 0;
+      await logger.dispose();
+
+      logger
+        ..auth(source: 'auth', operation: 'event', meta: meta)
+        ..navigationTrace(
+          source: 'router',
+          operation: 'push',
+          routeName: '/next',
+          arguments: value,
+          meta: meta,
+        )
+        ..stateChange(
+          source: 'state',
+          operation: 'change',
+          fromState: value,
+          toState: value,
+          meta: meta,
+        );
+
+      final result = await logger.authTrace(
+        source: 'auth',
+        operation: 'refresh',
+        meta: meta,
+        run: () async => ++runCalls,
+      );
+
+      expect(result, 1);
+      expect(runCalls, 1);
+      expect(meta.keyReads, 0);
+      expect(value.toJsonCalls, 0);
+      expect(value.toStringCalls, 0);
+      expect(logger.traces, isEmpty);
+    });
+
+    test('enabled helpers snapshot hostile values behind the safe boundary',
+        () {
+      final meta = _ThrowingTraceMeta();
+      final value = _HostileTraceValue();
+      final stack = _HostileTraceStack();
+
+      expect(
+        () => logger.navigationTrace(
+          source: 'router',
+          operation: 'push',
+          routeName: '/next',
+          arguments: value,
+          meta: meta,
+        ),
+        returnsNormally,
+      );
+      expect(
+        () => logger.performanceJank(
+          source: 'frame',
+          buildDuration: Duration.zero,
+          rasterDuration: Duration.zero,
+          totalSpan: Duration.zero,
+          targetFrameTime: Duration.zero,
+          stackTrace: stack,
+          meta: meta,
+        ),
+        returnsNormally,
+      );
+
+      expect(value.toJsonCalls, 0);
+      expect(value.toStringCalls, 0);
+      expect(stack.calls, 0);
+      expect(logger.traces, hasLength(2));
+    });
 
     test('push auto-correlation uses messageId', () {
       logger.push(
@@ -639,7 +1437,7 @@ void main() {
         '/api?token=abc&name=test',
         const {'token'},
       );
-      expect(result, contains('token=[REDACTED]'));
+      expect(Uri.decodeFull(result), contains('token=[REDACTED]'));
       expect(result, contains('name=test'));
     });
 
@@ -654,9 +1452,49 @@ void main() {
         'https://app/callback#access_token=abc123&id_token=xyz789',
         defaultSensitiveKeys,
       );
-      expect(result, contains('access_token=[REDACTED]'));
+      expect(
+        Uri.decodeFull(result),
+        contains('access_token=[REDACTED]'),
+      );
       expect(result, isNot(contains('abc123')));
       expect(result, isNot(contains('xyz789')));
+    });
+
+    test('redactTarget scrubs credentials in encoded nested URLs', () {
+      var nested =
+          'https://alice:hunter2@inner.test/path?token=NESTED_TARGET_SECRET';
+      for (var index = 0; index < 2; index++) {
+        nested = Uri.encodeQueryComponent(nested);
+      }
+
+      final result = RedactionService.redactTarget(
+        'https://outer.test/callback?redirect=$nested',
+        defaultSensitiveKeys,
+      );
+      var decoded = result;
+      for (var index = 0; index < 2; index++) {
+        decoded = Uri.decodeFull(decoded);
+      }
+
+      expect(decoded, isNot(contains('alice:hunter2')));
+      expect(decoded, isNot(contains('NESTED_TARGET_SECRET')));
+      expect(decoded, contains(defaultPlaceholder));
+    });
+
+    test('redactTarget scrubs encoded relative callback URLs', () {
+      final nested = Uri.encodeQueryComponent(
+        '/callback?token=RELATIVE_TARGET_SECRET&safe=visible',
+      );
+
+      final result = RedactionService.redactTarget(
+        'https://outer.test/start?redirect=$nested',
+        defaultSensitiveKeys,
+      );
+      final decoded = Uri.decodeComponent(result);
+
+      expect(decoded, isNot(contains('RELATIVE_TARGET_SECRET')));
+      expect(decoded, contains('safe=visible'));
+      expect(decoded, contains(Uri.encodeComponent(defaultPlaceholder)));
     });
 
     test('redactExportString masks Bearer tokens', () {
@@ -664,7 +1502,7 @@ void main() {
         'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9',
         defaultSensitiveKeys,
       );
-      expect(result, contains('Bearer [REDACTED]'));
+      expect(result, 'Authorization: [REDACTED]');
     });
 
     test('redactExportString with null keys returns unchanged', () {
@@ -796,6 +1634,32 @@ void main() {
       expect(jsonl, contains('[REDACTED]'));
     });
 
+    test('exports redact secrets embedded in free-form messages', () {
+      final log = ISpectLogData(
+        'failed https://alice:password@example.test/users?token=MESSAGE_SECRET&api_key=PATTERN_SECRET',
+      );
+
+      final text = LogExporter.toText(
+        [log],
+        redactKeys: defaultSensitiveKeys,
+      );
+      final markdown = LogExporter.toMarkdown(
+        [log],
+        redactKeys: defaultSensitiveKeys,
+      );
+      final jsonLines = LogExporter.toJsonLines(
+        [log],
+        redactKeys: defaultSensitiveKeys,
+      );
+
+      for (final exported in [text, markdown, jsonLines]) {
+        expect(exported, isNot(contains('password')));
+        expect(exported, isNot(contains('MESSAGE_SECRET')));
+        expect(exported, isNot(contains('PATTERN_SECRET')));
+        expect(exported, contains('[REDACTED]'));
+      }
+    });
+
     test('toJsonLines preserves logs with unsupported BLoC event objects', () {
       final jsonl = LogExporter.toJsonLines(
         [
@@ -818,25 +1682,28 @@ void main() {
       final metadata = additionalData[TraceKeys.meta] as Map<String, dynamic>;
 
       expect(decoded['id'], 'AUTH-EVENT');
-      expect(metadata['event'], "Instance of '_CheckStatusAuthEvent'");
+      expect(
+        metadata['event'],
+        JsonValueNormalizer.unprintableValue,
+      );
       expect(metadata['authorization'], isNot(contains('secret-token')));
       expect(decoded, isNot(contains('export-error')));
     });
 
-    test('toText leaves additionalData raw when redactKeys is null (opt-out)',
-        () {
+    test('toText uses default redaction when redactKeys is omitted', () {
       final text = secretLog().toText();
 
-      expect(text, contains('hunter2'));
-      expect(text, contains('super-secret-token'));
+      expect(text, isNot(contains('hunter2')));
+      expect(text, isNot(contains('super-secret-token')));
+      expect(text, contains(defaultPlaceholder));
     });
 
-    test('toJsonLines leaves additionalData raw when redactKeys null (opt-out)',
-        () {
+    test('toJsonLines uses default redaction when redactKeys is omitted', () {
       final jsonl = LogExporter.toJsonLines([secretLog()]);
 
-      expect(jsonl, contains('hunter2'));
-      expect(jsonl, contains('super-secret-token'));
+      expect(jsonl, isNot(contains('hunter2')));
+      expect(jsonl, isNot(contains('super-secret-token')));
+      expect(jsonl, contains(defaultPlaceholder));
     });
   });
 

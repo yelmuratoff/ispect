@@ -2,69 +2,77 @@ part of 'inspector_controller.dart';
 
 extension InspectorControllerPointer on InspectorController {
   void onTap(Offset? pointerOffset, BuildContext context) {
-    final mode = modeNotifier.value;
-    if (mode == InspectorMode.none) return;
+    if (!isEnabled) return;
+    _batchStateUpdates(() {
+      final mode = modeNotifier.value;
+      if (mode == InspectorMode.none) return;
 
-    if (mode == InspectorMode.colorPicker) {
-      final sampleOffset = _pointerHoverPosition ?? pointerOffset;
-      if (sampleOffset != null) {
-        _onColorPickerHover(sampleOffset, context);
+      if (mode == InspectorMode.colorPicker) {
+        final sampleOffset = _pointerHoverPosition ?? pointerOffset;
+        if (sampleOffset != null) {
+          _onColorPickerHover(sampleOffset, context);
+        }
+        if (selectedColorStateNotifier.value != null) {
+          HapticFeedback.selectionClick();
+        }
+        return;
       }
-      if (selectedColorStateNotifier.value != null) {
-        HapticFeedback.selectionClick();
-      }
-      return;
-    }
 
-    if (mode == InspectorMode.zoom) {
-      final sampleOffset = _pointerHoverPosition ?? pointerOffset;
-      if (sampleOffset != null) {
-        final ctx = stackKey.currentContext ?? context;
-        _onZoomHover(sampleOffset, ctx);
+      if (mode == InspectorMode.zoom) {
+        final sampleOffset = _pointerHoverPosition ?? pointerOffset;
+        if (sampleOffset != null) {
+          final ctx = stackKey.currentContext ?? context;
+          _onZoomHover(sampleOffset, ctx);
+        }
+        return;
       }
-      return;
-    }
 
-    if (mode == InspectorMode.compareSelect) {
-      if (pointerOffset == null) return;
-      final compared = _computeBoxInfoAt(pointerOffset);
-      setMode(InspectorMode.inspector);
-      if (compared != null &&
-          compared.targetRenderBox !=
-              currentRenderBoxNotifier.value?.targetRenderBox) {
-        comparedRenderBoxNotifier.value = compared;
+      if (mode == InspectorMode.compareSelect) {
+        if (pointerOffset == null) return;
+        final compared = _computeBoxInfoAt(pointerOffset);
+        setMode(InspectorMode.inspector);
+        if (compared != null &&
+            compared.targetRenderBox !=
+                currentRenderBoxNotifier.value?.targetRenderBox) {
+          comparedRenderBoxNotifier.value = compared;
+        }
+        return;
       }
-      return;
-    }
 
-    if (mode == InspectorMode.inspector ||
-        mode == InspectorMode.inspectAndCompare) {
-      if (pointerOffset == null) return;
-      hoveredRenderBoxNotifier.value = null;
-      comparedRenderBoxNotifier.value = null;
-      currentRenderBoxNotifier.value = _computeBoxInfoAt(
-        pointerOffset,
-        findContainer: true,
-      );
-    }
+      if (mode == InspectorMode.inspector ||
+          mode == InspectorMode.inspectAndCompare) {
+        if (pointerOffset == null) return;
+        hoveredRenderBoxNotifier.value = null;
+        comparedRenderBoxNotifier.value = null;
+        currentRenderBoxNotifier.value = _computeBoxInfoAt(
+          pointerOffset,
+          findContainer: true,
+        );
+      }
+    });
   }
 
   void onPointerMove(Offset pointerOffset, BuildContext context) {
-    _pointerHoverPosition = pointerOffset;
-    final mode = modeNotifier.value;
+    if (!isEnabled) return;
+    _batchStateUpdates(() {
+      _pointerHoverPosition = pointerOffset;
+      final mode = modeNotifier.value;
 
-    if (mode == InspectorMode.colorPicker) {
-      _onColorPickerHover(pointerOffset, context);
-    } else if (mode == InspectorMode.zoom) {
-      _onZoomHover(pointerOffset, context);
-    }
+      if (mode == InspectorMode.colorPicker) {
+        _onColorPickerHover(pointerOffset, context);
+      } else if (mode == InspectorMode.zoom) {
+        _onZoomHover(pointerOffset, context);
+      }
+    });
   }
 
   void onPointerHoverDebounced(Offset pointerOffset, BuildContext context) {
-    _onPointerHover(pointerOffset);
+    if (!isEnabled) return;
+    _batchStateUpdates(() => _onPointerHover(pointerOffset));
   }
 
   void onPointerExit(Offset pointerOffset) {
+    if (!isEnabled) return;
     hoveredRenderBoxNotifier.value = null;
   }
 
@@ -73,6 +81,7 @@ extension InspectorControllerPointer on InspectorController {
   /// the target is not on the path, or when the render box has detached
   /// (e.g. after navigation). Powers the breadcrumb in the inspector panel.
   void selectFromPath(RenderBox newTarget) {
+    if (!isEnabled) return;
     final current = currentRenderBoxNotifier.value;
     if (current == null) return;
     if (!newTarget.attached) return;
@@ -83,6 +92,7 @@ extension InspectorControllerPointer on InspectorController {
   }
 
   void onPointerScroll(PointerScrollEvent scrollEvent) {
+    if (!isEnabled) return;
     if (modeNotifier.value == InspectorMode.zoom) {
       _setZoomScale(
         zoomScaleNotifier.value + _zoomStep * -scrollEvent.scrollDelta.dy.sign,

@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -20,6 +21,29 @@ final class _AuthenticateWithTokensAuthEvent {
   @override
   String toString() =>
       'AuthenticateWithTokensAuthEvent(Bearer embedded-secret-token)';
+}
+
+final class _ReadTrackingLogs extends ListBase<ISpectLogData> {
+  _ReadTrackingLogs(this._logs);
+
+  final List<ISpectLogData> _logs;
+  int recordReads = 0;
+
+  @override
+  int get length => _logs.length;
+
+  @override
+  set length(int value) => throw UnsupportedError('immutable');
+
+  @override
+  ISpectLogData operator [](int index) {
+    recordReads++;
+    return _logs[index];
+  }
+
+  @override
+  void operator []=(int index, ISpectLogData value) =>
+      throw UnsupportedError('immutable');
 }
 
 void main() {
@@ -108,7 +132,8 @@ void main() {
     expect(content, contains('shared snapshot entry'));
   });
 
-  test('JSON export stringifies non-encodable diagnostic values', () async {
+  test('JSON export snapshots non-encodable values without formatters',
+      () async {
     final content = await buildLogsExportContent(
       ExportFormat.json,
       logs: [
@@ -135,15 +160,48 @@ void main() {
     final log = logs.single as Map<String, dynamic>;
     final additionalData = log['additional-data'] as Map<String, dynamic>;
 
-    expect(additionalData['timeout'], '0:00:01.000000');
-    expect(additionalData['endpoint'], 'https://example.com/logs');
+    expect(additionalData['timeout'], JsonValueNormalizer.unprintableValue);
+    expect(additionalData['endpoint'], JsonValueNormalizer.unprintableValue);
     final blocMetadata = additionalData[TraceKeys.meta] as Map<String, dynamic>;
-    expect(blocMetadata['event'], "Instance of '_CheckStatusAuthEvent'");
+    expect(
+      blocMetadata['event'],
+      JsonValueNormalizer.unprintableValue,
+    );
     expect(
       blocMetadata['tokenEvent'],
       isNot(contains('embedded-secret-token')),
     );
     expect(blocMetadata['authorization'], isNot(contains('secret-token')));
-    expect(blocMetadata['metrics'], {'1': 'NaN'});
+    expect(
+      blocMetadata['metrics'],
+      {
+        JsonValueNormalizer.traversalMarkerKey:
+            JsonValueNormalizer.unprintableValue,
+      },
+    );
   });
+
+  for (final format in const [
+    ExportFormat.text,
+    ExportFormat.markdown,
+    ExportFormat.csv,
+  ]) {
+    test('large ${format.label} export defers record reads', () async {
+      final logs = _ReadTrackingLogs(
+        List<ISpectLogData>.generate(
+          64,
+          (index) => ISpectLogData(
+            'background export $index',
+            id: 'BACKGROUND-$index',
+          ),
+        ),
+      );
+
+      final operation = buildLogsExportContent(format, logs: logs);
+
+      expect(logs.recordReads, 0);
+      final content = await operation;
+      expect(content, contains('background export 0'));
+    });
+  }
 }

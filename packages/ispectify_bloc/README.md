@@ -51,7 +51,7 @@
 `ispectify_bloc` plugs the [`bloc`](https://pub.dev/packages/bloc) and [`flutter_bloc`](https://pub.dev/packages/flutter_bloc) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `BlocObserver` forwards every event, state change, transition, and error through the log pipeline, so the whole state-management timeline shows up in the log viewer.
 
 - Events, transitions, errors, and create/close lifecycle hooks.
-- Per-type filtering. Mute specific `Bloc` or `Cubit` classes without touching their code.
+- Family and typed-predicate filtering. Mute BLoCs without formatting caller-owned objects.
 - Zero configuration. Set `Bloc.observer` and the rest is done.
 
 ## Install
@@ -59,8 +59,8 @@
 ```yaml
 dependencies:
   flutter_bloc: ^8.0.0
-  ispectify: ^6.1.7
-  ispectify_bloc: ^6.1.7
+  ispectify: ^7.0.0
+  ispectify_bloc: ^7.0.0
 ```
 
 ## Quick start
@@ -82,7 +82,7 @@ The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-state`,
 
 ## Settings
 
-`ISpectBlocSettings` controls which lifecycle events are captured and whether raw event/state payloads are written to trace meta. Payload capture is off by default — runtime types are emitted instead, so it is safe to leave the observer enabled in shared environments.
+`ISpectBlocSettings` controls which lifecycle events are captured and whether raw event/state payloads are written to trace meta. Payload capture is off by default. BLoCs use the coarse family labels `Bloc`, `Cubit`, or `BlocBase`; common event/state shapes use structural labels such as `String`, `int`, `List`, or `Map`, and other caller-owned objects use `Object`. These labels do not invoke application `runtimeType` or `toString()` methods.
 
 ```dart
 const settings = ISpectBlocSettings(
@@ -93,8 +93,8 @@ const settings = ISpectBlocSettings(
   printClosings: true,
   printCompletions: true,
   printErrors: true,
-  printEventFullData: true,  // raw event payloads on by default
-  printStateFullData: true,  // raw state payloads on by default
+  printEventFullData: false, // coarse structural label — default
+  printStateFullData: false, // coarse structural label — default
   enableRedaction: true,     // route meta values through RedactionService when set
 );
 ```
@@ -108,13 +108,9 @@ ISpectBlocObserver(settings: ISpectBlocSettings.silent);
 // Skip per-change / per-completion noise — keeps creations, transitions, errors.
 ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
 
-// Full event and state payloads are captured by default. Opt out per flag to
-// log only the runtime type:
+// Explicit local-development payload capture; redaction remains enabled.
 ISpectBlocObserver(
-  settings: ISpectBlocSettings(
-    printEventFullData: false,
-    printStateFullData: false,
-  ),
+  settings: ISpectBlocSettings.development,
 );
 ```
 
@@ -122,14 +118,80 @@ ISpectBlocObserver(
 
 ```dart
 ISpectBlocObserver(
-  // Drop everything for blocs whose runtime type matches one of these patterns.
-  filters: [RegExp(r'AnalyticsBloc'), 'MetricsCubit'],
+  // Pattern filters see only Bloc, Cubit, or BlocBase.
+  filters: ['Cubit'],
+
+  // Use explicit type checks when an exact application class must be muted.
+  filterPredicate: (candidate) =>
+      candidate is AnalyticsBloc || candidate is MetricsCubit,
+
   settings: ISpectBlocSettings(
     // Or skip individual events / transitions / changes by inspecting them.
     eventFilter: (bloc, event) => event is! HeartbeatEvent,
   ),
 );
 ```
+
+## Data redaction
+
+Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.
+
+The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
+
+Redaction works best paired with focused capture. Keep body and header logging off unless you actually need the payload, and register project-specific keys for the business identifiers only your application understands.
+
+### Global configuration
+
+```dart
+import 'package:ispectify/ispectify.dart';
+
+ISpectRedaction.configure(
+  service: RedactionService(
+    additionalSensitiveKeys: {
+      'x-custom-secret',
+      'internal_token',
+    },
+    additionalSensitiveKeyPatterns: [
+      RegExp(r'my_app_secret_\w+', caseSensitive: false),
+    ],
+    fullyMaskedKeys: {'filename'},
+    placeholder: '***',
+    visibleEdgeLength: 3,
+  ),
+);
+```
+
+`additionalSensitiveKeys` and `additionalSensitiveKeyPatterns` extend the built-in policy. Use `sensitiveKeys` or `sensitiveKeyPatterns` only when you intentionally want to replace the corresponding defaults:
+
+```dart
+final replacementPolicy = RedactionService(
+  sensitiveKeys: {
+    'x-custom-secret',
+    'internal_token',
+  },
+  sensitiveKeyPatterns: [
+    RegExp(r'my_app_secret_\w+', caseSensitive: false),
+  ],
+);
+```
+
+Flutter apps can pass the same policy as `ISpect.run(redactionService: ...)`; `ISpect.dispose()` restores the policy that was active before that run. An explicit `RedactionService` supplied to one integration stays local and takes precedence over the global policy. Existing integrations without an explicit service pick up later global reconfiguration. The policy is scoped to the current Dart isolate.
+
+### Local exceptions
+
+```dart
+final redactor = RedactionService(
+  ignoredKeys: {'mobile', 'platform_token'},
+  ignoredValues: {'<test-token>', 'public-api-key'},
+);
+```
+
+### Disabling
+
+`ISpectRedaction.configure(enabled: false)` is the global content-masking opt-out. Each interceptor also accepts `enableRedaction: false` on its settings object for a local opt-out. Size limits, non-executing snapshots, private-storage checks, and the compile-time `ISPECT_ENABLED` gate remain enforced.
+
+Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
+
 
 ## The ISpect toolkit
 

@@ -3,9 +3,19 @@ import 'package:ispectify/ispectify.dart';
 /// Case-insensitive search across all fields of [ISpectLogData],
 /// including nested [ISpectLogData.additionalData].
 class SearchFilter implements Filter<ISpectLogData> {
-  SearchFilter(this.query) : _lowerQuery = query.toLowerCase();
+  SearchFilter(String query)
+      : query = LogExportOutput.truncateUtf8(
+          query,
+          maxBytes: _maxQueryBytes,
+        ),
+        _lowerQuery = LogExportOutput.truncateUtf8(
+          query,
+          maxBytes: _maxQueryBytes,
+        ).toLowerCase();
 
-  /// The original search query.
+  static const int _maxQueryBytes = 4096;
+
+  /// The bounded search query.
   final String query;
 
   final String _lowerQuery;
@@ -14,41 +24,20 @@ class SearchFilter implements Filter<ISpectLogData> {
   bool apply(ISpectLogData item) {
     if (_lowerQuery.isEmpty) return true;
 
-    final lowerMsg = item.lowerMessage;
-    if (lowerMsg != null && lowerMsg.contains(_lowerQuery)) {
-      return true;
-    }
-
-    final key = item.key;
-    if (key != null && key.toLowerCase().contains(_lowerQuery)) return true;
-
-    final logLevel = item.logLevel;
-    if (logLevel != null && logLevel.name.toLowerCase().contains(_lowerQuery)) {
-      return true;
-    }
-
-    if (item.formattedTime.toLowerCase().contains(_lowerQuery)) return true;
-
-    final exception = item.exception;
-    if (exception != null &&
-        exception.toString().toLowerCase().contains(_lowerQuery)) {
-      return true;
-    }
-
-    final error = item.error;
-    if (error != null && error.toString().toLowerCase().contains(_lowerQuery)) {
-      return true;
-    }
-
-    final stackTrace = item.stackTrace;
-    if (stackTrace != null &&
-        stackTrace != StackTrace.empty &&
-        stackTrace.toString().toLowerCase().contains(_lowerQuery)) {
-      return true;
-    }
-
-    final additionalData = item.additionalData;
-    return additionalData != null && _deepSearch(additionalData);
+    final captured = captureISpectLogDataForEgress(item);
+    final snapshot = LogExportOutput.boundJsonValue(
+      <String, Object?>{
+        'message': captured.message,
+        'key': captured.key,
+        'log-level': captured.logLevel?.name,
+        'time': ISpectDateTimeFormatter(captured.time).defaultFormat,
+        'exception': captured.exceptionText,
+        'error': captured.errorText,
+        'stack-trace': captured.stackTraceText,
+        'additional-data': captured.additionalData,
+      },
+    );
+    return _deepSearch(snapshot);
   }
 
   /// Iteratively searches nested structures (Map/List) for a string
@@ -89,9 +78,9 @@ class SearchFilter implements Filter<ISpectLogData> {
         continue;
       }
 
-      // Primitives (int, bool, etc.) — check string representation.
-      final str = current.toString();
-      if (str.toLowerCase().contains(_lowerQuery)) return true;
+      if (current is num || current is bool) {
+        if (current.toString().toLowerCase().contains(_lowerQuery)) return true;
+      }
     }
     return false;
   }

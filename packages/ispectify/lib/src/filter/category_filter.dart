@@ -9,7 +9,9 @@ class CategoryFilter implements Filter<ISpectLogData> {
 
   @override
   bool apply(ISpectLogData item) {
-    final cat = item.additionalData?[TraceKeys.category];
+    final cat = captureISpectLogDataForEgress(
+      item,
+    ).additionalData?[TraceKeys.category];
     return cat is String && categories.contains(cat);
   }
 }
@@ -21,7 +23,9 @@ class SourceFilter implements Filter<ISpectLogData> {
 
   @override
   bool apply(ISpectLogData item) {
-    final src = item.additionalData?[TraceKeys.source];
+    final src = captureISpectLogDataForEgress(
+      item,
+    ).additionalData?[TraceKeys.source];
     return src is String && sources.contains(src);
   }
 }
@@ -33,7 +37,9 @@ class CorrelationFilter implements Filter<ISpectLogData> {
 
   @override
   bool apply(ISpectLogData item) {
-    final cid = item.additionalData?[TraceKeys.correlationId];
+    final cid = captureISpectLogDataForEgress(
+      item,
+    ).additionalData?[TraceKeys.correlationId];
     return cid is String && cid == correlationId;
   }
 }
@@ -45,7 +51,9 @@ class TransactionFilter implements Filter<ISpectLogData> {
 
   @override
   bool apply(ISpectLogData item) {
-    final tid = item.additionalData?[TraceKeys.transactionId];
+    final tid = captureISpectLogDataForEgress(
+      item,
+    ).additionalData?[TraceKeys.transactionId];
     return tid is String && tid == transactionId;
   }
 }

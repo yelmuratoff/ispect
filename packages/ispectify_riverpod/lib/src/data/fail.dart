@@ -1,5 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_riverpod/src/data/riverpod_json_keys.dart';
+import 'package:ispectify_riverpod/src/safe_type_label.dart';
 import 'package:riverpod/riverpod.dart';
 
 /// Snapshot of a Riverpod `providerDidFail` event.
@@ -15,7 +16,8 @@ class RiverpodFailData {
   final StackTrace stackTrace;
 
   /// Human-readable provider label.
-  String get providerName => provider.name ?? provider.runtimeType.toString();
+  String get providerName =>
+      provider.name ?? safeRiverpodProviderTypeLabel(provider);
 
   /// Returns a raw, JSON-compatible map of the event.
   ///
@@ -23,8 +25,8 @@ class RiverpodFailData {
   /// on the trace entry itself, not in `meta`.
   Map<String, dynamic> toJson() => <String, dynamic>{
         RiverpodJsonKeys.providerName: providerName,
-        RiverpodJsonKeys.providerType: provider.runtimeType.toString(),
-        RiverpodJsonKeys.errorType: error.runtimeType.toString(),
+        RiverpodJsonKeys.providerType: safeRiverpodProviderTypeLabel(provider),
+        RiverpodJsonKeys.errorType: safeRiverpodValueTypeLabel(error),
       };
 
   /// Applies in-place redaction to a map produced by [toJson].

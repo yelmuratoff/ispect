@@ -81,9 +81,14 @@ check_versions() {
 }
 
 ensure_clean_git() {
-	if ! git diff --quiet || ! git diff --cached --quiet; then
-		warn "Uncommitted changes detected.";
+	local status
+	status=$(git status --porcelain --untracked-files=all)
+	if [[ -n "$status" ]]; then
+		error "Publishing requires a clean working tree (including untracked files)."
+		printf '%s\n' "$status" >&2
+		exit 1
 	fi
+	info "Working tree is clean."
 }
 
 # Preflight validation: ensure no 'any' constraints and no disallowed lockfiles in packages.
@@ -169,6 +174,7 @@ main() {
 	ensure_clean_git
 	preflight_validate
 	run_format
+	ensure_clean_git
 
 	local failures=()
 	for p in "${PACKAGES[@]}"; do

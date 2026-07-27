@@ -2,6 +2,7 @@ import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
+import 'package:ispectify/src/trace/trace_helpers.dart';
 
 /// Trace helpers for state-management layers (BLoC, Cubit, Riverpod, etc.).
 extension ISpectLoggerState on ISpectLogger {
@@ -32,8 +33,8 @@ extension ISpectLoggerState on ISpectLogger {
 
   /// Logs a state-change event (transition) under [stateCategory].
   ///
-  /// [fromState] and [toState] are stringified and stored in meta, along with
-  /// the triggering [event] when provided.
+  /// [fromState] and [toState] are safely snapshotted into meta, along with the
+  /// triggering [event] when provided.
   void stateChange({
     required String source,
     required String operation,
@@ -49,24 +50,28 @@ extension ISpectLoggerState on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
     String? consoleMessage,
-  }) =>
-      traceCategory(
-        category: stateCategory,
-        source: source,
-        operation: operation,
-        target: stateName,
-        success: success ?? (error == null),
-        error: error,
-        errorStackTrace: errorStackTrace,
-        duration: duration,
-        meta: {
-          if (fromState != null) 'from': '$fromState',
-          if (toState != null) 'to': '$toState',
+  }) {
+    if (!isEnabled) return;
+    traceCategory(
+      category: stateCategory,
+      source: source,
+      operation: operation,
+      target: stateName,
+      success: success ?? (error == null),
+      error: error,
+      errorStackTrace: errorStackTrace,
+      duration: duration,
+      meta: boundedTraceMeta(
+        fields: {
+          if (fromState != null) 'from': fromState,
+          if (toState != null) 'to': toState,
           if (event != null) 'event': event,
-          ...?meta,
         },
-        config: config,
-        correlationId: correlationId,
-        consoleMessage: consoleMessage,
-      );
+        overrides: meta,
+      ),
+      config: config,
+      correlationId: correlationId,
+      consoleMessage: consoleMessage,
+    );
+  }
 }

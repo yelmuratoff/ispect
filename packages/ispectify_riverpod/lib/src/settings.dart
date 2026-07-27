@@ -1,4 +1,5 @@
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify_riverpod/src/safe_type_label.dart';
 import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart';
 
@@ -22,7 +23,7 @@ class ISpectRiverpodSettings {
     this.printUpdates = true,
     this.printDisposes = true,
     this.printFails = true,
-    this.printValues = true,
+    this.printValues = false,
     this.providerFilter,
     this.updateFilter,
     this.enableRedaction = true,
@@ -38,11 +39,17 @@ class ISpectRiverpodSettings {
     printUpdates: false,
   );
 
-  /// Reduces values to their runtime type only. Useful when provider state
+  /// Reduces values to a coarse type label only. Useful when provider state
   /// may carry PII and the project still wants lifecycle visibility.
-  static const ISpectRiverpodSettings compact = ISpectRiverpodSettings(
-    printValues: false,
+  static const ISpectRiverpodSettings compact = ISpectRiverpodSettings();
+
+  /// Captures full provider values for explicitly enabled diagnostics.
+  static const ISpectRiverpodSettings verbose = ISpectRiverpodSettings(
+    printValues: true,
   );
+
+  /// Alias for [verbose] for development-only diagnostics.
+  static const ISpectRiverpodSettings development = verbose;
 
   /// Whether logging is enabled.
   final bool enabled;
@@ -59,12 +66,10 @@ class ISpectRiverpodSettings {
   /// Whether to log provider failures (`providerDidFail`).
   final bool printFails;
 
-  /// Whether to log full provider values instead of only the runtime type.
+  /// Whether to log full provider values instead of a coarse type label.
   ///
-  /// `true` by default — ISpect is gated by `ISPECT_ENABLED` and only runs in
-  /// non-production builds, so verbose value capture is the more useful trade.
-  /// Set to `false` (or use [compact]) when provider state may carry PII and
-  /// you still want lifecycle visibility.
+  /// Defaults to `false` so lifecycle logging exposes type metadata only.
+  /// Use [verbose] only when payload capture is explicitly required.
   final bool printValues;
 
   /// A filter function applied to every provider event.
@@ -79,37 +84,40 @@ class ISpectRiverpodSettings {
 
   /// Whether to apply redaction to sensitive data in log payloads.
   ///
-  /// Redaction is only applied when this is `true` AND [redactor] is not null.
+  /// When `true`, [redactor] is used when provided; otherwise
+  /// [ISpectRedaction.service] is resolved when an operation runs.
   final bool enableRedaction;
 
   /// Optional redaction service for masking sensitive data in provider value
   /// payloads before they are logged.
+  ///
+  /// Leave this `null` to follow [ISpectRedaction.service].
   final RedactionService? redactor;
 
   /// Whether redaction is active for this configuration.
-  bool get isRedactionActive => enableRedaction && redactor != null;
+  bool get isRedactionActive => enableRedaction && ISpectRedaction.enabled;
 
   /// Applies redaction to a meta map if redaction is active.
+  ///
+  /// Returns a bounded, non-executing copy. When redaction is disabled, values
+  /// remain unmasked but still cannot bypass outbound byte and traversal
+  /// limits. A redaction failure returns an empty map.
   Map<String, dynamic>? redactAdditionalData(
     Map<String, dynamic>? data,
   ) {
-    final redactorInstance = redactor;
-    if (data == null || !isRedactionActive || redactorInstance == null) {
-      return data;
-    }
-    return data.map(
-      (key, value) => MapEntry(
-        key,
-        redactorInstance.redact(value, keyName: key),
-      ),
+    if (data == null) return null;
+    return _prepareAdditionalData(
+      data,
+      enableRedaction: isRedactionActive,
+      redactor: redactor,
     );
   }
 
   /// Formats a provider value for display based on [printValues].
   ///
-  /// Returns the full object when verbose, otherwise its runtime type.
+  /// Returns the full object when verbose, otherwise a coarse type label.
   Object formatValue(Object? value) =>
-      printValues ? (value ?? 'null') : (value?.runtimeType ?? 'null');
+      printValues ? (value ?? 'null') : safeRiverpodValueTypeLabel(value);
 
   /// Returns a copy with the provided overrides.
   ISpectRiverpodSettings copyWith({
@@ -136,4 +144,38 @@ class ISpectRiverpodSettings {
         enableRedaction: enableRedaction ?? this.enableRedaction,
         redactor: redactor ?? this.redactor,
       );
+}
+
+Map<String, dynamic> _prepareAdditionalData(
+  Map<String, dynamic> data, {
+  required bool enableRedaction,
+  required RedactionService? redactor,
+}) {
+  final redactionActive = enableRedaction && ISpectRedaction.enabled;
+  try {
+    final prepared = LogExportOutput.boundJsonValue(
+      data,
+      preserveTypes: redactionActive,
+      replaceOversizedStrings: redactionActive,
+    );
+    final Object? output;
+    if (redactionActive) {
+      output = ISpectRedaction.resolveService(
+        service: redactor,
+      ).redactForExport(prepared);
+    } else {
+      output = prepared;
+    }
+    final bounded = LogExportOutput.boundJsonValue(
+      output,
+      replaceOversizedStrings: redactionActive,
+    );
+    if (bounded is Map) {
+      return <String, dynamic>{
+        for (final entry in bounded.entries)
+          if (entry.key case final String key) key: entry.value,
+      };
+    }
+  } catch (_) {}
+  return <String, dynamic>{};
 }

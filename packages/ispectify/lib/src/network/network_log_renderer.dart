@@ -36,7 +36,9 @@ abstract final class NetworkLogRenderer {
   /// adapters (gRPC, GraphQL, Chopper, …) opt in automatically as soon as
   /// they tag their entries with `TraceCategoryIds.network`.
   static bool isNetworkLog(ISpectLogData entry) {
-    final category = entry.additionalData?[TraceKeys.category];
+    final category = captureISpectLogDataForEgress(
+      entry,
+    ).additionalData?[TraceKeys.category];
     return category == TraceCategoryIds.network ||
         category == TraceCategoryIds.ws;
   }
@@ -44,7 +46,7 @@ abstract final class NetworkLogRenderer {
   /// Builds the renderable body for [entry]. See the class doc for the
   /// contract.
   static String renderBody(ISpectLogData entry) {
-    final ad = entry.additionalData;
+    final ad = captureISpectLogDataForEgress(entry).additionalData;
     if (ad == null) return '';
     final category = ad[TraceKeys.category];
 
@@ -107,8 +109,10 @@ abstract final class NetworkLogRenderer {
     Map<String, dynamic> respData,
     _RenderHints h,
   ) {
-    final statusCode = respData[NetworkJsonKeys.statusCode];
-    final statusMessage = respData[NetworkJsonKeys.statusMessage] as String?;
+    final rawStatusCode = respData[NetworkJsonKeys.statusCode];
+    final statusCode = rawStatusCode is int ? rawStatusCode : null;
+    final rawStatusMessage = respData[NetworkJsonKeys.statusMessage];
+    final statusMessage = rawStatusMessage is String ? rawStatusMessage : null;
     return _joinSections([
       if (statusCode != null) 'Status: $statusCode',
       if (h.printMessage && statusMessage != null && statusMessage.isNotEmpty)
@@ -131,10 +135,14 @@ abstract final class NetworkLogRenderer {
     Map<String, dynamic> errData,
     _RenderHints h,
   ) {
-    final response = errData[NetworkJsonKeys.response] as Map<String, dynamic>?;
-    final statusCode = response?[NetworkJsonKeys.statusCode];
-    final statusMessage = response?[NetworkJsonKeys.statusMessage] as String?;
-    final errorMessage = errData[NetworkJsonKeys.message] as String?;
+    final rawResponse = errData[NetworkJsonKeys.response];
+    final response = rawResponse is Map<String, dynamic> ? rawResponse : null;
+    final rawStatusCode = response?[NetworkJsonKeys.statusCode];
+    final statusCode = rawStatusCode is int ? rawStatusCode : null;
+    final rawStatusMessage = response?[NetworkJsonKeys.statusMessage];
+    final statusMessage = rawStatusMessage is String ? rawStatusMessage : null;
+    final rawErrorMessage = errData[NetworkJsonKeys.message];
+    final errorMessage = rawErrorMessage is String ? rawErrorMessage : null;
     return _joinSections([
       if (statusCode != null) 'Status: $statusCode',
       if (h.printMessage && statusMessage != null && statusMessage.isNotEmpty)

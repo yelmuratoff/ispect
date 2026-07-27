@@ -9,10 +9,15 @@ import 'package:ispectify/ispectify.dart';
 /// - warning → 4 px
 /// - everything else → 3 px
 ({double width, double alpha}) severityBar(ISpectLogData data) {
-  if (data.isError) return (width: 5.0, alpha: 1);
+  final captured = captureISpectLogDataForEgress(data);
+  final isError = captured.logLevel == LogLevel.error ||
+      captured.logLevel == LogLevel.critical ||
+      ISpectLogType.isErrorKey(captured.key) ||
+      captured.additionalData?[TraceKeys.success] == false;
+  if (isError) return (width: 5.0, alpha: 1);
 
-  final level = data.logLevel;
-  if (level == LogLevel.warning || data.key == ISpectLogType.warning.key) {
+  final level = captured.logLevel;
+  if (level == LogLevel.warning || captured.key == ISpectLogType.warning.key) {
     return (width: 4.0, alpha: 0.9);
   }
 

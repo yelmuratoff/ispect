@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/src/config.dart';
@@ -8,6 +9,11 @@ import 'package:ispectify_db/src/db_preprocess_input.dart';
 import 'package:ispectify_db/src/db_token.dart';
 import 'package:ispectify_db/src/sql_digest.dart';
 import 'package:ispectify_db/src/transaction.dart';
+
+const _dbProjectionNotProvided = _DbProjectionNotProvided();
+const _maxDbScalarBytes = 4 * 1024;
+const _maxDbDiagnosticsBytes = 16 * 1024;
+const _maxDbMetaBytes = 24 * 1024;
 
 /// Database logging extension on [ISpectLogger].
 ///
@@ -19,6 +25,8 @@ import 'package:ispectify_db/src/transaction.dart';
 /// [traceTransaction], placing DB-specific data in [TraceKeys.meta].
 extension ISpectLoggerDb on ISpectLogger {
   /// Logs a single database operation via [trace].
+  ///
+  /// A supplied [projection], including `null`, replaces [value].
   void db({
     required String source,
     required String operation,
@@ -37,7 +45,7 @@ extension ISpectLoggerDb on ISpectLogger {
     bool? cacheHit,
     Duration? duration,
     Map<String, Object?>? meta,
-    Object? projection,
+    Object? projection = _dbProjectionNotProvided,
     double? sample,
     bool? redact,
     List<String>? redactKeys,
@@ -48,49 +56,67 @@ extension ISpectLoggerDb on ISpectLogger {
     StackTrace? errorStackTrace,
     ISpectDbConfig config = const ISpectDbConfig(),
   }) {
-    if (!options.enabled) return;
+    if (!hasActiveConsumers) return;
     if (!ISpectDbCore.shouldLog(sample, config)) return;
 
-    final dbMeta = _preprocessDb(
-      DbPreprocessInput(
-        cfg: config,
-        statement: statement,
-        args: args,
-        namedArgs: namedArgs,
-        table: table,
-        key: key,
-        value: projection ?? value,
-        affected: affected,
-        items: items,
-        sizeBytes: sizeBytes,
-        cacheHit: cacheHit,
-        meta: meta,
-        redact: redact,
-        redactKeys: redactKeys,
-        maxValueLength: maxValueLength,
-        maxArgsLength: maxArgsLength,
-        maxStatementLength: maxStatementLength,
-        error: error,
-      ),
+    final preprocessInput = DbPreprocessInput(
+      cfg: config,
+      statement: statement,
+      args: args,
+      namedArgs: namedArgs,
+      table: table,
+      key: key,
+      value:
+          identical(projection, _dbProjectionNotProvided) ? value : projection,
+      affected: affected,
+      items: items,
+      sizeBytes: sizeBytes,
+      cacheHit: cacheHit,
+      meta: meta,
+      redact: redact,
+      redactKeys: redactKeys,
+      maxValueLength: maxValueLength,
+      maxArgsLength: maxArgsLength,
+      maxStatementLength: maxStatementLength,
+      error: error,
     );
+    final preprocessed = _preprocessDb(
+      preprocessInput,
+      errorStackTrace: errorStackTrace,
+    );
+    final traceConfig = _resolveTraceConfig(
+      config,
+      redact: redact,
+      redactKeys: redactKeys,
+    );
+    final shouldRedact = preprocessInput.shouldRedact;
 
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
     final isError = (success == false) || (error != null);
 
     trace(
       category: dbCategory,
-      source: source,
-      operation: operation,
-      target: table ?? target,
-      key: key,
+      source: _boundDbText(source, shouldRedact: shouldRedact),
+      operation: _boundDbText(operation, shouldRedact: shouldRedact),
+      target: _boundNullableDbText(
+        table ?? target,
+        shouldRedact: shouldRedact,
+      ),
+      key: _boundNullableDbText(
+        _safeDbKey(key, shouldRedact),
+        shouldRedact: shouldRedact,
+      ),
       success: success ?? (error == null),
-      error: error,
-      errorStackTrace: errorStackTrace,
+      error: preprocessed.error,
+      errorStackTrace: preprocessed.errorStackTrace,
       duration: duration,
       sample: sample,
-      config: config,
-      meta: dbMeta,
-      correlationId: txnId,
+      config: traceConfig,
+      meta: preprocessed.meta,
+      correlationId: _boundNullableDbText(
+        txnId,
+        shouldRedact: shouldRedact,
+      ),
       logLevel: isError ? LogLevel.error : null,
     );
   }
@@ -121,7 +147,7 @@ extension ISpectLoggerDb on ISpectLogger {
     String? transactionId,
     ISpectDbConfig config = const ISpectDbConfig(),
   }) async {
-    if (!options.enabled) return run();
+    if (!hasActiveConsumers) return run();
     if (!ISpectDbCore.shouldLog(sample, config)) return run();
 
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
@@ -162,11 +188,10 @@ extension ISpectLoggerDb on ISpectLogger {
         elapsed: sw.elapsed,
         err: err,
         st: st,
-        items: err == null
-            ? (itemsCountFromLength ?? (result is List ? result.length : null))
-            : null,
+        itemsCountFromLength: itemsCountFromLength,
         affectedOverride: affectedOverride,
-        projected: _safeProject(err == null, projectResult, () => result),
+        projectResult: projectResult,
+        getResult: () => result,
       );
     }
   }
@@ -197,7 +222,7 @@ extension ISpectLoggerDb on ISpectLogger {
     String? transactionId,
     ISpectDbConfig config = const ISpectDbConfig(),
   }) {
-    if (!options.enabled) return run();
+    if (!hasActiveConsumers) return run();
     if (!ISpectDbCore.shouldLog(sample, config)) return run();
 
     final txnId = transactionId ?? ISpectDbTxn.currentTransactionId();
@@ -236,17 +261,16 @@ extension ISpectLoggerDb on ISpectLogger {
         elapsed: sw.elapsed,
         err: err,
         st: st,
-        items: err == null
-            ? (itemsCountFromLength ?? (result is List ? result.length : null))
-            : null,
+        itemsCountFromLength: itemsCountFromLength,
         affectedOverride: affectedOverride,
-        projected: _safeProject(err == null, projectResult, () => result),
+        projectResult: projectResult,
+        getResult: () => result,
       );
     }
   }
 
   /// Shared finally-block logic for [dbTrace] and [dbTraceSync].
-  void _logTraceResult({
+  void _logTraceResult<T>({
     required ISpectDbConfig config,
     required String? txnId,
     required String source,
@@ -268,55 +292,81 @@ extension ISpectLoggerDb on ISpectLogger {
     required Duration elapsed,
     required Object? err,
     required StackTrace? st,
-    required int? items,
+    required int? itemsCountFromLength,
     required int? affectedOverride,
-    required Object? projected,
+    required Object? Function(T value)? projectResult,
+    required T Function() getResult,
   }) {
+    if (!hasActiveConsumers) return;
+    final success = err == null;
+    final items = _safeItemCount(
+      success,
+      itemsCountFromLength,
+      getResult,
+    );
+    if (!hasActiveConsumers) return;
+    final projected = _safeProject(success, projectResult, getResult);
+    if (!hasActiveConsumers) return;
     try {
-      final success = err == null;
-
-      final dbMeta = _preprocessDb(
-        DbPreprocessInput(
-          cfg: config,
-          statement: statement,
-          args: args,
-          namedArgs: namedArgs,
-          table: target,
-          key: key,
-          value: projected,
-          affected: affectedOverride,
-          items: items,
-          sizeBytes: sizeBytes,
-          cacheHit: cacheHit,
-          meta: meta,
-          redact: redact,
-          redactKeys: redactKeys,
-          maxValueLength: maxValueLength,
-          maxArgsLength: maxArgsLength,
-          maxStatementLength: maxStatementLength,
-          error: err,
-        ),
+      final preprocessInput = DbPreprocessInput(
+        cfg: config,
+        statement: statement,
+        args: args,
+        namedArgs: namedArgs,
+        table: target,
+        key: key,
+        value: projected,
+        affected: affectedOverride,
+        items: items,
+        sizeBytes: sizeBytes,
+        cacheHit: cacheHit,
+        meta: meta,
+        redact: redact,
+        redactKeys: redactKeys,
+        maxValueLength: maxValueLength,
+        maxArgsLength: maxArgsLength,
+        maxStatementLength: maxStatementLength,
+        error: err,
       );
+      final preprocessed = _preprocessDb(
+        preprocessInput,
+        errorStackTrace: st,
+      );
+      final traceConfig = _resolveTraceConfig(
+        config,
+        redact: redact,
+        redactKeys: redactKeys,
+      );
+      final shouldRedact = preprocessInput.shouldRedact;
 
       trace(
         category: dbCategory,
-        source: source,
-        operation: operation,
-        target: target,
-        key: key,
+        source: _boundDbText(source, shouldRedact: shouldRedact),
+        operation: _boundDbText(operation, shouldRedact: shouldRedact),
+        target: _boundNullableDbText(
+          target,
+          shouldRedact: shouldRedact,
+        ),
+        key: _boundNullableDbText(
+          _safeDbKey(key, shouldRedact),
+          shouldRedact: shouldRedact,
+        ),
         success: success,
-        error: err,
-        errorStackTrace: st,
+        error: preprocessed.error,
+        errorStackTrace: preprocessed.errorStackTrace,
         duration: elapsed,
         sample: sample,
-        config: config,
-        meta: dbMeta,
-        correlationId: txnId,
+        config: traceConfig,
+        meta: preprocessed.meta,
+        correlationId: _boundNullableDbText(
+          txnId,
+          shouldRedact: shouldRedact,
+        ),
       );
-    } catch (loggingError) {
+    } catch (_) {
       assert(() {
         // ignore: avoid_print
-        print('ISpectDbTrace: logging failed — $loggingError');
+        print('ISpectDbTrace: logging failed safely.');
         return true;
       }());
     }
@@ -336,6 +386,21 @@ extension ISpectLoggerDb on ISpectLogger {
     }
   }
 
+  static int? _safeItemCount<T>(
+    bool success,
+    int? explicitCount,
+    T Function() getResult,
+  ) {
+    if (!success) return null;
+    if (explicitCount != null) return explicitCount;
+    try {
+      final result = getResult();
+      return result is List ? result.length : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Starts a manual span.
   ISpectDbToken dbStart({
     String? source,
@@ -348,20 +413,24 @@ extension ISpectLoggerDb on ISpectLogger {
     Map<String, Object?>? namedArgs,
     Map<String, Object?>? meta,
     String? transactionId,
-  }) =>
-      ISpectDbToken(
-        stopwatch: Stopwatch()..start(),
-        source: source,
-        operation: operation,
-        statement: statement,
-        target: target,
-        table: table,
-        key: key,
-        args: args,
-        namedArgs: namedArgs,
-        meta: meta,
-        transactionId: transactionId ?? ISpectDbTxn.currentTransactionId(),
-      );
+  }) {
+    if (!hasActiveConsumers) {
+      return ISpectDbToken(stopwatch: Stopwatch());
+    }
+    return ISpectDbToken(
+      stopwatch: Stopwatch()..start(),
+      source: source,
+      operation: operation,
+      statement: statement,
+      target: target,
+      table: table,
+      key: key,
+      args: args,
+      namedArgs: namedArgs,
+      meta: meta,
+      transactionId: transactionId ?? ISpectDbTxn.currentTransactionId(),
+    );
+  }
 
   /// Finalizes a span started by [dbStart].
   void dbEnd(
@@ -377,6 +446,7 @@ extension ISpectLoggerDb on ISpectLogger {
     ISpectDbConfig config = const ISpectDbConfig(),
   }) {
     token.stopTiming();
+    if (!hasActiveConsumers) return;
     db(
       source: token.source ?? dbDefaultSource,
       operation: token.operation ?? dbDefaultOperation,
@@ -394,7 +464,11 @@ extension ISpectLoggerDb on ISpectLogger {
       sizeBytes: sizeBytes,
       cacheHit: cacheHit,
       duration: token.elapsed,
-      meta: {...?token.meta, ...?meta},
+      meta: _mergeBoundedMeta(
+        token.meta,
+        meta,
+        shouldRedact: ISpectRedaction.enabled && config.redact,
+      ),
       transactionId: token.transactionId,
       config: config,
     );
@@ -408,6 +482,7 @@ extension ISpectLoggerDb on ISpectLogger {
     bool? logMarkers,
     ISpectDbConfig config = const ISpectDbConfig(),
   }) async {
+    if (!hasActiveConsumers) return run();
     final enableMarkers = logMarkers ?? config.enableTransactionMarkers;
     return traceTransaction(
       category: dbCategory,
@@ -418,62 +493,89 @@ extension ISpectLoggerDb on ISpectLogger {
   }
 
   /// Preprocesses DB-specific fields into a meta map for trace().
-  static Map<String, Object?> _preprocessDb(DbPreprocessInput input) {
+  static _PreprocessedDbTrace _preprocessDb(
+    DbPreprocessInput input, {
+    StackTrace? errorStackTrace,
+  }) {
     final shouldRedact = input.shouldRedact;
-    final sensitiveKeys = input.sensitiveKeys.toSet();
-    final maxArgsLen = input.resolvedMaxArgsLength;
+    final sensitiveKeys = _boundSensitiveKeys(input.sensitiveKeys);
+    final maxArgsLen = _boundConfiguredLength(input.resolvedMaxArgsLength);
+    final diagnostics = _boundDbDiagnostics(
+      input,
+      errorStackTrace: errorStackTrace,
+    );
 
-    final redactor = shouldRedact
-        ? RedactionService(
-            sensitiveKeys: sensitiveKeys,
-            placeholder: defaultPlaceholder,
-          )
-        : null;
+    final RedactionService? redactor;
+    if (!shouldRedact) {
+      redactor = null;
+    } else if (input.hasExplicitRedactKeys) {
+      redactor = RedactionService(
+        sensitiveKeys: sensitiveKeys,
+        placeholder: defaultPlaceholder,
+      );
+    } else {
+      redactor = ISpectRedaction.service;
+    }
+    final boundedStatement = _boundNullableDbText(
+      input.statement,
+      shouldRedact: shouldRedact,
+      maxBytes: _maxDbDiagnosticsBytes,
+    );
 
-    Object? redactData(Object? data, {String? keyName}) => data == null
-        ? null
-        : (redactor?.redact(data, keyName: keyName) ?? data);
+    Object? redactData(Object? data, {String? keyName}) {
+      if (data == null || redactor == null) return data;
+      return redactor.redact(data, keyName: keyName);
+    }
 
     final truncatedStmt = _truncateToString(
-      input.statement,
-      input.resolvedMaxStatementLength,
+      boundedStatement,
+      _boundConfiguredLength(input.resolvedMaxStatementLength),
     );
 
     final processedArgs = _processPositionalArgs(
-      input.args,
+      diagnostics.args,
       redactor: redactor,
       sensitiveKeys: sensitiveKeys,
-      statement: input.statement,
+      statement: boundedStatement,
       maxLen: maxArgsLen,
     );
 
     final processedNamedArgs = _processNamedArgs(
-      redactData(input.namedArgs),
+      redactData(diagnostics.namedArgs),
       maxLen: maxArgsLen,
     );
 
-    final processedMeta = redactData(input.meta);
-    final digest = DbSqlDigest.compute(input.statement);
+    final processedMeta = redactData(diagnostics.meta);
+    final digest = DbSqlDigest.compute(boundedStatement);
 
     final truncatedValue = ISpectDbCore.truncateValue(
-      redactData(input.value, keyName: input.key),
-      input.resolvedMaxValueLength,
+      redactData(diagnostics.value, keyName: input.key),
+      _boundConfiguredLength(input.resolvedMaxValueLength),
     );
 
-    final errorText = input.error == null
+    final rawErrorText = _renderBoundedDbValue(
+      diagnostics.error,
+      shouldRedact: shouldRedact,
+    );
+    final errorText = rawErrorText == null
         ? null
-        : shouldRedact
-            ? RedactionService.redactExportString(
-                '${input.error}',
-                sensitiveKeys,
-              )
-            : '${input.error}';
+        : redactor == null
+            ? rawErrorText
+            : _redactDbError(rawErrorText, redactor);
 
-    return ISpectDbCore.clean(<String, Object?>{
-      'statement': shouldRedact ? digest : truncatedStmt,
+    final dbMeta = ISpectDbCore.clean(<String, Object?>{
       'statementDigest': digest,
-      if (input.table != null) 'table': input.table,
-      if (input.key != null) 'key': input.key,
+      'statement': shouldRedact ? digest : truncatedStmt,
+      if (input.table != null)
+        'table': _boundDbText(
+          input.table!,
+          shouldRedact: shouldRedact,
+        ),
+      if (input.key != null)
+        'key': _boundDbText(
+          _safeDbKey(input.key, shouldRedact)!,
+          shouldRedact: shouldRedact,
+        ),
       'args': processedArgs,
       'namedArgs': processedNamedArgs,
       if (input.affected != null) 'affected': input.affected,
@@ -484,12 +586,58 @@ extension ISpectLoggerDb on ISpectLogger {
       if (processedMeta != null) 'userMeta': processedMeta,
       if (errorText != null) 'dbError': errorText,
     });
+    final boundedMeta = LogExportOutput.boundJsonValue(
+      dbMeta,
+      maxBytes: _maxDbMetaBytes,
+      replaceOversizedStrings: shouldRedact,
+    );
+    return _PreprocessedDbTrace(
+      meta: boundedMeta is Map<String, Object?>
+          ? boundedMeta
+          : const <String, Object?>{},
+      error: rawErrorText,
+      errorStackTrace: diagnostics.errorStackTraceText == null
+          ? null
+          : StackTrace.fromString(diagnostics.errorStackTraceText!),
+    );
   }
 
   static String? _truncateToString(String? value, int maxLen) {
     if (value == null) return null;
     final truncated = ISpectDbCore.truncateValue(value, maxLen);
     return truncated is String ? truncated : truncated?.toString();
+  }
+
+  static String? _safeDbKey(String? key, bool shouldRedact) =>
+      key == null || !shouldRedact ? key : defaultPlaceholder;
+
+  static String _redactDbError(
+    String error,
+    RedactionService redactor,
+  ) {
+    final redacted = redactor.redactForExport(error);
+    return redacted is String ? redacted : defaultPlaceholder;
+  }
+
+  static ISpectDbConfig _resolveTraceConfig(
+    ISpectDbConfig config, {
+    required bool? redact,
+    required List<String>? redactKeys,
+  }) {
+    final resolvedRedact = ISpectRedaction.enabled && (redact ?? config.redact);
+    final usesDefaultKeys = redactKeys == null &&
+        identical(config.redactKeys, defaultSensitiveKeys);
+    final resolvedKeys = usesDefaultKeys
+        ? config.redactKeys
+        : _boundSensitiveKeys(redactKeys ?? config.redactKeys);
+    if (resolvedRedact == config.redact &&
+        identical(resolvedKeys, config.redactKeys)) {
+      return config;
+    }
+    return config.copyWith(
+      redact: resolvedRedact,
+      redactKeys: resolvedKeys,
+    );
   }
 
   static List<Object?>? _processPositionalArgs(
@@ -525,4 +673,195 @@ extension ISpectLoggerDb on ISpectLogger {
     }
     return null;
   }
+
+  static _BoundedDbDiagnostics _boundDbDiagnostics(
+    DbPreprocessInput input, {
+    required StackTrace? errorStackTrace,
+  }) {
+    final shouldRedact = input.shouldRedact;
+    final bounded = LogExportOutput.boundJsonValue(
+      <String, Object?>{
+        if (input.error != null) 'error': input.error,
+        if (errorStackTrace != null) 'errorStackTrace': errorStackTrace,
+        if (input.args != null) 'args': input.args,
+        if (input.namedArgs != null) 'namedArgs': input.namedArgs,
+        if (input.value != null) 'value': input.value,
+        if (input.meta != null) 'meta': input.meta,
+      },
+      maxBytes: _maxDbDiagnosticsBytes,
+      preserveTypes: shouldRedact,
+      replaceOversizedStrings: shouldRedact,
+    );
+    final values =
+        bounded is Map<String, Object?> ? bounded : const <String, Object?>{};
+
+    return _BoundedDbDiagnostics(
+      args: switch (values['args']) {
+        final List<Object?> value => List<Object?>.unmodifiable(value),
+        _ => null,
+      },
+      namedArgs: switch (values['namedArgs']) {
+        final Map<String, Object?> value =>
+          Map<String, Object?>.unmodifiable(value),
+        _ => null,
+      },
+      value: values['value'],
+      meta: switch (values['meta']) {
+        final Map<String, Object?> value =>
+          Map<String, Object?>.unmodifiable(value),
+        _ => null,
+      },
+      error: values['error'],
+      errorStackTraceText: switch (values['errorStackTrace']) {
+        final String value => value,
+        _ => null,
+      },
+    );
+  }
+
+  static Set<String> _boundSensitiveKeys(Iterable<String> values) {
+    final bounded = LogExportOutput.boundJsonValue(
+      values,
+      maxBytes: _maxDbDiagnosticsBytes,
+      replaceOversizedStrings: true,
+    );
+    if (bounded is! List<Object?>) return defaultSensitiveKeys;
+    final result = <String>{};
+    var traversalFailed = false;
+    for (final value in bounded) {
+      if (value is! String) {
+        traversalFailed = true;
+        continue;
+      }
+      if (value == JsonValueNormalizer.unprintableValue ||
+          value == JsonValueNormalizer.maxNodesReached ||
+          value == LogExportOutput.truncatedMarker) {
+        traversalFailed = true;
+        continue;
+      }
+      if (value == JsonValueNormalizer.maxCollectionItemsReached) break;
+      result.add(value);
+    }
+    return traversalFailed && result.isEmpty ? defaultSensitiveKeys : result;
+  }
+
+  static int _boundConfiguredLength(int value) => value.clamp(
+        0,
+        _maxDbDiagnosticsBytes,
+      );
+
+  static String? _renderBoundedDbValue(
+    Object? value, {
+    required bool shouldRedact,
+  }) {
+    if (value == null) return null;
+    final bounded = LogExportOutput.boundJsonValue(
+      value,
+      replaceOversizedStrings: shouldRedact,
+    );
+    if (bounded is String) return bounded;
+    if (bounded is bool || bounded is num) return Error.safeToString(bounded);
+    try {
+      final encoded = jsonEncode(bounded);
+      if (LogExportOutput.utf8Length(
+            encoded,
+            limit: LogExportOutput.maxPreparedValueBytes,
+          ) <=
+          LogExportOutput.maxPreparedValueBytes) {
+        return encoded;
+      }
+      return shouldRedact
+          ? LogExportOutput.truncatedMarker
+          : LogExportOutput.truncateUtf8(
+              encoded,
+              maxBytes: LogExportOutput.maxPreparedValueBytes,
+            );
+    } catch (_) {
+      return JsonValueNormalizer.unprintableValue;
+    }
+  }
+
+  static String _boundDbText(
+    String value, {
+    required bool shouldRedact,
+    int maxBytes = _maxDbScalarBytes,
+  }) {
+    final bounded = LogExportOutput.boundJsonValue(
+      value,
+      maxBytes: maxBytes,
+      replaceOversizedStrings: shouldRedact,
+    );
+    return bounded is String ? bounded : JsonValueNormalizer.unprintableValue;
+  }
+
+  static String? _boundNullableDbText(
+    String? value, {
+    required bool shouldRedact,
+    int maxBytes = _maxDbScalarBytes,
+  }) =>
+      value == null
+          ? null
+          : _boundDbText(
+              value,
+              shouldRedact: shouldRedact,
+              maxBytes: maxBytes,
+            );
+
+  static Map<String, Object?>? _mergeBoundedMeta(
+    Map<String, Object?>? first,
+    Map<String, Object?>? second, {
+    required bool shouldRedact,
+  }) {
+    if (first == null && second == null) return null;
+    final bounded = LogExportOutput.boundJsonValue(
+      <String, Object?>{
+        if (first != null) 'first': first,
+        if (second != null) 'second': second,
+      },
+      maxBytes: _maxDbDiagnosticsBytes,
+      preserveTypes: shouldRedact,
+      replaceOversizedStrings: shouldRedact,
+    );
+    if (bounded is! Map<String, Object?>) return null;
+    final firstValues = bounded['first'];
+    final secondValues = bounded['second'];
+    return <String, Object?>{
+      if (firstValues is Map<String, Object?>) ...firstValues,
+      if (secondValues is Map<String, Object?>) ...secondValues,
+    };
+  }
+}
+
+final class _DbProjectionNotProvided {
+  const _DbProjectionNotProvided();
+}
+
+final class _BoundedDbDiagnostics {
+  const _BoundedDbDiagnostics({
+    required this.args,
+    required this.namedArgs,
+    required this.value,
+    required this.meta,
+    required this.error,
+    required this.errorStackTraceText,
+  });
+
+  final List<Object?>? args;
+  final Map<String, Object?>? namedArgs;
+  final Object? value;
+  final Map<String, Object?>? meta;
+  final Object? error;
+  final String? errorStackTraceText;
+}
+
+final class _PreprocessedDbTrace {
+  const _PreprocessedDbTrace({
+    required this.meta,
+    required this.error,
+    required this.errorStackTrace,
+  });
+
+  final Map<String, Object?> meta;
+  final String? error;
+  final StackTrace? errorStackTrace;
 }

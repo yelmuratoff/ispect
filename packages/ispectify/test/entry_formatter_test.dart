@@ -16,6 +16,61 @@ ISpectLogData _data({
       additionalData: additionalData,
     );
 
+final class _HostileFormatterLogGetters extends ISpectLogData {
+  _HostileFormatterLogGetters()
+      : super(
+          'trusted-formatter-message',
+          time: DateTime.utc(2026, 4, 21, 1, 17, 7, 259),
+          key: 'trusted-formatter-key',
+          logLevel: LogLevel.info,
+          additionalData: const {
+            TraceKeys.source: 'trusted-formatter-source',
+          },
+        );
+
+  final List<int> _getterCalls = [0];
+
+  int get getterCalls => _getterCalls.single;
+
+  Never _forged() {
+    _getterCalls[0]++;
+    throw StateError('FORGED_FORMATTER_GETTER_SECRET');
+  }
+
+  @override
+  DateTime get time => _forged();
+
+  @override
+  String? get key => _forged();
+
+  @override
+  LogLevel? get logLevel => _forged();
+
+  @override
+  Map<String, dynamic>? get additionalData => _forged();
+
+  @override
+  Object? get exception => _forged();
+
+  @override
+  Error? get error => _forged();
+
+  @override
+  StackTrace? get stackTrace => _forged();
+
+  @override
+  String? get message => _forged();
+
+  @override
+  Object? get messageForSerialization => _forged();
+
+  @override
+  String get formattedTime => _forged();
+
+  @override
+  String get textMessage => _forged();
+}
+
 void main() {
   group('HumanLogEntryFormatter', () {
     const formatter = HumanLogEntryFormatter();
@@ -120,6 +175,18 @@ void main() {
       final line = formatter.format(data, settings);
       expect(line, endsWith(' | (empty log message)'));
     });
+
+    test('ignores hostile log getter overrides', () {
+      final data = _HostileFormatterLogGetters();
+
+      final line = formatter.format(data, settings);
+
+      expect(line, contains('trusted-formatter-message'));
+      expect(line, contains('trusted-formatter-key'));
+      expect(line, contains('trusted-formatter-source'));
+      expect(line, isNot(contains('FORGED_FORMATTER_GETTER_SECRET')));
+      expect(data.getterCalls, 0);
+    });
   });
 
   group('BoxedLogEntryFormatter', () {
@@ -178,6 +245,17 @@ void main() {
       final line = formatter.format(_data(message: ''), settings);
       expect(line, contains('│ '));
       expect(line, contains('(empty log message)'));
+    });
+
+    test('ignores hostile log getter overrides', () {
+      final data = _HostileFormatterLogGetters();
+
+      final line = formatter.format(data, settings);
+
+      expect(line, contains('trusted-formatter-message'));
+      expect(line, contains('trusted-formatter-key'));
+      expect(line, isNot(contains('FORGED_FORMATTER_GETTER_SECRET')));
+      expect(data.getterCalls, 0);
     });
 
     test(

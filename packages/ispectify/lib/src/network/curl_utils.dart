@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:ispectify/ispectify.dart';
 
 /// Utility class for generating cURL commands from HTTP request data.
@@ -6,67 +8,208 @@ abstract final class CurlUtils {
   ///
   /// - [data]: A map containing request details such as 'uri', 'method',
   ///   'headers', 'data'.
-  /// - [redactor]: When provided, the URL is passed through
-  ///   [RedactionService.redactUrl], header values through
-  ///   [RedactionService.redactHeaders], and the body through
-  ///   [RedactionService.redact] before being written to the command.
+  /// - [redactor]: Optional custom redaction policy. A default
+  ///   [RedactionService] is used when omitted.
+  /// - [enableRedaction]: Explicitly set to `false` only for controlled local
+  ///   debugging when raw request values are required.
   ///
-  /// **The URL, headers, and body are NOT redacted unless a [RedactionService]
-  /// is provided.** Without a [redactor], values such as `Authorization`,
-  /// `Cookie`, `X-API-Key`, and URL credentials or query parameters
-  /// (`?token=…`, `user:pass@host`) will appear verbatim in the generated
-  /// string. Always pass a [redactor] when the result is exposed to users
-  /// (copy to clipboard, share sheet, bug report).
+  /// With redaction enabled, the method is treated as free-form diagnostic
+  /// text, the URL is passed through [RedactionService.redactUrl], header
+  /// values through [RedactionService.redactHeaders], and the body through the
+  /// shared network payload sanitizer before being written to the command.
   ///
   /// Returns `null` if the data is insufficient to generate a valid cURL
   /// command.
   static String? generateCurl(
     Map<String, dynamic>? data, {
     RedactionService? redactor,
+    bool enableRedaction = true,
   }) {
-    if (data == null ||
-        (!data.containsKey('uri') && !data.containsKey('url')) ||
-        !data.containsKey('method')) {
+    if (data == null) return null;
+    try {
+      final redactionActive = enableRedaction && ISpectRedaction.enabled;
+      final effectiveRedactor = redactionActive
+          ? ISpectRedaction.resolveService(service: redactor)
+          : null;
+      final uriValue = data['uri'];
+      final urlValue = data['url'];
+      final methodValue = data['method'];
+      final rawUri = uriValue is String
+          ? uriValue
+          : urlValue is String
+              ? urlValue
+              : null;
+      if (rawUri == null || methodValue is! String) return null;
+
+      final uri = _boundString(rawUri, redactionActive: redactionActive);
+      final boundedMethod = _boundString(
+        methodValue,
+        redactionActive: redactionActive,
+      );
+      final method = effectiveRedactor == null
+          ? boundedMethod
+          : NetworkMapRedactor.redactFreeTextValue(
+              boundedMethod,
+              effectiveRedactor,
+            );
+      final redactedUri =
+          effectiveRedactor == null ? uri : effectiveRedactor.redactUrl(uri);
+      final safeUri = _boundString(
+        redactedUri,
+        redactionActive: redactionActive,
+      );
+      final buffer = _CurlCommandBuffer(LogExportOutput.maxRecordBytes);
+      final base =
+          'curl -X ${_shellEscape(method)} --url ${_shellEscape(safeUri)}';
+      if (!buffer.write(base)) {
+        return "curl -X '${LogExportOutput.truncatedMarker}' "
+            "--url '${LogExportOutput.truncatedMarker}'";
+      }
+
+      final rawBody = LogExportOutput.boundJsonValue(
+        data['data'],
+        preserveTypes: redactionActive,
+        replaceOversizedStrings: redactionActive,
+      );
+      final rawHeaders = _coerceHeaders(
+        data['headers'],
+        redactionActive: redactionActive,
+      );
+      final redactedHeaders = rawHeaders == null
+          ? null
+          : effectiveRedactor == null
+              ? rawHeaders
+              : NetworkPayloadSanitizer(effectiveRedactor).headersMap(
+                  rawHeaders,
+                  enableRedaction: true,
+                );
+      final boundedHeaders = LogExportOutput.boundJsonValue(
+        redactedHeaders,
+        preserveTypes: redactionActive,
+        replaceOversizedStrings: redactionActive,
+      );
+      final headers = boundedHeaders is Map<String, Object?>
+          ? boundedHeaders
+          : boundedHeaders is Map
+              ? Map<String, Object?>.from(boundedHeaders)
+              : null;
+      var truncated = false;
+      if (headers != null) {
+        var emittedHeaders = 0;
+        for (final entry in headers.entries) {
+          if (emittedHeaders >= _maxEmittedHeaders) {
+            truncated = true;
+            break;
+          }
+          final key = entry.key;
+          final value = entry.value;
+          if (rawBody != null && key.toLowerCase() == 'content-length') {
+            continue;
+          }
+          final values = value is List<Object?> && value is! TypedData
+              ? value
+              : <Object?>[value];
+          for (final item in values) {
+            if (item == null) continue;
+            if (emittedHeaders >= _maxEmittedHeaders) {
+              truncated = true;
+              break;
+            }
+            emittedHeaders++;
+            final text = _boundedText(item);
+            if (!buffer.write(' -H ${_shellEscape('$key: $text')}')) {
+              truncated = true;
+              break;
+            }
+          }
+          if (truncated) break;
+        }
+      }
+
+      final redactedBody = rawBody == null || effectiveRedactor == null
+          ? rawBody
+          : NetworkPayloadSanitizer(effectiveRedactor).body(
+              rawBody,
+              enableRedaction: true,
+            );
+      final body = LogExportOutput.boundJsonValue(
+        redactedBody,
+        replaceOversizedStrings: redactionActive,
+      );
+      if (body != null) {
+        final bodyString = body is String ? body : JsonTruncator.pretty(body);
+        if (!buffer.write(' --data-raw ${_shellEscape(bodyString)}')) {
+          truncated = true;
+        }
+      }
+      if (truncated) {
+        buffer.write(' # ${LogExportOutput.truncatedMarker}');
+      }
+      return buffer.toString();
+    } catch (_) {
       return null;
     }
+  }
 
-    final uri = data['uri'] as String? ?? data['url'] as String?;
-    final method = data['method'] as String?;
-    if (uri == null || method == null) return null;
-
-    final safeUri = redactor != null ? redactor.redactUrl(uri) : uri;
-    final buffer = StringBuffer(
-      'curl -X ${_shellEscape(method)} ${_shellEscape(safeUri)}',
+  static Map<String, Object?>? _coerceHeaders(
+    Object? value, {
+    required bool redactionActive,
+  }) {
+    final bounded = LogExportOutput.boundJsonValue(
+      value,
+      preserveTypes: redactionActive,
+      replaceOversizedStrings: redactionActive,
     );
+    if (bounded is Map<String, Object?>) return bounded;
+    if (bounded is Map) return Map<String, Object?>.from(bounded);
+    return null;
+  }
 
-    final rawHeaders = data['headers'] as Map<String, dynamic>?;
-    final headers = rawHeaders == null
-        ? null
-        : redactor != null
-            ? redactor.redactHeaders(Map<String, Object?>.from(rawHeaders))
-            : rawHeaders;
-    if (headers != null) {
-      headers.forEach((key, value) {
-        if (value != null) {
-          buffer.write(' -H ${_shellEscape('$key: $value')}');
-        }
-      });
-    }
+  static String _boundString(
+    String value, {
+    required bool redactionActive,
+  }) {
+    final bounded = LogExportOutput.boundJsonValue(
+      value,
+      replaceOversizedStrings: redactionActive,
+    );
+    return bounded is String ? bounded : LogExportOutput.truncatedMarker;
+  }
 
-    final rawBody = data['data'];
-    final body = rawBody == null || redactor == null
-        ? rawBody
-        : redactor.redact(rawBody);
-    if (body != null) {
-      final bodyString = body is String ? body : JsonTruncator.pretty(body);
-      buffer.write(' -d ${_shellEscape(bodyString)}');
-    }
-
-    return buffer.toString();
+  static String _boundedText(Object? value) {
+    if (value == null) return '';
+    if (value is String) return value;
+    if (value is bool || value is num) return value.toString();
+    final bounded = value is TypedData || value is ByteBuffer
+        ? LogExportOutput.boundJsonValue(value)
+        : value;
+    return JsonTruncator.pretty(bounded);
   }
 
   static String _shellEscape(String value) {
     final escaped = value.replaceAll("'", r"'\''");
     return "'$escaped'";
   }
+}
+
+const int _maxEmittedHeaders = 100;
+
+final class _CurlCommandBuffer {
+  _CurlCommandBuffer(this.maxBytes);
+
+  final int maxBytes;
+  final StringBuffer _buffer = StringBuffer();
+  int _bytes = 0;
+
+  bool write(String value) {
+    final remaining = maxBytes - _bytes;
+    final bytes = LogExportOutput.utf8Length(value, limit: remaining);
+    if (bytes > remaining) return false;
+    _buffer.write(value);
+    _bytes += bytes;
+    return true;
+  }
+
+  @override
+  String toString() => _buffer.toString();
 }

@@ -1,9 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/widgets/export_sheet.dart';
+
+const int _backgroundExportLogThreshold = 50;
+
+final class _LogsExportRequest {
+  const _LogsExportRequest({
+    required this.format,
+    required this.logs,
+    required this.redactionService,
+    required this.enableRedaction,
+    required this.metadata,
+  });
+
+  final ExportFormat format;
+  final List<ISpectLogData> logs;
+  final RedactionService redactionService;
+  final bool enableRedaction;
+  final ISpectMetadata? metadata;
+}
+
+String _buildNonJsonExport(_LogsExportRequest request) {
+  switch (request.format) {
+    case ExportFormat.text:
+      return LogExporter.toText(
+        request.logs,
+        redactionService: request.redactionService,
+        enableRedaction: request.enableRedaction,
+        metadata: request.metadata,
+      );
+    case ExportFormat.markdown:
+      return LogExporter.toMarkdown(
+        request.logs,
+        redactionService: request.redactionService,
+        enableRedaction: request.enableRedaction,
+        metadata: request.metadata,
+      );
+    case ExportFormat.csv:
+      return LogExporter.toCsv(
+        request.logs,
+        redactionService: request.redactionService,
+        enableRedaction: request.enableRedaction,
+      );
+    case ExportFormat.json:
+      throw ArgumentError.value(request.format, 'format');
+  }
+}
 
 class ISpectShareAllLogsBottomSheet {
   const ISpectShareAllLogsBottomSheet({
@@ -45,32 +91,40 @@ Future<String> buildLogsExportContent(
   ExportFormat format, {
   required List<ISpectLogData> logs,
   Set<String>? redactKeys,
+  RedactionService? redactionService,
   ISpectMetadata? metadata,
 }) async {
   if (logs.isEmpty) return '';
 
-  switch (format) {
-    case ExportFormat.text:
-      return LogExporter.toText(
-        logs,
-        redactKeys: redactKeys,
-        metadata: metadata,
-      );
-    case ExportFormat.markdown:
-      return LogExporter.toMarkdown(
-        logs,
-        redactKeys: redactKeys,
-        metadata: metadata,
-      );
-    case ExportFormat.csv:
-      return LogExporter.toCsv(logs, redactKeys: redactKeys);
-    case ExportFormat.json:
-      return const LogsJsonService().exportToJson(
-        logs,
-        redactionService: redactKeys == null
-            ? null
-            : RedactionService(sensitiveKeys: redactKeys),
-        metadata: metadata,
-      );
+  final effectiveRedactor = ISpectRedaction.resolveService(
+    service: redactionService,
+    sensitiveKeys: redactKeys,
+  );
+  if (format == ExportFormat.json) {
+    return const LogsJsonService().exportToJson(
+      logs,
+      redactionService: effectiveRedactor,
+      metadata: metadata,
+    );
   }
+
+  final request = _LogsExportRequest(
+    format: format,
+    logs: logs,
+    redactionService: effectiveRedactor,
+    enableRedaction: ISpectRedaction.enabled,
+    metadata: metadata,
+  );
+  if (logs.length < _backgroundExportLogThreshold) {
+    return _buildNonJsonExport(request);
+  }
+  if (kIsWeb) {
+    await Future<void>.delayed(Duration.zero);
+    return _buildNonJsonExport(request);
+  }
+  return compute(
+    _buildNonJsonExport,
+    request,
+    debugLabel: 'ISpect ${format.label} export',
+  );
 }

@@ -1,11 +1,22 @@
+import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 
 /// Service responsible for building JSON view model nodes
 class JsonNodeBuilder {
-  static const _maxBuildDepth = 1000;
+  static const int maxBuildDepth = JsonInputPreflight.maxNestingDepth;
+  static const int maxBuildNodes = JsonInputPreflight.maxViewerNodes;
 
-  /// Builds view model nodes from raw JSON object
-  static Map<String, NodeViewModelState> buildViewModelNodes(Object? object) {
+  /// Takes a safe viewer snapshot and builds nodes from that owned graph.
+  static Map<String, NodeViewModelState> buildViewModelNodes(Object? object) =>
+      buildSnapshotViewModelNodes(
+        JsonInputPreflight.snapshotForViewer(object),
+      );
+
+  /// Builds view model nodes without re-normalizing a proven snapshot.
+  static Map<String, NodeViewModelState> buildSnapshotViewModelNodes(
+    JsonInputSnapshot snapshot,
+  ) {
+    final object = snapshot.value;
     if (object is Map<String, dynamic>) {
       return _buildClassNodes(object: object);
     }
@@ -23,18 +34,6 @@ class JsonNodeBuilder {
     for (final entry in object.entries) {
       final key = entry.key;
       final value = entry.value;
-
-      if (treeDepth >= _maxBuildDepth) {
-        // At max depth, render any nested structure as a leaf string value
-        map[key] = NodeViewModelState.fromProperty(
-          key: key,
-          value: value?.toString() ?? 'null',
-          treeDepth: treeDepth,
-          parent: parent,
-          rawValue: value,
-        );
-        continue;
-      }
 
       if (value is Map) {
         final classNode = NodeViewModelState.fromClass(
@@ -92,19 +91,6 @@ class JsonNodeBuilder {
 
     for (var i = 0; i < object.length; i++) {
       final dynamic arrayValue = object[i];
-
-      if (treeDepth >= _maxBuildDepth) {
-        array.add(
-          NodeViewModelState.fromProperty(
-            key: i.toString(),
-            value: arrayValue?.toString() ?? 'null',
-            treeDepth: treeDepth + 1,
-            parent: parent,
-            rawValue: arrayValue,
-          ),
-        );
-        continue;
-      }
 
       if (arrayValue is Map<String, dynamic>) {
         final classNode = NodeViewModelState.fromClass(

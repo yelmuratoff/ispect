@@ -9,9 +9,15 @@ extension InspectorControllerCapture on InspectorController {
   double get minZoomScale => _minZoomScale;
   double get maxZoomScale => _maxZoomScale;
 
-  void zoomIn() => _setZoomScale(zoomScaleNotifier.value + _zoomStep);
+  void zoomIn() {
+    if (!isEnabled) return;
+    _setZoomScale(zoomScaleNotifier.value + _zoomStep);
+  }
 
-  void zoomOut() => _setZoomScale(zoomScaleNotifier.value - _zoomStep);
+  void zoomOut() {
+    if (!isEnabled) return;
+    _setZoomScale(zoomScaleNotifier.value - _zoomStep);
+  }
 
   void _setZoomScale(double next) {
     final clamped = next.clamp(_minZoomScale, _maxZoomScale);
@@ -35,6 +41,7 @@ extension InspectorControllerCapture on InspectorController {
   /// opening). Without this the loupe keeps showing stale pixels at stale
   /// positions and the picker effectively desyncs from the live UI.
   void invalidateCapturedImage() {
+    if (!isEnabled) return;
     final mode = modeNotifier.value;
     if (mode != InspectorMode.colorPicker && mode != InspectorMode.zoom) {
       return;

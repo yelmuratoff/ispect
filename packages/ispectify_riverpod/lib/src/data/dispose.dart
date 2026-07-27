@@ -1,5 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_riverpod/src/data/riverpod_json_keys.dart';
+import 'package:ispectify_riverpod/src/safe_type_label.dart';
 import 'package:riverpod/riverpod.dart';
 
 /// Snapshot of a Riverpod `didDisposeProvider` event.
@@ -9,12 +10,13 @@ class RiverpodDisposeData {
   final ProviderBase<Object?> provider;
 
   /// Human-readable provider label.
-  String get providerName => provider.name ?? provider.runtimeType.toString();
+  String get providerName =>
+      provider.name ?? safeRiverpodProviderTypeLabel(provider);
 
   /// Returns a raw, JSON-compatible map of the event.
   Map<String, dynamic> toJson() => <String, dynamic>{
         RiverpodJsonKeys.providerName: providerName,
-        RiverpodJsonKeys.providerType: provider.runtimeType.toString(),
+        RiverpodJsonKeys.providerType: safeRiverpodProviderTypeLabel(provider),
       };
 
   /// Applies in-place redaction to a map produced by [toJson].

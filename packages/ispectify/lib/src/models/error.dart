@@ -1,5 +1,4 @@
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify/src/logger/log_parts.dart';
 
 /// Log entry produced when a Dart [Error] is captured by the logger.
 ///
@@ -11,21 +10,25 @@ base class ISpectLogError extends ISpectLogData {
   /// human-readable [message] and [stackTrace].
   ISpectLogError(
     Error error, {
-    String? message,
-    super.stackTrace,
+    Object? message,
+    StackTrace? stackTrace,
+    DateTime? time,
+    LogLevel? logLevel,
+    AnsiPen? pen,
+    String? key,
+    Map<String, dynamic>? additionalData,
+    String? id,
   }) : super(
           message,
           error: error,
-          key: ISpectLogType.error.key,
-          logLevel: LogLevel.error,
+          stackTrace: stackTrace,
+          time: time,
+          logLevel: logLevel ?? LogLevel.error,
+          pen: pen,
+          key: key ?? ISpectLogType.error.key,
+          additionalData: additionalData,
+          id: id,
         );
-
-  @override
-  String get textMessage => joinLogParts([
-        messageText,
-        errorText,
-        stackTraceText,
-      ]);
 
   @override
   void notifyObserver(ISpectObserver observer) {

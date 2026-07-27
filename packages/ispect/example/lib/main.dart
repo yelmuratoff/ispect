@@ -95,7 +95,6 @@ class _MyAppState extends State<MyApp> {
       ),
       builder: (_, child) => ISpectBuilder.wrap(
         child: child!,
-        // Set to false to hide the panel for non-admin users at runtime.
         // Compile-time gating already happens via kISpectEnabled.
         // isISpectEnabled: currentUser.isAdmin,
         //
@@ -134,20 +133,7 @@ class _MyAppState extends State<MyApp> {
             buildNumber: '1',
             environment: 'dev',
           ),
-          // Supplies a file for multipart bodies in the HTTP composer. A real
-          // app picks one here, e.g. with package:file_picker:
-          //
-          //   final result = await FilePicker.platform.pickFiles(withData: true);
-          //   if (result == null) return null; // user cancelled
-          //   final file = result.files.single;
-          //   return ComposerPickedFile(
-          //     filename: file.name,
-          //     bytes: file.bytes!,
-          //     contentType: lookupMimeType(file.name) ?? 'application/octet-stream',
-          //   );
-          //
-          // This stub returns in-memory bytes so the "attach file" control
-          // works without a native picker. Omit the callback to hide it.
+          // Omitting this callback hides the composer's attach-file control.
           onPickComposerFile: () async => ComposerPickedFile(
             filename: 'sample.txt',
             bytes: 'Hello from the ISpect HTTP composer'.codeUnits,
@@ -165,11 +151,7 @@ class _MyAppState extends State<MyApp> {
             // Returning null cancels without an error.
             return null;
           },
-          onSettingsChanged: (settings) {
-            // Here you can save changed settings to local storage
-            // e.g. prefs.setString('ispect', jsonEncode(settings.toJson()));
-          },
-          // Here you can attach saved settings from local storage
+          onSettingsChanged: (settings) {},
           initialSettings: null,
           // Add custom buttons to the action sheet (logs export, share, etc.).
           actionItems: [
@@ -361,7 +343,7 @@ class _HomePage extends StatelessWidget {
         }
       },
     };
-    const JsonScreen(data: sample).push(context);
+    JsonScreen(data: sample).push(context);
   }
 }
 

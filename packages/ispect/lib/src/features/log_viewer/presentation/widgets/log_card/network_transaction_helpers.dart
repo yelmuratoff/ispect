@@ -104,8 +104,11 @@ void shareTransaction(BuildContext context, NetworkTransaction tx) {
   // If only request exists (pending), share directly.
   if (responseLog == null) {
     ISpectShareLogBottomSheet(
-      data: tx.request.toJson(),
-      truncatedData: tx.request.toJson(truncated: true),
+      data: tx.request.toExportJson(redactionActive: true),
+      truncatedData: tx.request.toExportJson(
+        redactionActive: true,
+        truncated: true,
+      ),
     ).show(context);
     return;
   }
@@ -137,8 +140,11 @@ void _showTransactionShareSheet(
           Navigator.of(sheetContext).pop();
           if (!context.mounted) return;
           ISpectShareLogBottomSheet(
-            data: request.toJson(),
-            truncatedData: request.toJson(truncated: true),
+            data: request.toExportJson(redactionActive: true),
+            truncatedData: request.toExportJson(
+              redactionActive: true,
+              truncated: true,
+            ),
           ).show(context);
         },
       ),
@@ -149,8 +155,11 @@ void _showTransactionShareSheet(
           Navigator.of(sheetContext).pop();
           if (!context.mounted) return;
           ISpectShareLogBottomSheet(
-            data: response.toJson(),
-            truncatedData: response.toJson(truncated: true),
+            data: response.toExportJson(redactionActive: true),
+            truncatedData: response.toExportJson(
+              redactionActive: true,
+              truncated: true,
+            ),
           ).show(context);
         },
       ),

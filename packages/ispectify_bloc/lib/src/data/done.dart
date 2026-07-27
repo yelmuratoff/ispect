@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/src/data/bloc_json_keys.dart';
+import 'package:ispectify_bloc/src/safe_type_label.dart';
 
 /// Snapshot of a BLoC `onDone` invocation.
 class BlocDoneData {
@@ -16,11 +17,11 @@ class BlocDoneData {
   final bool hasError;
 
   /// Whether the raw [event] should be surfaced in [toJson] alongside its
-  /// runtime type. Mirrors `ISpectBlocSettings.printEventFullData`.
+  /// coarse type label. Mirrors `ISpectBlocSettings.printEventFullData`.
   final bool includeFullData;
 
-  String get blocType => bloc.runtimeType.toString();
-  String? get eventType => event?.runtimeType.toString();
+  String get blocType => safeBlocTypeLabel(bloc);
+  String? get eventType => event == null ? null : safeBlocValueTypeLabel(event);
 
   /// Returns a raw, JSON-compatible map of the completion event.
   Map<String, dynamic> toJson() => <String, dynamic>{

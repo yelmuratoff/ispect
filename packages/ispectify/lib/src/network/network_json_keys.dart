@@ -11,9 +11,7 @@
 /// };
 /// ```
 abstract final class NetworkJsonKeys {
-  // ---------------------------------------------------------------------------
   // Identity
-  // ---------------------------------------------------------------------------
 
   static const String method = 'method';
   static const String url = 'url';
@@ -21,16 +19,12 @@ abstract final class NetworkJsonKeys {
   static const String path = 'path';
   static const String queryParameters = 'query-parameters';
 
-  // ---------------------------------------------------------------------------
   // Status
-  // ---------------------------------------------------------------------------
 
   static const String statusCode = 'status-code';
   static const String statusMessage = 'status-message';
 
-  // ---------------------------------------------------------------------------
   // Payload
-  // ---------------------------------------------------------------------------
 
   static const String contentType = 'content-type';
   static const String contentLength = 'content-length';
@@ -45,17 +39,13 @@ abstract final class NetworkJsonKeys {
   static const String bodyBytes = 'body-bytes';
   static const String encoding = 'encoding';
 
-  // ---------------------------------------------------------------------------
   // Timing
-  // ---------------------------------------------------------------------------
 
   static const String connectTimeout = 'connect-timeout';
   static const String sendTimeout = 'send-timeout';
   static const String receiveTimeout = 'receive-timeout';
 
-  // ---------------------------------------------------------------------------
   // Behaviour
-  // ---------------------------------------------------------------------------
 
   static const String followRedirects = 'follow-redirects';
   static const String maxRedirects = 'max-redirects';
@@ -67,24 +57,18 @@ abstract final class NetworkJsonKeys {
   static const String listFormat = 'list-format';
   static const String cancelToken = 'cancel-token';
 
-  // ---------------------------------------------------------------------------
   // Redirects
-  // ---------------------------------------------------------------------------
 
   static const String isRedirect = 'is-redirect';
   static const String redirects = 'redirects';
   static const String location = 'location';
 
-  // ---------------------------------------------------------------------------
   // Meta
-  // ---------------------------------------------------------------------------
 
   static const String extra = 'extra';
   static const String finalized = 'finalized';
 
-  // ---------------------------------------------------------------------------
   // Meta envelope (top-level keys written inside `meta` by interceptors)
-  // ---------------------------------------------------------------------------
 
   /// Correlation id shared across a request/response/error trio.
   static const String requestId = 'request-id';
@@ -98,9 +82,16 @@ abstract final class NetworkJsonKeys {
   /// Serialized error blob.
   static const String errorData = 'error-data';
 
-  // ---------------------------------------------------------------------------
+  /// Machine-readable proof that capture-time redaction changed replayable
+  /// request fields. Replay consumes this instead of guessing placeholder
+  /// text, which also supports custom redaction placeholders.
+  static const String redactionProvenance = 'redaction-provenance';
+  static const String redactedHeaderKeys = 'redacted-header-keys';
+  static const String urlRedacted = 'url-redacted';
+  static const String queryRedacted = 'query-redacted';
+  static const String bodyRedacted = 'body-redacted';
+
   // Nested references
-  // ---------------------------------------------------------------------------
 
   /// Key for nested original-request blob inside response/error maps.
   static const String request = 'request';
@@ -108,17 +99,13 @@ abstract final class NetworkJsonKeys {
   /// Key for nested response blob inside error maps.
   static const String response = 'response';
 
-  // ---------------------------------------------------------------------------
   // Multipart
-  // ---------------------------------------------------------------------------
 
   static const String multipartRequest = 'multipart-request';
   static const String fields = 'fields';
   static const String files = 'files';
 
-  // ---------------------------------------------------------------------------
   // File metadata (inside multipart `files` entries)
-  // ---------------------------------------------------------------------------
 
   /// The form field name the file was attached to.
   static const String fieldName = 'field';
@@ -126,24 +113,18 @@ abstract final class NetworkJsonKeys {
   static const String contentTypeValue = 'content-type';
   static const String length = 'length';
 
-  // ---------------------------------------------------------------------------
   // Error
-  // ---------------------------------------------------------------------------
 
   static const String type = 'type';
   static const String message = 'message';
   static const String error = 'error';
   static const String stackTrace = 'stack-trace';
 
-  // ---------------------------------------------------------------------------
   // WebSocket
-  // ---------------------------------------------------------------------------
 
   static const String metrics = 'metrics';
 
-  // ---------------------------------------------------------------------------
   // Internal
-  // ---------------------------------------------------------------------------
 
   /// Request ID stored in Dio's `extra` map; preserved during redaction.
   static const String ispectRequestId = '_ispect_rid';

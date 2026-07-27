@@ -13,7 +13,7 @@ const String defaultPlaceholder = '[REDACTED]';
 /// [defaultPlaceholder] mask.
 @Deprecated(
   'Use defaultPlaceholder; redaction now uses one unified mask. '
-  'Will be removed in 7.0.0.',
+  'Will be removed in 8.0.0.',
 )
 const String redactedMask = defaultPlaceholder;
 

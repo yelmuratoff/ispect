@@ -1,6 +1,9 @@
+import 'package:ispectify/src/history/serialization.dart';
 import 'package:ispectify/src/network/network_json_keys.dart';
 import 'package:ispectify/src/network/replay/network_replay_body.dart';
+import 'package:ispectify/src/redaction/constants/key_defaults.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart';
+import 'package:ispectify/src/utils/json_value_normalizer.dart';
 import 'package:meta/meta.dart';
 
 /// A transport-agnostic description of an HTTP request to send.
@@ -76,32 +79,64 @@ abstract final class NetworkReplayRequestParser {
   ///
   /// Returns `null` when [map] lacks a usable URL.
   static ParsedReplayRequest? fromRequestMap(Map<String, dynamic> map) {
-    final urlValue = map[NetworkJsonKeys.url] ?? map['uri'];
-    final uri = urlValue is String ? Uri.tryParse(urlValue) : null;
-    if (uri == null) return null;
+    final bounded = LogExportOutput.boundJsonValue(
+      map,
+      maxBytes: LogExportOutput.maxRecordBytes,
+    );
+    if (bounded is! Map<String, Object?>) return null;
 
-    final method =
-        (map[NetworkJsonKeys.method] as String?)?.toUpperCase() ?? 'GET';
+    final urlValue = bounded[NetworkJsonKeys.url] ?? bounded['uri'];
+    if (urlValue is! String ||
+        _isUnsafeText(urlValue) ||
+        LogExportOutput.utf8Length(
+              urlValue,
+              limit: LogExportOutput.maxPreparedValueBytes,
+            ) >
+            LogExportOutput.maxPreparedValueBytes) {
+      return null;
+    }
+    final uri = Uri.tryParse(urlValue);
+    if (uri == null) return null;
+    final provenance = _provenanceOf(bounded);
+    if (provenance[NetworkJsonKeys.urlRedacted] == true) return null;
+
+    final rawMethod = bounded[NetworkJsonKeys.method];
+    final method = rawMethod is String && !_isUnsafeText(rawMethod)
+        ? LogExportOutput.truncateUtf8(rawMethod, maxBytes: 32).toUpperCase()
+        : 'GET';
 
     final redactedHeaderKeys = <String>{};
-    final headers = _parseHeaders(map, redactedHeaderKeys);
+    final recordedHeaderKeys = provenance[NetworkJsonKeys.redactedHeaderKeys];
+    if (recordedHeaderKeys is List<Object?>) {
+      redactedHeaderKeys.addAll(recordedHeaderKeys.whereType<String>());
+    }
+    final headers = _parseHeaders(bounded, redactedHeaderKeys);
 
-    final contentType = (map[NetworkJsonKeys.contentType] ??
-            headers['content-type'] ??
-            headers['Content-Type'])
-        ?.toString();
-
-    var bodyRedacted = false;
-    final body = _parseBody(
-      map,
-      contentType: contentType,
-      onRedacted: () => bodyRedacted = true,
+    final contentType = _primitiveText(
+      bounded[NetworkJsonKeys.contentType] ??
+          headers['content-type'] ??
+          headers['Content-Type'],
     );
+    if (contentType != null && _isUnsafeText(contentType)) return null;
+
+    if (provenance[NetworkJsonKeys.queryRedacted] == true ||
+        _containsUnsafeMarker(bounded[NetworkJsonKeys.queryParameters])) {
+      return null;
+    }
+
+    var bodyRedacted = provenance[NetworkJsonKeys.bodyRedacted] == true;
+    final body = bodyRedacted
+        ? null
+        : _parseBody(
+            bounded,
+            contentType: contentType,
+            onRedacted: () => bodyRedacted = true,
+          );
 
     return ParsedReplayRequest(
       request: NetworkReplayRequest(
         method: method,
-        uri: _withQueryParameters(uri, map),
+        uri: _withQueryParameters(uri, bounded),
         headers: headers,
         body: body,
       ),
@@ -117,16 +152,29 @@ abstract final class NetworkReplayRequestParser {
     final raw = map[NetworkJsonKeys.headers];
     if (raw is! Map) return const {};
     final headers = <String, String>{};
-    raw.forEach((key, value) {
-      if (value == null) return;
-      final name = key.toString();
-      final text = value.toString();
-      if (_isRedacted(text)) {
+    for (final entry in raw.entries.take(100)) {
+      final key = entry.key;
+      final value = entry.value;
+      if (value == null) continue;
+      final name = key is String ? key : null;
+      final text = _primitiveText(value);
+      if (name == null ||
+          text == null ||
+          _isUnsafeText(name) ||
+          _isUnsafeText(text)) {
+        if (name != null && !_isUnsafeText(name)) {
+          redactedKeys.add(name);
+        }
+        continue;
+      }
+      if (redactedKeys.contains(name) ||
+          _isSensitiveHeaderName(name) ||
+          _containsUnsafeMarker(text)) {
         redactedKeys.add(name);
-        return;
+        continue;
       }
       headers[name] = text;
-    });
+    }
     return headers;
   }
 
@@ -134,9 +182,16 @@ abstract final class NetworkReplayRequestParser {
     final raw = map[NetworkJsonKeys.queryParameters];
     if (raw is! Map || raw.isEmpty) return uri;
     final merged = <String, String>{...uri.queryParameters};
-    raw.forEach((key, value) {
-      if (value != null) merged[key.toString()] = value.toString();
-    });
+    for (final entry in raw.entries.take(100)) {
+      final key = entry.key;
+      final value = _primitiveText(entry.value);
+      if (key is String &&
+          value != null &&
+          !_isUnsafeText(key) &&
+          !_isUnsafeText(value)) {
+        merged[key] = value;
+      }
+    }
     return merged.isEmpty ? uri : uri.replace(queryParameters: merged);
   }
 
@@ -146,23 +201,43 @@ abstract final class NetworkReplayRequestParser {
     required void Function() onRedacted,
   }) {
     final multipart = map[NetworkJsonKeys.multipartRequest];
-    if (multipart is Map) return _parseMultipart(multipart);
+    if (multipart is Map) {
+      if (_containsUnsafeMarker(multipart)) {
+        onRedacted();
+        return null;
+      }
+      return _parseMultipart(multipart);
+    }
 
     final raw = map.containsKey(NetworkJsonKeys.data)
         ? map[NetworkJsonKeys.data]
         : map[NetworkJsonKeys.body];
     if (raw == null) return null;
 
-    if (raw is Map || raw is List) return JsonReplayBody(raw);
+    if (raw is Map || raw is List) {
+      if (_containsUnsafeMarker(raw)) {
+        onRedacted();
+        return null;
+      }
+      return JsonReplayBody(raw);
+    }
 
-    final text = raw.toString();
-    if (_isRedacted(text)) {
+    final text = _primitiveText(raw);
+    if (text == null || _isUnsafeText(text)) {
       onRedacted();
       return null;
     }
     if (contentType != null &&
         contentType.contains('application/x-www-form-urlencoded')) {
-      return FormUrlEncodedReplayBody(Uri.splitQueryString(text));
+      try {
+        return FormUrlEncodedReplayBody(Uri.splitQueryString(text));
+      } on FormatException {
+        onRedacted();
+        return null;
+      } catch (_) {
+        onRedacted();
+        return null;
+      }
     }
     return TextReplayBody(text, contentType: contentType);
   }
@@ -171,16 +246,91 @@ abstract final class NetworkReplayRequestParser {
     final fields = <MultipartReplayField>[];
     final rawFields = multipart[NetworkJsonKeys.fields];
     if (rawFields is Map) {
-      rawFields.forEach((key, value) {
-        fields
-            .add(MultipartReplayField(key.toString(), value?.toString() ?? ''));
-      });
+      for (final entry in rawFields.entries.take(100)) {
+        final name = entry.key;
+        final value = _primitiveText(entry.value) ?? '';
+        if (name is String && !_isUnsafeText(name) && !_isUnsafeText(value)) {
+          fields.add(MultipartReplayField(name, value));
+        }
+      }
     }
     return MultipartReplayBody(fields: fields);
   }
 
-  static bool _isRedacted(String value) =>
-      value == defaultPlaceholder || value == _legacyShortMask;
+  static String? _primitiveText(Object? value) => switch (value) {
+        final String text => text,
+        final bool primitive => primitive.toString(),
+        final num primitive => primitive.toString(),
+        _ => null,
+      };
+
+  static Map<String, Object?> _provenanceOf(Map<String, Object?> map) {
+    final value = map[NetworkJsonKeys.redactionProvenance];
+    return value is Map<String, Object?> ? value : const {};
+  }
+
+  static bool _isSensitiveHeaderName(String name) {
+    final lower = name.trim().toLowerCase();
+    final underscored = lower.replaceAll('-', '_');
+    return defaultSensitiveKeys.contains(lower) ||
+        defaultSensitiveKeys.contains(underscored);
+  }
+
+  static bool _containsUnsafeMarker(Object? value) {
+    if (value is String) return _isUnsafeText(value);
+    if (value is Map) {
+      for (final entry in value.entries) {
+        if (_containsUnsafeMarker(entry.key) ||
+            _containsUnsafeMarker(entry.value)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    if (value is Iterable) {
+      for (final item in value) {
+        if (_containsUnsafeMarker(item)) return true;
+      }
+    }
+    return false;
+  }
+
+  static bool _isUnsafeText(String value) {
+    var candidate = value;
+    for (var pass = 0; pass < 3; pass++) {
+      if (_containsPlainUnsafeMarker(candidate)) return true;
+      try {
+        final decoded = Uri.decodeFull(candidate);
+        if (decoded == candidate) return false;
+        candidate = decoded;
+      } on FormatException {
+        return true;
+      } catch (_) {
+        return true;
+      }
+    }
+    return _containsPlainUnsafeMarker(candidate);
+  }
+
+  static bool _containsPlainUnsafeMarker(String value) =>
+      value.contains(defaultPlaceholder) ||
+      value.contains(userInfoRedactedPlaceholder) ||
+      value.contains(_legacyShortMask) ||
+      value.contains(redactionFailedPlaceholder) ||
+      value.contains(conversionFailedPlaceholder) ||
+      value.contains(LogExportOutput.truncatedMarker) ||
+      value.contains(JsonValueNormalizer.unprintableValue) ||
+      value.contains(JsonValueNormalizer.circularReference) ||
+      value.contains(JsonValueNormalizer.maxDepthReached) ||
+      value.contains(JsonValueNormalizer.maxNodesReached) ||
+      value.contains(JsonValueNormalizer.maxCollectionItemsReached) ||
+      _binaryMarker.hasMatch(value) ||
+      _base64Marker.hasMatch(value) ||
+      _diagnosticDescriptor.hasMatch(value);
+
+  static final RegExp _binaryMarker = RegExp(r'\[binary \d+ bytes\]');
+  static final RegExp _base64Marker = RegExp(r'\[base64 ~\d+B\]');
+  static final RegExp _diagnosticDescriptor = RegExp(r"^Instance of '.+'$");
 
   /// Pre-unification short mask, still recognized so replay never resends a
   /// value redacted by an older capture.

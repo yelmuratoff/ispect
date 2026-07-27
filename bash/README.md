@@ -45,6 +45,9 @@ cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 ./bash/release_prep.sh --carry-changelog
 ```
 
+Every release-prep flow regenerates both the package READMEs and the root
+`llms.txt` index before formatting Dart sources.
+
 ## Version management
 
 Primary source of truth: `version.config` (line `VERSION=X.Y.Z`).

@@ -50,6 +50,8 @@ ISpect.run(
 
 ```dart
 const settings = ISpectDioInterceptorSettings(
+  logRequests: true,
+  logResponses: true,
   printRequestHeaders: true,
   printRequestData: true,
   printResponseHeaders: false,
@@ -61,10 +63,10 @@ const settings = ISpectDioInterceptorSettings(
 ### Preset factories
 
 ```dart
-// Verbose. Full payloads, no redaction. Only for local development.
+// Verbose payload capture with redaction still enabled.
 final dev = ISpectDioInterceptorSettingsBuilder.development().build();
 
-// Redacted. Conservative defaults, body capture off.
+// Redacted errors only. Routine request/response records are not retained.
 final prod = ISpectDioInterceptorSettingsBuilder.production().build();
 
 // Middle ground for staging environments.
@@ -75,11 +77,20 @@ final staging = ISpectDioInterceptorSettingsBuilder.staging().build();
 
 ```dart
 final settings = ISpectDioInterceptorSettingsBuilder()
+    .withoutResponses()
     .withRequestHeaders()
     .withResponseHeaders()
     .withoutRedaction() // not recommended, see "Data redaction" below.
     .build();
 ```
+
+`logRequests` and `logResponses` decide whether routine records are retained.
+Body and header capture is off by default; the `print*` fields opt specific
+retained fields into both the console message and structured metadata. The
+explicit development preset enables verbose capture while keeping redaction on.
+Concrete settings `copyWith` methods and builders expose the retention
+controls. The shared base `configure` helper keeps its legacy-compatible field
+set.
 
 <!-- partial:redaction -->
 
@@ -98,7 +109,7 @@ Supply a custom `RedactionService`:
 ISpectDioInterceptor(
   logger: logger,
   redactor: RedactionService(
-    sensitiveKeys: {...defaultSensitiveKeys, 'x-tenant-token'},
+    additionalSensitiveKeys: {'x-tenant-token'},
   ),
 );
 ```

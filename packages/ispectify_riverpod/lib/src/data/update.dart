@@ -1,5 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_riverpod/src/data/riverpod_json_keys.dart';
+import 'package:ispectify_riverpod/src/safe_type_label.dart';
 import 'package:riverpod/riverpod.dart';
 
 /// Snapshot of a Riverpod `didUpdateProvider` event.
@@ -16,11 +17,12 @@ class RiverpodUpdateData {
   final Object? newValue;
 
   /// Whether raw values should be surfaced in [toJson] alongside their runtime
-  /// types. Mirrors `ISpectRiverpodSettings.printValues`.
+  /// type labels. Mirrors `ISpectRiverpodSettings.printValues`.
   final bool includeValue;
 
   /// Human-readable provider label.
-  String get providerName => provider.name ?? provider.runtimeType.toString();
+  String get providerName =>
+      provider.name ?? safeRiverpodProviderTypeLabel(provider);
 
   /// Returns a raw, JSON-compatible map of the event.
   ///
@@ -28,11 +30,10 @@ class RiverpodUpdateData {
   /// is required.
   Map<String, dynamic> toJson() => <String, dynamic>{
         RiverpodJsonKeys.providerName: providerName,
-        RiverpodJsonKeys.providerType: provider.runtimeType.toString(),
+        RiverpodJsonKeys.providerType: safeRiverpodProviderTypeLabel(provider),
         RiverpodJsonKeys.previousValueType:
-            previousValue?.runtimeType.toString() ?? 'null',
-        RiverpodJsonKeys.newValueType:
-            newValue?.runtimeType.toString() ?? 'null',
+            safeRiverpodValueTypeLabel(previousValue),
+        RiverpodJsonKeys.newValueType: safeRiverpodValueTypeLabel(newValue),
         if (includeValue) ...{
           RiverpodJsonKeys.previousValue: previousValue,
           RiverpodJsonKeys.newValue: newValue,

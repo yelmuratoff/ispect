@@ -9,13 +9,23 @@ on:
     paths:
       - 'packages/*/pubspec.yaml'
       - 'packages/*/README.md'
+      - 'web_logs_viewer/pubspec.yaml'
+      - 'web_logs_viewer/pubspec.lock'
       - 'version.config'
+      - 'llms.txt'
       - 'CHANGELOG.md'
       - 'ROADMAP.md'
       - 'SECURITY.md'
       - 'docs/readme/**'
       - 'docs/*.md'
       - 'bash/build_readme.sh'
+      - 'bash/build_llms.sh'
+      - 'bash/check_dependencies.sh'
+      - 'bash/check_version_sync.sh'
+      - 'bash/update_versions.sh'
+
+permissions:
+  contents: read
 
 jobs:
   validate-versions:
@@ -23,9 +33,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: "3.32.6"
+          channel: stable
+          cache: true
 
       - name: Check Version Sync
         id: check_versions
@@ -60,6 +77,21 @@ jobs:
           fi
           echo "✅ README sync check passed!"
 
+      - name: Check llms.txt Sync
+        run: |
+          set -euo pipefail
+
+          if [[ ! -x bash/build_llms.sh ]]; then
+            chmod +x bash/build_llms.sh
+          fi
+
+          echo "🔍 Checking that llms.txt matches repository metadata..."
+          if ! ./bash/build_llms.sh --check; then
+            echo "❌ llms.txt drift detected. Please run './bash/build_llms.sh' and commit the result."
+            exit 1
+          fi
+          echo "✅ llms.txt sync check passed!"
+
       - name: Check Dependencies Consistency
         id: check_dependencies
         run: |
@@ -76,6 +108,12 @@ jobs:
             exit 1
           fi
           echo "✅ Dependency consistency check passed!"
+
+      - name: Check Web Viewer Lockfile
+        run: |
+          set -euo pipefail
+          cd web_logs_viewer
+          flutter pub get --enforce-lockfile
 
       - name: Validate CHANGELOG
         id: validate_changelog

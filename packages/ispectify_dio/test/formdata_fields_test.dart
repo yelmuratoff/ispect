@@ -12,6 +12,7 @@ void main() {
       logger: logger,
       settings: const ISpectDioInterceptorSettings(
         enableRedaction: false,
+        printRequestData: true,
       ),
     );
 
@@ -46,7 +47,7 @@ void main() {
     expect((fields?['tags[]'] as List).length, 2);
   });
 
-  test('response with FormData is logged', () {
+  test('response FormData is logged as a non-executing descriptor', () {
     final logger = ISpectLogger(
       options: ISpectLoggerOptions(useConsoleLogs: false),
     );
@@ -54,6 +55,7 @@ void main() {
       logger: logger,
       settings: const ISpectDioInterceptorSettings(
         enableRedaction: false,
+        printResponseData: true,
       ),
     );
 
@@ -75,11 +77,11 @@ void main() {
     expect(log.key, ISpectLogType.httpResponse.key);
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
     expect(meta?['status-code'], 200);
-    // FormData response body is stored as-is in responseData.data
     final responseData = meta?['response-data'] as Map?;
     expect(responseData, isNotNull);
-    // data is a FormData — it's not serialized to Map by DioResponseData.toJson()
-    expect(responseData?['data'], isA<FormData>());
+    expect(responseData?['data'], isA<String>());
+    expect(responseData?['data'], isNot(same(responseForm)));
+    expect(responseData?['data'], isNot(contains('ids')));
   });
 
   test('request FormData is properly extracted and logged', () {
@@ -90,6 +92,7 @@ void main() {
       logger: logger,
       settings: const ISpectDioInterceptorSettings(
         enableRedaction: false,
+        printRequestData: true,
       ),
     );
 

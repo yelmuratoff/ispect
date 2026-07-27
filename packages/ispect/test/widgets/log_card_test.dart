@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
@@ -53,6 +54,19 @@ void main() {
         expect(find.text('Test message'), findsOneWidget);
       },
     );
+
+    testWidgets('subtitle does not inspect a hostile diagnostic runtime type',
+        (tester) async {
+      final hostile = _HostileRuntimeTypeError();
+      final data = ISpectLogData('safe message', error: hostile);
+
+      await tester.pumpWidget(buildLogCard(data: data));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(hostile.calls, 0);
+      expect(find.textContaining('Error'), findsWidgets);
+    });
 
     testWidgets(
       'Given a LogCard with key "info", '
@@ -238,5 +252,57 @@ void main() {
         }
       },
     );
+
+    testWidgets(
+      'copy message retains binary provenance until context-menu redaction',
+      (tester) async {
+        String? clipboardText;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            clipboardText = (call.arguments as Map?)?['text'] as String?;
+          }
+          return null;
+        });
+        addTearDown(() {
+          ISpectRedaction.enabled = true;
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+              .setMockMethodCallHandler(SystemChannels.platform, null);
+        });
+        ISpectRedaction.enabled = false;
+        final data = ISpectLogData(
+          Uint8List.fromList(List<int>.filled(64, 211)),
+          key: 'info',
+        );
+        ISpectRedaction.enabled = true;
+
+        await tester.pumpWidget(buildLogCard(data: data));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.more_vert_rounded));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.content_copy_rounded));
+        await tester.pumpAndSettle();
+
+        expect(clipboardText, isNotNull);
+        expect(clipboardText, isNot(contains('211, 211, 211')));
+        expect(clipboardText, '[binary 64 bytes]');
+      },
+    );
   });
+}
+
+final class _HostileRuntimeTypeError extends Error {
+  int calls = 0;
+
+  @override
+  Type get runtimeType {
+    calls++;
+    throw StateError('HOSTILE_LOG_CARD_RUNTIME_TYPE');
+  }
+
+  @override
+  String toString() {
+    calls++;
+    throw StateError('HOSTILE_LOG_CARD_FORMATTER');
+  }
 }

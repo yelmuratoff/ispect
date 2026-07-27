@@ -985,7 +985,7 @@ class _ResultView extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             child: SelectableText(
               result.isError && status == null
-                  ? result.error.toString()
+                  ? _pretty(result.error)
                   : _pretty(result.body),
               style: ISpectInputStyle.textStyle(context),
             ),
@@ -996,18 +996,36 @@ class _ResultView extends StatelessWidget {
 
   static Map<String, dynamic>? _jsonViewerData(NetworkReplayResult result) {
     if (result.isError && result.statusCode == null) return null;
-    final body = result.body;
-    if (body is Map) return Map<String, dynamic>.from(body);
-    if (body is List) return {'content': body};
+    final body = LogExportOutput.boundJsonValue(result.body);
+    if (body is Map<String, Object?>) {
+      return Map<String, dynamic>.from(body);
+    }
+    if (body is List<Object?>) return <String, dynamic>{'content': body};
     return null;
   }
 
   static String _pretty(Object? body) {
-    if (body == null) return '';
-    if (body is Map || body is List) {
-      return const JsonEncoder.withIndent('  ').convert(body);
+    final bounded = LogExportOutput.boundJsonValue(body);
+    if (bounded == null) return '';
+    final String rendered;
+    if (bounded is Map<String, Object?> || bounded is List<Object?>) {
+      try {
+        rendered = const JsonEncoder.withIndent('  ').convert(bounded);
+      } catch (_) {
+        return JsonValueNormalizer.unprintableValue;
+      }
+    } else {
+      rendered = switch (bounded) {
+        final String value => value,
+        final num value => value.toString(),
+        final bool value => value.toString(),
+        _ => JsonValueNormalizer.unprintableValue,
+      };
     }
-    return body.toString();
+    return LogExportOutput.truncateUtf8(
+      rendered,
+      maxBytes: LogExportOutput.maxPreparedValueBytes,
+    );
   }
 }
 

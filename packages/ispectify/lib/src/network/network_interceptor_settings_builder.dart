@@ -23,21 +23,25 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     TReq,
     TRes,
     TErr> {
-  /// Creates a builder with default settings (moderate verbosity).
+  /// Creates a builder with metadata-only defaults.
   BaseNetworkInterceptorSettingsBuilder()
       : enabled = true,
         enableRedaction = true,
-        printResponseData = true,
+        logRequests = true,
+        logResponses = true,
+        printResponseData = false,
         printResponseHeaders = false,
         printResponseMessage = true,
-        printErrorData = true,
-        printErrorHeaders = true,
+        printErrorData = false,
+        printErrorHeaders = false,
         printErrorMessage = true,
-        printRequestData = true,
+        printRequestData = false,
         printRequestHeaders = false;
 
   bool enabled;
   bool enableRedaction;
+  bool logRequests;
+  bool logResponses;
   bool printResponseData;
   bool printResponseHeaders;
   bool printResponseMessage;
@@ -50,11 +54,11 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   AnsiPen? responsePen;
   AnsiPen? errorPen;
 
-  @Deprecated('Use requestChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use requestChain instead. Will be removed in 8.0.0.')
   bool Function(TReq)? requestFilter;
-  @Deprecated('Use responseChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use responseChain instead. Will be removed in 8.0.0.')
   bool Function(TRes)? responseFilter;
-  @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use errorChain instead. Will be removed in 8.0.0.')
   bool Function(TErr)? errorFilter;
 
   NetworkFilterChain<TReq>? requestChain;
@@ -69,6 +73,30 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   /// Enables the interceptor (enabled by default).
   B withEnabled() {
     enabled = true;
+    return _self;
+  }
+
+  /// Enables normal request diagnostics.
+  B withRequests() {
+    logRequests = true;
+    return _self;
+  }
+
+  /// Disables normal request diagnostics.
+  B withoutRequests() {
+    logRequests = false;
+    return _self;
+  }
+
+  /// Enables normal response diagnostics.
+  B withResponses() {
+    logResponses = true;
+    return _self;
+  }
+
+  /// Disables normal response diagnostics.
+  B withoutResponses() {
+    logResponses = false;
     return _self;
   }
 
@@ -162,6 +190,8 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
 
   /// Configures to log only errors (disables request/response logging).
   B withErrorsOnly() {
+    logRequests = false;
+    logResponses = false;
     printRequestData = false;
     printRequestHeaders = false;
     printResponseData = false;
@@ -196,21 +226,21 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   // Filters (legacy — prefer filter chains)
 
   /// Sets a custom request filter callback.
-  @Deprecated('Use withRequestChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use withRequestChain instead. Will be removed in 8.0.0.')
   B withRequestFilter(bool Function(TReq) filter) {
     requestFilter = filter;
     return _self;
   }
 
   /// Sets a custom response filter callback.
-  @Deprecated('Use withResponseChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use withResponseChain instead. Will be removed in 8.0.0.')
   B withResponseFilter(bool Function(TRes) filter) {
     responseFilter = filter;
     return _self;
   }
 
   /// Sets a custom error filter callback.
-  @Deprecated('Use withErrorChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use withErrorChain instead. Will be removed in 8.0.0.')
   B withErrorFilter(bool Function(TErr) filter) {
     errorFilter = filter;
     return _self;
@@ -240,6 +270,8 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
 
   /// Applies development preset: all headers, all data, redaction enabled.
   void applyDevelopmentDefaults() {
+    logRequests = true;
+    logResponses = true;
     withAllHeaders();
     withRedaction();
     withAllData();
@@ -249,10 +281,14 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   void applyProductionDefaults() {
     withRedaction();
     withErrorsOnly();
+    printErrorData = false;
+    printErrorHeaders = false;
   }
 
   /// Applies staging preset: request data + errors, redaction enabled.
   void applyStagingDefaults() {
+    logRequests = true;
+    logResponses = false;
     withRedaction();
     withRequestData();
     withErrorData();

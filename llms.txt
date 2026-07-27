@@ -10,7 +10,7 @@ need on demand instead of working from memorized API. Treat each package's expor
 `lib/<package>.dart` and `README.md` as the authoritative API surface.
 
 - Repository: https://github.com/yelmuratoff/ispect
-- Version: 6.0.0
+- Version: 7.0.0
 
 ## Integration prompt
 
@@ -33,9 +33,11 @@ need on demand instead of working from memorized API. Treat each package's expor
 - [packages/ispect/example/lib/main.dart](packages/ispect/example/lib/main.dart): example wiring for `ispect`.
 - [packages/ispect_layout/example/lib/main.dart](packages/ispect_layout/example/lib/main.dart): example wiring for `ispect_layout`.
 - [packages/ispectify/example/ispectify_example.dart](packages/ispectify/example/ispectify_example.dart): example wiring for `ispectify`.
+- [packages/ispectify_bloc/example/main.dart](packages/ispectify_bloc/example/main.dart): example wiring for `ispectify_bloc`.
 - [packages/ispectify_db/example/lib/main.dart](packages/ispectify_db/example/lib/main.dart): example wiring for `ispectify_db`.
 - [packages/ispectify_dio/example/lib/main.dart](packages/ispectify_dio/example/lib/main.dart): example wiring for `ispectify_dio`.
 - [packages/ispectify_http/example/main.dart](packages/ispectify_http/example/main.dart): example wiring for `ispectify_http`.
+- [packages/ispectify_riverpod/example/main.dart](packages/ispectify_riverpod/example/main.dart): example wiring for `ispectify_riverpod`.
 - [packages/ispectify_ws/example/lib/main.dart](packages/ispectify_ws/example/lib/main.dart): example wiring for `ispectify_ws`.
 
 ## Database interceptors (reference implementations to copy)
@@ -62,6 +64,7 @@ need on demand instead of working from memorized API. Treat each package's expor
 
 - [Compatibility](docs/COMPATIBILITY.md)
 - [Deprecations and Migration Notes](docs/DEPRECATIONS.md)
+- [Integration Walkthroughs](docs/INTEGRATION_GUIDES.md)
 - [Performance Scope](docs/PERFORMANCE.md)
 - [Quality Gates](docs/QUALITY.md)
 - [Security and Data Handling](docs/SECURITY.md)

@@ -23,15 +23,19 @@ void main() {
       expect(ISpect.senders, isEmpty);
     });
 
-    test('registerSender is a no-op when ISpect is disabled', () async {
-      await ISpect.dispose();
+    test(
+      'registerSender is a no-op when ISpect is disabled',
+      () async {
+        await ISpect.dispose();
 
-      ISpect.registerSender(_FakeSender());
+        ISpect.registerSender(_FakeSender());
 
-      // kISpectEnabled is false in the test env: production builds must not
-      // retain the client or expose request sending.
-      expect(ISpect.senders, isEmpty);
-    });
+        // kISpectEnabled is false in the test env: production builds must not
+        // retain the client or expose request sending.
+        expect(ISpect.senders, isEmpty);
+      },
+      skip: kISpectEnabled,
+    );
 
     test('unregisterSender on an empty registry is safe', () async {
       await ISpect.dispose();

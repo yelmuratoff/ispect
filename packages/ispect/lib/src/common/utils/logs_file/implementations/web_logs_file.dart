@@ -156,7 +156,7 @@ class WebLogsFile extends BaseLogsFile {
   static Blob _requireBlob(Object file) {
     final jsFile = file.jsify();
     if (jsFile == null || !jsFile.isA<Blob>()) {
-      throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
+      throw ArgumentError('Expected Blob instance.');
     }
     return jsFile as Blob;
   }

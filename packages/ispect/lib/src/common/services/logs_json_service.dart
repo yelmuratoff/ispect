@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/chunking.dart';
+import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:meta/meta.dart';
 
 /// Service for managing JSON export/import operations for logs.
@@ -16,26 +17,34 @@ class LogsJsonService {
   /// Creates a new instance of logs JSON service.
   const LogsJsonService();
 
-  /// Maximum allowed JSON string size (100MB)
-  static const int maxJsonSize = 100 * 1024 * 1024;
+  /// Maximum allowed JSON string size in UTF-16 code units.
+  static const int maxJsonSize = JsonInputPreflight.maxCharacters;
 
   /// Maximum allowed JSON nesting depth
-  static const int maxJsonDepth = 500;
+  static const int maxJsonDepth = JsonInputPreflight.maxNestingDepth;
+
+  /// Maximum allowed encoded JSON size in bytes.
+  static const int maxJsonByteSize = JsonInputPreflight.maxEncodedBytes;
+
+  /// Maximum approximate number of JSON values and containers.
+  static const int maxJsonNodes = JsonInputPreflight.maxApproximateNodes;
 
   /// Maximum number of log entries allowed in import
   static const int maxLogEntries = 100000;
 
   /// Exports logs to JSON format with metadata.
   ///
-  /// The export-time redaction is an **opt-in defense-in-depth pass**.
-  /// Captured payloads (network bodies, DB args, etc.) are already redacted
-  /// at interceptor capture time, so the export pass only runs when the
-  /// caller passes [redactionService]. Pass `enableRedaction: false` to skip
-  /// the pass even when a service is provided.
+  /// Export-time redaction is enabled by default as a defense-in-depth pass.
+  /// [redactionService] customizes its policy; when omitted, the global
+  /// [ISpectRedaction.service] policy is used. Pass `enableRedaction: false`
+  /// for an explicit controlled-debugging opt-out.
+  /// Output is compact and capped by [LogExportOutput.maxDocumentBytes].
+  /// When the cap is reached, only complete leading records that fit are
+  /// emitted; metadata counts continue to describe the source list.
   ///
   /// - Parameters: logs (list of entries), includeMetadata (flag for metadata),
-  ///   redactionService (optional; when null the export pass is skipped),
-  ///   enableRedaction (default: true; combined with non-null [redactionService])
+  ///   redactionService (optional policy override),
+  ///   enableRedaction (default: true)
   /// - Return: JSON string ready for file export
   /// - Usage example: `final jsonString = await service.exportToJson(logs);`
   /// - Edge case notes: Processes in chunks to prevent memory issues, handles large datasets
@@ -46,57 +55,52 @@ class LogsJsonService {
     bool enableRedaction = true,
     ISpectMetadata? metadata,
   }) async {
-    final exportData = <String, dynamic>{};
-
-    if (includeMetadata) {
-      exportData[ISpectMetadata.exportKey] =
-          _createExportMetadata(logs.length, metadata);
+    final effectiveRedactor = _effectiveRedactor(
+      enableRedaction,
+      redactionService,
+    );
+    final encoder = _JsonExportEncoder(
+      includeMetadata: includeMetadata,
+      metadata: includeMetadata
+          ? _prepareJsonValue(
+              _createExportMetadata(
+                logs.length,
+                metadata,
+                effectiveRedactor,
+              ),
+              effectiveRedactor,
+            )
+          : null,
+      redactor: effectiveRedactor,
+    );
+    const chunkSize = 50;
+    const yieldEveryChunks = 10;
+    var processed = 0;
+    exportLoop:
+    for (final chunk in Chunking.chunks(logs, chunkSize)) {
+      for (final log in chunk) {
+        if (!encoder.addLog(log)) break exportLoop;
+      }
+      processed++;
+      await Chunking.yieldEvery(processed, yieldEveryChunks);
     }
-
-    final logsJson = (await _processLogsInChunks(logs))
-        .map(
-          (log) => JsonValueNormalizer.normalize(log)! as Map<String, dynamic>,
-        )
-        .toList(growable: false);
-    if (enableRedaction && redactionService != null) {
-      exportData['logs'] = _redactLogsList(logsJson, redactionService);
-    } else {
-      exportData['logs'] = logsJson;
-    }
-
-    const encoder = JsonEncoder.withIndent('  ');
-    return encoder.convert(JsonValueNormalizer.normalize(exportData));
+    return encoder.finish();
   }
 
   /// Creates export metadata with current timestamp and version
   Map<String, dynamic> _createExportMetadata(
     int totalLogs,
     ISpectMetadata? metadata,
-  ) =>
-      {
-        'exportedAt': DateTime.now().toIso8601String(),
-        'version': '1.0.0',
-        'totalLogs': totalLogs,
-        'platform': 'ispect',
-        ...?metadata?.toMap(),
-      };
-
-  /// Processes logs in chunks to prevent memory issues
-  Future<List<Map<String, dynamic>>> _processLogsInChunks(
-    List<ISpectLogData> logs,
-  ) async {
-    final jsonLogs = <Map<String, dynamic>>[];
-    const chunkSize = 50;
-    const yieldEveryChunks = 10;
-    var processed = 0;
-    for (final chunk in Chunking.chunks(logs, chunkSize)) {
-      for (final log in chunk) {
-        jsonLogs.add(log.toJson());
-      }
-      processed++;
-      await Chunking.yieldEvery(processed, yieldEveryChunks);
-    }
-    return jsonLogs;
+    RedactionService? redactor,
+  ) {
+    final result = <String, dynamic>{
+      'exportedAt': DateTime.now().toIso8601String(),
+      'version': '1.0.0',
+      'totalLogs': totalLogs,
+      'platform': 'ispect',
+    };
+    _appendHostMetadata(result, metadata, redactor);
+    return result;
   }
 
   /// Imports logs from JSON format with comprehensive validation
@@ -107,20 +111,15 @@ class LogsJsonService {
   /// - Edge case notes: Supports legacy format, skips invalid entries, processes in chunks
   ///
   /// **Validation:**
-  /// - Size: Max 100MB
-  /// - Depth: Max 1000 levels
+  /// - Size: Max 8 MiB characters and 16 MiB encoded
+  /// - Depth: Max 64 levels
+  /// - Structure: Max 100,000 approximate nodes
   /// - Count: Max 100,000 entries
   ///
   /// **Security:** Prevents DoS attacks via malformed JSON
   Future<List<ISpectLogData>> importFromJson(String jsonString) async {
     try {
-      // Validate size
-      _validateJsonSize(jsonString);
-
-      final dynamic jsonData = jsonDecode(jsonString);
-
-      // Validate depth
-      _validateJsonDepth(jsonData);
+      final dynamic jsonData = _decodeJson(jsonString);
 
       final logsJson = _extractLogsFromJsonData(jsonData);
 
@@ -134,45 +133,8 @@ class LogsJsonService {
     }
   }
 
-  /// Validates JSON string size to prevent memory exhaustion.
-  ///
-  /// Uses [String.length] (UTF-16 code units) as a fast, conservative proxy
-  /// for size. For JSON content this closely approximates the actual byte count.
-  void _validateJsonSize(String jsonString) {
-    if (jsonString.length > maxJsonSize) {
-      throw FormatException(
-        'JSON size (${jsonString.length} characters) exceeds maximum allowed '
-        'size ($maxJsonSize characters). Please import a smaller dataset.',
-      );
-    }
-  }
-
-  /// Validates JSON nesting depth to prevent stack overflow.
-  ///
-
-  void _validateJsonDepth(dynamic data) {
-    // Each entry is (node, depth).
-    final queue = <(dynamic, int)>[(data, 0)];
-
-    while (queue.isNotEmpty) {
-      final (node, depth) = queue.removeLast();
-      if (depth >= maxJsonDepth) {
-        throw FormatException(
-          'JSON nesting depth ($depth) exceeds maximum allowed '
-          'depth ($maxJsonDepth). This may indicate malformed or malicious JSON.',
-        );
-      }
-      if (node is Map) {
-        for (final value in node.values) {
-          queue.add((value, depth + 1));
-        }
-      } else if (node is List) {
-        for (final item in node) {
-          queue.add((item, depth + 1));
-        }
-      }
-    }
-  }
+  static Object? _decodeJson(String jsonString) =>
+      JsonInputPreflight.decode(jsonString);
 
   /// Validates log entry count to prevent excessive memory usage
   void _validateLogCount(List<dynamic> logsJson) {
@@ -189,9 +151,7 @@ class LogsJsonService {
     if (jsonData is Map<String, dynamic> && jsonData.containsKey('logs')) {
       final logs = jsonData['logs'];
       if (logs is! List<dynamic>) {
-        throw FormatException(
-          'Expected "logs" to be a List, got ${logs.runtimeType}',
-        );
+        throw const FormatException('Expected "logs" to be a List.');
       }
       return logs;
     }
@@ -343,10 +303,9 @@ class LogsJsonService {
   /// Formats filtered logs into [fileType], applying redaction consistently
   /// across every format.
   ///
-  /// When [enableRedaction] is true, the JSON branch derives a
-  /// [RedactionService] from the effective sensitive-key set (the same keys
-  /// the txt/md/csv branches use) unless an explicit [redactionService] is
-  /// supplied, so passing [redactKeys] alone is enough to redact JSON exports.
+  /// When [enableRedaction] is true, every format uses [redactionService] when
+  /// supplied. Otherwise [redactKeys] derive a local service; when neither is
+  /// supplied, every format resolves the global policy.
   @visibleForTesting
   String formatFilteredContent({
     required List<ISpectLogData> logs,
@@ -358,68 +317,110 @@ class LogsJsonService {
     Set<String>? redactKeys,
     ISpectMetadata? metadata,
   }) {
-    final effectiveRedactKeys =
-        redactKeys ?? (enableRedaction ? defaultSensitiveKeys : null);
+    final effectiveService = _effectiveRedactor(
+      enableRedaction,
+      redactionService,
+      sensitiveKeys: redactKeys,
+    );
 
     switch (fileType) {
       case 'txt':
         return LogExporter.toText(
           filteredLogs,
-          redactKeys: effectiveRedactKeys,
+          redactKeys: redactKeys,
+          redactionService: effectiveService,
           metadata: metadata,
+          enableRedaction: enableRedaction,
         );
       case 'md':
         return LogExporter.toMarkdown(
           filteredLogs,
-          redactKeys: effectiveRedactKeys,
+          redactKeys: redactKeys,
+          redactionService: effectiveService,
           metadata: metadata,
+          enableRedaction: enableRedaction,
         );
       case 'csv':
         return LogExporter.toCsv(
           filteredLogs,
-          redactKeys: effectiveRedactKeys,
+          redactKeys: redactKeys,
+          redactionService: effectiveService,
+          enableRedaction: enableRedaction,
         );
       default:
-        final exportData = _createFilteredExportData(
-          logs,
-          filteredLogs,
-          filter,
-          metadata,
+        final encoder = _JsonExportEncoder(
+          includeMetadata: true,
+          metadata: _prepareJsonValue(
+            _createFilteredMetadata(
+              logs,
+              filteredLogs,
+              filter,
+              metadata,
+              effectiveService,
+            ),
+            effectiveService,
+          ),
+          redactor: effectiveService,
         );
-        final effectiveService = !enableRedaction
-            ? null
-            : redactionService ??
-                (effectiveRedactKeys != null
-                    ? RedactionService(sensitiveKeys: effectiveRedactKeys)
-                    : null);
-        if (effectiveService != null) {
-          final logsData = exportData['logs'];
-          if (logsData is List<Map<String, dynamic>>) {
-            exportData['logs'] = _redactLogsList(logsData, effectiveService);
-          }
+        for (final log in filteredLogs) {
+          if (!encoder.addLog(log)) break;
         }
-        const encoder = JsonEncoder.withIndent('  ');
-        return encoder.convert(JsonValueNormalizer.normalize(exportData));
+        return encoder.finish();
     }
   }
 
-  /// Creates export data structure for filtered logs
-  Map<String, dynamic> _createFilteredExportData(
-    List<ISpectLogData> logs,
-    List<ISpectLogData> filteredLogs,
-    ISpectFilter filter,
-    ISpectMetadata? metadata,
-  ) =>
-      {
-        ISpectMetadata.exportKey:
-            _createFilteredMetadata(logs, filteredLogs, filter, metadata),
-        'logs': filteredLogs
-            .map(
-              (log) => JsonValueNormalizer.normalize(log.toJson())!
-                  as Map<String, dynamic>,
-            )
-            .toList(growable: false),
-      };
+  static Map<String, Object?> _prepareJsonLog(
+    Map<String, dynamic> source,
+    RedactionService? redactor,
+  ) {
+    final prepared = LogExportOutput.boundJsonValue(
+      source,
+      preserveTypes: redactor != null,
+      replaceOversizedStrings: redactor != null,
+    );
+    final outbound = redactor == null
+        ? prepared
+        : redactor.redactEnvelopeForExport(
+            prepared,
+            rootValueKeys: const {'key'},
+          );
+    final bounded = LogExportOutput.boundJsonValue(
+      outbound,
+      replaceOversizedStrings: redactor != null,
+    );
+    return bounded is Map<String, Object?>
+        ? bounded
+        : const {'message': JsonValueNormalizer.unprintableValue};
+  }
+
+  static Object? _prepareJsonValue(
+    Object? source,
+    RedactionService? redactor,
+  ) {
+    final prepared = LogExportOutput.boundJsonValue(
+      source,
+      preserveTypes: redactor != null,
+      replaceOversizedStrings: redactor != null,
+    );
+    final outbound =
+        redactor == null ? prepared : redactor.redactForExport(prepared);
+    return LogExportOutput.boundJsonValue(
+      outbound,
+      replaceOversizedStrings: redactor != null,
+    );
+  }
+
+  static RedactionService? _effectiveRedactor(
+    bool enableRedaction,
+    RedactionService? redactionService, {
+    Set<String>? sensitiveKeys,
+  }) {
+    if (!enableRedaction || !ISpectRedaction.enabled) return null;
+    return ISpectRedaction.resolveService(
+      service: redactionService,
+      sensitiveKeys: sensitiveKeys,
+    );
+  }
 
   /// Creates metadata for filtered export including filter information
   Map<String, dynamic> _createFilteredMetadata(
@@ -427,15 +428,49 @@ class LogsJsonService {
     List<ISpectLogData> filteredLogs,
     ISpectFilter filter,
     ISpectMetadata? metadata,
-  ) =>
-      {
-        'exportedAt': DateTime.now().toIso8601String(),
-        'totalLogs': logs.length,
-        'filteredLogs': filteredLogs.length,
-        'platform': 'ispect',
-        'appliedFilter': _createFilterSummary(filter),
-        ...?metadata?.toMap(),
-      };
+    RedactionService? redactor,
+  ) {
+    final result = <String, dynamic>{
+      'exportedAt': DateTime.now().toIso8601String(),
+      'totalLogs': logs.length,
+      'filteredLogs': filteredLogs.length,
+      'platform': 'ispect',
+      'appliedFilter': _createFilterSummary(filter),
+    };
+    _appendHostMetadata(result, metadata, redactor);
+    return result;
+  }
+
+  static void _appendHostMetadata(
+    Map<String, dynamic> result,
+    ISpectMetadata? metadata,
+    RedactionService? redactor,
+  ) {
+    if (metadata == null) return;
+    final typedFields = <String, Object?>{
+      if (metadata.appName != null) 'appName': metadata.appName,
+      if (metadata.appVersion != null) 'appVersion': metadata.appVersion,
+      if (metadata.buildNumber != null) 'buildNumber': metadata.buildNumber,
+      if (metadata.environment != null) 'environment': metadata.environment,
+      if (metadata.device != null) 'device': metadata.device,
+      if (metadata.os != null) 'os': metadata.os,
+      if (metadata.osVersion != null) 'osVersion': metadata.osVersion,
+      if (metadata.locale != null) 'locale': metadata.locale,
+    };
+    for (final entry in typedFields.entries) {
+      result.putIfAbsent(entry.key, () => entry.value);
+    }
+
+    final boundedExtra = LogExportOutput.boundJsonValue(
+      metadata.extra,
+      preserveTypes: redactor != null,
+      replaceOversizedStrings: redactor != null,
+    );
+    if (boundedExtra is! Map<String, Object?>) return;
+    for (final entry in boundedExtra.entries) {
+      result.putIfAbsent(entry.key, () => entry.value);
+    }
+  }
 
   /// Creates summary of applied filter
   Map<String, dynamic> _createFilterSummary(ISpectFilter filter) => {
@@ -446,16 +481,6 @@ class LogsJsonService {
         'typeFiltersCount': filter.filters.whereType<TypeFilter>().length,
       };
 
-  /// Applies redaction to a list of serialized log entries.
-  List<Map<String, dynamic>> _redactLogsList(
-    List<Map<String, dynamic>> logsJson,
-    RedactionService redactionService,
-  ) =>
-      logsJson.map((log) {
-        final redacted = redactionService.redact(log);
-        return redacted is Map<String, dynamic> ? redacted : log;
-      }).toList(growable: false);
-
   /// Validates JSON structure for logs import
   ///
   /// - Parameters: jsonString (JSON content to validate)
@@ -464,7 +489,7 @@ class LogsJsonService {
   /// - Edge case notes: Checks structure without full parsing for performance
   bool validateJsonStructure(String jsonString) {
     try {
-      final dynamic jsonData = jsonDecode(jsonString);
+      final dynamic jsonData = _decodeJson(jsonString);
       return _isValidJsonStructure(jsonData);
     } catch (e) {
       return false;
@@ -487,7 +512,7 @@ class LogsJsonService {
   /// - Edge case notes: Returns null for legacy format or invalid JSON
   Map<String, dynamic>? getMetadataFromJson(String jsonString) {
     try {
-      final dynamic jsonData = jsonDecode(jsonString);
+      final dynamic jsonData = _decodeJson(jsonString);
       return _extractMetadata(jsonData);
     } catch (e) {
       return null;
@@ -503,4 +528,204 @@ class LogsJsonService {
     }
     return null;
   }
+}
+
+final class _JsonExportEncoder {
+  _JsonExportEncoder({
+    required bool includeMetadata,
+    required Object? metadata,
+    required this.redactor,
+  }) : _output = _JsonDocumentBuffer(LogExportOutput.maxDocumentBytes) {
+    _output.writeAll(const ['{'], reservedBytes: 10);
+    if (includeMetadata) {
+      final encodedMetadata = _encodePreparedValue(metadata);
+      final metadataStats = _JsonStructureStats.scan(encodedMetadata);
+      final metadataNodes = 1 + metadataStats.nodeContribution;
+      final canUseMetadata =
+          metadataStats.maxDepth <= JsonInputPreflight.maxNestingDepth - 1 &&
+              _approximateNodes + metadataNodes <=
+                  JsonInputPreflight.maxApproximateNodes;
+      final wroteMetadata = canUseMetadata &&
+          _output.writeAll(
+            ['"${ISpectMetadata.exportKey}":', encodedMetadata, ','],
+            reservedBytes: 9,
+          );
+      if (!wroteMetadata) {
+        _output.writeAll(
+          ['"${ISpectMetadata.exportKey}":null,'],
+          reservedBytes: 9,
+        );
+        _approximateNodes++;
+      } else {
+        _approximateNodes += metadataNodes;
+      }
+    }
+    _output.writeAll(const ['"logs":['], reservedBytes: 2);
+  }
+
+  final RedactionService? redactor;
+  final _JsonDocumentBuffer _output;
+  int _approximateNodes = 5;
+  bool _hasLogs = false;
+  bool _finished = false;
+
+  bool addLog(ISpectLogData log) {
+    if (_finished) return false;
+    final capturedTime = captureISpectLogDataForEgress(log).time;
+    final prepared = LogsJsonService._prepareJsonLog(
+      log.toExportJson(redactionActive: redactor != null),
+      redactor,
+    );
+    var encoded = _encodeLog(prepared, capturedTime);
+    var stats = _JsonStructureStats.scan(encoded);
+    if (stats.maxDepth > JsonInputPreflight.maxNestingDepth - 2) {
+      encoded = _fallbackLog(capturedTime);
+      stats = _JsonStructureStats.scan(encoded);
+    }
+    final prefix = _hasLogs ? ',' : '';
+    final additionalNodes = stats.nodeContribution + (_hasLogs ? 1 : 0);
+    if (_approximateNodes + additionalNodes >
+        JsonInputPreflight.maxApproximateNodes) {
+      return false;
+    }
+    if (!_output.writeAll([prefix, encoded], reservedBytes: 2)) return false;
+    _approximateNodes += additionalNodes;
+    _hasLogs = true;
+    return true;
+  }
+
+  String finish() {
+    if (!_finished) {
+      _output.writeAll(const [']}']);
+      _finished = true;
+    }
+    return _output.toString();
+  }
+
+  static String _encodePreparedValue(Object? value) {
+    try {
+      final encoded = jsonEncode(value);
+      return LogExportOutput.utf8Length(
+                encoded,
+                limit: LogExportOutput.maxRecordBytes,
+              ) <=
+              LogExportOutput.maxRecordBytes
+          ? encoded
+          : 'null';
+    } catch (_) {
+      return 'null';
+    }
+  }
+
+  static String _encodeLog(
+    Map<String, Object?> prepared,
+    DateTime capturedTime,
+  ) {
+    if (!prepared.containsKey('time') && !prepared.containsKey('message')) {
+      return _fallbackLog(capturedTime);
+    }
+    try {
+      final encoded = jsonEncode(prepared);
+      if (LogExportOutput.utf8Length(
+            encoded,
+            limit: LogExportOutput.maxRecordBytes,
+          ) <=
+          LogExportOutput.maxRecordBytes) {
+        return encoded;
+      }
+    } catch (_) {
+      return _fallbackLog(capturedTime);
+    }
+    return _fallbackLog(capturedTime);
+  }
+
+  static String _fallbackLog(DateTime capturedTime) => jsonEncode({
+        'time': capturedTime.toIso8601String(),
+        'message': LogExportOutput.truncatedMarker,
+        'export-error': LogExportOutput.truncatedMarker,
+      });
+}
+
+final class _JsonStructureStats {
+  const _JsonStructureStats({
+    required this.nodeContribution,
+    required this.maxDepth,
+  });
+
+  factory _JsonStructureStats.scan(String source) {
+    var nodeContribution = 0;
+    var depth = 0;
+    var maxDepth = 0;
+    var inString = false;
+    var escaped = false;
+    final containers = <int>[];
+
+    for (var index = 0; index < source.length; index++) {
+      final codeUnit = source.codeUnitAt(index);
+      if (inString) {
+        if (escaped) {
+          escaped = false;
+        } else if (codeUnit == 0x5c) {
+          escaped = true;
+        } else if (codeUnit == 0x22) {
+          inString = false;
+        }
+        continue;
+      }
+
+      if (codeUnit == 0x22) {
+        inString = true;
+      } else if (codeUnit == 0x7b || codeUnit == 0x5b) {
+        containers.add(codeUnit);
+        depth++;
+        if (depth > maxDepth) maxDepth = depth;
+        nodeContribution++;
+        if (codeUnit == 0x5b) nodeContribution++;
+      } else if (codeUnit == 0x7d || codeUnit == 0x5d) {
+        if (containers.isNotEmpty) containers.removeLast();
+        if (depth > 0) depth--;
+      } else if (codeUnit == 0x3a) {
+        nodeContribution++;
+      } else if (codeUnit == 0x2c &&
+          containers.isNotEmpty &&
+          containers.last == 0x5b) {
+        nodeContribution++;
+      }
+    }
+
+    return _JsonStructureStats(
+      nodeContribution: nodeContribution,
+      maxDepth: maxDepth,
+    );
+  }
+
+  final int nodeContribution;
+  final int maxDepth;
+}
+
+final class _JsonDocumentBuffer {
+  _JsonDocumentBuffer(this.maxBytes);
+
+  final int maxBytes;
+  final StringBuffer _buffer = StringBuffer();
+  int _bytes = 0;
+
+  bool writeAll(List<String> values, {int reservedBytes = 0}) {
+    var additionalBytes = 0;
+    for (final value in values) {
+      final remaining = maxBytes - reservedBytes - _bytes - additionalBytes;
+      if (remaining < 0) return false;
+      final valueBytes = LogExportOutput.utf8Length(value, limit: remaining);
+      if (valueBytes > remaining) return false;
+      additionalBytes += valueBytes;
+    }
+    for (final value in values) {
+      _buffer.write(value);
+    }
+    _bytes += additionalBytes;
+    return true;
+  }
+
+  @override
+  String toString() => _buffer.toString();
 }

@@ -11,7 +11,7 @@ import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 ///
 /// When [correlatedLog] is provided, shows a banner allowing
 /// navigation to the correlated request/response.
-class LogDetailView extends StatelessWidget {
+class LogDetailView extends StatefulWidget {
   const LogDetailView({
     required this.activeData,
     this.onClose,
@@ -63,38 +63,81 @@ class LogDetailView extends StatelessWidget {
   }
 
   @override
+  State<LogDetailView> createState() => _LogDetailViewState();
+}
+
+class _LogDetailViewState extends State<LogDetailView> {
+  late bool _redactionActive;
+  late JsonScreen _jsonScreen;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshSnapshots();
+  }
+
+  @override
+  void didUpdateWidget(covariant LogDetailView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.activeData, widget.activeData) ||
+        _redactionActive != ISpectRedaction.enabled) {
+      _refreshSnapshots();
+    }
+  }
+
+  void _refreshSnapshots() {
+    _redactionActive = ISpectRedaction.enabled;
+    final json = widget.activeData.toExportJson(
+      redactionActive: _redactionActive,
+    );
+    _jsonScreen = JsonScreen(
+      key: ValueKey(widget.activeData.id),
+      data: json,
+      truncatedData: widget.activeData.toExportJson(
+        redactionActive: _redactionActive,
+        truncated: true,
+      ),
+      onClose: _handleClose,
+    );
+  }
+
+  void _handleClose() {
+    final callback = widget.onClose;
+    if (callback != null) {
+      callback();
+      return;
+    }
+    Navigator.of(context).pop();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final json = activeData.toJson();
-    final corrId =
-        activeData.additionalData?[TraceKeys.correlationId] as String?;
-    final txnId =
-        activeData.additionalData?[TraceKeys.transactionId] as String?;
+    final activeData = widget.activeData;
+    final corrId = activeData.traceCorrelationId;
+    final txnId = activeData.traceTransactionId;
     final hasTraceCorrelation = (corrId != null || txnId != null) &&
-        !(correlatedLog != null && onNavigateToCorrelated != null);
+        !(widget.correlatedLog != null &&
+            widget.onNavigateToCorrelated != null);
 
     return Column(
       children: [
-        if (correlatedLog != null && onNavigateToCorrelated != null)
+        if (widget.correlatedLog != null &&
+            widget.onNavigateToCorrelated != null)
           _CorrelationBanner(
             activeData: activeData,
-            correlatedLog: correlatedLog!,
-            duration: correlationDuration,
-            onNavigate: onNavigateToCorrelated!,
+            correlatedLog: widget.correlatedLog!,
+            duration: widget.correlationDuration,
+            onNavigate: widget.onNavigateToCorrelated!,
           ),
         if (hasTraceCorrelation)
           _TraceCorrelationBanner(
             correlationId: corrId,
             transactionId: txnId,
-            onShowRelated: onShowRelated,
+            onShowRelated: widget.onShowRelated,
           ),
         Expanded(
           child: RepaintBoundary(
-            child: JsonScreen(
-              key: ValueKey(activeData.id),
-              data: json,
-              truncatedData: activeData.toJson(truncated: true),
-              onClose: onClose,
-            ),
+            child: _jsonScreen,
           ),
         ),
       ],

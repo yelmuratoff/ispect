@@ -227,11 +227,9 @@ class LogsScreenController {
     if (isMetaOrCtrl && event.logicalKey == LogicalKeyboardKey.keyC) {
       final activeData = logsViewController.activeData;
       if (activeData != null) {
-        final text = activeData.isHttpLog
-            ? (activeData.httpLogText ?? '')
-            : activeData.textMessage;
+        final text = activeData.toExportMessageText();
         if (text.isNotEmpty) {
-          copyClipboard(context, value: text, redact: true);
+          copyClipboard(context, value: text);
           return KeyEventResult.handled;
         }
       }

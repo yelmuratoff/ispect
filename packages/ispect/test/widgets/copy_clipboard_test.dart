@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispectify/ispectify.dart';
 
 import '../helpers/pump_ispect.dart';
 
@@ -23,6 +24,7 @@ void main() {
     tearDown(() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, null);
+      ISpectRedaction.reset();
     });
 
     testWidgets(
@@ -42,7 +44,7 @@ void main() {
 
         expect(clipboardText, isNotNull);
         expect(clipboardText, isNot(contains('super-secret-token')));
-        expect(clipboardText, contains('Bearer [REDACTED]'));
+        expect(clipboardText, 'Authorization: [REDACTED]');
       },
     );
 
@@ -103,5 +105,91 @@ void main() {
         expect(clipboardText, raw);
       },
     );
+
+    testWidgets('uses the global custom redaction policy', (tester) async {
+      ISpectRedaction.configure(
+        service: RedactionService(
+          sensitiveKeys: const {'global_field'},
+          placeholder: '<global>',
+        ),
+      );
+      await tester.pumpWidget(appShell(const SizedBox.shrink()));
+      final context = tester.element(find.byType(SizedBox));
+
+      copyClipboard(
+        context,
+        value: '{"global_field":"GLOBAL_RAW","safe_field":"VISIBLE"}',
+        redact: true,
+      );
+      await tester.pumpAndSettle();
+
+      expect(clipboardText, contains('<global>'));
+      expect(clipboardText, isNot(contains('GLOBAL_RAW')));
+      expect(clipboardText, contains('VISIBLE'));
+    });
+
+    testWidgets('prefers an explicit service over keys and global policy',
+        (tester) async {
+      final globalService = RedactionService(
+        sensitiveKeys: const {'global_field'},
+        placeholder: '<global>',
+      );
+      final localService = RedactionService(
+        sensitiveKeys: const {'local_field'},
+        placeholder: '<local>',
+      );
+      ISpectRedaction.configure(service: globalService);
+      await tester.pumpWidget(appShell(const SizedBox.shrink()));
+      final context = tester.element(find.byType(SizedBox));
+
+      copyClipboard(
+        context,
+        value: '{"global_field":"GLOBAL_RAW","local_field":"LOCAL_RAW",'
+            '"option_field":"OPTION_RAW"}',
+        redact: true,
+        redactKeys: const {'option_field'},
+        redactionService: localService,
+      );
+      await tester.pumpAndSettle();
+
+      expect(clipboardText, contains('<local>'));
+      expect(clipboardText, isNot(contains('LOCAL_RAW')));
+      expect(clipboardText, contains('GLOBAL_RAW'));
+      expect(clipboardText, contains('OPTION_RAW'));
+      expect(ISpectRedaction.service, same(globalService));
+    });
+
+    testWidgets('bounds oversized values before redaction', (tester) async {
+      await tester.pumpWidget(appShell(const SizedBox.shrink()));
+      final context = tester.element(find.byType(SizedBox));
+      final raw = 'password=CLIPBOARD_SECRET${_asciiString(4 * 1024 * 1024)}';
+
+      copyClipboard(context, value: raw, redact: true);
+      await tester.pumpAndSettle();
+
+      expect(clipboardText, LogExportOutput.truncatedMarker);
+      expect(clipboardText, isNot(contains('CLIPBOARD_SECRET')));
+    });
+
+    testWidgets('bounds explicit raw clipboard output by UTF-8 bytes',
+        (tester) async {
+      await tester.pumpWidget(appShell(const SizedBox.shrink()));
+      final context = tester.element(find.byType(SizedBox));
+
+      copyClipboard(
+        context,
+        value: _asciiString(4 * 1024 * 1024),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        LogExportOutput.utf8Length(clipboardText!),
+        lessThanOrEqualTo(100000),
+      );
+      expect(clipboardText, endsWith(LogExportOutput.truncatedMarker));
+    });
   });
 }
+
+String _asciiString(int length) =>
+    String.fromCharCodes(Uint8List(length)..fillRange(0, length, 97));

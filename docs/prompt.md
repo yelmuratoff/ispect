@@ -92,7 +92,7 @@ Safety & compatibility:
 - One logger: pass `ISpect.logger` to every interceptor and observer so all diagnostics share
   one history. Never create separate logger instances for adapters.
 - Security default-on: keep redaction enabled; keep tokens, credentials, and PII out of logs
-  and out of `metadataProvider` output (it is written verbatim into exported logs).
+  and out of `metadataProvider` output even though outbound metadata is redacted by default.
 - Production safety is compile-time: gate through `kISpectEnabled` and ISpect's own entry
   points; never ship `--dart-define=ISPECT_ENABLED=true` to a release configuration.
 - Match the project: follow its entry-point structure, DI, router type, and naming. Do not

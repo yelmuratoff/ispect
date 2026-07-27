@@ -1,6 +1,29 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
+final class _HostileNetworkLogGetters extends ISpectLogData {
+  _HostileNetworkLogGetters()
+      : super(
+          'trusted-network-message',
+          additionalData: const {
+            TraceKeys.category: TraceCategoryIds.network,
+            NetworkJsonKeys.requestData: {
+              NetworkJsonKeys.data: {'trusted': 'network-data'},
+            },
+          },
+        );
+
+  final List<int> _getterCalls = [0];
+
+  int get getterCalls => _getterCalls.single;
+
+  @override
+  Map<String, dynamic>? get additionalData {
+    _getterCalls[0]++;
+    throw StateError('FORGED_NETWORK_GETTER_SECRET');
+  }
+}
+
 void main() {
   group('NetworkLogRenderer.isNetworkLog', () {
     test('returns false for entries without additionalData', () {
@@ -29,6 +52,13 @@ void main() {
         additionalData: const {TraceKeys.category: TraceCategoryIds.ws},
       );
       expect(NetworkLogRenderer.isNetworkLog(entry), isTrue);
+    });
+
+    test('ignores hostile additionalData getter overrides', () {
+      final entry = _HostileNetworkLogGetters();
+
+      expect(NetworkLogRenderer.isNetworkLog(entry), isTrue);
+      expect(entry.getterCalls, 0);
     });
   });
 
@@ -61,6 +91,16 @@ void main() {
       expect(body, contains('alice'));
       expect(body, isNot(contains('Headers')));
       expect(body, isNot(contains('authorization')));
+    });
+
+    test('renderBody ignores hostile additionalData getter overrides', () {
+      final entry = _HostileNetworkLogGetters();
+
+      final body = NetworkLogRenderer.renderBody(entry);
+
+      expect(body, contains('network-data'));
+      expect(body, isNot(contains('FORGED_NETWORK_GETTER_SECRET')));
+      expect(entry.getterCalls, 0);
     });
 
     test('hint printHeaders=true exposes headers', () {
@@ -140,6 +180,29 @@ void main() {
       expect(NetworkLogRenderer.renderBody(entry), contains('Message: OK'));
     });
 
+    test('ignores wrong-shaped response status and message fields', () {
+      final entry = ISpectLogData(
+        'headline',
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          'response-data': {
+            'status-code': <String, int>{'unexpected': 200},
+            'status-message': 200,
+            'data': {'id': 1},
+          },
+          NetworkLogRenderer.renderHintsKey: {
+            NetworkLogRenderer.hintPrintMessage: true,
+          },
+        },
+      );
+
+      final body = NetworkLogRenderer.renderBody(entry);
+
+      expect(body, contains('"id": 1'));
+      expect(body, isNot(contains('Status:')));
+      expect(body, isNot(contains('Message:')));
+    });
+
     test('http error route taken when only response-data is present with 4xx',
         () {
       final entry = ISpectLogData(
@@ -184,6 +247,24 @@ void main() {
       expect(body, contains('Status: 401'));
       expect(body, contains('Error: Unauthorized'));
       expect(body, contains('token expired'));
+    });
+
+    test('ignores wrong-shaped error response and message fields', () {
+      final entry = ISpectLogData(
+        'headline',
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          'error-data': {
+            'message': <String>['unexpected'],
+            'response': <String>['not', 'a', 'map'],
+          },
+          NetworkLogRenderer.renderHintsKey: {
+            NetworkLogRenderer.hintPrintMessage: true,
+          },
+        },
+      );
+
+      expect(NetworkLogRenderer.renderBody(entry), isEmpty);
     });
 
     test('skipEmpty drops empty headers section', () {
