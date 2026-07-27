@@ -5,9 +5,11 @@ How versions are kept consistent across the ISpect monorepo.
 ## Files
 
 - `version.config`, the single source of truth for the current version.
-- `bash/bump_version.sh`, bumps versions.
-- `bash/update_versions.sh`, syncs all package versions and internal package dependencies.
-- `bash/update_changelog.sh`, syncs all changelog files.
+- `CHANGELOG.md`, the source of truth for release notes.
+- `bash/release_prep.sh`, the single user-facing command for version bumps and release synchronization.
+- `bash/update_versions.sh`, the version and dependency helper used by `release_prep.sh`.
+- `bash/update_changelog.sh`, the changelog propagation helper used by `release_prep.sh`.
+- `bash/build_readme.sh` and `bash/build_llms.sh`, the generated-document helpers used by `release_prep.sh`.
 - `bash/check_version_sync.sh`, validates version synchronization.
 - `bash/check_dependencies.sh`, validates that internal package dependencies are consistent.
 - `bash/pre-commit.sh`, Git hook that catches version drift before a commit lands.
@@ -17,29 +19,39 @@ How versions are kept consistent across the ISpect monorepo.
 
 ## Usage
 
-### Manual version management
+### One-command release synchronization
 
 ```bash
-# Bump patch version (4.1.2 -> 4.1.3).
-./bash/bump_version.sh patch
+# Patch bump (default).
+./bash/release_prep.sh
 
-# Bump minor version (4.1.2 -> 4.2.0).
-./bash/bump_version.sh minor
+# Explicit patch, minor, or major bump.
+./bash/release_prep.sh --bump minor
 
-# Bump major version (4.1.2 -> 5.0.0).
-./bash/bump_version.sh major
+# Keep VERSION and refresh every release-managed artifact.
+./bash/release_prep.sh --skip-bump
 
-# Bump dev version (4.1.2 -> 4.1.2-dev01, or 4.1.2-dev01 -> 4.1.2-dev02).
-./bash/bump_version.sh dev
+# Advance the current prerelease and carry its notes forward.
+./bash/release_prep.sh --carry-changelog
 
-# Set a specific version.
-./bash/bump_version.sh 4.2.0-beta01
+# Resume an interrupted prerelease sync without another bump.
+./bash/release_prep.sh --skip-bump --recover-changelog
 ```
 
-`bump_version.sh` does two things:
+The default patch mode increments a stable patch version or advances the
+numeric suffix of the current prerelease. Use `--skip-bump` after editing
+`CHANGELOG.md` or `docs/readme/**` to regenerate everything without changing
+the version.
 
-1. Updates `version.config` with the new version.
-2. Runs `update_versions.sh` to update all package versions and changelogs.
+The command updates version metadata, internal constraints, the web-viewer
+lockfile, the root and package changelogs, generated READMEs, and `llms.txt`.
+It validates the complete result and restores all managed files to their
+pre-run state if any step fails.
+
+Use `--skip-bump --recover-changelog` only to recover an interrupted
+prerelease carry when the root changelog still starts with the immediately
+previous prerelease. Recovery is explicit, and stable changelog sections are
+never renamed.
 
 ### Automatic updates via CI/CD
 
@@ -48,36 +60,36 @@ The GitHub Actions workflows automate the rest.
 `sync_versions_and_changelogs.yml`:
 
 - Triggers when `version.config` or `CHANGELOG.md` changes.
-- Updates all package versions to match `version.config`.
-- Syncs the main changelog into every package changelog.
-- Regenerates package README files from `docs/readme/`.
+- Runs `release_prep.sh --skip-bump`, using the same workflow as local development.
+- Validates the web-viewer lockfile with the CI-pinned Flutter 3.32.6 toolchain.
 - Commits and pushes the changes back.
 
 `validate_versions.yml`:
 
 - Runs on pull requests to main branches.
-- Checks that all package versions are in sync.
+- Runs release-prep regression tests.
+- Checks package versions, internal constraints, and the web-viewer lockfile.
 - Checks that `CHANGELOG.md` documents the current version.
-- Checks that generated README files match their sources.
+- Checks that generated READMEs and `llms.txt` match their sources.
 
 ## How it works
 
 1. `version.config` contains a single `VERSION` variable.
-2. When you bump the version, every package `pubspec.yaml` is updated.
-3. Internal dependencies between packages (for example `ispect` depending on `ispectify`) are updated to the new version.
-4. The main `CHANGELOG.md` stays the source of truth for release notes.
-5. Each package `CHANGELOG.md` is synced from the main one.
-6. Package README files are regenerated from `docs/readme/`.
-7. CI keeps versions, dependencies, changelogs, and READMEs aligned.
+2. `release_prep.sh` optionally bumps it, then synchronizes every package `pubspec.yaml` and internal dependency.
+3. `CHANGELOG.md` remains the release-note source of truth and is copied to package changelogs.
+4. `docs/readme/**` remains the README source of truth; generated READMEs and `llms.txt` are rebuilt.
+5. The web-viewer manifest and lockfile are synchronized with the same version.
+6. All checks pass before the transaction is accepted.
+7. CI repeats the no-bump path and validates the lockfile with Flutter 3.32.6.
 
 ## Best practices
 
-1. Bump versions only through `bump_version.sh`.
-2. Update the main `CHANGELOG.md` before bumping versions.
-3. Let CI handle the sync.
+1. Use `release_prep.sh` for every bump or no-bump synchronization.
+2. Keep user-facing notes in the root `CHANGELOG.md`.
+3. Keep README source changes under `docs/readme/**`.
 4. Install the pre-commit hook to catch version drift locally.
-5. On larger teams, prefer the GitHub Actions manual version-bump workflow.
-6. Check the diff after CI runs to confirm nothing was missed.
+5. Run `publish.sh --dry-run` before any publish attempt.
+6. Review the generated diff before committing or publishing.
 
 ## Pre-commit hook
 
@@ -98,7 +110,6 @@ The hook:
 
 If you hit a sync issue:
 
-1. Run `./bash/check_version_sync.sh` to find out-of-sync packages.
-2. Run `./bash/check_dependencies.sh` to find inconsistent dependencies between packages.
-3. Run `./bash/update_versions.sh` to sync versions and dependencies.
-4. If the changelog is missing your version, update it and rerun the script above.
+1. Run `./bash/release_prep.sh --skip-bump`.
+2. If it fails, read the first reported error; managed files have already been restored.
+3. Use `./bash/check_version_sync.sh`, `./bash/check_dependencies.sh`, `./bash/build_readme.sh --check`, and `./bash/build_llms.sh --check` to isolate remaining drift.

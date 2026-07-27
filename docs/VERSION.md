@@ -8,9 +8,8 @@ A short overview of the version-management workflow. The full reference lives in
 
 - `version.config`, the single source of truth for the current version.
 - `CHANGELOG.md`, the release notes for every version.
-- `bash/bump_version.sh`, bumps versions.
-- `bash/update_versions.sh`, updates all package versions and internal dependencies.
-- `bash/update_changelog.sh`, syncs the main changelog to every package.
+- `bash/release_prep.sh`, the single command for bumps and release synchronization.
+- `bash/update_versions.sh`, `bash/update_changelog.sh`, `bash/build_readme.sh`, and `bash/build_llms.sh`, internal helpers used by `release_prep.sh`.
 - `bash/check_version_sync.sh`, validates that versions are in sync.
 - `bash/check_dependencies.sh`, validates that internal dependencies are consistent.
 
@@ -25,39 +24,38 @@ A short overview of the version-management workflow. The full reference lives in
 ## Version bump types
 
 ```bash
-# Bump patch version (7.0.0 -> 7.0.1).
-./bash/bump_version.sh patch
+# Patch bump (default).
+./bash/release_prep.sh
 
-# Bump minor version (7.0.0 -> 7.1.0).
-./bash/bump_version.sh minor
+# Explicit patch, minor, or major bump.
+./bash/release_prep.sh --bump major
 
-# Bump major version (7.0.0 -> 8.0.0).
-./bash/bump_version.sh major
+# Keep VERSION and refresh all release-managed files.
+./bash/release_prep.sh --skip-bump
 
-# Bump dev version (7.0.0 -> 7.0.0-dev01, or 7.0.0-dev01 -> 7.0.0-dev02).
-./bash/bump_version.sh dev
+# Advance a prerelease and keep its current changelog notes.
+./bash/release_prep.sh --carry-changelog
 
-# Set a specific version.
-./bash/bump_version.sh 6.2.0-beta01
+# Resume an interrupted prerelease sync without another bump.
+./bash/release_prep.sh --skip-bump --recover-changelog
 ```
 
 ## CI process
 
 When you update `CHANGELOG.md` or `version.config`, GitHub Actions automatically:
 
-- Updates all package versions to match `version.config`.
-- Updates all internal dependencies between packages to the same version.
-- Updates all example and standalone web-viewer internal dependencies.
-- Copies the main changelog into every package changelog.
-- Regenerates package README files from `docs/readme/`.
+- Runs `release_prep.sh --skip-bump` to synchronize versions, dependencies, changelogs, generated READMEs, and `llms.txt`.
+- Synchronizes the standalone web-viewer manifest and lockfile.
+- Validates the lockfile with the CI-pinned Flutter 3.32.6 toolchain.
 - Commits and pushes the changes.
 
 On a pull request, GitHub Actions checks that:
 
+- Release-prep regression tests pass.
 - All package versions match `version.config`.
 - All internal dependencies, including the standalone web viewer, are consistent.
 - The changelog contains the current version.
-- Generated README files match their sources.
+- Generated README files and `llms.txt` match their sources.
 
 ## Internal dependencies
 
@@ -69,9 +67,9 @@ The system manages dependencies between ISpect packages:
 
 ## Best practices
 
-1. Update `CHANGELOG.md` before bumping versions.
-2. Use `bump_version.sh` locally.
-3. For releases, prefer the GitHub Actions workflow for consistency.
-4. Check the Git diff after a version bump to confirm everything updated.
+1. Use `release_prep.sh` for bumps and `release_prep.sh --skip-bump` for no-bump synchronization.
+2. Edit release notes only in the root `CHANGELOG.md`.
+3. Edit README content only under `docs/readme/**`.
+4. Review the generated diff and run `publish.sh --dry-run` before publishing.
 
 For more detail, see [`VERSION_MANAGEMENT.md`](./VERSION_MANAGEMENT.md).

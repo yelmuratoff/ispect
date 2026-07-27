@@ -15,10 +15,12 @@ on:
          - "docs/readme/**"
          - "docs/*.md"
          - ".github/workflows/sync_versions_and_changelogs.yml"
+         - "bash/release_prep.sh"
          - "bash/update_versions.sh"
          - "bash/update_changelog.sh"
          - "bash/build_readme.sh"
          - "bash/build_llms.sh"
+         - "bash/tests/**"
 
 jobs:
    update-versions-changelogs-readmes:
@@ -45,36 +47,14 @@ jobs:
               channel: stable
               cache: true
 
-         - name: Update package versions and CHANGELOGs
+         - name: Synchronize release artifacts
            run: |
-              chmod +x bash/update_versions.sh
-              ./bash/update_versions.sh
+              chmod +x bash/release_prep.sh
+              ./bash/release_prep.sh --skip-bump
 
-         - name: Build package READMEs
-           run: |
-              chmod +x bash/build_readme.sh
-              ./bash/build_readme.sh
-
-         - name: Build llms.txt
-           run: |
-              chmod +x bash/build_llms.sh
-              ./bash/build_llms.sh
-
-         - name: Verify package versions
-           run: |
-              chmod +x bash/check_version_sync.sh
-              ./bash/check_version_sync.sh
-
-         - name: Verify dependencies
-           run: |
-              chmod +x bash/check_dependencies.sh
-              ./bash/check_dependencies.sh
-
-         - name: Verify generated READMEs
-           run: ./bash/build_readme.sh --check
-
-         - name: Verify generated llms.txt
-           run: ./bash/build_llms.sh --check
+         - name: Validate web viewer lockfile with pinned Flutter
+           working-directory: web_logs_viewer
+           run: flutter pub get --enforce-lockfile
 
          - name: Prepare changes for PR
            id: prepare_diff

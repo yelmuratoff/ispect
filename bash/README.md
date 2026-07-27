@@ -6,16 +6,17 @@ Maintenance scripts, quality gates, and release helpers for the ISpect monorepo.
 
 Scripts:
 
+- `release_prep.sh` — the single entry point for synchronizing every release-managed artifact, with or without a version bump.
 - `pre-commit.sh` — local git hook (version sync, dependency sync, README sync, changelog presence).
 - `publish.sh` — ordered multi-package publish with preflight validation, dry-run, and auto mode.
-- `update_versions.sh` — semantic bump and propagation of version + internal dependency constraints.
+- `update_versions.sh` — internal helper for version metadata, internal dependency constraints, and the web-viewer lockfile.
 - `update_changelog.sh` — append / propagate a specific changelog section or overwrite all.
 - `build_readme.sh` — assemble every package README from `docs/readme/` sources (primary doc builder).
 - `update_readme.sh` — thin wrapper over `build_readme.sh` for symmetry with `update_versions.sh`.
 - `build_llms.sh` — generate the repo-root `llms.txt` AI navigation index from repository metadata.
 - `check_version_sync.sh` — ensure every package version matches `version.config`.
 - `check_dependencies.sh` — verify internal dependency constraints reference the current version.
-- `bump_version.sh` — legacy bump helper (kept for backward compatibility; prefer `update_versions.sh --bump`).
+- `bump_version.sh` — legacy bump helper kept for backward compatibility; prefer `release_prep.sh`.
 
 ## Quick start
 
@@ -28,47 +29,59 @@ cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 ```
 
 ```bash
-./bash/update_changelog.sh --full-copy && ./bash/update_versions.sh && ./bash/sync_readme.sh && dart format .
+# Synchronize all release-managed files without changing VERSION.
+./bash/release_prep.sh --skip-bump
 ```
 
-`release_prep.sh` common flows:
+`release_prep.sh` is the user-facing release workflow:
 
 ```bash
-# Standard release prep: bump and create a fresh changelog stub.
+# Patch bump (default), changelog section, and every generated artifact.
 ./bash/release_prep.sh
 
-# Re-sync changelog/README after editing entries.
+# Explicit patch, minor, or major bump.
+./bash/release_prep.sh --bump minor
+
+# Keep VERSION and synchronize every release-managed artifact.
 ./bash/release_prep.sh --skip-bump
 
-# Dev cycle: bump current prerelease and carry the existing changelog section
-# forward to the new version (for example 5.0.0-dev22 -> 5.0.0-dev23).
+# Advance a prerelease and carry its existing notes forward.
 ./bash/release_prep.sh --carry-changelog
+
+# Resume an interrupted prerelease sync without another bump.
+./bash/release_prep.sh --skip-bump --recover-changelog
+
+# Open CHANGELOG.md during the workflow.
+./bash/release_prep.sh --edit
 ```
 
-Every release-prep flow regenerates both the package READMEs and the root
-`llms.txt` index before formatting Dart sources.
+Every mode synchronizes `version.config`, package metadata and internal
+constraints, the web-viewer lockfile, root and package changelogs, generated
+READMEs, and `llms.txt`, then validates the result. If any step fails, managed
+files are restored to their exact pre-run state.
 
 ## Version management
 
 Primary source of truth: `version.config` (line `VERSION=X.Y.Z`).
 
 ```bash
-# Dry-run (see what would change)
+# Preview the low-level version sync without writing.
 ./bash/update_versions.sh --dry-run
 
-# Bump patch / minor / major
-./bash/update_versions.sh --bump patch
-./bash/update_versions.sh --bump minor
-./bash/update_versions.sh --bump major
+# Synchronize the complete release state without changing VERSION.
+./bash/release_prep.sh --skip-bump
 ```
 
-`update_versions.sh`:
+`update_versions.sh` is used by `release_prep.sh` and:
 
 - Updates each package `version:` line.
 - Aligns internal dependency references (`^<VERSION>`).
 - Updates example pubspec internal references.
-- Ensures a root CHANGELOG section exists; then propagates its section to packages.
+- Synchronizes local path-package versions in `web_logs_viewer/pubspec.lock`.
 - Supports `--dry-run` for a non-destructive preview.
+
+It does not update changelogs, READMEs, or `llms.txt`; use `release_prep.sh`
+when the complete release state must be synchronized.
 
 ## Changelog propagation
 
@@ -158,12 +171,8 @@ Do not edit `llms.txt` by hand — edits are overwritten on the next build.
 ## Publish workflow
 
 ```bash
-# Ensure versions aligned and READMEs built.
-./bash/update_versions.sh --dry-run
-./bash/build_readme.sh
-
-# Add / propagate changelog section for the current version.
-./bash/update_changelog.sh --version $(grep VERSION version.config | cut -d= -f2)
+# Synchronize and validate every release-managed artifact.
+./bash/release_prep.sh --skip-bump
 
 # Dry-run publish (all packages in dependency order).
 ./bash/publish.sh --dry-run
@@ -200,12 +209,14 @@ Checks performed:
 # Check everything is consistent.
 ./bash/check_version_sync.sh \
   && ./bash/check_dependencies.sh \
-  && ./bash/build_readme.sh --check
+  && ./bash/build_readme.sh --check \
+  && ./bash/build_llms.sh --check
 
-# Sync everything after a version bump.
-./bash/update_versions.sh --bump patch \
-  && ./bash/update_changelog.sh --version $(grep VERSION version.config | cut -d= -f2) \
-  && ./bash/build_readme.sh
+# Bump and synchronize everything.
+./bash/release_prep.sh
+
+# Synchronize everything without a bump.
+./bash/release_prep.sh --skip-bump
 ```
 
 ## Notes

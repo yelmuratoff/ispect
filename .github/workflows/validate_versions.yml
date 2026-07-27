@@ -8,7 +8,10 @@ on:
       - develop
     paths:
       - 'packages/*/pubspec.yaml'
+      - 'packages/*/example/pubspec.yaml'
+      - 'packages/*/CHANGELOG.md'
       - 'packages/*/README.md'
+      - 'README.md'
       - 'web_logs_viewer/pubspec.yaml'
       - 'web_logs_viewer/pubspec.lock'
       - 'version.config'
@@ -18,11 +21,16 @@ on:
       - 'SECURITY.md'
       - 'docs/readme/**'
       - 'docs/*.md'
+      - 'bash/README.md'
       - 'bash/build_readme.sh'
       - 'bash/build_llms.sh'
       - 'bash/check_dependencies.sh'
       - 'bash/check_version_sync.sh'
+      - 'bash/release_prep.sh'
+      - 'bash/update_changelog.sh'
       - 'bash/update_versions.sh'
+      - 'bash/tests/**'
+      - '.github/workflows/validate_versions.yml'
 
 permissions:
   contents: read
@@ -44,6 +52,11 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Test Release Automation
+        run: |
+          ./bash/tests/update_versions_test.sh
+          ./bash/tests/release_prep_test.sh
+
       - name: Check Version Sync
         id: check_versions
         run: |
@@ -56,7 +69,7 @@ jobs:
 
           echo "🔍 Checking version synchronization across packages..."
           if ! ./bash/check_version_sync.sh; then
-            echo "❌ Version check failed. Please run './bash/update_versions.sh' to sync all package versions."
+            echo "❌ Version check failed. Please run './bash/release_prep.sh --skip-bump'."
             exit 1
           fi
           echo "✅ Version synchronization check passed!"
@@ -72,7 +85,7 @@ jobs:
 
           echo "🔍 Checking that generated READMEs match docs/readme/ sources..."
           if ! ./bash/build_readme.sh --check; then
-            echo "❌ README drift detected. Please run './bash/build_readme.sh' and commit the result."
+            echo "❌ README drift detected. Please run './bash/release_prep.sh --skip-bump' and commit the result."
             exit 1
           fi
           echo "✅ README sync check passed!"
@@ -87,7 +100,7 @@ jobs:
 
           echo "🔍 Checking that llms.txt matches repository metadata..."
           if ! ./bash/build_llms.sh --check; then
-            echo "❌ llms.txt drift detected. Please run './bash/build_llms.sh' and commit the result."
+            echo "❌ llms.txt drift detected. Please run './bash/release_prep.sh --skip-bump' and commit the result."
             exit 1
           fi
           echo "✅ llms.txt sync check passed!"
@@ -104,7 +117,7 @@ jobs:
 
           echo "🔍 Checking dependency version consistency..."
           if ! ./bash/check_dependencies.sh; then
-            echo "❌ Dependency version check failed. Please run './bash/update_versions.sh' to sync all package dependencies."
+            echo "❌ Dependency version check failed. Please run './bash/release_prep.sh --skip-bump'."
             exit 1
           fi
           echo "✅ Dependency consistency check passed!"

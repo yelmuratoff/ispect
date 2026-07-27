@@ -290,15 +290,15 @@ The global redaction switch remains authoritative. Setting `ISpectRedaction.enab
 ## Release channel
 
 The version declared in `version.config` (currently `{{version}}`) is the
-stable channel and the recommended pin for new integrations. Older major
-releases remain available on pub.dev for teams that still need their API
-surface.
+repository version used by package metadata and generated documentation. It
+may be a stable release or a prerelease; check pub.dev for the latest published
+stable version before pinning a production integration.
 
 ## Project state
 
 What you can verify from the repository today:
 
-- The current stable release is `{{version}}`.
+- Repository metadata and generated documentation currently target `{{version}}`.
 - SDK baseline is Dart `>=3.6.0 <4.0.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
 - The `production_safety` workflow runs disabled direct-API tests for every package and compares disabled/enabled release AOT probes using exact implementation sentinels.
 - Core diagnostics and supported integrations resolve one configurable default `RedactionService`; explicit integration services remain local overrides.
