@@ -184,6 +184,8 @@ void main() {
 
       final metadata = jsonData['metadata'] as Map<String, dynamic>;
       expect(metadata['totalLogs'], equals(3));
+      expect(metadata['exportedLogs'], equals(3));
+      expect(metadata['truncated'], isFalse);
       expect(metadata['version'], equals('1.0.0'));
       expect(metadata['platform'], equals('ispect'));
 
@@ -580,9 +582,9 @@ void main() {
 
       test('many-record regular and filtered exports stay valid and bounded',
           () async {
-        final message = 'bounded-${''.padRight(8000, 'x')}';
+        final message = 'bounded-${''.padRight(200 * 1024, 'x')}';
         final logs = List.generate(
-          1200,
+          180,
           (index) => ISpectLogData(
             message,
             time: DateTime(2025).add(Duration(seconds: index)),
@@ -611,10 +613,17 @@ void main() {
             utf8.encode(output).length,
             lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
           );
-          expect(exportedLogs.length, greaterThan(1000));
+          expect(exportedLogs.length, greaterThan(100));
           expect(exportedLogs.length, lessThan(logs.length));
           expect(metadata['totalLogs'], logs.length);
+          expect(metadata['exportedLogs'], exportedLogs.length);
+          expect(metadata['truncated'], isTrue);
         }
+
+        final regularExport = jsonDecode(outputs.first) as Map<String, dynamic>;
+        final regularLogs = regularExport['logs'] as List<dynamic>;
+        final imported = await service.importFromJson(outputs.first);
+        expect(imported, hasLength(regularLogs.length));
       });
 
       test('never executes caller formatters in regular or filtered JSON',
@@ -863,8 +872,7 @@ void main() {
       });
     });
 
-    test('should skip invalid log entries during import', () async {
-      // Arrange
+    test('reports invalid log entries skipped during import', () async {
       final mixedJson = jsonEncode({
         'logs': [
           {
@@ -881,13 +889,14 @@ void main() {
         ],
       });
 
-      // Act
-      final importedLogs = await service.importFromJson(mixedJson);
+      final result = await service.importFromJsonWithReport(mixedJson);
 
-      // Assert
-      expect(importedLogs.length, equals(2));
-      expect(importedLogs[0].message, equals('Valid log'));
-      expect(importedLogs[1].message, equals('Another valid log'));
+      expect(result.totalEntries, 3);
+      expect(result.importedEntries, 2);
+      expect(result.skippedEntries, 1);
+      expect(result.hasSkippedEntries, isTrue);
+      expect(result.logs[0].message, equals('Valid log'));
+      expect(result.logs[1].message, equals('Another valid log'));
     });
 
     test('should handle empty logs gracefully in shareLogsAsJsonFile',
@@ -1121,7 +1130,11 @@ void main() {
 
         expect(json, isNot(contains(secret)));
         final decoded = jsonDecode(json) as Map<String, dynamic>;
-        expect(decoded[ISpectMetadata.exportKey], isNull);
+        final metadata =
+            decoded[ISpectMetadata.exportKey] as Map<String, dynamic>;
+        expect(metadata['totalLogs'], sampleLogs.length);
+        expect(metadata['exportedLogs'], sampleLogs.length);
+        expect(metadata['truncated'], isFalse);
       });
 
       test('redacts typed binary before JSON normalization', () async {
@@ -1160,6 +1173,8 @@ void main() {
               'exportedAt': 'attacker-controlled',
               'version': '999.0.0',
               'totalLogs': -1,
+              'exportedLogs': -1,
+              'truncated': true,
               'platform': 'spoofed',
             },
           ),
@@ -1171,6 +1186,8 @@ void main() {
         expect(metadata['exportedAt'], isNot('attacker-controlled'));
         expect(metadata['version'], '1.0.0');
         expect(metadata['totalLogs'], sampleLogs.length);
+        expect(metadata['exportedLogs'], sampleLogs.length);
+        expect(metadata['truncated'], isFalse);
         expect(metadata['platform'], 'ispect');
       });
 
@@ -1279,7 +1296,11 @@ void main() {
 
         expect(content, isNot(contains(secret)));
         final decoded = jsonDecode(content) as Map<String, dynamic>;
-        expect(decoded[ISpectMetadata.exportKey], isNull);
+        final metadata =
+            decoded[ISpectMetadata.exportKey] as Map<String, dynamic>;
+        expect(metadata['totalLogs'], 1);
+        expect(metadata['exportedLogs'], 1);
+        expect(metadata['truncated'], isFalse);
       });
 
       test('custom redactor failure aborts before sharing', () async {
@@ -1371,6 +1392,8 @@ void main() {
               'exportedAt': 'attacker-controlled',
               'totalLogs': -1,
               'filteredLogs': -1,
+              'exportedLogs': -1,
+              'truncated': true,
               'platform': 'spoofed',
               'appliedFilter': 'spoofed',
             },
@@ -1383,6 +1406,8 @@ void main() {
         expect(metadata['exportedAt'], isNot('attacker-controlled'));
         expect(metadata['totalLogs'], 1);
         expect(metadata['filteredLogs'], 1);
+        expect(metadata['exportedLogs'], 1);
+        expect(metadata['truncated'], isFalse);
         expect(metadata['platform'], 'ispect');
         expect(metadata['appliedFilter'], isA<Map<String, dynamic>>());
       });

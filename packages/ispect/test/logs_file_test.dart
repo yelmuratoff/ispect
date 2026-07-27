@@ -851,7 +851,7 @@ Future<void> main(List<String> arguments) async {
 
         final lazyLogger = ISpect.logger;
         await _waitUntil(() async => cleanupAttempts == 1);
-        expect(ISpect.initialize(lazyLogger), isFalse);
+        expect(ISpect.initialize(lazyLogger), isTrue);
 
         await _waitUntil(() async => !await staleFile.exists());
         expect(cleanupAttempts, greaterThanOrEqualTo(2));

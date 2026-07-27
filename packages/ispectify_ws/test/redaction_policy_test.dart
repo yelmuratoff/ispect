@@ -36,7 +36,6 @@ WsDiagnostics _diagnostics(
 }) =>
     WsDiagnostics(
       logger: logger,
-      settings: const ISpectWSInterceptorSettings(printSentData: true),
       redactor: redactor,
       source: source,
     );

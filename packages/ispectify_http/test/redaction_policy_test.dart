@@ -19,10 +19,6 @@ ISpectHttpInterceptor _interceptor(
 }) =>
     ISpectHttpInterceptor(
       logger: logger,
-      settings: const ISpectHttpInterceptorSettings(
-        printRequestData: true,
-        printRequestHeaders: true,
-      ),
       redactor: redactor,
     );
 

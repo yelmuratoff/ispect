@@ -10,6 +10,11 @@ class LogImportService {
   Future<List<ISpectLogData>> importLogsFromJson(String jsonContent) async =>
       _logsJsonService.importFromJson(jsonContent);
 
+  Future<LogsImportResult> importLogsFromJsonWithReport(
+    String jsonContent,
+  ) async =>
+      _logsJsonService.importFromJsonWithReport(jsonContent);
+
   bool validateLogsJsonContent(String jsonContent) =>
       _logsJsonService.validateJsonStructure(jsonContent);
 }

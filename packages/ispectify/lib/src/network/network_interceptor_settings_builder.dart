@@ -23,20 +23,20 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     TReq,
     TRes,
     TErr> {
-  /// Creates a builder with metadata-only defaults.
+  /// Creates a builder with full diagnostics and redaction enabled.
   BaseNetworkInterceptorSettingsBuilder()
       : enabled = true,
         enableRedaction = true,
         logRequests = true,
         logResponses = true,
-        printResponseData = false,
-        printResponseHeaders = false,
+        printResponseData = true,
+        printResponseHeaders = true,
         printResponseMessage = true,
-        printErrorData = false,
-        printErrorHeaders = false,
+        printErrorData = true,
+        printErrorHeaders = true,
         printErrorMessage = true,
-        printRequestData = false,
-        printRequestHeaders = false;
+        printRequestData = true,
+        printRequestHeaders = true;
 
   bool enabled;
   bool enableRedaction;
@@ -267,6 +267,21 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   }
 
   // Environment presets
+
+  /// Applies metadata-only capture with redaction enabled.
+  void applyMetadataOnlyDefaults() {
+    logRequests = true;
+    logResponses = true;
+    enableRedaction = true;
+    printResponseData = false;
+    printResponseHeaders = false;
+    printResponseMessage = true;
+    printErrorData = false;
+    printErrorHeaders = false;
+    printErrorMessage = true;
+    printRequestData = false;
+    printRequestHeaders = false;
+  }
 
   /// Applies development preset: all headers, all data, redaction enabled.
   void applyDevelopmentDefaults() {

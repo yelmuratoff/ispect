@@ -34,7 +34,7 @@ The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-state`,
 
 ## Settings
 
-`ISpectBlocSettings` controls which lifecycle events are captured and whether raw event/state payloads are written to trace meta. Payload capture is off by default. BLoCs use the coarse family labels `Bloc`, `Cubit`, or `BlocBase`; common event/state shapes use structural labels such as `String`, `int`, `List`, or `Map`, and other caller-owned objects use `Object`. These labels do not invoke application `runtimeType` or `toString()` methods.
+`ISpectBlocSettings` controls which lifecycle events are captured and whether event/state payloads are written to trace meta. Full bounded payloads are captured and redacted by default. The `compact` preset keeps lifecycle visibility while replacing values with coarse structural labels such as `String`, `int`, `List`, or `Map`.
 
 ```dart
 const settings = ISpectBlocSettings(
@@ -45,9 +45,9 @@ const settings = ISpectBlocSettings(
   printClosings: true,
   printCompletions: true,
   printErrors: true,
-  printEventFullData: false, // coarse structural label — default
-  printStateFullData: false, // coarse structural label — default
-  enableRedaction: true,     // route meta values through RedactionService when set
+  printEventFullData: true,
+  printStateFullData: true,
+  enableRedaction: true,
 );
 ```
 
@@ -60,10 +60,7 @@ ISpectBlocObserver(settings: ISpectBlocSettings.silent);
 // Skip per-change / per-completion noise — keeps creations, transitions, errors.
 ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
 
-// Explicit local-development payload capture; redaction remains enabled.
-ISpectBlocObserver(
-  settings: ISpectBlocSettings.development,
-);
+ISpectBlocObserver(settings: ISpectBlocSettings.compact);
 ```
 
 ### Filtering noisy blocs

@@ -12,26 +12,36 @@ class ISpectWSInterceptorSettingsBuilder
         ISpectLogData,
         ISpectLogData,
         ISpectLogData> {
-  ISpectWSInterceptorSettingsBuilder();
+  ISpectWSInterceptorSettingsBuilder() {
+    printErrorHeaders = false;
+    printStateData = true;
+  }
+
+  factory ISpectWSInterceptorSettingsBuilder.metadataOnly() =>
+      ISpectWSInterceptorSettingsBuilder()
+        ..applyMetadataOnlyDefaults()
+        ..printStateData = false;
 
   factory ISpectWSInterceptorSettingsBuilder.development() =>
       ISpectWSInterceptorSettingsBuilder()
         ..applyDevelopmentDefaults()
-        ..printRequestHeaders = false
-        ..printResponseHeaders = false
         ..printErrorHeaders = false
         ..printStateData = true;
 
   factory ISpectWSInterceptorSettingsBuilder.production() =>
-      ISpectWSInterceptorSettingsBuilder()..applyProductionDefaults();
+      ISpectWSInterceptorSettingsBuilder()
+        ..applyProductionDefaults()
+        ..printStateData = false;
 
   factory ISpectWSInterceptorSettingsBuilder.staging() =>
-      ISpectWSInterceptorSettingsBuilder()..applyStagingDefaults();
+      ISpectWSInterceptorSettingsBuilder()
+        ..applyStagingDefaults()
+        ..printStateData = false;
 
   factory ISpectWSInterceptorSettingsBuilder.disabled() =>
       ISpectWSInterceptorSettingsBuilder()..enabled = false;
 
-  bool printStateData = false;
+  bool printStateData = true;
 
   /// Retains raw adapter connection-state details.
   ISpectWSInterceptorSettingsBuilder withStateData() {

@@ -38,7 +38,7 @@ typedef RiverpodFilterPredicate = bool Function(Object? candidate);
 class ISpectRiverpodObserver extends ProviderObserver {
   ISpectRiverpodObserver({
     ISpectLogger? logger,
-    this.settings = ISpectRiverpodSettings.compact,
+    this.settings = ISpectRiverpodSettings.verbose,
     this.onProviderAdd,
     this.onProviderUpdate,
     this.onProviderDispose,

@@ -7,6 +7,32 @@ import 'package:ispect/src/common/utils/chunking.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:meta/meta.dart';
 
+/// Immutable outcome of a bounded log import.
+@immutable
+final class LogsImportResult {
+  LogsImportResult._({
+    required List<ISpectLogData> logs,
+    required this.totalEntries,
+    required this.skippedEntries,
+  })  : assert(totalEntries == logs.length + skippedEntries),
+        logs = List<ISpectLogData>.unmodifiable(logs);
+
+  /// Successfully decoded log entries.
+  final List<ISpectLogData> logs;
+
+  /// Number of entries found in the imported JSON document.
+  final int totalEntries;
+
+  /// Number of entries rejected because they could not be decoded safely.
+  final int skippedEntries;
+
+  /// Number of successfully decoded entries.
+  int get importedEntries => logs.length;
+
+  /// Whether the caller should disclose a partial import.
+  bool get hasSkippedEntries => skippedEntries > 0;
+}
+
 /// Service for managing JSON export/import operations for logs.
 ///
 /// - Parameters: None required for initialization
@@ -40,7 +66,7 @@ class LogsJsonService {
   /// for an explicit controlled-debugging opt-out.
   /// Output is compact and capped by [LogExportOutput.maxDocumentBytes].
   /// When the cap is reached, only complete leading records that fit are
-  /// emitted; metadata counts continue to describe the source list.
+  /// emitted. Metadata reports `totalLogs`, `exportedLogs`, and `truncated`.
   ///
   /// - Parameters: logs (list of entries), includeMetadata (flag for metadata),
   ///   redactionService (optional policy override),
@@ -61,6 +87,8 @@ class LogsJsonService {
     );
     final encoder = _JsonExportEncoder(
       includeMetadata: includeMetadata,
+      totalLogCount: logs.length,
+      sourceLogCount: logs.length,
       metadata: includeMetadata
           ? _prepareJsonValue(
               _createExportMetadata(
@@ -114,13 +142,26 @@ class LogsJsonService {
   /// - Edge case notes: Supports legacy format, skips invalid entries, processes in chunks
   ///
   /// **Validation:**
-  /// - Size: Max 8 MiB characters and 16 MiB encoded
+  /// - Size: Max 32 MiB characters and 32 MiB encoded
   /// - Depth: Max 64 levels
   /// - Structure: Max 100,000 approximate nodes
   /// - Count: Max 100,000 entries
   ///
   /// **Security:** Prevents DoS attacks via malformed JSON
   Future<List<ISpectLogData>> importFromJson(
+    String jsonString, {
+    RedactionService? redactionService,
+    bool enableRedaction = true,
+  }) async =>
+      (await importFromJsonWithReport(
+        jsonString,
+        redactionService: redactionService,
+        enableRedaction: enableRedaction,
+      ))
+          .logs;
+
+  /// Imports logs and reports entries that could not be decoded.
+  Future<LogsImportResult> importFromJsonWithReport(
     String jsonString, {
     RedactionService? redactionService,
     bool enableRedaction = true,
@@ -173,7 +214,7 @@ class LogsJsonService {
   }
 
   /// Processes imported logs in chunks to prevent UI freezing
-  Future<List<ISpectLogData>> _processImportedLogsInChunks(
+  Future<LogsImportResult> _processImportedLogsInChunks(
     List<dynamic> logsJson,
     RedactionService? redactor,
   ) async {
@@ -195,7 +236,11 @@ class LogsJsonService {
       processed++;
       await Chunking.yieldEvery(processed, yieldEveryChunks);
     }
-    return logs;
+    return LogsImportResult._(
+      logs: logs,
+      totalEntries: logsJson.length,
+      skippedEntries: logsJson.length - logs.length,
+    );
   }
 
   /// Creates and downloads a JSON file with logs
@@ -361,6 +406,8 @@ class LogsJsonService {
       default:
         final encoder = _JsonExportEncoder(
           includeMetadata: true,
+          totalLogCount: logs.length,
+          sourceLogCount: filteredLogs.length,
           metadata: _prepareJsonValue(
             _createFilteredMetadata(
               logs,
@@ -544,39 +591,58 @@ class LogsJsonService {
 final class _JsonExportEncoder {
   _JsonExportEncoder({
     required bool includeMetadata,
+    required this.totalLogCount,
+    required this.sourceLogCount,
     required Object? metadata,
     required this.redactor,
   }) : _output = _JsonDocumentBuffer(LogExportOutput.maxDocumentBytes) {
-    _output.writeAll(const ['{'], reservedBytes: 10);
+    String? encodedMetadata;
     if (includeMetadata) {
-      final encodedMetadata = _encodePreparedValue(metadata);
-      final metadataStats = _JsonStructureStats.scan(encodedMetadata);
+      var effectiveMetadata =
+          metadata is Map<String, Object?> ? metadata : <String, Object?>{};
+      final candidate = _metadataWithStats(
+        effectiveMetadata,
+        exportedLogs: sourceLogCount,
+      );
+      encodedMetadata = _encodePreparedValue(candidate);
+      var metadataStats = _JsonStructureStats.scan(encodedMetadata);
       final metadataNodes = 1 + metadataStats.nodeContribution;
       final canUseMetadata =
           metadataStats.maxDepth <= JsonInputPreflight.maxNestingDepth - 1 &&
               _approximateNodes + metadataNodes <=
                   JsonInputPreflight.maxApproximateNodes;
-      final wroteMetadata = canUseMetadata &&
-          _output.writeAll(
-            ['"${ISpectMetadata.exportKey}":', encodedMetadata, ','],
-            reservedBytes: 9,
-          );
-      if (!wroteMetadata) {
-        _output.writeAll(
-          ['"${ISpectMetadata.exportKey}":null,'],
-          reservedBytes: 9,
+      if (!canUseMetadata) {
+        effectiveMetadata = const <String, Object?>{};
+        encodedMetadata = _encodePreparedValue(
+          _metadataWithStats(
+            effectiveMetadata,
+            exportedLogs: sourceLogCount,
+          ),
         );
-        _approximateNodes++;
-      } else {
-        _approximateNodes += metadataNodes;
+        metadataStats = _JsonStructureStats.scan(encodedMetadata);
       }
+      _metadata = effectiveMetadata;
+      _approximateNodes += 1 + metadataStats.nodeContribution;
     }
-    _output.writeAll(const ['"logs":['], reservedBytes: 2);
+    _metadataSuffixBytes = encodedMetadata == null
+        ? 2
+        : LogExportOutput.utf8Length(
+            '],"${ISpectMetadata.exportKey}":$encodedMetadata}',
+          );
+    _output.writeAll(
+      const ['{"logs":['],
+      reservedBytes: _metadataSuffixBytes,
+    );
   }
 
+  final int totalLogCount;
+  final int sourceLogCount;
   final RedactionService? redactor;
   final _JsonDocumentBuffer _output;
+  Map<String, Object?>? _metadata;
+  late final int _metadataSuffixBytes;
   int _approximateNodes = 5;
+  int _exportedLogs = 0;
   bool _hasLogs = false;
   bool _finished = false;
 
@@ -599,19 +665,48 @@ final class _JsonExportEncoder {
         JsonInputPreflight.maxApproximateNodes) {
       return false;
     }
-    if (!_output.writeAll([prefix, encoded], reservedBytes: 2)) return false;
+    if (!_output.writeAll(
+      [prefix, encoded],
+      reservedBytes: _metadataSuffixBytes,
+    )) {
+      return false;
+    }
     _approximateNodes += additionalNodes;
     _hasLogs = true;
+    _exportedLogs++;
     return true;
   }
 
   String finish() {
     if (!_finished) {
-      _output.writeAll(const [']}']);
+      final metadata = _metadata;
+      if (metadata == null) {
+        _output.writeAll(const [']}']);
+      } else {
+        final encodedMetadata = _encodePreparedValue(
+          _metadataWithStats(metadata, exportedLogs: _exportedLogs),
+        );
+        _output.writeAll([
+          '],"${ISpectMetadata.exportKey}":',
+          encodedMetadata,
+          '}',
+        ]);
+      }
       _finished = true;
     }
     return _output.toString();
   }
+
+  Map<String, Object?> _metadataWithStats(
+    Map<String, Object?> metadata, {
+    required int exportedLogs,
+  }) =>
+      <String, Object?>{
+        ...metadata,
+        'totalLogs': totalLogCount,
+        'exportedLogs': exportedLogs,
+        'truncated': exportedLogs < sourceLogCount,
+      };
 
   static String _encodePreparedValue(Object? value) {
     try {

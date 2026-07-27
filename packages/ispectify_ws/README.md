@@ -59,8 +59,8 @@
 
 ```yaml
 dependencies:
-  ispectify: ^7.0.0-dev2
-  ispectify_ws: ^7.0.0-dev2
+  ispectify: ^7.0.0-dev3
+  ispectify_ws: ^7.0.0-dev3
   # plus your WebSocket client, e.g.
   # ws: ^1.0.0  |  web_socket_channel: ^3.0.0  |  socket_io_client: ^3.0.0
 ```
@@ -118,14 +118,14 @@ const settings = ISpectWSInterceptorSettings(
 final diagnostics = WsDiagnostics(logger: ISpect.logger, settings: settings);
 ```
 
-Frame bodies and raw connection-state details are omitted by default. The
-explicit development builder preset enables verbose sent/received/state
-payload capture while keeping redaction on. The
-production preset disables sent/received frame retention and keeps redacted
-error diagnostics. `print*` fields shape retained records but do not re-enable
-a suppressed frame. Use the concrete settings `copyWith` or builder for
-retention controls; the shared base `configure` helper retains its
-legacy-compatible field set.
+Frame bodies, raw connection-state details, and errors are captured and
+redacted by default. Use
+`ISpectWSInterceptorSettingsBuilder.metadataOnly()` to retain frame lifecycle
+metadata without payloads, or the production preset to disable sent/received
+frame retention and keep redacted error diagnostics. `print*` fields shape
+retained records but do not re-enable a suppressed frame. Use the concrete
+settings `copyWith` or builder for retention controls; the shared base
+`configure` helper retains its legacy-compatible field set.
 
 ## Data redaction
 
@@ -133,7 +133,7 @@ Sensitive data is masked before it reaches logs or observers. Redaction is on by
 
 The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
 
-Redaction works best paired with focused capture. Keep body and header logging off unless you actually need the payload, and register project-specific keys for the business identifiers only your application understands.
+Redaction works best paired with deliberate capture. Use the integration's `metadataOnly()` or compact preset when payload values are unnecessary, and register project-specific keys for the business identifiers only your application understands.
 
 ### Global configuration
 

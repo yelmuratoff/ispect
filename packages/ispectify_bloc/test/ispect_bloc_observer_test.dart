@@ -339,8 +339,11 @@ void main() {
             returnsNormally,
           );
 
-          expect(observer.settings.formatEvent(event), 'Object');
-          expect(observer.settings.formatState(currentState), 'Object');
+          expect(observer.settings.formatEvent(event), same(event));
+          expect(
+            observer.settings.formatState(currentState),
+            same(currentState),
+          );
           expect(hostileBloc.runtimeTypeCalls, 0);
           for (final value in <_HostileRuntimeTypeValue>[
             event,
@@ -932,9 +935,14 @@ void main() {
       });
 
       group('redaction', () {
+        test('compact preset opts into coarse event and state labels', () {
+          expect(ISpectBlocSettings.compact.formatEvent('event'), 'String');
+          expect(ISpectBlocSettings.compact.formatState(1), 'int');
+        });
+
         test('default settings activate redaction without a custom service',
             () {
-          const settings = ISpectBlocSettings();
+          const settings = ISpectBlocSettings.verbose;
           final redacted = settings.redactAdditionalData(
             <String, dynamic>{'password': 'DEFAULT_REDACTION_SECRET'},
           );
@@ -951,7 +959,7 @@ void main() {
             ),
           );
 
-          final redacted = const ISpectBlocSettings().redactAdditionalData(
+          final redacted = ISpectBlocSettings.verbose.redactAdditionalData(
             <String, dynamic>{'business_marker': 'bloc-secret'},
           );
 
@@ -968,7 +976,6 @@ void main() {
           );
           final observer = ISpectBlocObserver(
             logger: logger,
-            settings: ISpectBlocSettings.verbose,
           )..onEvent(
               bloc,
               const <String, Object?>{'business_marker': 'first-secret'},
@@ -1008,7 +1015,6 @@ void main() {
           final observer = ISpectBlocObserver(
             logger: logger,
             settings: ISpectBlocSettings(
-              printEventFullData: true,
               redactor: RedactionService(
                 sensitiveKeys: const {'business_marker'},
                 placeholder: '<LOCAL_BLOC>',
@@ -1042,7 +1048,7 @@ void main() {
         });
 
         test('isRedactionActive reflects local and global gates', () {
-          expect(const ISpectBlocSettings().isRedactionActive, isTrue);
+          expect(ISpectBlocSettings.verbose.isRedactionActive, isTrue);
           expect(
             const ISpectBlocSettings(
               enableRedaction: false,
@@ -1052,12 +1058,12 @@ void main() {
 
           ISpectRedaction.enabled = false;
 
-          expect(const ISpectBlocSettings().isRedactionActive, isFalse);
+          expect(ISpectBlocSettings.verbose.isRedactionActive, isFalse);
         });
 
         test('additionalData helper bounds active and opt-out strings', () {
           final payload = List<String>.filled(2 * 1024 * 1024, 'a').join();
-          final redacted = const ISpectBlocSettings().redactAdditionalData(
+          final redacted = ISpectBlocSettings.verbose.redactAdditionalData(
             <String, dynamic>{'payload': payload},
           );
           final unredacted = const ISpectBlocSettings(
@@ -1095,7 +1101,7 @@ void main() {
 
         test('additionalData helper never formats hostile keys or values', () {
           final hostileValue = _HostilePayload();
-          final valueResult = const ISpectBlocSettings().redactAdditionalData(
+          final valueResult = ISpectBlocSettings.verbose.redactAdditionalData(
             <String, dynamic>{'payload': hostileValue},
           );
           final hostileKey = _HostilePayload();
@@ -1103,7 +1109,7 @@ void main() {
             hostileKey: 'visible',
           }.cast<String, dynamic>();
           final keyResult =
-              const ISpectBlocSettings().redactAdditionalData(hostileMap);
+              ISpectBlocSettings.verbose.redactAdditionalData(hostileMap);
           final redactorKey = _HostilePayload();
           final redactorValue = _HostilePayload();
           final redactorResult = ISpectBlocSettings(
@@ -1171,7 +1177,6 @@ void main() {
           final payload = List<String>.filled(2 * 1024 * 1024, 's').join();
           ISpectBlocObserver(
             logger: logger,
-            settings: ISpectBlocSettings.verbose,
           ).onEvent(
             bloc,
             <String, Object?>{'payload': payload},
@@ -1198,7 +1203,6 @@ void main() {
           ISpectBlocObserver(
             logger: logger,
             settings: ISpectBlocSettings(
-              printEventFullData: true,
               redactor: _ExpandingRedactor(),
             ),
           ).onEvent(bloc, const {'label': 'visible'});
@@ -1219,7 +1223,6 @@ void main() {
           ISpectBlocObserver(
             logger: logger,
             settings: ISpectBlocSettings(
-              printEventFullData: true,
               redactor: RedactionService(redactBinary: false),
             ),
           ).onEvent(
@@ -1244,7 +1247,6 @@ void main() {
           ISpectBlocObserver(
             logger: logger,
             settings: const ISpectBlocSettings(
-              printEventFullData: true,
               enableRedaction: false,
             ),
           ).onEvent(
@@ -1274,7 +1276,6 @@ void main() {
           ISpectBlocObserver(
             logger: logger,
             settings: ISpectBlocSettings(
-              printEventFullData: true,
               eventFilter: (_, __) {
                 logger.disable();
                 return true;
@@ -1292,7 +1293,6 @@ void main() {
           final value = _IterableProbe();
           ISpectBlocObserver(
             logger: logger,
-            settings: ISpectBlocSettings.verbose,
             onBlocEvent: (_, __) => logger.disable(),
           ).onEvent(bloc, value);
 
@@ -1316,8 +1316,6 @@ void main() {
           ISpectBlocObserver(
             logger: disabledLogger,
             settings: ISpectBlocSettings(
-              printEventFullData: true,
-              printStateFullData: true,
               eventFilter: (_, __) {
                 settingsFilterCalls++;
                 return true;
@@ -1438,17 +1436,18 @@ void main() {
       group('console message redaction', () {
         const secret = 'sk-live-super-secret-value-1234567890';
 
-        test('omits sensitive event fields from the console message by default',
+        test('shows redacted event fields in the console message by default',
             () {
           ISpectBlocObserver(logger: logger)
               .onEvent(bloc, <String, dynamic>{'password': secret});
 
           final message = logger.byOperation('event').single.message;
           expect(message, isNot(contains(secret)));
-          expect(message, isNot(contains('password')));
+          expect(message, contains('password'));
+          expect(message, contains('[REDACTED]'));
         });
 
-        test('uses state types in the transition console message by default',
+        test('shows redacted state fields in the transition message by default',
             () {
           ISpectBlocObserver(logger: logger).onTransition(
             bloc,
@@ -1461,7 +1460,8 @@ void main() {
 
           final message = logger.byOperation('transition').single.message;
           expect(message, isNot(contains(secret)));
-          expect(message, isNot(contains('token')));
+          expect(message, contains('token'));
+          expect(message, contains('[REDACTED]'));
         });
 
         test(
@@ -1470,7 +1470,6 @@ void main() {
           ISpectBlocObserver(
             logger: logger,
             settings: const ISpectBlocSettings(
-              printEventFullData: true,
               enableRedaction: false,
             ),
           ).onEvent(bloc, <String, dynamic>{'password': secret});
@@ -1481,21 +1480,20 @@ void main() {
       });
 
       group('full data logging', () {
-        test('default records event type without the payload', () {
+        test('default records the full redacted event payload', () {
           ISpectBlocObserver(logger: logger).onEvent(bloc, 'detailed_event');
 
           final meta = logger
               .byOperation('event')
               .single
               .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-          expect(meta.containsKey(BlocJsonKeys.event), isFalse);
+          expect(meta[BlocJsonKeys.event], 'detailed_event');
           expect(meta[BlocJsonKeys.eventType], 'String');
         });
 
         test('verbose preset includes event payload in meta', () {
           ISpectBlocObserver(
             logger: logger,
-            settings: ISpectBlocSettings.verbose,
           ).onEvent(bloc, 'detailed_event');
 
           final meta = logger
@@ -1505,7 +1503,7 @@ void main() {
           expect(meta[BlocJsonKeys.event], 'detailed_event');
         });
 
-        test('default shows serialized state type names in transition', () {
+        test('default shows full state values in transition', () {
           ISpectBlocObserver(logger: logger).onTransition(
             bloc,
             const Transition(currentState: 0, event: 'x', nextState: 42),
@@ -1515,14 +1513,13 @@ void main() {
               .byOperation('transition')
               .single
               .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-          expect(meta[BlocJsonKeys.currentState], 'int');
-          expect(meta[BlocJsonKeys.nextState], 'int');
+          expect(meta[BlocJsonKeys.currentState], 0);
+          expect(meta[BlocJsonKeys.nextState], 42);
         });
 
         test('verbose preset shows full state in transition', () {
           ISpectBlocObserver(
             logger: logger,
-            settings: ISpectBlocSettings.verbose,
           ).onTransition(
             bloc,
             const Transition(currentState: 0, event: 'x', nextState: 42),
@@ -1544,7 +1541,6 @@ void main() {
           };
           final observer = ISpectBlocObserver(
             logger: logger,
-            settings: ISpectBlocSettings.verbose,
           )
             ..onEvent(bloc, payload)
             ..onTransition(
@@ -1584,7 +1580,6 @@ void main() {
           final payload = _HostilePayload();
           ISpectBlocObserver(
             logger: logger,
-            settings: ISpectBlocSettings.verbose,
           )
             ..onEvent(bloc, payload)
             ..onTransition(
@@ -1636,8 +1631,6 @@ void main() {
             ISpectBlocObserver(
               logger: logger,
               settings: ISpectBlocSettings(
-                printEventFullData: true,
-                printStateFullData: true,
                 redactor: redactor,
               ),
             )
@@ -1680,8 +1673,6 @@ void main() {
           ISpectBlocObserver(
             logger: logger,
             settings: const ISpectBlocSettings(
-              printEventFullData: true,
-              printStateFullData: true,
               enableRedaction: false,
             ),
           )

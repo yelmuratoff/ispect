@@ -32,12 +32,6 @@ ISpect.run(
     dio.interceptors.add(
       ISpectDioInterceptor(
         logger: logger,
-        settings: const ISpectDioInterceptorSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-          printRequestData: true,
-          printResponseData: true,
-        ),
       ),
     );
   },
@@ -46,7 +40,7 @@ ISpect.run(
 
 ## Settings
 
-`ISpectDioInterceptorSettings` controls which parts of each call are captured and whether they are redacted before logging. `enableRedaction` defaults to `true` on every constructor.
+`ISpectDioInterceptorSettings` captures headers, bodies, messages, and errors by default so the first diagnostic session is useful without extra configuration. Captured values are bounded and redacted before logging; `enableRedaction` defaults to `true` on every constructor.
 
 ```dart
 const settings = ISpectDioInterceptorSettings(
@@ -65,6 +59,9 @@ const settings = ISpectDioInterceptorSettings(
 ```dart
 // Verbose payload capture with redaction still enabled.
 final dev = ISpectDioInterceptorSettingsBuilder.development().build();
+
+final hardened =
+    ISpectDioInterceptorSettingsBuilder.metadataOnly().build();
 
 // Redacted errors only. Routine request/response records are not retained.
 final prod = ISpectDioInterceptorSettingsBuilder.production().build();
@@ -85,9 +82,10 @@ final settings = ISpectDioInterceptorSettingsBuilder()
 ```
 
 `logRequests` and `logResponses` decide whether routine records are retained.
-Body and header capture is off by default; the `print*` fields opt specific
-retained fields into both the console message and structured metadata. The
-explicit development preset enables verbose capture while keeping redaction on.
+Body and header capture is on by default and passes through the active
+redaction policy. The `print*` fields can omit specific retained fields, while
+the `metadataOnly()` preset opts into stronger data minimization without
+disabling request/response visibility.
 Concrete settings `copyWith` methods and builders expose the retention
 controls. The shared base `configure` helper keeps its legacy-compatible field
 set.

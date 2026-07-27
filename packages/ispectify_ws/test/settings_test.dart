@@ -3,15 +3,16 @@ import 'package:test/test.dart';
 
 void main() {
   group('ISpectWSInterceptorSettings', () {
-    test('defaults to metadata-only frame diagnostics', () {
+    test('defaults to full redacted frame diagnostics', () {
       const settings = ISpectWSInterceptorSettings();
 
-      expect(settings.printSentData, isFalse);
-      expect(settings.printReceivedData, isFalse);
-      expect(settings.printStateData, isFalse);
-      expect(settings.printErrorData, isFalse);
-      expect(settings.printSentHeaders, isFalse);
-      expect(settings.printReceivedHeaders, isFalse);
+      expect(settings.enableRedaction, isTrue);
+      expect(settings.printSentData, isTrue);
+      expect(settings.printReceivedData, isTrue);
+      expect(settings.printStateData, isTrue);
+      expect(settings.printErrorData, isTrue);
+      expect(settings.printSentHeaders, isTrue);
+      expect(settings.printReceivedHeaders, isTrue);
       expect(settings.printErrorHeaders, isFalse);
     });
 
@@ -40,6 +41,8 @@ void main() {
       final staging = ISpectWSInterceptorSettingsBuilder.staging().build();
       final production =
           ISpectWSInterceptorSettingsBuilder.production().build();
+      final metadataOnly =
+          ISpectWSInterceptorSettingsBuilder.metadataOnly().build();
 
       expect(development.logRequests, isTrue);
       expect(development.logResponses, isTrue);
@@ -47,8 +50,8 @@ void main() {
       expect(development.printReceivedData, isTrue);
       expect(development.printStateData, isTrue);
       expect(development.printErrorData, isTrue);
-      expect(development.printSentHeaders, isFalse);
-      expect(development.printReceivedHeaders, isFalse);
+      expect(development.printSentHeaders, isTrue);
+      expect(development.printReceivedHeaders, isTrue);
       expect(development.printErrorHeaders, isFalse);
       expect(staging.logRequests, isTrue);
       expect(staging.logResponses, isFalse);
@@ -56,6 +59,14 @@ void main() {
       expect(production.logRequests, isFalse);
       expect(production.logResponses, isFalse);
       expect(production.printStateData, isFalse);
+      expect(metadataOnly.logRequests, isTrue);
+      expect(metadataOnly.logResponses, isTrue);
+      expect(metadataOnly.printSentData, isFalse);
+      expect(metadataOnly.printReceivedData, isFalse);
+      expect(metadataOnly.printSentHeaders, isFalse);
+      expect(metadataOnly.printReceivedHeaders, isFalse);
+      expect(metadataOnly.printStateData, isFalse);
+      expect(metadataOnly.printErrorData, isFalse);
     });
   });
 }

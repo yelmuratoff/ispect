@@ -83,7 +83,6 @@ void main() {
       logger: logger,
       redactor: redactor,
       settings: ISpectWSInterceptorSettings(
-        printSentData: true,
         sentChain: NetworkFilterChain<ISpectLogData>.fromPredicate((_) {
           filterCalls++;
           return true;

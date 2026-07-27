@@ -3,8 +3,8 @@ import 'dart:convert';
 
 /// Cheap limits applied before JSON decoding and recursive presentation.
 abstract final class JsonInputPreflight {
-  static const int maxCharacters = 8 * 1024 * 1024;
-  static const int maxEncodedBytes = 16 * 1024 * 1024;
+  static const int maxCharacters = 32 * 1024 * 1024;
+  static const int maxEncodedBytes = 32 * 1024 * 1024;
   static const int maxNestingDepth = 64;
   static const int maxApproximateNodes = 100000;
   static const int maxViewerNodes = 20000;

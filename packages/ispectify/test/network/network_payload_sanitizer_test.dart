@@ -629,6 +629,17 @@ void main() {
     });
   });
 
+  group('NetworkPayloadSanitizer.body', () {
+    test('retains a 128 KiB response after redaction', () {
+      final payload = ('safe-payload:' * 11000).substring(0, 128 * 1024);
+      final sanitizer = NetworkPayloadSanitizer(RedactionService());
+
+      final result = sanitizer.body(payload, enableRedaction: true);
+
+      expect(result, payload);
+    });
+  });
+
   group('NetworkPayloadSanitizer.encodeJsonGracefully', () {
     test('snapshots ordinary JSON values without changing their shape', () {
       const map = <String, dynamic>{'k': 'v'};

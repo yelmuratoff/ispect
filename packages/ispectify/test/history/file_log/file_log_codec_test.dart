@@ -664,7 +664,7 @@ void main() {
     );
   });
 
-  test('decodeLine accepts a map bounded by the prepared-value budget', () {
+  test('decodeLine preserves a map within the prepared-value budget', () {
     final codec = FileLogCodec(redactor: RedactionService());
     final groups = <Object?>[
       for (var group = 0; group < 6; group++)
@@ -686,8 +686,8 @@ void main() {
     final decoded = codec.decodeLine(utf8.decode(encoded.bytes).trim());
     final decodedGroups = decoded.additionalData!['groups']! as List<dynamic>;
 
-    expect(encoded.truncated, isTrue);
-    expect(decodedGroups.whereType<Map<String, dynamic>>(), isNotEmpty);
+    expect(encoded.truncated, isFalse);
+    expect(decodedGroups.whereType<Map<String, dynamic>>(), hasLength(6));
     expect(encoded.bytes.length, lessThanOrEqualTo(1024 * 1024));
   });
 

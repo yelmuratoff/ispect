@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.0.0-dev2
+## 7.0.0-dev3
 
 ### Breaking Changes
 
@@ -11,19 +11,20 @@
 ### Behavioral Changes
 
 - **Deprecation schedule:** Deprecated compatibility aliases remain available through 7.x and are now scheduled for removal in 8.0.0.
-- **Safer diagnostic summaries:** BLoC, Riverpod, navigation, and error logs expose coarse summaries by default; use the `verbose` or `development` presets when full values are required.
+- **Useful state diagnostics by default:** BLoC and Riverpod expose full bounded values after redaction; use their `compact` presets for coarse structural summaries.
 - **Native exports:** Persistent exports now use the application's private support directory.
 
 ### Security
 
 - **Unified redaction:** `ISpectRedaction.configure(...)` now controls masking across built-in logging, adapters, observers, persistence, and exports.
-- **Safer capture defaults:** Network adapters capture metadata only, while database and state observers minimize retained values unless richer diagnostics are explicitly enabled.
+- **Redacted full capture:** Network adapters capture headers and payloads by default after bounded redaction; use their `metadataOnly()` presets for stricter minimization.
 - **Protected diagnostic data:** Imports, exports, clipboard, cURL, observers, and stored logs are bounded and redacted by default.
 - **Production gate:** Diagnostics remain inactive when `ISPECT_ENABLED` is omitted.
 
 ### Improvements
 
 - **Enabled-build performance:** Reduced logging, adapter, viewer, import, and export overhead when `ISPECT_ENABLED=true`.
+- **More complete diagnostic handoff:** Increased bounded payloads to 256 KiB, individual records to 1 MiB, and JSON exports to 32 MiB; exports now report actual/truncated counts and imports can report skipped records.
 
 ### Bug Fixes
 

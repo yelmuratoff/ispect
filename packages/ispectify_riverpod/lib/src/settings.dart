@@ -23,7 +23,7 @@ class ISpectRiverpodSettings {
     this.printUpdates = true,
     this.printDisposes = true,
     this.printFails = true,
-    this.printValues = false,
+    this.printValues = true,
     this.providerFilter,
     this.updateFilter,
     this.enableRedaction = true,
@@ -41,14 +41,14 @@ class ISpectRiverpodSettings {
 
   /// Reduces values to a coarse type label only. Useful when provider state
   /// may carry PII and the project still wants lifecycle visibility.
-  static const ISpectRiverpodSettings compact = ISpectRiverpodSettings();
-
-  /// Captures full provider values for explicitly enabled diagnostics.
-  static const ISpectRiverpodSettings verbose = ISpectRiverpodSettings(
-    printValues: true,
+  static const ISpectRiverpodSettings compact = ISpectRiverpodSettings(
+    printValues: false,
   );
 
-  /// Alias for [verbose] for development-only diagnostics.
+  /// Captures full redacted provider values.
+  static const ISpectRiverpodSettings verbose = ISpectRiverpodSettings();
+
+  /// Alias for [verbose].
   static const ISpectRiverpodSettings development = verbose;
 
   /// Whether logging is enabled.
@@ -68,8 +68,8 @@ class ISpectRiverpodSettings {
 
   /// Whether to log full provider values instead of a coarse type label.
   ///
-  /// Defaults to `false` so lifecycle logging exposes type metadata only.
-  /// Use [verbose] only when payload capture is explicitly required.
+  /// Defaults to `true`; values remain bounded and redacted by default.
+  /// Use [compact] to retain type metadata only.
   final bool printValues;
 
   /// A filter function applied to every provider event.

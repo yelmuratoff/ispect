@@ -561,7 +561,7 @@ void main() {
             returnsNormally,
           );
 
-          expect(observer.settings.formatValue(newValue), 'Object');
+          expect(observer.settings.formatValue(newValue), same(newValue));
           expect(provider.runtimeTypeCalls, 0);
           for (final value in <_HostileRuntimeTypeValue>[
             previousValue,
@@ -580,7 +580,10 @@ void main() {
               .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
           expect(addMeta[RiverpodJsonKeys.providerName], 'Provider');
           expect(addMeta[RiverpodJsonKeys.providerType], 'Provider');
-          expect(addMeta[RiverpodJsonKeys.valueType], 'Object');
+          expect(
+            addMeta[RiverpodJsonKeys.value],
+            JsonValueNormalizer.unprintableValue,
+          );
         });
       });
 
@@ -690,9 +693,24 @@ void main() {
       });
 
       group('value rendering', () {
-        test('default settings record only a coarse value type', () {
+        test('default settings record full redacted values', () {
           ISpectRiverpodObserver(logger: logger)
               .didAddProvider(_counterProvider, 99, container);
+
+          final meta = logger
+              .byOperation('add')
+              .single
+              .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
+          expect(meta[RiverpodJsonKeys.value], 99);
+        });
+
+        test('compact preset keeps value capture disabled', () {
+          expect(ISpectRiverpodSettings.compact.printValues, isFalse);
+
+          ISpectRiverpodObserver(
+            logger: logger,
+            settings: ISpectRiverpodSettings.compact,
+          ).didAddProvider(_counterProvider, 99, container);
 
           final meta = logger
               .byOperation('add')
@@ -702,14 +720,9 @@ void main() {
           expect(meta[RiverpodJsonKeys.valueType], 'int');
         });
 
-        test('compact preset keeps value capture disabled', () {
-          expect(ISpectRiverpodSettings.compact.printValues, isFalse);
-        });
-
         test('verbose preset includes raw add and update values', () {
           final observer = ISpectRiverpodObserver(
             logger: logger,
-            settings: ISpectRiverpodSettings.verbose,
           )
             ..didAddProvider(_counterProvider, 99, container)
             ..didUpdateProvider(_counterProvider, 0, 1, container);
@@ -730,7 +743,7 @@ void main() {
           expect(observer.settings.printValues, isTrue);
         });
 
-        test('default update meta records coarse types only', () {
+        test('default update meta records full redacted values', () {
           ISpectRiverpodObserver(logger: logger)
               .didUpdateProvider(_counterProvider, 0, 1, container);
 
@@ -738,8 +751,8 @@ void main() {
               .byOperation('update')
               .single
               .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-          expect(meta.containsKey(RiverpodJsonKeys.previousValue), isFalse);
-          expect(meta.containsKey(RiverpodJsonKeys.newValue), isFalse);
+          expect(meta[RiverpodJsonKeys.previousValue], 0);
+          expect(meta[RiverpodJsonKeys.newValue], 1);
           expect(meta[RiverpodJsonKeys.previousValueType], 'int');
           expect(meta[RiverpodJsonKeys.newValueType], 'int');
         });
@@ -760,7 +773,10 @@ void main() {
               .byOperation('add')
               .single
               .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-          expect(meta[RiverpodJsonKeys.argument], 'Object');
+          expect(
+            meta[RiverpodJsonKeys.argument],
+            JsonValueNormalizer.unprintableValue,
+          );
           expect(argument.runtimeTypeCalls, 0);
           expect(argument.toStringCalls, 0);
         });
@@ -771,7 +787,6 @@ void main() {
           expect(
             () => ISpectRiverpodObserver(
               logger: logger,
-              settings: ISpectRiverpodSettings.verbose,
             ).didAddProvider(
               _familyProvider(argument),
               1,
@@ -790,7 +805,6 @@ void main() {
           const argument = 'password=FAMILY_ARGUMENT_SECRET';
           ISpectRiverpodObserver(
             logger: logger,
-            settings: ISpectRiverpodSettings.verbose,
           ).didAddProvider(
             _familyProvider(argument),
             1,
@@ -812,7 +826,6 @@ void main() {
           ISpectRiverpodObserver(
             logger: logger,
             settings: const ISpectRiverpodSettings(
-              printValues: true,
               enableRedaction: false,
             ),
           ).didAddProvider(
@@ -837,7 +850,6 @@ void main() {
           };
           ISpectRiverpodObserver(
             logger: logger,
-            settings: ISpectRiverpodSettings.verbose,
           ).didAddProvider(
             _familyProvider(payload),
             payload,
@@ -863,7 +875,6 @@ void main() {
           final payload = _HostilePayload();
           ISpectRiverpodObserver(
             logger: logger,
-            settings: ISpectRiverpodSettings.verbose,
           ).didAddProvider(
             _familyProvider(payload),
             payload,
@@ -902,7 +913,6 @@ void main() {
             ISpectRiverpodObserver(
               logger: logger,
               settings: ISpectRiverpodSettings(
-                printValues: true,
                 redactor: redactor,
               ),
             ).didAddProvider(
@@ -926,7 +936,6 @@ void main() {
           ISpectRiverpodObserver(
             logger: logger,
             settings: const ISpectRiverpodSettings(
-              printValues: true,
               enableRedaction: false,
             ),
           ).didAddProvider(
@@ -947,7 +956,7 @@ void main() {
       group('redaction', () {
         test('default settings activate redaction without a custom service',
             () {
-          const settings = ISpectRiverpodSettings.compact;
+          const settings = ISpectRiverpodSettings.verbose;
           final redacted = settings.redactAdditionalData(
             <String, dynamic>{'password': 'DEFAULT_REDACTION_SECRET'},
           );
@@ -964,7 +973,7 @@ void main() {
             ),
           );
 
-          final redacted = ISpectRiverpodSettings.compact.redactAdditionalData(
+          final redacted = ISpectRiverpodSettings.verbose.redactAdditionalData(
             <String, dynamic>{'business_marker': 'riverpod-secret'},
           );
 
@@ -987,7 +996,6 @@ void main() {
           );
           final observer = ISpectRiverpodObserver(
             logger: logger,
-            settings: ISpectRiverpodSettings.verbose,
           )..didAddProvider(
               _counterProvider,
               const <String, Object?>{'business_marker': 'first-secret'},
@@ -1029,7 +1037,6 @@ void main() {
           final observer = ISpectRiverpodObserver(
             logger: logger,
             settings: ISpectRiverpodSettings(
-              printValues: true,
               redactor: RedactionService(
                 sensitiveKeys: const {'business_marker'},
                 placeholder: '<LOCAL_RIVERPOD>',
@@ -1200,7 +1207,6 @@ void main() {
           final payload = List<String>.filled(2 * 1024 * 1024, 's').join();
           ISpectRiverpodObserver(
             logger: logger,
-            settings: ISpectRiverpodSettings.verbose,
           ).didAddProvider(
             _counterProvider,
             <String, Object?>{'payload': payload},
@@ -1228,7 +1234,6 @@ void main() {
           ISpectRiverpodObserver(
             logger: logger,
             settings: ISpectRiverpodSettings(
-              printValues: true,
               redactor: _ExpandingRedactor(),
             ),
           ).didAddProvider(
@@ -1253,7 +1258,6 @@ void main() {
           ISpectRiverpodObserver(
             logger: logger,
             settings: ISpectRiverpodSettings(
-              printValues: true,
               redactor: RedactionService(redactBinary: false),
             ),
           ).didAddProvider(
@@ -1279,7 +1283,6 @@ void main() {
           ISpectRiverpodObserver(
             logger: logger,
             settings: const ISpectRiverpodSettings(
-              printValues: true,
               enableRedaction: false,
             ),
           ).didAddProvider(
@@ -1323,8 +1326,7 @@ void main() {
       group('console message redaction', () {
         const secret = 'sk-live-super-secret-value-1234567890';
 
-        test('omits sensitive value fields from the add message by default',
-            () {
+        test('shows redacted value fields in the add message by default', () {
           ISpectRiverpodObserver(logger: logger).didAddProvider(
             _counterProvider,
             <String, dynamic>{'password': secret},
@@ -1333,10 +1335,11 @@ void main() {
 
           final message = logger.byOperation('add').single.message;
           expect(message, isNot(contains(secret)));
-          expect(message, isNot(contains('password')));
+          expect(message, contains('password'));
+          expect(message, contains('[REDACTED]'));
         });
 
-        test('uses value types in the update message by default', () {
+        test('shows redacted values in the update message by default', () {
           ISpectRiverpodObserver(logger: logger).didUpdateProvider(
             _counterProvider,
             0,
@@ -1346,15 +1349,14 @@ void main() {
 
           final message = logger.byOperation('update').single.message;
           expect(message, isNot(contains(secret)));
-          expect(message, isNot(contains('token')));
-          expect(message, contains('int → Map'));
+          expect(message, contains('token'));
+          expect(message, contains('[REDACTED]'));
         });
 
         test('keeps the raw value in the console when redaction disabled', () {
           ISpectRiverpodObserver(
             logger: logger,
             settings: const ISpectRiverpodSettings(
-              printValues: true,
               enableRedaction: false,
             ),
           ).didAddProvider(
@@ -1377,7 +1379,6 @@ void main() {
           ISpectRiverpodObserver(
             logger: logger,
             settings: ISpectRiverpodSettings(
-              printValues: true,
               providerFilter: (_) {
                 logger.disable();
                 return true;
@@ -1400,7 +1401,6 @@ void main() {
           final value = _IterableProbe();
           ISpectRiverpodObserver(
             logger: logger,
-            settings: ISpectRiverpodSettings.verbose,
             onProviderAdd: (_, __, ___) => logger.disable(),
           ).didAddProvider(_counterProvider, value, container);
 
@@ -1415,7 +1415,6 @@ void main() {
           ISpectRiverpodObserver(
             logger: logger,
             settings: ISpectRiverpodSettings(
-              printValues: true,
               updateFilter: (_, __, ___) {
                 logger.disable();
                 return true;
@@ -1453,7 +1452,6 @@ void main() {
           ISpectRiverpodObserver(
             logger: disabledLogger,
             settings: ISpectRiverpodSettings(
-              printValues: true,
               providerFilter: (_) {
                 providerFilterCalls++;
                 return true;

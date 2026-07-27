@@ -168,7 +168,7 @@ void main() {
 
       expect(
         LogExportOutput.utf8Length(encoded),
-        lessThan(128 * 1024),
+        lessThan(LogExportOutput.maxRecordBytes),
       );
       expect(encoded, contains(LogExportOutput.truncatedMarker));
       expect(snapshot.body, isNot(same(aggregate)));

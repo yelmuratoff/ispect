@@ -66,7 +66,7 @@ navigation diagnostics.
 
 ```yaml
 dependencies:
-  ispect: ^7.0.0-dev2
+  ispect: ^7.0.0-dev3
 ```
 
 ```dart
@@ -273,7 +273,10 @@ The toolkit handles the diagnostics most projects rebuild by hand for every new 
 
 ## Data handling
 
-ISpect only captures what you enable. Logs, network metadata, optional bodies and headers, database trace arguments, BLoC events, navigation, and exports are all opt-in at the call site.
+ISpect only captures integrations you enable. Network bodies and headers,
+BLoC/Riverpod values, database trace arguments, navigation, and exports remain
+scoped to those integrations; supported network and state integrations use
+full bounded redacted diagnostics by default.
 
 Redaction is on by default for every supported network and database interceptor. The shared engine masks auth headers, cookies, bearer tokens, passwords, API keys, common PII (emails, phone numbers, SSN-class IDs), and financial fields. Application-specific keys (tenant IDs, internal tokens, account numbers) belong in the global policy, because only your team knows what counts as sensitive in your data model:
 
@@ -289,7 +292,7 @@ This is the default-policy SSOT for core logs, traces, persistence, interceptors
 
 A few habits that pay off on shared internal builds:
 
-- Capture metadata first. Turn body and header logging on only for the bug you are chasing.
+- Use `metadataOnly()` or `compact` presets when a shared build needs stronger data minimization.
 - Register your domain-specific redaction keys before sharing exported sessions outside the engineering team.
 - Treat exported `.json` sessions according to the data class they contain. They are plain-text artifacts and travel through the same channels as any internal log.
 - Review observer adapters before pointing them at a centralized sink. An observer sees whatever category you choose to forward.
@@ -297,15 +300,22 @@ A few habits that pay off on shared internal builds:
 
 `docs/SECURITY.md` has the full data-handling policy and a rollout checklist.
 
-## Minimal safe setup
+JSON handoffs retain up to 256 KiB per structured value, 1 MiB per record, and
+32 MiB per export. Their metadata reports `totalLogs`, `exportedLogs`, and
+`truncated`. Call `LogsJsonService.importFromJsonWithReport(...)` when the UI
+needs to disclose skipped invalid entries.
 
-Start with the UI shell and metadata-only diagnostics. Turn deeper capture on for the specific problem you are investigating.
+## Hardened setup
+
+Defaults prioritize useful redacted diagnostics in internal builds. Opt into
+metadata-only network capture or compact state summaries when a build needs
+stricter minimization.
 
 1. Add `ispect` and wrap the app with `ISpect.run(...)` and `ISpectBuilder.wrap(...)`.
 2. Run internal builds with `--dart-define=ISPECT_ENABLED=true`.
 3. Keep production jobs free of that flag.
 4. Add network, database, BLoC, and Riverpod modules one at a time as you need them.
-5. Leave body and header capture off until a payload-level investigation needs it.
+5. Use `metadataOnly()` or `compact` presets for integrations that do not need payload values.
 6. Add your project's redaction keys before sharing exported sessions with anyone outside the team.
 
 ### Rolling file history (opt-in)
@@ -352,7 +362,7 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 
 ## Release channel
 
-The version declared in `version.config` (currently `7.0.0-dev2`) is the
+The version declared in `version.config` (currently `7.0.0-dev3`) is the
 repository version used by package metadata and generated documentation. It
 may be a stable release or a prerelease; check pub.dev for the latest published
 stable version before pinning a production integration.
@@ -361,7 +371,7 @@ stable version before pinning a production integration.
 
 What you can verify from the repository today:
 
-- Repository metadata and generated documentation currently target `7.0.0-dev2`.
+- Repository metadata and generated documentation currently target `7.0.0-dev3`.
 - SDK baseline is Dart `>=3.6.0 <4.0.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
 - The `production_safety` workflow runs disabled direct-API tests for every package and compares disabled/enabled release AOT probes using exact implementation sentinels.
 - Core diagnostics and supported integrations resolve one configurable default `RedactionService`; explicit integration services remain local overrides.

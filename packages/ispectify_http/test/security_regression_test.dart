@@ -454,6 +454,8 @@ void main() {
         logger: logger,
         settings: const ISpectHttpInterceptorSettings(
           logRequests: false,
+          printRequestData: false,
+          printRequestHeaders: false,
           printErrorData: false,
           printErrorHeaders: false,
           printErrorMessage: false,

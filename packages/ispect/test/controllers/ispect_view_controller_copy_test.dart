@@ -189,7 +189,7 @@ void main() {
       final ctx = await pumpContext(tester);
       late String captured;
       ISpectRedaction.enabled = false;
-      final payload = List<String>.filled(72 * 1024, 'x').join();
+      final payload = ''.padRight(220 * 1024, 'x');
       final logs = List<ISpectLogData>.generate(
         160,
         (index) => ISpectLogData('$index:$payload'),

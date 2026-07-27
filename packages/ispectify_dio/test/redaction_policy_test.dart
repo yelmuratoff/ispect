@@ -17,10 +17,6 @@ ISpectDioInterceptor _interceptor(
 }) =>
     ISpectDioInterceptor(
       logger: logger,
-      settings: const ISpectDioInterceptorSettings(
-        printRequestData: true,
-        printRequestHeaders: true,
-      ),
       redactor: redactor,
     );
 

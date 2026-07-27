@@ -2,7 +2,7 @@
 
 `ispectify_riverpod` plugs the [`riverpod`](https://pub.dev/packages/riverpod) and [`flutter_riverpod`](https://pub.dev/packages/flutter_riverpod) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `ProviderObserver` forwards every provider add, update, dispose, and failure through the log pipeline, so the whole provider lifecycle shows up in the log viewer.
 
-- Adds, updates, disposes, and failures with coarse structural summaries by default.
+- Adds, updates, disposes, and failures with full redacted values by default.
 - Per-provider filtering. Mute noisy providers without touching their code.
 - Zero configuration. Hand the observer to `ProviderScope` (or `ProviderContainer`) and you are done.
 
@@ -38,10 +38,9 @@ The observer emits logs under the `riverpod-add`, `riverpod-update`, `riverpod-d
 
 `ISpectRiverpodSettings` controls which lifecycle events are captured and
 whether provider values are written to trace meta. `printValues` defaults to
-`false`, so values and family arguments use coarse structural labels such as
-`String`, `int`, `List`, or `Map`; other caller-owned objects use `Object`.
-Unnamed providers use the family label `Provider`. These summaries do not call
-application `runtimeType` or `toString()` methods.
+`true`, so bounded provider values are retained after redaction. The `compact`
+preset replaces them with coarse structural labels such as `String`, `int`,
+`List`, or `Map`. Unnamed providers use the family label `Provider`.
 
 ```dart
 const settings = ISpectRiverpodSettings(
@@ -49,8 +48,8 @@ const settings = ISpectRiverpodSettings(
   printUpdates: true,
   printDisposes: true,
   printFails: true,
-  printValues: false,       // coarse structural summaries — default
-  enableRedaction: true,    // route values through RedactionService when set
+  printValues: true,
+  enableRedaction: true,
 );
 ```
 
@@ -67,8 +66,6 @@ ISpectRiverpodObserver(settings: ISpectRiverpodSettings.minimal);
 // carry PII and you still want lifecycle visibility.
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.compact);
 
-// Explicit local-development value capture; redaction remains enabled.
-ISpectRiverpodObserver(settings: ISpectRiverpodSettings.development);
 ```
 
 ### Filtering noisy providers

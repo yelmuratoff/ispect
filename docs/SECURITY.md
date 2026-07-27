@@ -1,8 +1,8 @@
 # Security and Data Handling
 
-ISpect is a pre-release diagnostics toolkit. On an internal build, it captures whatever streams you enable: logs, network metadata, optional request and response payloads, database trace arguments, BLoC events and states, Riverpod provider lifecycle events, navigation events, exported sessions, and observer events.
+ISpect is a pre-release diagnostics toolkit. On an internal build, it captures whatever streams you enable: logs, network requests and responses, database trace arguments, BLoC events and states, Riverpod provider lifecycle events, navigation events, exported sessions, and observer events.
 
-The default posture is conservative. Compile-time gating, network redaction on by default, and per-interceptor settings let you keep payload and header capture narrow. The toolkit gives you safer defaults. The team using it still has to handle the output according to the data class it contains.
+The default posture favors useful diagnostics in internal builds: network payloads, headers, and state values are visible after bounded redaction. Compile-time gating and the shared redaction policy remain mandatory defaults, while per-integration compact and metadata-only presets let teams opt into stricter minimization. The team using ISpect still has to handle the output according to the data class it contains.
 
 The shared redaction pipeline is what sets ISpect apart from a plain log viewer. One configurable default policy covers core logs, traces, persistence, supported interceptors, database diagnostics, state observers, export flows, clipboard helpers, cURL generation, and observer payloads. A request masked in the viewer stays masked in every place it can leak.
 
@@ -85,17 +85,17 @@ ISpectRedaction.configure(
 
 ## Data minimization
 
-Capture metadata first. Reach for broad payload logging only when metadata is not enough.
+Defaults favor useful redacted diagnostics. Use the stricter presets when a
+session does not need payload values.
 
-Defaults that work for shared internal builds:
+Optional hardening for shared internal builds:
 
 - Use `logRequests: false` and `logResponses: false` (or an errors-only
   production preset) when routine network records are unnecessary.
-- Keep request and response body capture off unless you need it.
-- Keep headers off unless you are debugging auth, caching, or routing.
-- Keep BLoC events/states and Riverpod values at their default coarse-family
-  summaries; use the explicit `verbose`/`development` presets only for a
-  narrowly scoped session.
+- Use the Dio, HTTP, or WebSocket `metadataOnly()` preset when request and
+  response bodies are unnecessary.
+- Use `ISpectBlocSettings.compact` or `ISpectRiverpodSettings.compact` when
+  lifecycle visibility is enough without values.
 - Project database traces to counts, IDs, timings, and status fields instead of full rows.
 - Do not pipe raw user input through `logger.info(...)`.
 - Supply device model metadata only. Never attach serial numbers, advertising
@@ -104,8 +104,8 @@ Defaults that work for shared internal builds:
 
 A safe rollout:
 
-1. Start with the debug panel, structured logs, and metadata-only network diagnostics.
-2. Turn body and header capture on for a specific debugging session, then turn it back off.
+1. Start with the default redacted diagnostics in an isolated internal build.
+2. Switch noisy or higher-risk integrations to `metadataOnly()` or `compact`.
 3. Add domain-specific redaction keys before sharing logs outside the engineering team.
 4. Apply filters and sampling to noisy categories.
 5. Review observer adapters before pointing them at external systems.
@@ -121,6 +121,12 @@ user removes them. Generated cURL commands redact by default and use
 Imported JSON sessions are bounded and pass through the active redaction
 policy before they are retained. `enableRedaction: false` is the explicit
 local opt-out for controlled raw-session analysis.
+
+Structured values are bounded to 256 KiB, individual records to 1 MiB, and
+complete JSON exports to 32 MiB. Export metadata includes `totalLogs`,
+`exportedLogs`, and `truncated`, so a partial handoff is explicit. Use
+`LogsJsonService.importFromJsonWithReport(...)` when the caller must surface
+invalid records that were skipped.
 
 Observer hooks receive a redacted copy by default before forwarding selected
 events to an internal tool. Disabling `ISpectRedaction.enabled` is the explicit

@@ -392,6 +392,11 @@ class ISpectViewController implements Listenable {
   Future<List<ISpectLogData>> importLogsFromJson(String jsonContent) async =>
       _importService.importLogsFromJson(jsonContent);
 
+  Future<LogsImportResult> importLogsFromJsonWithReport(
+    String jsonContent,
+  ) async =>
+      _importService.importLogsFromJsonWithReport(jsonContent);
+
   bool validateLogsJsonContent(String jsonContent) =>
       _importService.validateLogsJsonContent(jsonContent);
 

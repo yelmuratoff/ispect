@@ -418,7 +418,13 @@ void main() {
         expect(csvRows.first, ['Key', 'Value']);
         expect(csvRows.every((row) => row.length == 2), isTrue);
         _expectClosedMarkdownFence(contents[ExportFormat.markdown]!);
-        expect(extra.visitedEntries, lessThan(2000));
+        expect(
+          extra.visitedEntries,
+          lessThanOrEqualTo(
+            JsonValueNormalizer.defaultMaxCollectionItems *
+                ExportFormat.values.length,
+          ),
+        );
       },
     );
 

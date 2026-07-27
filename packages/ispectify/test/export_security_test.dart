@@ -1031,9 +1031,9 @@ void main() {
     });
 
     test('many records keep every batch format within the aggregate cap', () {
-      final message = 'bounded-${''.padRight(8000, 'x')}';
+      final message = 'bounded-${''.padRight(200 * 1024, 'x')}';
       final logs = List.generate(
-        1200,
+        180,
         (index) => ISpectLogData(
           message,
           time: DateTime(2025).add(Duration(seconds: index)),
@@ -1069,7 +1069,7 @@ void main() {
 
         final lines = const LineSplitter().convert(output);
         expect(lines.length, lessThan(logs.length));
-        expect(lines.length, greaterThan(1000));
+        expect(lines.length, greaterThan(100));
         for (final line in lines) {
           expect(() => jsonDecode(line), returnsNormally);
           expect(

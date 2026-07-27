@@ -584,6 +584,8 @@ void main() {
         logger: logger,
         settings: const ISpectDioInterceptorSettings(
           logRequests: false,
+          printRequestData: false,
+          printRequestHeaders: false,
           printErrorData: false,
           printErrorHeaders: false,
           printErrorMessage: false,

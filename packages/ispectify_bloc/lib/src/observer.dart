@@ -38,7 +38,7 @@ typedef BlocFilterPredicate = bool Function(Object? candidate);
 class ISpectBlocObserver extends BlocObserver {
   ISpectBlocObserver({
     ISpectLogger? logger,
-    this.settings = const ISpectBlocSettings(),
+    this.settings = ISpectBlocSettings.verbose,
     this.onBlocEvent,
     this.onBlocTransition,
     this.onBlocChange,

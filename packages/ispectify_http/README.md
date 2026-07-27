@@ -60,8 +60,8 @@
 dependencies:
   http: ^1.0.0
   http_interceptor: ^2.0.0
-  ispectify: ^7.0.0-dev2
-  ispectify_http: ^7.0.0-dev2
+  ispectify: ^7.0.0-dev3
+  ispectify_http: ^7.0.0-dev3
 ```
 
 ## Quick start
@@ -80,10 +80,6 @@ ISpect.run(
     client.interceptors.add(
       ISpectHttpInterceptor(
         logger: logger,
-        settings: const ISpectHttpInterceptorSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-        ),
       ),
     );
   },
@@ -95,7 +91,7 @@ ISpect.run(
 ## Settings
 
 `ISpectHttpInterceptorSettings` mirrors the Dio version. Headers and bodies are
-omitted by default, and `enableRedaction` defaults to `true`.
+captured and redacted by default, and `enableRedaction` defaults to `true`.
 
 ```dart
 const settings = ISpectHttpInterceptorSettings(
@@ -109,15 +105,19 @@ const settings = ISpectHttpInterceptorSettings(
 );
 ```
 
-Preset factories and a builder are also available. See `ISpectHttpInterceptorSettingsBuilder` for the `development()`, `staging()`, and `production()` presets.
+Preset factories and a builder are also available. Use
+`ISpectHttpInterceptorSettingsBuilder.metadataOnly()` to retain request and
+response metadata while omitting bodies and headers. The `development()`,
+`staging()`, and `production()` presets remain available for environment-based
+policies.
 
 `logRequests` and `logResponses` control whether routine records are retained;
 the production preset disables both and keeps redacted errors. The `print*`
-flags explicitly opt bodies, headers, or messages into retained console and
-metadata fields. The development preset enables verbose payload capture while
-keeping redaction on. Use the concrete settings `copyWith` or builder for these
-retention controls; the shared base `configure` helper retains its
-legacy-compatible field set.
+flags can omit bodies, headers, or messages from retained console and metadata
+fields. Full capture is the default and keeps redaction on; individual flags
+and the `metadataOnly()` preset provide opt-in minimization. Use the
+concrete settings `copyWith` or builder for these retention controls; the
+shared base `configure` helper retains its legacy-compatible field set.
 
 ## Data redaction
 
@@ -125,7 +125,7 @@ Sensitive data is masked before it reaches logs or observers. Redaction is on by
 
 The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
 
-Redaction works best paired with focused capture. Keep body and header logging off unless you actually need the payload, and register project-specific keys for the business identifiers only your application understands.
+Redaction works best paired with deliberate capture. Use the integration's `metadataOnly()` or compact preset when payload values are unnecessary, and register project-specific keys for the business identifiers only your application understands.
 
 ### Global configuration
 

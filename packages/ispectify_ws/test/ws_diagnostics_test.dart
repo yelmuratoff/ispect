@@ -126,7 +126,6 @@ void main() {
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
           enableRedaction: false,
-          printSentData: true,
         ),
       ).onSent(_SerializationProbe(() => serializationCount++));
 
@@ -142,6 +141,7 @@ void main() {
     test('omits data when printSentData is false', () {
       WsDiagnostics(
         logger: logger,
+        settings: const ISpectWSInterceptorSettings(printSentData: false),
       ).onSent({'secret': 'value'});
 
       final sent = _firstByKey(logger, ISpectLogType.wsSent.key);
@@ -151,6 +151,7 @@ void main() {
     test('omits data when printReceivedData is false', () {
       WsDiagnostics(
         logger: logger,
+        settings: const ISpectWSInterceptorSettings(printReceivedData: false),
       ).onReceived({'foo': 'bar'});
 
       final rec = _firstByKey(logger, ISpectLogType.wsReceived.key);
@@ -161,6 +162,10 @@ void main() {
       var serializationCount = 0;
       WsDiagnostics(
         logger: logger,
+        settings: const ISpectWSInterceptorSettings(
+          printSentData: false,
+          printReceivedData: false,
+        ),
       )
         ..onSent(_SerializationProbe(() => serializationCount++))
         ..onReceived(_SerializationProbe(() => serializationCount++));
@@ -173,7 +178,6 @@ void main() {
     test('still logs when the redactor throws', () {
       WsDiagnostics(
         logger: logger,
-        settings: const ISpectWSInterceptorSettings(printSentData: true),
         redactor: _ThrowingRedactor(),
       ).onSent({'boom': true});
 
@@ -244,7 +248,6 @@ void main() {
       WsDiagnostics(
         logger: logger,
         settings: ISpectWSInterceptorSettings(
-          printSentData: true,
           sentFilter: (_) {
             logger.disable();
             return true;
@@ -300,7 +303,6 @@ void main() {
     test('keeps the raw client state as a stringified hint', () {
       WsDiagnostics(
         logger: logger,
-        settings: const ISpectWSInterceptorSettings(printStateData: true),
       ).onStateChanged(
         WsConnectionState.closed,
         raw: const {'code': 1000},
@@ -315,7 +317,6 @@ void main() {
 
       WsDiagnostics(
         logger: logger,
-        settings: const ISpectWSInterceptorSettings(printStateData: true),
         redactor: RedactionService(sensitiveKeys: {'tenantSecret'}),
       ).onStateChanged(
         WsConnectionState.closed,
@@ -333,7 +334,6 @@ void main() {
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
           enableRedaction: false,
-          printStateData: true,
         ),
       ).onStateChanged(
         WsConnectionState.closed,
@@ -351,7 +351,6 @@ void main() {
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
           enableRedaction: false,
-          printStateData: true,
         ),
       ).onStateChanged(WsConnectionState.closed, raw: raw);
 
@@ -368,7 +367,6 @@ void main() {
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
           enableRedaction: false,
-          printStateData: true,
         ),
       ).onStateChanged(
         WsConnectionState.closed,
@@ -382,10 +380,13 @@ void main() {
       );
     });
 
-    test('default state capture omits raw data without inspecting it', () {
+    test('disabled state capture omits raw data without inspecting it', () {
       final raw = _StringificationProbe();
 
-      WsDiagnostics(logger: logger).onStateChanged(
+      WsDiagnostics(
+        logger: logger,
+        settings: const ISpectWSInterceptorSettings(printStateData: false),
+      ).onStateChanged(
         WsConnectionState.closed,
         raw: raw,
       );
@@ -410,7 +411,6 @@ void main() {
 
       WsDiagnostics(
         logger: logger,
-        settings: const ISpectWSInterceptorSettings(printErrorData: true),
         redactor: RedactionService(sensitiveKeys: {'tenantSecret'}),
       ).onError(error, stackTrace);
 
@@ -458,7 +458,6 @@ void main() {
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
           enableRedaction: false,
-          printErrorData: true,
         ),
       ).onError(error, stackTrace);
 
@@ -527,7 +526,6 @@ void main() {
     test('redacts sensitive keys in the sent payload', () {
       WsDiagnostics(
         logger: logger,
-        settings: const ISpectWSInterceptorSettings(printSentData: true),
         redactor: RedactionService(sensitiveKeys: {'token'}),
       ).onSent({'token': 'ABC-SECRET', 'ok': true});
 
@@ -540,7 +538,6 @@ void main() {
 
       WsDiagnostics(
         logger: logger,
-        settings: const ISpectWSInterceptorSettings(printSentData: true),
       ).onSent(
         '{"event":"login","password":"$secret"}',
       );
@@ -555,7 +552,6 @@ void main() {
 
       WsDiagnostics(
         logger: logger,
-        settings: const ISpectWSInterceptorSettings(printSentData: true),
         redactor: RedactionService(sensitiveKeys: {'tenantSecret'}),
       ).onSent('{"tenantSecret":"$secret",}');
 
@@ -569,7 +565,6 @@ void main() {
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
           enableRedaction: false,
-          printReceivedData: true,
         ),
       ).onReceived({'token': 'xyz'});
 
@@ -584,7 +579,6 @@ void main() {
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
           enableRedaction: false,
-          printReceivedData: true,
         ),
       ).onReceived(frame);
 

@@ -16,14 +16,14 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
     super.enableRedaction,
     super.logRequests,
     super.logResponses,
-    bool printReceivedData = false,
+    bool printReceivedData = true,
     bool printReceivedMessage = true,
     super.printErrorData,
     super.printErrorMessage,
-    bool printSentData = false,
-    this.printStateData = false,
-    bool printReceivedHeaders = false,
-    bool printSentHeaders = false,
+    bool printSentData = true,
+    this.printStateData = true,
+    bool printReceivedHeaders = true,
+    bool printSentHeaders = true,
     AnsiPen? sentPen,
     AnsiPen? receivedPen,
     super.errorPen,
@@ -70,8 +70,7 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
 
   /// Whether raw client connection-state details are retained.
   ///
-  /// Disabled by default because disconnect reasons and adapter state objects
-  /// can contain application data.
+  /// Values are bounded and redacted by default.
   final bool printStateData;
 
   /// Returns `true` when the sent message should be logged.

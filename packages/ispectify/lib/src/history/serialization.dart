@@ -13,13 +13,13 @@ import 'package:ispectify/src/utils/safe_object_description.dart';
 /// the final in-memory export.
 abstract final class LogExportOutput {
   /// Maximum UTF-8 bytes retained while preparing one structured value.
-  static const int maxPreparedValueBytes = 64 * 1024;
+  static const int maxPreparedValueBytes = 256 * 1024;
 
   /// Maximum UTF-8 bytes emitted for one log entry.
-  static const int maxRecordBytes = 256 * 1024;
+  static const int maxRecordBytes = 1024 * 1024;
 
   /// Maximum UTF-8 bytes emitted for one complete export.
-  static const int maxDocumentBytes = 8 * 1024 * 1024;
+  static const int maxDocumentBytes = 32 * 1024 * 1024;
 
   /// Marker used when diagnostic content exceeds an outbound byte budget.
   static const String truncatedMarker = '<export-output-truncated>';

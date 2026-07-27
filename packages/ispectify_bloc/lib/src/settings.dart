@@ -31,8 +31,8 @@ class ISpectBlocSettings {
     this.printCreations = true,
     this.printClosings = true,
     this.printErrors = true,
-    this.printEventFullData = false,
-    this.printStateFullData = false,
+    this.printEventFullData = true,
+    this.printStateFullData = true,
     this.transitionFilter,
     this.eventFilter,
     this.changeFilter,
@@ -49,13 +49,16 @@ class ISpectBlocSettings {
     printCompletions: false,
   );
 
-  /// Logs every lifecycle event with full payloads.
-  static const ISpectBlocSettings verbose = ISpectBlocSettings(
-    printEventFullData: true,
-    printStateFullData: true,
+  /// Reduces event and state values to coarse type labels.
+  static const ISpectBlocSettings compact = ISpectBlocSettings(
+    printEventFullData: false,
+    printStateFullData: false,
   );
 
-  /// Alias for [verbose] for development-only diagnostics.
+  /// Logs every lifecycle event with full redacted payloads.
+  static const ISpectBlocSettings verbose = ISpectBlocSettings();
+
+  /// Alias for [verbose].
   static const ISpectBlocSettings development = verbose;
 
   /// Whether logging is enabled.

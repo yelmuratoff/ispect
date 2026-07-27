@@ -3,8 +3,24 @@ import 'package:test/test.dart';
 
 void main() {
   group('ISpectHttpInterceptorSettingsBuilder', () {
-    test('default constructor keeps payload capture disabled', () {
+    test('default constructor captures full redacted diagnostics', () {
       final settings = ISpectHttpInterceptorSettingsBuilder().build();
+
+      expect(settings.enabled, true);
+      expect(settings.enableRedaction, true);
+      expect(settings.logRequests, true);
+      expect(settings.logResponses, true);
+      expect(settings.printResponseData, true);
+      expect(settings.printResponseHeaders, true);
+      expect(settings.printRequestData, true);
+      expect(settings.printRequestHeaders, true);
+      expect(settings.printErrorData, true);
+      expect(settings.printErrorHeaders, true);
+    });
+
+    test('metadataOnly() opts into payload minimization with redaction', () {
+      final settings =
+          ISpectHttpInterceptorSettingsBuilder.metadataOnly().build();
 
       expect(settings.enabled, true);
       expect(settings.enableRedaction, true);
