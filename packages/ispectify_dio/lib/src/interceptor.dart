@@ -33,8 +33,7 @@ class ISpectDioInterceptor extends Interceptor
   RedactionService get redactor =>
       ISpectRedaction.resolveService(service: _explicitRedactor);
 
-  bool get _captureEnabled =>
-      _logger.hasActiveConsumers && settings.enabled;
+  bool get _captureEnabled => _logger.hasActiveConsumers && settings.enabled;
   bool get _requestCaptureEnabled => _captureEnabled && settings.logRequests;
   bool get _responseCaptureEnabled => _captureEnabled && settings.logResponses;
 

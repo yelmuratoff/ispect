@@ -105,9 +105,11 @@ extension InspectorControllerModes on InspectorController {
         break;
     }
 
-    _cleanupMode(modeNotifier.value, mode, context);
-    modeNotifier.value = mode;
-    _setupMode(mode);
+    _batchStateUpdates(() {
+      _cleanupMode(modeNotifier.value, mode, context);
+      modeNotifier.value = mode;
+      _setupMode(mode);
+    });
   }
 
   void _toggleMode(bool enable, InspectorMode targetMode) {

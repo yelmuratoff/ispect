@@ -79,7 +79,7 @@ void main() {
       ),
     );
     addTearDown(logger.dispose);
-    final diagnostics = WsDiagnostics(
+    WsDiagnostics(
       logger: logger,
       redactor: redactor,
       settings: ISpectWSInterceptorSettings(
@@ -89,9 +89,7 @@ void main() {
           return true;
         }),
       ),
-    );
-
-    diagnostics.onSent(
+    ).onSent(
       {'password': 'secret'},
       url: 'wss://api.example.test?token=secret',
     );

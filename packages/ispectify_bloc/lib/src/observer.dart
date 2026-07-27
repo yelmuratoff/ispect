@@ -73,7 +73,8 @@ class ISpectBlocObserver extends BlocObserver {
 
   bool get _ispectEnabled => kISpectEnabled && (debugEnabledOverride ?? true);
   bool get _loggingEnabled =>
-      _ispectEnabled && _logger.hasActiveConsumers && settings.enabled;
+      _ispectEnabled && _logger.isEnabled && settings.enabled;
+  bool get _captureEnabled => _loggingEnabled && _logger.hasActiveConsumers;
 
   static const _maxPendingEventIds = 1000;
   static final _pendingEvents =
@@ -127,8 +128,12 @@ class ISpectBlocObserver extends BlocObserver {
   bool _shouldLog({
     required bool toggle,
     required Object? candidate,
+    bool hasAdapterCallback = false,
   }) {
     if (!_loggingEnabled || !toggle) {
+      return false;
+    }
+    if (!_captureEnabled && !hasAdapterCallback) {
       return false;
     }
     final filtered = _isFiltered(candidate);
@@ -229,14 +234,19 @@ class ISpectBlocObserver extends BlocObserver {
     if (!_loggingEnabled || !settings.printEvents) {
       return;
     }
-    final correlations = _pendingEvents[bloc] ??=
-        _PendingEventCorrelations(capacity: _maxPendingEventIds);
+    if (!_captureEnabled && onBlocEvent == null) {
+      return;
+    }
+    var correlations = _captureEnabled
+        ? _pendingEvents[bloc] ??=
+            _PendingEventCorrelations(capacity: _maxPendingEventIds)
+        : null;
     final filtered = _isFiltered(bloc);
     if (!_loggingEnabled) {
       return;
     }
     if (filtered) {
-      correlations.add(event, null);
+      if (_captureEnabled) correlations?.add(event, null);
       return;
     }
     final accepted = settings.eventFilter?.call(bloc, event) ?? true;
@@ -244,7 +254,7 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     if (!accepted) {
-      correlations.add(event, null);
+      if (_captureEnabled) correlations?.add(event, null);
       return;
     }
     try {
@@ -256,6 +266,11 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
 
+    if (!_captureEnabled) {
+      return;
+    }
+    correlations ??= _pendingEvents[bloc] ??=
+        _PendingEventCorrelations(capacity: _maxPendingEventIds);
     final eventId = generateTraceId();
     correlations.add(event, eventId);
 
@@ -291,7 +306,11 @@ class ISpectBlocObserver extends BlocObserver {
     final correlations = _pendingEvents[bloc];
     final eventId = correlations?.correlationIdFor(transition.event);
     try {
-      if (!_shouldLog(toggle: settings.printTransitions, candidate: bloc)) {
+      if (!_shouldLog(
+        toggle: settings.printTransitions,
+        candidate: bloc,
+        hasAdapterCallback: onBlocTransition != null,
+      )) {
         return;
       }
       final accepted =
@@ -307,7 +326,7 @@ class ISpectBlocObserver extends BlocObserver {
       } catch (callbackError) {
         _logCallbackError('onBlocTransition', callbackError);
       }
-      if (!_loggingEnabled) {
+      if (!_captureEnabled) {
         return;
       }
 
@@ -345,7 +364,11 @@ class ISpectBlocObserver extends BlocObserver {
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
     final eventId = _pendingEvents[bloc]?.takeNextChangeCorrelationId();
-    if (!_shouldLog(toggle: settings.printChanges, candidate: bloc)) {
+    if (!_shouldLog(
+      toggle: settings.printChanges,
+      candidate: bloc,
+      hasAdapterCallback: onBlocChange != null,
+    )) {
       return;
     }
     final accepted = settings.changeFilter?.call(bloc, change) ?? true;
@@ -360,7 +383,7 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocChange', callbackError);
     }
-    if (!_loggingEnabled) {
+    if (!_captureEnabled) {
       return;
     }
 
@@ -391,7 +414,11 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
-    if (!_shouldLog(toggle: settings.printErrors, candidate: bloc)) {
+    if (!_shouldLog(
+      toggle: settings.printErrors,
+      candidate: bloc,
+      hasAdapterCallback: onBlocError != null,
+    )) {
       return;
     }
     try {
@@ -399,7 +426,7 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocError', callbackError);
     }
-    if (!_loggingEnabled) {
+    if (!_captureEnabled) {
       return;
     }
 
@@ -423,7 +450,11 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onCreate(BlocBase<dynamic> bloc) {
     super.onCreate(bloc);
-    if (!_shouldLog(toggle: settings.printCreations, candidate: bloc)) {
+    if (!_shouldLog(
+      toggle: settings.printCreations,
+      candidate: bloc,
+      hasAdapterCallback: onBlocCreate != null,
+    )) {
       return;
     }
     try {
@@ -431,7 +462,7 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocCreate', callbackError);
     }
-    if (!_loggingEnabled) {
+    if (!_captureEnabled) {
       return;
     }
 
@@ -450,7 +481,11 @@ class ISpectBlocObserver extends BlocObserver {
   void onClose(BlocBase<dynamic> bloc) {
     super.onClose(bloc);
     _pendingEvents[bloc] = null;
-    if (!_shouldLog(toggle: settings.printClosings, candidate: bloc)) {
+    if (!_shouldLog(
+      toggle: settings.printClosings,
+      candidate: bloc,
+      hasAdapterCallback: onBlocClose != null,
+    )) {
       return;
     }
     try {
@@ -458,7 +493,7 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocClose', callbackError);
     }
-    if (!_loggingEnabled) {
+    if (!_captureEnabled) {
       return;
     }
 
@@ -484,9 +519,9 @@ class ISpectBlocObserver extends BlocObserver {
 
     final eventId = _pendingEvents[bloc]?.remove(event);
 
-    if (!_loggingEnabled) return;
+    if (!_captureEnabled) return;
     final filtered = _isFiltered(bloc);
-    if (!_loggingEnabled || filtered) return;
+    if (!_captureEnabled || filtered) return;
 
     final shouldLogCompletion = (settings.printCompletions && error == null) ||
         (settings.printErrors && error != null);

@@ -118,6 +118,9 @@ writing. Native shares use a dedicated temporary directory rather than the
 durable logs directory; explicit downloads remain durable until the host or
 user removes them. Generated cURL commands redact by default and use
 `--data-raw` so an `@`-prefixed body cannot be interpreted as a local file.
+Imported JSON sessions are bounded and pass through the active redaction
+policy before they are retained. `enableRedaction: false` is the explicit
+local opt-out for controlled raw-session analysis.
 
 Observer hooks receive a redacted copy by default before forwarding selected
 events to an internal tool. Disabling `ISpectRedaction.enabled` is the explicit

@@ -4,38 +4,33 @@
 
 ### Breaking Changes
 
-- **`JsonScreen` input isolation:** `JsonScreen(...)` is now a non-const factory so it can detach and bound caller-owned data before the widget retains it. Existing call sites must remove the `const` keyword; all runtime arguments remain unchanged.
-- **Forge-proof diagnostic boundaries:** External `ISpectLogData` subtypes are downgraded to a core-owned base snapshot before observer, stream, history, console, filtering, formatting, serialization, or persistence. Arbitrary messages and diagnostics use non-executing coarse descriptors instead of custom `toString` or `runtimeType`; custom subtype filtering must use log keys rather than `TypeFilter`. Deliberate local debugging opt-outs now belong to the logger call site through `logData(..., redact: false)`.
-- **Opaque implementable URIs:** HTTP redirect destinations and URL fields backed only by an arbitrary `Uri` are omitted rather than invoking user-controlled getters. Dio reconstructs request URLs from bounded trusted strings where available.
+- **`JsonScreen` construction:** `JsonScreen(...)` is no longer const; remove the `const` keyword from existing call sites.
+- **Custom log types:** Custom `ISpectLogData` subclasses are normalized for safety; filter them by log key instead of `TypeFilter`.
+- **HTTP URL fields:** Values available only through custom `Uri` implementations may now be omitted.
 
 ### Behavioral Changes
 
-- **Compatibility aliases retained:** APIs previously scheduled for removal in 7.0.0 remain deprecated through the 7.x line; their removal target is now 8.0.0 so this release stays focused on diagnostics safety.
-- **Coarse state and navigation labels:** BLoC, Riverpod, route, argument, error, and exception type labels use safe structural families such as `Bloc`, `Provider`, `Map`, `Error`, or `Object`; exact custom runtime class names are no longer inspected. The `verbose`/`development` state-observer presets remain explicit full-payload opt-ins.
-- **Private native export location:** Persistent native exports now use per-user application-support storage instead of Documents, cache, or shared temporary roots.
-- **Release documentation sync:** Every `release_prep.sh` flow now regenerates package READMEs and the root `llms.txt` index before formatting.
+- **Deprecation schedule:** Deprecated compatibility aliases remain available through 7.x and are now scheduled for removal in 8.0.0.
+- **Safer diagnostic summaries:** BLoC, Riverpod, navigation, and error logs expose coarse summaries by default; use the `verbose` or `development` presets when full values are required.
+- **Native exports:** Persistent exports now use the application's private support directory.
 
 ### Security
 
-- **Single redaction policy:** `ISpectRedaction.configure(...)` now defines the default masking service for core logs, traces, persistence, exports, cURL, network/database adapters, and state observers; additive keys and patterns preserve the built-in protections, while explicit integration policies remain supported.
-- **Compile-time gate enforcement:** Direct logger and Flutter initialization, the standalone layout inspector, deprecated builder construction, and BLoC/Riverpod test overrides can no longer enable or retain diagnostics when `ISPECT_ENABLED` is omitted. Dedicated disabled-build tests now cover every diagnostics package.
-- **Complete outbound sanitization:** Free-form messages, exception/error/stack strings and callbacks, metadata envelopes, observers, clipboard/share payloads, JSON Lines, text/Markdown/CSV, and rolling files now pass through default-on, bounded, fail-closed redaction. Authentication schemes, prose assignments, structured DTOs, typed binary, nested encoded URLs, absolute paths (including prose-like directory names), escaped JSON strings, custom full-mask keys of every value type, cyclic/hostile values, and spreadsheet formulas are handled safely.
-- **Network data minimization:** Dio, `http`, and WebSocket adapters now default to metadata-only records, decide capture before inspecting hostile bodies, remove disabled fields from stored metadata, redact string-encoded payloads, omit raw WebSocket state details, and provide explicit verbose development presets. Multipart request fields obey request capture independently.
-- **Database and state retention:** All positional database arguments are masked when redaction is enabled; SQL digests remove comments and safely tokenize escaped and dollar-quoted literals. The global redaction opt-out now applies consistently to database statement, key, argument, value, metadata, and error fields, and automatic result counting cannot let a hostile collection getter replace a successful operation. BLoC/Riverpod values default to coarse family summaries, Riverpod family arguments fail closed, and BLoC correlation queues are bounded.
-- **Bounded diagnostic imports:** JSON imports, metadata validation, raw file processing, and viewer-tree construction reject oversized, excessively deep, or excessively wide input before unbounded decoding or recursive UI materialization; malformed parser errors discard the original source payload before propagation.
-- **Private native storage:** Managed rolling history requires an existing owner-only POSIX provider directory; persistent exports use randomized owner-private directories and 0600 desktop files beneath per-user application support. Both paths reject unsafe permissions, symbolic-link artifacts, path replacement, oversized archives, aggregate decompression bombs, and implementable diagnostic formatters. The same-principal active namespace-mutation boundary of public cross-platform `dart:io` is documented explicitly.
-- **Safe egress defaults:** cURL generation redacts by default and uses `--data-raw`, imports receive a fresh session ID, external observers and streams receive sanitized copies, native shares use app-private temporary storage with cross-process leases and restart-time cleanup, and public Pages builds omit the diagnostics flag.
-- **Immutable capture boundaries:** Retained nested collections and binary buffers are detached into read-only snapshots, while non-string redaction keys are normalized without invoking application-defined formatters.
-- **Navigation and metadata minimization:** Navigation history minimizes route names and arguments instead of retaining raw identifiers or objects, and device metadata is explicitly limited to hardware/product models rather than stable identifiers.
-- **Release and supply-chain hardening:** Publishing now requires a clean tree including untracked files, Actions are pinned to immutable commits with least-privilege permissions, generated README/`llms.txt` drift is checked, coverage tooling runs from the package-resolved dependency graph, and the deployable web viewer tracks a pinned-SDK regenerated and enforced lockfile with bounded constraints and Dependabot updates.
+- **Unified redaction:** `ISpectRedaction.configure(...)` now controls masking across built-in logging, adapters, observers, persistence, and exports.
+- **Safer capture defaults:** Network adapters capture metadata only, while database and state observers minimize retained values unless richer diagnostics are explicitly enabled.
+- **Protected diagnostic data:** Imports, exports, clipboard, cURL, observers, and stored logs are bounded and redacted by default.
+- **Production gate:** Diagnostics remain inactive when `ISPECT_ENABLED` is omitted.
+
+### Improvements
+
+- **Enabled-build performance:** Reduced logging, adapter, viewer, import, and export overhead when `ISPECT_ENABLED=true`.
 
 ### Bug Fixes
 
-- **Concurrent state diagnostics:** BLoC events now correlate by object identity across filtering and out-of-order completion, and asynchronous JSON-tree builds or searches cannot publish stale results after a newer operation, clear, rebuild, or disposal.
-- **Failure-safe shutdown:** `ISpect.dispose()` always resets singleton, sender, navigator, and redaction state even if file-history flushing fails, while preserving the original failure for the caller.
-- **Logger lifecycle cleanup:** Core streams still close when history cleanup throws, and forced Flutter reinitialization retires the logger it replaces.
-- **Host error callbacks:** Flutter, platform, and zoned host callbacks receive their original error and stack objects; only the copy entering ISpect is bounded and sanitized.
-- **HTTP replay resilience:** Malformed form bodies fail closed, and a throwing replay sender produces a bounded failure result while always clearing the composer sending state.
+- **Concurrent diagnostics:** Fixed BLoC event correlation and stale asynchronous log-viewer updates.
+- **Reliable lifecycle:** Shutdown and forced reinitialization now clean up logger state consistently, including failure paths.
+- **Host error callbacks:** Flutter, platform, and zoned callbacks continue receiving the original error and stack trace.
+- **HTTP replay:** Malformed form data and sender failures no longer leave the composer in a broken state.
 
 ## 6.1.7
 

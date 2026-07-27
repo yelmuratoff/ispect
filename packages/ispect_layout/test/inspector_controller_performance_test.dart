@@ -53,6 +53,11 @@ void main() {
       expect(hoveredEmissions, 1);
       expect(comparedEmissions, 1);
       expect(stateEmissions, 1);
+
+      stateEmissions = 0;
+      controller.setMode(InspectorMode.none);
+
+      expect(stateEmissions, 1);
     },
   );
 }

@@ -102,6 +102,21 @@ void main() {
   tearDown(ISpectRedaction.reset);
 
   group('RedactionService', () {
+    test('exposes ignore-list mutations through its configuration revision',
+        () {
+      final service = RedactionService();
+
+      expect(service.configurationRevision, 0);
+      service.ignoreValue('public-example');
+      expect(service.configurationRevision, 1);
+      service.ignoreKey('public_field');
+      expect(service.configurationRevision, 2);
+      service.unignoreValue('public-example');
+      expect(service.configurationRevision, 3);
+      service.unignoreKey('public_field');
+      expect(service.configurationRevision, 4);
+    });
+
     test('propagates a strategy error so boundary callers fail closed', () {
       // The walker is fail-loud by design: it does not swallow a throwing
       // strategy. Boundary callers (NetworkRedactionMixin) catch and fail

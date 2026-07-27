@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
@@ -6,7 +7,7 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_v
 import '../../../../helpers/pump_ispect.dart';
 
 void main() {
-  tearDown(() => ISpectRedaction.enabled = true);
+  tearDown(ISpectRedaction.reset);
 
   testWidgets('build never executes caller diagnostic methods', (tester) async {
     final calls = _InvocationCounters();
@@ -128,6 +129,179 @@ void main() {
       expect(latestCallbackCalls, 1);
     },
   );
+
+  testWidgets('a replacement global redaction policy refreshes the snapshot',
+      (tester) async {
+    const policyKey = 'policy_specific_field';
+    const rawValue = 'visible project value';
+    final log = ISpectLogData(
+      'policy-sensitive detail',
+      additionalData: const {policyKey: rawValue},
+    );
+    ISpectRedaction.configure(
+      service: RedactionService(
+        additionalSensitiveKeys: const {'first_policy_key'},
+      ),
+    );
+
+    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
+    final firstScreen = tester.widget<JsonScreen>(find.byType(JsonScreen));
+    final firstAdditional =
+        firstScreen.data['additional-data']! as Map<String, dynamic>;
+
+    ISpectRedaction.configure(
+      service: RedactionService(
+        additionalSensitiveKeys: const {policyKey},
+      ),
+    );
+    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
+    final replacementScreen = tester.widget<JsonScreen>(
+      find.byType(JsonScreen),
+    );
+    final replacementAdditional =
+        replacementScreen.data['additional-data']! as Map<String, dynamic>;
+
+    expect(firstAdditional[policyKey], rawValue);
+    expect(replacementAdditional[policyKey], isNot(rawValue));
+    expect(replacementScreen.key, isNot(firstScreen.key));
+  });
+
+  testWidgets('an in-place policy mutation invalidates the cached snapshot',
+      (tester) async {
+    const policyKey = 'mutable_policy_field';
+    const rawValue = 'visible mutable value';
+    final service = RedactionService(
+      additionalSensitiveKeys: const {policyKey},
+    )..ignoreKey(policyKey);
+    ISpectRedaction.configure(service: service);
+    final log = ISpectLogData(
+      'mutable policy detail',
+      additionalData: const {policyKey: rawValue},
+    );
+
+    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
+    final firstScreen = tester.widget<JsonScreen>(find.byType(JsonScreen));
+    final firstAdditional =
+        firstScreen.data['additional-data']! as Map<String, dynamic>;
+
+    service.unignoreKey(policyKey);
+    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
+    final replacementScreen = tester.widget<JsonScreen>(
+      find.byType(JsonScreen),
+    );
+    final replacementAdditional =
+        replacementScreen.data['additional-data']! as Map<String, dynamic>;
+
+    expect(firstAdditional[policyKey], rawValue);
+    expect(replacementAdditional[policyKey], isNot(rawValue));
+    expect(replacementScreen.key, isNot(firstScreen.key));
+  });
+
+  testWidgets('correlation banner follows the global redaction policy',
+      (tester) async {
+    const rawSecret = 'CORRELATED_BANNER_SECRET';
+    final active = ISpectLogData(
+      'request',
+      key: ISpectLogType.httpRequest.key,
+    );
+    final correlated = ISpectLogData(
+      'GET https://api.example.test/items?token=$rawSecret',
+      key: ISpectLogType.httpResponse.key,
+    );
+
+    await tester.pumpWidget(
+      appShell(
+        LogDetailView(
+          activeData: active,
+          correlatedLog: correlated,
+          onNavigateToCorrelated: () {},
+        ),
+      ),
+    );
+    expect(find.textContaining(rawSecret), findsNothing);
+
+    ISpectRedaction.enabled = false;
+    await tester.pumpWidget(
+      appShell(
+        LogDetailView(
+          activeData: active,
+          correlatedLog: correlated,
+          onNavigateToCorrelated: () {},
+        ),
+      ),
+    );
+    expect(find.textContaining(rawSecret), findsOneWidget);
+  });
+
+  testWidgets('trace chips display and copy redacted identifiers',
+      (tester) async {
+    const correlationSecret = 'TRACE_CORRELATION_SECRET';
+    const transactionSecret = 'TRACE_TRANSACTION_SECRET';
+    String? copiedText;
+    final messenger = tester.binding.defaultBinaryMessenger
+      ..setMockMethodCallHandler(SystemChannels.platform, (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copiedText =
+              (call.arguments as Map<Object?, Object?>)['text'] as String?;
+        }
+        return null;
+      });
+    addTearDown(
+      () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+    final log = ISpectLogData(
+      'trace identifiers',
+      additionalData: const {
+        TraceKeys.correlationId: 'Bearer $correlationSecret',
+        TraceKeys.transactionId:
+            'https://api.example.test/session?token=$transactionSecret',
+      },
+    );
+
+    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
+
+    expect(find.textContaining(correlationSecret), findsNothing);
+    expect(find.textContaining(transactionSecret), findsNothing);
+
+    await tester.tap(find.textContaining('Corr:'));
+    await tester.pump();
+    expect(copiedText, isNot(contains(correlationSecret)));
+
+    await tester.tap(find.textContaining('Txn:'));
+    await tester.pump();
+    expect(copiedText, isNot(contains(transactionSecret)));
+
+    ISpectRedaction.enabled = false;
+    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
+    expect(find.textContaining(correlationSecret), findsWidgets);
+    expect(find.textContaining(transactionSecret), findsWidgets);
+  });
+
+  testWidgets('a throwing view redactor fails closed unless globally disabled',
+      (tester) async {
+    const rawSecret = 'THROWING_VIEW_REDACTOR_SECRET';
+    ISpectRedaction.configure(service: _ThrowingViewRedactionService());
+    final log = ISpectLogData(
+      rawSecret,
+      additionalData: const {
+        TraceKeys.correlationId: 'Bearer $rawSecret',
+      },
+    );
+
+    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
+    expect(tester.takeException(), isNull);
+    expect(find.textContaining(rawSecret), findsNothing);
+    final screen = tester.widget<JsonScreen>(find.byType(JsonScreen));
+    expect(
+      screen.data['message'],
+      JsonValueNormalizer.unprintableValue,
+    );
+
+    ISpectRedaction.enabled = false;
+    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
+    expect(tester.takeException(), isNull);
+    expect(find.textContaining(rawSecret), findsWidgets);
+  });
 }
 
 final class _InvocationCounters {
@@ -150,6 +324,25 @@ final class _HostileAdditionalValue {
     calls.toStringCalls++;
     return 'CALLER_TO_STRING_SECRET';
   }
+}
+
+final class _ThrowingViewRedactionService extends RedactionService {
+  @override
+  Object? redactEnvelopeForExport(
+    Object? data, {
+    required Set<String> rootValueKeys,
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  }) =>
+      throw StateError('view envelope redaction failed');
+
+  @override
+  Object? redactForExport(
+    Object? data, {
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  }) =>
+      throw StateError('view text redaction failed');
 }
 
 final class _HostileException implements Exception {

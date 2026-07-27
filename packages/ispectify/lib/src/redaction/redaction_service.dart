@@ -60,7 +60,8 @@ class RedactionService {
     Set<String>? fullyMaskedKeys,
     int? maxDepth,
     RedactionStrategy? strategy,
-  })  : _strategy = strategy ??
+  })  : _usesDefaultStrategy = strategy == null,
+        _strategy = strategy ??
             const CompositeRedactionStrategy([
               KeyBasedRedaction(),
               PatternBasedRedaction(),
@@ -107,9 +108,15 @@ class RedactionService {
   }
 
   RedactionConfig _config;
+  int _configurationRevision = 0;
+  final bool _usesDefaultStrategy;
   final RedactionStrategy _strategy;
   late final _ExportKeyPatterns? _exportKeyPatterns =
       _exportPatternsFor(_config.sensitiveKeysLower);
+
+  /// Monotonically increases whenever an ignore-list mutation method is
+  /// invoked, allowing cached redacted views to detect policy updates.
+  int get configurationRevision => _configurationRevision;
 
   /// Redacts header names and values, respecting optional per-call overrides.
   ///
@@ -419,6 +426,15 @@ class RedactionService {
         replaceOversizedStrings: redactionActive,
       );
       if (!redactionActive) return normalized;
+      if (_usesDefaultStrategy &&
+          (normalized == null ||
+              normalized is bool ||
+              normalized is num ||
+              normalized is String &&
+                  normalized.length < 32 &&
+                  !_requiresExportStringScrub(normalized))) {
+        return normalized;
+      }
       final structurallyRedacted = _redactNormalizedForExport(
         normalized,
         ignoredValues: ignoredValues,
@@ -498,6 +514,7 @@ class RedactionService {
     // list here would eagerly materialize the complete buffer first.
     if (value is TypedData || value is ByteBuffer) return value;
     if (value is String) {
+      if (!_requiresExportStringScrub(value)) return value;
       final assignmentRedacted = _redactClassifiedAssignments(
         redactUrlsInText(value),
         ignoredValues: ignoredValues,
@@ -964,6 +981,7 @@ class RedactionService {
   static const int _carriageReturnCodeUnit = 13;
   static const int _spaceCodeUnit = 32;
   static const int _exclamationCodeUnit = 33;
+  static const int _hashCodeUnit = 35;
   static const int _doubleQuoteCodeUnit = 34;
   static const int _percentCodeUnit = 37;
   static const int _singleQuoteCodeUnit = 39;
@@ -972,6 +990,7 @@ class RedactionService {
   static const int _commaCodeUnit = 44;
   static const int _hyphenCodeUnit = 45;
   static const int _dotCodeUnit = 46;
+  static const int _slashCodeUnit = 47;
   static const int _colonCodeUnit = 58;
   static const int _semicolonCodeUnit = 59;
   static const int _questionMarkCodeUnit = 63;
@@ -984,6 +1003,7 @@ class RedactionService {
   static const int _closeBraceCodeUnit = 125;
   static const int _ampersandCodeUnit = 38;
   static const int _lowercaseUCodeUnit = 117;
+  static const int _tildeCodeUnit = 126;
 
   /// Like [redactHeaders], but also returns [RedactionStats] describing
   /// what was redacted and why.
@@ -1034,57 +1054,74 @@ class RedactionService {
 
   /// Add a string value to the ignore list (exact match).
   void ignoreValue(String value) {
-    _config = _config.copyWithIgnoredValues({..._config.ignoredValues, value});
+    _updateConfig(
+      _config.copyWithIgnoredValues({..._config.ignoredValues, value}),
+    );
   }
 
   /// Add multiple string values to the ignore list (exact matches).
   void ignoreValues(Iterable<String> values) {
-    _config = _config.copyWithIgnoredValues(
-      {..._config.ignoredValues, ...values},
+    _updateConfig(
+      _config.copyWithIgnoredValues(
+        {..._config.ignoredValues, ...values},
+      ),
     );
   }
 
   /// Remove a string value from the ignore list.
   void unignoreValue(String value) {
-    _config = _config.copyWithIgnoredValues(
-      {..._config.ignoredValues}..remove(value),
+    _updateConfig(
+      _config.copyWithIgnoredValues(
+        {..._config.ignoredValues}..remove(value),
+      ),
     );
   }
 
   /// Clear all ignored string values.
   void clearIgnoredValues() {
-    _config = _config.copyWithIgnoredValues({});
+    _updateConfig(_config.copyWithIgnoredValues({}));
   }
 
   // Mutation API — ignored keys
 
   /// Add a key name to the ignore list (case-insensitive).
   void ignoreKey(String keyName) {
-    _config = _config.copyWithIgnoredKeys(
-      {..._config.ignoredKeyNamesLower, keyName.toLowerCase()},
+    _updateConfig(
+      _config.copyWithIgnoredKeys(
+        {..._config.ignoredKeyNamesLower, keyName.toLowerCase()},
+      ),
     );
   }
 
   /// Add multiple key names to the ignore list (case-insensitive).
   void ignoreKeys(Iterable<String> keyNames) {
-    _config = _config.copyWithIgnoredKeys(
-      {
-        ..._config.ignoredKeyNamesLower,
-        ...keyNames.map((e) => e.toLowerCase()),
-      },
+    _updateConfig(
+      _config.copyWithIgnoredKeys(
+        {
+          ..._config.ignoredKeyNamesLower,
+          ...keyNames.map((e) => e.toLowerCase()),
+        },
+      ),
     );
   }
 
   /// Remove a key name from the ignore list.
   void unignoreKey(String keyName) {
-    _config = _config.copyWithIgnoredKeys(
-      {..._config.ignoredKeyNamesLower}..remove(keyName.toLowerCase()),
+    _updateConfig(
+      _config.copyWithIgnoredKeys(
+        {..._config.ignoredKeyNamesLower}..remove(keyName.toLowerCase()),
+      ),
     );
   }
 
   /// Clear all ignored key names.
   void clearIgnoredKeys() {
-    _config = _config.copyWithIgnoredKeys({});
+    _updateConfig(_config.copyWithIgnoredKeys({}));
+  }
+
+  void _updateConfig(RedactionConfig config) {
+    _config = config;
+    _configurationRevision++;
   }
 
   // URL redaction
@@ -1613,6 +1650,68 @@ class RedactionService {
       mask,
     );
   }
+
+  static bool _requiresExportStringScrub(String value) {
+    for (var index = 0; index < value.length; index++) {
+      final codeUnit = value.codeUnitAt(index);
+      if (codeUnit < _spaceCodeUnit || codeUnit > _tildeCodeUnit) return true;
+      switch (codeUnit) {
+        case _hashCodeUnit:
+        case _ampersandCodeUnit:
+        case _dotCodeUnit:
+        case _slashCodeUnit:
+        case _colonCodeUnit:
+        case _equalsCodeUnit:
+        case _questionMarkCodeUnit:
+        case _backslashCodeUnit:
+          return true;
+      }
+    }
+    final lower = value.toLowerCase();
+    for (final marker in _exportTokenMarkers) {
+      if (lower.contains(marker)) return true;
+    }
+    return false;
+  }
+
+  static const _exportTokenMarkers = <String>[
+    'bearer ',
+    'basic ',
+    'token ',
+    'digest ',
+    'ntlm ',
+    'negotiate ',
+    'oauth ',
+    'hoba ',
+    'mutual ',
+    'scram-sha-',
+    'github_pat_',
+    'ghp_',
+    'gho_',
+    'ghu_',
+    'ghs_',
+    'ghr_',
+    'xoxb-',
+    'xoxa-',
+    'xoxp-',
+    'xoxr-',
+    'xoxs-',
+    'glpat-',
+    'sk-',
+    'gsk_',
+    'sk_live_',
+    'pk_live_',
+    'rk_live_',
+    'sk_test_',
+    'pk_test_',
+    'rk_test_',
+    'aiza',
+    'sbp_',
+    'npm_',
+    'pypi-',
+    'pat_',
+    'akia',
+  ];
 
   static String _redactQuotedAbsolutePaths(String value, String mask) {
     final output = StringBuffer();

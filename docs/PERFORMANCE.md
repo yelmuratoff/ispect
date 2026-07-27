@@ -23,6 +23,9 @@ When the toolkit is on, overhead depends on what you capture:
 - Filter or sample noisy categories.
 - Prefer a result projection over a full database row.
 - Keep the history bounded for long QA sessions.
+- Check `ISpectLogger.hasActiveConsumers` before a custom integration builds an
+  expensive diagnostic snapshot. Built-in adapters already do this. Treat the
+  value as a read-time snapshot because consumers can change before emission.
 
 ## Benchmarks
 
@@ -56,9 +59,10 @@ and bounded history, redaction of 1, 10, and 100 KB payloads, and JSON Lines
 exports of 100 and 1,000 entries. The same run measures `ispectify_db`
 `dbTraceSync` against a direct in-memory operation, plus `dio.*` and `http.*`
 request batches against fixed in-memory transports. The adapter suites compare
-the baseline client, metadata-only diagnostics, and body-enabled diagnostics.
-All pure Dart cases compile to AOT before running so that JIT warm-up does not
-distort the result.
+the baseline client, metadata-only diagnostics, and body-enabled diagnostics
+while an active bounded history consumes the generated entries. All pure Dart
+cases compile to AOT before running so that JIT warm-up does not distort the
+result.
 
 ```bash
 ./bash/run_benchmarks.sh
@@ -123,6 +127,11 @@ p90, p99, and worst UI/raster durations, 16 ms frame-budget exceed counts,
 frame samples, GC counts, and layer/picture cache metrics. The accompanying
 `high-volume-metadata` records the event counts, refresh rate, physical size,
 and device-pixel ratio.
+
+Large pasted JSON and text, Markdown, or CSV exports run on a background
+isolate on native platforms. Flutter web yields before processing but remains
+single-isolate, so validate near-limit imports and exports separately in the
+target browser.
 
 Record the device model, OS, commit, and generated report alongside any
 published comparison. The 16 ms counters are a common comparison budget, not

@@ -51,8 +51,7 @@ final class WsDiagnostics
   RedactionService get redactor =>
       ISpectRedaction.resolveService(service: _explicitRedactor);
 
-  bool get _captureEnabled =>
-      _logger.hasActiveConsumers && settings.enabled;
+  bool get _captureEnabled => _logger.hasActiveConsumers && settings.enabled;
   String get _correlationId => _connectionId ??= generateTraceId();
 
   @override

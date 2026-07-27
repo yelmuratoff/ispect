@@ -237,6 +237,104 @@ void main() {
       expect(importedLogs[0].message, equals('Test log message 1'));
     });
 
+    test('import redacts sensitive fields and embedded URL tokens by default',
+        () async {
+      const headerSecret = 'IMPORT_HEADER_SECRET';
+      const querySecret = 'IMPORT_QUERY_SECRET';
+      const nestedSecret = 'IMPORT_NESTED_SECRET';
+      final json = jsonEncode({
+        'logs': [
+          {
+            'message': 'GET https://api.example.test/items?token=$querySecret',
+            'time': '2025-01-01T12:00:00.000Z',
+            'key': 'http-request',
+            'additional-data': {
+              'headers': {'Authorization': 'Bearer $headerSecret'},
+              'nested': {'password': nestedSecret},
+            },
+          },
+        ],
+      });
+
+      final imported = await service.importFromJson(json);
+      final log = imported.single;
+      final serialized = jsonEncode(log.toJson());
+
+      expect(log.key, 'http-request');
+      expect(serialized, isNot(contains(headerSecret)));
+      expect(serialized, isNot(contains(querySecret)));
+      expect(serialized, isNot(contains(nestedSecret)));
+      expect(serialized, contains('[REDACTED]'));
+    });
+
+    test('import opt-out retains a bounded raw prefix', () async {
+      const rawPrefix = 'RAW_IMPORT_SECRET';
+      final padding = ''.padRight(
+        LogExportOutput.maxPreparedValueBytes * 2,
+        'x',
+      );
+      final json = jsonEncode({
+        'logs': [
+          {
+            'message': '$rawPrefix$padding',
+            'time': '2025-01-01T12:00:00.000Z',
+          },
+        ],
+      });
+
+      final imported = await service.importFromJson(
+        json,
+        enableRedaction: false,
+      );
+      final message = imported.single.message!;
+
+      expect(message, startsWith(rawPrefix));
+      expect(message, contains(LogExportOutput.truncatedMarker));
+      expect(
+        utf8.encode(message).length,
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
+      );
+    });
+
+    test('import drops a record when its redaction service throws', () async {
+      const secret = 'THROWING_IMPORT_SECRET';
+      final json = jsonEncode({
+        'logs': [
+          {
+            'message': secret,
+            'time': '2025-01-01T12:00:00.000Z',
+          },
+        ],
+      });
+
+      final imported = await service.importFromJson(
+        json,
+        redactionService: _ThrowingEnvelopeRedactionService(),
+      );
+
+      expect(imported, isEmpty);
+    });
+
+    test('import replaces a hostile null redaction result', () async {
+      const secret = 'NULL_IMPORT_SECRET';
+      final json = jsonEncode({
+        'logs': [
+          {
+            'message': secret,
+            'time': '2025-01-01T12:00:00.000Z',
+          },
+        ],
+      });
+
+      final imported = await service.importFromJson(
+        json,
+        redactionService: _NullEnvelopeRedactionService(),
+      );
+
+      expect(imported.single.message, JsonValueNormalizer.unprintableValue);
+      expect(jsonEncode(imported.single.toJson()), isNot(contains(secret)));
+    });
+
     test('should handle empty logs list for export', () async {
       // Act
       final jsonString = await service.exportToJson([]);
@@ -1353,4 +1451,26 @@ final class _EmptyEnvelopeRedactionService extends RedactionService {
     Set<String>? ignoredKeys,
   }) =>
       const <String, Object?>{};
+}
+
+final class _NullEnvelopeRedactionService extends RedactionService {
+  @override
+  Object? redactEnvelopeForExport(
+    Object? data, {
+    required Set<String> rootValueKeys,
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  }) =>
+      null;
+}
+
+final class _ThrowingEnvelopeRedactionService extends RedactionService {
+  @override
+  Object? redactEnvelopeForExport(
+    Object? data, {
+    required Set<String> rootValueKeys,
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+  }) =>
+      throw StateError('import redaction failed');
 }

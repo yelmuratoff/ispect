@@ -267,6 +267,26 @@ void main() {
           expect(sinklessLogger.history, isEmpty);
         });
 
+        test('adapter callback remains active without a logger destination',
+            () {
+          var callbackCalls = 0;
+          final sinklessLogger = ISpectLogger(
+            options: ISpectLoggerOptions(
+              useConsoleLogs: false,
+              useHistory: false,
+            ),
+          );
+          addTearDown(sinklessLogger.dispose);
+
+          ISpectRiverpodObserver(
+            logger: sinklessLogger,
+            onProviderAdd: (_, __, ___) => callbackCalls++,
+          ).didAddProvider(_counterProvider, 0, container);
+
+          expect(callbackCalls, 1);
+          expect(sinklessLogger.history, isEmpty);
+        });
+
         test('logs provider initialization with riverpod-add key', () {
           ISpectRiverpodObserver(logger: logger)
               .didAddProvider(_counterProvider, 0, container);
@@ -301,6 +321,25 @@ void main() {
       });
 
       group('didUpdateProvider', () {
+        test('keeps update callback active without a logger destination', () {
+          var callbackCalls = 0;
+          final sinklessLogger = ISpectLogger(
+            options: ISpectLoggerOptions(
+              useConsoleLogs: false,
+              useHistory: false,
+            ),
+          );
+          addTearDown(sinklessLogger.dispose);
+
+          ISpectRiverpodObserver(
+            logger: sinklessLogger,
+            onProviderUpdate: (_, __, ___, ____) => callbackCalls++,
+          ).didUpdateProvider(_counterProvider, 0, 1, container);
+
+          expect(callbackCalls, 1);
+          expect(sinklessLogger.history, isEmpty);
+        });
+
         test('logs provider updates with riverpod-update key', () {
           ISpectRiverpodObserver(logger: logger)
               .didUpdateProvider(_counterProvider, 0, 1, container);

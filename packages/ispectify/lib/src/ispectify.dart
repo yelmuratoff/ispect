@@ -214,7 +214,7 @@ class ISpectLogger {
       // in FileLogHistory) before replacing it.
       _history.dispose();
       _history = history;
-    } else if (_history is DefaultISpectLoggerHistory) {
+    } else if (options != null && _history is DefaultISpectLoggerHistory) {
       // Rebuild default history to inherit updated options while
       // keeping the accumulated entries.
       _history = DefaultISpectLoggerHistory(
@@ -263,14 +263,12 @@ class ISpectLogger {
 
   void enable() {
     if (!_isActive) return;
-    _options = _guardOptions(_options.copyWith(enabled: true));
-    _pipeline.update(options: _options);
+    configure(options: _options.copyWith(enabled: true));
   }
 
   void disable() {
     if (!_isActive) return;
-    _options = _options.copyWith(enabled: false);
-    _pipeline.update(options: _options);
+    configure(options: _options.copyWith(enabled: false));
   }
 
   /// Routes [exception] through the configured [ISpectErrorHandler] to produce

@@ -7,10 +7,15 @@ import 'package:ispectify/ispectify.dart';
 void main(List<String> arguments) {
   final outputPath = _outputPath(arguments);
   final results = <_BenchmarkResult>[
-    _LoggerBenchmark('logger.metadata-only', additionalData: null).result(),
+    _LoggerBenchmark(
+      'logger.metadata-only',
+      additionalData: null,
+      maxHistoryItems: 1000,
+    ).result(),
     _LoggerBenchmark(
       'logger.with-payload',
       additionalData: _payload(1024),
+      maxHistoryItems: 1000,
     ).result(),
     _LoggerBenchmark(
       'logger.history-disabled',

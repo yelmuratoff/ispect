@@ -18,8 +18,7 @@ final class _RecordingHistory implements ILogHistory {
   final List<ISpectLogData> entries = <ISpectLogData>[];
 
   @override
-  List<ISpectLogData> get history =>
-      List<ISpectLogData>.unmodifiable(entries);
+  List<ISpectLogData> get history => List<ISpectLogData>.unmodifiable(entries);
 
   @override
   void add(ISpectLogData data) => entries.add(data);
@@ -53,8 +52,28 @@ void main() {
     expect(logger.hasActiveConsumers, isTrue);
   });
 
+  test('uses injected default history settings as the dispatch contract', () {
+    final history = DefaultISpectLoggerHistory(
+      ISpectLoggerOptions(useConsoleLogs: false),
+    );
+    final logger = ISpectLogger.testing(
+      history: history,
+      options: ISpectLoggerOptions(
+        useConsoleLogs: false,
+        useHistory: false,
+      ),
+    );
+    addTearDown(logger.dispose);
+
+    expect(logger.hasActiveConsumers, isTrue);
+    logger.configure(logger: ISpectBaseLogger());
+    expect(logger.logHistory, same(history));
+    logger.info('retained by injected default history');
+    expect(history.history, hasLength(1));
+  });
+
   test('tracks stream subscriptions and observers', () async {
-    final observer = const _Observer();
+    const observer = _Observer();
     final logger = ISpectLogger.testing(
       options: ISpectLoggerOptions(
         useConsoleLogs: false,
@@ -95,13 +114,46 @@ void main() {
       options: ISpectLoggerOptions(useConsoleLogs: false),
     );
 
-    logger.disable();
-    expect(logger.hasActiveConsumers, isFalse);
-
-    logger.enable();
-    expect(logger.hasActiveConsumers, isTrue);
+    expect((logger..disable()).hasActiveConsumers, isFalse);
+    expect((logger..enable()).hasActiveConsumers, isTrue);
 
     await logger.dispose();
     expect(logger.hasActiveConsumers, isFalse);
+  });
+
+  test('enabling a constructed-disabled logger activates default history', () {
+    final logger = ISpectLogger.testing(
+      options: ISpectLoggerOptions(
+        enabled: false,
+        useConsoleLogs: false,
+      ),
+    );
+    addTearDown(logger.dispose);
+
+    expect(logger.hasActiveConsumers, isFalse);
+
+    logger
+      ..enable()
+      ..info('retained after enable');
+
+    expect(logger.hasActiveConsumers, isTrue);
+    expect(logger.history, hasLength(1));
+
+    logger
+      ..disable()
+      ..info('ignored after disable');
+    expect(logger.hasActiveConsumers, isFalse);
+    expect(logger.history, hasLength(1));
+
+    logger
+      ..configure(
+        options: logger.options.copyWith(
+          enabled: true,
+          useHistory: false,
+        ),
+      )
+      ..info('ignored after history opt-out');
+    expect(logger.hasActiveConsumers, isFalse);
+    expect(logger.history, hasLength(1));
   });
 }

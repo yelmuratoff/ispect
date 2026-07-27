@@ -69,7 +69,8 @@ class ISpectRiverpodObserver extends ProviderObserver {
 
   bool get _ispectEnabled => kISpectEnabled && (debugEnabledOverride ?? true);
   bool get _loggingEnabled =>
-      _ispectEnabled && _logger.hasActiveConsumers && settings.enabled;
+      _ispectEnabled && _logger.isEnabled && settings.enabled;
+  bool get _captureEnabled => _loggingEnabled && _logger.hasActiveConsumers;
 
   bool _isFiltered(ProviderBase<Object?> provider) {
     final providerName = _providerName(provider);
@@ -96,8 +97,12 @@ class ISpectRiverpodObserver extends ProviderObserver {
   bool _shouldLog({
     required bool toggle,
     required ProviderBase<Object?> provider,
+    bool hasAdapterCallback = false,
   }) {
     if (!_loggingEnabled || !toggle) {
+      return false;
+    }
+    if (!_captureEnabled && !hasAdapterCallback) {
       return false;
     }
     final accepted = settings.providerFilter?.call(provider) ?? true;
@@ -209,7 +214,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
     ProviderContainer container,
   ) {
     super.didAddProvider(provider, value, container);
-    if (!_shouldLog(toggle: settings.printAdds, provider: provider)) {
+    if (!_shouldLog(
+      toggle: settings.printAdds,
+      provider: provider,
+      hasAdapterCallback: onProviderAdd != null,
+    )) {
       return;
     }
     try {
@@ -217,7 +226,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
     } catch (callbackError) {
       _logCallbackError('onProviderAdd', callbackError);
     }
-    if (!_loggingEnabled) {
+    if (!_captureEnabled) {
       return;
     }
 
@@ -254,7 +263,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
     ProviderContainer container,
   ) {
     super.didUpdateProvider(provider, previousValue, newValue, container);
-    if (!_shouldLog(toggle: settings.printUpdates, provider: provider)) {
+    if (!_shouldLog(
+      toggle: settings.printUpdates,
+      provider: provider,
+      hasAdapterCallback: onProviderUpdate != null,
+    )) {
       return;
     }
     final accepted = settings.updateFilter?.call(
@@ -274,7 +287,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
     } catch (callbackError) {
       _logCallbackError('onProviderUpdate', callbackError);
     }
-    if (!_loggingEnabled) {
+    if (!_captureEnabled) {
       return;
     }
 
@@ -312,7 +325,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
     ProviderContainer container,
   ) {
     super.didDisposeProvider(provider, container);
-    if (!_shouldLog(toggle: settings.printDisposes, provider: provider)) {
+    if (!_shouldLog(
+      toggle: settings.printDisposes,
+      provider: provider,
+      hasAdapterCallback: onProviderDispose != null,
+    )) {
       return;
     }
     try {
@@ -320,7 +337,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
     } catch (callbackError) {
       _logCallbackError('onProviderDispose', callbackError);
     }
-    if (!_loggingEnabled) {
+    if (!_captureEnabled) {
       return;
     }
 
@@ -350,7 +367,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
     ProviderContainer container,
   ) {
     super.providerDidFail(provider, error, stackTrace, container);
-    if (!_shouldLog(toggle: settings.printFails, provider: provider)) {
+    if (!_shouldLog(
+      toggle: settings.printFails,
+      provider: provider,
+      hasAdapterCallback: onProviderFail != null,
+    )) {
       return;
     }
     try {
@@ -358,7 +379,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
     } catch (callbackError) {
       _logCallbackError('onProviderFail', callbackError);
     }
-    if (!_loggingEnabled) {
+    if (!_captureEnabled) {
       return;
     }
 

@@ -68,6 +68,12 @@ class LogDetailView extends StatefulWidget {
 
 class _LogDetailViewState extends State<LogDetailView> {
   late bool _redactionActive;
+  late RedactionService _redactionService;
+  late int _redactionRevision;
+  late String _correlatedMessage;
+  late ({String display, String raw})? _correlationId;
+  late ({String display, String raw})? _transactionId;
+  late bool _isViewingRequest;
   late JsonScreen _jsonScreen;
 
   @override
@@ -79,26 +85,88 @@ class _LogDetailViewState extends State<LogDetailView> {
   @override
   void didUpdateWidget(covariant LogDetailView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final currentRedactionService = ISpectRedaction.service;
     if (!identical(oldWidget.activeData, widget.activeData) ||
-        _redactionActive != ISpectRedaction.enabled) {
+        !identical(oldWidget.correlatedLog, widget.correlatedLog) ||
+        _redactionActive != ISpectRedaction.enabled ||
+        !identical(_redactionService, currentRedactionService) ||
+        _redactionRevision != currentRedactionService.configurationRevision) {
       _refreshSnapshots();
     }
   }
 
   void _refreshSnapshots() {
     _redactionActive = ISpectRedaction.enabled;
-    final json = widget.activeData.toExportJson(
-      redactionActive: _redactionActive,
-    );
+    _redactionService = ISpectRedaction.service;
+    _redactionRevision = _redactionService.configurationRevision;
+    final activeData = captureISpectLogDataForEgress(widget.activeData);
+    final correlatedLog = widget.correlatedLog;
+    _correlatedMessage = correlatedLog == null
+        ? ''
+        : _viewerText(captureISpectLogDataForEgress(correlatedLog).message);
+    final correlationId = activeData.additionalData?[TraceKeys.correlationId];
+    final transactionId = activeData.additionalData?[TraceKeys.transactionId];
+    _correlationId =
+        _viewerTraceId(correlationId is String ? correlationId : null);
+    _transactionId =
+        _viewerTraceId(transactionId is String ? transactionId : null);
+    _isViewingRequest = activeData.key == ISpectLogType.httpRequest.key;
+    final json = _viewerSnapshot();
     _jsonScreen = JsonScreen(
-      key: ValueKey(widget.activeData.id),
+      key: UniqueKey(),
       data: json,
-      truncatedData: widget.activeData.toExportJson(
-        redactionActive: _redactionActive,
-        truncated: true,
-      ),
+      truncatedData: _viewerSnapshot(truncated: true),
       onClose: _handleClose,
     );
+  }
+
+  Map<String, dynamic> _viewerSnapshot({bool truncated = false}) {
+    final prepared = widget.activeData.toExportJson(
+      redactionActive: _redactionActive,
+      truncated: truncated,
+    );
+    if (!_redactionActive) return prepared;
+
+    try {
+      final redacted = _redactionService.redactEnvelopeForExport(
+        prepared,
+        rootValueKeys: const {'key'},
+      );
+      if (redacted is Map<String, Object?>) {
+        return Map<String, dynamic>.from(redacted);
+      }
+    } on Object {
+      return const <String, dynamic>{
+        'message': JsonValueNormalizer.unprintableValue,
+      };
+    }
+    return const <String, dynamic>{
+      'message': JsonValueNormalizer.unprintableValue,
+    };
+  }
+
+  ({String display, String raw})? _viewerTraceId(String? value) => value == null
+      ? null
+      : (
+          display: _viewerText(value),
+          raw: value,
+        );
+
+  String _viewerText(Object? value) {
+    if (value == null) return '';
+    try {
+      final prepared = _redactionActive
+          ? _redactionService.redactForExport(value)
+          : LogExportOutput.boundJsonValue(value);
+      return switch (prepared) {
+        final String text => text,
+        final bool value => value.toString(),
+        final num value => value.toString(),
+        _ => defaultPlaceholder,
+      };
+    } on Object {
+      return defaultPlaceholder;
+    }
   }
 
   void _handleClose() {
@@ -112,27 +180,25 @@ class _LogDetailViewState extends State<LogDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    final activeData = widget.activeData;
-    final corrId = activeData.traceCorrelationId;
-    final txnId = activeData.traceTransactionId;
-    final hasTraceCorrelation = (corrId != null || txnId != null) &&
-        !(widget.correlatedLog != null &&
-            widget.onNavigateToCorrelated != null);
+    final hasTraceCorrelation =
+        (_correlationId != null || _transactionId != null) &&
+            !(widget.correlatedLog != null &&
+                widget.onNavigateToCorrelated != null);
 
     return Column(
       children: [
         if (widget.correlatedLog != null &&
             widget.onNavigateToCorrelated != null)
           _CorrelationBanner(
-            activeData: activeData,
-            correlatedLog: widget.correlatedLog!,
+            isViewingRequest: _isViewingRequest,
+            correlatedMessage: _correlatedMessage,
             duration: widget.correlationDuration,
             onNavigate: widget.onNavigateToCorrelated!,
           ),
         if (hasTraceCorrelation)
           _TraceCorrelationBanner(
-            correlationId: corrId,
-            transactionId: txnId,
+            correlationId: _correlationId,
+            transactionId: _transactionId,
             onShowRelated: widget.onShowRelated,
           ),
         Expanded(
@@ -152,8 +218,8 @@ class _TraceCorrelationBanner extends StatelessWidget {
     this.onShowRelated,
   });
 
-  final String? correlationId;
-  final String? transactionId;
+  final ({String display, String raw})? correlationId;
+  final ({String display, String raw})? transactionId;
   final void Function(String id)? onShowRelated;
 
   static void _copyId(BuildContext context, String id) {
@@ -173,14 +239,14 @@ class _TraceCorrelationBanner extends StatelessWidget {
       chips.add(
         _IdChip(
           label: 'Corr',
-          value: correlationId!,
+          value: correlationId!.display,
           color: color,
           actionIcon: onShowRelated != null
               ? Icons.filter_list_rounded
               : Icons.copy_rounded,
           onTap: onShowRelated != null
-              ? () => onShowRelated!(correlationId!)
-              : () => _copyId(context, correlationId!),
+              ? () => onShowRelated!(correlationId!.raw)
+              : () => _copyId(context, correlationId!.display),
         ),
       );
     }
@@ -188,14 +254,14 @@ class _TraceCorrelationBanner extends StatelessWidget {
       chips.add(
         _IdChip(
           label: 'Txn',
-          value: transactionId!,
+          value: transactionId!.display,
           color: color,
           actionIcon: onShowRelated != null
               ? Icons.filter_list_rounded
               : Icons.copy_rounded,
           onTap: onShowRelated != null
-              ? () => onShowRelated!(transactionId!)
-              : () => _copyId(context, transactionId!),
+              ? () => onShowRelated!(transactionId!.raw)
+              : () => _copyId(context, transactionId!.display),
         ),
       );
     }
@@ -295,20 +361,19 @@ class _IdChip extends StatelessWidget {
 
 class _CorrelationBanner extends StatelessWidget {
   const _CorrelationBanner({
-    required this.activeData,
-    required this.correlatedLog,
+    required this.isViewingRequest,
+    required this.correlatedMessage,
     required this.onNavigate,
     this.duration,
   });
 
-  final ISpectLogData activeData;
-  final ISpectLogData correlatedLog;
+  final bool isViewingRequest;
+  final String correlatedMessage;
   final Duration? duration;
   final VoidCallback onNavigate;
 
   @override
   Widget build(BuildContext context) {
-    final isViewingRequest = activeData.key == ISpectLogType.httpRequest.key;
     final l10n = ISpectLocalization.of(context);
     final theme = context.iSpect.theme;
 
@@ -344,7 +409,7 @@ class _CorrelationBanner extends StatelessWidget {
             ],
             Expanded(
               child: Text(
-                correlatedLog.message ?? '',
+                correlatedMessage,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

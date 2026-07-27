@@ -319,11 +319,7 @@ abstract final class LogExporter {
   }) {
     final redactionActive = enableRedaction && ISpectRedaction.enabled;
     if (!redactionActive) {
-      return LogExportOutput.boundJsonValue(
-        value,
-        preserveTypes: false,
-        replaceOversizedStrings: false,
-      );
+      return LogExportOutput.boundJsonValue(value);
     }
     final redactor = _redactor(redactKeys, redactionService);
     return rootValueKeys == null || rootValueKeys.isEmpty

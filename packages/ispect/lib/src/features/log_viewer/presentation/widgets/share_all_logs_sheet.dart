@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -49,6 +49,11 @@ String _buildNonJsonExport(_LogsExportRequest request) {
     case ExportFormat.json:
       throw ArgumentError.value(request.format, 'format');
   }
+}
+
+bool _isUnsendableIsolateMessage(ArgumentError error) {
+  final message = error.toString();
+  return message.contains('isolate message') || message.contains('unsendable');
 }
 
 class ISpectShareAllLogsBottomSheet {
@@ -122,9 +127,17 @@ Future<String> buildLogsExportContent(
     await Future<void>.delayed(Duration.zero);
     return _buildNonJsonExport(request);
   }
-  return compute(
-    _buildNonJsonExport,
-    request,
-    debugLabel: 'ISpect ${format.label} export',
-  );
+  try {
+    return await compute(
+      _buildNonJsonExport,
+      request,
+      debugLabel: 'ISpect ${format.label} export',
+    );
+  } on Object catch (error) {
+    if (error is! ArgumentError || !_isUnsendableIsolateMessage(error)) {
+      rethrow;
+    }
+    // Custom strategies may own native handles that cannot cross an isolate.
+    return _buildNonJsonExport(request);
+  }
 }

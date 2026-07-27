@@ -105,7 +105,10 @@ class LogsJsonService {
 
   /// Imports logs from JSON format with comprehensive validation
   ///
-  /// - Parameters: jsonString (JSON content to parse)
+  /// Import-time redaction is enabled by default. [redactionService]
+  /// customizes its policy; pass `enableRedaction: false` only when bounded
+  /// raw diagnostics are explicitly required.
+  ///
   /// - Return: List of imported log entries
   /// - Usage example: `final logs = await service.importFromJson(jsonContent);`
   /// - Edge case notes: Supports legacy format, skips invalid entries, processes in chunks
@@ -117,16 +120,22 @@ class LogsJsonService {
   /// - Count: Max 100,000 entries
   ///
   /// **Security:** Prevents DoS attacks via malformed JSON
-  Future<List<ISpectLogData>> importFromJson(String jsonString) async {
+  Future<List<ISpectLogData>> importFromJson(
+    String jsonString, {
+    RedactionService? redactionService,
+    bool enableRedaction = true,
+  }) async {
     try {
       final dynamic jsonData = _decodeJson(jsonString);
 
       final logsJson = _extractLogsFromJsonData(jsonData);
 
-      // Validate count
       _validateLogCount(logsJson);
 
-      return await _processImportedLogsInChunks(logsJson);
+      return await _processImportedLogsInChunks(
+        logsJson,
+        _effectiveRedactor(enableRedaction, redactionService),
+      );
     } catch (e) {
       if (e is FormatException) rethrow;
       throw FormatException('Failed to import logs from JSON: $e');
@@ -166,6 +175,7 @@ class LogsJsonService {
   /// Processes imported logs in chunks to prevent UI freezing
   Future<List<ISpectLogData>> _processImportedLogsInChunks(
     List<dynamic> logsJson,
+    RedactionService? redactor,
   ) async {
     final logs = <ISpectLogData>[];
     const chunkSize = 25;
@@ -175,7 +185,8 @@ class LogsJsonService {
       for (final logJson in chunk) {
         try {
           if (logJson is! Map<String, dynamic>) continue;
-          final log = ISpectLogDataJsonUtils.fromJson(logJson);
+          final prepared = _prepareJsonLog(logJson, redactor);
+          final log = ISpectLogDataJsonUtils.fromJson(prepared);
           logs.add(log);
         } catch (_) {
           continue;

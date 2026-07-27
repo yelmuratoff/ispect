@@ -238,6 +238,26 @@ void main() {
           expect(sinklessLogger.history, isEmpty);
         });
 
+        test('adapter callback remains active without a logger destination',
+            () {
+          var callbackCalls = 0;
+          final sinklessLogger = ISpectLogger(
+            options: ISpectLoggerOptions(
+              useConsoleLogs: false,
+              useHistory: false,
+            ),
+          );
+          addTearDown(sinklessLogger.dispose);
+
+          ISpectBlocObserver(
+            logger: sinklessLogger,
+            onBlocCreate: (_) => callbackCalls++,
+          ).onCreate(bloc);
+
+          expect(callbackCalls, 1);
+          expect(sinklessLogger.history, isEmpty);
+        });
+
         test('logs bloc creation', () {
           ISpectBlocObserver(logger: logger).onCreate(bloc);
 
@@ -342,6 +362,66 @@ void main() {
       });
 
       group('onTransition', () {
+        test('keeps transition callback active without a logger destination',
+            () {
+          var callbackCalls = 0;
+          final sinklessLogger = ISpectLogger(
+            options: ISpectLoggerOptions(
+              useConsoleLogs: false,
+              useHistory: false,
+            ),
+          );
+          addTearDown(sinklessLogger.dispose);
+
+          ISpectBlocObserver(
+            logger: sinklessLogger,
+            onBlocTransition: (_, __) => callbackCalls++,
+          ).onTransition(
+            bloc,
+            const Transition(currentState: 0, event: 'x', nextState: 1),
+          );
+
+          expect(callbackCalls, 1);
+          expect(sinklessLogger.history, isEmpty);
+        });
+
+        test('does not retain a sinkless event for a later consumer', () {
+          var filterCalls = 0;
+          final sinklessLogger = ISpectLogger(
+            options: ISpectLoggerOptions(
+              useConsoleLogs: false,
+              useHistory: false,
+            ),
+          );
+          addTearDown(sinklessLogger.dispose);
+          final observer = ISpectBlocObserver(
+            logger: sinklessLogger,
+            filterPredicate: (_) {
+              filterCalls++;
+              return false;
+            },
+          );
+          const transition = Transition(
+            currentState: 0,
+            event: 'increment',
+            nextState: 1,
+          );
+
+          observer.onEvent(bloc, transition.event);
+          expect(filterCalls, 0);
+          sinklessLogger.configure(
+            options: ISpectLoggerOptions(
+              useConsoleLogs: false,
+            ),
+          );
+          observer.onTransition(bloc, transition);
+
+          expect(
+            sinklessLogger.history.single.additionalData,
+            isNot(contains(TraceKeys.correlationId)),
+          );
+        });
+
         test('logs state transitions with correct trace output', () {
           final observer = ISpectBlocObserver(logger: logger);
           const transition = Transition(
@@ -373,6 +453,28 @@ void main() {
       });
 
       group('onChange', () {
+        test('keeps change callback active without a logger destination', () {
+          var callbackCalls = 0;
+          final sinklessLogger = ISpectLogger(
+            options: ISpectLoggerOptions(
+              useConsoleLogs: false,
+              useHistory: false,
+            ),
+          );
+          addTearDown(sinklessLogger.dispose);
+
+          ISpectBlocObserver(
+            logger: sinklessLogger,
+            onBlocChange: (_, __) => callbackCalls++,
+          ).onChange(
+            bloc,
+            const Change(currentState: 0, nextState: 1),
+          );
+
+          expect(callbackCalls, 1);
+          expect(sinklessLogger.history, isEmpty);
+        });
+
         test('logs state changes', () {
           ISpectBlocObserver(logger: logger)
               .onChange(bloc, const Change(currentState: 0, nextState: 1));

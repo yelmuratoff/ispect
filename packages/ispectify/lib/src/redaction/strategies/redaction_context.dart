@@ -64,11 +64,9 @@ final class RedactionContext {
       return (fullyMasked: fullyMasked, sensitive: sensitive);
     }
 
-    final canonical =
-        needsCanonicalization ? _canonicalizeKey(trimmed) : lower;
+    final canonical = needsCanonicalization ? _canonicalizeKey(trimmed) : lower;
     if (canonical != lower) {
-      fullyMasked =
-          fullyMasked || fullyMaskedKeyNamesLower.contains(canonical);
+      fullyMasked = fullyMasked || fullyMaskedKeyNamesLower.contains(canonical);
       sensitive = sensitive || _matchesSensitive(canonical);
     }
     if ((fullyMasked && sensitive) || !canonical.contains('_')) {
@@ -114,6 +112,8 @@ final class RedactionContext {
     required bool fullyMasked,
     required bool sensitive,
   }) {
+    var hasFullyMaskedMatch = fullyMasked;
+    var hasSensitiveMatch = sensitive;
     final tokens = canonical
         .split('_')
         .where((token) => token.isNotEmpty)
@@ -124,16 +124,21 @@ final class RedactionContext {
         if (candidate.isNotEmpty) candidate.write('_');
         candidate.write(tokens[end]);
         final value = candidate.toString();
-        if (!fullyMasked && fullyMaskedKeyNamesLower.contains(value)) {
-          fullyMasked = true;
+        if (!hasFullyMaskedMatch && fullyMaskedKeyNamesLower.contains(value)) {
+          hasFullyMaskedMatch = true;
         }
-        if (!sensitive && _matchesSensitive(value)) sensitive = true;
-        if (fullyMasked && sensitive) {
+        if (!hasSensitiveMatch && _matchesSensitive(value)) {
+          hasSensitiveMatch = true;
+        }
+        if (hasFullyMaskedMatch && hasSensitiveMatch) {
           return (fullyMasked: true, sensitive: true);
         }
       }
     }
-    return (fullyMasked: fullyMasked, sensitive: sensitive);
+    return (
+      fullyMasked: hasFullyMaskedMatch,
+      sensitive: hasSensitiveMatch,
+    );
   }
 
   /// Normalizes camelCase / PascalCase and dotted/bracketed boundaries to `_`.

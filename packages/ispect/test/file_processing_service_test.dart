@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/file_format.dart';
-import 'package:ispect/src/features/log_viewer/domain/models/file_processing_result.dart';
 import 'package:ispect/src/features/log_viewer/services/file_processing_service.dart';
 
 void main() {
@@ -114,23 +113,27 @@ void main() {
       expect(service.isValidJson(content), false);
     });
 
-    test('offers an asynchronous path for large JSON content', () async {
+    test('large JSON processing yields before completing', () async {
       final payload = List<String>.filled(300 * 1024, 'x').join();
       final content = '{"payload":"$payload"}';
-      final dynamic dynamicService = service;
-      Object? operation;
-      try {
-        operation = dynamicService.processPastedContentAsync(content);
-      } on NoSuchMethodError {
-        operation = null;
-      }
+      final completionOrder = <String>[];
+      final queuedUiWork = Future<void>(
+        () => completionOrder.add('ui'),
+      );
+      final operation = service.processPastedContentAsync(content).then(
+        (result) {
+          completionOrder.add('processed');
+          return result;
+        },
+      );
 
-      expect(operation, isA<Future<FileProcessingResult>>());
-      final result = await (operation! as Future<FileProcessingResult>);
+      final result = await operation;
+      await queuedUiWork;
 
       expect(result.success, true);
       expect(result.format, FileFormat.json);
       expect(result.displayName, 'JSON');
+      expect(completionOrder, const ['ui', 'processed']);
     });
   });
 }

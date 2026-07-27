@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,6 +45,20 @@ final class _ReadTrackingLogs extends ListBase<ISpectLogData> {
   @override
   void operator []=(int index, ISpectLogData value) =>
       throw UnsupportedError('immutable');
+}
+
+final class _UnsendableRedactionStrategy implements RedactionStrategy {
+  const _UnsendableRedactionStrategy(this.port);
+
+  final ReceivePort port;
+
+  @override
+  Object? tryRedact(
+    Object? node, {
+    required RedactionContext context,
+    String? keyName,
+  }) =>
+      keyName == 'project_private' ? '[CUSTOM MASK]' : null;
 }
 
 void main() {
@@ -204,4 +219,28 @@ void main() {
       expect(content, contains('background export 0'));
     });
   }
+
+  test('large export preserves an isolate-incompatible custom redactor',
+      () async {
+    final port = ReceivePort();
+    addTearDown(port.close);
+    final logs = List<ISpectLogData>.generate(
+      64,
+      (index) => ISpectLogData(
+        'custom policy $index',
+        additionalData: {'project_private': 'visible raw value $index'},
+      ),
+    );
+
+    final content = await buildLogsExportContent(
+      ExportFormat.text,
+      logs: logs,
+      redactionService: RedactionService(
+        strategy: _UnsendableRedactionStrategy(port),
+      ),
+    );
+
+    expect(content, contains('[CUSTOM MASK]'));
+    expect(content, isNot(contains('visible raw value')));
+  });
 }
