@@ -78,6 +78,8 @@ class _HttpComposerScreenState extends State<HttpComposerScreen> {
     senders: widget.senders,
     filePicker: widget.onPickComposerFile,
     seed: widget.seed,
+    resourceLimits: ISpect.loggerIfInitialized?.options.resourceLimits ??
+        DiagnosticResourceLimits.balanced,
   );
   late final TextEditingController _urlController =
       TextEditingController(text: _controller.url);

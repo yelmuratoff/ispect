@@ -493,6 +493,7 @@ class LogsJsonService {
         : redactor.redactEnvelopeForExport(
             prepared,
             rootValueKeys: const {'key'},
+            resourceLimits: resourceLimits,
           );
     final bounded = LogExportOutput.boundJsonValue(
       outbound,
@@ -515,8 +516,12 @@ class LogsJsonService {
       preserveTypes: redactor != null,
       replaceOversizedStrings: redactor != null,
     );
-    final outbound =
-        redactor == null ? prepared : redactor.redactForExport(prepared);
+    final outbound = redactor == null
+        ? prepared
+        : redactor.redactForExport(
+            prepared,
+            resourceLimits: resourceLimits,
+          );
     return LogExportOutput.boundJsonValue(
       outbound,
       resourceLimits: resourceLimits,

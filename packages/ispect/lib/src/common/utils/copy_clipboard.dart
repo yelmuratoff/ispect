@@ -65,6 +65,7 @@ void copyClipboard(
           boundedInput,
           redactionService: redactionService,
           redactKeys: redactKeys,
+          resourceLimits: limits,
         )
       : boundedInput;
   final truncatedValue = LogExportOutput.truncateUtf8(
@@ -103,12 +104,16 @@ String _redactClipboardValue(
   String value, {
   required RedactionService? redactionService,
   required Set<String>? redactKeys,
+  required DiagnosticResourceLimits resourceLimits,
 }) {
   try {
     final redacted = ISpectRedaction.resolveService(
       service: redactionService,
       sensitiveKeys: redactKeys,
-    ).redactForExport(value);
+    ).redactForExport(
+      value,
+      resourceLimits: resourceLimits,
+    );
     return redacted is String ? redacted : defaultPlaceholder;
   } on Object {
     return defaultPlaceholder;

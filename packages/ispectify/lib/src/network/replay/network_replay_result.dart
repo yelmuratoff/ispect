@@ -1,4 +1,5 @@
 import 'package:ispectify/src/history/serialization.dart';
+import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart';
 import 'package:ispectify/src/redaction/redaction_service.dart';
 import 'package:ispectify/src/redaction/redaction_toggle.dart';
@@ -42,7 +43,11 @@ final class NetworkReplayResult {
   /// boundary by identity. The global redaction switch remains authoritative;
   /// when active, the supplied [redactor] or the safe default redactor masks
   /// sensitive response content before the final bounded snapshot is retained.
-  NetworkReplayResult safeSnapshot({RedactionService? redactor}) {
+  NetworkReplayResult safeSnapshot({
+    RedactionService? redactor,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
     final redactionActive = ISpectRedaction.enabled;
     final prepared = LogExportOutput.boundJsonValue(
       <String, Object?>{
@@ -50,14 +55,18 @@ final class NetworkReplayResult {
         'error': error,
         'headers': headers,
       },
+      resourceLimits: resourceLimits,
       preserveTypes: redactionActive,
       replaceOversizedStrings: redactionActive,
     );
     final Object? sanitized;
     if (redactionActive) {
       try {
-        sanitized = ISpectRedaction.resolveService(service: redactor)
-            .redactForExport(prepared);
+        sanitized =
+            ISpectRedaction.resolveService(service: redactor).redactForExport(
+          prepared,
+          resourceLimits: resourceLimits,
+        );
       } catch (_) {
         return _redactionFailureSnapshot();
       }
@@ -66,6 +75,7 @@ final class NetworkReplayResult {
     }
     final bounded = LogExportOutput.boundJsonValue(
       sanitized,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: redactionActive,
     );
     if (bounded is! Map<String, Object?>) {

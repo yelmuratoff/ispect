@@ -745,20 +745,17 @@ Object? _prepareEgressValue(
   };
   if (byteLength != null) return placeholders.binaryPlaceholder(byteLength);
   try {
-    final bounded = LogExportOutput.boundJsonValue(
+    if (redactor != null) {
+      return redactor.redactForExport(
+        value,
+        resourceLimits: resourceLimits,
+      );
+    }
+    return LogExportOutput.boundJsonValue(
       value,
       resourceLimits: resourceLimits,
       preserveTypes: true,
     );
-    if (redactor != null) {
-      return redactor.redactForExport(
-        LogExportOutput.replaceTruncatedPrefixes(
-          bounded,
-          resourceLimits: resourceLimits,
-        ),
-      );
-    }
-    return bounded;
   } catch (_) {
     return defaultPlaceholder;
   }

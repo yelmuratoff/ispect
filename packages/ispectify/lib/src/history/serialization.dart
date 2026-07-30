@@ -967,7 +967,11 @@ String _redactExportText(
         );
   final outbound = redactionActive
       ? _exportRedactor(redactKeys, redactionService).redactForExport(
-          LogExportOutput.replaceTruncatedPrefixes(prepared),
+          LogExportOutput.replaceTruncatedPrefixes(
+            prepared,
+            resourceLimits: resourceLimits,
+          ),
+          resourceLimits: resourceLimits,
         )
       : prepared;
   final bounded = maxBytes == null
@@ -1013,7 +1017,11 @@ Map<String, dynamic> _redactAdditionalData(
       : <String, dynamic>{};
   final outbound = redactionActive
       ? _exportRedactor(redactKeys, redactionService).redactForExport(
-          LogExportOutput.replaceTruncatedPrefixes(normalized),
+          LogExportOutput.replaceTruncatedPrefixes(
+            normalized,
+            resourceLimits: resourceLimits,
+          ),
+          resourceLimits: resourceLimits,
         )
       : normalized;
   final safe = maxBytes == null

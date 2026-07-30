@@ -236,6 +236,7 @@ final class _EnvelopeThrowingScalarIdentityRedactor extends RedactionService {
     required Set<String> rootValueKeys,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       throw StateError('envelope redaction failed');
 
@@ -244,6 +245,7 @@ final class _EnvelopeThrowingScalarIdentityRedactor extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       data;
 }

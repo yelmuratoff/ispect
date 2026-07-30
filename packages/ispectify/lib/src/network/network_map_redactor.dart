@@ -165,6 +165,7 @@ abstract final class NetworkMapRedactor {
               prepared,
               ignoredValues: ignoredValues,
               ignoredKeys: ignoredKeys,
+              resourceLimits: resourceLimits,
             )
           : prepared;
       final normalized = _boundValue(
@@ -332,6 +333,7 @@ abstract final class NetworkMapRedactor {
               prepared,
               ignoredValues: ignoredValues,
               ignoredKeys: ignoredKeys,
+              resourceLimits: resourceLimits,
             )
           : prepared;
       if (exported == null) return redactionFailedPlaceholder;
@@ -529,6 +531,7 @@ abstract final class NetworkMapRedactor {
                 rawFields,
                 ignoredValues: ignoredValues,
                 ignoredKeys: ignoredKeys,
+                resourceLimits: resourceLimits,
               )
             : rawFields;
         final normalized = _boundValue(
@@ -552,6 +555,7 @@ abstract final class NetworkMapRedactor {
                 rawFiles,
                 ignoredValues: ignoredValues,
                 ignoredKeys: ignoredKeys,
+                resourceLimits: resourceLimits,
               )
             : rawFiles;
         final normalized = _boundValue(

@@ -119,6 +119,7 @@ final class _ThrowingRedactor extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       throw StateError('tenantSecret=REDACTOR_FAILURE_SECRET');
 }
@@ -129,6 +130,7 @@ final class _NullExportRedactor extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       null;
 }
@@ -139,6 +141,7 @@ final class _ScalarExportRedactor extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       1;
 }
@@ -154,6 +157,7 @@ final class _ExpandingRedactor extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       <String, Object?>{'expansion': expansion};
 }
@@ -169,6 +173,7 @@ final class _HostileMapRedactor extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       <Object, Object>{key: value};
 }

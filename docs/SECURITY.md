@@ -71,6 +71,9 @@ application-defined `toJson()` or `toString()` while the value is first
 captured; `DiagnosticCaptureMode.strict` disables those calls. Persistence,
 exports, and observer fan-out operate on the captured snapshot and never
 re-invoke application formatters.
+The caller's validated `DiagnosticResourceLimits` remains authoritative
+through every redaction and outbound normalization pass: `extended` never
+disables redaction, and `constrained` is never widened internally.
 
 Domain-specific fields belong to the application team. Register custom keys for values such as tenant identifiers, internal account numbers, organization-specific tokens, customer references, business-sensitive IDs, and proprietary request fields. Extend the safe defaults through the global policy:
 

@@ -156,7 +156,10 @@ class ExportController extends ChangeNotifier {
         resourceLimits: _resourceLimits,
         replaceOversizedStrings: true,
       );
-      final redacted = ISpectRedaction.service.redactForExport(prepared);
+      final redacted = ISpectRedaction.service.redactForExport(
+        prepared,
+        resourceLimits: _resourceLimits,
+      );
       final bounded = LogExportOutput.boundJsonValue(
         redacted,
         resourceLimits: _resourceLimits,

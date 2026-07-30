@@ -345,7 +345,10 @@ final class RollingFileLogHistory implements FileLogHistory {
         ),
       );
       final bounded = LogExportOutput.boundJsonValue(
-        _redactor.redactForExport(prepared),
+        _redactor.redactForExport(
+          prepared,
+          resourceLimits: _loggerOptions.resourceLimits,
+        ),
         resourceLimits: _loggerOptions.resourceLimits,
         replaceOversizedStrings: true,
       );

@@ -40,10 +40,12 @@ final class _ThrowingSender implements NetworkRequestSender {
 HttpComposerController _controller({
   List<NetworkRequestSender>? senders,
   NetworkReplayRequest? seed,
+  DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
 }) =>
     HttpComposerController(
       senders: senders ?? [_RecordingSender()],
       seed: seed,
+      resourceLimits: resourceLimits,
     );
 
 void main() {
@@ -193,6 +195,29 @@ void main() {
       );
       expect(result.headers, isNot(same(headers)));
       expect(result.body, isNot(same(body)));
+    });
+
+    test('applies the configured resource limits to response snapshots',
+        () async {
+      final body = List<String>.filled(10000, 'safe-value').join('|');
+      final sender = _RecordingSender(
+        result: NetworkReplayResult(body: body),
+      );
+      final controller = _controller(
+        senders: [sender],
+        resourceLimits: DiagnosticResourceLimits.constrained,
+      )..setUrl('https://api.test/ping');
+
+      await controller.send();
+
+      final resultBody = controller.result!.body! as String;
+      expect(
+        LogExportOutput.utf8Length(resultBody),
+        lessThanOrEqualTo(
+          DiagnosticResourceLimits.constrained.maxCapturedValueBytes,
+        ),
+      );
+      expect(resultBody, isNot(body));
     });
 
     test('resets sending state and captures an unexpected sender failure',

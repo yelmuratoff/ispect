@@ -155,6 +155,9 @@ and `extended`/`throughput` only in controlled internal builds. Validation
 keeps finite host-protection ceilings in place; increasing a budget never
 disables redaction. Traces and supported integrations inherit the logger
 policy unless their settings provide a local `resourceLimits` override.
+The selected limits remain authoritative inside redaction, header
+sanitization, persistence, replay snapshots, clipboard, and export; internal
+stages do not silently fall back to `balanced`.
 Both policy models support value equality plus `toMap()`/`fromMap()`, so
 per-field overrides can be persisted without collapsing them to a preset.
 

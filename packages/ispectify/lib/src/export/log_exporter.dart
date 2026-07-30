@@ -37,12 +37,15 @@ abstract final class LogExporter {
     final limits = resourceLimits;
     final capped = _cap(logs, _resolveMaxLogs(maxLogs, limits));
     final output = _BoundedExportBuffer(limits.maxExportDocumentBytes);
+    final effectiveRedactionService = enableRedaction && ISpectRedaction.enabled
+        ? _redactor(redactKeys, redactionService)
+        : null;
     var hasRecord = false;
     for (final log in capped) {
       final record = _jsonLine(
         log,
-        redactKeys: redactKeys,
-        redactionService: redactionService,
+        redactKeys: null,
+        redactionService: effectiveRedactionService,
         enableRedaction: enableRedaction,
         resourceLimits: limits,
       );
@@ -73,6 +76,9 @@ abstract final class LogExporter {
     resourceLimits.validate();
     final limits = resourceLimits;
     final capped = _cap(logs, _resolveMaxLogs(maxLogs, limits));
+    final effectiveRedactionService = enableRedaction && ISpectRedaction.enabled
+        ? _redactor(redactKeys, redactionService)
+        : null;
     final header = StringBuffer()
       ..writeln('=== ISpect Log Report ===')
       ..writeln('Generated: ${DateTime.now().toIso8601String()}')
@@ -83,8 +89,7 @@ abstract final class LogExporter {
     _writeMetadata(
       header,
       metadata,
-      redactKeys: redactKeys,
-      redactionService: redactionService,
+      redactionService: effectiveRedactionService,
       enableRedaction: enableRedaction,
       resourceLimits: limits,
     );
@@ -93,8 +98,7 @@ abstract final class LogExporter {
       ..writeBounded(header.toString());
     for (final log in capped) {
       final record = log.toText(
-        redactKeys: redactKeys,
-        redactionService: redactionService,
+        redactionService: effectiveRedactionService,
         enableRedaction: enableRedaction,
         maxOutputBytes: limits.maxLogRecordBytes,
       );
@@ -119,6 +123,9 @@ abstract final class LogExporter {
     resourceLimits.validate();
     final limits = resourceLimits;
     final capped = _cap(logs, _resolveMaxLogs(maxLogs, limits));
+    final effectiveRedactionService = enableRedaction && ISpectRedaction.enabled
+        ? _redactor(redactKeys, redactionService)
+        : null;
     final header = StringBuffer()
       ..writeln('# ISpect Log Report')
       ..writeln()
@@ -131,8 +138,7 @@ abstract final class LogExporter {
       header,
       metadata,
       linePrefix: '> ',
-      redactKeys: redactKeys,
-      redactionService: redactionService,
+      redactionService: effectiveRedactionService,
       enableRedaction: enableRedaction,
       resourceLimits: limits,
     );
@@ -141,8 +147,7 @@ abstract final class LogExporter {
       ..writeBounded(header.toString());
     for (final log in capped) {
       final record = log.toMarkdown(
-        redactKeys: redactKeys,
-        redactionService: redactionService,
+        redactionService: effectiveRedactionService,
         enableRedaction: enableRedaction,
         maxOutputBytes: limits.maxLogRecordBytes,
       );
@@ -170,6 +175,9 @@ abstract final class LogExporter {
     resourceLimits.validate();
     final limits = resourceLimits;
     final capped = _cap(logs, _resolveMaxLogs(maxLogs, limits));
+    final effectiveRedactionService = enableRedaction && ISpectRedaction.enabled
+        ? _redactor(redactKeys, redactionService)
+        : null;
     final output = _BoundedExportBuffer(limits.maxExportDocumentBytes)
       ..writeAll([
         'time,level,key,category,source,operation,target,durationMs,success,message\n',
@@ -179,8 +187,8 @@ abstract final class LogExporter {
       final ad = captured.additionalData;
       String scrub(Object? value) => _redactText(
             value,
-            redactKeys,
-            redactionService: redactionService,
+            null,
+            redactionService: effectiveRedactionService,
             enableRedaction: enableRedaction,
             resourceLimits: limits,
           );
@@ -359,29 +367,23 @@ abstract final class LogExporter {
     Set<String>? rootValueKeys,
   }) {
     final redactionActive = enableRedaction && ISpectRedaction.enabled;
-    final bounded = LogExportOutput.boundJsonValue(
-      value,
-      resourceLimits: resourceLimits,
-      preserveTypes: redactionActive,
-      replaceOversizedStrings: redactionActive,
-    );
-    if (!redactionActive) return bounded;
-    final prepared = LogExportOutput.replaceTruncatedPrefixes(
-      bounded,
-      resourceLimits: resourceLimits,
-    );
+    if (!redactionActive) {
+      return LogExportOutput.boundJsonValue(
+        value,
+        resourceLimits: resourceLimits,
+      );
+    }
     final redactor = _redactor(redactKeys, redactionService);
-    final redacted = rootValueKeys == null || rootValueKeys.isEmpty
-        ? redactor.redactForExport(prepared)
+    return rootValueKeys == null || rootValueKeys.isEmpty
+        ? redactor.redactForExport(
+            value,
+            resourceLimits: resourceLimits,
+          )
         : redactor.redactEnvelopeForExport(
-            prepared,
+            value,
             rootValueKeys: rootValueKeys,
+            resourceLimits: resourceLimits,
           );
-    return LogExportOutput.boundJsonValue(
-      redacted,
-      resourceLimits: resourceLimits,
-      replaceOversizedStrings: true,
-    );
   }
 
   static String _redactText(

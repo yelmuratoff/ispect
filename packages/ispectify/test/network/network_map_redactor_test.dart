@@ -32,6 +32,7 @@ final class _NullExportMapRedactor extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       null;
 }
@@ -42,6 +43,7 @@ final class _ThrowingHeaderRedactor extends RedactionService {
     Map<String, Object?> headers, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       throw StateError('custom header redactor failed');
 }

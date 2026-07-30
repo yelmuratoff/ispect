@@ -26,6 +26,7 @@ final class _HostileFileErrorRedactor extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       output;
 }

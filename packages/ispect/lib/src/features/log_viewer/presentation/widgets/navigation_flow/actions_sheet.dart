@@ -337,7 +337,10 @@ class ISpectNavigationFlowActionsSheet {
     if (prepared == LogExportOutput.truncatedMarker) return prepared;
     if (!redactionActive) return prepared;
     try {
-      return sanitizeRouteDiagnosticName(prepared);
+      return sanitizeRouteDiagnosticName(
+        prepared,
+        resourceLimits: _resourceLimits,
+      );
     } catch (_) {
       return defaultPlaceholder;
     }
@@ -440,7 +443,10 @@ class ISpectNavigationFlowActionsSheet {
 
   static String _redactedText(String rawText, RedactionService redactor) {
     try {
-      final redacted = redactor.redactForExport(rawText);
+      final redacted = redactor.redactForExport(
+        rawText,
+        resourceLimits: _resourceLimits,
+      );
       return redacted is String ? redacted : defaultPlaceholder;
     } catch (_) {
       return defaultPlaceholder;

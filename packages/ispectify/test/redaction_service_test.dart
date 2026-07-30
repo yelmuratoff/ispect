@@ -1269,6 +1269,52 @@ void main() {
         expect(raw, endsWith(LogExportOutput.truncatedMarker));
       });
 
+      test('honors the caller resource limits', () {
+        final payload = List<String>.filled(30000, 'safe-value').join('|');
+
+        final extended = RedactionService().redactForExport(
+          payload,
+          resourceLimits: DiagnosticResourceLimits.extended,
+        );
+        final constrained = RedactionService().redactForExport(
+          payload,
+          resourceLimits: DiagnosticResourceLimits.constrained,
+        );
+
+        expect(extended, payload);
+        expect(
+          LogExportOutput.utf8Length(constrained! as String),
+          lessThanOrEqualTo(
+            DiagnosticResourceLimits.constrained.maxCapturedValueBytes,
+          ),
+        );
+        expect(constrained, isNot(payload));
+      });
+
+      test('redacts short root credentials without separator characters', () {
+        final service = RedactionService();
+
+        expect(
+          service.redactForExport('AKIAIOSFODNN7EXAMPLE'),
+          isNot('AKIAIOSFODNN7EXAMPLE'),
+        );
+        expect(
+          service.redactForExport('AIzaSyExampleCredential'),
+          isNot('AIzaSyExampleCredential'),
+        );
+      });
+
+      test('applies caller resource limits while hardening headers', () {
+        final value = List<String>.filled(30000, 'safe-value').join('|');
+
+        final headers = RedactionService().redactHeaders(
+          {'x-debug': value},
+          resourceLimits: DiagnosticResourceLimits.extended,
+        );
+
+        expect(headers['x-debug'], value);
+      });
+
       test('bounds multi-MiB typed binary under both masking opt-outs', () {
         const byteLength = 4 * 1024 * 1024;
         final bytes = Uint8List(byteLength);

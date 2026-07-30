@@ -87,6 +87,7 @@ class ISpectShareLogBottomSheet {
         ).redactEnvelopeForExport(
           preparedEnvelope,
           rootValueKeys: const {'key'},
+          resourceLimits: limits,
         );
       } catch (_) {
         redactedEnvelope = null;

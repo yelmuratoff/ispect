@@ -134,6 +134,7 @@ final class _InspectingRedactor extends RedactionService {
     required Set<String> rootValueKeys,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     calls++;
     if (data is Map<Object?, Object?>) {
@@ -150,6 +151,7 @@ final class _InspectingRedactor extends RedactionService {
       rootValueKeys: rootValueKeys,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
   }
 }
@@ -165,6 +167,7 @@ final class _ReturningEnvelopeRedactor extends RedactionService {
     required Set<String> rootValueKeys,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       output;
 }

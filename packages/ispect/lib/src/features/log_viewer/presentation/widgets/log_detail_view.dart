@@ -76,6 +76,10 @@ class _LogDetailViewState extends State<LogDetailView> {
   late bool _isViewingRequest;
   late JsonScreen _jsonScreen;
 
+  DiagnosticResourceLimits get _resourceLimits =>
+      ISpect.loggerIfInitialized?.options.resourceLimits ??
+      DiagnosticResourceLimits.balanced;
+
   @override
   void initState() {
     super.initState();
@@ -131,6 +135,7 @@ class _LogDetailViewState extends State<LogDetailView> {
       final redacted = _redactionService.redactEnvelopeForExport(
         prepared,
         rootValueKeys: const {'key'},
+        resourceLimits: _resourceLimits,
       );
       if (redacted is Map<String, Object?>) {
         return Map<String, dynamic>.from(redacted);
@@ -156,8 +161,14 @@ class _LogDetailViewState extends State<LogDetailView> {
     if (value == null) return '';
     try {
       final prepared = _redactionActive
-          ? _redactionService.redactForExport(value)
-          : LogExportOutput.boundJsonValue(value);
+          ? _redactionService.redactForExport(
+              value,
+              resourceLimits: _resourceLimits,
+            )
+          : LogExportOutput.boundJsonValue(
+              value,
+              resourceLimits: _resourceLimits,
+            );
       return switch (prepared) {
         final String text => text,
         final bool value => value.toString(),

@@ -19,12 +19,14 @@ final class _CountingRedactor extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     calls++;
     return super.redactForExport(
       data,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
   }
 }

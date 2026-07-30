@@ -26,6 +26,7 @@ final class _DisablingRedactor extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     calls++;
     onRedact();
@@ -33,6 +34,7 @@ final class _DisablingRedactor extends RedactionService {
       data,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
   }
 }

@@ -4,18 +4,25 @@ import 'package:ispectify/ispectify.dart';
 String sanitizeRouteDiagnosticText(
   String value, {
   bool enableRedaction = true,
+  DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
 }) {
+  resourceLimits.validate();
   final redactionActive = enableRedaction && ISpectRedaction.enabled;
   final prepared = LogExportOutput.boundJsonValue(
     value,
+    resourceLimits: resourceLimits,
     replaceOversizedStrings: redactionActive,
   );
   if (prepared is! String) return defaultPlaceholder;
   if (!redactionActive) return prepared;
 
-  final redacted = ISpectRedaction.service.redactForExport(prepared);
+  final redacted = ISpectRedaction.service.redactForExport(
+    prepared,
+    resourceLimits: resourceLimits,
+  );
   final boundedRedacted = LogExportOutput.boundJsonValue(
     redacted,
+    resourceLimits: resourceLimits,
     replaceOversizedStrings: true,
   );
   return boundedRedacted is String && boundedRedacted.isNotEmpty
@@ -31,11 +38,13 @@ String sanitizeRouteDiagnosticText(
 String sanitizeRouteDiagnosticName(
   String name, {
   bool enableRedaction = true,
+  DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
 }) {
   final redactionActive = enableRedaction && ISpectRedaction.enabled;
   final scrubbed = sanitizeRouteDiagnosticText(
     name,
     enableRedaction: enableRedaction,
+    resourceLimits: resourceLimits,
   );
   if (!redactionActive) return scrubbed;
 

@@ -7,6 +7,7 @@
 - **`JsonScreen` construction:** `JsonScreen(...)` is no longer const; remove the `const` keyword from existing call sites.
 - **Custom log types:** Custom `ISpectLogData` subclasses are normalized for safety; filter them by log key instead of `TypeFilter`.
 - **HTTP URL fields:** Throwing custom `Uri` implementations may now be omitted; strict capture deliberately keeps all caller-owned `Uri` values opaque.
+- **Custom redaction services:** Overrides of `RedactionService.redactForExport`, `redactEnvelopeForExport`, or `redactHeaders` must accept the optional `resourceLimits` parameter.
 
 ### Behavioral Changes
 
@@ -22,13 +23,16 @@
 - **Redacted full capture:** Network adapters capture headers and payloads by default after bounded redaction; use their `metadataOnly()` presets for stricter minimization.
 - **Strict hardening remains available:** Network `metadataOnly()` and `production()` presets, plus BLoC/Riverpod `compact`, avoid application-defined formatters. Builders and settings expose the same strict opt-in directly.
 - **Protected diagnostic data:** Imports, exports, clipboard, cURL, observers, and stored logs are bounded and redacted by default.
+- **Consistent diagnostic budgets:** Custom `DiagnosticResourceLimits` now remain authoritative through redaction, headers, replay results, observers, persistence, clipboard, and exports instead of falling back to balanced limits.
 - **Production gate:** Diagnostics remain inactive when `ISPECT_ENABLED` is omitted.
 
 ### Improvements
 
 - **Enabled-build performance:** Caller-owned values are not captured or formatted when no history, stream listener, console sink, or observer can consume the entry. Active consumers deliberately retain bounded capture and redaction rather than trading diagnostic safety for benchmark throughput.
+- **Faster active diagnostics:** Active payload capture and batch export avoid redundant sanitization work while keeping default redaction and output bounds unchanged.
 - **More complete diagnostic handoff:** Increased bounded payloads to 256 KiB, individual records to 1 MiB, and JSON exports to 32 MiB; exports now report actual/truncated counts and imports can report skipped records.
-- **Configurable diagnostic policies:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` control formatter isolation, capture, traversal, import/export, viewer, clipboard, network, database, state-observer, correlation, console stack frames, batching, yielding, background-work, and search budgets. The in-app Settings sheet exposes Capture, Resource, and Processing profiles, `ISpectSettingsState` persists exact custom values, and the layout inspector separately exposes `maxRenderTreeClipboardCharacters`. Balanced defaults preserve useful diagnostics; `strict`, `constrained`, and `responsive` harden or reduce resource use, while `extended` and `throughput` support controlled larger sessions.
+- **Convenient diagnostic profiles:** Balanced defaults require no tuning; the in-app Settings sheet offers one-tap Capture, Resource, and Processing profiles for stricter, lower-memory, responsive, larger-session, or throughput-focused diagnostics.
+- **Fully configurable budgets:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` cover formatter isolation, data sizes and counts, traversal, integrations, UI, batching, yielding, background work, and search. Exact `copyWith(...)` values persist through `ISpectSettingsState`, while the layout inspector separately exposes `maxRenderTreeClipboardCharacters`.
 
 ### Bug Fixes
 

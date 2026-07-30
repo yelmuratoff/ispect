@@ -27,9 +27,8 @@ CI runs against a pinned Flutter SDK as the required signal, and against the lat
 
 ## Release channels
 
-The `7.x` line is the current stable channel. The `6.x` line remains available
-on pub.dev for teams that need its older API surface, but new work targets
-`7.x`.
+The `7.x` line is the current pre-release development channel. The `6.x` line
+is the current stable channel on pub.dev, while new work targets `7.x`.
 
 ## Compatibility changes
 

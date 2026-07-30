@@ -230,6 +230,7 @@ Map<String, dynamic> _prepareAdditionalData(
           prepared,
           resourceLimits: resourceLimits,
         ),
+        resourceLimits: resourceLimits,
       );
     } else {
       output = prepared;

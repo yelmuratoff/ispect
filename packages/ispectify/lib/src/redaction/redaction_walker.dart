@@ -108,7 +108,7 @@ final class RedactionWalker {
     return null;
   }
 
-  RedactionContext _createContext() => RedactionContext(
+  RedactionContext _createContext() => RedactionContext.cached(
         placeholder: config.placeholder,
         redactBinary: config.redactBinary,
         redactBase64: config.redactBase64,
@@ -262,12 +262,13 @@ final class RedactionWalker {
   // Content detection heuristics
 
   bool _looksLikeAuthorizationValue(String value) {
-    if (jwtRegex.hasMatch(value)) return true;
-    if (schemeRegex.hasMatch(value)) return true;
-    return tokenPrefixRegex.hasMatch(value);
+    if (value.length >= 32 && jwtRegex.hasMatch(value)) return true;
+    if (value.length >= 5 && schemeRegex.hasMatch(value)) return true;
+    return value.length >= 3 && tokenPrefixRegex.hasMatch(value);
   }
 
   bool _isLikelyBase64(String value) {
+    if (value.length < 32) return false;
     final sanitized = value.replaceAll(whitespaceRegex, '');
     if (sanitized.length < 32) return false;
     if (!base64Regex.hasMatch(sanitized)) return false;

@@ -25,6 +25,7 @@ final class _PayloadCountingRedactor extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     if (data == 'FILTER-ERROR-PAYLOAD') {
       payloadCalls++;
@@ -33,6 +34,7 @@ final class _PayloadCountingRedactor extends RedactionService {
       data,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
   }
 }

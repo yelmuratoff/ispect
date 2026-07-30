@@ -177,7 +177,7 @@ cd packages/ispectify_riverpod/example && dart run -DISPECT_ENABLED=true main.da
   <tr>
     <td align="center" width="33%">
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="240" alt="Settings panel" /><br />
-      <sub><strong>Settings</strong><br />Tune filters, history, and debug flags.</sub>
+      <sub><strong>Settings</strong><br />Tune capture, resources, processing, history, and filters.</sub>
     </td>
     <td align="center" width="33%">
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="240" alt="Share sheet" /><br />
@@ -321,16 +321,20 @@ final logger = ISpectFlutter.init(
 ```
 
 Use `copyWith` for individual values or the `extended`/`throughput` profiles
-for a controlled larger session. Every profile remains bounded by validated
-host-protection ceilings, and redaction stays enabled independently.
+for a controlled larger session. Selected profiles and per-field overrides
+remain authoritative through redaction, observers, replay, persistence,
+clipboard, and export instead of silently reverting to `balanced`. Every
+profile remains bounded by validated host-protection ceilings, and redaction
+stays enabled independently.
 
-In Flutter, the Settings sheet offers Capture, Resource, and Processing
-profiles under Advanced. Capture can switch from the useful `Balanced` default
-to `Strict`, which never invokes application-defined formatters. Selections
-update capture, search, viewer, import, and export behavior immediately and are
-included in `ISpectSettingsState.toJson()`. Per-field `copyWith` values also
-round-trip through `ISpectOptions.initialSettings`; a non-preset resource or
-processing combination is shown as `Custom`.
+No policy setup is required for the default path. In Flutter, the Settings
+sheet offers Capture, Resource, and Processing profiles under Advanced.
+Capture can switch from the useful `Balanced` default to `Strict`, which never
+invokes application-defined formatters. Selections update capture, search,
+viewer, import, and export behavior immediately and are included in
+`ISpectSettingsState.toJson()`. Per-field `copyWith` values also round-trip
+through `ISpectOptions.initialSettings`; a non-preset resource or processing
+combination is shown as `Custom`.
 
 ## Hardened setup
 

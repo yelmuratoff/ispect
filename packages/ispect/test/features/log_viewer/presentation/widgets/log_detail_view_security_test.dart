@@ -339,6 +339,7 @@ final class _ThrowingViewRedactionService extends RedactionService {
     required Set<String> rootValueKeys,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       throw StateError('view envelope redaction failed');
 
@@ -347,6 +348,7 @@ final class _ThrowingViewRedactionService extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       throw StateError('view text redaction failed');
 }

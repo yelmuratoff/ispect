@@ -628,6 +628,7 @@ final class FileLogCodec {
     final redacted = _redactor.redactEnvelopeForExport(
       record,
       rootValueKeys: const {'key'},
+      resourceLimits: _resourceLimits,
     );
     final bounded = LogExportOutput.boundJsonValue(
       redacted,

@@ -611,7 +611,11 @@ extension ISpectLoggerDb on ISpectLogger {
         ? null
         : redactor == null
             ? rawErrorText
-            : _redactDbError(rawErrorText, redactor);
+            : _redactDbError(
+                rawErrorText,
+                redactor,
+                resourceLimits,
+              );
 
     final dbMeta = ISpectDbCore.clean(<String, Object?>{
       'statementDigest': digest,
@@ -667,8 +671,12 @@ extension ISpectLoggerDb on ISpectLogger {
   static String _redactDbError(
     String error,
     RedactionService redactor,
+    DiagnosticResourceLimits resourceLimits,
   ) {
-    final redacted = redactor.redactForExport(error);
+    final redacted = redactor.redactForExport(
+      error,
+      resourceLimits: resourceLimits,
+    );
     return redacted is String ? redacted : defaultPlaceholder;
   }
 

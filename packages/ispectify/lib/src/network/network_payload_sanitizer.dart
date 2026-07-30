@@ -43,6 +43,7 @@ final class NetworkPayloadSanitizer {
         limited,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: _resourceLimits,
       );
       final normalized = _boundedSnapshot(
         redacted,
@@ -90,12 +91,14 @@ final class NetworkPayloadSanitizer {
       resourceLimits: _resourceLimits,
     );
     final normalized = normalizer != null ? normalizer(prepared) : prepared;
-    final bounded = _boundedSnapshot(
-      normalized,
-      redactionActive: redactionActive,
-      preserveTypes: redactionActive,
-      resourceLimits: _resourceLimits,
-    );
+    final bounded = normalizer == null
+        ? prepared
+        : _boundedSnapshot(
+            normalized,
+            redactionActive: redactionActive,
+            preserveTypes: redactionActive,
+            resourceLimits: _resourceLimits,
+          );
     if (!redactionActive) return bounded;
     return _redactBody(
       bounded,
@@ -205,6 +208,7 @@ final class NetworkPayloadSanitizer {
             decoded,
             ignoredValues: ignoredValues,
             ignoredKeys: ignoredKeys,
+            resourceLimits: _resourceLimits,
           );
           if (redacted == null) return redactionFailedPlaceholder;
           final bounded = _boundedSnapshot(
@@ -229,6 +233,7 @@ final class NetworkPayloadSanitizer {
         value,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: _resourceLimits,
       );
       if (redacted == null) return redactionFailedPlaceholder;
       return _boundedSnapshot(

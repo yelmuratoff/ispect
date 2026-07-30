@@ -132,8 +132,10 @@ class RedactionService {
     Map<String, Object?> headers, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     if (!ISpectRedaction.enabled) return headers;
+    resourceLimits.validate();
     final request = RedactionRequest.fromOverrides(ignoredValues, ignoredKeys);
     final headerAware = _createWalker(request).redactHeaders(headers);
     return _hardenRedactedHeaders(
@@ -142,6 +144,7 @@ class RedactionService {
       request: request,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
   }
 
@@ -151,6 +154,7 @@ class RedactionService {
     required RedactionRequest request,
     required Set<String>? ignoredValues,
     required Set<String>? ignoredKeys,
+    required DiagnosticResourceLimits resourceLimits,
     RedactionStats? stats,
   }) {
     final entries = <({
@@ -172,12 +176,14 @@ class RedactionService {
           request: request,
           ignoredValues: ignoredValues,
           ignoredKeys: ignoredKeys,
+          resourceLimits: resourceLimits,
         );
         final scrubbedValue = _scrubHeaderValue(
           entry.value,
           request: request,
           ignoredValues: ignoredValues,
           ignoredKeys: ignoredKeys,
+          resourceLimits: resourceLimits,
         );
         restoredValue = _restoreHeaderAwareValue(
           scrubbedValue,
@@ -233,6 +239,7 @@ class RedactionService {
     required RedactionRequest request,
     required Set<String>? ignoredValues,
     required Set<String>? ignoredKeys,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     if (_isIgnoredHeaderValue(name, request)) return name;
     try {
@@ -240,6 +247,7 @@ class RedactionService {
         name,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
       if (scrubbed is! String || scrubbed.isEmpty) return _config.placeholder;
       return scrubbed == name ? name : _config.placeholder;
@@ -253,6 +261,7 @@ class RedactionService {
     required RedactionRequest request,
     required Set<String>? ignoredValues,
     required Set<String>? ignoredKeys,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     if (value is String && _isIgnoredHeaderValue(value, request)) {
       return value;
@@ -262,6 +271,7 @@ class RedactionService {
         value,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
     }
     if (value is List<Object?>) {
@@ -272,6 +282,7 @@ class RedactionService {
             request: request,
             ignoredValues: ignoredValues,
             ignoredKeys: ignoredKeys,
+            resourceLimits: resourceLimits,
           ),
       ];
     }
@@ -290,12 +301,14 @@ class RedactionService {
               request: request,
               ignoredValues: ignoredValues,
               ignoredKeys: ignoredKeys,
+              resourceLimits: resourceLimits,
             ),
             value: _scrubHeaderValue(
               entry.value,
               request: request,
               ignoredValues: ignoredValues,
               ignoredKeys: ignoredKeys,
+              resourceLimits: resourceLimits,
             ),
           ),
         );
@@ -315,6 +328,7 @@ class RedactionService {
       value,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
   }
 
@@ -322,12 +336,14 @@ class RedactionService {
     Object? value, {
     required Set<String>? ignoredValues,
     required Set<String>? ignoredKeys,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     try {
       final scrubbed = redactForExport(
         value,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
       return value != null && scrubbed == null ? _config.placeholder : scrubbed;
     } on Object {
@@ -381,16 +397,19 @@ class RedactionService {
   /// parameters, and JSON-shaped secrets. Exceptions, errors, and other
   /// unknown values are converted to scrubbed strings so raw diagnostic
   /// objects cannot cross an export or persistence boundary. Type tokens are
-  /// retained for structured metadata.
+  /// retained for structured metadata. [resourceLimits] applies the caller's
+  /// traversal and byte budgets to every normalization pass.
   Object? redactForExport(
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       _redactForExport(
         data,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
 
   /// Prepares a schema envelope while treating [rootValueKeys] as values.
@@ -399,61 +418,75 @@ class RedactionService {
   /// their values are still scrubbed as free text, but their schema-level key
   /// name does not cause the whole value to be structurally masked. Nested
   /// fields with the same name continue to receive normal key redaction.
+  /// [resourceLimits] applies the caller's traversal and byte budgets.
   Object? redactEnvelopeForExport(
     Object? data, {
     required Set<String> rootValueKeys,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       _redactForExport(
         data,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
         rootValueKeys: rootValueKeys,
+        resourceLimits: resourceLimits,
       );
 
   Object? _redactForExport(
     Object? data, {
+    required DiagnosticResourceLimits resourceLimits,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
     Set<String>? rootValueKeys,
   }) {
     try {
+      resourceLimits.validate();
       final redactionActive = ISpectRedaction.enabled;
       final normalized = LogExportOutput.boundJsonValue(
         data,
+        resourceLimits: resourceLimits,
         preserveTypes: true,
         replaceOversizedStrings: redactionActive,
       );
       if (!redactionActive) return normalized;
+      final prepared = LogExportOutput.replaceTruncatedPrefixes(
+        normalized,
+        resourceLimits: resourceLimits,
+      );
       if (_usesDefaultStrategy &&
-          (normalized == null ||
-              normalized is bool ||
-              normalized is num ||
-              normalized is String &&
-                  normalized.length < 32 &&
-                  !_requiresExportStringScrub(normalized))) {
-        return normalized;
+          (prepared == null ||
+              prepared is bool ||
+              prepared is num ||
+              prepared is String &&
+                  prepared.length < 32 &&
+                  !_requiresExportStringScrub(prepared))) {
+        return prepared;
       }
       final structurallyRedacted = _redactNormalizedForExport(
-        normalized,
+        prepared,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
         rootValueKeys: rootValueKeys,
       );
-      final safeRedacted = LogExportOutput.boundJsonValue(
-        structurallyRedacted,
-        preserveTypes: true,
-        replaceOversizedStrings: true,
-      );
+      final exportReady = _usesDefaultStrategy
+          ? structurallyRedacted
+          : LogExportOutput.boundJsonValue(
+              structurallyRedacted,
+              resourceLimits: resourceLimits,
+              preserveTypes: true,
+              replaceOversizedStrings: true,
+            );
       final scrubbed = _scrubExportValue(
-        safeRedacted,
+        exportReady,
         _exportKeyPatterns,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
       return LogExportOutput.boundJsonValue(
         scrubbed,
+        resourceLimits: resourceLimits,
         preserveTypes: true,
         replaceOversizedStrings: true,
       );
@@ -1011,10 +1044,12 @@ class RedactionService {
     Map<String, Object?> headers, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     if (!ISpectRedaction.enabled) {
       return HeaderRedactionResult(headers: headers, stats: RedactionStats());
     }
+    resourceLimits.validate();
     final request = RedactionRequest.fromOverrides(ignoredValues, ignoredKeys);
     final walker = _createWalker(request);
     final headerAware = walker.redactHeaders(headers);
@@ -1024,6 +1059,7 @@ class RedactionService {
       request: request,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
       stats: walker.stats,
     );
     return HeaderRedactionResult(headers: result, stats: walker.stats);
@@ -1652,6 +1688,7 @@ class RedactionService {
   }
 
   static bool _requiresExportStringScrub(String value) {
+    var mayContainTokenMarker = false;
     for (var index = 0; index < value.length; index++) {
       final codeUnit = value.codeUnitAt(index);
       if (codeUnit < _spaceCodeUnit || codeUnit > _tildeCodeUnit) return true;
@@ -1665,11 +1702,33 @@ class RedactionService {
         case _questionMarkCodeUnit:
         case _backslashCodeUnit:
           return true;
+        case _spaceCodeUnit:
+        case _hyphenCodeUnit:
+        case _underscoreCodeUnit:
+          mayContainTokenMarker = true;
       }
+    }
+    if (!mayContainTokenMarker) {
+      return _containsUnseparatedTokenMarker(value);
     }
     final lower = value.toLowerCase();
     for (final marker in _exportTokenMarkers) {
       if (lower.contains(marker)) return true;
+    }
+    return false;
+  }
+
+  static bool _containsUnseparatedTokenMarker(String value) {
+    for (var index = 0; index <= value.length - 4; index++) {
+      final first = value.codeUnitAt(index) | 0x20;
+      if (first != 0x61) continue;
+      final second = value.codeUnitAt(index + 1) | 0x20;
+      final third = value.codeUnitAt(index + 2) | 0x20;
+      final fourth = value.codeUnitAt(index + 3) | 0x20;
+      if ((second == 0x69 && third == 0x7a && fourth == 0x61) ||
+          (second == 0x6b && third == 0x69 && fourth == 0x61)) {
+        return true;
+      }
     }
     return false;
   }

@@ -54,15 +54,16 @@ workloads before warming up and measuring the device.
 
 ### Pure Dart hot paths
 
-The `ispectify` benchmark covers metadata-only and payload logging, disabled
-and bounded history, redaction of 1, 10, and 100 KB payloads, and JSON Lines
-exports of 100 and 1,000 entries. The same run measures `ispectify_db`
-`dbTraceSync` against a direct in-memory operation, plus `dio.*` and `http.*`
-request batches against fixed in-memory transports. The adapter suites compare
-the baseline client, metadata-only diagnostics, and body-enabled diagnostics
-while an active bounded history consumes the generated entries. All pure Dart
-cases compile to AOT before running so that JIT warm-up does not distort the
-result.
+The `ispectify` benchmark covers metadata-only and payload logging, strict and
+redaction-disabled capture, disabled and bounded history, structural and
+export redaction of 1, 10, and 100 KB payloads, standalone bounded snapshots,
+and JSON Lines exports of 100 and 1,000 entries with redaction enabled and
+disabled. The same run measures `ispectify_db` `dbTraceSync` against a direct
+in-memory operation, plus `dio.*` and `http.*` request batches against fixed
+in-memory transports. The adapter suites compare the baseline client,
+metadata-only diagnostics, and body-enabled diagnostics while an active
+bounded history consumes the generated entries. All pure Dart cases compile
+to AOT before running so that JIT warm-up does not distort the result.
 
 ```bash
 ./bash/run_benchmarks.sh

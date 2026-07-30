@@ -291,7 +291,10 @@ final class ErrorHandlerService {
 
   String _redactPreparedDiagnostic(Object? prepared) {
     try {
-      final redacted = ISpectRedaction.service.redactForExport(prepared);
+      final redacted = ISpectRedaction.service.redactForExport(
+        prepared,
+        resourceLimits: logger.options.resourceLimits,
+      );
       final bounded = LogExportOutput.boundJsonValue(
         redacted,
         resourceLimits: logger.options.resourceLimits,

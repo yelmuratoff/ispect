@@ -127,16 +127,29 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     }
   }
 
+  DiagnosticResourceLimits get _resourceLimits =>
+      _captureLogger?.options.resourceLimits ??
+      DiagnosticResourceLimits.balanced;
+
   RouteTransition _sanitizeExternalTransition(RouteTransition transition) {
     RouteMetadata? sanitizeMetadata(RouteMetadata? metadata) => metadata == null
         ? null
         : RouteMetadata(
-            name: sanitizeRouteDiagnosticName(metadata.name),
-            routeType: sanitizeRouteDiagnosticText(metadata.routeType),
+            name: sanitizeRouteDiagnosticName(
+              metadata.name,
+              resourceLimits: _resourceLimits,
+            ),
+            routeType: sanitizeRouteDiagnosticText(
+              metadata.routeType,
+              resourceLimits: _resourceLimits,
+            ),
           );
 
     return RouteTransition(
-      id: sanitizeRouteDiagnosticText(transition.id),
+      id: sanitizeRouteDiagnosticText(
+        transition.id,
+        resourceLimits: _resourceLimits,
+      ),
       from: sanitizeMetadata(transition.from),
       to: sanitizeMetadata(transition.to),
       type: transition.type,
@@ -254,6 +267,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       previousRoute: previousRoute,
       enableArgumentRedaction: enableArgumentRedaction,
       globalRedactionEnabled: ISpectRedaction.enabled,
+      resourceLimits: logger.options.resourceLimits,
     );
     logger.route(logMessage, transitionId: correlationId);
   }
@@ -290,11 +304,17 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   }
 
   /// Extracts lightweight [RouteMetadata] from a live [Route] object.
-  static RouteMetadata? _extractMetadata(Route<dynamic>? route) {
+  RouteMetadata? _extractMetadata(Route<dynamic>? route) {
     if (route == null) return null;
     return RouteMetadata(
-      name: sanitizeRouteDiagnosticName(route.routeName),
-      routeType: sanitizeRouteDiagnosticText(route.routeType),
+      name: sanitizeRouteDiagnosticName(
+        route.routeName,
+        resourceLimits: _resourceLimits,
+      ),
+      routeType: sanitizeRouteDiagnosticText(
+        route.routeType,
+        resourceLimits: _resourceLimits,
+      ),
     );
   }
 
@@ -372,23 +392,28 @@ String buildRouteLogMessage({
   required Route<dynamic>? previousRoute,
   required bool enableArgumentRedaction,
   required bool globalRedactionEnabled,
+  DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
 }) {
   final buffer = StringBuffer();
   final routeName = sanitizeRouteDiagnosticName(
     route.routeName,
     enableRedaction: globalRedactionEnabled,
+    resourceLimits: resourceLimits,
   );
   final routeType = sanitizeRouteDiagnosticText(
     route.routeType,
     enableRedaction: globalRedactionEnabled,
+    resourceLimits: resourceLimits,
   );
   final previousRouteName = sanitizeRouteDiagnosticName(
     previousRoute.routeName,
     enableRedaction: globalRedactionEnabled,
+    resourceLimits: resourceLimits,
   );
   final previousRouteType = sanitizeRouteDiagnosticText(
     previousRoute.routeType,
     enableRedaction: globalRedactionEnabled,
+    resourceLimits: resourceLimits,
   );
 
   buffer.writeln(
@@ -406,20 +431,23 @@ String buildRouteLogMessage({
           'Arguments: ${summarizeRouteDiagnosticArguments(args)}',
         );
       } else {
-        buffer.writeln('Arguments: ${_boundedRouteArgumentText(args)}');
+        buffer.writeln(
+          'Arguments: ${_boundedRouteArgumentText(args, resourceLimits)}',
+        );
       }
   }
 
   return buffer.toString().trim();
 }
 
-String _boundedRouteArgumentText(Object value) {
+String _boundedRouteArgumentText(
+  Object value,
+  DiagnosticResourceLimits resourceLimits,
+) {
   try {
-    final limits = ISpect.loggerIfInitialized?.options.resourceLimits ??
-        DiagnosticResourceLimits.balanced;
     final bounded = LogExportOutput.boundJsonValue(
       value,
-      resourceLimits: limits,
+      resourceLimits: resourceLimits,
     );
     final text = switch (bounded) {
       null => 'null',
@@ -430,7 +458,7 @@ String _boundedRouteArgumentText(Object value) {
     };
     return LogExportOutput.truncateUtf8(
       text,
-      maxBytes: limits.maxUiDiagnosticBytes,
+      maxBytes: resourceLimits.maxUiDiagnosticBytes,
     );
   } on Object {
     return JsonValueNormalizer.unprintableValue;

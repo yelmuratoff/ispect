@@ -20,8 +20,12 @@ abstract final class ISpectSafeDiagnosticSnapshot {
         preserveTypes: redactor != null,
         replaceOversizedStrings: redactor != null,
       );
-      final scrubbed =
-          redactor == null ? prepared : redactor.redactForExport(prepared);
+      final scrubbed = redactor == null
+          ? prepared
+          : redactor.redactForExport(
+              prepared,
+              resourceLimits: resourceLimits,
+            );
       final bounded = LogExportOutput.boundJsonValue(
         scrubbed,
         maxBytes: maxBytes,

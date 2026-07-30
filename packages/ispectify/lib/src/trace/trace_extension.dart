@@ -650,6 +650,7 @@ Object? _prepareTracePayload(
       prepared,
       resourceLimits: resourceLimits,
     ),
+    resourceLimits: resourceLimits,
   );
   return LogExportOutput.boundJsonValue(
     redacted,

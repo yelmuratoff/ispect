@@ -18,6 +18,18 @@ void main(List<String> arguments) {
       maxHistoryItems: 1000,
     ).result(),
     _LoggerBenchmark(
+      'logger.with-payload.strict',
+      additionalData: _payload(1024),
+      captureMode: DiagnosticCaptureMode.strict,
+      maxHistoryItems: 1000,
+    ).result(),
+    _LoggerBenchmark(
+      'logger.with-payload.redaction-disabled',
+      additionalData: _payload(1024),
+      enableRedaction: false,
+      maxHistoryItems: 1000,
+    ).result(),
+    _LoggerBenchmark(
       'logger.history-disabled',
       additionalData: null,
       useHistory: false,
@@ -30,8 +42,20 @@ void main(List<String> arguments) {
     for (final size in <int>[1024, 10 * 1024, 100 * 1024])
       _RedactionBenchmark('redaction.${size ~/ 1024}kb', _payload(size))
           .result(),
+    _ExportRedactionBenchmark('redaction.export.1kb', _payload(1024)).result(),
+    _SnapshotBenchmark('snapshot.1kb', _payload(1024)).result(),
     _ExportBenchmark('export.json-lines.100', _logs(100)).result(),
     _ExportBenchmark('export.json-lines.1000', _logs(1000)).result(),
+    _ExportBenchmark(
+      'export.json-lines.100.redaction-disabled',
+      _logs(100),
+      enableRedaction: false,
+    ).result(),
+    _ExportBenchmark(
+      'export.json-lines.1000.redaction-disabled',
+      _logs(1000),
+      enableRedaction: false,
+    ).result(),
   ];
 
   final report = <String, Object?>{
@@ -88,20 +112,26 @@ final class _LoggerBenchmark extends BenchmarkBase {
     required this.additionalData,
     this.useHistory = true,
     this.maxHistoryItems = 0,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.enableRedaction = true,
   });
 
   final Map<String, Object?>? additionalData;
   final bool useHistory;
   final int maxHistoryItems;
+  final DiagnosticCaptureMode captureMode;
+  final bool enableRedaction;
   late final ISpectLogger _logger;
 
   @override
   void setup() {
+    ISpectRedaction.enabled = enableRedaction;
     _logger = ISpectLogger(
       options: ISpectLoggerOptions(
         useConsoleLogs: false,
         useHistory: useHistory,
         maxHistoryItems: maxHistoryItems,
+        captureMode: captureMode,
       ),
     );
   }
@@ -116,6 +146,7 @@ final class _LoggerBenchmark extends BenchmarkBase {
   @override
   void teardown() {
     _logger.dispose();
+    ISpectRedaction.enabled = true;
   }
 }
 
@@ -146,15 +177,76 @@ final class _RedactionBenchmark extends BenchmarkBase {
   }
 }
 
+final class _ExportRedactionBenchmark extends BenchmarkBase {
+  _ExportRedactionBenchmark(super.name, this.payload);
+
+  final Map<String, Object?> payload;
+  late final RedactionService _redactor;
+  Object? _result;
+
+  @override
+  void setup() {
+    _redactor = RedactionService();
+  }
+
+  @override
+  void exercise() {
+    _result = _redactor.redactForExport(payload);
+  }
+
+  _BenchmarkResult result() => _BenchmarkResult(name, super.measure());
+
+  @override
+  void teardown() {
+    if (_result == null) {
+      throw StateError('Export redaction benchmark did not produce a result');
+    }
+  }
+}
+
+final class _SnapshotBenchmark extends BenchmarkBase {
+  _SnapshotBenchmark(super.name, this.payload);
+
+  final Map<String, Object?> payload;
+  Object? _result;
+
+  @override
+  void exercise() {
+    _result = LogExportOutput.boundJsonValue(
+      payload,
+      preserveTypes: true,
+      replaceOversizedStrings: true,
+    );
+  }
+
+  _BenchmarkResult result() => _BenchmarkResult(name, super.measure());
+
+  @override
+  void teardown() {
+    if (_result == null) {
+      throw StateError('Snapshot benchmark did not produce a result');
+    }
+  }
+}
+
 final class _ExportBenchmark extends BenchmarkBase {
-  _ExportBenchmark(super.name, this.logs);
+  _ExportBenchmark(
+    super.name,
+    this.logs, {
+    this.enableRedaction = true,
+  });
 
   final List<ISpectLogData> logs;
+  final bool enableRedaction;
   String? _result;
 
   @override
   void exercise() {
-    _result = LogExporter.toJsonLines(logs, redactKeys: const {'token'});
+    _result = LogExporter.toJsonLines(
+      logs,
+      redactKeys: const {'token'},
+      enableRedaction: enableRedaction,
+    );
   }
 
   _BenchmarkResult result() => _BenchmarkResult(name, super.measure());

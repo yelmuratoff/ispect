@@ -34,14 +34,17 @@ final class HttpComposerController extends ChangeNotifier {
     required List<NetworkRequestSender> senders,
     ISpectComposerFilePicker? filePicker,
     NetworkReplayRequest? seed,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
   })  : _senders = senders,
         _filePicker = filePicker {
+    resourceLimits.validate();
     if (senders.isNotEmpty) _selectedSenderId = senders.first.id;
     if (seed != null) _applySeed(seed);
   }
 
   final List<NetworkRequestSender> _senders;
   final ISpectComposerFilePicker? _filePicker;
+  final DiagnosticResourceLimits resourceLimits;
 
   String _method = 'GET';
   String _url = '';
@@ -206,9 +209,13 @@ final class HttpComposerController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _result = (await sender.send(request)).safeSnapshot();
+      _result = (await sender.send(request)).safeSnapshot(
+        resourceLimits: resourceLimits,
+      );
     } catch (error) {
-      _result = NetworkReplayResult(error: error).safeSnapshot();
+      _result = NetworkReplayResult(error: error).safeSnapshot(
+        resourceLimits: resourceLimits,
+      );
     } finally {
       _isSending = false;
       notifyListeners();

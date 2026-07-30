@@ -1492,6 +1492,7 @@ final class _NullRedactionService extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       null;
 }
@@ -1502,6 +1503,7 @@ final class _ThrowingRedactionService extends RedactionService {
     Object? data, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       throw StateError('redaction failed');
 }
@@ -1513,6 +1515,7 @@ final class _EmptyEnvelopeRedactionService extends RedactionService {
     required Set<String> rootValueKeys,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       const <String, Object?>{};
 }
@@ -1524,6 +1527,7 @@ final class _NullEnvelopeRedactionService extends RedactionService {
     required Set<String> rootValueKeys,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       null;
 }
@@ -1535,6 +1539,7 @@ final class _ThrowingEnvelopeRedactionService extends RedactionService {
     required Set<String> rootValueKeys,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) =>
       throw StateError('import redaction failed');
 }

@@ -22,7 +22,26 @@ final class RedactionContext {
     required this.looksLikeAuthorizationValue,
     required this.isLikelyBase64,
     required this.isProbablyBinaryString,
-  });
+  }) : _classificationCache = null;
+
+  /// Caches at most 256 repeated field names for this context's lifetime.
+  RedactionContext.cached({
+    required this.placeholder,
+    required this.redactBinary,
+    required this.redactBase64,
+    required this.sensitiveKeysLower,
+    required this.sensitiveKeyPatterns,
+    required this.fullyMaskedKeyNamesLower,
+    required this.isIgnoredValue,
+    required this.isIgnoredKey,
+    required this.maskString,
+    required this.binaryPlaceholder,
+    required this.base64Placeholder,
+    required this.redactUint8List,
+    required this.looksLikeAuthorizationValue,
+    required this.isLikelyBase64,
+    required this.isProbablyBinaryString,
+  }) : _classificationCache = {};
 
   final String placeholder;
   final bool redactBinary;
@@ -41,6 +60,7 @@ final class RedactionContext {
   final bool Function(String value) looksLikeAuthorizationValue;
   final bool Function(String value) isLikelyBase64;
   final bool Function(String value) isProbablyBinaryString;
+  final Map<String, ({bool fullyMasked, bool sensitive})>? _classificationCache;
 
   /// Classifies [keyName] as fully-masked and/or sensitive in a single
   /// normalization pass, so the per-key hot path avoids repeating
@@ -51,6 +71,17 @@ final class RedactionContext {
   /// treats dotted or bracketed path segments like snake-case segments.
   ({bool fullyMasked, bool sensitive}) classifyKey(String? keyName) {
     if (keyName == null) return _noMatch;
+    final cache = _classificationCache;
+    final cached = cache?[keyName];
+    if (cached != null) return cached;
+    final classification = _classifyKey(keyName);
+    if (cache != null && cache.length < _maxClassificationCacheEntries) {
+      cache[keyName] = classification;
+    }
+    return classification;
+  }
+
+  ({bool fullyMasked, bool sensitive}) _classifyKey(String keyName) {
     final trimmed = keyName.trim();
     final lower = trimmed.toLowerCase();
     if (isIgnoredKey(lower)) return _noMatch;
@@ -98,6 +129,7 @@ final class RedactionContext {
 
   static const ({bool fullyMasked, bool sensitive}) _noMatch =
       (fullyMasked: false, sensitive: false);
+  static const int _maxClassificationCacheEntries = 256;
 
   bool _matchesSensitive(String lowerKey) {
     if (sensitiveKeysLower.contains(lowerKey)) return true;

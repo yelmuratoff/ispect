@@ -158,6 +158,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
           prepared,
           resourceLimits: _resourceLimits,
         ),
+        resourceLimits: _resourceLimits,
       );
       return LogExportOutput.boundJsonValue(
         redacted,
