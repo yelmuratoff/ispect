@@ -235,13 +235,14 @@ final class ErrorHandlerService {
     );
   }
 
-  static Object? _prepareDiagnosticValue(
+  Object? _prepareDiagnosticValue(
     Object value, {
     required bool replaceOversizedStrings,
   }) {
     try {
       return LogExportOutput.boundJsonValue(
         value,
+        resourceLimits: logger.options.resourceLimits,
         replaceOversizedStrings: replaceOversizedStrings,
       );
     } on Object {
@@ -249,7 +250,7 @@ final class ErrorHandlerService {
     }
   }
 
-  static _DiagnosticSnapshot _captureDiagnostic(
+  _DiagnosticSnapshot _captureDiagnostic(
     Object exception,
     StackTrace? stack,
   ) {
@@ -275,9 +276,9 @@ final class ErrorHandlerService {
     );
   }
 
-  static String _sanitizeText(String value) => _safeDiagnosticText(value);
+  String _sanitizeText(String value) => _safeDiagnosticText(value);
 
-  static String _safeDiagnosticText(Object value) {
+  String _safeDiagnosticText(Object value) {
     final redactionActive = ISpectRedaction.enabled;
     final prepared = _prepareDiagnosticValue(
       value,
@@ -288,11 +289,12 @@ final class ErrorHandlerService {
         : _diagnosticSnapshotText(prepared);
   }
 
-  static String _redactPreparedDiagnostic(Object? prepared) {
+  String _redactPreparedDiagnostic(Object? prepared) {
     try {
       final redacted = ISpectRedaction.service.redactForExport(prepared);
       final bounded = LogExportOutput.boundJsonValue(
         redacted,
+        resourceLimits: logger.options.resourceLimits,
         replaceOversizedStrings: true,
       );
       return _diagnosticSnapshotText(bounded);
@@ -301,7 +303,7 @@ final class ErrorHandlerService {
     }
   }
 
-  static String _diagnosticSnapshotText(Object? value) {
+  String _diagnosticSnapshotText(Object? value) {
     if (value == null) return defaultPlaceholder;
 
     final String text;
@@ -318,7 +320,7 @@ final class ErrorHandlerService {
     }
     return LogExportOutput.truncateUtf8(
       text,
-      maxBytes: LogExportOutput.maxPreparedValueBytes,
+      maxBytes: logger.options.resourceLimits.maxUiDiagnosticBytes,
     );
   }
 

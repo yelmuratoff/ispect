@@ -50,8 +50,14 @@ const settings = ISpectRiverpodSettings(
   printFails: true,
   printValues: true,
   enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 ```
+
+Balanced capture retains guarded, bounded `toJson()` or `toString()` output
+before redaction. Set `captureMode: DiagnosticCaptureMode.strict` when
+application-defined formatters must never run.
 
 ### Presets
 
@@ -67,6 +73,10 @@ ISpectRiverpodObserver(settings: ISpectRiverpodSettings.minimal);
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.compact);
 
 ```
+
+`compact` uses strict capture automatically.
+Omit `resourceLimits` to inherit the logger policy; set it locally to tune
+provider-value and state-trace budgets for this observer.
 
 ### Filtering noisy providers
 

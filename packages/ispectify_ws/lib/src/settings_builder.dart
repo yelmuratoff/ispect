@@ -85,6 +85,8 @@ class ISpectWSInterceptorSettingsBuilder
   ISpectWSInterceptorSettings build() => ISpectWSInterceptorSettings(
         enabled: enabled,
         enableRedaction: enableRedaction,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
         logRequests: logRequests,
         logResponses: logResponses,
         printReceivedData: printResponseData,

@@ -189,6 +189,25 @@ final class _HostilePayload {
   }
 }
 
+final class _ReadablePayload {
+  _ReadablePayload({
+    required this.label,
+    required this.password,
+  });
+
+  final String label;
+  final String password;
+  int toJsonCalls = 0;
+
+  Map<String, Object?> toJson() {
+    toJsonCalls++;
+    return <String, Object?>{
+      'label': label,
+      'password': password,
+    };
+  }
+}
+
 final class _HostileException implements Exception {
   _HostileException({required this.throws});
 
@@ -430,6 +449,9 @@ void main() {
             expect(
               () => ISpectRiverpodObserver(
                 logger: logger,
+                settings: const ISpectRiverpodSettings(
+                  captureMode: DiagnosticCaptureMode.strict,
+                ),
               ).providerDidFail(
                 _failingProvider,
                 error,
@@ -538,6 +560,9 @@ void main() {
           final observer = ISpectRiverpodObserver(
             logger: logger,
             filters: const <Pattern>['never-match'],
+            settings: const ISpectRiverpodSettings(
+              captureMode: DiagnosticCaptureMode.strict,
+            ),
           );
 
           expect(
@@ -706,6 +731,10 @@ void main() {
 
         test('compact preset keeps value capture disabled', () {
           expect(ISpectRiverpodSettings.compact.printValues, isFalse);
+          expect(
+            ISpectRiverpodSettings.compact.captureMode,
+            DiagnosticCaptureMode.strict,
+          );
 
           ISpectRiverpodObserver(
             logger: logger,
@@ -757,11 +786,16 @@ void main() {
           expect(meta[RiverpodJsonKeys.newValueType], 'int');
         });
 
-        test('default family argument rendering never invokes toString', () {
+        test('strict family argument rendering never invokes formatters', () {
           final argument = _HostileArgument();
 
           expect(
-            () => ISpectRiverpodObserver(logger: logger).didAddProvider(
+            () => ISpectRiverpodObserver(
+              logger: logger,
+              settings: const ISpectRiverpodSettings(
+                captureMode: DiagnosticCaptureMode.strict,
+              ),
+            ).didAddProvider(
               _familyProvider(argument),
               1,
               container,
@@ -871,10 +905,39 @@ void main() {
           expect(logger.records.toString(), isNot(contains(secret)));
         });
 
-        test('verbose snapshots custom payloads without executing them', () {
+        test('verbose captures and redacts typed payloads by default', () {
+          const secret = 'TYPED_RIVERPOD_PASSWORD';
+          final payload = _ReadablePayload(
+            label: 'ready',
+            password: secret,
+          );
+
+          ISpectRiverpodObserver(logger: logger).didAddProvider(
+            _counterProvider,
+            payload,
+            container,
+          );
+
+          final meta = logger
+              .byOperation('add')
+              .single
+              .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
+          expect(meta[RiverpodJsonKeys.value], {
+            'label': 'ready',
+            'password': '[REDACTED]',
+          });
+          expect(payload.toJsonCalls, 1);
+          expect(logger.records.toString(), isNot(contains(secret)));
+        });
+
+        test('strict mode snapshots custom payloads without executing them',
+            () {
           final payload = _HostilePayload();
           ISpectRiverpodObserver(
             logger: logger,
+            settings: const ISpectRiverpodSettings(
+              captureMode: DiagnosticCaptureMode.strict,
+            ),
           ).didAddProvider(
             _familyProvider(payload),
             payload,
@@ -1093,7 +1156,11 @@ void main() {
         test('additionalData helper bounds active and opt-out strings', () {
           final payload = List<String>.filled(2 * 1024 * 1024, 'a').join();
           final redacted = ISpectRiverpodSettings.compact.redactAdditionalData(
-            <String, dynamic>{'payload': payload},
+            <String, dynamic>{
+              'payload': payload,
+              'prebounded':
+                  'PARTIAL_RIVERPOD${LogExportOutput.truncatedMarker}',
+            },
           );
           final unredacted = const ISpectRiverpodSettings(
             enableRedaction: false,
@@ -1102,6 +1169,7 @@ void main() {
           );
 
           expect(redacted?['payload'], LogExportOutput.truncatedMarker);
+          expect(redacted?['prebounded'], LogExportOutput.truncatedMarker);
           expect(unredacted, isNotNull);
           expect(unredacted!['payload'], startsWith('a'));
           expect(
@@ -1209,7 +1277,11 @@ void main() {
             logger: logger,
           ).didAddProvider(
             _counterProvider,
-            <String, Object?>{'payload': payload},
+            <String, Object?>{
+              'payload': payload,
+              'prebounded':
+                  'PARTIAL_RIVERPOD${LogExportOutput.truncatedMarker}',
+            },
             container,
           );
 
@@ -1218,6 +1290,10 @@ void main() {
               record.additionalData?[TraceKeys.meta] as Map<String, dynamic>;
           expect(
             (meta[RiverpodJsonKeys.value] as Map)['payload'],
+            LogExportOutput.truncatedMarker,
+          );
+          expect(
+            (meta[RiverpodJsonKeys.value] as Map)['prebounded'],
             LogExportOutput.truncatedMarker,
           );
           expect(
@@ -1547,6 +1623,37 @@ void main() {
           expect(logger.byOperation('add'), hasLength(1));
           expect(logger.byOperation('update'), isEmpty);
           expect(logger.byOperation('dispose'), hasLength(1));
+        });
+
+        test('copyWith preserves and replaces local resource limits', () {
+          const original = ISpectRiverpodSettings(
+            resourceLimits: DiagnosticResourceLimits.constrained,
+          );
+
+          expect(
+            original.copyWith().resourceLimits,
+            same(DiagnosticResourceLimits.constrained),
+          );
+          expect(
+            original
+                .copyWith(resourceLimits: DiagnosticResourceLimits.extended)
+                .resourceLimits,
+            same(DiagnosticResourceLimits.extended),
+          );
+        });
+
+        test('observer rejects an invalid local resource policy', () {
+          expect(
+            () => ISpectRiverpodObserver(
+              logger: logger,
+              settings: const ISpectRiverpodSettings(
+                resourceLimits: DiagnosticResourceLimits(
+                  maxStateTraceBytes: 0,
+                ),
+              ),
+            ),
+            throwsArgumentError,
+          );
         });
       });
     },

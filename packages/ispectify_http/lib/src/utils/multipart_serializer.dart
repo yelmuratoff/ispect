@@ -9,10 +9,13 @@ class HttpMultipartSerializer {
   static Map<String, dynamic> serialize(
     MultipartRequest request, {
     bool redactionActive = false,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
+    resourceLimits.validate();
     final fields = LogExportOutput.boundJsonValue(
       request.fields,
-      maxBytes: LogExportOutput.maxPreparedValueBytes ~/ 2,
+      maxBytes: resourceLimits.maxNetworkBodyBytes ~/ 2,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: redactionActive,
     );
     final files = LogExportOutput.boundJsonValue(
@@ -24,7 +27,8 @@ class HttpMultipartSerializer {
           NetworkJsonKeys.length: file.length,
         },
       ),
-      maxBytes: LogExportOutput.maxPreparedValueBytes ~/ 2,
+      maxBytes: resourceLimits.maxNetworkBodyBytes ~/ 2,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: redactionActive,
     );
     final bounded = LogExportOutput.boundJsonValue(
@@ -33,8 +37,8 @@ class HttpMultipartSerializer {
             fields is Map<String, Object?> ? fields : <String, Object?>{},
         NetworkJsonKeys.files: files is List<Object?> ? files : <Object?>[],
       },
-      // Leave headroom for JSON object/list punctuation around retained text.
-      maxBytes: 44 * 1024,
+      maxBytes: resourceLimits.maxNetworkBodyBytes,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: redactionActive,
     );
     return bounded is Map<String, Object?>

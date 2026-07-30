@@ -30,13 +30,17 @@ final class DbSqlDigest {
   /// prefix could expose those values even after ordinary literal handling.
   ///
   /// Returns `null` when [statement] is `null` or empty.
-  static String? compute(String? statement) {
+  static String? compute(
+    String? statement, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
     if (statement == null || statement.isEmpty) return null;
     final prepared = LogExportOutput.utf8Length(
               statement,
-              limit: LogExportOutput.maxPreparedValueBytes,
+              limit: resourceLimits.maxDatabaseDiagnosticsBytes,
             ) >
-            LogExportOutput.maxPreparedValueBytes
+            resourceLimits.maxDatabaseDiagnosticsBytes
         ? LogExportOutput.truncatedMarker
         : statement;
     var s = _stripCommentsAndLiterals(prepared).toLowerCase();

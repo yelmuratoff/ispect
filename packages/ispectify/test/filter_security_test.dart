@@ -117,6 +117,7 @@ void main() {
       'safe',
       exception: exception,
       stackTrace: stack,
+      captureMode: DiagnosticCaptureMode.strict,
     );
 
     expect(SearchFilter('needle').apply(data), isFalse);

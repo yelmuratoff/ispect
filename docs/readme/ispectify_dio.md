@@ -48,11 +48,18 @@ const settings = ISpectDioInterceptorSettings(
   logResponses: true,
   printRequestHeaders: true,
   printRequestData: true,
-  printResponseHeaders: false,
+  printResponseHeaders: true,
   printResponseData: true,
   enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 ```
+
+Balanced capture lets typed request and response values contribute a guarded,
+bounded `toJson()` snapshot before redaction. Set
+`captureMode: DiagnosticCaptureMode.strict` when application-defined
+formatters must never run.
 
 ### Preset factories
 
@@ -69,6 +76,12 @@ final prod = ISpectDioInterceptorSettingsBuilder.production().build();
 // Middle ground for staging environments.
 final staging = ISpectDioInterceptorSettingsBuilder.staging().build();
 ```
+
+`metadataOnly()` and `production()` select strict capture. `development()` and
+`staging()` keep balanced capture. A custom builder can switch explicitly with
+`withStrictCapture()` or `withBalancedCapture()`.
+Use `withResourceLimits(...)` for an interceptor-local budget, or
+`withInheritedResourceLimits()` to return to the logger policy.
 
 ### Builder
 

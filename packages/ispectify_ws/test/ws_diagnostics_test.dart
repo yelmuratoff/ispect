@@ -120,11 +120,24 @@ void main() {
       );
     });
 
-    test('describes a typed message without invoking toJson', () {
+    test('captures and redacts a typed message by default', () {
+      var serializationCount = 0;
+      WsDiagnostics(
+        logger: logger,
+      ).onSent(_SerializationProbe(() => serializationCount++));
+
+      final sent = _firstByKey(logger, ISpectLogType.wsSent.key);
+      expect(serializationCount, 1);
+      expect(_meta(sent)['data'], {'password': '[REDACTED]'});
+      expect(_meta(sent)['data'], isNot(contains('synthetic-secret')));
+    });
+
+    test('strict mode does not invoke typed message formatters', () {
       var serializationCount = 0;
       WsDiagnostics(
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
+          captureMode: DiagnosticCaptureMode.strict,
           enableRedaction: false,
         ),
       ).onSent(_SerializationProbe(() => serializationCount++));
@@ -135,7 +148,6 @@ void main() {
         _meta(sent)['data'],
         JsonValueNormalizer.unprintableValue,
       );
-      expect(_meta(sent)['data'], isNot(contains('synthetic-secret')));
     });
 
     test('omits data when printSentData is false', () {
@@ -333,6 +345,7 @@ void main() {
       WsDiagnostics(
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
+          captureMode: DiagnosticCaptureMode.strict,
           enableRedaction: false,
         ),
       ).onStateChanged(
@@ -344,12 +357,32 @@ void main() {
       expect(_meta(state)['raw'], contains(secret));
     });
 
-    test('bounds raw state without executing its formatter', () {
+    test('captures bounded readable raw state by default', () {
       final raw = _StringificationProbe();
 
       WsDiagnostics(
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
+          enableRedaction: false,
+        ),
+      ).onStateChanged(WsConnectionState.closed, raw: raw);
+
+      final state = _firstByKey(logger, ISpectLogType.wsState.key);
+      expect(raw.calls, 1);
+      expect(
+        _meta(state)['raw'],
+        'customer-alpha-private-value',
+      );
+    });
+
+    test('strict mode keeps raw state opaque without executing its formatter',
+        () {
+      final raw = _StringificationProbe();
+
+      WsDiagnostics(
+        logger: logger,
+        settings: const ISpectWSInterceptorSettings(
+          captureMode: DiagnosticCaptureMode.strict,
           enableRedaction: false,
         ),
       ).onStateChanged(WsConnectionState.closed, raw: raw);
@@ -366,6 +399,7 @@ void main() {
       WsDiagnostics(
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
+          captureMode: DiagnosticCaptureMode.strict,
           enableRedaction: false,
         ),
       ).onStateChanged(
@@ -457,6 +491,7 @@ void main() {
       WsDiagnostics(
         logger: logger,
         settings: const ISpectWSInterceptorSettings(
+          captureMode: DiagnosticCaptureMode.strict,
           enableRedaction: false,
         ),
       ).onError(error, stackTrace);

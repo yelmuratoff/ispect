@@ -11,9 +11,6 @@ import 'package:ispectify_db/src/sql_digest.dart';
 import 'package:ispectify_db/src/transaction.dart';
 
 const _dbProjectionNotProvided = _DbProjectionNotProvided();
-const _maxDbScalarBytes = 4 * 1024;
-const _maxDbDiagnosticsBytes = 16 * 1024;
-const _maxDbMetaBytes = 24 * 1024;
 
 /// Database logging extension on [ISpectLogger].
 ///
@@ -57,10 +54,11 @@ extension ISpectLoggerDb on ISpectLogger {
     ISpectDbConfig config = const ISpectDbConfig(),
   }) {
     if (!hasActiveConsumers) return;
-    if (!ISpectDbCore.shouldLog(sample, config)) return;
+    final resolvedConfig = _resolveResourceConfig(config);
+    if (!ISpectDbCore.shouldLog(sample, resolvedConfig)) return;
 
     final preprocessInput = DbPreprocessInput(
-      cfg: config,
+      cfg: resolvedConfig,
       statement: statement,
       args: args,
       namedArgs: namedArgs,
@@ -85,7 +83,7 @@ extension ISpectLoggerDb on ISpectLogger {
       errorStackTrace: errorStackTrace,
     );
     final traceConfig = _resolveTraceConfig(
-      config,
+      resolvedConfig,
       redact: redact,
       redactKeys: redactKeys,
     );
@@ -96,15 +94,25 @@ extension ISpectLoggerDb on ISpectLogger {
 
     trace(
       category: dbCategory,
-      source: _boundDbText(source, shouldRedact: shouldRedact),
-      operation: _boundDbText(operation, shouldRedact: shouldRedact),
+      source: _boundDbText(
+        source,
+        shouldRedact: shouldRedact,
+        resourceLimits: resolvedConfig.resourceLimits!,
+      ),
+      operation: _boundDbText(
+        operation,
+        shouldRedact: shouldRedact,
+        resourceLimits: resolvedConfig.resourceLimits!,
+      ),
       target: _boundNullableDbText(
         table ?? target,
         shouldRedact: shouldRedact,
+        resourceLimits: resolvedConfig.resourceLimits!,
       ),
       key: _boundNullableDbText(
         _safeDbKey(key, shouldRedact),
         shouldRedact: shouldRedact,
+        resourceLimits: resolvedConfig.resourceLimits!,
       ),
       success: success ?? (error == null),
       error: preprocessed.error,
@@ -116,6 +124,7 @@ extension ISpectLoggerDb on ISpectLogger {
       correlationId: _boundNullableDbText(
         txnId,
         shouldRedact: shouldRedact,
+        resourceLimits: resolvedConfig.resourceLimits!,
       ),
       logLevel: isError ? LogLevel.error : null,
     );
@@ -298,6 +307,7 @@ extension ISpectLoggerDb on ISpectLogger {
     required T Function() getResult,
   }) {
     if (!hasActiveConsumers) return;
+    final resolvedConfig = _resolveResourceConfig(config);
     final success = err == null;
     final items = _safeItemCount(
       success,
@@ -309,7 +319,7 @@ extension ISpectLoggerDb on ISpectLogger {
     if (!hasActiveConsumers) return;
     try {
       final preprocessInput = DbPreprocessInput(
-        cfg: config,
+        cfg: resolvedConfig,
         statement: statement,
         args: args,
         namedArgs: namedArgs,
@@ -333,7 +343,7 @@ extension ISpectLoggerDb on ISpectLogger {
         errorStackTrace: st,
       );
       final traceConfig = _resolveTraceConfig(
-        config,
+        resolvedConfig,
         redact: redact,
         redactKeys: redactKeys,
       );
@@ -341,15 +351,25 @@ extension ISpectLoggerDb on ISpectLogger {
 
       trace(
         category: dbCategory,
-        source: _boundDbText(source, shouldRedact: shouldRedact),
-        operation: _boundDbText(operation, shouldRedact: shouldRedact),
+        source: _boundDbText(
+          source,
+          shouldRedact: shouldRedact,
+          resourceLimits: resolvedConfig.resourceLimits!,
+        ),
+        operation: _boundDbText(
+          operation,
+          shouldRedact: shouldRedact,
+          resourceLimits: resolvedConfig.resourceLimits!,
+        ),
         target: _boundNullableDbText(
           target,
           shouldRedact: shouldRedact,
+          resourceLimits: resolvedConfig.resourceLimits!,
         ),
         key: _boundNullableDbText(
           _safeDbKey(key, shouldRedact),
           shouldRedact: shouldRedact,
+          resourceLimits: resolvedConfig.resourceLimits!,
         ),
         success: success,
         error: preprocessed.error,
@@ -361,6 +381,7 @@ extension ISpectLoggerDb on ISpectLogger {
         correlationId: _boundNullableDbText(
           txnId,
           shouldRedact: shouldRedact,
+          resourceLimits: resolvedConfig.resourceLimits!,
         ),
       );
     } catch (_) {
@@ -468,6 +489,7 @@ extension ISpectLoggerDb on ISpectLogger {
         token.meta,
         meta,
         shouldRedact: ISpectRedaction.enabled && config.redact,
+        resourceLimits: config.resourceLimits ?? options.resourceLimits,
       ),
       transactionId: token.transactionId,
       config: config,
@@ -492,14 +514,31 @@ extension ISpectLoggerDb on ISpectLogger {
     );
   }
 
+  ISpectDbConfig _resolveResourceConfig(ISpectDbConfig config) {
+    final resourceLimits = (config.resourceLimits ?? options.resourceLimits)
+      ..validate();
+    return identical(resourceLimits, config.resourceLimits)
+        ? config
+        : config.copyWith(resourceLimits: resourceLimits);
+  }
+
   /// Preprocesses DB-specific fields into a meta map for trace().
   static _PreprocessedDbTrace _preprocessDb(
     DbPreprocessInput input, {
     StackTrace? errorStackTrace,
   }) {
     final shouldRedact = input.shouldRedact;
-    final sensitiveKeys = _boundSensitiveKeys(input.sensitiveKeys);
-    final maxArgsLen = _boundConfiguredLength(input.resolvedMaxArgsLength);
+    final resourceLimits = (input.cfg.resourceLimits ??
+        DiagnosticResourceLimits.balanced)
+      ..validate();
+    final sensitiveKeys = _boundSensitiveKeys(
+      input.sensitiveKeys,
+      resourceLimits,
+    );
+    final maxArgsLen = _boundConfiguredLength(
+      input.resolvedMaxArgsLength,
+      resourceLimits,
+    );
     final diagnostics = _boundDbDiagnostics(
       input,
       errorStackTrace: errorStackTrace,
@@ -519,7 +558,8 @@ extension ISpectLoggerDb on ISpectLogger {
     final boundedStatement = _boundNullableDbText(
       input.statement,
       shouldRedact: shouldRedact,
-      maxBytes: _maxDbDiagnosticsBytes,
+      maxBytes: resourceLimits.maxDatabaseDiagnosticsBytes,
+      resourceLimits: resourceLimits,
     );
 
     Object? redactData(Object? data, {String? keyName}) {
@@ -529,7 +569,10 @@ extension ISpectLoggerDb on ISpectLogger {
 
     final truncatedStmt = _truncateToString(
       boundedStatement,
-      _boundConfiguredLength(input.resolvedMaxStatementLength),
+      _boundConfiguredLength(
+        input.resolvedMaxStatementLength,
+        resourceLimits,
+      ),
     );
 
     final processedArgs = _processPositionalArgs(
@@ -546,16 +589,23 @@ extension ISpectLoggerDb on ISpectLogger {
     );
 
     final processedMeta = redactData(diagnostics.meta);
-    final digest = DbSqlDigest.compute(boundedStatement);
+    final digest = DbSqlDigest.compute(
+      boundedStatement,
+      resourceLimits: resourceLimits,
+    );
 
     final truncatedValue = ISpectDbCore.truncateValue(
       redactData(diagnostics.value, keyName: input.key),
-      _boundConfiguredLength(input.resolvedMaxValueLength),
+      _boundConfiguredLength(
+        input.resolvedMaxValueLength,
+        resourceLimits,
+      ),
     );
 
     final rawErrorText = _renderBoundedDbValue(
       diagnostics.error,
       shouldRedact: shouldRedact,
+      resourceLimits: resourceLimits,
     );
     final errorText = rawErrorText == null
         ? null
@@ -570,11 +620,13 @@ extension ISpectLoggerDb on ISpectLogger {
         'table': _boundDbText(
           input.table!,
           shouldRedact: shouldRedact,
+          resourceLimits: resourceLimits,
         ),
       if (input.key != null)
         'key': _boundDbText(
           _safeDbKey(input.key, shouldRedact)!,
           shouldRedact: shouldRedact,
+          resourceLimits: resourceLimits,
         ),
       'args': processedArgs,
       'namedArgs': processedNamedArgs,
@@ -588,7 +640,8 @@ extension ISpectLoggerDb on ISpectLogger {
     });
     final boundedMeta = LogExportOutput.boundJsonValue(
       dbMeta,
-      maxBytes: _maxDbMetaBytes,
+      maxBytes: resourceLimits.maxDatabaseMetadataBytes,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: shouldRedact,
     );
     return _PreprocessedDbTrace(
@@ -629,7 +682,10 @@ extension ISpectLoggerDb on ISpectLogger {
         identical(config.redactKeys, defaultSensitiveKeys);
     final resolvedKeys = usesDefaultKeys
         ? config.redactKeys
-        : _boundSensitiveKeys(redactKeys ?? config.redactKeys);
+        : _boundSensitiveKeys(
+            redactKeys ?? config.redactKeys,
+            config.resourceLimits ?? DiagnosticResourceLimits.balanced,
+          );
     if (resolvedRedact == config.redact &&
         identical(resolvedKeys, config.redactKeys)) {
       return config;
@@ -679,6 +735,8 @@ extension ISpectLoggerDb on ISpectLogger {
     required StackTrace? errorStackTrace,
   }) {
     final shouldRedact = input.shouldRedact;
+    final resourceLimits =
+        input.cfg.resourceLimits ?? DiagnosticResourceLimits.balanced;
     final bounded = LogExportOutput.boundJsonValue(
       <String, Object?>{
         if (input.error != null) 'error': input.error,
@@ -688,9 +746,14 @@ extension ISpectLoggerDb on ISpectLogger {
         if (input.value != null) 'value': input.value,
         if (input.meta != null) 'meta': input.meta,
       },
-      maxBytes: _maxDbDiagnosticsBytes,
+      maxBytes: resourceLimits.maxDatabaseDiagnosticsBytes,
+      resourceLimits: resourceLimits,
       preserveTypes: shouldRedact,
       replaceOversizedStrings: shouldRedact,
+      allowCustomSerialization:
+          input.cfg.captureMode == DiagnosticCaptureMode.balanced,
+      allowCustomStringification:
+          input.cfg.captureMode == DiagnosticCaptureMode.balanced,
     );
     final values =
         bounded is Map<String, Object?> ? bounded : const <String, Object?>{};
@@ -719,10 +782,14 @@ extension ISpectLoggerDb on ISpectLogger {
     );
   }
 
-  static Set<String> _boundSensitiveKeys(Iterable<String> values) {
+  static Set<String> _boundSensitiveKeys(
+    Iterable<String> values,
+    DiagnosticResourceLimits resourceLimits,
+  ) {
     final bounded = LogExportOutput.boundJsonValue(
       values,
-      maxBytes: _maxDbDiagnosticsBytes,
+      maxBytes: resourceLimits.maxDatabaseDiagnosticsBytes,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: true,
     );
     if (bounded is! List<Object?>) return defaultSensitiveKeys;
@@ -745,19 +812,25 @@ extension ISpectLoggerDb on ISpectLogger {
     return traversalFailed && result.isEmpty ? defaultSensitiveKeys : result;
   }
 
-  static int _boundConfiguredLength(int value) => value.clamp(
+  static int _boundConfiguredLength(
+    int value,
+    DiagnosticResourceLimits resourceLimits,
+  ) =>
+      value.clamp(
         0,
-        _maxDbDiagnosticsBytes,
+        resourceLimits.maxDatabaseDiagnosticsBytes,
       );
 
   static String? _renderBoundedDbValue(
     Object? value, {
     required bool shouldRedact,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     if (value == null) return null;
     final bounded = LogExportOutput.boundJsonValue(
       value,
       replaceOversizedStrings: shouldRedact,
+      resourceLimits: resourceLimits,
     );
     if (bounded is String) return bounded;
     if (bounded is bool || bounded is num) return Error.safeToString(bounded);
@@ -765,16 +838,16 @@ extension ISpectLoggerDb on ISpectLogger {
       final encoded = jsonEncode(bounded);
       if (LogExportOutput.utf8Length(
             encoded,
-            limit: LogExportOutput.maxPreparedValueBytes,
+            limit: resourceLimits.maxDatabaseDiagnosticsBytes,
           ) <=
-          LogExportOutput.maxPreparedValueBytes) {
+          resourceLimits.maxDatabaseDiagnosticsBytes) {
         return encoded;
       }
       return shouldRedact
           ? LogExportOutput.truncatedMarker
           : LogExportOutput.truncateUtf8(
               encoded,
-              maxBytes: LogExportOutput.maxPreparedValueBytes,
+              maxBytes: resourceLimits.maxDatabaseDiagnosticsBytes,
             );
     } catch (_) {
       return JsonValueNormalizer.unprintableValue;
@@ -784,11 +857,13 @@ extension ISpectLoggerDb on ISpectLogger {
   static String _boundDbText(
     String value, {
     required bool shouldRedact,
-    int maxBytes = _maxDbScalarBytes,
+    required DiagnosticResourceLimits resourceLimits,
+    int? maxBytes,
   }) {
     final bounded = LogExportOutput.boundJsonValue(
       value,
-      maxBytes: maxBytes,
+      maxBytes: maxBytes ?? resourceLimits.maxDatabaseScalarBytes,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: shouldRedact,
     );
     return bounded is String ? bounded : JsonValueNormalizer.unprintableValue;
@@ -797,13 +872,15 @@ extension ISpectLoggerDb on ISpectLogger {
   static String? _boundNullableDbText(
     String? value, {
     required bool shouldRedact,
-    int maxBytes = _maxDbScalarBytes,
+    required DiagnosticResourceLimits resourceLimits,
+    int? maxBytes,
   }) =>
       value == null
           ? null
           : _boundDbText(
               value,
               shouldRedact: shouldRedact,
+              resourceLimits: resourceLimits,
               maxBytes: maxBytes,
             );
 
@@ -811,6 +888,7 @@ extension ISpectLoggerDb on ISpectLogger {
     Map<String, Object?>? first,
     Map<String, Object?>? second, {
     required bool shouldRedact,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     if (first == null && second == null) return null;
     final bounded = LogExportOutput.boundJsonValue(
@@ -818,7 +896,8 @@ extension ISpectLoggerDb on ISpectLogger {
         if (first != null) 'first': first,
         if (second != null) 'second': second,
       },
-      maxBytes: _maxDbDiagnosticsBytes,
+      maxBytes: resourceLimits.maxDatabaseDiagnosticsBytes,
+      resourceLimits: resourceLimits,
       preserveTypes: shouldRedact,
       replaceOversizedStrings: shouldRedact,
     );

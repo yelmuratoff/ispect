@@ -1,12 +1,15 @@
 import 'package:ispectify/src/history/serialization.dart';
 import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/models/data.dart';
+import 'package:ispectify/src/models/diagnostic_capture_mode.dart';
+import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/models/models.dart';
 import 'package:ispectify/src/network/network_payload_sanitizer.dart';
 import 'package:ispectify/src/network/network_uri_snapshot.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
 import 'package:ispectify/src/redaction/redaction_service.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
+import 'package:ispectify/src/utils/json_value_normalizer.dart';
 
 /// Mixin providing redaction utilities for network interceptors.
 ///
@@ -27,12 +30,21 @@ mixin NetworkRedactionMixin {
   /// Implementations should return their specific settings' redaction flag.
   bool get enableRedaction;
 
+  /// Capture policy for values crossing this interceptor boundary.
+  DiagnosticCaptureMode get captureMode => DiagnosticCaptureMode.balanced;
+
+  /// Resource budgets resolved by the adapter or inherited from [logger].
+  DiagnosticResourceLimits get resourceLimits => logger.options.resourceLimits;
+
   /// The redaction service for this interceptor.
   ///
   /// Implementing classes must override this to return their redactor instance.
   RedactionService get redactor;
 
-  NetworkPayloadSanitizer get _payload => NetworkPayloadSanitizer(redactor);
+  NetworkPayloadSanitizer get _payload => NetworkPayloadSanitizer(
+        redactor,
+        resourceLimits: resourceLimits,
+      );
 
   /// Redacts query parameter values and userInfo credentials in a URL.
   ///
@@ -41,13 +53,13 @@ mixin NetworkRedactionMixin {
   String redactUrl(String url, {required bool useRedaction}) {
     final prepared = LogExportOutput.truncateUtf8(
       url,
-      maxBytes: LogExportOutput.maxPreparedValueBytes,
+      maxBytes: resourceLimits.maxCapturedValueBytes,
     );
     if (!useRedaction) return prepared;
     try {
       return LogExportOutput.truncateUtf8(
         redactor.redactUrl(prepared),
-        maxBytes: LogExportOutput.maxPreparedValueBytes,
+        maxBytes: resourceLimits.maxCapturedValueBytes,
       );
     } on Object {
       _logRedactionFailure();
@@ -55,16 +67,17 @@ mixin NetworkRedactionMixin {
     }
   }
 
-  /// Returns an opaque URL and path without inspecting [uri].
-  ///
-  /// [Uri] is implementable, so callers with trusted URL text should create a
-  /// [NetworkUriSnapshot.fromTrustedText] and call [redactUrlSnapshot].
+  /// Returns a bounded URL and path using the selected capture policy.
   ({String url, String path}) redactUrlAndPath(
     Uri uri, {
     required bool useRedaction,
   }) =>
       redactUrlSnapshot(
-        NetworkUriSnapshot.fromUri(uri),
+        NetworkUriSnapshot.fromUri(
+          uri,
+          captureMode: captureMode,
+          resourceLimits: resourceLimits,
+        ),
         useRedaction: useRedaction,
       );
 
@@ -89,13 +102,15 @@ mixin NetworkRedactionMixin {
       final redacted = _payload.body(
         data,
         enableRedaction: useRedaction,
-        normalizer: NetworkPayloadSanitizer.encodeJsonGracefully,
+        captureMode: captureMode,
       );
       if (useRedaction && redacted == ph.redactionFailedPlaceholder) {
         _logRedactionFailure();
       }
       if (redacted != null) return redacted;
-      return useRedaction ? ph.redactionFailedPlaceholder : data;
+      return useRedaction
+          ? ph.redactionFailedPlaceholder
+          : JsonValueNormalizer.unprintableValue;
     } on Object {
       _logRedactionFailure();
       return ph.redactionFailedPlaceholder;
@@ -125,11 +140,15 @@ mixin NetworkRedactionMixin {
       final redacted = _payload.body(
         data,
         enableRedaction: useRedaction,
+        captureMode: captureMode,
       );
       if (redacted == null) {
         return useRedaction
             ? <String, dynamic>{'raw': ph.redactionFailedPlaceholder}
-            : NetworkPayloadSanitizer.toStringKeyMap(data);
+            : NetworkPayloadSanitizer.toStringKeyMap(
+                data,
+                resourceLimits: resourceLimits,
+              );
       }
 
       if (redacted is Map<String, dynamic>) return redacted;
@@ -155,6 +174,7 @@ mixin NetworkRedactionMixin {
       ISpectLogData(
         'Redaction failed; diagnostic data omitted.',
         logLevel: LogLevel.warning,
+        resourceLimits: resourceLimits,
       ),
     );
   }

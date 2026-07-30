@@ -36,8 +36,6 @@ import 'package:ispect/src/common/extensions/context.dart';
 /// );
 /// ```
 
-const int _maxClipboardBytes = 100000;
-
 void copyClipboard(
   BuildContext? context, {
   required String value,
@@ -46,12 +44,18 @@ void copyClipboard(
   bool redact = false,
   Set<String>? redactKeys,
   RedactionService? redactionService,
+  DiagnosticResourceLimits? resourceLimits,
   ISpectGeneratedLocalization? l10n,
   ScaffoldMessengerState? messenger,
 }) {
+  final limits = (resourceLimits ??
+      ISpect.loggerIfInitialized?.options.resourceLimits ??
+      DiagnosticResourceLimits.balanced)
+    ..validate();
   final prepared = LogExportOutput.boundJsonValue(
     value,
-    maxBytes: _maxClipboardBytes,
+    resourceLimits: limits,
+    maxBytes: limits.maxClipboardBytes,
     replaceOversizedStrings: redact,
   );
   final boundedInput =
@@ -65,7 +69,7 @@ void copyClipboard(
       : boundedInput;
   final truncatedValue = LogExportOutput.truncateUtf8(
     sanitized,
-    maxBytes: _maxClipboardBytes,
+    maxBytes: limits.maxClipboardBytes,
     marker: '\n... [truncated]',
   );
 

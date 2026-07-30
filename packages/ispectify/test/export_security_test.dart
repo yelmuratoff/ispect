@@ -259,6 +259,7 @@ void main() {
       final log = ISpectLogData(
         'message',
         exception: const _ThrowingDiagnostic(),
+        captureMode: DiagnosticCaptureMode.strict,
         additionalData: {'payload': cyclic},
       );
 
@@ -275,6 +276,7 @@ void main() {
       final hostile = _HostileJsonValue();
       final log = ISpectLogData(
         'message',
+        captureMode: DiagnosticCaptureMode.strict,
         additionalData: {
           'hostile': hostile,
           'oversized': 'x' * (4 * 1024 * 1024),
@@ -336,20 +338,17 @@ void main() {
       }
     });
 
-    test('message capture replaces unknown objects without formatting', () {
+    test('balanced message capture keeps a bounded readable description', () {
       final diagnostic = _StatefulDiagnostic();
       final log = ISpectLogData(diagnostic);
 
-      expect(log.message, JsonValueNormalizer.unprintableValue);
-      expect(
-        log.toJson()['message'],
-        JsonValueNormalizer.unprintableValue,
-      );
+      expect(log.message, 'render-1');
+      expect(log.toJson()['message'], 'render-1');
       expect(
         log.toText(enableRedaction: false),
-        contains(JsonValueNormalizer.unprintableValue),
+        contains('render-1'),
       );
-      expect(diagnostic.calls, 0);
+      expect(diagnostic.calls, 1);
     });
 
     test('capture-time redaction opt-out keeps binary provenance opaque', () {
@@ -1101,6 +1100,28 @@ void main() {
       );
     });
 
+    test('active text exports drop previously truncated prefixes', () {
+      const partialMessage = 'PARTIAL_EXPORT_MESSAGE';
+      const partialData = 'PARTIAL_EXPORT_DATA';
+      final log = ISpectLogData(
+        '$partialMessage${LogExportOutput.truncatedMarker}',
+        additionalData: const {
+          'visible': '$partialData${LogExportOutput.truncatedMarker}',
+        },
+      );
+
+      for (final output in [
+        log.toExportMessageText(),
+        log.toText(),
+        log.toMarkdown(),
+        LogExporter.toJsonLines([log]),
+      ]) {
+        expect(output, isNot(contains(partialMessage)));
+        expect(output, isNot(contains(partialData)));
+        expect(output, contains(LogExportOutput.truncatedMarker));
+      }
+    });
+
     test('single-record serializers are bounded and fail closed by default',
         () {
       const secret = 'SINGLE_RECORD_OUTPUT_SECRET';
@@ -1220,6 +1241,7 @@ void main() {
         exception: hostileException,
         error: hostileError,
         stackTrace: hostileStackTrace,
+        captureMode: DiagnosticCaptureMode.strict,
         additionalData: {'json': hostileJson},
       );
 
@@ -1294,6 +1316,7 @@ void main() {
         exception: hostileException,
         error: hostileError,
         stackTrace: hostileStackTrace,
+        captureMode: DiagnosticCaptureMode.strict,
         additionalData: {
           'dateTime': hostileDateTime,
           'uri': hostileUri,

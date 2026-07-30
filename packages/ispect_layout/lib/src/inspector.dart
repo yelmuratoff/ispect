@@ -42,9 +42,17 @@ class Inspector extends StatefulWidget {
     this.initialPanelExpanded = true,
     this.isEnabled,
     this.decimalPlaces = 1,
+    this.maxRenderTreeClipboardCharacters = 10000,
     this.theme,
     this.panelBuilder,
-  }) : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0');
+  })  : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0'),
+        assert(
+          maxRenderTreeClipboardCharacters > 0 &&
+              maxRenderTreeClipboardCharacters <=
+                  InspectorController.maxAllowedRenderTreeClipboardCharacters,
+          'maxRenderTreeClipboardCharacters must be between 1 and '
+          '${InspectorController.maxAllowedRenderTreeClipboardCharacters}',
+        );
 
   final Widget child;
   final InspectorController? controller;
@@ -53,6 +61,11 @@ class Inspector extends StatefulWidget {
   final Alignment alignment;
   final bool? isEnabled;
   final int decimalPlaces;
+
+  /// Maximum final character count copied by the render-tree action.
+  ///
+  /// Ignored when [controller] is supplied; configure the controller instead.
+  final int maxRenderTreeClipboardCharacters;
 
   /// Overlay accent colours. When non-null and no [controller] is provided,
   /// this is forwarded to the internally-created [InspectorController].
@@ -114,6 +127,8 @@ class InspectorState extends State<Inspector> {
         InspectorController(
           isEnabled: _isEnabled,
           decimalPlaces: widget.decimalPlaces,
+          maxRenderTreeClipboardCharacters:
+              widget.maxRenderTreeClipboardCharacters,
           theme: widget.theme ?? InspectorTheme.defaults,
         );
   }
@@ -127,8 +142,14 @@ class InspectorState extends State<Inspector> {
     final decimalPlacesChanged =
         oldWidget.decimalPlaces != widget.decimalPlaces &&
             widget.controller == null;
+    final clipboardLimitChanged = oldWidget.maxRenderTreeClipboardCharacters !=
+            widget.maxRenderTreeClipboardCharacters &&
+        widget.controller == null;
 
-    if (controllerChanged || isEnabledChanged || decimalPlacesChanged) {
+    if (controllerChanged ||
+        isEnabledChanged ||
+        decimalPlacesChanged ||
+        clipboardLimitChanged) {
       // Dispose the previous controller only if we owned it (created
       // internally). A user-supplied controller must be disposed by the user.
       if (oldWidget.controller == null) {
@@ -138,6 +159,9 @@ class InspectorState extends State<Inspector> {
           InspectorController(
             isEnabled: _isEnabled,
             decimalPlaces: widget.decimalPlaces,
+            maxRenderTreeClipboardCharacters:
+                widget.maxRenderTreeClipboardCharacters,
+            theme: widget.theme ?? InspectorTheme.defaults,
           );
     }
 
@@ -335,6 +359,8 @@ class InspectorState extends State<Inspector> {
                 onCompare: onCompare,
                 isCompareActive: isCompareActive,
                 decimalPlaces: _controller.decimalPlaces,
+                maxRenderTreeClipboardCharacters:
+                    _controller.maxRenderTreeClipboardCharacters,
                 theme: _controller.theme,
                 onSelectFromPath: _controller.selectFromPath,
               ),

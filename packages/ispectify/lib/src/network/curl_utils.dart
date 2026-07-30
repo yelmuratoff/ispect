@@ -24,9 +24,11 @@ abstract final class CurlUtils {
     Map<String, dynamic>? data, {
     RedactionService? redactor,
     bool enableRedaction = true,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     if (data == null) return null;
     try {
+      resourceLimits.validate();
       final redactionActive = enableRedaction && ISpectRedaction.enabled;
       final effectiveRedactor = redactionActive
           ? ISpectRedaction.resolveService(service: redactor)
@@ -41,10 +43,15 @@ abstract final class CurlUtils {
               : null;
       if (rawUri == null || methodValue is! String) return null;
 
-      final uri = _boundString(rawUri, redactionActive: redactionActive);
+      final uri = _boundString(
+        rawUri,
+        redactionActive: redactionActive,
+        resourceLimits: resourceLimits,
+      );
       final boundedMethod = _boundString(
         methodValue,
         redactionActive: redactionActive,
+        resourceLimits: resourceLimits,
       );
       final method = effectiveRedactor == null
           ? boundedMethod
@@ -57,8 +64,9 @@ abstract final class CurlUtils {
       final safeUri = _boundString(
         redactedUri,
         redactionActive: redactionActive,
+        resourceLimits: resourceLimits,
       );
-      final buffer = _CurlCommandBuffer(LogExportOutput.maxRecordBytes);
+      final buffer = _CurlCommandBuffer(resourceLimits.maxLogRecordBytes);
       final base =
           'curl -X ${_shellEscape(method)} --url ${_shellEscape(safeUri)}';
       if (!buffer.write(base)) {
@@ -68,23 +76,29 @@ abstract final class CurlUtils {
 
       final rawBody = LogExportOutput.boundJsonValue(
         data['data'],
+        resourceLimits: resourceLimits,
         preserveTypes: redactionActive,
         replaceOversizedStrings: redactionActive,
       );
       final rawHeaders = _coerceHeaders(
         data['headers'],
         redactionActive: redactionActive,
+        resourceLimits: resourceLimits,
       );
       final redactedHeaders = rawHeaders == null
           ? null
           : effectiveRedactor == null
               ? rawHeaders
-              : NetworkPayloadSanitizer(effectiveRedactor).headersMap(
+              : NetworkPayloadSanitizer(
+                  effectiveRedactor,
+                  resourceLimits: resourceLimits,
+                ).headersMap(
                   rawHeaders,
                   enableRedaction: true,
                 );
       final boundedHeaders = LogExportOutput.boundJsonValue(
         redactedHeaders,
+        resourceLimits: resourceLimits,
         preserveTypes: redactionActive,
         replaceOversizedStrings: redactionActive,
       );
@@ -97,7 +111,7 @@ abstract final class CurlUtils {
       if (headers != null) {
         var emittedHeaders = 0;
         for (final entry in headers.entries) {
-          if (emittedHeaders >= _maxEmittedHeaders) {
+          if (emittedHeaders >= resourceLimits.maxNetworkHeaders) {
             truncated = true;
             break;
           }
@@ -111,12 +125,12 @@ abstract final class CurlUtils {
               : <Object?>[value];
           for (final item in values) {
             if (item == null) continue;
-            if (emittedHeaders >= _maxEmittedHeaders) {
+            if (emittedHeaders >= resourceLimits.maxNetworkHeaders) {
               truncated = true;
               break;
             }
             emittedHeaders++;
-            final text = _boundedText(item);
+            final text = _boundedText(item, resourceLimits);
             if (!buffer.write(' -H ${_shellEscape('$key: $text')}')) {
               truncated = true;
               break;
@@ -128,16 +142,25 @@ abstract final class CurlUtils {
 
       final redactedBody = rawBody == null || effectiveRedactor == null
           ? rawBody
-          : NetworkPayloadSanitizer(effectiveRedactor).body(
+          : NetworkPayloadSanitizer(
+              effectiveRedactor,
+              resourceLimits: resourceLimits,
+            ).body(
               rawBody,
               enableRedaction: true,
             );
       final body = LogExportOutput.boundJsonValue(
         redactedBody,
+        resourceLimits: resourceLimits,
         replaceOversizedStrings: redactionActive,
       );
       if (body != null) {
-        final bodyString = body is String ? body : JsonTruncator.pretty(body);
+        final bodyString = body is String
+            ? body
+            : JsonTruncator.pretty(
+                body,
+                maxStringLength: resourceLimits.maxNetworkBodyBytes,
+              );
         if (!buffer.write(' --data-raw ${_shellEscape(bodyString)}')) {
           truncated = true;
         }
@@ -154,9 +177,11 @@ abstract final class CurlUtils {
   static Map<String, Object?>? _coerceHeaders(
     Object? value, {
     required bool redactionActive,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     final bounded = LogExportOutput.boundJsonValue(
       value,
+      resourceLimits: resourceLimits,
       preserveTypes: redactionActive,
       replaceOversizedStrings: redactionActive,
     );
@@ -168,22 +193,33 @@ abstract final class CurlUtils {
   static String _boundString(
     String value, {
     required bool redactionActive,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     final bounded = LogExportOutput.boundJsonValue(
       value,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: redactionActive,
     );
     return bounded is String ? bounded : LogExportOutput.truncatedMarker;
   }
 
-  static String _boundedText(Object? value) {
+  static String _boundedText(
+    Object? value,
+    DiagnosticResourceLimits resourceLimits,
+  ) {
     if (value == null) return '';
     if (value is String) return value;
     if (value is bool || value is num) return value.toString();
     final bounded = value is TypedData || value is ByteBuffer
-        ? LogExportOutput.boundJsonValue(value)
+        ? LogExportOutput.boundJsonValue(
+            value,
+            resourceLimits: resourceLimits,
+          )
         : value;
-    return JsonTruncator.pretty(bounded);
+    return JsonTruncator.pretty(
+      bounded,
+      maxStringLength: resourceLimits.maxCapturedValueBytes,
+    );
   }
 
   static String _shellEscape(String value) {
@@ -191,8 +227,6 @@ abstract final class CurlUtils {
     return "'$escaped'";
   }
 }
-
-const int _maxEmittedHeaders = 100;
 
 final class _CurlCommandBuffer {
   _CurlCommandBuffer(this.maxBytes);

@@ -87,13 +87,15 @@ void main() {
       final uri = _HostileUri();
       final request = http.Request('GET', uri);
       final response = http.Response('', 200, request: request);
-      final requestJson = HttpRequestData(request).toJson();
+      final requestJson = HttpRequestData(request).toJson(
+        captureMode: DiagnosticCaptureMode.strict,
+      );
       final responseJson = HttpResponseData(
         response: response,
         baseResponse: response,
         requestData: HttpRequestData(request),
         multipartRequest: null,
-      ).toJson();
+      ).toJson(captureMode: DiagnosticCaptureMode.strict);
 
       expect(
         requestJson[NetworkJsonKeys.url],
@@ -111,7 +113,12 @@ void main() {
       final logger = ISpectLogger(
         options: ISpectLoggerOptions(useConsoleLogs: false),
       );
-      final interceptor = ISpectHttpInterceptor(logger: logger);
+      final interceptor = ISpectHttpInterceptor(
+        logger: logger,
+        settings: const ISpectHttpInterceptorSettings(
+          captureMode: DiagnosticCaptureMode.strict,
+        ),
+      );
 
       expect(
         await interceptor.interceptRequest(request: request),

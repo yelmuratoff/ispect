@@ -21,7 +21,7 @@ abstract final class JsonTruncator {
   /// Pretty-prints a JSON object with depth limitation.
   ///
   /// Limits the depth of nested structures to [maxDepth].
-  /// Truncates strings longer than [kDefaultStringTruncateLimit] characters.
+  /// Truncates strings longer than [maxStringLength] characters.
   /// Limits iterables to first [maxIterableSize] elements.
   /// Set [maxIterableSize] to -1 for unlimited iterable size.
   ///
@@ -30,6 +30,7 @@ abstract final class JsonTruncator {
     Object? json, {
     int maxDepth = _defaultMaxDepth,
     int maxIterableSize = _defaultIterableSizeLimit,
+    int maxStringLength = kDefaultStringTruncateLimit,
   }) {
     try {
       const encoder = JsonEncoder.withIndent('  ');
@@ -38,6 +39,7 @@ abstract final class JsonTruncator {
         0,
         maxDepth: maxDepth,
         maxIterableSize: maxIterableSize,
+        maxStringLength: maxStringLength,
       );
       return encoder.convert(truncated);
     } catch (e) {
@@ -54,6 +56,7 @@ abstract final class JsonTruncator {
     int currentDepth, {
     required int maxDepth,
     required int maxIterableSize,
+    required int maxStringLength,
   }) {
     if (currentDepth >= maxDepth) return _truncationMarker;
     if (value == null) return null;
@@ -61,7 +64,13 @@ abstract final class JsonTruncator {
     final nextDepth = currentDepth + 1;
 
     if (value is Map) {
-      return _processTruncatedMap(value, nextDepth, maxDepth, maxIterableSize);
+      return _processTruncatedMap(
+        value,
+        nextDepth,
+        maxDepth,
+        maxIterableSize,
+        maxStringLength,
+      );
     }
 
     if (value is Iterable) {
@@ -70,10 +79,13 @@ abstract final class JsonTruncator {
         nextDepth,
         maxDepth,
         maxIterableSize,
+        maxStringLength,
       );
     }
 
-    if (value is String) return truncateString(value);
+    if (value is String) {
+      return truncateString(value, maxLength: maxStringLength);
+    }
     if (value is num || value is bool) return value;
     if (value is DateTime) return value.toIso8601String();
     if (value is RegExp) return value.pattern;
@@ -88,6 +100,7 @@ abstract final class JsonTruncator {
     int nextDepth,
     int maxDepth,
     int maxIterableSize,
+    int maxStringLength,
   ) =>
       value.map(
         (key, val) => MapEntry(
@@ -97,6 +110,7 @@ abstract final class JsonTruncator {
             nextDepth,
             maxDepth: maxDepth,
             maxIterableSize: maxIterableSize,
+            maxStringLength: maxStringLength,
           ),
         ),
       );
@@ -109,6 +123,7 @@ abstract final class JsonTruncator {
     int nextDepth,
     int maxDepth,
     int maxIterableSize,
+    int maxStringLength,
   ) {
     var items = value;
     var exceeded = false;
@@ -126,6 +141,7 @@ abstract final class JsonTruncator {
             nextDepth,
             maxDepth: maxDepth,
             maxIterableSize: maxIterableSize,
+            maxStringLength: maxStringLength,
           ),
         )
         .toList();

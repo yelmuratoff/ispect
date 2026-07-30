@@ -47,6 +47,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
     this.filterPredicate,
   }) : filters = List<Pattern>.unmodifiable(filters) {
     _logger = logger ?? ISpectLogger();
+    settings.resourceLimits?.validate();
   }
 
   late final ISpectLogger _logger;
@@ -71,6 +72,8 @@ class ISpectRiverpodObserver extends ProviderObserver {
   bool get _loggingEnabled =>
       _ispectEnabled && _logger.isEnabled && settings.enabled;
   bool get _captureEnabled => _loggingEnabled && _logger.hasActiveConsumers;
+  DiagnosticResourceLimits get _resourceLimits =>
+      settings.resourceLimits ?? _logger.options.resourceLimits;
 
   bool _isFiltered(ProviderBase<Object?> provider) {
     final providerName = _providerName(provider);
@@ -126,12 +129,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
       : null;
   // Every caller-controlled trace field is prepared below. A second generic
   // pass would replace the configured redactor and repeat boundary traversal.
-  static const ISpectTraceConfig _traceConfig = ISpectTraceConfig(
-    redact: false,
-    attachStackOnError: true,
-  );
-  static const int _maxPreparedTraceBytes =
-      LogExportOutput.maxPreparedValueBytes ~/ 2;
+  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
+        redact: false,
+        attachStackOnError: true,
+        resourceLimits: _resourceLimits,
+      );
 
   bool get _redactionActive => settings.isRedactionActive;
 
@@ -140,16 +142,27 @@ class ISpectRiverpodObserver extends ProviderObserver {
     final redactionActive = _redactionActive;
     final prepared = LogExportOutput.boundJsonValue(
       value,
-      maxBytes: _maxPreparedTraceBytes,
+      maxBytes: _resourceLimits.maxStateTraceBytes,
+      resourceLimits: _resourceLimits,
       preserveTypes: redactionActive,
       replaceOversizedStrings: redactionActive,
+      allowCustomSerialization:
+          settings.captureMode == DiagnosticCaptureMode.balanced,
+      allowCustomStringification:
+          settings.captureMode == DiagnosticCaptureMode.balanced,
     );
     if (!redactionActive) return prepared;
     try {
-      final redacted = redactor!.redactForExport(prepared);
+      final redacted = redactor!.redactForExport(
+        LogExportOutput.replaceTruncatedPrefixes(
+          prepared,
+          resourceLimits: _resourceLimits,
+        ),
+      );
       return LogExportOutput.boundJsonValue(
         redacted,
-        maxBytes: _maxPreparedTraceBytes,
+        maxBytes: _resourceLimits.maxStateTraceBytes,
+        resourceLimits: _resourceLimits,
         replaceOversizedStrings: true,
       );
     } catch (_) {
@@ -201,10 +214,10 @@ class ISpectRiverpodObserver extends ProviderObserver {
     return _redactionActive ? '[REDACTED]' : _prepareTraceText(fallback);
   }
 
-  static String _providerName(ProviderBase<Object?> provider) =>
+  String _providerName(ProviderBase<Object?> provider) =>
       LogExportOutput.truncateUtf8(
         provider.name ?? safeRiverpodProviderTypeLabel(provider),
-        maxBytes: LogExportOutput.maxPreparedValueBytes,
+        maxBytes: _resourceLimits.maxStateTraceBytes,
       );
 
   @override

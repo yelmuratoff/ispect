@@ -48,8 +48,14 @@ const settings = ISpectBlocSettings(
   printEventFullData: true,
   printStateFullData: true,
   enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 ```
+
+Balanced capture retains guarded, bounded `toJson()` or `toString()` output
+before redaction. Set `captureMode: DiagnosticCaptureMode.strict` when
+application-defined formatters must never run.
 
 ### Presets
 
@@ -62,6 +68,10 @@ ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
 
 ISpectBlocObserver(settings: ISpectBlocSettings.compact);
 ```
+
+`compact` uses strict capture automatically.
+Omit `resourceLimits` to inherit the logger policy; set it locally to tune
+state payload and pending-correlation budgets for this observer.
 
 ### Filtering noisy blocs
 

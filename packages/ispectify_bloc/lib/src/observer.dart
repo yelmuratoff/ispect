@@ -49,6 +49,7 @@ class ISpectBlocObserver extends BlocObserver {
     this.filterPredicate,
   }) : filters = List<Pattern>.unmodifiable(filters) {
     _logger = logger ?? ISpectLogger();
+    settings.resourceLimits?.validate();
   }
 
   late final ISpectLogger _logger;
@@ -76,9 +77,11 @@ class ISpectBlocObserver extends BlocObserver {
       _ispectEnabled && _logger.isEnabled && settings.enabled;
   bool get _captureEnabled => _loggingEnabled && _logger.hasActiveConsumers;
 
-  static const _maxPendingEventIds = 1000;
   static final _pendingEvents =
       Expando<_PendingEventCorrelations>('bloc_event_ids');
+
+  DiagnosticResourceLimits get _resourceLimits =>
+      settings.resourceLimits ?? _logger.options.resourceLimits;
 
   bool _isFiltered(Object? candidate) {
     final predicateMatch = filterPredicate?.call(candidate) ?? false;
@@ -106,12 +109,19 @@ class ISpectBlocObserver extends BlocObserver {
     return false;
   }
 
-  static String _filterText(Object? candidate) {
+  String _filterText(Object? candidate) {
     final value = switch (candidate) {
       null => '',
       final String value => value,
       final BlocBase<dynamic> bloc => safeBlocTypeLabel(bloc),
-      _ => LogExportOutput.boundJsonValue(candidate),
+      _ => LogExportOutput.boundJsonValue(
+          candidate,
+          resourceLimits: _resourceLimits,
+          allowCustomSerialization:
+              settings.captureMode == DiagnosticCaptureMode.balanced,
+          allowCustomStringification:
+              settings.captureMode == DiagnosticCaptureMode.balanced,
+        ),
     };
     final text = switch (value) {
       final String value => value,
@@ -121,7 +131,7 @@ class ISpectBlocObserver extends BlocObserver {
     };
     return LogExportOutput.truncateUtf8(
       text,
-      maxBytes: LogExportOutput.maxPreparedValueBytes,
+      maxBytes: _resourceLimits.maxStateTraceBytes,
     );
   }
 
@@ -153,12 +163,11 @@ class ISpectBlocObserver extends BlocObserver {
       : null;
   // Every caller-controlled trace field is prepared below. A second generic
   // pass would replace the configured redactor and repeat boundary traversal.
-  static const ISpectTraceConfig _traceConfig = ISpectTraceConfig(
-    redact: false,
-    attachStackOnError: true,
-  );
-  static const int _maxPreparedTraceBytes =
-      LogExportOutput.maxPreparedValueBytes ~/ 2;
+  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
+        redact: false,
+        attachStackOnError: true,
+        resourceLimits: _resourceLimits,
+      );
 
   bool get _redactionActive => settings.isRedactionActive;
 
@@ -167,16 +176,27 @@ class ISpectBlocObserver extends BlocObserver {
     final redactionActive = _redactionActive;
     final prepared = LogExportOutput.boundJsonValue(
       value,
-      maxBytes: _maxPreparedTraceBytes,
+      maxBytes: _resourceLimits.maxStateTraceBytes,
+      resourceLimits: _resourceLimits,
       preserveTypes: redactionActive,
       replaceOversizedStrings: redactionActive,
+      allowCustomSerialization:
+          settings.captureMode == DiagnosticCaptureMode.balanced,
+      allowCustomStringification:
+          settings.captureMode == DiagnosticCaptureMode.balanced,
     );
     if (!redactionActive) return prepared;
     try {
-      final redacted = redactor!.redactForExport(prepared);
+      final redacted = redactor!.redactForExport(
+        LogExportOutput.replaceTruncatedPrefixes(
+          prepared,
+          resourceLimits: _resourceLimits,
+        ),
+      );
       return LogExportOutput.boundJsonValue(
         redacted,
-        maxBytes: _maxPreparedTraceBytes,
+        maxBytes: _resourceLimits.maxStateTraceBytes,
+        resourceLimits: _resourceLimits,
         replaceOversizedStrings: true,
       );
     } catch (_) {
@@ -238,8 +258,9 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
     var correlations = _captureEnabled
-        ? _pendingEvents[bloc] ??=
-            _PendingEventCorrelations(capacity: _maxPendingEventIds)
+        ? _pendingEvents[bloc] ??= _PendingEventCorrelations(
+            capacity: _resourceLimits.maxPendingCorrelations,
+          )
         : null;
     final filtered = _isFiltered(bloc);
     if (!_loggingEnabled) {
@@ -269,8 +290,9 @@ class ISpectBlocObserver extends BlocObserver {
     if (!_captureEnabled) {
       return;
     }
-    correlations ??= _pendingEvents[bloc] ??=
-        _PendingEventCorrelations(capacity: _maxPendingEventIds);
+    correlations ??= _pendingEvents[bloc] ??= _PendingEventCorrelations(
+      capacity: _resourceLimits.maxPendingCorrelations,
+    );
     final eventId = generateTraceId();
     correlations.add(event, eventId);
 

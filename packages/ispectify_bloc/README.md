@@ -96,8 +96,14 @@ const settings = ISpectBlocSettings(
   printEventFullData: true,
   printStateFullData: true,
   enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 ```
+
+Balanced capture retains guarded, bounded `toJson()` or `toString()` output
+before redaction. Set `captureMode: DiagnosticCaptureMode.strict` when
+application-defined formatters must never run.
 
 ### Presets
 
@@ -110,6 +116,10 @@ ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
 
 ISpectBlocObserver(settings: ISpectBlocSettings.compact);
 ```
+
+`compact` uses strict capture automatically.
+Omit `resourceLimits` to inherit the logger policy; set it locally to tune
+state payload and pending-correlation budgets for this observer.
 
 ### Filtering noisy blocs
 
@@ -136,6 +146,14 @@ Sensitive data is masked before it reaches logs or observers. Redaction is on by
 The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
 
 Redaction works best paired with deliberate capture. Use the integration's `metadataOnly()` or compact preset when payload values are unnecessary, and register project-specific keys for the business identifiers only your application understands.
+
+The default `DiagnosticCaptureMode.balanced` keeps diagnostics useful by
+allowing guarded `toJson()` and `toString()` capture. The result is bounded
+immediately and redacted before it leaves the active pipeline. Select
+`DiagnosticCaptureMode.strict` when application-defined formatters must never
+run. Network `metadataOnly()` and `production()` presets, plus BLoC/Riverpod
+`compact`, select strict capture automatically. Persistence, export, and
+observer delivery do not re-run formatters after capture.
 
 ### Global configuration
 
@@ -185,7 +203,10 @@ final redactor = RedactionService(
 
 ### Disabling
 
-`ISpectRedaction.configure(enabled: false)` is the global content-masking opt-out. Each interceptor also accepts `enableRedaction: false` on its settings object for a local opt-out. Size limits, non-executing snapshots, private-storage checks, and the compile-time `ISPECT_ENABLED` gate remain enforced.
+`ISpectRedaction.configure(enabled: false)` is the global content-masking
+opt-out. Each interceptor also accepts `enableRedaction: false` on its settings
+object for a local opt-out. Size limits, private-storage checks, the selected
+capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 

@@ -3,20 +3,23 @@ import 'package:ispectify/ispectify.dart';
 /// Case-insensitive search across all fields of [ISpectLogData],
 /// including nested [ISpectLogData.additionalData].
 class SearchFilter implements Filter<ISpectLogData> {
-  SearchFilter(String query)
-      : query = LogExportOutput.truncateUtf8(
+  SearchFilter(
+    String query, {
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
+  })  : query = LogExportOutput.truncateUtf8(
           query,
-          maxBytes: _maxQueryBytes,
+          maxBytes: resourceLimits.maxSearchQueryBytes,
         ),
         _lowerQuery = LogExportOutput.truncateUtf8(
           query,
-          maxBytes: _maxQueryBytes,
+          maxBytes: resourceLimits.maxSearchQueryBytes,
         ).toLowerCase();
-
-  static const int _maxQueryBytes = 4096;
 
   /// The bounded search query.
   final String query;
+
+  /// Budgets applied to the query and searchable log snapshot.
+  final DiagnosticResourceLimits resourceLimits;
 
   final String _lowerQuery;
 
@@ -36,6 +39,7 @@ class SearchFilter implements Filter<ISpectLogData> {
         'stack-trace': captured.stackTraceText,
         'additional-data': captured.additionalData,
       },
+      resourceLimits: resourceLimits,
     );
     return _deepSearch(snapshot);
   }

@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
+import 'package:ispectify/ispectify.dart';
 
 /// Interface for search strategy following Strategy pattern
 abstract interface class SearchStrategy {
@@ -160,11 +161,15 @@ class StandardBatchSearchStrategy implements SearchStrategy {
   StandardBatchSearchStrategy({
     SearchMatchFinder? matchFinder,
     SearchProgressTracker? progressTracker,
+    this.processingPolicy = DiagnosticProcessingPolicy.balanced,
   })  : _matchFinder = matchFinder ?? DefaultSearchMatchFinder(),
-        _progressTracker = progressTracker;
+        _progressTracker = progressTracker {
+    processingPolicy.validate();
+  }
 
   final SearchMatchFinder _matchFinder;
   final SearchProgressTracker? _progressTracker;
+  final DiagnosticProcessingPolicy processingPolicy;
 
   @override
   Future<List<SearchResult>> search({
@@ -186,7 +191,11 @@ class StandardBatchSearchStrategy implements SearchStrategy {
     final totalNodes = nodes.length;
 
     final tracker = _progressTracker ??
-        DefaultSearchProgressTracker(onProgressUpdate: onProgressUpdate);
+        DefaultSearchProgressTracker(
+          onProgressUpdate: onProgressUpdate,
+          yieldInterval: processingPolicy.searchYieldInterval,
+          progressThreshold: processingPolicy.searchProgressThreshold,
+        );
 
     while (processedCount < totalNodes && isMounted()) {
       final end = (processedCount + batchSize).clamp(0, totalNodes);
@@ -212,20 +221,25 @@ class StandardBatchSearchStrategy implements SearchStrategy {
     return results;
   }
 
-  int _calculateBatchSize(int nodeCount) => nodeCount > 10000
-      ? 80
-      : nodeCount > 5000
-          ? 120
-          : 200;
+  int _calculateBatchSize(int nodeCount) =>
+      nodeCount > processingPolicy.veryLargeSearchNodeThreshold
+          ? processingPolicy.veryLargeSearchBatchSize
+          : nodeCount > processingPolicy.largeSearchNodeThreshold
+              ? processingPolicy.largeSearchBatchSize
+              : processingPolicy.searchBatchSize;
 }
 
 /// Concrete strategy for optimized search with short terms
 class OptimizedShortTermSearchStrategy implements SearchStrategy {
   OptimizedShortTermSearchStrategy({
     SearchMatchFinder? matchFinder,
-  }) : _matchFinder = matchFinder ?? DefaultSearchMatchFinder();
+    this.processingPolicy = DiagnosticProcessingPolicy.balanced,
+  }) : _matchFinder = matchFinder ?? DefaultSearchMatchFinder() {
+    processingPolicy.validate();
+  }
 
   final SearchMatchFinder _matchFinder;
+  final DiagnosticProcessingPolicy processingPolicy;
 
   @override
   Future<List<SearchResult>> search({
@@ -238,7 +252,7 @@ class OptimizedShortTermSearchStrategy implements SearchStrategy {
       return const <SearchResult>[];
     }
 
-    const batchSize = 300;
+    final batchSize = processingPolicy.shortSearchBatchSize;
     final results = <SearchResult>[];
     final totalNodes = nodes.length;
     var processedCount = 0;
@@ -246,8 +260,8 @@ class OptimizedShortTermSearchStrategy implements SearchStrategy {
     final normalizedTerm = searchTerm.toLowerCase();
     final tracker = DefaultSearchProgressTracker(
       onProgressUpdate: onProgressUpdate,
-      yieldInterval: const Duration(milliseconds: 150),
-      progressThreshold: 20,
+      yieldInterval: processingPolicy.shortSearchYieldInterval,
+      progressThreshold: processingPolicy.shortSearchProgressThreshold,
     );
 
     while (processedCount < totalNodes && isMounted()) {
@@ -281,15 +295,23 @@ class SearchStrategyFactory {
     required int searchTermLength,
     SearchMatchFinder? matchFinder,
     SearchProgressTracker? progressTracker,
+    DiagnosticProcessingPolicy processingPolicy =
+        DiagnosticProcessingPolicy.balanced,
   }) {
+    processingPolicy.validate();
     // Optimize for short search terms in large datasets
-    if (nodeCount > 5000 && searchTermLength < 3) {
-      return OptimizedShortTermSearchStrategy(matchFinder: matchFinder);
+    if (nodeCount > processingPolicy.largeSearchNodeThreshold &&
+        searchTermLength < 3) {
+      return OptimizedShortTermSearchStrategy(
+        matchFinder: matchFinder,
+        processingPolicy: processingPolicy,
+      );
     }
 
     return StandardBatchSearchStrategy(
       matchFinder: matchFinder,
       progressTracker: progressTracker,
+      processingPolicy: processingPolicy,
     );
   }
 }
@@ -300,15 +322,17 @@ class JsonSearchService {
     SearchStrategy? strategy,
     SearchMatchFinder? matchFinder,
     SearchProgressTracker? progressTracker,
+    this.processingPolicy = DiagnosticProcessingPolicy.balanced,
   })  : _strategy = strategy,
         _matchFinder = matchFinder ?? DefaultSearchMatchFinder(),
-        _progressTracker = progressTracker;
+        _progressTracker = progressTracker {
+    processingPolicy.validate();
+  }
 
   SearchStrategy? _strategy;
   final SearchMatchFinder _matchFinder;
   final SearchProgressTracker? _progressTracker;
-
-  static const Duration _searchDebounceTime = Duration(milliseconds: 300);
+  final DiagnosticProcessingPolicy processingPolicy;
 
   /// Main search method using strategy pattern
   Future<List<SearchResult>> searchInNodes({
@@ -323,6 +347,7 @@ class JsonSearchService {
           searchTermLength: searchTerm.length,
           matchFinder: _matchFinder,
           progressTracker: _progressTracker,
+          processingPolicy: processingPolicy,
         );
 
     return effectiveStrategy.search(
@@ -344,14 +369,19 @@ class JsonSearchService {
     String searchTerm,
     DateTime? lastSearchTime,
     int nodeCount,
-    VoidCallback onSearch,
-  ) {
+    VoidCallback onSearch, {
+    DiagnosticProcessingPolicy processingPolicy =
+        DiagnosticProcessingPolicy.balanced,
+  }) {
+    processingPolicy.validate();
     final now = DateTime.now();
     if (lastSearchTime != null) {
       final timeSinceLastSearch = now.difference(lastSearchTime);
-      final adjustedDebounceTime = nodeCount > 10000 && searchTerm.length < 3
-          ? _searchDebounceTime + const Duration(milliseconds: 50)
-          : _searchDebounceTime;
+      final adjustedDebounceTime = nodeCount >
+                  processingPolicy.veryLargeSearchNodeThreshold &&
+              searchTerm.length < 3
+          ? processingPolicy.searchDebounce + const Duration(milliseconds: 50)
+          : processingPolicy.searchDebounce;
 
       if (timeSinceLastSearch < adjustedDebounceTime) {
         return Timer(adjustedDebounceTime - timeSinceLastSearch, onSearch);

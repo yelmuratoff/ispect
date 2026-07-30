@@ -1,13 +1,15 @@
 import 'package:ispectify/src/history/serialization.dart';
+import 'package:ispectify/src/models/diagnostic_capture_mode.dart';
+import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/utils/json_value_normalizer.dart';
 
 /// Bounded URL and path captured from caller-owned URL text.
 ///
 /// [Uri] is implementable, and no cross-platform runtime check can prove that
-/// an arbitrary instance was created by the Dart SDK. URI-only boundaries must
-/// therefore use [fromUri], which deliberately returns an opaque snapshot
-/// without invoking any member on the supplied object. Callers that already
-/// own immutable URL text can use [fromTrustedText].
+/// an arbitrary instance was created by the Dart SDK. [fromUri] therefore uses
+/// guarded formatting in balanced mode and returns an opaque snapshot in
+/// strict mode. Callers that already own immutable URL text can bypass that
+/// boundary with [fromTrustedText].
 final class NetworkUriSnapshot {
   const NetworkUriSnapshot._({
     required this.url,
@@ -15,24 +17,41 @@ final class NetworkUriSnapshot {
     required this.isTrusted,
   });
 
-  /// Returns an opaque snapshot without inspecting [uri].
-  ///
-  /// Even `runtimeType` is not read because an implementation can override it.
-  factory NetworkUriSnapshot.fromUri(Uri _) => unavailable;
+  /// Captures a bounded URL in balanced mode, or an opaque strict snapshot.
+  factory NetworkUriSnapshot.fromUri(
+    Uri uri, {
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
+    if (captureMode == DiagnosticCaptureMode.strict) return unavailable;
+    try {
+      return NetworkUriSnapshot.fromTrustedText(
+        uri.toString(),
+        resourceLimits: resourceLimits,
+      );
+    } on Object {
+      return unavailable;
+    }
+  }
 
   /// Parses bounded URL text owned by the caller.
   ///
   /// Do not obtain [url] by formatting an arbitrary [Uri]. The parsed [Uri] is
   /// created inside this method, so reading its path does not cross an
   /// implementable-object trust boundary.
-  factory NetworkUriSnapshot.fromTrustedText(String url) {
+  factory NetworkUriSnapshot.fromTrustedText(
+    String url, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
     try {
-      final prepared = _bound(url);
+      final prepared = _bound(url, resourceLimits);
       final parsed = Uri.tryParse(prepared);
       if (parsed == null) return unavailable;
       return NetworkUriSnapshot._(
         url: prepared,
-        path: _bound(parsed.path),
+        path: _bound(parsed.path, resourceLimits),
         isTrusted: true,
       );
     } on Object {
@@ -56,8 +75,12 @@ final class NetworkUriSnapshot {
   /// Whether the snapshot came from caller-owned URL text.
   final bool isTrusted;
 
-  static String _bound(String value) => LogExportOutput.truncateUtf8(
+  static String _bound(
+    String value,
+    DiagnosticResourceLimits resourceLimits,
+  ) =>
+      LogExportOutput.truncateUtf8(
         value,
-        maxBytes: LogExportOutput.maxPreparedValueBytes,
+        maxBytes: resourceLimits.maxCapturedValueBytes,
       );
 }

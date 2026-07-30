@@ -169,6 +169,25 @@ final class _HostilePayload {
   }
 }
 
+final class _ReadablePayload {
+  _ReadablePayload({
+    required this.label,
+    required this.password,
+  });
+
+  final String label;
+  final String password;
+  int toJsonCalls = 0;
+
+  Map<String, Object?> toJson() {
+    toJsonCalls++;
+    return <String, Object?>{
+      'label': label,
+      'password': password,
+    };
+  }
+}
+
 final class _HostileException implements Exception {
   _HostileException({required this.throws});
 
@@ -310,6 +329,9 @@ void main() {
           final observer = ISpectBlocObserver(
             logger: logger,
             filters: const <Pattern>['never-match'],
+            settings: const ISpectBlocSettings(
+              captureMode: DiagnosticCaptureMode.strict,
+            ),
           );
 
           expect(
@@ -876,6 +898,9 @@ void main() {
               () => ISpectBlocObserver(
                 logger: logger,
                 filters: const <Pattern>['never-match'],
+                settings: const ISpectBlocSettings(
+                  captureMode: DiagnosticCaptureMode.strict,
+                ),
               ).onError(bloc, error, stackTrace),
               returnsNormally,
             );
@@ -938,6 +963,10 @@ void main() {
         test('compact preset opts into coarse event and state labels', () {
           expect(ISpectBlocSettings.compact.formatEvent('event'), 'String');
           expect(ISpectBlocSettings.compact.formatState(1), 'int');
+          expect(
+            ISpectBlocSettings.compact.captureMode,
+            DiagnosticCaptureMode.strict,
+          );
         });
 
         test('default settings activate redaction without a custom service',
@@ -1064,7 +1093,10 @@ void main() {
         test('additionalData helper bounds active and opt-out strings', () {
           final payload = List<String>.filled(2 * 1024 * 1024, 'a').join();
           final redacted = ISpectBlocSettings.verbose.redactAdditionalData(
-            <String, dynamic>{'payload': payload},
+            <String, dynamic>{
+              'payload': payload,
+              'prebounded': 'PARTIAL_BLOC${LogExportOutput.truncatedMarker}',
+            },
           );
           final unredacted = const ISpectBlocSettings(
             enableRedaction: false,
@@ -1073,6 +1105,7 @@ void main() {
           );
 
           expect(redacted?['payload'], LogExportOutput.truncatedMarker);
+          expect(redacted?['prebounded'], LogExportOutput.truncatedMarker);
           expect(unredacted, isNotNull);
           expect(unredacted!['payload'], startsWith('a'));
           expect(
@@ -1101,7 +1134,9 @@ void main() {
 
         test('additionalData helper never formats hostile keys or values', () {
           final hostileValue = _HostilePayload();
-          final valueResult = ISpectBlocSettings.verbose.redactAdditionalData(
+          final valueResult = const ISpectBlocSettings(
+            captureMode: DiagnosticCaptureMode.strict,
+          ).redactAdditionalData(
             <String, dynamic>{'payload': hostileValue},
           );
           final hostileKey = _HostilePayload();
@@ -1179,7 +1214,10 @@ void main() {
             logger: logger,
           ).onEvent(
             bloc,
-            <String, Object?>{'payload': payload},
+            <String, Object?>{
+              'payload': payload,
+              'prebounded': 'PARTIAL_BLOC${LogExportOutput.truncatedMarker}',
+            },
           );
 
           final record = logger.byOperation('event').single;
@@ -1187,6 +1225,10 @@ void main() {
               record.additionalData?[TraceKeys.meta] as Map<String, dynamic>;
           expect(
             (meta[BlocJsonKeys.event] as Map)['payload'],
+            LogExportOutput.truncatedMarker,
+          );
+          expect(
+            (meta[BlocJsonKeys.event] as Map)['prebounded'],
             LogExportOutput.truncatedMarker,
           );
           expect(
@@ -1576,10 +1618,35 @@ void main() {
           expect(observer.settings.printStateFullData, isTrue);
         });
 
-        test('verbose snapshots custom payloads without executing them', () {
+        test('verbose captures and redacts typed payloads by default', () {
+          const secret = 'TYPED_BLOC_PASSWORD';
+          final payload = _ReadablePayload(
+            label: 'ready',
+            password: secret,
+          );
+
+          ISpectBlocObserver(logger: logger).onEvent(bloc, payload);
+
+          final meta = logger
+              .byOperation('event')
+              .single
+              .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
+          expect(meta[BlocJsonKeys.event], {
+            'label': 'ready',
+            'password': '[REDACTED]',
+          });
+          expect(payload.toJsonCalls, 1);
+          expect(logger.records.toString(), isNot(contains(secret)));
+        });
+
+        test('strict mode snapshots custom payloads without executing them',
+            () {
           final payload = _HostilePayload();
           ISpectBlocObserver(
             logger: logger,
+            settings: const ISpectBlocSettings(
+              captureMode: DiagnosticCaptureMode.strict,
+            ),
           )
             ..onEvent(bloc, payload)
             ..onTransition(
@@ -1796,6 +1863,37 @@ void main() {
 
           expect(logger.byOperation('create'), hasLength(1));
           expect(logger.byOperation('state'), isEmpty);
+        });
+
+        test('copyWith preserves and replaces local resource limits', () {
+          const original = ISpectBlocSettings(
+            resourceLimits: DiagnosticResourceLimits.constrained,
+          );
+
+          expect(
+            original.copyWith().resourceLimits,
+            same(DiagnosticResourceLimits.constrained),
+          );
+          expect(
+            original
+                .copyWith(resourceLimits: DiagnosticResourceLimits.extended)
+                .resourceLimits,
+            same(DiagnosticResourceLimits.extended),
+          );
+        });
+
+        test('observer rejects an invalid local resource policy', () {
+          expect(
+            () => ISpectBlocObserver(
+              logger: logger,
+              settings: const ISpectBlocSettings(
+                resourceLimits: DiagnosticResourceLimits(
+                  maxPendingCorrelations: 0,
+                ),
+              ),
+            ),
+            throwsArgumentError,
+          );
         });
       });
     },

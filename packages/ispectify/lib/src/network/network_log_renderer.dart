@@ -46,9 +46,11 @@ abstract final class NetworkLogRenderer {
   /// Builds the renderable body for [entry]. See the class doc for the
   /// contract.
   static String renderBody(ISpectLogData entry) {
-    final ad = captureISpectLogDataForEgress(entry).additionalData;
+    final captured = captureISpectLogDataForEgress(entry);
+    final ad = captured.additionalData;
     if (ad == null) return '';
     final category = ad[TraceKeys.category];
+    final maxStringLength = captured.resourceLimits.maxCapturedValueBytes;
 
     // Trace pipeline nests caller-supplied `meta` under `additionalData['meta']`.
     // Fall back to top-level for entries built without traceCategory (e.g.
@@ -59,21 +61,21 @@ abstract final class NetworkLogRenderer {
     if (category == TraceCategoryIds.network) {
       final errData = payload[NetworkJsonKeys.errorData];
       if (errData is Map<String, dynamic>) {
-        return _renderHttpError(errData, h);
+        return _renderHttpError(errData, h, maxStringLength);
       }
       final respData = payload[NetworkJsonKeys.responseData];
       if (respData is Map<String, dynamic>) {
-        return _renderHttpResponse(respData, h);
+        return _renderHttpResponse(respData, h, maxStringLength);
       }
       final reqData = payload[NetworkJsonKeys.requestData];
       if (reqData is Map<String, dynamic>) {
-        return _renderHttpRequest(reqData, h);
+        return _renderHttpRequest(reqData, h, maxStringLength);
       }
       return '';
     }
 
     if (category == TraceCategoryIds.ws) {
-      return _renderWs(payload, h);
+      return _renderWs(payload, h, maxStringLength);
     }
 
     return '';
@@ -90,17 +92,20 @@ abstract final class NetworkLogRenderer {
   static String _renderHttpRequest(
     Map<String, dynamic> reqData,
     _RenderHints h,
+    int maxStringLength,
   ) =>
       _joinSections([
         _section(
           enabled: h.printBody,
           label: 'Data',
           value: reqData[NetworkJsonKeys.data],
+          maxStringLength: maxStringLength,
         ),
         _section(
           enabled: h.printHeaders,
           label: 'Headers',
           value: reqData[NetworkJsonKeys.headers],
+          maxStringLength: maxStringLength,
           skipEmpty: true,
         ),
       ]);
@@ -108,6 +113,7 @@ abstract final class NetworkLogRenderer {
   static String _renderHttpResponse(
     Map<String, dynamic> respData,
     _RenderHints h,
+    int maxStringLength,
   ) {
     final rawStatusCode = respData[NetworkJsonKeys.statusCode];
     final statusCode = rawStatusCode is int ? rawStatusCode : null;
@@ -121,11 +127,13 @@ abstract final class NetworkLogRenderer {
         enabled: h.printBody,
         label: 'Data',
         value: respData[NetworkJsonKeys.data] ?? respData[NetworkJsonKeys.body],
+        maxStringLength: maxStringLength,
       ),
       _section(
         enabled: h.printHeaders,
         label: 'Headers',
         value: respData[NetworkJsonKeys.headers],
+        maxStringLength: maxStringLength,
         skipEmpty: true,
       ),
     ]);
@@ -134,6 +142,7 @@ abstract final class NetworkLogRenderer {
   static String _renderHttpError(
     Map<String, dynamic> errData,
     _RenderHints h,
+    int maxStringLength,
   ) {
     final rawResponse = errData[NetworkJsonKeys.response];
     final response = rawResponse is Map<String, dynamic> ? rawResponse : null;
@@ -154,12 +163,14 @@ abstract final class NetworkLogRenderer {
         label: 'Data',
         value:
             response?[NetworkJsonKeys.data] ?? response?[NetworkJsonKeys.body],
+        maxStringLength: maxStringLength,
         skipEmpty: true,
       ),
       _section(
         enabled: h.printHeaders,
         label: 'Headers',
         value: response?[NetworkJsonKeys.headers],
+        maxStringLength: maxStringLength,
         skipEmpty: true,
       ),
     ]);
@@ -167,13 +178,18 @@ abstract final class NetworkLogRenderer {
 
   // ── WS renderer ───────────────────────────────────────────────────────
 
-  static String _renderWs(Map<String, dynamic> ad, _RenderHints h) {
+  static String _renderWs(
+    Map<String, dynamic> ad,
+    _RenderHints h,
+    int maxStringLength,
+  ) {
     final data = ad['data'];
     if (data == null || !h.printBody) return '';
     return _section(
           enabled: true,
           label: 'Data',
           value: data,
+          maxStringLength: maxStringLength,
         ) ??
         '';
   }
@@ -211,6 +227,7 @@ abstract final class NetworkLogRenderer {
     required bool enabled,
     required String label,
     required Object? value,
+    required int maxStringLength,
     bool skipEmpty = false,
   }) {
     if (!enabled || value == null) return null;
@@ -218,7 +235,10 @@ abstract final class NetworkLogRenderer {
       if (value is Map && value.isEmpty) return null;
       if (value is Iterable && value.isEmpty) return null;
     }
-    return '$label: ${JsonTruncator.pretty(value)}';
+    return '$label: ${JsonTruncator.pretty(
+      value,
+      maxStringLength: maxStringLength,
+    )}';
   }
 }
 

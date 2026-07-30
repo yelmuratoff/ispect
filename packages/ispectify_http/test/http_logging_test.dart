@@ -7,6 +7,18 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/ispectify_http.dart';
 import 'package:test/test.dart';
 
+final class _TypedResponseBody {
+  int toJsonCalls = 0;
+
+  Object? toJson() {
+    toJsonCalls++;
+    return const {
+      'status': 'ready',
+      'token': 'TYPED-RESPONSE-SECRET',
+    };
+  }
+}
+
 void main() {
   group('JSON Serialization', () {
     test('HttpRequestData.toJson produces JSON-encodable data', () {
@@ -17,7 +29,7 @@ void main() {
       final jsonData = requestData.toJson();
 
       expect(jsonData['url'], isA<String>());
-      expect(jsonData['url'], JsonValueNormalizer.unprintableValue);
+      expect(jsonData['url'], 'https://example.com/test');
       expect(() => jsonEncode(jsonData), returnsNormally);
     });
 
@@ -42,7 +54,7 @@ void main() {
       final jsonData = responseData.toJson();
 
       expect(jsonData['url'], isA<String>());
-      expect(jsonData['url'], JsonValueNormalizer.unprintableValue);
+      expect(jsonData['url'], 'https://example.com/test');
       expect(() => jsonEncode(jsonData), returnsNormally);
     });
 
@@ -65,6 +77,53 @@ void main() {
       final nullJsonData = nullResponseData.toJson();
       expect(nullJsonData['url'], isA<String>());
       expect(() => jsonEncode(nullJsonData), returnsNormally);
+    });
+
+    test('strict mode keeps request URLs opaque', () {
+      final request =
+          http.Request('GET', Uri.parse('https://example.com/private'));
+
+      final jsonData = HttpRequestData(request).toJson(
+        captureMode: DiagnosticCaptureMode.strict,
+      );
+
+      expect(jsonData['url'], JsonValueNormalizer.unprintableValue);
+    });
+
+    test('response capture mode applies to a prepared typed body', () {
+      final request =
+          http.Request('GET', Uri.parse('https://example.com/typed'));
+      final response = http.Response('', 200, request: request);
+      final body = _TypedResponseBody();
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+        preDecodedBody: body,
+      );
+
+      final balanced = responseData.toJson(redactionActive: true);
+      HttpResponseData.redact(balanced, RedactionService());
+
+      expect(
+        balanced[NetworkJsonKeys.body],
+        {
+          'status': 'ready',
+          'token': isNot('TYPED-RESPONSE-SECRET'),
+        },
+      );
+      expect(body.toJsonCalls, 1);
+
+      final strict = responseData.toJson(
+        captureMode: DiagnosticCaptureMode.strict,
+      );
+
+      expect(
+        strict[NetworkJsonKeys.body],
+        JsonValueNormalizer.unprintableValue,
+      );
+      expect(body.toJsonCalls, 1);
     });
   });
 

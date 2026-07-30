@@ -15,6 +15,7 @@ class BoxInfoPanelWidget extends StatefulWidget {
     super.key,
     required this.boxInfo,
     required this.decimalPlaces,
+    required this.maxRenderTreeClipboardCharacters,
     this.comparedBoxInfo,
     this.onCompare,
     this.isCompareActive = false,
@@ -23,6 +24,7 @@ class BoxInfoPanelWidget extends StatefulWidget {
 
   final BoxInfo boxInfo;
   final int decimalPlaces;
+  final int maxRenderTreeClipboardCharacters;
   final BoxInfo? comparedBoxInfo;
   final VoidCallback? onCompare;
   final bool isCompareActive;
@@ -104,6 +106,8 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
                         _PanelTitleBar(
                           target: target,
                           decimalPlaces: widget.decimalPlaces,
+                          maxRenderTreeClipboardCharacters:
+                              widget.maxRenderTreeClipboardCharacters,
                           onCompare: widget.onCompare,
                           isCompareActive: widget.isCompareActive,
                         ),
@@ -411,12 +415,14 @@ class _PanelTitleBar extends StatelessWidget {
   const _PanelTitleBar({
     required this.target,
     required this.decimalPlaces,
+    required this.maxRenderTreeClipboardCharacters,
     required this.onCompare,
     required this.isCompareActive,
   });
 
   final RenderBox target;
   final int decimalPlaces;
+  final int maxRenderTreeClipboardCharacters;
   final VoidCallback? onCompare;
   final bool isCompareActive;
 
@@ -511,15 +517,17 @@ class _PanelTitleBar extends StatelessWidget {
     return name.startsWith('Render') ? name.substring(6) : name;
   }
 
-  static const int _maxClipboardChars = 10000;
-
   Future<void> _copyRenderTreeToClipboard(
     BuildContext context,
     RenderBox target,
   ) async {
     final full = target.toStringDeep();
-    final truncated = full.length > _maxClipboardChars
-        ? '${full.substring(0, _maxClipboardChars)}\n… (${full.length - _maxClipboardChars} more chars)'
+    final limit = maxRenderTreeClipboardCharacters;
+    const marker = '\n…';
+    final truncated = full.length > limit
+        ? limit <= marker.length
+            ? marker.substring(0, limit)
+            : '${full.substring(0, limit - marker.length)}$marker'
         : full;
 
     await Clipboard.setData(ClipboardData(text: truncated));
@@ -532,8 +540,8 @@ class _PanelTitleBar extends StatelessWidget {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            full.length > _maxClipboardChars
-                ? 'Copied render tree ($_maxClipboardChars / ${full.length} chars)'
+            full.length > limit
+                ? 'Copied render tree ($limit / ${full.length} chars)'
                 : 'Copied render tree (${full.length} chars)',
           ),
         ),

@@ -5,6 +5,7 @@ import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controlle
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/app_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_button.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/search_bar.dart';
+import 'package:ispectify/ispectify.dart';
 
 import '../helpers/pump_ispect.dart';
 
@@ -21,6 +22,7 @@ void main() {
     });
 
     tearDown(() {
+      controller.dispose();
       focusNode.dispose();
       titlesController.dispose();
     });
@@ -121,8 +123,28 @@ void main() {
 
         expect(controller.searchController.text, 'test');
 
-        // Settle all internal debounce timers.
         await tester.pumpAndSettle(const Duration(seconds: 1));
+      },
+    );
+
+    testWidgets(
+      'search uses the configured processing debounce once',
+      (tester) async {
+        controller.dispose();
+        controller = ISpectViewController(
+          processingPolicy: DiagnosticProcessingPolicy.balanced.copyWith(
+            searchDebounce: const Duration(milliseconds: 100),
+          ),
+        );
+        await tester.pumpWidget(buildAppBar());
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byType(SearchBar), 'test');
+        await tester.pump(const Duration(milliseconds: 99));
+        expect(controller.filter.searchQuery, isNot('test'));
+
+        await tester.pump(const Duration(milliseconds: 1));
+        expect(controller.filter.searchQuery, 'test');
       },
     );
 

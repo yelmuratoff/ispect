@@ -20,6 +20,8 @@ extension ISpectDataX on ISpectLogData {
     String? key,
     Map<String, dynamic>? additionalData,
     String? id,
+    DiagnosticCaptureMode? captureMode,
+    DiagnosticResourceLimits? resourceLimits,
   }) {
     final captured = captureISpectLogDataForEgress(this);
     return ISpectLogData(
@@ -33,6 +35,8 @@ extension ISpectDataX on ISpectLogData {
       key: key ?? captured.key,
       additionalData: additionalData ?? captured.additionalData,
       id: id ?? captured.id,
+      captureMode: captureMode ?? captured.captureMode,
+      resourceLimits: resourceLimits ?? captured.resourceLimits,
     );
   }
 
@@ -40,31 +44,36 @@ extension ISpectDataX on ISpectLogData {
   ISpectLogData copy() => copyWith();
 
   /// Truncated summary for debugging/display.
-  String generateText() {
+  String generateText({int? maxOutputBytes}) {
     final captured = captureISpectLogDataForEgress(this);
-    String truncate(String? value, int maxLength) {
-      if (value == null) return '';
-      return value.length > maxLength
-          ? '${value.substring(0, maxLength)}...'
-          : value;
+    final policyBudget = captured.resourceLimits.maxUiDiagnosticBytes;
+    final requestedBudget = maxOutputBytes ?? policyBudget;
+    if (requestedBudget < 0) {
+      throw RangeError.range(
+        requestedBudget,
+        0,
+        policyBudget,
+        'maxOutputBytes',
+      );
     }
+    final outputBudget =
+        requestedBudget < policyBudget ? requestedBudget : policyBudget;
+    String bounded(String? value) => LogExportOutput.truncateUtf8(
+          value ?? '',
+          maxBytes: outputBudget,
+        );
 
-    final formattedKey = truncate(captured.key, 100);
-    final formattedMessage = truncate(
-      _safeDiagnosticText(captured.message),
-      100,
-    );
-    final exceptionText = truncate(captured.exceptionText, 500);
-    final errorText = truncate(captured.errorText, 500);
-    final stackTraceText = truncate(captured.stackTraceText, 500);
-
-    return '''[Item with hashcode: ${captured.id.hashCode}
+    final output = '''[Item with hashcode: ${captured.id.hashCode}
 Time: ${ISpectDateTimeFormatter(captured.time).defaultFormat}
-Key: $formattedKey
-Message: $formattedMessage
-Exception: $exceptionText
-Error: $errorText
-StackTrace: $stackTraceText]''';
+Key: ${bounded(captured.key)}
+Message: ${bounded(_safeDiagnosticText(captured.message))}
+Exception: ${bounded(captured.exceptionText)}
+Error: ${bounded(captured.errorText)}
+StackTrace: ${bounded(captured.stackTraceText)}]''';
+    return LogExportOutput.truncateUtf8(
+      output,
+      maxBytes: outputBudget,
+    );
   }
 
   /// Stack trace text for log display. Returns `null` if unavailable.
@@ -76,7 +85,10 @@ StackTrace: $stackTraceText]''';
         captured.additionalData?[TraceKeys.success] == false;
     final stackTraceText = captured.stackTraceText;
     return isError && stackTraceText != null && stackTraceText.isNotEmpty
-        ? 'StackTrace:\n$stackTraceText'.truncate()
+        ? LogExportOutput.truncateUtf8(
+            'StackTrace:\n$stackTraceText',
+            maxBytes: captured.resourceLimits.maxUiDiagnosticBytes,
+          )
         : null;
   }
 
@@ -91,7 +103,12 @@ StackTrace: $stackTraceText]''';
 
     final text = _isHttpKey(captured.key) ? toExportMessageText() : txt;
 
-    return text.truncate();
+    return text == null
+        ? null
+        : LogExportOutput.truncateUtf8(
+            text,
+            maxBytes: captured.resourceLimits.maxUiDiagnosticBytes,
+          );
   }
 
   bool get isHttpLog => _isHttpKey(captureISpectLogDataForEgress(this).key);
@@ -118,6 +135,7 @@ StackTrace: $stackTraceText]''';
         captured.additionalData,
         redactor: redactor,
         enableRedaction: enableRedaction,
+        resourceLimits: captured.resourceLimits,
       );
     } else if (captured.key == ISpectLogType.httpResponse.key ||
         captured.key == ISpectLogType.httpError.key) {
@@ -130,6 +148,7 @@ StackTrace: $stackTraceText]''';
               requestOptions,
               redactor: redactor,
               enableRedaction: enableRedaction,
+              resourceLimits: captured.resourceLimits,
             )
           : null;
     }

@@ -47,6 +47,8 @@ class ISpectDioInterceptorSettingsBuilder
   ISpectDioInterceptorSettings build() => ISpectDioInterceptorSettings(
         enabled: enabled,
         enableRedaction: enableRedaction,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
         logRequests: logRequests,
         logResponses: logResponses,
         printResponseData: printResponseData,

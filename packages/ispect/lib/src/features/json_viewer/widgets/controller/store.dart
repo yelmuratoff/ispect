@@ -10,12 +10,21 @@ import 'package:ispect/src/features/json_viewer/services/json_node_builder.dart'
 import 'package:ispect/src/features/json_viewer/services/json_node_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_search_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_tree_flattener.dart';
+import 'package:ispectify/ispectify.dart';
 
 /// Handles the data and manages the state of a json explorer.
 ///
 /// This class has been refactored to use separate services for better
 /// separation of concerns and improved maintainability.
 class JsonExplorerStore extends ChangeNotifier {
+  JsonExplorerStore({
+    this.processingPolicy = DiagnosticProcessingPolicy.balanced,
+  }) {
+    processingPolicy.validate();
+  }
+
+  final DiagnosticProcessingPolicy processingPolicy;
+
   List<NodeViewModelState> _displayNodes = [];
   UnmodifiableListView<NodeViewModelState> _allNodes = UnmodifiableListView([]);
 
@@ -193,12 +202,13 @@ class JsonExplorerStore extends ChangeNotifier {
 
     // For large JSON objects, process asynchronously
     final jsonObject = snapshot.value;
-    final isLargeJson = (jsonObject is Map && jsonObject.length > 1000) ||
-        (jsonObject is List && jsonObject.length > 1000);
+    final threshold = processingPolicy.viewerBuildYieldThreshold;
+    final isLargeJson = (jsonObject is Map && jsonObject.length > threshold) ||
+        (jsonObject is List && jsonObject.length > threshold);
 
     if (isLargeJson) {
       // Give UI thread a chance to update before heavy processing
-      await Future<void>.delayed(const Duration(milliseconds: 5));
+      await Future<void>.delayed(processingPolicy.viewerBuildYieldDelay);
       if (!mounted || generation != _buildGeneration) return;
     }
 
@@ -214,7 +224,7 @@ class JsonExplorerStore extends ChangeNotifier {
     _displayNodes = List<NodeViewModelState>.of(flatList);
 
     _nodeService = JsonNodeService();
-    _searchService = JsonSearchService();
+    _searchService = JsonSearchService(processingPolicy: processingPolicy);
 
     if (!mounted) return;
 

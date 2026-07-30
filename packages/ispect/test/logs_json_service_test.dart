@@ -655,6 +655,14 @@ void main() {
             'stackTrace': hostileStackTrace,
           },
         );
+        final callsAtCapture = [
+          hostileDateTime.calls,
+          hostileUri.calls,
+          hostileException.calls,
+          hostileError.calls,
+          hostileStackTrace.calls,
+          hostileJson.calls,
+        ];
         final outputs = [
           await service.exportToJson([log], metadata: metadata),
           service.formatFilteredContent(
@@ -673,16 +681,17 @@ void main() {
             lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
           );
         }
-        for (final calls in [
-          hostileDateTime.calls,
-          hostileUri.calls,
-          hostileException.calls,
-          hostileError.calls,
-          hostileStackTrace.calls,
-          hostileJson.calls,
-        ]) {
-          expect(calls, 0);
-        }
+        expect(
+          [
+            hostileDateTime.calls,
+            hostileUri.calls,
+            hostileException.calls,
+            hostileError.calls,
+            hostileStackTrace.calls,
+            hostileJson.calls,
+          ],
+          callsAtCapture,
+        );
       });
 
       test('caps aggregate nodes so every export remains importable', () async {
@@ -1442,6 +1451,36 @@ void main() {
           expect(redactedBytes.take(7), equals('[binary'.codeUnits));
           expect(redactedBytes, isNot(contains(122)));
         }
+      });
+
+      test('local resource policy limits import entry count', () async {
+        final constrainedService = LogsJsonService(
+          resourceLimits: DiagnosticResourceLimits.balanced.copyWith(
+            maxImportEntries: 1,
+          ),
+        );
+
+        await expectLater(
+          constrainedService.importFromJson('[{},{}]'),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains('entries (1)'),
+            ),
+          ),
+        );
+      });
+
+      test('local processing policy is validated before work starts', () async {
+        const invalidService = LogsJsonService(
+          processingPolicy: DiagnosticProcessingPolicy(importChunkSize: 0),
+        );
+
+        await expectLater(
+          invalidService.importFromJson('[]'),
+          throwsArgumentError,
+        );
       });
     });
   });

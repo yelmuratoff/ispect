@@ -62,6 +62,18 @@ final class _HostileTraceValue {
   }
 }
 
+final class _ReadableTraceValue {
+  int toJsonCalls = 0;
+
+  Map<String, Object?> toJson() {
+    toJsonCalls++;
+    return const {
+      'label': 'ready',
+      'password': 'TRACE_TYPED_SECRET',
+    };
+  }
+}
+
 final class _ThrowingTraceMeta extends MapBase<String, Object?> {
   int keyReads = 0;
 
@@ -129,6 +141,18 @@ void main() {
     test('localSample overrides config sampleRate', () {
       const cfg = ISpectTraceConfig(sampleRate: 0);
       expect(cfg.shouldLog(isError: false, localSample: 1), isTrue);
+    });
+
+    test('copyWith preserves and replaces per-trace resource limits', () {
+      const limits = DiagnosticResourceLimits.constrained;
+      const replacement = DiagnosticResourceLimits.extended;
+      const config = ISpectTraceConfig(resourceLimits: limits);
+
+      expect(config.copyWith().resourceLimits, same(limits));
+      expect(
+        config.copyWith(resourceLimits: replacement).resourceLimits,
+        same(replacement),
+      );
     });
   });
 
@@ -206,6 +230,68 @@ void main() {
         operation: 'GET',
       );
       expect(disabled.traces, isEmpty);
+    });
+
+    test('inherits resource limits from logger options', () {
+      final limits = DiagnosticResourceLimits.balanced.copyWith(
+        maxCapturedValueBytes: 64,
+        maxLogRecordBytes: 256,
+        maxExportDocumentBytes: 512,
+      );
+      logger.configure(
+        options: logger.options.copyWith(resourceLimits: limits),
+      );
+
+      logger.trace(
+        category: dbCategory,
+        source: 's' * 200,
+        operation: 'read',
+        config: const ISpectTraceConfig(redact: false),
+      );
+
+      final source =
+          '${logger.traces.single.additionalData?[TraceKeys.source]}';
+      expect(
+        LogExportOutput.utf8Length(source),
+        lessThanOrEqualTo(limits.maxCapturedValueBytes),
+      );
+    });
+
+    test('per-trace resource limits override the logger policy', () {
+      final loggerLimits = DiagnosticResourceLimits.balanced.copyWith(
+        maxCapturedValueBytes: 64,
+        maxLogRecordBytes: 256,
+        maxExportDocumentBytes: 512,
+      );
+      final traceLimits = loggerLimits.copyWith(
+        maxCapturedValueBytes: 512,
+        maxLogRecordBytes: 1024,
+        maxExportDocumentBytes: 2048,
+      );
+      logger.configure(
+        options: logger.options.copyWith(resourceLimits: loggerLimits),
+      );
+
+      logger.trace(
+        category: dbCategory,
+        source: 's' * 200,
+        operation: 'read',
+        config: ISpectTraceConfig(
+          redact: false,
+          resourceLimits: traceLimits,
+        ),
+      );
+
+      final source =
+          '${logger.traces.single.additionalData?[TraceKeys.source]}';
+      expect(
+        LogExportOutput.utf8Length(source),
+        greaterThan(loggerLimits.maxCapturedValueBytes),
+      );
+      expect(
+        LogExportOutput.utf8Length(source),
+        lessThanOrEqualTo(traceLimits.maxCapturedValueBytes),
+      );
     });
 
     test('disposed logger does not inspect trace metadata', () async {
@@ -441,6 +527,11 @@ void main() {
     });
 
     test('bounds opt-out diagnostics without executing their formatters', () {
+      logger.configure(
+        options: logger.options.copyWith(
+          captureMode: DiagnosticCaptureMode.strict,
+        ),
+      );
       final exception = _HostileTraceException();
       final stack = _HostileTraceStack();
 
@@ -470,6 +561,11 @@ void main() {
 
     test('bounds diagnostics before redaction without executing formatters',
         () {
+      logger.configure(
+        options: logger.options.copyWith(
+          captureMode: DiagnosticCaptureMode.strict,
+        ),
+      );
       final exception = _HostileTraceException();
       final stack = _HostileTraceStack();
       final value = _HostileTraceValue();
@@ -497,6 +593,26 @@ void main() {
       expect(stack.calls, 0);
       expect(value.toJsonCalls, 0);
       expect(value.toStringCalls, 0);
+    });
+
+    test('balanced mode captures and redacts typed trace values', () {
+      final value = _ReadableTraceValue();
+
+      logger.trace(
+        category: networkCategory,
+        source: 'dio',
+        operation: 'GET',
+        value: value,
+      );
+
+      expect(
+        logger.traces.single.additionalData?[TraceKeys.value],
+        {
+          'label': 'ready',
+          'password': '[REDACTED]',
+        },
+      );
+      expect(value.toJsonCalls, 1);
     });
   });
 
@@ -741,6 +857,22 @@ void main() {
       ]) {
         expect(retained, isNot(contains(secret)));
       }
+    });
+
+    test('active redaction drops a previously truncated prefix', () {
+      const partial = 'PARTIAL_TRACE_SECRET';
+      final token = logger.traceStart(
+        category: grpcCategory,
+        source: 'grpc',
+        operation: 'unary',
+        target: '$partial${LogExportOutput.truncatedMarker}',
+        meta: const {
+          'visible': '$partial${LogExportOutput.truncatedMarker}',
+        },
+      );
+
+      expect(token?.target, LogExportOutput.truncatedMarker);
+      expect(token?.meta?['visible'], LogExportOutput.truncatedMarker);
     });
 
     test('explicit opt-out retains only a bounded token prefix', () {
@@ -1684,7 +1816,7 @@ void main() {
       expect(decoded['id'], 'AUTH-EVENT');
       expect(
         metadata['event'],
-        JsonValueNormalizer.unprintableValue,
+        contains('_CheckStatusAuthEvent'),
       );
       expect(metadata['authorization'], isNot(contains('secret-token')));
       expect(decoded, isNot(contains('export-error')));

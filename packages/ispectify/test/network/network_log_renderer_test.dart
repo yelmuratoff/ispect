@@ -378,5 +378,24 @@ void main() {
       expect(body, contains('Headers'));
       expect(body, contains('x-trace'));
     });
+
+    test('uses the entry policy instead of the legacy string limit', () {
+      final limits = DiagnosticResourceLimits.balanced.copyWith(
+        maxCapturedValueBytes: 64 * 1024,
+      );
+      final payload = '${'x' * 12000}TAIL';
+      final entry = ISpectLogData(
+        'request',
+        additionalData: {
+          TraceKeys.category: TraceCategoryIds.network,
+          NetworkJsonKeys.requestData: {
+            NetworkJsonKeys.data: {'payload': payload},
+          },
+        },
+        resourceLimits: limits,
+      );
+
+      expect(NetworkLogRenderer.renderBody(entry), contains('TAIL'));
+    });
   });
 }

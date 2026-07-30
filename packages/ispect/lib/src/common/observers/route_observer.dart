@@ -323,7 +323,11 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       return summarizeRouteDiagnosticArguments(arguments);
     }
 
-    return LogExportOutput.boundJsonValue(arguments);
+    return LogExportOutput.boundJsonValue(
+      arguments,
+      resourceLimits: _captureLogger?.options.resourceLimits ??
+          DiagnosticResourceLimits.balanced,
+    );
   }
 
   /// Determines whether arriving at [route] should be logged.
@@ -411,7 +415,12 @@ String buildRouteLogMessage({
 
 String _boundedRouteArgumentText(Object value) {
   try {
-    final bounded = LogExportOutput.boundJsonValue(value);
+    final limits = ISpect.loggerIfInitialized?.options.resourceLimits ??
+        DiagnosticResourceLimits.balanced;
+    final bounded = LogExportOutput.boundJsonValue(
+      value,
+      resourceLimits: limits,
+    );
     final text = switch (bounded) {
       null => 'null',
       final String value => value,
@@ -421,7 +430,7 @@ String _boundedRouteArgumentText(Object value) {
     };
     return LogExportOutput.truncateUtf8(
       text,
-      maxBytes: LogExportOutput.maxPreparedValueBytes,
+      maxBytes: limits.maxUiDiagnosticBytes,
     );
   } on Object {
     return JsonValueNormalizer.unprintableValue;

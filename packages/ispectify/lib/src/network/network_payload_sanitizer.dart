@@ -9,9 +9,15 @@ import 'package:ispectify/src/utils/bounded_json_decoder.dart';
 /// Handles string-key normalization, optional redaction, and conversion of
 /// arbitrary values into map representations consumable by log models.
 final class NetworkPayloadSanitizer {
-  NetworkPayloadSanitizer(this._redactor);
+  NetworkPayloadSanitizer(
+    this._redactor, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) : _resourceLimits = resourceLimits {
+    resourceLimits.validate();
+  }
 
   final RedactionService _redactor;
+  final DiagnosticResourceLimits _resourceLimits;
 
   /// Returns a string-keyed map of headers, applying redaction when enabled.
   Map<String, dynamic> headersMap(
@@ -25,14 +31,16 @@ final class NetworkPayloadSanitizer {
       headers,
       redactionActive: redactionActive,
       preserveTypes: redactionActive,
+      resourceLimits: _resourceLimits,
     );
     final typed = prepared is Map<String, Object?>
         ? Map<String, dynamic>.from(prepared)
         : <String, dynamic>{};
-    if (!redactionActive) return typed;
+    final limited = _limitStringMap(typed, _resourceLimits.maxNetworkHeaders);
+    if (!redactionActive) return limited;
     try {
       final redacted = _redactor.redactHeaders(
-        typed,
+        limited,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
@@ -40,11 +48,15 @@ final class NetworkPayloadSanitizer {
         redacted,
         redactionActive: true,
         preserveTypes: true,
+        resourceLimits: _resourceLimits,
       );
       if (normalized is! Map<String, Object?>) {
         return <String, dynamic>{};
       }
-      return Map<String, dynamic>.from(normalized);
+      return _limitStringMap(
+        Map<String, dynamic>.from(normalized),
+        _resourceLimits.maxNetworkHeaders,
+      );
     } on Object {
       return <String, dynamic>{};
     }
@@ -67,18 +79,22 @@ final class NetworkPayloadSanitizer {
     Object? Function(Object? value)? normalizer,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.strict,
   }) {
     final redactionActive = enableRedaction && ISpectRedaction.enabled;
     final prepared = _boundedSnapshot(
       data,
       redactionActive: redactionActive,
       preserveTypes: redactionActive,
+      captureMode: captureMode,
+      resourceLimits: _resourceLimits,
     );
     final normalized = normalizer != null ? normalizer(prepared) : prepared;
     final bounded = _boundedSnapshot(
       normalized,
       redactionActive: redactionActive,
       preserveTypes: redactionActive,
+      resourceLimits: _resourceLimits,
     );
     if (!redactionActive) return bounded;
     return _redactBody(
@@ -95,6 +111,7 @@ final class NetworkPayloadSanitizer {
       value,
       redactionActive: false,
       preserveTypes: true,
+      resourceLimits: _resourceLimits,
     );
     if (bounded == null) return <String, dynamic>{};
     if (bounded is Map<String, Object?>) {
@@ -108,23 +125,32 @@ final class NetworkPayloadSanitizer {
   /// Also available as [toStringKeyMap] for call sites without a sanitizer
   /// instance (e.g. data serialization classes).
   Map<String, dynamic> stringKeyMap(Map<dynamic, dynamic>? input) =>
-      toStringKeyMap(input);
+      toStringKeyMap(input, resourceLimits: _resourceLimits);
 
   /// Converts a map with arbitrary key types into a `Map<String, dynamic>`.
   ///
-  /// The result is a bounded, non-executing snapshot. Non-string keys and
-  /// caller-defined objects are replaced with stable diagnostic markers;
-  /// their `toString` or `toJson` implementations are never invoked.
-  static Map<String, dynamic> toStringKeyMap(Map<dynamic, dynamic>? input) {
+  /// The result is always bounded. Strict capture replaces caller-defined
+  /// objects with stable markers; balanced capture may use guarded `toJson()`
+  /// or `toString()` before applying the same output limits.
+  static Map<String, dynamic> toStringKeyMap(
+    Map<dynamic, dynamic>? input, {
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.strict,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+    int? maxEntries,
+  }) {
+    resourceLimits.validate();
     if (input == null) return <String, dynamic>{};
     final bounded = _boundedSnapshot(
       input,
       redactionActive: false,
       preserveTypes: true,
+      captureMode: captureMode,
+      resourceLimits: resourceLimits,
     );
-    return bounded is Map<String, Object?>
+    final result = bounded is Map<String, Object?>
         ? Map<String, dynamic>.from(bounded)
         : <String, dynamic>{};
+    return maxEntries == null ? result : _limitStringMap(result, maxEntries);
   }
 
   /// Returns null when the provided map is null or empty; otherwise returns the map.
@@ -137,16 +163,28 @@ final class NetworkPayloadSanitizer {
   /// inspection, so ordinary non-JSON text and malformed or over-budget JSON
   /// retain a bounded prefix without executing caller-defined methods.
   /// Useful for HTTP string responses that may contain remote JSON.
-  static Object? decodeJsonGracefully(Object? value) {
+  static Object? decodeJsonGracefully(
+    Object? value, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
     final bounded = _boundedSnapshot(
       value,
       redactionActive: false,
+      resourceLimits: resourceLimits,
     );
     if (bounded is! String) return bounded;
     if (bounded.isEmpty) return null;
     if (!BoundedJsonDecoder.looksLikeJson(bounded)) return bounded;
     try {
-      return BoundedJsonDecoder.decode(bounded);
+      return BoundedJsonDecoder.decode(
+        bounded,
+        maxCharacters: resourceLimits.maxCapturedValueBytes,
+        maxEncodedBytes: resourceLimits.maxCapturedValueBytes,
+        maxDepth: resourceLimits.maxTraversalDepth,
+        maxNodes: resourceLimits.maxTraversalNodes,
+        maxCollectionItems: resourceLimits.maxCollectionItems,
+      );
     } on BoundedJsonException {
       return bounded;
     }
@@ -172,12 +210,14 @@ final class NetworkPayloadSanitizer {
           final bounded = _boundedSnapshot(
             redacted,
             redactionActive: true,
+            resourceLimits: _resourceLimits,
           );
           if (bounded is! Map && bounded is! List) return bounded;
           final encoded = jsonEncode(bounded);
           final boundedEncoded = _boundedSnapshot(
             encoded,
             redactionActive: true,
+            resourceLimits: _resourceLimits,
           );
           return boundedEncoded is String
               ? boundedEncoded
@@ -194,77 +234,81 @@ final class NetworkPayloadSanitizer {
       return _boundedSnapshot(
         redacted,
         redactionActive: true,
+        resourceLimits: _resourceLimits,
       );
     } on Object {
       return redactionFailedPlaceholder;
     }
   }
 
-  /// Creates a bounded snapshot without invoking caller-supplied `toJson` or
-  /// `toString` implementations.
+  /// Creates a bounded payload snapshot using the selected capture policy.
   ///
   /// Pure JSON values retain their shape. Typed binary values remain atomic so
   /// an active redactor can apply its binary policy; oversized binary values
   /// are replaced before they can cross the capture boundary.
-  static Object? encodeJsonGracefully(Object? value) => _boundedSnapshot(
+  static Object? encodeJsonGracefully(
+    Object? value, {
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.strict,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) =>
+      _boundedSnapshot(
         value,
         redactionActive: false,
         preserveTypes: true,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
       );
 
   static Object? _boundedSnapshot(
     Object? value, {
     required bool redactionActive,
     bool preserveTypes = false,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.strict,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
+    resourceLimits.validate();
     final bounded = LogExportOutput.boundJsonValue(
       value,
+      resourceLimits: resourceLimits,
       preserveTypes: preserveTypes,
       replaceOversizedStrings: redactionActive,
+      allowCustomSerialization: captureMode == DiagnosticCaptureMode.balanced,
+      allowCustomStringification: captureMode == DiagnosticCaptureMode.balanced,
     );
     final binaryBounded = preserveTypes
         ? _PreservedBinaryBudget(
-            LogExportOutput.maxPreparedValueBytes,
+            resourceLimits.maxCapturedValueBytes,
+            resourceLimits.maxTraversalDepth,
           ).convert(bounded)
         : bounded;
     return redactionActive
-        ? _replaceTruncatedPrefixes(binaryBounded)
+        ? LogExportOutput.replaceTruncatedPrefixes(
+            binaryBounded,
+            resourceLimits: resourceLimits,
+          )
         : binaryBounded;
   }
 
-  static Object? _replaceTruncatedPrefixes(Object? value, {int depth = 0}) {
-    if (value is String) {
-      return value.contains(LogExportOutput.truncatedMarker)
-          ? LogExportOutput.truncatedMarker
-          : value;
+  static Map<String, dynamic> _limitStringMap(
+    Map<String, dynamic> source,
+    int maxEntries,
+  ) {
+    if (maxEntries < 1) {
+      throw RangeError.range(maxEntries, 1, null, 'maxEntries');
     }
-    if (value is TypedData || value is ByteBuffer) return value;
-    if (depth >= 64) return JsonValueNormalizer.maxDepthReached;
-    if (value is Map<String, Object?>) {
-      return <String, Object?>{
-        for (final entry in value.entries)
-          (entry.key.contains(LogExportOutput.truncatedMarker)
-              ? LogExportOutput.truncatedMarker
-              : entry.key): _replaceTruncatedPrefixes(
-            entry.value,
-            depth: depth + 1,
-          ),
-      };
-    }
-    if (value is List<Object?>) {
-      return <Object?>[
-        for (final item in value)
-          _replaceTruncatedPrefixes(item, depth: depth + 1),
-      ];
-    }
-    return value;
+    if (source.length <= maxEntries) return source;
+    return <String, dynamic>{
+      for (final entry in source.entries.take(maxEntries))
+        entry.key: entry.value,
+    };
   }
 }
 
 final class _PreservedBinaryBudget {
-  _PreservedBinaryBudget(this._remainingBytes);
+  _PreservedBinaryBudget(this._remainingBytes, this._maxDepth);
 
   int _remainingBytes;
+  final int _maxDepth;
 
   Object? convert(Object? value, {int depth = 0}) {
     if (value is TypedData) {
@@ -281,7 +325,7 @@ final class _PreservedBinaryBudget {
       _remainingBytes -= value.lengthInBytes;
       return value;
     }
-    if (depth >= 64) return JsonValueNormalizer.maxDepthReached;
+    if (depth >= _maxDepth) return JsonValueNormalizer.maxDepthReached;
     if (value is Map<String, Object?>) {
       return <String, Object?>{
         for (final entry in value.entries)

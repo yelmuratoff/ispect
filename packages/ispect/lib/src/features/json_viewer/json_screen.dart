@@ -31,21 +31,39 @@ class JsonScreen extends StatefulWidget {
     Map<String, dynamic>? correlatedLogData,
     String? correlatedLogLabel,
     Duration? correlationDuration,
+    DiagnosticResourceLimits? resourceLimits,
+    DiagnosticProcessingPolicy? processingPolicy,
     Key? key,
   }) {
-    final dataSnapshot = JsonInputPreflight.snapshotForViewer(data);
+    final limits = (resourceLimits ??
+        ISpect.loggerIfInitialized?.options.resourceLimits ??
+        DiagnosticResourceLimits.balanced)
+      ..validate();
+    final scheduling = (processingPolicy ??
+        ISpect.loggerIfInitialized?.options.processingPolicy ??
+        DiagnosticProcessingPolicy.balanced)
+      ..validate();
+    JsonInputSnapshot snapshot(Object? value) =>
+        JsonInputPreflight.snapshotForViewer(
+          value,
+          nestingDepthLimit: limits.maxTraversalDepth,
+          nodeLimit: limits.maxViewerNodes,
+          encodedByteLimit: limits.maxViewerBytes,
+        );
+
+    final dataSnapshot = snapshot(data);
     final truncatedDataSnapshot = truncatedData == null
         ? null
         : identical(truncatedData, data)
             ? dataSnapshot
-            : JsonInputPreflight.snapshotForViewer(truncatedData);
+            : snapshot(truncatedData);
     final correlatedLogDataSnapshot = correlatedLogData == null
         ? null
         : identical(correlatedLogData, data)
             ? dataSnapshot
             : identical(correlatedLogData, truncatedData)
                 ? truncatedDataSnapshot
-                : JsonInputPreflight.snapshotForViewer(correlatedLogData);
+                : snapshot(correlatedLogData);
 
     return JsonScreen._(
       dataSnapshot: dataSnapshot,
@@ -54,6 +72,7 @@ class JsonScreen extends StatefulWidget {
       correlatedLogDataSnapshot: correlatedLogDataSnapshot,
       correlatedLogLabel: correlatedLogLabel,
       correlationDuration: correlationDuration,
+      processingPolicy: scheduling,
       key: key,
     );
   }
@@ -65,6 +84,7 @@ class JsonScreen extends StatefulWidget {
     required this.onClose,
     required this.correlatedLogLabel,
     required this.correlationDuration,
+    required this.processingPolicy,
     super.key,
   })  : _dataSnapshot = dataSnapshot,
         _truncatedDataSnapshot = truncatedDataSnapshot,
@@ -73,6 +93,7 @@ class JsonScreen extends StatefulWidget {
   final JsonInputSnapshot _dataSnapshot;
   final JsonInputSnapshot? _truncatedDataSnapshot;
   final JsonInputSnapshot? _correlatedLogDataSnapshot;
+  final DiagnosticProcessingPolicy processingPolicy;
 
   /// Bounded JSON-compatible snapshot owned by this viewer.
   Map<String, dynamic> get data => _mapFromSnapshot(_dataSnapshot);
@@ -117,7 +138,7 @@ class JsonScreen extends StatefulWidget {
 }
 
 class _JsonScreenState extends State<JsonScreen> {
-  final _store = JsonExplorerStore();
+  late final JsonExplorerStore _store;
   final _searchController = TextEditingController();
   final _hasSearchText = ValueNotifier(false);
 
@@ -129,6 +150,7 @@ class _JsonScreenState extends State<JsonScreen> {
   @override
   void initState() {
     super.initState();
+    _store = JsonExplorerStore(processingPolicy: widget.processingPolicy);
     _store.buildNodes(widget._dataSnapshot);
   }
 
@@ -155,7 +177,7 @@ class _JsonScreenState extends State<JsonScreen> {
   void _onSearchChanged(String value) {
     _hasSearchText.value = value.isNotEmpty;
     _searchDebounceTimer?.cancel();
-    _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+    _searchDebounceTimer = Timer(widget.processingPolicy.searchDebounce, () {
       if (mounted && _store.mounted) {
         _store.search(value);
       }

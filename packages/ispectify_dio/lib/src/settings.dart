@@ -7,6 +7,8 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectDioInterceptorSettings({
     super.enabled,
     super.enableRedaction,
+    super.captureMode,
+    super.resourceLimits,
     super.logRequests,
     super.logResponses,
     super.printResponseData,
@@ -83,6 +85,8 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
   ISpectDioInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,
+    DiagnosticCaptureMode? captureMode,
+    DiagnosticResourceLimits? resourceLimits,
     bool? logRequests,
     bool? logResponses,
     bool? printResponseData,
@@ -109,6 +113,8 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
       ISpectDioInterceptorSettings(
         enabled: enabled ?? this.enabled,
         enableRedaction: enableRedaction ?? this.enableRedaction,
+        captureMode: captureMode ?? this.captureMode,
+        resourceLimits: resourceLimits ?? this.resourceLimits,
         logRequests: logRequests ?? this.logRequests,
         logResponses: logResponses ?? this.logResponses,
         printResponseData: printResponseData ?? this.printResponseData,

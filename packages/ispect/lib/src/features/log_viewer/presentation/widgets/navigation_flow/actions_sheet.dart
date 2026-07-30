@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/observers/route_sanitizer.dart';
 import 'package:ispect/src/common/observers/transition.dart';
 import 'package:ispect/src/common/widgets/export_sheet.dart';
-import 'package:ispectify/ispectify.dart';
 
 class ISpectNavigationFlowActionsSheet {
   const ISpectNavigationFlowActionsSheet({
@@ -400,11 +400,12 @@ class ISpectNavigationFlowActionsSheet {
   static String? _comparableTransitionId(RouteTransition transition) {
     try {
       final id = transition.id;
+      final maxBytes = _resourceLimits.maxCapturedValueBytes;
       if (LogExportOutput.utf8Length(
             id,
-            limit: LogExportOutput.maxPreparedValueBytes,
+            limit: maxBytes,
           ) >
-          LogExportOutput.maxPreparedValueBytes) {
+          maxBytes) {
         return null;
       }
       return id;
@@ -417,7 +418,7 @@ class ISpectNavigationFlowActionsSheet {
     String value, {
     required bool redactionActive,
   }) {
-    const maxBytes = LogExportOutput.maxPreparedValueBytes;
+    final maxBytes = _resourceLimits.maxCapturedValueBytes;
     if (LogExportOutput.utf8Length(value, limit: maxBytes) <= maxBytes) {
       return value;
     }
@@ -488,12 +489,20 @@ class ISpectNavigationFlowActionsSheet {
 
   static String _twoDigits(int value) => value.toString().padLeft(2, '0');
 
-  static const int _maxSourceItems =
-      JsonValueNormalizer.defaultMaxCollectionItems;
-  static const int _maxNavigationOutputBytes =
-      LogExportOutput.maxRecordBytes < LogExportOutput.maxDocumentBytes
-          ? LogExportOutput.maxRecordBytes
-          : LogExportOutput.maxDocumentBytes;
+  static DiagnosticResourceLimits get _resourceLimits =>
+      (ISpect.loggerIfInitialized?.options.resourceLimits ??
+          DiagnosticResourceLimits.balanced)
+        ..validate();
+
+  static int get _maxSourceItems => _resourceLimits.maxCollectionItems;
+
+  static int get _maxNavigationOutputBytes {
+    final limits = _resourceLimits;
+    return limits.maxLogRecordBytes < limits.maxExportDocumentBytes
+        ? limits.maxLogRecordBytes
+        : limits.maxExportDocumentBytes;
+  }
+
   static const String _markdownFallback = '# Navigation Flow\n\n```\n'
       '${LogExportOutput.truncatedMarker}\n'
       '```\n';

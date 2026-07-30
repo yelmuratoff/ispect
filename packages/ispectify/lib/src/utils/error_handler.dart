@@ -26,17 +26,23 @@ class ISpectErrorHandler {
             err,
             message: msg,
             stackTrace: stackTrace,
+            captureMode: settings.captureMode,
+            resourceLimits: settings.resourceLimits,
           ),
         final Exception ex => ISpectLogException(
             ex,
             message: msg,
             stackTrace: stackTrace,
+            captureMode: settings.captureMode,
+            resourceLimits: settings.resourceLimits,
           ),
         _ => ISpectLogData(
             msg ?? exception,
             key: ISpectLogType.error.key,
             logLevel: LogLevel.error,
             stackTrace: stackTrace,
+            captureMode: settings.captureMode,
+            resourceLimits: settings.resourceLimits,
           ),
       };
 }

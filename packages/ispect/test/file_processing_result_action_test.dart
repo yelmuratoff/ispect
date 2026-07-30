@@ -28,14 +28,16 @@ void main() {
 
   Future<void> expectRejectedContent(
     WidgetTester tester,
-    String content,
-  ) async {
+    String content, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) async {
     final result = FileProcessingResult.success(
       content: content,
       displayName: 'test',
       mimeType: 'application/json',
       fileName: 'hostile.json',
       format: FileFormat.json,
+      resourceLimits: resourceLimits,
     );
 
     await tester.pumpWidget(
@@ -158,6 +160,19 @@ void main() {
       final content = '$oversizedPrefix"}';
 
       await expectRejectedContent(tester, content);
+    });
+
+    testWidgets('uses the result-local import budget', (tester) async {
+      final limits = DiagnosticResourceLimits.balanced.copyWith(
+        maxImportCharacters: 64,
+        maxImportBytes: 64,
+      );
+
+      await expectRejectedContent(
+        tester,
+        '{"value":"${'x' * 100}"}',
+        resourceLimits: limits,
+      );
     });
 
     testWidgets('does not decode deeply nested JSON', (tester) async {

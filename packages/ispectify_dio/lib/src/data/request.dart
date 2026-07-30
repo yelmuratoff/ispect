@@ -3,10 +3,15 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_dio/src/utils/form_data_serializer.dart';
 
 class DioRequestData {
-  DioRequestData(this.requestOptions)
-      : uriSnapshot = _snapshotRequestUrl(requestOptions);
+  DioRequestData(
+    this.requestOptions, {
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
+  }) : uriSnapshot = _snapshotRequestUrl(requestOptions, resourceLimits) {
+    resourceLimits.validate();
+  }
 
   final RequestOptions requestOptions;
+  final DiagnosticResourceLimits resourceLimits;
 
   /// Bounded request URL reconstructed without reading [RequestOptions.uri].
   ///
@@ -23,19 +28,31 @@ class DioRequestData {
     bool includeData = true,
     bool includeHeaders = true,
     bool redactionActive = false,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
   }) {
     final normalizedHeaders = includeHeaders
-        ? NetworkPayloadSanitizer.toStringKeyMap(requestOptions.headers)
+        ? NetworkPayloadSanitizer.toStringKeyMap(
+            requestOptions.headers,
+            captureMode: captureMode,
+            resourceLimits: resourceLimits,
+            maxEntries: resourceLimits.maxNetworkHeaders,
+          )
         : null;
-    final normalizedQuery =
-        NetworkPayloadSanitizer.toStringKeyMap(requestOptions.queryParameters);
-    final normalizedExtra =
-        NetworkPayloadSanitizer.toStringKeyMap(requestOptions.extra)
-          ..remove(NetworkJsonKeys.ispectRequestStartedAt);
+    final normalizedQuery = NetworkPayloadSanitizer.toStringKeyMap(
+      requestOptions.queryParameters,
+      captureMode: captureMode,
+      resourceLimits: resourceLimits,
+    );
+    final normalizedExtra = NetworkPayloadSanitizer.toStringKeyMap(
+      requestOptions.extra,
+      captureMode: captureMode,
+      resourceLimits: resourceLimits,
+    )..remove(NetworkJsonKeys.ispectRequestStartedAt);
     final normalizedData = includeData
         ? _normalizeBody(
             requestOptions.data,
             redactionActive: redactionActive,
+            captureMode: captureMode,
           )
         : null;
 
@@ -84,12 +101,14 @@ class DioRequestData {
     RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     NetworkMapRedactor.redactMethod(
       map,
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     NetworkMapRedactor.redactFreeText(
       map,
@@ -97,20 +116,31 @@ class DioRequestData {
       key: NetworkJsonKeys.contentType,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
-    NetworkMapRedactor.redactPathFields(map, redactor);
-    NetworkMapRedactor.redactUrl(map, redactor);
+    NetworkMapRedactor.redactPathFields(
+      map,
+      redactor,
+      resourceLimits: resourceLimits,
+    );
+    NetworkMapRedactor.redactUrl(
+      map,
+      redactor,
+      resourceLimits: resourceLimits,
+    );
     NetworkMapRedactor.redactData(
       map,
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     NetworkMapRedactor.redactHeaders(
       map,
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     NetworkMapRedactor.redactMapField(
       map,
@@ -118,6 +148,7 @@ class DioRequestData {
       key: NetworkJsonKeys.queryParameters,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     NetworkMapRedactor.redactMapField(
       map,
@@ -126,24 +157,38 @@ class DioRequestData {
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
       preserveKeys: {NetworkJsonKeys.ispectRequestId},
+      resourceLimits: resourceLimits,
     );
   }
 
   Object? _normalizeBody(
     Object? data, {
     required bool redactionActive,
+    required DiagnosticCaptureMode captureMode,
   }) {
     if (data is FormData) {
       return DioFormDataSerializer.serialize(
         data,
         redactionActive: redactionActive,
+        resourceLimits: resourceLimits,
       );
     }
-    return NetworkPayloadSanitizer.encodeJsonGracefully(data);
+    final normalized = NetworkPayloadSanitizer.encodeJsonGracefully(
+      data,
+      captureMode: captureMode,
+      resourceLimits: resourceLimits,
+    );
+    return LogExportOutput.boundJsonValue(
+      normalized,
+      maxBytes: resourceLimits.maxNetworkBodyBytes,
+      resourceLimits: resourceLimits,
+      replaceOversizedStrings: redactionActive,
+    );
   }
 
   static NetworkUriSnapshot _snapshotRequestUrl(
     RequestOptions requestOptions,
+    DiagnosticResourceLimits resourceLimits,
   ) {
     try {
       var url = requestOptions.path;
@@ -154,7 +199,10 @@ class DioRequestData {
           url = '${schemeParts[0]}:/${schemeParts[1].replaceAll('//', '/')}';
         }
       }
-      return NetworkUriSnapshot.fromTrustedText(url);
+      return NetworkUriSnapshot.fromTrustedText(
+        url,
+        resourceLimits: resourceLimits,
+      );
     } on Object {
       return NetworkUriSnapshot.unavailable;
     }

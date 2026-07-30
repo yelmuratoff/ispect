@@ -9,18 +9,28 @@ class ISpectFilter implements Filter<ISpectLogData> {
     Iterable<Type> types = const [],
     Iterable<String> logTypeKeys = const [],
     String? searchQuery,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
   })  : _types = {...types},
         _logTypeKeys = {...logTypeKeys.where((key) => key.isNotEmpty)},
         _searchQuery = searchQuery?.trim(),
-        _searchFilter = _toSearchFilter(searchQuery?.trim());
+        _searchFilter = _toSearchFilter(
+          searchQuery?.trim(),
+          resourceLimits,
+        );
 
-  static SearchFilter? _toSearchFilter(String? trimmed) =>
-      (trimmed != null && trimmed.isNotEmpty) ? SearchFilter(trimmed) : null;
+  static SearchFilter? _toSearchFilter(
+    String? trimmed,
+    DiagnosticResourceLimits resourceLimits,
+  ) =>
+      (trimmed != null && trimmed.isNotEmpty)
+          ? SearchFilter(trimmed, resourceLimits: resourceLimits)
+          : null;
 
   final Set<Type> _types;
   final Set<String> _logTypeKeys;
   final String? _searchQuery;
   final SearchFilter? _searchFilter;
+  final DiagnosticResourceLimits resourceLimits;
 
   /// Active filters materialized as a list (cached).
   late final List<Filter<ISpectLogData>> filters =
@@ -57,10 +67,12 @@ class ISpectFilter implements Filter<ISpectLogData> {
     List<Type>? types,
     List<String>? logTypeKeys,
     String? searchQuery,
+    DiagnosticResourceLimits? resourceLimits,
   }) =>
       ISpectFilter(
         types: types ?? _types,
         logTypeKeys: logTypeKeys ?? _logTypeKeys,
         searchQuery: searchQuery ?? _searchQuery,
+        resourceLimits: resourceLimits ?? this.resourceLimits,
       );
 }

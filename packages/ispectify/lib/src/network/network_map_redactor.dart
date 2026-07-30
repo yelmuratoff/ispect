@@ -1,8 +1,8 @@
 import 'dart:collection';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:ispectify/src/history/serialization.dart';
+import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/network/network_json_keys.dart';
 import 'package:ispectify/src/network/network_payload_sanitizer.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart';
@@ -29,10 +29,11 @@ abstract final class NetworkMapRedactor {
     Map<String, dynamic> map,
     RedactionService redactor, {
     String key = NetworkJsonKeys.url,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     final value = map[key];
     if (value is String) {
-      final redacted = _redactUrlValue(value, redactor);
+      final redacted = _redactUrlValue(value, redactor, resourceLimits);
       map[key] = redacted;
       if (ISpectRedaction.enabled && redacted != value) {
         _markRedaction(map, NetworkJsonKeys.urlRedacted, true);
@@ -50,12 +51,16 @@ abstract final class NetworkMapRedactor {
     String key = NetworkJsonKeys.headers,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     final raw = map[key];
     if (raw == null) return null;
     if (raw is! Map) return null;
 
-    final sanitizer = NetworkPayloadSanitizer(redactor);
+    final sanitizer = NetworkPayloadSanitizer(
+      redactor,
+      resourceLimits: resourceLimits,
+    );
     final prepared = sanitizer.headersMap(
       raw,
       enableRedaction: false,
@@ -72,7 +77,11 @@ abstract final class NetworkMapRedactor {
       final changedKeys = redacted.keys.where(
         (header) =>
             !prepared.containsKey(header) ||
-            !_safeJsonEquals(prepared[header], redacted[header]),
+            !_safeJsonEquals(
+              prepared[header],
+              redacted[header],
+              resourceLimits,
+            ),
       );
       if (changedKeys.isNotEmpty) {
         _markRedaction(
@@ -94,10 +103,14 @@ abstract final class NetworkMapRedactor {
     String key = NetworkJsonKeys.data,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     if (!map.containsKey(key)) return;
     final raw = map[key];
-    final sanitizer = NetworkPayloadSanitizer(redactor);
+    final sanitizer = NetworkPayloadSanitizer(
+      redactor,
+      resourceLimits: resourceLimits,
+    );
     final prepared = sanitizer.body(
       raw,
       enableRedaction: false,
@@ -109,7 +122,8 @@ abstract final class NetworkMapRedactor {
       ignoredKeys: ignoredKeys,
     );
     map[key] = redacted;
-    if (ISpectRedaction.enabled && !_safeJsonEquals(prepared, redacted)) {
+    if (ISpectRedaction.enabled &&
+        !_safeJsonEquals(prepared, redacted, resourceLimits)) {
       _markRedaction(map, NetworkJsonKeys.bodyRedacted, true);
     }
   }
@@ -127,6 +141,7 @@ abstract final class NetworkMapRedactor {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
     Set<String> preserveKeys = const {},
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     final raw = map[key];
     if (raw == null) return;
@@ -135,6 +150,7 @@ abstract final class NetworkMapRedactor {
       raw,
       redactionActive: redactionActive,
       preserveTypes: redactionActive,
+      resourceLimits: resourceLimits,
     );
 
     final preserved =
@@ -154,6 +170,7 @@ abstract final class NetworkMapRedactor {
       final normalized = _boundValue(
         result,
         redactionActive: redactionActive,
+        resourceLimits: resourceLimits,
       );
       if (normalized is Map<String, Object?>) {
         redacted = Map<String, dynamic>.from(normalized);
@@ -167,13 +184,14 @@ abstract final class NetworkMapRedactor {
     final bounded = _boundValue(
       redacted,
       redactionActive: redactionActive,
+      resourceLimits: resourceLimits,
     );
     map[key] = bounded is Map<String, Object?>
         ? Map<String, dynamic>.from(bounded)
         : <String, dynamic>{};
     if (redactionActive &&
         key == NetworkJsonKeys.queryParameters &&
-        !_safeJsonEquals(prepared, map[key])) {
+        !_safeJsonEquals(prepared, map[key], resourceLimits)) {
       _markRedaction(map, NetworkJsonKeys.queryRedacted, true);
     }
   }
@@ -200,11 +218,14 @@ abstract final class NetworkMapRedactor {
     map[NetworkJsonKeys.redactionProvenance] = provenance;
   }
 
-  static bool _safeJsonEquals(Object? left, Object? right) {
+  static bool _safeJsonEquals(
+    Object? left,
+    Object? right,
+    DiagnosticResourceLimits resourceLimits,
+  ) {
     final pending = <(Object?, Object?)>[(left, right)];
     var inspected = 0;
-    while (
-        pending.isNotEmpty && inspected < JsonValueNormalizer.defaultMaxNodes) {
+    while (pending.isNotEmpty && inspected < resourceLimits.maxTraversalNodes) {
       final (currentLeft, currentRight) = pending.removeLast();
       inspected++;
       if (identical(currentLeft, currentRight)) continue;
@@ -250,16 +271,19 @@ abstract final class NetworkMapRedactor {
   /// values and user-info credentials cannot leak through duplicate URL data.
   static void redactPathFields(
     Map<String, dynamic> map,
-    RedactionService redactor,
-  ) {
+    RedactionService redactor, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
     final rawPath = map[NetworkJsonKeys.path];
     if (rawPath is String) {
-      map[NetworkJsonKeys.path] = _redactUrlValue(rawPath, redactor);
+      map[NetworkJsonKeys.path] =
+          _redactUrlValue(rawPath, redactor, resourceLimits);
     }
 
     final rawBaseUrl = map[NetworkJsonKeys.baseUrl];
     if (rawBaseUrl is String) {
-      map[NetworkJsonKeys.baseUrl] = _redactUrlValue(rawBaseUrl, redactor);
+      map[NetworkJsonKeys.baseUrl] =
+          _redactUrlValue(rawBaseUrl, redactor, resourceLimits);
     }
   }
 
@@ -274,6 +298,7 @@ abstract final class NetworkMapRedactor {
     required String key,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     final value = map[key];
     if (value is! Object) return;
@@ -282,6 +307,7 @@ abstract final class NetworkMapRedactor {
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
   }
 
@@ -291,6 +317,7 @@ abstract final class NetworkMapRedactor {
     RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     final redactionActive = ISpectRedaction.enabled;
     try {
@@ -298,6 +325,7 @@ abstract final class NetworkMapRedactor {
         value,
         redactionActive: redactionActive,
         preserveTypes: redactionActive,
+        resourceLimits: resourceLimits,
       );
       final exported = redactionActive
           ? redactor.redactForExport(
@@ -310,12 +338,14 @@ abstract final class NetworkMapRedactor {
       final bounded = _boundValue(
         exported,
         redactionActive: redactionActive,
+        resourceLimits: resourceLimits,
       );
       final text = _safeText(bounded);
       final redacted = redactionActive ? redactor.redactUrlsInText(text) : text;
       final output = _boundValue(
         redacted,
         redactionActive: redactionActive,
+        resourceLimits: resourceLimits,
       );
       return output is String ? output : redactionFailedPlaceholder;
     } on Object {
@@ -329,6 +359,7 @@ abstract final class NetworkMapRedactor {
     RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     redactFreeText(
       map,
@@ -336,6 +367,7 @@ abstract final class NetworkMapRedactor {
       key: NetworkJsonKeys.method,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
   }
 
@@ -349,7 +381,9 @@ abstract final class NetworkMapRedactor {
     required bool includeHeaders,
     required bool includeMessage,
     bool recursive = false,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
+    resourceLimits.validate();
     final pending = <(Map<String, dynamic>, int)>[(map, 0)];
     final visited = HashSet<Map<String, dynamic>>.identity();
     var inspected = 0;
@@ -373,8 +407,8 @@ abstract final class NetworkMapRedactor {
         final nested = current[key];
         if (nested is! Map<String, dynamic>) continue;
         if (visited.contains(nested) ||
-            depth >= _capturePolicyMaxDepth ||
-            inspected >= JsonValueNormalizer.defaultMaxNodes) {
+            depth >= resourceLimits.maxTraversalDepth ||
+            inspected >= resourceLimits.maxTraversalNodes) {
           current.remove(key);
         } else {
           pending.add((nested, depth + 1));
@@ -405,8 +439,6 @@ abstract final class NetworkMapRedactor {
     }
   }
 
-  static const int _capturePolicyMaxDepth = 64;
-
   /// Redacts caller-controlled URL and method fields in redirect entries.
   ///
   /// Replaces each entry with a bounded snapshot without invoking
@@ -416,6 +448,7 @@ abstract final class NetworkMapRedactor {
     RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     final raw = map[NetworkJsonKeys.redirects];
     if (raw is! List) return;
@@ -423,6 +456,7 @@ abstract final class NetworkMapRedactor {
     final bounded = _boundValue(
       raw,
       redactionActive: redactionActive,
+      resourceLimits: resourceLimits,
     );
     if (bounded is! List<Object?>) {
       map[NetworkJsonKeys.redirects] = <Object?>[];
@@ -436,7 +470,7 @@ abstract final class NetworkMapRedactor {
       final location = redirect[NetworkJsonKeys.location];
       if (location is String) {
         redirect[NetworkJsonKeys.location] =
-            _redactUrlValue(location, redactor);
+            _redactUrlValue(location, redactor, resourceLimits);
       } else if (location != null) {
         redirect[NetworkJsonKeys.location] = redactionActive
             ? redactionFailedPlaceholder
@@ -447,12 +481,14 @@ abstract final class NetworkMapRedactor {
         redactor,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
       redirects.add(redirect);
     }
     map[NetworkJsonKeys.redirects] = _boundValue(
       redirects,
       redactionActive: redactionActive,
+      resourceLimits: resourceLimits,
     );
   }
 
@@ -462,6 +498,7 @@ abstract final class NetworkMapRedactor {
     RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     final raw = map[NetworkJsonKeys.multipartRequest];
     if (raw is! Map) return;
@@ -470,6 +507,7 @@ abstract final class NetworkMapRedactor {
       raw,
       redactionActive: redactionActive,
       preserveTypes: redactionActive,
+      resourceLimits: resourceLimits,
     );
     if (prepared is! Map<String, Object?>) {
       map[NetworkJsonKeys.multipartRequest] = <String, Object?>{
@@ -496,6 +534,7 @@ abstract final class NetworkMapRedactor {
         final normalized = _boundValue(
           redacted,
           redactionActive: redactionActive,
+          resourceLimits: resourceLimits,
         );
         if (normalized is Map<String, Object?>) {
           mp[NetworkJsonKeys.fields] = normalized;
@@ -518,6 +557,7 @@ abstract final class NetworkMapRedactor {
         final normalized = _boundValue(
           redacted,
           redactionActive: redactionActive,
+          resourceLimits: resourceLimits,
         );
         if (normalized is List<Object?>) {
           mp[NetworkJsonKeys.files] =
@@ -531,6 +571,7 @@ abstract final class NetworkMapRedactor {
     final boundedMultipart = _boundValue(
       mp,
       redactionActive: redactionActive,
+      resourceLimits: resourceLimits,
     );
     map[NetworkJsonKeys.multipartRequest] =
         boundedMultipart is Map<String, Object?>
@@ -544,12 +585,14 @@ abstract final class NetworkMapRedactor {
   static String _redactUrlValue(
     String value,
     RedactionService redactor,
+    DiagnosticResourceLimits resourceLimits,
   ) {
     final redactionActive = ISpectRedaction.enabled;
     try {
       final prepared = _boundValue(
         value,
         redactionActive: redactionActive,
+        resourceLimits: resourceLimits,
       );
       if (prepared is! String) return redactionFailedPlaceholder;
       final redacted =
@@ -557,6 +600,7 @@ abstract final class NetworkMapRedactor {
       final bounded = _boundValue(
         redacted,
         redactionActive: redactionActive,
+        resourceLimits: resourceLimits,
       );
       return bounded is String ? bounded : redactionFailedPlaceholder;
     } on Object {
@@ -578,42 +622,24 @@ abstract final class NetworkMapRedactor {
   static Object? _boundValue(
     Object? value, {
     required bool redactionActive,
+    required DiagnosticResourceLimits resourceLimits,
     bool preserveTypes = false,
   }) {
-    final prepared = NetworkPayloadSanitizer.encodeJsonGracefully(value);
+    final prepared = NetworkPayloadSanitizer.encodeJsonGracefully(
+      value,
+      resourceLimits: resourceLimits,
+    );
     final bounded = LogExportOutput.boundJsonValue(
       prepared,
+      resourceLimits: resourceLimits,
       preserveTypes: preserveTypes,
       replaceOversizedStrings: redactionActive,
     );
-    return redactionActive ? _replaceTruncatedPrefixes(bounded) : bounded;
-  }
-
-  static Object? _replaceTruncatedPrefixes(Object? value, {int depth = 0}) {
-    if (value is String) {
-      return value.contains(LogExportOutput.truncatedMarker)
-          ? LogExportOutput.truncatedMarker
-          : value;
-    }
-    if (value is TypedData || value is ByteBuffer) return value;
-    if (depth >= 64) return JsonValueNormalizer.maxDepthReached;
-    if (value is Map<String, Object?>) {
-      return <String, Object?>{
-        for (final entry in value.entries)
-          (entry.key.contains(LogExportOutput.truncatedMarker)
-              ? LogExportOutput.truncatedMarker
-              : entry.key): _replaceTruncatedPrefixes(
-            entry.value,
-            depth: depth + 1,
-          ),
-      };
-    }
-    if (value is List<Object?>) {
-      return <Object?>[
-        for (final item in value)
-          _replaceTruncatedPrefixes(item, depth: depth + 1),
-      ];
-    }
-    return value;
+    return redactionActive
+        ? LogExportOutput.replaceTruncatedPrefixes(
+            bounded,
+            resourceLimits: resourceLimits,
+          )
+        : bounded;
   }
 }

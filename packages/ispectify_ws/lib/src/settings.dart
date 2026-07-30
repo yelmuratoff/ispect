@@ -14,6 +14,8 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectWSInterceptorSettings({
     super.enabled,
     super.enableRedaction,
+    super.captureMode,
+    super.resourceLimits,
     super.logRequests,
     super.logResponses,
     bool printReceivedData = true,
@@ -112,6 +114,8 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
   ISpectWSInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,
+    DiagnosticCaptureMode? captureMode,
+    DiagnosticResourceLimits? resourceLimits,
     bool? logRequests,
     bool? logResponses,
     // WS-specific names (preferred)
@@ -150,6 +154,8 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
       ISpectWSInterceptorSettings(
         enabled: enabled ?? this.enabled,
         enableRedaction: enableRedaction ?? this.enableRedaction,
+        captureMode: captureMode ?? this.captureMode,
+        resourceLimits: resourceLimits ?? this.resourceLimits,
         logRequests: logRequests ?? this.logRequests,
         logResponses: logResponses ?? this.logResponses,
         printSentData: printSentData ?? printRequestData ?? this.printSentData,

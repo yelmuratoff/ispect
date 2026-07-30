@@ -4,15 +4,19 @@ import 'package:ispectify/ispectify.dart';
 
 /// Produces bounded UI-safe diagnostics without executing caller formatters.
 abstract final class ISpectSafeDiagnosticSnapshot {
-  static const int maxUiDiagnosticBytes = 8 * 1024;
-
-  static String text(Object? value) {
+  static String text(
+    Object? value, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
     if (value == null) return '';
+    resourceLimits.validate();
+    final maxBytes = resourceLimits.maxUiDiagnosticBytes;
     final redactor = ISpectRedaction.enabled ? ISpectRedaction.service : null;
     try {
       final prepared = LogExportOutput.boundJsonValue(
         value,
-        maxBytes: maxUiDiagnosticBytes,
+        maxBytes: maxBytes,
+        resourceLimits: resourceLimits,
         preserveTypes: redactor != null,
         replaceOversizedStrings: redactor != null,
       );
@@ -20,7 +24,8 @@ abstract final class ISpectSafeDiagnosticSnapshot {
           redactor == null ? prepared : redactor.redactForExport(prepared);
       final bounded = LogExportOutput.boundJsonValue(
         scrubbed,
-        maxBytes: maxUiDiagnosticBytes,
+        maxBytes: maxBytes,
+        resourceLimits: resourceLimits,
         replaceOversizedStrings: redactor != null,
       );
       final rendered = switch (bounded) {
@@ -32,13 +37,18 @@ abstract final class ISpectSafeDiagnosticSnapshot {
       };
       return LogExportOutput.truncateUtf8(
         rendered,
-        maxBytes: maxUiDiagnosticBytes,
+        maxBytes: maxBytes,
       );
     } on Object {
       return defaultPlaceholder;
     }
   }
 
-  static String summary(Object? value) =>
-      text(value).replaceAll(RegExp(r'[\r\n\u2028\u2029]+'), ' ').trim();
+  static String summary(
+    Object? value, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) =>
+      text(value, resourceLimits: resourceLimits)
+          .replaceAll(RegExp(r'[\r\n\u2028\u2029]+'), ' ')
+          .trim();
 }

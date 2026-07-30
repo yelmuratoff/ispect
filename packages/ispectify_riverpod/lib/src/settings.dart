@@ -28,6 +28,8 @@ class ISpectRiverpodSettings {
     this.updateFilter,
     this.enableRedaction = true,
     this.redactor,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits,
   });
 
   /// Turns off all logging.
@@ -43,6 +45,7 @@ class ISpectRiverpodSettings {
   /// may carry PII and the project still wants lifecycle visibility.
   static const ISpectRiverpodSettings compact = ISpectRiverpodSettings(
     printValues: false,
+    captureMode: DiagnosticCaptureMode.strict,
   );
 
   /// Captures full redacted provider values.
@@ -94,14 +97,20 @@ class ISpectRiverpodSettings {
   /// Leave this `null` to follow [ISpectRedaction.service].
   final RedactionService? redactor;
 
+  /// Controls whether guarded application formatters may run during capture.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Optional observer-specific budgets. `null` inherits the logger policy.
+  final DiagnosticResourceLimits? resourceLimits;
+
   /// Whether redaction is active for this configuration.
   bool get isRedactionActive => enableRedaction && ISpectRedaction.enabled;
 
   /// Applies redaction to a meta map if redaction is active.
   ///
-  /// Returns a bounded, non-executing copy. When redaction is disabled, values
-  /// remain unmasked but still cannot bypass outbound byte and traversal
-  /// limits. A redaction failure returns an empty map.
+  /// Returns a bounded copy using [captureMode]. When redaction is disabled,
+  /// values remain unmasked but still cannot bypass outbound byte and
+  /// traversal limits. A redaction failure returns an empty map.
   Map<String, dynamic>? redactAdditionalData(
     Map<String, dynamic>? data,
   ) {
@@ -110,6 +119,8 @@ class ISpectRiverpodSettings {
       data,
       enableRedaction: isRedactionActive,
       redactor: redactor,
+      captureMode: captureMode,
+      resourceLimits: resourceLimits ?? DiagnosticResourceLimits.balanced,
     );
   }
 
@@ -131,6 +142,8 @@ class ISpectRiverpodSettings {
     ISpectRiverpodUpdateFilter? updateFilter,
     bool? enableRedaction,
     RedactionService? redactor,
+    DiagnosticCaptureMode? captureMode,
+    DiagnosticResourceLimits? resourceLimits,
   }) =>
       ISpectRiverpodSettings(
         enabled: enabled ?? this.enabled,
@@ -143,6 +156,8 @@ class ISpectRiverpodSettings {
         updateFilter: updateFilter ?? this.updateFilter,
         enableRedaction: enableRedaction ?? this.enableRedaction,
         redactor: redactor ?? this.redactor,
+        captureMode: captureMode ?? this.captureMode,
+        resourceLimits: resourceLimits ?? this.resourceLimits,
       );
 }
 
@@ -150,6 +165,8 @@ Map<String, dynamic> _prepareAdditionalData(
   Map<String, dynamic> data, {
   required bool enableRedaction,
   required RedactionService? redactor,
+  required DiagnosticCaptureMode captureMode,
+  required DiagnosticResourceLimits resourceLimits,
 }) {
   final redactionActive = enableRedaction && ISpectRedaction.enabled;
   try {
@@ -157,18 +174,27 @@ Map<String, dynamic> _prepareAdditionalData(
       data,
       preserveTypes: redactionActive,
       replaceOversizedStrings: redactionActive,
+      allowCustomSerialization: captureMode == DiagnosticCaptureMode.balanced,
+      allowCustomStringification: captureMode == DiagnosticCaptureMode.balanced,
+      resourceLimits: resourceLimits,
     );
     final Object? output;
     if (redactionActive) {
       output = ISpectRedaction.resolveService(
         service: redactor,
-      ).redactForExport(prepared);
+      ).redactForExport(
+        LogExportOutput.replaceTruncatedPrefixes(
+          prepared,
+          resourceLimits: resourceLimits,
+        ),
+      );
     } else {
       output = prepared;
     }
     final bounded = LogExportOutput.boundJsonValue(
       output,
       replaceOversizedStrings: redactionActive,
+      resourceLimits: resourceLimits,
     );
     if (bounded is Map) {
       return <String, dynamic>{

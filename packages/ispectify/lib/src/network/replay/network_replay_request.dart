@@ -1,4 +1,5 @@
 import 'package:ispectify/src/history/serialization.dart';
+import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/network/network_json_keys.dart';
 import 'package:ispectify/src/network/replay/network_replay_body.dart';
 import 'package:ispectify/src/redaction/constants/key_defaults.dart';
@@ -78,10 +79,15 @@ abstract final class NetworkReplayRequestParser {
   /// Builds a [ParsedReplayRequest] from a captured request [map].
   ///
   /// Returns `null` when [map] lacks a usable URL.
-  static ParsedReplayRequest? fromRequestMap(Map<String, dynamic> map) {
+  static ParsedReplayRequest? fromRequestMap(
+    Map<String, dynamic> map, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
     final bounded = LogExportOutput.boundJsonValue(
       map,
-      maxBytes: LogExportOutput.maxRecordBytes,
+      maxBytes: resourceLimits.maxLogRecordBytes,
+      resourceLimits: resourceLimits,
     );
     if (bounded is! Map<String, Object?>) return null;
 
@@ -90,9 +96,9 @@ abstract final class NetworkReplayRequestParser {
         _isUnsafeText(urlValue) ||
         LogExportOutput.utf8Length(
               urlValue,
-              limit: LogExportOutput.maxPreparedValueBytes,
+              limit: resourceLimits.maxCapturedValueBytes,
             ) >
-            LogExportOutput.maxPreparedValueBytes) {
+            resourceLimits.maxCapturedValueBytes) {
       return null;
     }
     final uri = Uri.tryParse(urlValue);
@@ -110,7 +116,11 @@ abstract final class NetworkReplayRequestParser {
     if (recordedHeaderKeys is List<Object?>) {
       redactedHeaderKeys.addAll(recordedHeaderKeys.whereType<String>());
     }
-    final headers = _parseHeaders(bounded, redactedHeaderKeys);
+    final headers = _parseHeaders(
+      bounded,
+      redactedHeaderKeys,
+      resourceLimits,
+    );
 
     final contentType = _primitiveText(
       bounded[NetworkJsonKeys.contentType] ??
@@ -130,13 +140,14 @@ abstract final class NetworkReplayRequestParser {
         : _parseBody(
             bounded,
             contentType: contentType,
+            resourceLimits: resourceLimits,
             onRedacted: () => bodyRedacted = true,
           );
 
     return ParsedReplayRequest(
       request: NetworkReplayRequest(
         method: method,
-        uri: _withQueryParameters(uri, bounded),
+        uri: _withQueryParameters(uri, bounded, resourceLimits),
         headers: headers,
         body: body,
       ),
@@ -148,11 +159,12 @@ abstract final class NetworkReplayRequestParser {
   static Map<String, String> _parseHeaders(
     Map<String, dynamic> map,
     Set<String> redactedKeys,
+    DiagnosticResourceLimits resourceLimits,
   ) {
     final raw = map[NetworkJsonKeys.headers];
     if (raw is! Map) return const {};
     final headers = <String, String>{};
-    for (final entry in raw.entries.take(100)) {
+    for (final entry in raw.entries.take(resourceLimits.maxNetworkHeaders)) {
       final key = entry.key;
       final value = entry.value;
       if (value == null) continue;
@@ -178,11 +190,15 @@ abstract final class NetworkReplayRequestParser {
     return headers;
   }
 
-  static Uri _withQueryParameters(Uri uri, Map<String, dynamic> map) {
+  static Uri _withQueryParameters(
+    Uri uri,
+    Map<String, dynamic> map,
+    DiagnosticResourceLimits resourceLimits,
+  ) {
     final raw = map[NetworkJsonKeys.queryParameters];
     if (raw is! Map || raw.isEmpty) return uri;
     final merged = <String, String>{...uri.queryParameters};
-    for (final entry in raw.entries.take(100)) {
+    for (final entry in raw.entries.take(resourceLimits.maxCollectionItems)) {
       final key = entry.key;
       final value = _primitiveText(entry.value);
       if (key is String &&
@@ -198,31 +214,44 @@ abstract final class NetworkReplayRequestParser {
   static NetworkReplayBody? _parseBody(
     Map<String, dynamic> map, {
     required String? contentType,
+    required DiagnosticResourceLimits resourceLimits,
     required void Function() onRedacted,
   }) {
     final multipart = map[NetworkJsonKeys.multipartRequest];
     if (multipart is Map) {
-      if (_containsUnsafeMarker(multipart)) {
+      final boundedMultipart = LogExportOutput.boundJsonValue(
+        multipart,
+        maxBytes: resourceLimits.maxNetworkBodyBytes,
+        resourceLimits: resourceLimits,
+        replaceOversizedStrings: true,
+      );
+      if (boundedMultipart is! Map || _containsUnsafeMarker(boundedMultipart)) {
         onRedacted();
         return null;
       }
-      return _parseMultipart(multipart);
+      return _parseMultipart(boundedMultipart, resourceLimits);
     }
 
     final raw = map.containsKey(NetworkJsonKeys.data)
         ? map[NetworkJsonKeys.data]
         : map[NetworkJsonKeys.body];
     if (raw == null) return null;
-
-    if (raw is Map || raw is List) {
-      if (_containsUnsafeMarker(raw)) {
-        onRedacted();
-        return null;
-      }
-      return JsonReplayBody(raw);
+    final boundedRaw = LogExportOutput.boundJsonValue(
+      raw,
+      maxBytes: resourceLimits.maxNetworkBodyBytes,
+      resourceLimits: resourceLimits,
+      replaceOversizedStrings: true,
+    );
+    if (_containsUnsafeMarker(boundedRaw)) {
+      onRedacted();
+      return null;
     }
 
-    final text = _primitiveText(raw);
+    if (boundedRaw is Map || boundedRaw is List) {
+      return JsonReplayBody(boundedRaw);
+    }
+
+    final text = _primitiveText(boundedRaw);
     if (text == null || _isUnsafeText(text)) {
       onRedacted();
       return null;
@@ -242,11 +271,15 @@ abstract final class NetworkReplayRequestParser {
     return TextReplayBody(text, contentType: contentType);
   }
 
-  static MultipartReplayBody _parseMultipart(Map<dynamic, dynamic> multipart) {
+  static MultipartReplayBody _parseMultipart(
+    Map<dynamic, dynamic> multipart,
+    DiagnosticResourceLimits resourceLimits,
+  ) {
     final fields = <MultipartReplayField>[];
     final rawFields = multipart[NetworkJsonKeys.fields];
     if (rawFields is Map) {
-      for (final entry in rawFields.entries.take(100)) {
+      for (final entry
+          in rawFields.entries.take(resourceLimits.maxCollectionItems)) {
         final name = entry.key;
         final value = _primitiveText(entry.value) ?? '';
         if (name is String && !_isUnsafeText(name) && !_isUnsafeText(value)) {

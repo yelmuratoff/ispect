@@ -23,12 +23,22 @@ class DioResponseData {
     bool includeRequestData = true,
     bool includeRequestHeaders = true,
     bool redactionActive = false,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
   }) {
     final resp = response;
-    final headers = includeHeaders ? resp?.headers : null;
+    final headers = includeHeaders && resp != null
+        ? NetworkPayloadSanitizer.toStringKeyMap(
+            resp.headers.map,
+            captureMode: captureMode,
+            resourceLimits: requestData.resourceLimits,
+            maxEntries: requestData.resourceLimits.maxNetworkHeaders,
+          )
+        : null;
     final redirects = _serializeRedirects(
       resp?.redirects,
       redactionActive: redactionActive,
+      captureMode: captureMode,
+      resourceLimits: requestData.resourceLimits,
     );
     return <String, dynamic>{
       // --- Status: first thing you check ---
@@ -42,24 +52,40 @@ class DioResponseData {
         redirects,
         requestUri: requestData.uriSnapshot,
         redactionActive: redactionActive,
+        resourceLimits: requestData.resourceLimits,
       ),
 
       // --- Payload ---
-      if (includeHeaders) NetworkJsonKeys.headers: headers?.map,
-      if (includeData) NetworkJsonKeys.data: resp?.data,
+      if (includeHeaders) NetworkJsonKeys.headers: headers,
+      if (includeData)
+        NetworkJsonKeys.data: LogExportOutput.boundJsonValue(
+          NetworkPayloadSanitizer.encodeJsonGracefully(
+            resp?.data,
+            captureMode: captureMode,
+            resourceLimits: requestData.resourceLimits,
+          ),
+          maxBytes: requestData.resourceLimits.maxNetworkBodyBytes,
+          resourceLimits: requestData.resourceLimits,
+          replaceOversizedStrings: redactionActive,
+        ),
 
       // --- Redirects ---
       NetworkJsonKeys.isRedirect: resp?.isRedirect,
       NetworkJsonKeys.redirects: redirects,
 
       // --- Meta ---
-      NetworkJsonKeys.extra: resp?.extra,
+      NetworkJsonKeys.extra: NetworkPayloadSanitizer.toStringKeyMap(
+        resp?.extra,
+        captureMode: captureMode,
+        resourceLimits: requestData.resourceLimits,
+      ),
 
       // --- Original request (reference) ---
       NetworkJsonKeys.request: requestData.toJson(
         includeData: includeRequestData,
         includeHeaders: includeRequestHeaders,
         redactionActive: redactionActive,
+        captureMode: captureMode,
       ),
     };
   }
@@ -67,12 +93,18 @@ class DioResponseData {
   static List<Object?>? _serializeRedirects(
     List<RedirectRecord>? redirects, {
     required bool redactionActive,
+    required DiagnosticCaptureMode captureMode,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     if (redirects == null) return null;
     final bounded = LogExportOutput.boundJsonValue(
       redirects.map(
         (redirect) {
-          final location = NetworkUriSnapshot.fromUri(redirect.location);
+          final location = NetworkUriSnapshot.fromUri(
+            redirect.location,
+            captureMode: captureMode,
+            resourceLimits: resourceLimits,
+          );
           return <String, Object?>{
             NetworkJsonKeys.location: location.url,
             NetworkJsonKeys.statusCode: redirect.statusCode,
@@ -81,6 +113,7 @@ class DioResponseData {
         },
       ),
       replaceOversizedStrings: redactionActive,
+      resourceLimits: resourceLimits,
     );
     return bounded is List<Object?> ? bounded : <Object?>[];
   }
@@ -90,6 +123,7 @@ class DioResponseData {
     List<Object?>? redirects, {
     required NetworkUriSnapshot requestUri,
     required bool redactionActive,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     if (response == null) return null;
     if (redirects != null && redirects.isNotEmpty) {
@@ -103,6 +137,7 @@ class DioResponseData {
     final bounded = LogExportOutput.boundJsonValue(
       requestUri.url,
       replaceOversizedStrings: redactionActive,
+      resourceLimits: resourceLimits,
     );
     return bounded is String ? bounded : JsonValueNormalizer.unprintableValue;
   }
@@ -115,32 +150,41 @@ class DioResponseData {
     RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     NetworkMapRedactor.redactMethod(
       map,
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
-    NetworkMapRedactor.redactUrl(map, redactor);
+    NetworkMapRedactor.redactUrl(
+      map,
+      redactor,
+      resourceLimits: resourceLimits,
+    );
     NetworkMapRedactor.redactFreeText(
       map,
       redactor,
       key: NetworkJsonKeys.statusMessage,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     NetworkMapRedactor.redactData(
       map,
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     NetworkMapRedactor.redactHeaders(
       map,
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     NetworkMapRedactor.redactMapField(
       map,
@@ -148,12 +192,14 @@ class DioResponseData {
       key: NetworkJsonKeys.extra,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     NetworkMapRedactor.redactRedirects(
       map,
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
 
     if (map[NetworkJsonKeys.request]
@@ -163,6 +209,7 @@ class DioResponseData {
         redactor,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
     }
   }

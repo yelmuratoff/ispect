@@ -23,10 +23,9 @@ final class WsDiagnostics
     this.source = defaultSource,
     RedactionService? redactor,
   })  : _logger = logger,
-        _explicitRedactor = redactor;
-
-  static const _preserveResolvedRedaction =
-      NetworkRedactionMixin.noRedactConfig;
+        _explicitRedactor = redactor {
+    settings.resourceLimits?.validate();
+  }
 
   /// Default source label used when no adapter-specific label is given.
   static const defaultSource = 'ws';
@@ -56,6 +55,18 @@ final class WsDiagnostics
 
   @override
   bool get enableRedaction => settings.enableRedaction;
+
+  @override
+  DiagnosticCaptureMode get captureMode => settings.captureMode;
+
+  @override
+  DiagnosticResourceLimits get resourceLimits =>
+      settings.resourceLimits ?? _logger.options.resourceLimits;
+
+  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
+        redact: false,
+        resourceLimits: resourceLimits,
+      );
 
   @override
   void newConnection() {
@@ -91,7 +102,7 @@ final class WsDiagnostics
       state: state.name,
       target: normalizedUrl,
       correlationId: correlationId,
-      config: _preserveResolvedRedaction,
+      config: _traceConfig,
       consoleMessage: '→ state:${state.name} $normalizedUrl',
       meta: {
         'url': normalizedUrl,
@@ -124,6 +135,7 @@ final class WsDiagnostics
         TraceKeys.success: false,
         TraceKeys.correlationId: correlationId,
       },
+      resourceLimits: resourceLimits,
     );
 
     if (!settings.shouldProcessError(preview)) return;
@@ -148,7 +160,7 @@ final class WsDiagnostics
       error: safeError,
       errorStackTrace: safeStackTrace,
       correlationId: correlationId,
-      config: _preserveResolvedRedaction,
+      config: _traceConfig,
       meta: {'url': normalizedUrl, 'path': path},
     );
   }
@@ -213,7 +225,7 @@ final class WsDiagnostics
         operation: operation,
         target: url,
         correlationId: correlationId,
-        config: _preserveResolvedRedaction,
+        config: _traceConfig,
         meta: traceMeta,
       );
     } on Object {
@@ -227,7 +239,7 @@ final class WsDiagnostics
         success: false,
         error: settings.printErrorMessage ? _frameCaptureFailure : null,
         correlationId: correlationId,
-        config: _preserveResolvedRedaction,
+        config: _traceConfig,
         meta: {'url': url, 'path': path},
       );
     }
@@ -268,21 +280,33 @@ final class WsDiagnostics
     try {
       final prepared = LogExportOutput.boundJsonValue(
         value,
+        maxBytes: resourceLimits.maxNetworkBodyBytes,
+        resourceLimits: resourceLimits,
         preserveTypes: useRedaction,
         replaceOversizedStrings: useRedaction,
+        allowCustomSerialization:
+            settings.captureMode == DiagnosticCaptureMode.balanced,
+        allowCustomStringification:
+            settings.captureMode == DiagnosticCaptureMode.balanced,
       );
       final redacted = useRedaction && prepared != null
-          ? NetworkMapRedactor.redactFreeTextValue(prepared, redactor)
+          ? NetworkMapRedactor.redactFreeTextValue(
+              prepared,
+              redactor,
+              resourceLimits: resourceLimits,
+            )
           : prepared;
       final bounded = LogExportOutput.boundJsonValue(
         redacted,
+        maxBytes: resourceLimits.maxNetworkBodyBytes,
+        resourceLimits: resourceLimits,
         replaceOversizedStrings: useRedaction,
       );
       if (bounded is String) return bounded;
       if (bounded is bool || bounded is num) return bounded.toString();
       return LogExportOutput.truncateUtf8(
         jsonEncode(bounded),
-        maxBytes: LogExportOutput.maxPreparedValueBytes,
+        maxBytes: resourceLimits.maxNetworkBodyBytes,
       );
     } on Object {
       return redactionFailedPlaceholder;

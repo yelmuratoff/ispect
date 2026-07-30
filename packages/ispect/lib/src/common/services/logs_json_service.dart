@@ -40,22 +40,28 @@ final class LogsImportResult {
 /// - Usage example: final service = LogsJsonService();
 /// - Edge case notes: Handles empty data gracefully, provides chunked processing
 class LogsJsonService {
-  /// Creates a new instance of logs JSON service.
-  const LogsJsonService();
+  /// Creates a service that inherits logger policies unless locally overridden.
+  const LogsJsonService({
+    this.resourceLimits,
+    this.processingPolicy,
+  });
 
-  /// Maximum allowed JSON string size in UTF-16 code units.
+  final DiagnosticResourceLimits? resourceLimits;
+  final DiagnosticProcessingPolicy? processingPolicy;
+
+  /// Balanced default JSON string size in UTF-16 code units.
   static const int maxJsonSize = JsonInputPreflight.maxCharacters;
 
-  /// Maximum allowed JSON nesting depth
+  /// Balanced default JSON nesting depth.
   static const int maxJsonDepth = JsonInputPreflight.maxNestingDepth;
 
-  /// Maximum allowed encoded JSON size in bytes.
+  /// Balanced default encoded JSON size in bytes.
   static const int maxJsonByteSize = JsonInputPreflight.maxEncodedBytes;
 
-  /// Maximum approximate number of JSON values and containers.
+  /// Balanced default number of JSON values and containers.
   static const int maxJsonNodes = JsonInputPreflight.maxApproximateNodes;
 
-  /// Maximum number of log entries allowed in import
+  /// Balanced default number of imported log entries.
   static const int maxLogEntries = 100000;
 
   /// Exports logs to JSON format with metadata.
@@ -64,7 +70,7 @@ class LogsJsonService {
   /// [redactionService] customizes its policy; when omitted, the global
   /// [ISpectRedaction.service] policy is used. Pass `enableRedaction: false`
   /// for an explicit controlled-debugging opt-out.
-  /// Output is compact and capped by [LogExportOutput.maxDocumentBytes].
+  /// Output is compact and capped by the active resource policy.
   /// When the cap is reached, only complete leading records that fit are
   /// emitted. Metadata reports `totalLogs`, `exportedLogs`, and `truncated`.
   ///
@@ -81,6 +87,8 @@ class LogsJsonService {
     bool enableRedaction = true,
     ISpectMetadata? metadata,
   }) async {
+    final limits = _resourceLimits;
+    final scheduling = _processingPolicy;
     final effectiveRedactor = _effectiveRedactor(
       enableRedaction,
       redactionService,
@@ -95,22 +103,26 @@ class LogsJsonService {
                 logs.length,
                 metadata,
                 effectiveRedactor,
+                limits,
               ),
               effectiveRedactor,
+              limits,
             )
           : null,
       redactor: effectiveRedactor,
+      resourceLimits: limits,
     );
-    const chunkSize = 50;
-    const yieldEveryChunks = 10;
     var processed = 0;
     exportLoop:
-    for (final chunk in Chunking.chunks(logs, chunkSize)) {
+    for (final chunk in Chunking.chunks(logs, scheduling.exportChunkSize)) {
       for (final log in chunk) {
         if (!encoder.addLog(log)) break exportLoop;
       }
       processed++;
-      await Chunking.yieldEvery(processed, yieldEveryChunks);
+      await Chunking.yieldEvery(
+        processed,
+        scheduling.yieldEveryExportChunks,
+      );
     }
     return encoder.finish();
   }
@@ -120,6 +132,7 @@ class LogsJsonService {
     int totalLogs,
     ISpectMetadata? metadata,
     RedactionService? redactor,
+    DiagnosticResourceLimits resourceLimits,
   ) {
     final result = <String, dynamic>{
       'exportedAt': DateTime.now().toIso8601String(),
@@ -127,7 +140,7 @@ class LogsJsonService {
       'totalLogs': totalLogs,
       'platform': 'ispect',
     };
-    _appendHostMetadata(result, metadata, redactor);
+    _appendHostMetadata(result, metadata, redactor, resourceLimits);
     return result;
   }
 
@@ -166,8 +179,13 @@ class LogsJsonService {
     RedactionService? redactionService,
     bool enableRedaction = true,
   }) async {
+    final limits = _resourceLimits;
+    final scheduling = _processingPolicy;
     try {
-      final dynamic jsonData = _decodeJson(jsonString);
+      final dynamic jsonData = _decodeJson(
+        jsonString,
+        resourceLimits: limits,
+      );
 
       final logsJson = _extractLogsFromJsonData(jsonData);
 
@@ -176,6 +194,8 @@ class LogsJsonService {
       return await _processImportedLogsInChunks(
         logsJson,
         _effectiveRedactor(enableRedaction, redactionService),
+        resourceLimits: limits,
+        processingPolicy: scheduling,
       );
     } catch (e) {
       if (e is FormatException) rethrow;
@@ -183,15 +203,27 @@ class LogsJsonService {
     }
   }
 
-  static Object? _decodeJson(String jsonString) =>
-      JsonInputPreflight.decode(jsonString);
+  Object? _decodeJson(
+    String jsonString, {
+    DiagnosticResourceLimits? resourceLimits,
+  }) {
+    final limits = resourceLimits ?? _resourceLimits;
+    return JsonInputPreflight.decode(
+      jsonString,
+      characterLimit: limits.maxImportCharacters,
+      encodedByteLimit: limits.maxImportBytes,
+      nestingDepthLimit: limits.maxTraversalDepth,
+      approximateNodeLimit: limits.maxImportNodes,
+    );
+  }
 
   /// Validates log entry count to prevent excessive memory usage
   void _validateLogCount(List<dynamic> logsJson) {
-    if (logsJson.length > maxLogEntries) {
+    final maximum = _resourceLimits.maxImportEntries;
+    if (logsJson.length > maximum) {
       throw FormatException(
         'Log count (${logsJson.length}) exceeds maximum allowed '
-        'entries ($maxLogEntries). Please split the import into smaller batches.',
+        'entries ($maximum). Please split the import into smaller batches.',
       );
     }
   }
@@ -216,25 +248,36 @@ class LogsJsonService {
   /// Processes imported logs in chunks to prevent UI freezing
   Future<LogsImportResult> _processImportedLogsInChunks(
     List<dynamic> logsJson,
-    RedactionService? redactor,
-  ) async {
+    RedactionService? redactor, {
+    DiagnosticResourceLimits? resourceLimits,
+    DiagnosticProcessingPolicy? processingPolicy,
+  }) async {
+    final limits = resourceLimits ?? _resourceLimits;
+    final scheduling = processingPolicy ?? _processingPolicy;
     final logs = <ISpectLogData>[];
-    const chunkSize = 25;
-    const yieldEveryChunks = 4;
     var processed = 0;
-    for (final chunk in Chunking.chunks(logsJson, chunkSize)) {
+    for (final chunk in Chunking.chunks(
+      logsJson,
+      scheduling.importChunkSize,
+    )) {
       for (final logJson in chunk) {
         try {
           if (logJson is! Map<String, dynamic>) continue;
-          final prepared = _prepareJsonLog(logJson, redactor);
-          final log = ISpectLogDataJsonUtils.fromJson(prepared);
+          final prepared = _prepareJsonLog(logJson, redactor, limits);
+          final log = ISpectLogDataJsonUtils.fromJson(
+            prepared,
+            resourceLimits: _resourceLimits,
+          );
           logs.add(log);
         } catch (_) {
           continue;
         }
       }
       processed++;
-      await Chunking.yieldEvery(processed, yieldEveryChunks);
+      await Chunking.yieldEvery(
+        processed,
+        scheduling.yieldEveryImportChunks,
+      );
     }
     return LogsImportResult._(
       logs: logs,
@@ -387,6 +430,7 @@ class LogsJsonService {
           redactionService: effectiveService,
           metadata: metadata,
           enableRedaction: enableRedaction,
+          resourceLimits: _resourceLimits,
         );
       case 'md':
         return LogExporter.toMarkdown(
@@ -395,6 +439,7 @@ class LogsJsonService {
           redactionService: effectiveService,
           metadata: metadata,
           enableRedaction: enableRedaction,
+          resourceLimits: _resourceLimits,
         );
       case 'csv':
         return LogExporter.toCsv(
@@ -402,8 +447,10 @@ class LogsJsonService {
           redactKeys: redactKeys,
           redactionService: effectiveService,
           enableRedaction: enableRedaction,
+          resourceLimits: _resourceLimits,
         );
       default:
+        final limits = _resourceLimits;
         final encoder = _JsonExportEncoder(
           includeMetadata: true,
           totalLogCount: logs.length,
@@ -415,10 +462,13 @@ class LogsJsonService {
               filter,
               metadata,
               effectiveService,
+              limits,
             ),
             effectiveService,
+            limits,
           ),
           redactor: effectiveService,
+          resourceLimits: limits,
         );
         for (final log in filteredLogs) {
           if (!encoder.addLog(log)) break;
@@ -430,9 +480,11 @@ class LogsJsonService {
   static Map<String, Object?> _prepareJsonLog(
     Map<String, dynamic> source,
     RedactionService? redactor,
+    DiagnosticResourceLimits resourceLimits,
   ) {
     final prepared = LogExportOutput.boundJsonValue(
       source,
+      resourceLimits: resourceLimits,
       preserveTypes: redactor != null,
       replaceOversizedStrings: redactor != null,
     );
@@ -444,6 +496,7 @@ class LogsJsonService {
           );
     final bounded = LogExportOutput.boundJsonValue(
       outbound,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: redactor != null,
     );
     return bounded is Map<String, Object?>
@@ -454,9 +507,11 @@ class LogsJsonService {
   static Object? _prepareJsonValue(
     Object? source,
     RedactionService? redactor,
+    DiagnosticResourceLimits resourceLimits,
   ) {
     final prepared = LogExportOutput.boundJsonValue(
       source,
+      resourceLimits: resourceLimits,
       preserveTypes: redactor != null,
       replaceOversizedStrings: redactor != null,
     );
@@ -464,6 +519,7 @@ class LogsJsonService {
         redactor == null ? prepared : redactor.redactForExport(prepared);
     return LogExportOutput.boundJsonValue(
       outbound,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: redactor != null,
     );
   }
@@ -487,6 +543,7 @@ class LogsJsonService {
     ISpectFilter filter,
     ISpectMetadata? metadata,
     RedactionService? redactor,
+    DiagnosticResourceLimits resourceLimits,
   ) {
     final result = <String, dynamic>{
       'exportedAt': DateTime.now().toIso8601String(),
@@ -495,7 +552,7 @@ class LogsJsonService {
       'platform': 'ispect',
       'appliedFilter': _createFilterSummary(filter),
     };
-    _appendHostMetadata(result, metadata, redactor);
+    _appendHostMetadata(result, metadata, redactor, resourceLimits);
     return result;
   }
 
@@ -503,6 +560,7 @@ class LogsJsonService {
     Map<String, dynamic> result,
     ISpectMetadata? metadata,
     RedactionService? redactor,
+    DiagnosticResourceLimits resourceLimits,
   ) {
     if (metadata == null) return;
     final typedFields = <String, Object?>{
@@ -521,6 +579,7 @@ class LogsJsonService {
 
     final boundedExtra = LogExportOutput.boundJsonValue(
       metadata.extra,
+      resourceLimits: resourceLimits,
       preserveTypes: redactor != null,
       replaceOversizedStrings: redactor != null,
     );
@@ -586,6 +645,22 @@ class LogsJsonService {
     }
     return null;
   }
+
+  DiagnosticResourceLimits get _resourceLimits {
+    final limits = (resourceLimits ??
+        ISpect.loggerIfInitialized?.options.resourceLimits ??
+        DiagnosticResourceLimits.balanced)
+      ..validate();
+    return limits;
+  }
+
+  DiagnosticProcessingPolicy get _processingPolicy {
+    final policy = (processingPolicy ??
+        ISpect.loggerIfInitialized?.options.processingPolicy ??
+        DiagnosticProcessingPolicy.balanced)
+      ..validate();
+    return policy;
+  }
 }
 
 final class _JsonExportEncoder {
@@ -595,7 +670,9 @@ final class _JsonExportEncoder {
     required this.sourceLogCount,
     required Object? metadata,
     required this.redactor,
-  }) : _output = _JsonDocumentBuffer(LogExportOutput.maxDocumentBytes) {
+    required this.resourceLimits,
+  }) : _output = _JsonDocumentBuffer(resourceLimits.maxExportDocumentBytes) {
+    resourceLimits.validate();
     String? encodedMetadata;
     if (includeMetadata) {
       var effectiveMetadata =
@@ -607,10 +684,9 @@ final class _JsonExportEncoder {
       encodedMetadata = _encodePreparedValue(candidate);
       var metadataStats = _JsonStructureStats.scan(encodedMetadata);
       final metadataNodes = 1 + metadataStats.nodeContribution;
-      final canUseMetadata =
-          metadataStats.maxDepth <= JsonInputPreflight.maxNestingDepth - 1 &&
-              _approximateNodes + metadataNodes <=
-                  JsonInputPreflight.maxApproximateNodes;
+      final canUseMetadata = metadataStats.maxDepth <=
+              resourceLimits.maxTraversalDepth - 1 &&
+          _approximateNodes + metadataNodes <= resourceLimits.maxExportNodes;
       if (!canUseMetadata) {
         effectiveMetadata = const <String, Object?>{};
         encodedMetadata = _encodePreparedValue(
@@ -638,6 +714,7 @@ final class _JsonExportEncoder {
   final int totalLogCount;
   final int sourceLogCount;
   final RedactionService? redactor;
+  final DiagnosticResourceLimits resourceLimits;
   final _JsonDocumentBuffer _output;
   Map<String, Object?>? _metadata;
   late final int _metadataSuffixBytes;
@@ -652,17 +729,17 @@ final class _JsonExportEncoder {
     final prepared = LogsJsonService._prepareJsonLog(
       log.toExportJson(redactionActive: redactor != null),
       redactor,
+      resourceLimits,
     );
     var encoded = _encodeLog(prepared, capturedTime);
     var stats = _JsonStructureStats.scan(encoded);
-    if (stats.maxDepth > JsonInputPreflight.maxNestingDepth - 2) {
+    if (stats.maxDepth > resourceLimits.maxTraversalDepth - 2) {
       encoded = _fallbackLog(capturedTime);
       stats = _JsonStructureStats.scan(encoded);
     }
     final prefix = _hasLogs ? ',' : '';
     final additionalNodes = stats.nodeContribution + (_hasLogs ? 1 : 0);
-    if (_approximateNodes + additionalNodes >
-        JsonInputPreflight.maxApproximateNodes) {
+    if (_approximateNodes + additionalNodes > resourceLimits.maxExportNodes) {
       return false;
     }
     if (!_output.writeAll(
@@ -708,14 +785,14 @@ final class _JsonExportEncoder {
         'truncated': exportedLogs < sourceLogCount,
       };
 
-  static String _encodePreparedValue(Object? value) {
+  String _encodePreparedValue(Object? value) {
     try {
       final encoded = jsonEncode(value);
       return LogExportOutput.utf8Length(
                 encoded,
-                limit: LogExportOutput.maxRecordBytes,
+                limit: resourceLimits.maxLogRecordBytes,
               ) <=
-              LogExportOutput.maxRecordBytes
+              resourceLimits.maxLogRecordBytes
           ? encoded
           : 'null';
     } catch (_) {
@@ -723,7 +800,7 @@ final class _JsonExportEncoder {
     }
   }
 
-  static String _encodeLog(
+  String _encodeLog(
     Map<String, Object?> prepared,
     DateTime capturedTime,
   ) {
@@ -734,9 +811,9 @@ final class _JsonExportEncoder {
       final encoded = jsonEncode(prepared);
       if (LogExportOutput.utf8Length(
             encoded,
-            limit: LogExportOutput.maxRecordBytes,
+            limit: resourceLimits.maxLogRecordBytes,
           ) <=
-          LogExportOutput.maxRecordBytes) {
+          resourceLimits.maxLogRecordBytes) {
         return encoded;
       }
     } catch (_) {

@@ -27,6 +27,8 @@ const dbConfig = ISpectDbConfig(
   sampleRate: 1.0,
   redact: true,
   attachStackOnError: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
   slowThreshold: Duration(milliseconds: 400),
 );
 ```
@@ -57,6 +59,8 @@ final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
 | `sampleRate`         | `1.0`        | Fraction of calls to log. `0.1` keeps 10% of them.                                                            |
 | `redact`             | `true`       | Mask sensitive keys in `args` and `statement`.                                                                |
 | `redactKeys`         | built-in set | Override the redaction key list.                                                                              |
+| `captureMode`        | `balanced`   | Allow guarded, bounded typed-value and error formatting; use `strict` to disable application formatters.     |
+| `resourceLimits`     | logger policy | Override database scalar, diagnostic, metadata, traversal, and output budgets for this trace.                |
 | `attachStackOnError` | `true`       | Capture and log a stack trace on failure.                                                                     |
 | `slowThreshold`      | `null`       | Re-emit durations above the threshold as a `db-slow-query` entry. (Renamed from `slowQueryThreshold` in 5.0.) |
 

@@ -8,6 +8,13 @@ import 'package:ispectify/src/redaction/constants/placeholders.dart'
 import 'package:ispectify/src/utils/safe_object_description.dart';
 import 'package:meta/meta.dart';
 
+DiagnosticResourceLimits _validatedResourceLimits(
+  DiagnosticResourceLimits resourceLimits,
+) {
+  resourceLimits.validate();
+  return resourceLimits;
+}
+
 /// Core log entry model. All fields are immutable after construction.
 ///
 /// Uses `base` modifier to prevent external `implements` while allowing
@@ -26,19 +33,35 @@ base class ISpectLogData {
     String? key,
     Map<String, dynamic>? additionalData,
     String? id,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   })  : _id = id ?? LogId.generate(),
+        _captureMode = captureMode,
+        _resourceLimits = _validatedResourceLimits(resourceLimits),
         _time = _captureTime(time),
         _key = key,
-        _messageCapture = _captureMessage(message),
+        _messageCapture = _captureMessage(message, captureMode, resourceLimits),
         _logLevel = logLevel,
         _pen = pen,
-        _additionalData = _captureAdditionalData(additionalData),
+        _additionalData = _captureAdditionalData(
+          additionalData,
+          captureMode,
+          resourceLimits,
+        ),
         _exception = exception,
-        _exceptionSnapshot = _captureDiagnostic(exception),
+        _exceptionSnapshot = _captureDiagnostic(
+          exception,
+          captureMode,
+          resourceLimits,
+        ),
         _error = error,
-        _errorSnapshot = _captureDiagnostic(error),
+        _errorSnapshot = _captureDiagnostic(error, captureMode, resourceLimits),
         _stackTrace = stackTrace,
-        _stackTraceSnapshot = _captureStackTrace(stackTrace);
+        _stackTraceSnapshot = _captureStackTrace(
+          stackTrace,
+          captureMode,
+          resourceLimits,
+        );
 
   /// ULID-style identifier — globally unique across processes, isolates, and
   /// reloaded log files. Lexicographically sortable by creation time.
@@ -46,6 +69,8 @@ base class ISpectLogData {
   /// Pass an explicit [id] when reconstructing entries from persisted JSON to
   /// preserve the original identity; otherwise a fresh ULID is generated.
   final String _id;
+  final DiagnosticCaptureMode _captureMode;
+  final DiagnosticResourceLimits _resourceLimits;
   final DateTime _time;
   final String? _key;
   final _MessageCapture _messageCapture;
@@ -186,22 +211,22 @@ base class ISpectLogData {
       key: $_key,
       message: ${_messageCapture.text.truncate()},
       logLevel: ${_logLevel?.name},
-      exception: $_exceptionText,
-      error: $_errorText,
+      exception: ${_exceptionSnapshot.truncate()},
+      error: ${_errorSnapshot.truncate()},
       )''';
 
-  String get _messageText => _messageCapture.text.truncate() ?? '';
+  String get _messageText => _messageCapture.text ?? '';
 
-  String? get _exceptionText => _exceptionSnapshot.truncate();
+  String? get _exceptionText => _exceptionSnapshot;
 
-  String? get _errorText => _errorSnapshot.truncate();
+  String? get _errorText => _errorSnapshot;
 
   String? get _stackTraceText {
     if (_stackTrace == null || identical(_stackTrace, StackTrace.empty)) {
       return null;
     }
     final text = _stackTraceSnapshot;
-    return text == null ? null : 'StackTrace: $text'.truncate();
+    return text == null ? null : 'StackTrace: $text';
   }
 
   bool get _isError =>
@@ -215,6 +240,8 @@ base class ISpectLogData {
 /// that an external subtype can override.
 ({
   String id,
+  DiagnosticCaptureMode captureMode,
+  DiagnosticResourceLimits resourceLimits,
   DateTime time,
   String? key,
   Object? message,
@@ -229,6 +256,8 @@ base class ISpectLogData {
   String? stackTraceText,
 }) captureISpectLogDataForEgress(ISpectLogData data) => (
       id: data._id,
+      captureMode: data._captureMode,
+      resourceLimits: data._resourceLimits,
       time: data._time,
       key: data._key,
       message: data._messageCapture.serialization,
@@ -258,7 +287,11 @@ base class ISpectLogData {
       stackTraceText: data._stackTraceSnapshot,
     );
 
-String? _captureDiagnostic(Object? value) {
+String? _captureDiagnostic(
+  Object? value,
+  DiagnosticCaptureMode captureMode,
+  DiagnosticResourceLimits resourceLimits,
+) {
   if (value == null) return null;
   final binaryByteLength = _binaryByteLength(value);
   if (binaryByteLength != null) {
@@ -268,24 +301,26 @@ String? _captureDiagnostic(Object? value) {
     _CapturedException(:final text) => text,
     _CapturedError(:final text) => text,
     _CapturedStackTrace(:final text) => text,
+    _ when captureMode == DiagnosticCaptureMode.balanced =>
+      _guardedDiagnosticText(value),
     _ => safeDiagnosticDescriptor(value),
   };
-  return LogExportOutput.truncateUtf8(
-    description,
-    maxBytes: LogExportOutput.maxPreparedValueBytes,
-  );
+  return _boundDiagnosticText(description, resourceLimits);
 }
 
 typedef _MessageCapture = ({String? text, Object? serialization});
 
-String? _captureStackTrace(StackTrace? value) {
+String? _captureStackTrace(
+  StackTrace? value,
+  DiagnosticCaptureMode captureMode,
+  DiagnosticResourceLimits resourceLimits,
+) {
   if (value == null) return null;
   if (value case _CapturedStackTrace(:final text)) return text;
-
-  // StackTrace is implementable, and even SDK stack traces can contain source
-  // paths and caller data. Keep only a constant descriptor so construction and
-  // every later export remain non-executing and data-minimizing.
-  return JsonValueNormalizer.unprintableValue;
+  final captured = captureMode == DiagnosticCaptureMode.balanced
+      ? _guardedDiagnosticText(value)
+      : JsonValueNormalizer.unprintableValue;
+  return _boundDiagnosticText(captured, resourceLimits);
 }
 
 final class _CapturedException implements Exception {
@@ -332,18 +367,27 @@ DateTime _captureTime(DateTime? value) {
 
 Map<String, dynamic>? _captureAdditionalData(
   Map<String, dynamic>? value,
+  DiagnosticCaptureMode captureMode,
+  DiagnosticResourceLimits resourceLimits,
 ) {
   if (value == null) return null;
   final bounded = LogExportOutput.boundJsonValue(
     value,
+    resourceLimits: resourceLimits,
     preserveTypes: true,
     replaceOversizedStrings: ISpectRedaction.enabled,
+    allowCustomSerialization: captureMode == DiagnosticCaptureMode.balanced,
+    allowCustomStringification: captureMode == DiagnosticCaptureMode.balanced,
   );
   if (bounded is! Map<String, Object?>) return const {};
   return _freezeCapturedMap(bounded);
 }
 
-_MessageCapture _captureMessage(Object? value) {
+_MessageCapture _captureMessage(
+  Object? value,
+  DiagnosticCaptureMode captureMode,
+  DiagnosticResourceLimits resourceLimits,
+) {
   if (value == null) return (text: null, serialization: null);
   final byteLength = _binaryByteLength(value);
   if (byteLength != null) {
@@ -351,18 +395,35 @@ _MessageCapture _captureMessage(Object? value) {
     return (
       text: placeholder,
       serialization: ISpectRedaction.enabled ||
-              byteLength > LogExportOutput.maxPreparedValueBytes
+              byteLength > resourceLimits.maxCapturedValueBytes
           ? placeholder
           : _freezeCapturedValue(value),
     );
   }
 
-  final text = LogExportOutput.truncateUtf8(
-    safeScalarText(value) ?? '',
-    maxBytes: LogExportOutput.maxPreparedValueBytes,
-  );
+  final capturedText = captureMode == DiagnosticCaptureMode.balanced
+      ? _guardedDiagnosticText(value)
+      : safeScalarText(value) ?? JsonValueNormalizer.unprintableValue;
+  final text = _boundDiagnosticText(capturedText, resourceLimits);
   return (text: text, serialization: text);
 }
+
+String _guardedDiagnosticText(Object value) {
+  try {
+    return value.toString();
+  } on Object {
+    return JsonValueNormalizer.unprintableValue;
+  }
+}
+
+String _boundDiagnosticText(
+  String value,
+  DiagnosticResourceLimits resourceLimits,
+) =>
+    LogExportOutput.truncateUtf8(
+      value,
+      maxBytes: resourceLimits.maxCapturedValueBytes,
+    );
 
 Map<String, dynamic> _freezeCapturedMap(Map<String, Object?> value) {
   final frozen = <String, Object?>{

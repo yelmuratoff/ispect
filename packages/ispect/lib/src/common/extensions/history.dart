@@ -1,40 +1,37 @@
 import 'package:ispect/ispect.dart';
 
-/// Extension on `List<ISpectLogData>` to format history text output.
-///
-/// This extension provides a formatted string representation of the list,
-/// where each message is followed by a separator line.
+/// Formats log history for human-readable diagnostic handoff.
 extension HistoryListFlutterText on List<ISpectLogData> {
-  /// Returns a formatted string representation of the history list.
-  ///
-  /// Each message in the list is separated by a horizontal line of length 30.
-  /// Ensures proper spacing for readability.
-  ///
-  /// ### Example:
-  /// ```dart
-  /// print(history.formattedText);
-  /// ```
-  ///
-  /// **Output:**
-  /// ```
-  /// First log
-  /// ──────────────────────────────
-  /// Second log
-  /// ──────────────────────────────
-  /// ```
-  String get formattedText {
-    if (isEmpty) return ''; // Handle empty list case.
+  /// Uses the initialized logger policy, or the first entry's capture policy.
+  String get formattedText => formattedTextWith();
 
+  /// Formats history with an optional local resource-policy override.
+  String formattedTextWith({DiagnosticResourceLimits? resourceLimits}) {
+    if (isEmpty) return '';
+    final limits = (resourceLimits ??
+        ISpect.loggerIfInitialized?.options.resourceLimits ??
+        captureISpectLogDataForEgress(first).resourceLimits)
+      ..validate();
     final sb = StringBuffer();
     for (final data in this) {
+      final pretty = JsonTruncator.pretty(
+        data.toJson(truncated: true),
+        maxDepth: limits.maxTraversalDepth,
+        maxIterableSize: limits.maxCollectionItems,
+        maxStringLength: limits.maxUiDiagnosticBytes,
+      );
       sb
         ..writeln(
-          '\n${JsonTruncator.pretty(
-            data.toJson(truncated: true),
-          ).truncate()}',
-        ) // Ensures newline after text.
-        ..writeln('\n${ConsoleUtils.bottomLine(100)}'); // Separator line.
+          '\n${LogExportOutput.truncateUtf8(
+            pretty,
+            maxBytes: limits.maxUiDiagnosticBytes,
+          )}',
+        )
+        ..writeln('\n${ConsoleUtils.bottomLine(100)}');
     }
-    return sb.toString().trim(); // Trim trailing newline for cleaner output.
+    return LogExportOutput.truncateUtf8(
+      sb.toString().trim(),
+      maxBytes: limits.maxExportDocumentBytes,
+    );
   }
 }

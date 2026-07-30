@@ -4,33 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/ispect_layout.dart';
 import 'package:ispect_layout/src/widgets/components/box_info_panel_widget.dart';
 
-// class _ColorPickerTestPainter extends CustomPainter {
-//   static Color localPositionToColor({
-//     required Offset offset,
-//     required Size size,
-//   }) {
-//     return Color.lerp(Colors.blue, Colors.red,
-//         (offset.dx + offset.dy) / (size.width + size.height))!;
-//   }
-
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     for (var x = 0.0; x < size.width; x++) {
-//       for (var y = 0.0; y < size.height; y++) {
-//         final position = Offset(x, y);
-
-//         canvas.drawRect(
-//           Rect.fromLTRB(x, y, x + 1, y + 1),
-//           Paint()..color = localPositionToColor(offset: position, size: size),
-//         );
-//       }
-//     }
-//   }
-
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-// }
-
 const _containerKey = ValueKey('container');
 const _roundedMaterialChildKey = ValueKey('rounded-material-child');
 const _page1ContainerKey = ValueKey('page1-container');
@@ -40,9 +13,12 @@ const _rowTextKey = ValueKey('row-text');
 const _chipIconKey = ValueKey('chip-icon');
 const _chipLabelKey = ValueKey('chip-label');
 
-Widget _buildBody() {
+Widget _buildBody({int maxRenderTreeClipboardCharacters = 10000}) {
   return MaterialApp(
-    builder: (context, child) => Inspector(child: child!),
+    builder: (context, child) => Inspector(
+      maxRenderTreeClipboardCharacters: maxRenderTreeClipboardCharacters,
+      child: child!,
+    ),
     home: Scaffold(
       backgroundColor: Colors.black,
       body: SizedBox(
@@ -146,10 +122,8 @@ Widget _buildNavigationStackBody() {
                 key: _pushButtonKey,
                 onPressed: () => Navigator.of(context).push<void>(
                   PageRouteBuilder<void>(
-                    // Non-opaque: the page underneath remains onstage in
-                    // Overlay's _RenderTheatre, exposing the pre-fix walk
-                    // to its render boxes. The active barrier should
-                    // absorb the centre-screen tap regardless.
+                    // Non-opaque keeps page 1 onstage, proving the active
+                    // barrier blocks render boxes from the route underneath.
                     opaque: false,
                     barrierColor: const Color(0x99000000),
                     pageBuilder: (_, __, ___) => Align(
@@ -250,24 +224,6 @@ Widget _buildMaterialShapeBody() {
   );
 }
 
-// const _painterKey = ValueKey('container');
-// Widget _buildColorPickerTestBody() {
-//   return MaterialApp(
-//     builder: (context, child) => Inspector(child: child!),
-//     home: Scaffold(
-//       backgroundColor: Colors.black,
-//       body: SizedBox(
-//         width: 200.0,
-//         height: 200.0,
-//         child: CustomPaint(
-//           key: _painterKey,
-//           painter: _ColorPickerTestPainter(),
-//         ),
-//       ),
-//     ),
-//   );
-// }
-
 void main() {
   group('Inspector', () {
     testWidgets('panel shows up properly', (tester) async {
@@ -317,26 +273,6 @@ void main() {
       expect(find.byIcon(Icons.format_shapes), findsNothing);
       expect(find.byIcon(Icons.colorize), findsNothing);
     });
-
-    // testWidgets('open panel golden test', (tester) async {
-    //   await tester.pumpWidget(_buildBody());
-
-    //   await expectLater(
-    //     find.byType(InspectorPanel),
-    //     matchesGoldenFile('goldens/inspector_panel_open.png'),
-    //   );
-    // });
-
-    // testWidgets('closed panel golden test', (tester) async {
-    //   await tester.pumpWidget(_buildBody());
-    //   await tester.tap(find.byIcon(Icons.chevron_right));
-    //   await tester.pump();
-
-    //   await expectLater(
-    //     find.byType(InspectorPanel),
-    //     matchesGoldenFile('goldens/inspector_panel_closed.png'),
-    //   );
-    // });
   });
 
   group('Widget inspector', () {
@@ -472,6 +408,59 @@ void main() {
       expect(find.text('100.125 × 100.375'), findsWidgets);
     });
 
+    testWidgets('render-tree copy honors the configured character budget',
+        (tester) async {
+      String? clipboardText;
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            clipboardText = (call.arguments as Map?)?['text'] as String?;
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+
+      await tester.pumpWidget(
+        _buildBody(maxRenderTreeClipboardCharacters: 40),
+      );
+      await tester.tap(find.byIcon(Icons.format_shapes));
+      await tester.pump();
+
+      final container =
+          tester.renderObject(find.byKey(_containerKey)) as RenderBox;
+      await tester.tapAt(
+        (container.localToGlobal(Offset.zero) & container.size).center,
+      );
+      await tester.pump();
+      await tester.tap(find.byIcon(Icons.copy_rounded));
+      await tester.pump();
+
+      expect(clipboardText, isNotNull);
+      expect(clipboardText, hasLength(40));
+      expect(clipboardText, endsWith('\n…'));
+      expect(find.textContaining('Copied render tree (40 /'), findsOneWidget);
+    });
+
+    test('rejects unsafe render-tree clipboard budgets', () {
+      expect(
+        () => InspectorController(maxRenderTreeClipboardCharacters: 0),
+        throwsArgumentError,
+      );
+      expect(
+        () => InspectorController(
+          maxRenderTreeClipboardCharacters:
+              InspectorController.maxAllowedRenderTreeClipboardCharacters + 1,
+        ),
+        throwsArgumentError,
+      );
+    });
+
     testWidgets('can hit-test a Container', (tester) async {
       await tester.pumpWidget(_buildBody());
       await tester.tap(find.byIcon(Icons.format_shapes));
@@ -493,7 +482,6 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Padding shown as box-model diagram: individual values rather than LTRB string.
       expect(find.text('50.0'), findsWidgets);
       expect(find.text('150.0'), findsWidgets);
       expect(find.text('border radius'), findsOneWidget);
@@ -541,7 +529,6 @@ void main() {
       await tester.tap(flexChip);
       await tester.pump();
 
-      // Active target now matches the Row, not the Text.
       expect(find.textContaining('Flex'), findsWidgets);
       expect(find.text('80.0 × 40.0'), findsWidgets);
     });
@@ -549,11 +536,7 @@ void main() {
     testWidgets(
         "selects a chip's avatar icon instead of routing every tap to the label",
         (tester) async {
-      // Material's _RenderChip hit-tests its children at their own centre
-      // rather than the actual pointer, which sends every chip tap into the
-      // label slot. The enrichment in InspectorUtils.findRenderObjectsAt
-      // detects that centre-routing (label entry whose bounds don't contain
-      // the pointer) and re-hit-tests the avatar so it ends up on the path.
+      // _RenderChip tests child centers, requiring a second hit test for avatars.
       await tester.pumpWidget(_buildChipIconBody());
       await tester.tap(find.byIcon(Icons.format_shapes));
       await tester.pump();
@@ -579,8 +562,6 @@ void main() {
       await tester.tap(find.byIcon(Icons.format_shapes));
       await tester.pump();
 
-      // Centre tap lands on the barrier of the top route — the page-1
-      // 100×100 container behind it must stay invisible to the inspector.
       final page1 =
           tester.renderObject(find.byKey(_page1ContainerKey)) as RenderBox;
       final position = (page1.localToGlobal(Offset.zero) & page1.size).center;
@@ -590,123 +571,5 @@ void main() {
 
       expect(find.text('100.0 × 100.0'), findsNothing);
     });
-
-    // testWidgets('hit-test result golden test', (tester) async {
-    //   await tester.pumpWidget(_buildBody());
-    //   await tester.tap(find.byIcon(Icons.format_shapes));
-    //   await tester.pump();
-
-    //   final container =
-    //       tester.renderObject(find.byKey(_containerKey)) as RenderBox;
-
-    //   final position =
-    //       (container.localToGlobal(Offset.zero) & container.size).center;
-
-    //   await tester.tapAt(position);
-    //   await tester.pump();
-
-    //   await expectLater(
-    //     find.byType(BoxInfoPanelWidget),
-    //     matchesGoldenFile('./goldens/box_info_panel_widget.png'),
-    //   );
-    // });
   });
-
-  // group('Color picker', () {
-  //   testWidgets('can be toggled', (tester) async {
-  //     await tester.pumpWidget(_buildColorPickerTestBody());
-
-  //     final finder = find.ancestor(
-  //       of: find.byIcon(Icons.colorize),
-  //       matching: find.byType(FloatingActionButton),
-  //     );
-
-  //     FloatingActionButton getButton() =>
-  //         tester.widget(finder) as FloatingActionButton;
-
-  //     expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
-  //     expect(getButton().foregroundColor, Colors.white70);
-
-  //     await tester.tap(find.byIcon(Icons.colorize));
-  //     await tester.pumpAndSettle();
-
-  //     expect(getButton().backgroundColor, const Color(0xFF3B82F6));
-  //     expect(getButton().foregroundColor, Colors.white);
-
-  //     await tester.tap(find.byIcon(Icons.colorize));
-  //     await tester.pumpAndSettle();
-
-  //     expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
-  //     expect(getButton().foregroundColor, Colors.white70);
-  //   });
-
-  //   test('colorToHexString returns right colors', () {
-  //     final colors = {
-  //       'aaaaaa': const Color(0xFFAAAAAA),
-  //       'bbbbbb': const Color(0xFFBBBBBB),
-  //       'cccccc': const Color(0xFFCCCCCC),
-  //       'dddddd': const Color(0xFFDDDDDD),
-  //     };
-
-  //     for (final colorKey in colors.keys) {
-  //       final color = colors[colorKey];
-  //       expect(colorToHexString(color!), equals(colorKey));
-  //     }
-  //   });
-
-  //   testWidgets('gets the right colors', (tester) async {
-  //     await tester.pumpWidget(_buildColorPickerTestBody());
-  //     await tester.tap(find.byIcon(Icons.colorize));
-
-  //     await tester.pumpAndSettle(
-  //       const Duration(milliseconds: 100),
-  //       EnginePhase.build,
-  //     );
-
-  //     await expectLater(
-  //       find.byType(InspectorPanel),
-  //       matchesGoldenFile('a.png'),
-  //     );
-
-  //     // Not the cleanest way to do this, but whatever :P
-  //     await tester.sendEventToBinding(
-  //       const PointerDownEvent(position: Offset(1.0, 1.0)),
-  //     );
-  //     await tester.pump();
-
-  //     await tester.sendEventToBinding(
-  //       const PointerMoveEvent(
-  //         delta: Offset(49.0, 49.0),
-  //       ),
-  //     );
-  //     await tester.pump();
-
-  //     await expectLater(
-  //       find.byType(InspectorPanel),
-  //       matchesGoldenFile('b.png'),
-  //     );
-
-  //     // var previousPosition = Offset.zero;
-  //     // for (var x = 0.0; x < 200; x += 10) {
-  //     //   for (var y = 0.0; y < 200; y += 10) {
-  //     //     final position = Offset(x, y);
-  //     //     final expectedColor = _ColorPickerTestPainter.localPositionToColor(
-  //     //       offset: position,
-  //     //       size: const Size(200.0, 200.0),
-  //     //     );
-
-  //     //     await tester.sendEventToBinding(PointerMoveEvent(
-  //     //       delta: position - previousPosition,
-  //     //     ));
-
-  //     //     previousPosition = position;
-
-  //     //     await tester.pump();
-
-  //     //     final colorHex = colorToHexString(expectedColor);
-  //     //     expect(find.text(colorHex), findsOneWidget);
-  //     //   }
-  //     // }
-  //   });
-  // });
 }

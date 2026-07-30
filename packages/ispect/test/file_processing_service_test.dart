@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/file_format.dart';
 import 'package:ispect/src/features/log_viewer/services/file_processing_service.dart';
+import 'package:ispectify/ispectify.dart';
 
 void main() {
   late FileProcessingService service;
@@ -134,6 +135,34 @@ void main() {
       expect(result.format, FileFormat.json);
       expect(result.displayName, 'JSON');
       expect(completionOrder, const ['ui', 'processed']);
+    });
+
+    test('honors a local import character budget', () {
+      final constrained = FileProcessingService(
+        resourceLimits: DiagnosticResourceLimits.balanced.copyWith(
+          maxImportCharacters: 16,
+        ),
+      );
+
+      final result = constrained.processPastedContent(
+        '{"value":"1234567890"}',
+      );
+
+      expect(result.success, false);
+      expect(result.error, contains('16'));
+    });
+
+    test('rejects an invalid local scheduling policy', () {
+      const invalid = FileProcessingService(
+        processingPolicy: DiagnosticProcessingPolicy(
+          backgroundProcessingThresholdBytes: 0,
+        ),
+      );
+
+      expect(
+        () => invalid.processPastedContentAsync('{}'),
+        throwsArgumentError,
+      );
     });
   });
 }

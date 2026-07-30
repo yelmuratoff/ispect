@@ -119,7 +119,10 @@ final class LogPipeline {
             ? outboundData.error ?? outboundData.exception
             : null,
         stackTrace: _options.forwardErrorToConsole
-            ? truncateStackTrace(outboundData.stackTrace)
+            ? truncateStackTrace(
+                outboundData.stackTrace,
+                maxFrames: _options.resourceLimits.maxConsoleStackTraceFrames,
+              )
             : null,
       );
     } catch (_) {

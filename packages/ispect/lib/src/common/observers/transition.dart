@@ -83,13 +83,19 @@ class RouteTransition {
 
   String? get prettyArguments {
     final args = arguments;
-    final snapshot = _safeRouteArgumentsSnapshot(args);
+    final limits = _routeResourceLimits();
+    final snapshot = _safeRouteArgumentsSnapshot(args, limits);
     return switch (snapshot) {
       null => null,
       final String value => value,
       final bool value => value.toString(),
       final num value => value.toString(),
-      final Map<String, Object?> map => JsonTruncator.pretty(map),
+      final Map<String, Object?> map => JsonTruncator.pretty(
+          map,
+          maxDepth: limits.maxTraversalDepth,
+          maxIterableSize: limits.maxCollectionItems,
+          maxStringLength: limits.maxUiDiagnosticBytes,
+        ),
       _ => jsonEncode(snapshot),
     };
   }
@@ -118,8 +124,8 @@ class RouteTransition {
         type == other.type &&
         timestamp == other.timestamp &&
         _equality.equals(
-          _safeRouteArgumentsSnapshot(arguments),
-          _safeRouteArgumentsSnapshot(other.arguments),
+          _equalityArgumentsSnapshot(arguments),
+          _equalityArgumentsSnapshot(other.arguments),
         );
   }
 
@@ -130,7 +136,7 @@ class RouteTransition {
         to,
         type,
         timestamp,
-        _equality.hash(_safeRouteArgumentsSnapshot(arguments)),
+        _equality.hash(_equalityArgumentsSnapshot(arguments)),
       );
 
   RouteTransition copyWith({
@@ -151,5 +157,21 @@ class RouteTransition {
       );
 }
 
-Object? _safeRouteArgumentsSnapshot(Object? arguments) =>
-    LogExportOutput.boundJsonValue(arguments);
+DiagnosticResourceLimits _routeResourceLimits() =>
+    ISpect.loggerIfInitialized?.options.resourceLimits ??
+    DiagnosticResourceLimits.balanced;
+
+Object? _equalityArgumentsSnapshot(Object? arguments) =>
+    _safeRouteArgumentsSnapshot(
+      arguments,
+      DiagnosticResourceLimits.balanced,
+    );
+
+Object? _safeRouteArgumentsSnapshot(
+  Object? arguments, [
+  DiagnosticResourceLimits? resourceLimits,
+]) =>
+    LogExportOutput.boundJsonValue(
+      arguments,
+      resourceLimits: resourceLimits ?? _routeResourceLimits(),
+    );

@@ -409,6 +409,7 @@ void main() {
       ISpectLogData(
         'message',
         id: 'A',
+        captureMode: DiagnosticCaptureMode.strict,
         additionalData: {
           'nested': [
             {'instant': instant},
@@ -436,6 +437,7 @@ void main() {
     final encoded = codec.encode(
       ISpectLogData(
         'message',
+        captureMode: DiagnosticCaptureMode.strict,
         additionalData: {
           'instant': instant,
           'uri': uri,
@@ -591,7 +593,7 @@ void main() {
     expect(decoded.additionalData?[TraceKeys.sessionId], 'S');
   });
 
-  test('persists bounded diagnostic descriptors without invoking them', () {
+  test('persists bounded diagnostic messages and stack traces by default', () {
     final codec = FileLogCodec(redactor: RedactionService());
     final encoded = codec.encode(
       ISpectLogData(
@@ -606,18 +608,9 @@ void main() {
 
     final decoded = codec.decodeLine(utf8.decode(encoded.bytes).trim());
 
-    expect(decoded.exception.toString(), contains('FormatException'));
-    expect(decoded.error.toString(), contains('StateError'));
-    expect(decoded.exception.toString(), isNot(contains('ordinary exception')));
-    expect(decoded.error.toString(), isNot(contains('ordinary error')));
-    expect(
-      decoded.stackTrace.toString(),
-      JsonValueNormalizer.unprintableValue,
-    );
-    expect(
-      utf8.decode(encoded.bytes),
-      isNot(contains('ordinary stack frame')),
-    );
+    expect(decoded.exception.toString(), contains('ordinary exception'));
+    expect(decoded.error.toString(), contains('ordinary error'));
+    expect(decoded.stackTrace.toString(), contains('ordinary stack frame'));
   });
 
   test('does not invoke implementable exception and error fields', () {
@@ -630,6 +623,7 @@ void main() {
         'message',
         exception: exception,
         error: error,
+        captureMode: DiagnosticCaptureMode.strict,
       ),
       sessionId: 'S',
       maxBytes: 4096,
@@ -652,7 +646,11 @@ void main() {
     final codec = FileLogCodec(redactor: RedactionService());
 
     final encoded = codec.encode(
-      ISpectLogData('message', stackTrace: stackTrace),
+      ISpectLogData(
+        'message',
+        stackTrace: stackTrace,
+        captureMode: DiagnosticCaptureMode.strict,
+      ),
       sessionId: 'S',
       maxBytes: 4096,
     );
@@ -735,6 +733,37 @@ void main() {
     expect(list.length, lessThanOrEqualTo(1000));
   });
 
+  test('persistence honors a custom collection budget', () {
+    final limits = DiagnosticResourceLimits.balanced.copyWith(
+      maxCollectionItems: 4,
+    );
+    final codec = FileLogCodec(
+      redactor: RedactionService(),
+      resourceLimits: limits,
+    );
+    final encoded = codec.encode(
+      ISpectLogData(
+        'message',
+        additionalData: {
+          'nested': {
+            for (var index = 0; index < 10; index++) 'field-$index': index,
+          },
+        },
+      ),
+      sessionId: 'S',
+      maxBytes: limits.maxLogRecordBytes,
+    );
+
+    final decoded = codec.decodeLine(utf8.decode(encoded.bytes).trim());
+    final nested = decoded.additionalData!['nested']! as Map<String, dynamic>;
+
+    expect(nested.length, lessThanOrEqualTo(limits.maxCollectionItems));
+    expect(
+      nested[JsonValueNormalizer.traversalMarkerKey],
+      JsonValueNormalizer.maxCollectionItemsReached,
+    );
+  });
+
   test('never invokes hostile toJson while preparing a persisted record', () {
     final hostile = _HostileToJsonValue('x' * (1024 * 1024));
     final codec = FileLogCodec(redactor: RedactionService());
@@ -742,6 +771,7 @@ void main() {
     final encoded = codec.encode(
       ISpectLogData(
         'message',
+        captureMode: DiagnosticCaptureMode.strict,
         additionalData: {'hostile': hostile},
       ),
       sessionId: 'S',
@@ -788,6 +818,7 @@ void main() {
     final encoded = codec.encode(
       ISpectLogData(
         'z' * (256 * 1024),
+        captureMode: DiagnosticCaptureMode.strict,
         additionalData: {
           TraceKeys.transactionId: transaction,
           TraceKeys.correlationId: correlation,

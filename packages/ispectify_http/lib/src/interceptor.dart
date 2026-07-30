@@ -28,10 +28,9 @@ class ISpectHttpInterceptor
     RedactionService? redactor,
   })  : _settings = settings,
         _logger = logger ?? ISpectLogger(),
-        _explicitRedactor = redactor;
-
-  static const _preserveResolvedRedaction =
-      BaseNetworkInterceptor.noRedactConfig;
+        _explicitRedactor = redactor {
+    settings.resourceLimits?.validate();
+  }
 
   final ISpectLogger _logger;
   final RedactionService? _explicitRedactor;
@@ -60,11 +59,25 @@ class ISpectHttpInterceptor
   bool get enableRedaction => settings.enableRedaction;
 
   @override
+  DiagnosticCaptureMode get captureMode => settings.captureMode;
+
+  @override
+  DiagnosticResourceLimits get resourceLimits =>
+      settings.resourceLimits ?? _logger.options.resourceLimits;
+
+  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
+        redact: false,
+        resourceLimits: resourceLimits,
+      );
+
+  @override
   BaseNetworkInterceptorSettings get configurableSettings => _settings;
 
   @override
   void applyConfigurableSettings(BaseNetworkInterceptorSettings updated) {
-    _settings = updated as ISpectHttpInterceptorSettings;
+    final typed = updated as ISpectHttpInterceptorSettings;
+    typed.resourceLimits?.validate();
+    _settings = typed;
   }
 
   @override
@@ -108,14 +121,22 @@ class ISpectHttpInterceptor
     );
     if (!_requestCaptureEnabled) return request;
 
-    final requestDataJson = HttpRequestData(request).toJson(
+    final requestDataJson = HttpRequestData(
+      request,
+      resourceLimits: resourceLimits,
+    ).toJson(
       includeData: settings.printRequestData,
       includeHeaders: settings.printRequestHeaders,
       redactionActive: redactionActive,
+      captureMode: settings.captureMode,
     );
     if (!_requestCaptureEnabled) return request;
     if (redactionActive) {
-      HttpRequestData.redact(requestDataJson, redactor);
+      HttpRequestData.redact(
+        requestDataJson,
+        redactor,
+        resourceLimits: resourceLimits,
+      );
     }
 
     if (!_requestCaptureEnabled) return request;
@@ -124,7 +145,7 @@ class ISpectHttpInterceptor
       operation: operation,
       target: url,
       correlationId: requestId,
-      config: _preserveResolvedRedaction,
+      config: _traceConfig,
       meta: {
         NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.requestData: requestDataJson,
@@ -184,7 +205,10 @@ class ISpectHttpInterceptor
         : settings.printResponseMessage;
     final responseData = HttpResponseData(
       baseResponse: response,
-      requestData: HttpRequestData(request),
+      requestData: HttpRequestData(
+        request,
+        resourceLimits: resourceLimits,
+      ),
       response: response is Response ? response : null,
       multipartRequest: request is MultipartRequest ? request : null,
     );
@@ -196,10 +220,15 @@ class ISpectHttpInterceptor
       includeRequestData: settings.printRequestData,
       includeRequestHeaders: settings.printRequestHeaders,
       redactionActive: redactionActive,
+      captureMode: settings.captureMode,
     );
     if (!_captureResponseEnabled(isErrorResponse)) return response;
     if (redactionActive) {
-      HttpResponseData.redact(responseDataJson, redactor);
+      HttpResponseData.redact(
+        responseDataJson,
+        redactor,
+        resourceLimits: resourceLimits,
+      );
     }
 
     if (!_captureResponseEnabled(isErrorResponse)) return response;
@@ -217,7 +246,7 @@ class ISpectHttpInterceptor
         target: url,
         correlationId: requestId,
         duration: sw?.elapsed,
-        config: _preserveResolvedRedaction,
+        config: _traceConfig,
         meta: {
           ...baseMeta,
           NetworkLogRenderer.renderHintsKey: {
@@ -234,7 +263,7 @@ class ISpectHttpInterceptor
         target: url,
         correlationId: requestId,
         duration: sw?.elapsed,
-        config: _preserveResolvedRedaction,
+        config: _traceConfig,
         meta: {
           ...baseMeta,
           NetworkLogRenderer.renderHintsKey: {

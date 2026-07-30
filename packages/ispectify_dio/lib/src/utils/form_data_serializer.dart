@@ -12,7 +12,9 @@ final class DioFormDataSerializer {
   static Map<String, dynamic> serialize(
     FormData formData, {
     bool redactionActive = false,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
+    resourceLimits.validate();
     final rawFields = LogExportOutput.boundJsonValue(
       formData.fields.map(
         (entry) => <String, Object?>{
@@ -20,7 +22,8 @@ final class DioFormDataSerializer {
           NetworkJsonKeys.data: entry.value,
         },
       ),
-      maxBytes: LogExportOutput.maxPreparedValueBytes ~/ 2,
+      maxBytes: resourceLimits.maxNetworkBodyBytes ~/ 2,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: redactionActive,
     );
     final rawFiles = LogExportOutput.boundJsonValue(
@@ -33,7 +36,8 @@ final class DioFormDataSerializer {
           NetworkJsonKeys.headers: file.value.headers,
         },
       ),
-      maxBytes: LogExportOutput.maxPreparedValueBytes ~/ 2,
+      maxBytes: resourceLimits.maxNetworkBodyBytes ~/ 2,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: redactionActive,
     );
     final fields = _collectFields(rawFields);
@@ -57,8 +61,8 @@ final class DioFormDataSerializer {
         NetworkJsonKeys.fields: fields,
         NetworkJsonKeys.files: files,
       },
-      // Leave headroom for JSON object/list punctuation around retained text.
-      maxBytes: 44 * 1024,
+      maxBytes: resourceLimits.maxNetworkBodyBytes,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: redactionActive,
     );
     return bounded is Map<String, Object?>

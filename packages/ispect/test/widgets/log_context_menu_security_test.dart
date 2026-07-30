@@ -29,6 +29,9 @@ void main() {
 
       const secret = 'CONTEXT_MENU_COPY_SECRET';
       final hostile = hostileCopyLog(secret);
+      final exceptionCallsAtCapture = hostile.exception.calls;
+      final errorCallsAtCapture = hostile.error.calls;
+      final stackCallsAtCapture = hostile.stackTrace.calls;
       await tester.pumpWidget(
         appShell(const SizedBox(key: Key('context-menu-anchor'))),
       );
@@ -52,9 +55,9 @@ void main() {
         contains(JsonValueNormalizer.unprintableValue),
       );
       expect(clipboardText, isNot(contains(secret)));
-      expect(hostile.exception.calls, 0);
-      expect(hostile.error.calls, 0);
-      expect(hostile.stackTrace.calls, 0);
+      expect(hostile.exception.calls, exceptionCallsAtCapture);
+      expect(hostile.error.calls, errorCallsAtCapture);
+      expect(hostile.stackTrace.calls, stackCallsAtCapture);
     },
   );
 }

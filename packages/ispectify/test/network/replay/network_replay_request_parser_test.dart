@@ -337,5 +337,31 @@ void main() {
       expect(parsed!.bodyRedacted, isTrue);
       expect(parsed.request.body, isNull);
     });
+
+    test('honors custom replay header and body budgets', () {
+      final limits = DiagnosticResourceLimits.balanced.copyWith(
+        maxNetworkHeaders: 2,
+        maxNetworkBodyBytes: 64,
+      );
+
+      final parsed = NetworkReplayRequestParser.fromRequestMap(
+        {
+          NetworkJsonKeys.method: 'POST',
+          NetworkJsonKeys.url: 'https://api.example.com/safe',
+          NetworkJsonKeys.headers: {
+            'X-First': '1',
+            'X-Second': '2',
+            'X-Third': '3',
+          },
+          NetworkJsonKeys.data: 'x' * 200,
+        },
+        resourceLimits: limits,
+      );
+
+      expect(parsed, isNotNull);
+      expect(parsed!.request.headers, {'X-First': '1', 'X-Second': '2'});
+      expect(parsed.request.body, isNull);
+      expect(parsed.bodyRedacted, isTrue);
+    });
   });
 }

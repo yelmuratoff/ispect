@@ -266,7 +266,11 @@ final class HttpComposerController extends ChangeNotifier {
   static NetworkReplayRequest? seedFromLog(ISpectLogData log) {
     final map = _requestMapFromLog(log);
     if (map == null) return null;
-    return NetworkReplayRequestParser.fromRequestMap(map)?.request;
+    final captured = captureISpectLogDataForEgress(log);
+    return NetworkReplayRequestParser.fromRequestMap(
+      map,
+      resourceLimits: captured.resourceLimits,
+    )?.request;
   }
 
   static Map<String, dynamic>? _requestMapFromLog(ISpectLogData log) {

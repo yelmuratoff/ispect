@@ -1,7 +1,5 @@
 // ignore_for_file: implementation_imports, inference_failure_on_function_return_type, avoid_positional_boolean_parameters
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
@@ -73,7 +71,6 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
   TextEditingController get _searchController =>
       widget.controller.searchController;
   final _hasSearchText = ValueNotifier(false);
-  Timer? _debounce;
 
   @override
   void initState() {
@@ -84,7 +81,6 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
     _searchController.removeListener(_syncSearchText);
     _hasSearchText.dispose();
     super.dispose();
@@ -215,14 +211,10 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
 
   void _onSearchChanged(String query) {
     _hasSearchText.value = query.isNotEmpty;
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      widget.controller.updateFilterSearchQuery(query);
-    });
+    widget.controller.updateFilterSearchQuery(query);
   }
 
   void _onSearchClear() {
-    _debounce?.cancel();
     _searchController.clear();
     _hasSearchText.value = false;
     widget.controller.updateFilterSearchQuery('');

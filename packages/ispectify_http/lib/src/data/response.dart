@@ -38,15 +38,25 @@ class HttpResponseData {
     bool includeRequestData = true,
     bool includeRequestHeaders = true,
     bool redactionActive = false,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
   }) {
     final resp = response;
     final multipart = multipartRequest;
     final payload = includeData && resp != null
-        ? _preparePayload(resp, redactionActive: redactionActive)
+        ? _preparePayload(
+            resp,
+            redactionActive: redactionActive,
+            captureMode: captureMode,
+          )
         : null;
     final request = baseResponse.request;
-    final uriSnapshot =
-        request == null ? null : NetworkUriSnapshot.fromUri(request.url);
+    final uriSnapshot = request == null
+        ? null
+        : NetworkUriSnapshot.fromUri(
+            request.url,
+            captureMode: captureMode,
+            resourceLimits: requestData.resourceLimits,
+          );
     return <String, dynamic>{
       // --- Status: first thing you check ---
       NetworkJsonKeys.statusCode: baseResponse.statusCode,
@@ -58,7 +68,13 @@ class HttpResponseData {
       NetworkJsonKeys.url: uriSnapshot?.url,
 
       // --- Payload ---
-      if (includeHeaders) NetworkJsonKeys.headers: baseResponse.headers,
+      if (includeHeaders)
+        NetworkJsonKeys.headers: NetworkPayloadSanitizer.toStringKeyMap(
+          baseResponse.headers,
+          captureMode: captureMode,
+          resourceLimits: requestData.resourceLimits,
+          maxEntries: requestData.resourceLimits.maxNetworkHeaders,
+        ),
       if (payload != null) NetworkJsonKeys.body: payload.body,
       if (payload != null)
         NetworkJsonKeys.bodyBytes: payload.bodyBytes.toString(),
@@ -75,6 +91,7 @@ class HttpResponseData {
         NetworkJsonKeys.multipartRequest: HttpMultipartSerializer.serialize(
           multipart,
           redactionActive: redactionActive,
+          resourceLimits: requestData.resourceLimits,
         ),
 
       // --- Original request (reference) ---
@@ -82,6 +99,7 @@ class HttpResponseData {
         includeData: includeRequestData,
         includeHeaders: includeRequestHeaders,
         redactionActive: redactionActive,
+        captureMode: captureMode,
       ),
     };
   }
@@ -91,26 +109,34 @@ class HttpResponseData {
     RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     NetworkMapRedactor.redactMethod(
       map,
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
-    NetworkMapRedactor.redactUrl(map, redactor);
+    NetworkMapRedactor.redactUrl(
+      map,
+      redactor,
+      resourceLimits: resourceLimits,
+    );
     NetworkMapRedactor.redactFreeText(
       map,
       redactor,
       key: NetworkJsonKeys.statusMessage,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     final redactedHeaders = NetworkMapRedactor.redactHeaders(
       map,
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     if (redactedHeaders != null) {
       map[NetworkJsonKeys.headers] =
@@ -121,6 +147,7 @@ class HttpResponseData {
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
 
     NetworkMapRedactor.redactData(
@@ -129,6 +156,7 @@ class HttpResponseData {
       key: NetworkJsonKeys.body,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
 
     final requestMap = map[NetworkJsonKeys.request];
@@ -138,6 +166,7 @@ class HttpResponseData {
         redactor,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
     }
   }
@@ -145,6 +174,7 @@ class HttpResponseData {
   _PreparedHttpBody _preparePayload(
     Response response, {
     required bool redactionActive,
+    required DiagnosticCaptureMode captureMode,
   }) {
     try {
       final bytes = response.bodyBytes;
@@ -153,11 +183,17 @@ class HttpResponseData {
               bytes,
               response.headers,
               redactionActive: redactionActive,
+              resourceLimits: requestData.resourceLimits,
             )
           : LogExportOutput.boundJsonValue(
               _preDecodedBody,
-              maxBytes: httpCaptureBodyMaxBytes,
+              maxBytes: requestData.resourceLimits.maxNetworkBodyBytes,
+              resourceLimits: requestData.resourceLimits,
               replaceOversizedStrings: redactionActive,
+              allowCustomSerialization:
+                  captureMode == DiagnosticCaptureMode.balanced,
+              allowCustomStringification:
+                  captureMode == DiagnosticCaptureMode.balanced,
             );
       return (body: prepared, bodyBytes: bytes.lengthInBytes);
     } on Object {
@@ -172,9 +208,11 @@ class HttpResponseData {
     Uint8List bytes,
     Map<String, String> headers, {
     required bool redactionActive,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     if (bytes.isEmpty) return null;
-    final oversized = bytes.lengthInBytes > httpCaptureBodyMaxBytes;
+    final maxBodyBytes = resourceLimits.maxNetworkBodyBytes;
+    final oversized = bytes.lengthInBytes > maxBodyBytes;
     if (oversized && redactionActive) {
       return LogExportOutput.truncatedMarker;
     }
@@ -182,8 +220,9 @@ class HttpResponseData {
     final markerBytes = LogExportOutput.utf8Length(
       LogExportOutput.truncatedMarker,
     );
-    final prefixBytes =
-        oversized ? httpCaptureBodyMaxBytes - markerBytes : bytes.lengthInBytes;
+    final prefixBytes = oversized
+        ? (maxBodyBytes - markerBytes).clamp(0, bytes.lengthInBytes)
+        : bytes.lengthInBytes;
     final decoded = _decodePrefix(
       bytes,
       _encodingFor(headers),
@@ -194,10 +233,14 @@ class HttpResponseData {
         oversized ? '$decoded${LogExportOutput.truncatedMarker}' : decoded;
     final bounded = LogExportOutput.boundJsonValue(
       withMarker,
-      maxBytes: httpCaptureBodyMaxBytes,
+      maxBytes: maxBodyBytes,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: redactionActive,
     );
-    return NetworkPayloadSanitizer.decodeJsonGracefully(bounded);
+    return NetworkPayloadSanitizer.decodeJsonGracefully(
+      bounded,
+      resourceLimits: resourceLimits,
+    );
   }
 
   static Encoding _encodingFor(Map<String, String> headers) {

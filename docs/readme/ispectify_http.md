@@ -51,17 +51,30 @@ const settings = ISpectHttpInterceptorSettings(
   logResponses: true,
   printRequestHeaders: true,
   printRequestData: true,
-  printResponseHeaders: false,
+  printResponseHeaders: true,
   printResponseData: true,
   enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 ```
+
+Balanced capture keeps ordinary URLs and prepared typed values useful through
+guarded, bounded formatting before redaction. Set
+`captureMode: DiagnosticCaptureMode.strict` when application-defined
+formatters must never run.
 
 Preset factories and a builder are also available. Use
 `ISpectHttpInterceptorSettingsBuilder.metadataOnly()` to retain request and
 response metadata while omitting bodies and headers. The `development()`,
 `staging()`, and `production()` presets remain available for environment-based
 policies.
+
+`metadataOnly()` and `production()` select strict capture. `development()` and
+`staging()` keep balanced capture. Builders also expose
+`withStrictCapture()` and `withBalancedCapture()`.
+Use `withResourceLimits(...)` for an interceptor-local budget, or
+`withInheritedResourceLimits()` to return to the logger policy.
 
 `logRequests` and `logResponses` control whether routine records are retained;
 the production preset disables both and keeps redacted errors. The `print*`

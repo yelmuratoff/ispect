@@ -2,7 +2,15 @@
 
 ISpect is a pre-release diagnostics toolkit. On an internal build, it captures whatever streams you enable: logs, network requests and responses, database trace arguments, BLoC events and states, Riverpod provider lifecycle events, navigation events, exported sessions, and observer events.
 
-The default posture favors useful diagnostics in internal builds: network payloads, headers, and state values are visible after bounded redaction. Compile-time gating and the shared redaction policy remain mandatory defaults, while per-integration compact and metadata-only presets let teams opt into stricter minimization. The team using ISpect still has to handle the output according to the data class it contains.
+The default posture favors useful diagnostics in internal builds: network
+payloads, headers, exceptions, stack traces, and state values are visible after
+bounded redaction. Balanced capture may call application-defined `toJson()` or
+`toString()` inside guarded boundaries, then immediately bounds the result.
+Compile-time gating and the shared redaction policy remain mandatory defaults,
+while strict capture and per-integration compact or metadata-only presets let
+teams opt into stronger execution and data-minimization guarantees. The team
+using ISpect still has to handle the output according to the data class it
+contains.
 
 The shared redaction pipeline is what sets ISpect apart from a plain log viewer. One configurable default policy covers core logs, traces, persistence, supported interceptors, database diagnostics, state observers, export flows, clipboard helpers, cURL generation, and observer payloads. A request masked in the viewer stays masked in every place it can leak.
 
@@ -58,9 +66,11 @@ policy. Disabling it requires an explicit per-export or global opt-out and
 should be limited to controlled local debugging.
 
 An opt-out changes content masking, not the defensive output boundary.
-Diagnostic values remain size-bounded, and ISpect does not invoke
-application-defined `toString` or `toJson` implementations merely to render
-an export, observer event, trace, route argument, or adapter payload.
+Diagnostic values remain size-bounded. The balanced default may invoke guarded
+application-defined `toJson()` or `toString()` while the value is first
+captured; `DiagnosticCaptureMode.strict` disables those calls. Persistence,
+exports, and observer fan-out operate on the captured snapshot and never
+re-invoke application formatters.
 
 Domain-specific fields belong to the application team. Register custom keys for values such as tenant identifiers, internal account numbers, organization-specific tokens, customer references, business-sensitive IDs, and proprietary request fields. Extend the safe defaults through the global policy:
 
@@ -81,7 +91,10 @@ ISpectRedaction.configure(
 
 `additionalSensitiveKeys` and `additionalSensitiveKeyPatterns` preserve the built-in protection. The replacement parameters `sensitiveKeys` and `sensitiveKeyPatterns` remain available for deliberate policy replacement. An explicit service supplied to one integration takes precedence over the global service; otherwise even already-created integrations resolve the current global policy per diagnostic operation. Runtime configuration is scoped to the current Dart isolate.
 
-`ISpectRedaction.enabled = false` remains the global content-masking opt-out. Local `enableRedaction` flags can disable masking for one integration. Neither form disables output bounds, non-executing snapshots, storage checks, or the compile-time `ISPECT_ENABLED` gate.
+`ISpectRedaction.enabled = false` remains the global content-masking opt-out.
+Local `enableRedaction` flags can disable masking for one integration. Neither
+form disables output bounds, storage checks, the selected capture mode, or the
+compile-time `ISPECT_ENABLED` gate.
 
 ## Data minimization
 
@@ -93,9 +106,12 @@ Optional hardening for shared internal builds:
 - Use `logRequests: false` and `logResponses: false` (or an errors-only
   production preset) when routine network records are unnecessary.
 - Use the Dio, HTTP, or WebSocket `metadataOnly()` preset when request and
-  response bodies are unnecessary.
+  response bodies are unnecessary. These presets select strict capture.
 - Use `ISpectBlocSettings.compact` or `ISpectRiverpodSettings.compact` when
-  lifecycle visibility is enough without values.
+  lifecycle visibility is enough without values. These presets also select
+  strict capture.
+- Select `DiagnosticCaptureMode.strict` directly on logger, adapter, observer,
+  or database settings when application-defined formatters must never run.
 - Project database traces to counts, IDs, timings, and status fields instead of full rows.
 - Do not pipe raw user input through `logger.info(...)`.
 - Supply device model metadata only. Never attach serial numbers, advertising
@@ -131,9 +147,8 @@ invalid records that were skipped.
 Observer hooks receive a redacted copy by default before forwarding selected
 events to an internal tool. Disabling `ISpectRedaction.enabled` is the explicit
 content-redaction opt-out for both exports and observers. Ordinary supported
-values remain visible, but output bounds and fail-closed handling of
-application-defined formatters still apply. Handle either form according to
-the data class it contains.
+values remain visible, but output bounds and the selected capture mode still
+apply. Handle either form according to the data class it contains.
 
 Before enabling an observer:
 
@@ -154,9 +169,10 @@ must not be writable by the group or by everyone. ISpect also rejects
 symbolic-link artifacts, confines managed names to the resolved history root,
 bounds every read and write, and revalidates paths around open handles.
 Persistence never invokes supplied `Exception`, `Error`, or `StackTrace`
-formatting methods. Exceptions and errors use a bounded safe type descriptor;
-stack fields use a fail-closed marker because these Dart types permit
-implementations that cannot be authenticated.
+formatting methods after capture. In strict mode, exceptions and errors use a
+bounded safe descriptor and stack fields use a fail-closed marker. In balanced
+mode, their guarded text snapshots are already bounded before persistence sees
+them.
 
 Public cross-platform `dart:io` does not expose an atomic no-follow open or the
 inode/file ID behind a `RandomAccessFile`. Consequently, those checks detect

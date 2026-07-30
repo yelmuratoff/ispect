@@ -88,6 +88,9 @@ final class ISpectSettingsState {
     this.forwardErrorToConsole = false,
     this.maxHistoryItems = kDefaultMaxHistoryItems,
     this.logTruncateLength = kDefaultLogTruncateLength,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
+    this.processingPolicy = DiagnosticProcessingPolicy.balanced,
     this.disabledLogTypes = const {},
     this.expandedLogs = false,
     this.isLogOrderReversed = true,
@@ -116,6 +119,15 @@ final class ISpectSettingsState {
   final int maxHistoryItems;
   final int logTruncateLength;
 
+  /// Whether capture may invoke guarded application-defined formatters.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Resource budgets used across capture, viewer, import, and export.
+  final DiagnosticResourceLimits resourceLimits;
+
+  /// Cooperative scheduling used by search, import, and export.
+  final DiagnosticProcessingPolicy processingPolicy;
+
   /// Disabled [ISpectLogType.key] values. Empty set means "all enabled".
   final Set<String> disabledLogTypes;
 
@@ -138,6 +150,14 @@ final class ISpectSettingsState {
   bool isLogTypeEnabled(String logTypeKey) =>
       !disabledLogTypes.contains(logTypeKey);
 
+  /// Throws [ArgumentError] when persisted settings are unsafe.
+  void validate() {
+    _requireNonNegative(maxHistoryItems, 'maxHistoryItems');
+    _requireNonNegative(logTruncateLength, 'logTruncateLength');
+    resourceLimits.validate();
+    processingPolicy.validate();
+  }
+
   ISpectSettingsState copyWith({
     bool? enabled,
     bool? useConsoleLogs,
@@ -145,6 +165,9 @@ final class ISpectSettingsState {
     bool? forwardErrorToConsole,
     int? maxHistoryItems,
     int? logTruncateLength,
+    DiagnosticCaptureMode? captureMode,
+    DiagnosticResourceLimits? resourceLimits,
+    DiagnosticProcessingPolicy? processingPolicy,
     Set<String>? disabledLogTypes,
     bool? expandedLogs,
     bool? isLogOrderReversed,
@@ -164,6 +187,9 @@ final class ISpectSettingsState {
           forwardErrorToConsole ?? this.forwardErrorToConsole,
       maxHistoryItems: maxHistoryItems ?? this.maxHistoryItems,
       logTruncateLength: logTruncateLength ?? this.logTruncateLength,
+      captureMode: captureMode ?? this.captureMode,
+      resourceLimits: resourceLimits ?? this.resourceLimits,
+      processingPolicy: processingPolicy ?? this.processingPolicy,
       disabledLogTypes: disabledLogTypes ?? this.disabledLogTypes,
       expandedLogs: expandedLogs ?? this.expandedLogs,
       isLogOrderReversed: isLogOrderReversed ?? this.isLogOrderReversed,
@@ -185,6 +211,9 @@ final class ISpectSettingsState {
       'forward_error_to_console': forwardErrorToConsole,
       'max_history_items': maxHistoryItems,
       'log_truncate_length': logTruncateLength,
+      'capture_mode': captureMode.name,
+      'resource_limits': resourceLimits.toMap(),
+      'processing_policy': processingPolicy.toMap(),
       'disabled_log_types': disabledLogTypes.toList(growable: false),
       'expanded_logs': expandedLogs,
       'is_log_order_reversed': isLogOrderReversed,
@@ -202,13 +231,22 @@ final class ISpectSettingsState {
     T cast<T>(String k) => map[k] is T
         ? map[k] as T
         : throw ArgumentError('Invalid $k: expected $T.');
-    return ISpectSettingsState(
+    final settings = ISpectSettingsState(
       enabled: cast<bool?>('enabled') ?? false,
       useConsoleLogs: cast<bool?>('use_console_logs') ?? false,
       useHistory: cast<bool?>('use_history') ?? false,
       forwardErrorToConsole: cast<bool?>('forward_error_to_console') ?? false,
-      maxHistoryItems: cast<int?>('max_history_items') ?? 0,
-      logTruncateLength: cast<int?>('log_truncate_length') ?? 0,
+      maxHistoryItems: _requireNonNegative(
+        cast<int?>('max_history_items') ?? 0,
+        'max_history_items',
+      ),
+      logTruncateLength: _requireNonNegative(
+        cast<int?>('log_truncate_length') ?? 0,
+        'log_truncate_length',
+      ),
+      captureMode: _captureModeFromMap(map['capture_mode']),
+      resourceLimits: _resourceLimitsFromMap(map['resource_limits']),
+      processingPolicy: _processingPolicyFromMap(map['processing_policy']),
       disabledLogTypes: Set<String>.from(
           cast<Iterable<dynamic>?>('disabled_log_types') ?? const <String>{}),
       expandedLogs: cast<bool?>('expanded_logs') ?? false,
@@ -221,6 +259,8 @@ final class ISpectSettingsState {
       isInspectorEnabled: cast<bool?>('is_inspector_enabled') ?? false,
       isColorPickerEnabled: cast<bool?>('is_color_picker_enabled') ?? false,
     );
+    settings.validate();
+    return settings;
   }
 
   String toJson() => json.encode(toMap());
@@ -237,6 +277,9 @@ final class ISpectSettingsState {
       forwardErrorToConsole: $forwardErrorToConsole,
       maxHistoryItems: $maxHistoryItems,
       logTruncateLength: $logTruncateLength,
+      captureMode: $captureMode,
+      resourceLimits: $resourceLimits,
+      processingPolicy: $processingPolicy,
       disabledLogTypes: $disabledLogTypes,
       expandedLogs: $expandedLogs,
       isLogOrderReversed: $isLogOrderReversed,
@@ -262,6 +305,9 @@ final class ISpectSettingsState {
         other.forwardErrorToConsole == forwardErrorToConsole &&
         other.maxHistoryItems == maxHistoryItems &&
         other.logTruncateLength == logTruncateLength &&
+        other.captureMode == captureMode &&
+        other.resourceLimits == resourceLimits &&
+        other.processingPolicy == processingPolicy &&
         setEquals(other.disabledLogTypes, disabledLogTypes) &&
         other.expandedLogs == expandedLogs &&
         other.isLogOrderReversed == isLogOrderReversed &&
@@ -276,24 +322,66 @@ final class ISpectSettingsState {
 
   @override
   int get hashCode {
-    return Object.hash(
-        enabled,
-        useConsoleLogs,
-        useHistory,
-        forwardErrorToConsole,
-        maxHistoryItems,
-        logTruncateLength,
-        disabledLogTypes,
-        expandedLogs,
-        isLogOrderReversed,
-        groupHttpLogs,
-        useRelativeTime,
-        compactNetworkUrls,
-        isLogPageEnabled,
-        isPerformanceEnabled,
-        isInspectorEnabled,
-        isColorPickerEnabled);
+    return Object.hashAll([
+      enabled,
+      useConsoleLogs,
+      useHistory,
+      forwardErrorToConsole,
+      maxHistoryItems,
+      logTruncateLength,
+      captureMode,
+      resourceLimits,
+      processingPolicy,
+      const DeepCollectionEquality().hash(disabledLogTypes),
+      expandedLogs,
+      isLogOrderReversed,
+      groupHttpLogs,
+      useRelativeTime,
+      compactNetworkUrls,
+      isLogPageEnabled,
+      isPerformanceEnabled,
+      isInspectorEnabled,
+      isColorPickerEnabled,
+    ]);
   }
+}
+
+DiagnosticResourceLimits _resourceLimitsFromMap(Object? value) {
+  if (value == null) return DiagnosticResourceLimits.balanced;
+  if (value is! Map<Object?, Object?>) {
+    throw ArgumentError.value(value, 'resource_limits', 'must be a map');
+  }
+  return DiagnosticResourceLimits.fromMap(
+    value.map((key, value) => MapEntry(key.toString(), value)),
+  );
+}
+
+DiagnosticCaptureMode _captureModeFromMap(Object? value) {
+  if (value == null) return DiagnosticCaptureMode.balanced;
+  if (value == DiagnosticCaptureMode.balanced.name) {
+    return DiagnosticCaptureMode.balanced;
+  }
+  if (value == DiagnosticCaptureMode.strict.name) {
+    return DiagnosticCaptureMode.strict;
+  }
+  throw ArgumentError.value(value, 'capture_mode', 'is not supported');
+}
+
+DiagnosticProcessingPolicy _processingPolicyFromMap(Object? value) {
+  if (value == null) return DiagnosticProcessingPolicy.balanced;
+  if (value is! Map<Object?, Object?>) {
+    throw ArgumentError.value(value, 'processing_policy', 'must be a map');
+  }
+  return DiagnosticProcessingPolicy.fromMap(
+    value.map((key, value) => MapEntry(key.toString(), value)),
+  );
+}
+
+int _requireNonNegative(int value, String name) {
+  if (value < 0) {
+    throw ArgumentError.value(value, name, 'must be non-negative');
+  }
+  return value;
 }
 
 /// Describes content to pass into a custom share handler.

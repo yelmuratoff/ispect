@@ -65,6 +65,8 @@ const settings = ISpectWSInterceptorSettings(
   printErrorData: true,
   printErrorMessage: true,
   enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 
 final diagnostics = WsDiagnostics(logger: ISpect.logger, settings: settings);
@@ -78,6 +80,14 @@ frame retention and keep redacted error diagnostics. `print*` fields shape
 retained records but do not re-enable a suppressed frame. Use the concrete
 settings `copyWith` or builder for retention controls; the shared base
 `configure` helper retains its legacy-compatible field set.
+
+Balanced capture keeps typed frames and state objects useful through guarded,
+bounded formatting before redaction. Set `captureMode` to
+`DiagnosticCaptureMode.strict`, call `withStrictCapture()`, or use
+`metadataOnly()`/`production()` when application-defined formatters must never
+run.
+Use `withResourceLimits(...)` for a WebSocket-local budget, or
+`withInheritedResourceLimits()` to return to the logger policy.
 
 <!-- partial:redaction -->
 

@@ -145,7 +145,7 @@ void main() {
       }
     });
 
-    testWidgets('clipboard exports never execute caller diagnostic methods',
+    testWidgets('clipboard exports do not re-execute captured diagnostics',
         (tester) async {
       final ctx = await pumpContext(tester);
       final calls = _InvocationCounters();
@@ -158,6 +158,8 @@ void main() {
         stackTrace: _HostileStackTrace(calls),
         additionalData: {'custom': _HostileAdditionalValue(calls)},
       );
+      final toJsonCallsAtCapture = calls.toJsonCalls;
+      final toStringCallsAtCapture = calls.toStringCalls;
 
       controller
         ..copyLogEntryText(
@@ -172,15 +174,15 @@ void main() {
           'All logs',
         );
 
-      expect(calls.toJsonCalls, 0);
-      expect(calls.toStringCalls, 0);
+      expect(calls.toJsonCalls, toJsonCallsAtCapture);
+      expect(calls.toStringCalls, toStringCallsAtCapture);
       for (final output in [capturedSingle, capturedAll]) {
-        expect(output, contains(JsonValueNormalizer.unprintableValue));
+        expect(output, contains('[REDACTED]'));
         expect(output, isNot(contains('CALLER_TO_JSON_SECRET')));
         expect(output, isNot(contains('CALLER_TO_STRING_SECRET')));
-        expect(output, isNot(contains('HOSTILE_EXCEPTION_SECRET')));
-        expect(output, isNot(contains('HOSTILE_ERROR_SECRET')));
-        expect(output, isNot(contains('HOSTILE_STACK_SECRET')));
+        expect(output, contains('HOSTILE_EXCEPTION_SECRET'));
+        expect(output, contains('HOSTILE_ERROR_SECRET'));
+        expect(output, contains('HOSTILE_STACK_SECRET'));
       }
     });
 
@@ -207,6 +209,35 @@ void main() {
         lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
       );
       expect('\n'.allMatches(captured).length + 1, lessThan(logs.length));
+    });
+
+    testWidgets('clipboard exports honor a controller-local document budget',
+        (tester) async {
+      final limits = DiagnosticResourceLimits.balanced.copyWith(
+        maxCapturedValueBytes: 128,
+        maxLogRecordBytes: 256,
+        maxExportDocumentBytes: 512,
+      );
+      controller.dispose();
+      controller = ISpectViewController(resourceLimits: limits);
+      final ctx = await pumpContext(tester);
+      late String captured;
+      final logs = List<ISpectLogData>.generate(
+        20,
+        (index) => ISpectLogData('$index:${'x' * 200}'),
+      );
+
+      controller.copyAllLogsToClipboard(
+        ctx,
+        logs,
+        (_, {required value, title, showValue}) => captured = value,
+        'All logs',
+      );
+
+      expect(
+        LogExportOutput.utf8Length(captured),
+        lessThanOrEqualTo(limits.maxExportDocumentBytes),
+      );
     });
 
     testWidgets('clipboard paths honor the global redaction opt-out',

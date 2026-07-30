@@ -14,6 +14,7 @@ void main() {
         printResponseData: false,
         printRequestHeaders: true,
         printErrorHeaders: false,
+        captureMode: DiagnosticCaptureMode.strict,
         requestPen: AnsiPen()..yellow(),
       );
 
@@ -22,6 +23,7 @@ void main() {
       expect(updatedSettings.printResponseData, equals(false));
       expect(updatedSettings.printRequestHeaders, equals(true));
       expect(updatedSettings.printErrorHeaders, equals(false));
+      expect(updatedSettings.captureMode, DiagnosticCaptureMode.strict);
       expect(
         updatedSettings.requestPen,
         isNot(same(originalSettings.requestPen)),
@@ -98,6 +100,23 @@ void main() {
       expect(updatedEnabledSettings.enabled, equals(true));
       expect(updatedEnabledSettings.printErrorHeaders, equals(false));
       expect(updatedEnabledSettings.printRequestData, equals(false));
+    });
+
+    test('copyWith preserves and replaces adapter resource limits', () {
+      const original = ISpectDioInterceptorSettings(
+        resourceLimits: DiagnosticResourceLimits.constrained,
+      );
+
+      expect(
+        original.copyWith().resourceLimits,
+        same(DiagnosticResourceLimits.constrained),
+      );
+      expect(
+        original
+            .copyWith(resourceLimits: DiagnosticResourceLimits.extended)
+            .resourceLimits,
+        same(DiagnosticResourceLimits.extended),
+      );
     });
   });
 }

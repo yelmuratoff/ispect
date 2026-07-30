@@ -30,6 +30,7 @@ class InspectorController {
     this.isColorSchemeHintEnabled = true,
     this.isZoomEnabled = true,
     this.decimalPlaces = 1,
+    int maxRenderTreeClipboardCharacters = 10000,
     this.theme = InspectorTheme.defaults,
     this.widgetInspectorShortcuts,
     this.widgetInspectAndCompareShortcuts,
@@ -40,6 +41,10 @@ class InspectorController {
     this.colorPickerShortcutActivators,
     this.zoomShortcutActivators,
   })  : isEnabled = kISpectLayoutEnabled && isEnabled,
+        maxRenderTreeClipboardCharacters =
+            _validateRenderTreeClipboardCharacters(
+          maxRenderTreeClipboardCharacters,
+        ),
         assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0') {
     // Keep the sealed `stateNotifier` in sync with the legacy granular
     // notifiers. Legacy notifiers remain the mutation surface — internal
@@ -56,7 +61,13 @@ class InspectorController {
   final bool isColorSchemeHintEnabled;
   final bool isZoomEnabled;
   final int decimalPlaces;
+
+  /// Maximum final character count copied by the render-tree action.
+  final int maxRenderTreeClipboardCharacters;
+
   final InspectorTheme theme;
+
+  static const int maxAllowedRenderTreeClipboardCharacters = 4 * 1024 * 1024;
 
   /// Deprecated. Use [widgetInspectorShortcutActivators] — it supports
   /// multi-key chords and the full [ShortcutActivator] API. Will be removed
@@ -224,4 +235,17 @@ class InspectorController {
     zoomOverlayOffsetNotifier.dispose();
     stateNotifier.dispose();
   }
+}
+
+int _validateRenderTreeClipboardCharacters(int value) {
+  if (value < 1 ||
+      value > InspectorController.maxAllowedRenderTreeClipboardCharacters) {
+    throw ArgumentError.value(
+      value,
+      'maxRenderTreeClipboardCharacters',
+      'must be between 1 and '
+          '${InspectorController.maxAllowedRenderTreeClipboardCharacters}',
+    );
+  }
+  return value;
 }

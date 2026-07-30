@@ -27,4 +27,21 @@ void main() {
     expect(snapshot, contains('<second>'));
     expect(snapshot, isNot(contains('SECOND_RAW')));
   });
+
+  test('UI snapshots honor a custom diagnostic byte budget', () {
+    final limits = DiagnosticResourceLimits.balanced.copyWith(
+      maxUiDiagnosticBytes: 64,
+    );
+
+    final snapshot = ISpectSafeDiagnosticSnapshot.text(
+      'diagnostic ${'x' * 200}',
+      resourceLimits: limits,
+    );
+
+    expect(
+      LogExportOutput.utf8Length(snapshot),
+      lessThanOrEqualTo(limits.maxUiDiagnosticBytes),
+    );
+    expect(snapshot, contains(LogExportOutput.truncatedMarker));
+  });
 }

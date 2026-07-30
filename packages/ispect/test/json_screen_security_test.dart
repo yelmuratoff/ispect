@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/json_viewer/json_screen.dart';
+import 'package:ispectify/ispectify.dart';
 
 void main() {
   test('snapshots every caller graph before retaining the widget', () {
@@ -87,6 +88,21 @@ void main() {
         contains(JsonInputPreflight.rejectedContent),
       ),
     );
+  });
+
+  test('honors a local viewer byte budget', () {
+    final screen = JsonScreen(
+      data: {'value': 'x' * 1024},
+      resourceLimits: DiagnosticResourceLimits.balanced.copyWith(
+        maxViewerBytes: 64,
+      ),
+    );
+
+    expect(
+      utf8.encode(jsonEncode(screen.data)).length,
+      lessThanOrEqualTo(64),
+    );
+    expect(screen.data.toString(), contains(JsonInputPreflight.truncatedValue));
   });
 }
 

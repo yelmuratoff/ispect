@@ -19,7 +19,13 @@ final class EncodedLogRecord {
 }
 
 final class FileLogCodec {
-  FileLogCodec({RedactionService? redactor}) : _redactorOverride = redactor;
+  FileLogCodec({
+    RedactionService? redactor,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  })  : _redactorOverride = redactor,
+        _resourceLimits = resourceLimits {
+    resourceLimits.validate();
+  }
 
   static const int defaultMaxInputCharacters =
       BoundedJsonDecoder.defaultMaxCharacters;
@@ -41,6 +47,7 @@ final class FileLogCodec {
       FormatException('Invalid file-log record.');
 
   final RedactionService? _redactorOverride;
+  final DiagnosticResourceLimits _resourceLimits;
 
   RedactionService get _redactor =>
       ISpectRedaction.resolveService(service: _redactorOverride);
@@ -128,7 +135,10 @@ final class FileLogCodec {
       if (decoded is! Map<String, dynamic>) {
         throw const FormatException('JSONL record must be an object');
       }
-      return ISpectLogDataJsonUtils.fromJson(decoded);
+      return ISpectLogDataJsonUtils.fromJson(
+        decoded,
+        resourceLimits: _resourceLimits,
+      );
     } on FileLogHistoryException {
       rethrow;
     } on FormatException catch (_, stackTrace) {
@@ -177,7 +187,12 @@ final class FileLogCodec {
         if (entry is! Map<String, dynamic>) {
           throw const FormatException('Legacy record must be an object');
         }
-        logs.add(ISpectLogDataJsonUtils.fromJson(entry));
+        logs.add(
+          ISpectLogDataJsonUtils.fromJson(
+            entry,
+            resourceLimits: _resourceLimits,
+          ),
+        );
       } on FileLogHistoryException {
         rethrow;
       } on FormatException catch (_, stackTrace) {
@@ -240,7 +255,9 @@ final class FileLogCodec {
     final captured = captureISpectLogDataForEgress(log);
     final serializedAdditionalData = _safePersistenceValue(
       captured.additionalData,
-      rootCollectionLimit: JsonValueNormalizer.defaultMaxCollectionItems - 2,
+      rootCollectionLimit: _resourceLimits.maxCollectionItems > 2
+          ? _resourceLimits.maxCollectionItems - 2
+          : 1,
     );
     final additionalData = <String, Object?>{
       if (serializedAdditionalData is Map<String, Object?>)
@@ -277,14 +294,15 @@ final class FileLogCodec {
 
   Object? _safePersistenceValue(
     Object? value, {
-    int rootCollectionLimit = JsonValueNormalizer.defaultMaxCollectionItems,
+    int? rootCollectionLimit,
   }) =>
       _safePersistenceNode(
         value,
         depth: 0,
-        collectionLimit: rootCollectionLimit,
+        collectionLimit:
+            rootCollectionLimit ?? _resourceLimits.maxCollectionItems,
         ancestors: HashSet<Object>.identity(),
-        budget: _SnapshotBudget(JsonValueNormalizer.defaultMaxNodes),
+        budget: _SnapshotBudget(_resourceLimits.maxTraversalNodes),
       );
 
   Object? _safePersistenceNode(
@@ -305,7 +323,7 @@ final class FileLogCodec {
     if (value is Enum) return value.name;
     if (value is TypedData || value is ByteBuffer) return value;
     // The returned value is embedded below the file-record envelope.
-    if (depth >= defaultMaxDepth - 1) {
+    if (depth >= _resourceLimits.maxTraversalDepth - 1) {
       return JsonValueNormalizer.maxDepthReached;
     }
 
@@ -331,7 +349,7 @@ final class FileLogCodec {
               result[key] = _safePersistenceNode(
                 entry.value,
                 depth: depth + 1,
-                collectionLimit: JsonValueNormalizer.defaultMaxCollectionItems,
+                collectionLimit: _resourceLimits.maxCollectionItems,
                 ancestors: ancestors,
                 budget: budget,
               );
@@ -368,7 +386,7 @@ final class FileLogCodec {
               _safePersistenceNode(
                 item,
                 depth: depth + 1,
-                collectionLimit: JsonValueNormalizer.defaultMaxCollectionItems,
+                collectionLimit: _resourceLimits.maxCollectionItems,
                 ancestors: ancestors,
                 budget: budget,
               ),
@@ -473,9 +491,9 @@ final class FileLogCodec {
         continue;
       }
       nodes++;
-      if (nodes > JsonValueNormalizer.defaultMaxNodes ||
+      if (nodes > _resourceLimits.maxTraversalNodes ||
           !budget.take(1) ||
-          depth > defaultMaxDepth) {
+          depth > _resourceLimits.maxTraversalDepth) {
         return false;
       }
       if (value == null) {
@@ -504,7 +522,7 @@ final class FileLogCodec {
             ISpectRedaction.enabled ? 64 : value.lengthInBytes * 4 + 2;
         if (!budget.take(estimatedBytes)) return false;
       } else if (value is Map) {
-        if (depth >= defaultMaxDepth) return false;
+        if (depth >= _resourceLimits.maxTraversalDepth) return false;
         if (!ancestors.add(value)) {
           if (!budget.take(32)) return false;
           continue;
@@ -514,7 +532,7 @@ final class FileLogCodec {
         var count = 0;
         try {
           for (final entry in value.entries) {
-            if (count >= JsonValueNormalizer.defaultMaxCollectionItems - 1) {
+            if (count >= _resourceLimits.maxCollectionItems - 1) {
               if (!budget.take(64)) return false;
               break;
             }
@@ -534,7 +552,7 @@ final class FileLogCodec {
           return false;
         }
       } else if (value is Iterable) {
-        if (depth >= defaultMaxDepth) return false;
+        if (depth >= _resourceLimits.maxTraversalDepth) return false;
         if (!ancestors.add(value)) {
           if (!budget.take(32)) return false;
           continue;
@@ -544,7 +562,7 @@ final class FileLogCodec {
         var count = 0;
         try {
           for (final item in value) {
-            if (count >= JsonValueNormalizer.defaultMaxCollectionItems - 1) {
+            if (count >= _resourceLimits.maxCollectionItems - 1) {
               if (!budget.take(64)) return false;
               break;
             }
@@ -598,9 +616,9 @@ final class FileLogCodec {
     Map<String, Object?> record, {
     required int maxBytes,
   }) {
-    final preparationBudget = maxBytes < LogExportOutput.maxPreparedValueBytes
+    final preparationBudget = maxBytes < _resourceLimits.maxCapturedValueBytes
         ? maxBytes
-        : LogExportOutput.maxPreparedValueBytes;
+        : _resourceLimits.maxCapturedValueBytes;
     final sourceExceededPreparationBudget = !_canFitJsonValue(
       record,
       maxBytes: preparationBudget,
@@ -614,6 +632,7 @@ final class FileLogCodec {
     final bounded = LogExportOutput.boundJsonValue(
       redacted,
       maxBytes: maxBytes,
+      resourceLimits: _resourceLimits,
       replaceOversizedStrings: true,
     );
     final safeRecord = bounded is Map<String, Object?>
@@ -650,8 +669,7 @@ final class FileLogCodec {
   bool _containsTruncationMarker(Object? root) {
     final pending = <Object?>[root];
     var visited = 0;
-    while (
-        pending.isNotEmpty && visited < JsonValueNormalizer.defaultMaxNodes) {
+    while (pending.isNotEmpty && visited < _resourceLimits.maxTraversalNodes) {
       final value = pending.removeLast();
       visited++;
       if (value == LogExportOutput.truncatedMarker ||

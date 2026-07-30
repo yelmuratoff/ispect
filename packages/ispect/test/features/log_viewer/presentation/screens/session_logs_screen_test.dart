@@ -118,12 +118,19 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
     final clearHistory = find.text('Clear history');
+    final settingsScrollable = find.byType(Scrollable).last;
     await tester.scrollUntilVisible(
       clearHistory,
       200,
-      scrollable: find.byType(Scrollable).last,
+      scrollable: settingsScrollable,
     );
-    await tester.tap(clearHistory);
+    final position = tester.state<ScrollableState>(settingsScrollable).position;
+    position.jumpTo(
+      (position.pixels - 200)
+          .clamp(position.minScrollExtent, position.maxScrollExtent),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(clearHistory.hitTestable());
     await tester.pump();
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -147,7 +154,7 @@ void main() {
     expect(content, contains('shared snapshot entry'));
   });
 
-  test('JSON export snapshots non-encodable values without formatters',
+  test('JSON export uses balanced snapshots for non-encodable values',
       () async {
     final content = await buildLogsExportContent(
       ExportFormat.json,
@@ -175,12 +182,12 @@ void main() {
     final log = logs.single as Map<String, dynamic>;
     final additionalData = log['additional-data'] as Map<String, dynamic>;
 
-    expect(additionalData['timeout'], JsonValueNormalizer.unprintableValue);
-    expect(additionalData['endpoint'], JsonValueNormalizer.unprintableValue);
+    expect(additionalData['timeout'], '0:00:01.000000');
+    expect(additionalData['endpoint'], 'https://example.com/logs');
     final blocMetadata = additionalData[TraceKeys.meta] as Map<String, dynamic>;
     expect(
       blocMetadata['event'],
-      JsonValueNormalizer.unprintableValue,
+      contains('CheckStatusAuthEvent'),
     );
     expect(
       blocMetadata['tokenEvent'],

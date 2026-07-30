@@ -1,3 +1,4 @@
+import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/ispectify_http.dart';
 import 'package:test/test.dart';
 
@@ -16,6 +17,7 @@ void main() {
       expect(settings.printRequestHeaders, true);
       expect(settings.printErrorData, true);
       expect(settings.printErrorHeaders, true);
+      expect(settings.captureMode, DiagnosticCaptureMode.balanced);
     });
 
     test('metadataOnly() opts into payload minimization with redaction', () {
@@ -32,6 +34,7 @@ void main() {
       expect(settings.printRequestHeaders, false);
       expect(settings.printErrorData, false);
       expect(settings.printErrorHeaders, false);
+      expect(settings.captureMode, DiagnosticCaptureMode.strict);
     });
 
     test('development() creates verbose settings with redaction', () {
@@ -48,6 +51,7 @@ void main() {
       expect(settings.printResponseData, true);
       expect(settings.printRequestData, true);
       expect(settings.printErrorData, true);
+      expect(settings.captureMode, DiagnosticCaptureMode.balanced);
     });
 
     test('production() creates minimal settings with redaction', () {
@@ -63,6 +67,7 @@ void main() {
       expect(settings.printErrorData, false);
       expect(settings.printErrorHeaders, false);
       expect(settings.printErrorMessage, true);
+      expect(settings.captureMode, DiagnosticCaptureMode.strict);
     });
 
     test('staging() creates balanced settings with redaction', () {
@@ -74,6 +79,7 @@ void main() {
       expect(settings.logResponses, false);
       expect(settings.printRequestData, true);
       expect(settings.printErrorData, true);
+      expect(settings.captureMode, DiagnosticCaptureMode.balanced);
     });
 
     test('disabled() creates disabled settings', () {
@@ -89,6 +95,13 @@ void main() {
       expect(settings.printRequestHeaders, true);
       expect(settings.printResponseHeaders, true);
       expect(settings.printErrorHeaders, true);
+    });
+
+    test('withStrictCapture() opts out of application formatters', () {
+      final settings =
+          ISpectHttpInterceptorSettingsBuilder().withStrictCapture().build();
+
+      expect(settings.captureMode, DiagnosticCaptureMode.strict);
     });
 
     test('withErrorsOnly() disables request/response logging', () {

@@ -152,12 +152,13 @@ void main() {
 
       final entry = logger.history.single;
       expect(entry.exception, isNot(same(exception)));
-      expect('${entry.exception}', 'Exception');
+      expect('${entry.exception}', 'TestException: boom');
       expect(entry.stackTrace, isNot(same(stack)));
       expect(
-        '${entry.stackTrace}',
-        JsonValueNormalizer.unprintableValue,
+        LogExportOutput.utf8Length('${entry.stackTrace}'),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
       );
+      expect('${entry.stackTrace}', isNotEmpty);
       expect(entry.message, 'Zoned error caught');
     });
 
@@ -207,7 +208,7 @@ void main() {
       );
     });
 
-    test('does not call an exception formatter that throws', () {
+    test('contains an exception formatter that throws', () {
       const exception = _ThrowingDiagnostic();
       Object? forwarded;
 
@@ -225,7 +226,7 @@ void main() {
       expect(forwarded, same(exception));
       expect(
         logger.history.single.exception.toString(),
-        'Exception',
+        JsonValueNormalizer.unprintableValue,
       );
       expect(
         logger.history.single.toString(),
@@ -250,7 +251,7 @@ void main() {
       );
 
       final entry = logger.history.single;
-      expect(error.calls, 0);
+      expect(error.calls, 1);
       expect(forwarded, isA<Error>());
       expect(forwarded, same(error));
       expect(entry.error, isA<Error>());
@@ -286,11 +287,8 @@ void main() {
       final entry = logger.history.single;
       expect(entry.exception, isNot(same(exception)));
       expect(entry.stackTrace, isNot(same(stack)));
-      expect('${entry.exception}', 'Exception');
-      expect(
-        '${entry.stackTrace}',
-        JsonValueNormalizer.unprintableValue,
-      );
+      expect('${entry.exception}', contains('ZONE_RAW'));
+      expect('${entry.stackTrace}', contains('STACK_RAW'));
     });
 
     test('forwards the original value to onZonedError before logging', () {
@@ -308,7 +306,7 @@ void main() {
       expect(received, same(exception));
     });
 
-    test('does not inspect host callback values while logging a safe copy', () {
+    test('captures host callback values once while logging a safe copy', () {
       final diagnostic = _CountingDiagnostic(
         _oversizedDiagnosticText('password=STATEFUL_DIAGNOSTIC_SECRET'),
       );
@@ -326,8 +324,8 @@ void main() {
         isUncaughtErrorsHandlingEnabled: true,
       );
 
-      expect(diagnostic.calls, 0);
-      expect(stack.calls, 0);
+      expect(diagnostic.calls, 1);
+      expect(stack.calls, 1);
       expect(zonedValue, same(diagnostic));
       expect(uncaughtValue, same(diagnostic));
       expect(
@@ -370,7 +368,7 @@ void main() {
       );
     });
 
-    test('keeps filters from executing diagnostic formatters', () {
+    test('filters do not re-execute captured diagnostic formatters', () {
       final diagnostic = _CountingDiagnostic('FILTER_FORMATTER_SECRET');
       final stack = _CountingStackTrace('STACK_FILTER_FORMATTER_SECRET');
 
@@ -387,8 +385,8 @@ void main() {
         isUncaughtErrorsHandlingEnabled: true,
       );
 
-      expect(diagnostic.calls, 0);
-      expect(stack.calls, 0);
+      expect(diagnostic.calls, 1);
+      expect(stack.calls, 1);
       expect(logger.history, hasLength(1));
     });
 
@@ -407,7 +405,7 @@ void main() {
       expect(logger.history, isEmpty);
     });
 
-    test('bounds logged opt-out objects without inspecting formatters', () {
+    test('bounds balanced opt-out objects after one formatter call', () {
       ISpectRedaction.enabled = false;
       final diagnostic = _CountingDiagnostic(
         _oversizedDiagnosticText('RAW_DIAGNOSTIC_SECRET'),
@@ -429,19 +427,19 @@ void main() {
         isUncaughtErrorsHandlingEnabled: true,
       );
 
-      expect(diagnostic.calls, 0);
-      expect(stack.calls, 0);
+      expect(diagnostic.calls, 1);
+      expect(stack.calls, 1);
       expect(forwarded, same(diagnostic));
       expect(forwardedStack, same(stack));
       expect(logger.history.single.exception, isNot(same(diagnostic)));
       expect(logger.history.single.stackTrace, isNot(same(stack)));
       expect(
         '${logger.history.single.exception}',
-        'Exception',
+        startsWith('RAW_DIAGNOSTIC_SECRET'),
       );
       expect(
         '${logger.history.single.stackTrace}',
-        JsonValueNormalizer.unprintableValue,
+        startsWith('RAW_STACK_SECRET'),
       );
     });
 
@@ -569,11 +567,11 @@ void main() {
 
       final entry = errorEntries().single;
       expect(entry.exception, isNot(same(exception)));
-      expect('${entry.exception}', 'Exception');
+      expect('${entry.exception}', 'TestException: flutter');
       expect(entry.stackTrace, isNot(same(stack)));
       expect(
-        '${entry.stackTrace}',
-        JsonValueNormalizer.unprintableValue,
+        LogExportOutput.utf8Length('${entry.stackTrace}'),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
       );
     });
 
@@ -729,7 +727,7 @@ void main() {
       final entry = logger.history
           .singleWhere((e) => e.message == 'Flutter error presented');
       expect(entry.exception, isNot(same(exception)));
-      expect('${entry.exception}', 'Exception');
+      expect('${entry.exception}', 'TestException: present');
     });
 
     testWidgets('presentError forwards original callback details',
@@ -778,7 +776,7 @@ void main() {
       final entry = logger.history
           .singleWhere((e) => e.message == 'Platform error caught');
       expect(entry.exception, isNot(same(exception)));
-      expect('${entry.exception}', 'Exception');
+      expect('${entry.exception}', 'TestException: platform');
     });
 
     test('PlatformDispatcher.onError forwards original callback values', () {

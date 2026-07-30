@@ -30,6 +30,21 @@ final class _RecordingHistory implements ILogHistory {
   void dispose() {}
 }
 
+final class _CaptureTracker {
+  int calls = 0;
+
+  Object? toJson() {
+    calls++;
+    return const {'value': 'diagnostic'};
+  }
+
+  @override
+  String toString() {
+    calls++;
+    return 'diagnostic';
+  }
+}
+
 void main() {
   test('reports no consumers when the default fan-out is inactive', () {
     final logger = ISpectLogger.testing(
@@ -41,6 +56,24 @@ void main() {
     addTearDown(logger.dispose);
 
     expect(logger.hasActiveConsumers, isFalse);
+  });
+
+  test('does not capture caller objects when no consumer is active', () {
+    final tracker = _CaptureTracker();
+    final logger = ISpectLogger.testing(
+      options: ISpectLoggerOptions(
+        useConsoleLogs: false,
+        useHistory: false,
+      ),
+    );
+    addTearDown(logger.dispose);
+
+    logger
+      ..info(tracker)
+      ..handle(exception: tracker)
+      ..track(tracker, parameters: {'payload': tracker});
+
+    expect(tracker.calls, 0);
   });
 
   test('reports the active default history', () {

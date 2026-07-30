@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/widgets/export_sheet.dart';
-import 'package:ispectify/ispectify.dart';
 
 class ISpectShareLogBottomSheet {
   const ISpectShareLogBottomSheet({
@@ -52,17 +52,28 @@ class ISpectShareLogBottomSheet {
     bool enableRedaction = true,
     ISpectMetadata? metadata,
     RedactionService? redactionService,
+    DiagnosticResourceLimits? resourceLimits,
   }) {
+    final limits = (resourceLimits ??
+        ISpect.loggerIfInitialized?.options.resourceLimits ??
+        DiagnosticResourceLimits.balanced)
+      ..validate();
     final source = action == ExportAction.copy ? truncatedData : data;
-    final maxDepth = action == ExportAction.copy ? 10 : 500;
-    final maxIterableSize = action == ExportAction.copy ? 100 : 10000;
+    final maxDepth = action == ExportAction.copy
+        ? _minimum(10, limits.maxTraversalDepth)
+        : limits.maxTraversalDepth;
+    final maxIterableSize = action == ExportAction.copy
+        ? _minimum(100, limits.maxCollectionItems)
+        : limits.maxCollectionItems;
     final redactionActive = enableRedaction && ISpectRedaction.enabled;
     final preparedEnvelope = LogExportOutput.boundJsonValue(
       _buildEnvelope(
         source,
         metadata,
         redactionActive: redactionActive,
+        resourceLimits: limits,
       ),
+      resourceLimits: limits,
       preserveTypes: redactionActive,
       replaceOversizedStrings: redactionActive,
     );
@@ -84,6 +95,7 @@ class ISpectShareLogBottomSheet {
 
     final boundedEnvelope = LogExportOutput.boundJsonValue(
       redactedEnvelope,
+      resourceLimits: limits,
       replaceOversizedStrings: redactionActive,
     );
     final outboundData = boundedEnvelope is Map<String, Object?>
@@ -97,6 +109,7 @@ class ISpectShareLogBottomSheet {
       format: format,
       maxDepth: maxDepth,
       maxIterableSize: maxIterableSize,
+      resourceLimits: limits,
     );
   }
 
@@ -104,9 +117,11 @@ class ISpectShareLogBottomSheet {
     Map<String, dynamic> source,
     ISpectMetadata? metadata, {
     required bool redactionActive,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     final boundedSource = LogExportOutput.boundJsonValue(
       source,
+      resourceLimits: resourceLimits,
       preserveTypes: redactionActive,
       replaceOversizedStrings: redactionActive,
     );
@@ -120,6 +135,7 @@ class ISpectShareLogBottomSheet {
     final metadataMap = _boundedMetadata(
       metadata,
       redactionActive: redactionActive,
+      resourceLimits: resourceLimits,
     );
     if (metadataMap.isNotEmpty) {
       envelope[ISpectMetadata.exportKey] = metadataMap;
@@ -130,11 +146,13 @@ class ISpectShareLogBottomSheet {
   static Map<String, Object?> _boundedMetadata(
     ISpectMetadata metadata, {
     required bool redactionActive,
+    required DiagnosticResourceLimits resourceLimits,
   }) {
     final result = <String, Object?>{};
     if (metadata.extra case final extra?) {
       final boundedExtra = LogExportOutput.boundJsonValue(
         extra,
+        resourceLimits: resourceLimits,
         preserveTypes: redactionActive,
         replaceOversizedStrings: redactionActive,
       );
@@ -165,6 +183,7 @@ class ISpectShareLogBottomSheet {
   static String _formatSingleLog(
     Map<String, dynamic> logData, {
     required ExportFormat format,
+    required DiagnosticResourceLimits resourceLimits,
     int maxDepth = 500,
     int maxIterableSize = 10000,
   }) {
@@ -172,11 +191,12 @@ class ISpectShareLogBottomSheet {
       _jsonCompatible(logData),
       maxDepth: maxDepth,
       maxIterableSize: maxIterableSize,
+      maxStringLength: resourceLimits.maxCapturedValueBytes,
     );
 
     switch (format) {
       case ExportFormat.json:
-        return _fitsOutput(prettyJson)
+        return _fitsOutput(prettyJson, resourceLimits)
             ? prettyJson
             : jsonEncode({
                 'diagnostic': LogExportOutput.truncatedMarker,
@@ -184,33 +204,37 @@ class ISpectShareLogBottomSheet {
       case ExportFormat.text:
         return LogExportOutput.truncateUtf8(
           prettyJson,
-          maxBytes: _maxSingleLogOutputBytes,
+          maxBytes: _maxSingleLogOutputBytes(resourceLimits),
         );
       case ExportFormat.markdown:
-        return _formatMarkdown(prettyJson);
+        return _formatMarkdown(prettyJson, resourceLimits);
       case ExportFormat.csv:
-        return _formatCsv(logData);
+        return _formatCsv(logData, resourceLimits);
     }
   }
 
-  static String _formatMarkdown(String prettyJson) {
-    final fence = _safeMarkdownFence(prettyJson);
+  static String _formatMarkdown(
+    String prettyJson,
+    DiagnosticResourceLimits resourceLimits,
+  ) {
+    final maxOutputBytes = _maxSingleLogOutputBytes(resourceLimits);
+    final fence = _safeMarkdownFence(prettyJson, maxOutputBytes);
     if (fence == null) return _markdownFallback;
 
     final prefix = '# Log Entry\n\n${fence}json\n';
     final suffix = '\n$fence\n';
     final framingBytes =
         LogExportOutput.utf8Length(prefix) + LogExportOutput.utf8Length(suffix);
-    if (framingBytes > _maxSingleLogOutputBytes) return _markdownFallback;
+    if (framingBytes > maxOutputBytes) return _markdownFallback;
 
     final body = LogExportOutput.truncateUtf8(
       prettyJson,
-      maxBytes: _maxSingleLogOutputBytes - framingBytes,
+      maxBytes: maxOutputBytes - framingBytes,
     );
     return '$prefix$body$suffix';
   }
 
-  static String? _safeMarkdownFence(String value) {
+  static String? _safeMarkdownFence(String value, int maxOutputBytes) {
     var longestRun = 0;
     var currentRun = 0;
     for (final codeUnit in value.codeUnits) {
@@ -223,18 +247,22 @@ class ISpectShareLogBottomSheet {
     }
 
     final fenceLength = longestRun < 3 ? 3 : longestRun + 1;
-    if (fenceLength * 2 + 32 > _maxSingleLogOutputBytes) return null;
+    if (fenceLength * 2 + 32 > maxOutputBytes) return null;
     return ''.padLeft(fenceLength, '`');
   }
 
-  static String _formatCsv(Map<String, dynamic> logData) {
+  static String _formatCsv(
+    Map<String, dynamic> logData,
+    DiagnosticResourceLimits resourceLimits,
+  ) {
+    final maxOutputBytes = _maxSingleLogOutputBytes(resourceLimits);
     const header = 'Key,Value\n';
     final output = StringBuffer(header);
     var outputBytes = LogExportOutput.utf8Length(header);
     for (final entry in logData.entries) {
       final row = '${LogExporter.escapeCsvValue(entry.key)},'
-          '${LogExporter.escapeCsvValue(_csvValue(entry.value))}\n';
-      final remaining = _maxSingleLogOutputBytes - outputBytes;
+          '${LogExporter.escapeCsvValue(_csvValue(entry.value, resourceLimits))}\n';
+      final remaining = maxOutputBytes - outputBytes;
       final rowBytes = LogExportOutput.utf8Length(row, limit: remaining);
       if (rowBytes > remaining) {
         const markerKey = 'diagnostic';
@@ -249,7 +277,10 @@ class ISpectShareLogBottomSheet {
     return output.toString();
   }
 
-  static String _csvValue(Object? value) {
+  static String _csvValue(
+    Object? value,
+    DiagnosticResourceLimits resourceLimits,
+  ) {
     final compatible = _jsonCompatible(value);
     final String text;
     if (compatible == null) {
@@ -267,7 +298,7 @@ class ISpectShareLogBottomSheet {
     }
     return LogExportOutput.truncateUtf8(
       text,
-      maxBytes: LogExportOutput.maxPreparedValueBytes,
+      maxBytes: resourceLimits.maxCapturedValueBytes,
     );
   }
 
@@ -289,17 +320,25 @@ class ISpectShareLogBottomSheet {
     return value;
   }
 
-  static bool _fitsOutput(String value) =>
+  static bool _fitsOutput(
+    String value,
+    DiagnosticResourceLimits resourceLimits,
+  ) =>
       LogExportOutput.utf8Length(
         value,
-        limit: _maxSingleLogOutputBytes,
+        limit: _maxSingleLogOutputBytes(resourceLimits),
       ) <=
-      _maxSingleLogOutputBytes;
+      _maxSingleLogOutputBytes(resourceLimits);
 
-  static const int _maxSingleLogOutputBytes =
-      LogExportOutput.maxRecordBytes < LogExportOutput.maxDocumentBytes
-          ? LogExportOutput.maxRecordBytes
-          : LogExportOutput.maxDocumentBytes;
+  static int _maxSingleLogOutputBytes(
+    DiagnosticResourceLimits resourceLimits,
+  ) =>
+      _minimum(
+        resourceLimits.maxLogRecordBytes,
+        resourceLimits.maxExportDocumentBytes,
+      );
+
+  static int _minimum(int first, int second) => first < second ? first : second;
 
   static const String _markdownFallback = '# Log Entry\n\n```json\n'
       '{"diagnostic":"${LogExportOutput.truncatedMarker}"}\n'

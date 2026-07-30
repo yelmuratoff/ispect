@@ -27,6 +27,8 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   BaseNetworkInterceptorSettingsBuilder()
       : enabled = true,
         enableRedaction = true,
+        captureMode = DiagnosticCaptureMode.balanced,
+        resourceLimits = null,
         logRequests = true,
         logResponses = true,
         printResponseData = true,
@@ -40,6 +42,8 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
 
   bool enabled;
   bool enableRedaction;
+  DiagnosticCaptureMode captureMode;
+  DiagnosticResourceLimits? resourceLimits;
   bool logRequests;
   bool logResponses;
   bool printResponseData;
@@ -117,6 +121,31 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
   /// Disables sensitive data redaction (use only in dev/test environments).
   B withoutRedaction() {
     enableRedaction = false;
+    return _self;
+  }
+
+  /// Uses useful bounded capture, including guarded `toJson()`/`toString()`.
+  B withBalancedCapture() {
+    captureMode = DiagnosticCaptureMode.balanced;
+    return _self;
+  }
+
+  /// Uses opaque capture without invoking application-defined formatters.
+  B withStrictCapture() {
+    captureMode = DiagnosticCaptureMode.strict;
+    return _self;
+  }
+
+  /// Overrides logger resource budgets for this interceptor.
+  B withResourceLimits(DiagnosticResourceLimits value) {
+    value.validate();
+    resourceLimits = value;
+    return _self;
+  }
+
+  /// Restores inheritance from the attached logger.
+  B withInheritedResourceLimits() {
+    resourceLimits = null;
     return _self;
   }
 
@@ -273,6 +302,7 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     logRequests = true;
     logResponses = true;
     enableRedaction = true;
+    captureMode = DiagnosticCaptureMode.strict;
     printResponseData = false;
     printResponseHeaders = false;
     printResponseMessage = true;
@@ -290,6 +320,7 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     withAllHeaders();
     withRedaction();
     withAllData();
+    captureMode = DiagnosticCaptureMode.balanced;
   }
 
   /// Applies production preset: errors only, redaction enabled.
@@ -298,6 +329,7 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     withErrorsOnly();
     printErrorData = false;
     printErrorHeaders = false;
+    captureMode = DiagnosticCaptureMode.strict;
   }
 
   /// Applies staging preset: request data + errors, redaction enabled.
@@ -307,6 +339,7 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     withRedaction();
     withRequestData();
     withErrorData();
+    captureMode = DiagnosticCaptureMode.balanced;
   }
 
   /// Builds the concrete settings object. Subclasses must override to

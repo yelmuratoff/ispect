@@ -46,11 +46,22 @@ final class _HostileMessageValue {
   }
 }
 
+final class _ReadableMessageValue {
+  int toStringCalls = 0;
+
+  @override
+  String toString() {
+    toStringCalls++;
+    return 'readable diagnostic';
+  }
+}
+
 final class _HostileExtensionLogGetters extends ISpectLogData {
   _HostileExtensionLogGetters({
     Object? exception,
     Error? error,
     StackTrace? stackTrace,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
   }) : super(
           'trusted-extension-message',
           id: 'trusted-extension-id',
@@ -60,6 +71,7 @@ final class _HostileExtensionLogGetters extends ISpectLogData {
           exception: exception,
           error: error ?? StateError('trusted-error'),
           stackTrace: stackTrace ?? StackTrace.fromString('trusted-stack'),
+          captureMode: captureMode,
           additionalData: const {
             'method': 'GET',
             'uri': 'https://example.com/safe',
@@ -251,14 +263,37 @@ void main() {
       expect(data.message, '1234');
     });
 
-    test('captures unknown messages without invoking virtual members', () {
+    test('captures readable unknown messages in balanced mode by default', () {
+      final message = _ReadableMessageValue();
+
+      final data = ISpectLogData(message);
+
+      expect(data.message, 'readable diagnostic');
+      expect(message.toStringCalls, 1);
+    });
+
+    test('strict mode captures unknown messages without invoking formatters',
+        () {
       final hostile = _HostileMessageValue();
 
-      final data = ISpectLogData(hostile);
+      final data = ISpectLogData(
+        hostile,
+        captureMode: DiagnosticCaptureMode.strict,
+      );
 
       expect(data.message, JsonValueNormalizer.unprintableValue);
       expect(hostile.runtimeTypeCalls, 0);
       expect(hostile.toStringCalls, 0);
+    });
+
+    test('balanced mode retains exception messages and stack traces', () {
+      final data = ISpectLogException(
+        const FormatException('invalid response payload'),
+        stackTrace: StackTrace.fromString('package:example/client.dart 42:7'),
+      );
+
+      expect(data.exceptionText, contains('invalid response payload'));
+      expect(data.stackTraceText, contains('package:example/client.dart 42:7'));
     });
 
     test('captures a package-owned timestamp snapshot', () {
@@ -473,6 +508,7 @@ void main() {
         error: error,
         exception: exception,
         stackTrace: stackTrace,
+        captureMode: DiagnosticCaptureMode.strict,
       );
       final equal = ISpectLogData(
         'other',

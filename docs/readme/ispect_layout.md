@@ -82,9 +82,16 @@ Inspector(
   isEnabled: true,
   initialPanelExpanded: false,
   decimalPlaces: 3,
+  maxRenderTreeClipboardCharacters: 100000,
   child: child!,
 )
 ```
+
+`maxRenderTreeClipboardCharacters` bounds the final render-tree text copied
+from the selection panel. Its balanced default is 10,000 characters. Set a
+smaller value for constrained test devices or raise it, up to the finite
+host-protection ceiling, for controlled internal sessions. When you provide an
+`InspectorController`, configure the limit on that controller instead.
 
 For custom multi-key shortcuts, pass `ShortcutActivator`s to `InspectorController`:
 

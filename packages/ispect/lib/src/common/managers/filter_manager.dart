@@ -11,14 +11,28 @@ class FilterManager {
   FilterManager({
     ISpectFilter? initialFilter,
     void Function()? onChanged,
-    Duration debounceDuration = const Duration(milliseconds: 300),
-  })  : _filter = initialFilter ?? ISpectFilter(),
+    Duration? debounceDuration,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+    DiagnosticProcessingPolicy processingPolicy =
+        DiagnosticProcessingPolicy.balanced,
+  })  : _filter = initialFilter ?? ISpectFilter(resourceLimits: resourceLimits),
         _onChanged = onChanged,
-        _debounceDuration = debounceDuration;
+        _resourceLimits = resourceLimits,
+        _processingPolicy = processingPolicy,
+        _debounceDuration =
+            debounceDuration ?? processingPolicy.searchDebounce {
+    resourceLimits.validate();
+    processingPolicy.validate();
+  }
 
   ISpectFilter _filter;
   final void Function()? _onChanged;
-  final Duration _debounceDuration;
+  Duration _debounceDuration;
+  DiagnosticResourceLimits _resourceLimits;
+  DiagnosticProcessingPolicy _processingPolicy;
+
+  DiagnosticResourceLimits get resourceLimits => _resourceLimits;
+  DiagnosticProcessingPolicy get processingPolicy => _processingPolicy;
 
   final _filterCache = FilterCache();
   int _dataGeneration = 0;
@@ -53,6 +67,26 @@ class FilterManager {
   set filter(ISpectFilter val) {
     if (_filter == val) return;
     _filter = val;
+    _invalidateFilterCache();
+    _notify();
+  }
+
+  void updatePolicies(
+    DiagnosticResourceLimits resourceLimits,
+    DiagnosticProcessingPolicy processingPolicy,
+  ) {
+    resourceLimits.validate();
+    processingPolicy.validate();
+    if (_resourceLimits == resourceLimits &&
+        _processingPolicy == processingPolicy) {
+      return;
+    }
+
+    _filterDebounce?.cancel();
+    _resourceLimits = resourceLimits;
+    _processingPolicy = processingPolicy;
+    _debounceDuration = processingPolicy.searchDebounce;
+    _filter = _filter.copyWith(resourceLimits: resourceLimits);
     _invalidateFilterCache();
     _notify();
   }
@@ -144,6 +178,7 @@ class FilterManager {
       logTypeKeys: logTypeKeys ?? _getCurrentLogTypeKeys(),
       types: types ?? _getCurrentTypes(),
       searchQuery: searchQuery ?? _getCurrentSearchQuery(),
+      resourceLimits: resourceLimits,
     );
     if (newFilter == _filter) return;
     _filter = newFilter;
@@ -172,6 +207,7 @@ class FilterManager {
     final noSearchFilter = _cachedNoSearchFilter ??= ISpectFilter(
       types: _filter.types.toList(),
       logTypeKeys: _filter.logTypeKeys.toList(),
+      resourceLimits: resourceLimits,
     );
     final result = logsData.where(noSearchFilter.apply).toList(growable: false);
     _cachedNoSearchResult = UnmodifiableListView(result);
@@ -192,7 +228,10 @@ class FilterManager {
         identical(logsData, _lastSearchMatchInput)) {
       return _cachedSearchMatches;
     }
-    final searchFilter = SearchFilter(query);
+    final searchFilter = SearchFilter(
+      query,
+      resourceLimits: resourceLimits,
+    );
     _cachedSearchMatches =
         logsData.where(searchFilter.apply).toList(growable: false);
     _searchMatchesGeneration = _outputGeneration;

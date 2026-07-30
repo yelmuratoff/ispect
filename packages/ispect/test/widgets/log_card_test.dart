@@ -55,17 +55,21 @@ void main() {
       },
     );
 
-    testWidgets('subtitle does not inspect a hostile diagnostic runtime type',
+    testWidgets('subtitle does not re-inspect a hostile diagnostic',
         (tester) async {
       final hostile = _HostileRuntimeTypeError();
       final data = ISpectLogData('safe message', error: hostile);
+      final callsAtCapture = hostile.calls;
 
       await tester.pumpWidget(buildLogCard(data: data));
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(hostile.calls, 0);
-      expect(find.textContaining('Error'), findsWidgets);
+      expect(hostile.calls, callsAtCapture);
+      expect(
+        find.textContaining(JsonValueNormalizer.unprintableValue),
+        findsWidgets,
+      );
     });
 
     testWidgets(

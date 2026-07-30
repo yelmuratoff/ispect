@@ -110,9 +110,53 @@ final logger = ISpectLogger(
     useConsoleLogs: true,
     maxHistoryItems: 5000,
     logTruncateLength: 4000,
+    captureMode: DiagnosticCaptureMode.balanced,
   ),
 );
 ```
+
+Balanced capture is the useful default: guarded application `toJson()` and
+`toString()` results are bounded immediately and redacted before delivery.
+Use `DiagnosticCaptureMode.strict` when caller-defined formatters must never
+run. If no history, console, stream listener, or observer can consume an entry,
+the logger skips capture entirely.
+
+### Resource and processing policies
+
+The balanced defaults favor useful internal diagnostics while keeping every
+input and output bounded. Select a profile or override individual values:
+
+```dart
+final logger = ISpectLogger(
+  options: ISpectLoggerOptions(
+    resourceLimits: DiagnosticResourceLimits.balanced.copyWith(
+      maxNetworkBodyBytes: 512 * 1024,
+      maxImportEntries: 250_000,
+      maxViewerBytes: 2 * 1024 * 1024,
+      maxConsoleStackTraceFrames: 100,
+    ),
+    processingPolicy: DiagnosticProcessingPolicy.responsive.copyWith(
+      exportChunkSize: 40,
+      searchDebounce: const Duration(milliseconds: 220),
+    ),
+  ),
+);
+```
+
+`DiagnosticResourceLimits` covers captured values, records, documents,
+traversal, collections, imports, exports, the JSON viewer, clipboard,
+network payloads and headers, state observers and correlations, database
+diagnostics, UI messages, search queries, and stack frames forwarded to the
+console. `DiagnosticProcessingPolicy` covers import/export chunks and yields,
+background work, viewer build yields, and JSON/search scheduling.
+
+Use `constrained`/`responsive` for lower-memory or latency-sensitive sessions,
+and `extended`/`throughput` only in controlled internal builds. Validation
+keeps finite host-protection ceilings in place; increasing a budget never
+disables redaction. Traces and supported integrations inherit the logger
+policy unless their settings provide a local `resourceLimits` override.
+Both policy models support value equality plus `toMap()`/`fromMap()`, so
+per-field overrides can be persisted without collapsing them to a preset.
 
 Streaming-only, with no in-memory history. Use this when every event is forwarded to an observer:
 
@@ -171,8 +215,8 @@ rolling-history threat model; use in-memory history or a platform-native
 storage service when that attacker is in scope.
 
 Persistence does not invoke supplied `Exception`, `Error`, or `StackTrace`
-formatting methods. Exceptions and errors use a bounded safe type descriptor;
-stack traces use a fail-closed marker.
+formatting methods after capture. Strict mode uses bounded safe descriptors;
+balanced mode persists the already-bounded diagnostic text snapshot.
 
 ## Console output
 
@@ -234,9 +278,9 @@ final users = await logger.traceAsync<List<User>>(
 ## Observers
 
 Observers receive a redacted copy of every log event in real time. Attach one
-per external sink. The local history keeps the original diagnostic entry;
-setting `ISpectRedaction.enabled = false` is the explicit opt-out that also
-makes observer delivery raw.
+per external sink. Local history, streams, console output, and observers use
+the same redacted snapshot by default; setting `ISpectRedaction.enabled =
+false` is the explicit opt-out that makes those deliveries raw.
 
 ```dart
 class GrafanaObserver extends ISpectObserver {
@@ -266,6 +310,14 @@ Sensitive data is masked before it reaches logs or observers. Redaction is on by
 The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
 
 Redaction works best paired with deliberate capture. Use the integration's `metadataOnly()` or compact preset when payload values are unnecessary, and register project-specific keys for the business identifiers only your application understands.
+
+The default `DiagnosticCaptureMode.balanced` keeps diagnostics useful by
+allowing guarded `toJson()` and `toString()` capture. The result is bounded
+immediately and redacted before it leaves the active pipeline. Select
+`DiagnosticCaptureMode.strict` when application-defined formatters must never
+run. Network `metadataOnly()` and `production()` presets, plus BLoC/Riverpod
+`compact`, select strict capture automatically. Persistence, export, and
+observer delivery do not re-run formatters after capture.
 
 ### Global configuration
 
@@ -315,7 +367,10 @@ final redactor = RedactionService(
 
 ### Disabling
 
-`ISpectRedaction.configure(enabled: false)` is the global content-masking opt-out. Each interceptor also accepts `enableRedaction: false` on its settings object for a local opt-out. Size limits, non-executing snapshots, private-storage checks, and the compile-time `ISPECT_ENABLED` gate remain enforced.
+`ISpectRedaction.configure(enabled: false)` is the global content-masking
+opt-out. Each interceptor also accepts `enableRedaction: false` on its settings
+object for a local opt-out. Size limits, private-storage checks, the selected
+capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 

@@ -206,11 +206,13 @@ void main() {
         ],
       );
 
-      final requestJson = DioRequestData(options).toJson();
+      final requestJson = DioRequestData(options).toJson(
+        captureMode: DiagnosticCaptureMode.strict,
+      );
       final responseJson = DioResponseData(
         response: response,
         requestData: DioRequestData(options),
-      ).toJson();
+      ).toJson(captureMode: DiagnosticCaptureMode.strict);
       final redirect =
           (responseJson[NetworkJsonKeys.redirects] as List).single as Map;
 
@@ -234,7 +236,12 @@ void main() {
       final logger = ISpectLogger(
         options: ISpectLoggerOptions(useConsoleLogs: false),
       );
-      final interceptor = ISpectDioInterceptor(logger: logger);
+      final interceptor = ISpectDioInterceptor(
+        logger: logger,
+        settings: const ISpectDioInterceptorSettings(
+          captureMode: DiagnosticCaptureMode.strict,
+        ),
+      );
       final requestHandler = RequestInterceptorHandler();
       final responseHandler = ResponseInterceptorHandler();
 
@@ -389,7 +396,7 @@ void main() {
       expect(data[NetworkJsonKeys.data], isNot(contains(secret)));
     });
 
-    test('snapshots response DTOs without invoking formatters', () {
+    test('captures and redacts response DTOs by default', () {
       const bodySecret = 'violet-response-payload';
       const extraSecret = 'violet-response-extra';
       final body = _SensitiveDto(bodySecret);
@@ -417,13 +424,19 @@ void main() {
       final responseData =
           _meta(logger.history.single)[NetworkJsonKeys.responseData] as Map;
       final safeExtra = responseData[NetworkJsonKeys.extra] as Map;
-      expect(responseData[NetworkJsonKeys.data], isA<String>());
-      expect(safeExtra['diagnostic'], isA<String>());
+      expect(responseData[NetworkJsonKeys.data], {
+        'password': '[REDACTED]',
+        'label': 'visible',
+      });
+      expect(safeExtra['diagnostic'], {
+        'password': '[REDACTED]',
+        'label': 'visible',
+      });
       expect(responseData.toString(), isNot(contains(bodySecret)));
       expect(responseData.toString(), isNot(contains(extraSecret)));
-      expect(body.toJsonCalls, 0);
+      expect(body.toJsonCalls, 1);
       expect(body.toStringCalls, 0);
-      expect(extra.toJsonCalls, 0);
+      expect(extra.toJsonCalls, 1);
       expect(extra.toStringCalls, 0);
     });
 
@@ -459,9 +472,9 @@ void main() {
       expect(safeExtra['diagnostic'], isA<String>());
       expect(responseData.toString(), isNot(contains(bodySecret)));
       expect(responseData.toString(), isNot(contains(extraSecret)));
-      expect(body.toJsonCalls, 0);
+      expect(body.toJsonCalls, 1);
       expect(body.toStringCalls, 0);
-      expect(extra.toJsonCalls, 0);
+      expect(extra.toJsonCalls, 1);
       expect(extra.toStringCalls, 0);
     });
 
@@ -826,7 +839,7 @@ void main() {
       expect(requestData[NetworkJsonKeys.data], contains(secret));
     });
 
-    test('redaction opt-out still snapshots request extra DTOs', () {
+    test('redaction opt-out captures request extra DTOs', () {
       final extra = _SensitiveDto('violet-raw-request-extra');
       final logger = ISpectLogger(
         options: ISpectLoggerOptions(useConsoleLogs: false),
@@ -845,13 +858,15 @@ void main() {
       final requestData =
           _meta(logger.history.single)[NetworkJsonKeys.requestData] as Map;
       final rawExtra = requestData[NetworkJsonKeys.extra] as Map;
-      expect(rawExtra['diagnostic'], isA<String>());
-      expect(rawExtra['diagnostic'], isNot(contains(extra.secret)));
-      expect(extra.toJsonCalls, 0);
+      expect(rawExtra['diagnostic'], {
+        'password': extra.secret,
+        'label': 'visible',
+      });
+      expect(extra.toJsonCalls, 1);
       expect(extra.toStringCalls, 0);
     });
 
-    test('redaction opt-out still snapshots response DTOs', () {
+    test('redaction opt-out captures response DTOs', () {
       final body = _SensitiveDto('violet-raw-response');
       final extra = _SensitiveDto('violet-raw-extra');
       final logger = ISpectLogger(
@@ -878,13 +893,17 @@ void main() {
       final responseData =
           _meta(logger.history.single)[NetworkJsonKeys.responseData] as Map;
       final rawExtra = responseData[NetworkJsonKeys.extra] as Map;
-      expect(responseData[NetworkJsonKeys.data], isA<String>());
-      expect(rawExtra['diagnostic'], isA<String>());
-      expect(responseData.toString(), isNot(contains(body.secret)));
-      expect(responseData.toString(), isNot(contains(extra.secret)));
-      expect(body.toJsonCalls, 0);
+      expect(responseData[NetworkJsonKeys.data], {
+        'password': body.secret,
+        'label': 'visible',
+      });
+      expect(rawExtra['diagnostic'], {
+        'password': extra.secret,
+        'label': 'visible',
+      });
+      expect(body.toJsonCalls, 1);
       expect(body.toStringCalls, 0);
-      expect(extra.toJsonCalls, 0);
+      expect(extra.toJsonCalls, 1);
       expect(extra.toStringCalls, 0);
     });
 

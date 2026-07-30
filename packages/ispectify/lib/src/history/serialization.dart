@@ -77,23 +77,118 @@ abstract final class LogExportOutput {
   /// [replaceOversizedStrings] is true. This is used before an active
   /// redaction pass so a partial credential cannot escape solely because its
   /// suffix fell beyond the output boundary. Explicit redaction opt-outs keep
-  /// a bounded prefix instead.
+  /// a bounded prefix instead. Custom serialization and stringification are
+  /// disabled unless explicitly enabled for a guarded balanced capture.
   static Object? boundJsonValue(
     Object? value, {
-    int maxBytes = maxPreparedValueBytes,
+    int? maxBytes,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
     bool preserveTypes = false,
     bool replaceOversizedStrings = false,
     bool stripPrivateKeys = false,
+    bool allowCustomSerialization = false,
+    bool allowCustomStringification = false,
   }) {
-    if (maxBytes < 0) {
-      throw RangeError.range(maxBytes, 0, null, 'maxBytes');
+    resourceLimits.validate();
+    final resolvedMaxBytes = maxBytes ?? resourceLimits.maxCapturedValueBytes;
+    if (resolvedMaxBytes < 0) {
+      throw RangeError.range(resolvedMaxBytes, 0, null, 'maxBytes');
     }
     return _BoundedJsonSnapshot(
-      maxBytes: maxBytes,
+      maxBytes: resolvedMaxBytes,
+      maxDepth: resourceLimits.maxTraversalDepth,
+      maxNodes: resourceLimits.maxTraversalNodes,
+      maxCollectionItems: resourceLimits.maxCollectionItems,
       preserveTypes: preserveTypes,
       replaceOversizedStrings: replaceOversizedStrings,
       stripPrivateKeys: stripPrivateKeys,
+      allowCustomSerialization: allowCustomSerialization,
+      allowCustomStringification: allowCustomStringification,
     ).convert(value);
+  }
+
+  /// Replaces previously truncated string prefixes in a bounded snapshot.
+  ///
+  /// Use this immediately before active redaction so a credential split by an
+  /// earlier byte boundary cannot escape as a partial value.
+  static Object? replaceTruncatedPrefixes(
+    Object? value, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
+    return _replaceTruncatedPrefixes(
+      value,
+      resourceLimits: resourceLimits,
+      depth: 0,
+      budget: _ReplacementBudget(resourceLimits.maxTraversalNodes),
+    );
+  }
+
+  static Object? _replaceTruncatedPrefixes(
+    Object? value, {
+    required DiagnosticResourceLimits resourceLimits,
+    required int depth,
+    required _ReplacementBudget budget,
+  }) {
+    if (!budget.take()) return JsonValueNormalizer.maxNodesReached;
+    if (value is String) {
+      return value.contains(truncatedMarker) ? truncatedMarker : value;
+    }
+    if (value is TypedData || value is ByteBuffer) return value;
+    if (depth >= resourceLimits.maxTraversalDepth) {
+      return JsonValueNormalizer.maxDepthReached;
+    }
+    if (value is Map<String, Object?>) {
+      final output = <String, Object?>{};
+      var count = 0;
+      for (final entry in value.entries) {
+        if (!budget.hasCapacity) {
+          output[JsonValueNormalizer.traversalMarkerKey] =
+              JsonValueNormalizer.maxNodesReached;
+          break;
+        }
+        if (count >= resourceLimits.maxCollectionItems) {
+          output[JsonValueNormalizer.traversalMarkerKey] =
+              JsonValueNormalizer.maxCollectionItemsReached;
+          break;
+        }
+        output[entry.key.contains(truncatedMarker)
+            ? truncatedMarker
+            : entry.key] = _replaceTruncatedPrefixes(
+          entry.value,
+          resourceLimits: resourceLimits,
+          depth: depth + 1,
+          budget: budget,
+        );
+        count++;
+      }
+      return output;
+    }
+    if (value is List<Object?>) {
+      final output = <Object?>[];
+      var count = 0;
+      for (final item in value) {
+        if (!budget.hasCapacity) {
+          output.add(JsonValueNormalizer.maxNodesReached);
+          break;
+        }
+        if (count >= resourceLimits.maxCollectionItems) {
+          output.add(JsonValueNormalizer.maxCollectionItemsReached);
+          break;
+        }
+        output.add(
+          _replaceTruncatedPrefixes(
+            item,
+            resourceLimits: resourceLimits,
+            depth: depth + 1,
+            budget: budget,
+          ),
+        );
+        count++;
+      }
+      return output;
+    }
+    return value;
   }
 
   static bool _isHighSurrogate(int codeUnit) =>
@@ -135,20 +230,40 @@ abstract final class LogExportOutput {
       value.substring(0, _prefixEndWithinBytes(value, maxBytes));
 }
 
+final class _ReplacementBudget {
+  _ReplacementBudget(this.remaining);
+
+  int remaining;
+
+  bool get hasCapacity => remaining > 0;
+
+  bool take() => remaining-- > 0;
+}
+
 final class _BoundedJsonSnapshot {
   _BoundedJsonSnapshot({
     required int maxBytes,
+    required this.maxDepth,
+    required int maxNodes,
+    required this.maxCollectionItems,
     required this.preserveTypes,
     required this.replaceOversizedStrings,
     required this.stripPrivateKeys,
-  }) : _remainingBytes = maxBytes;
+    required this.allowCustomSerialization,
+    required this.allowCustomStringification,
+  })  : _remainingBytes = maxBytes,
+        _remainingNodes = maxNodes;
 
+  final int maxDepth;
+  final int maxCollectionItems;
   final bool preserveTypes;
   final bool replaceOversizedStrings;
   final bool stripPrivateKeys;
+  final bool allowCustomSerialization;
+  final bool allowCustomStringification;
   final Set<Object> _ancestors = Set<Object>.identity();
   int _remainingBytes;
-  int _remainingNodes = JsonValueNormalizer.defaultMaxNodes;
+  int _remainingNodes;
 
   Object? convert(Object? value, {int depth = 0}) {
     if (_remainingNodes <= 0) {
@@ -174,18 +289,63 @@ final class _BoundedJsonSnapshot {
     }
     if (value is String) return _boundString(value);
     if (value is DateTime || value is Uri) {
-      return _boundString(JsonValueNormalizer.unprintableValue);
+      return allowCustomStringification
+          ? _boundString(_customString(value))
+          : _boundString(JsonValueNormalizer.unprintableValue);
     }
     if (value is Enum) return _boundString(value.name);
     if (value is Error || value is Exception || value is StackTrace) {
-      return _boundString(_safeDiagnosticSnapshot(value));
+      return _boundString(
+        allowCustomStringification
+            ? _customString(value)
+            : _safeDiagnosticSnapshot(value),
+      );
     }
-    if (depth >= 64) {
+    if (depth >= maxDepth) {
       return _boundString(JsonValueNormalizer.maxDepthReached);
     }
     if (value is Map) return _boundMap(value, depth);
     if (value is Iterable) return _boundIterable(value, depth);
+    if (allowCustomSerialization || allowCustomStringification) {
+      return _boundCustomValue(value, depth);
+    }
     return _boundString(JsonValueNormalizer.unprintableValue);
+  }
+
+  Object? _boundCustomValue(Object value, int depth) {
+    if (!_ancestors.add(value)) {
+      return _boundString(JsonValueNormalizer.circularReference);
+    }
+    try {
+      if (allowCustomSerialization) {
+        try {
+          final dynamic dynamicValue = value;
+          // ignore: avoid_dynamic_calls
+          final serialized = dynamicValue.toJson() as Object?;
+          if (identical(serialized, value)) {
+            return _boundString(JsonValueNormalizer.circularReference);
+          }
+          return convert(serialized, depth: depth + 1);
+        } on Object catch (error) {
+          if (error is! NoSuchMethodError) {
+            return _boundString(JsonValueNormalizer.unprintableValue);
+          }
+        }
+      }
+      return allowCustomStringification
+          ? _boundString(_customString(value))
+          : _boundString(JsonValueNormalizer.unprintableValue);
+    } finally {
+      _ancestors.remove(value);
+    }
+  }
+
+  static String _customString(Object value) {
+    try {
+      return value.toString();
+    } on Object {
+      return JsonValueNormalizer.unprintableValue;
+    }
   }
 
   Map<String, Object?> _boundMap(Map<dynamic, dynamic> value, int depth) {
@@ -205,7 +365,7 @@ final class _BoundedJsonSnapshot {
       }
 
       var count = 0;
-      while (count < JsonValueNormalizer.defaultMaxCollectionItems) {
+      while (count < maxCollectionItems) {
         if (_remainingBytes <= 0 || _remainingNodes <= 0) {
           _addTraversalMarker(
             result,
@@ -285,7 +445,7 @@ final class _BoundedJsonSnapshot {
       }
 
       var count = 0;
-      while (count < JsonValueNormalizer.defaultMaxCollectionItems) {
+      while (count < maxCollectionItems) {
         if (_remainingBytes <= 0 || _remainingNodes <= 0) {
           result.add(
             _boundString(
@@ -434,8 +594,15 @@ extension ISpectLogDataSerialization on ISpectLogData {
       if (captured.additionalData != null)
         'additional-data': captured.additionalData,
     };
+    final preparedRaw = replaceOversizedStrings
+        ? LogExportOutput.replaceTruncatedPrefixes(
+            raw,
+            resourceLimits: captured.resourceLimits,
+          )
+        : raw;
     final normalized = LogExportOutput.boundJsonValue(
-      raw,
+      preparedRaw,
+      resourceLimits: captured.resourceLimits,
       preserveTypes: preserveTypes,
       replaceOversizedStrings: replaceOversizedStrings,
       stripPrivateKeys: true,
@@ -454,7 +621,10 @@ extension ISpectLogDataSerialization on ISpectLogData {
         'stack-trace',
       ]) {
         if (result[key] case final String value) {
-          result[key] = value.truncate();
+          result[key] = LogExportOutput.truncateUtf8(
+            value,
+            maxBytes: captured.resourceLimits.maxUiDiagnosticBytes,
+          );
         }
       }
     }
@@ -470,11 +640,15 @@ extension ISpectLogDataSerialization on ISpectLogData {
     Set<String>? redactKeys,
     RedactionService? redactionService,
     bool enableRedaction = true,
-    int maxOutputBytes = LogExportOutput.maxRecordBytes,
+    int? maxOutputBytes,
   }) {
     final captured = captureISpectLogDataForEgress(this);
-    final outputBudget = _effectiveRecordBudget(maxOutputBytes);
-    final preparedValueBytes = _preparedValueBudget(outputBudget);
+    final resourceLimits = captured.resourceLimits;
+    final outputBudget = _effectiveRecordBudget(maxOutputBytes, resourceLimits);
+    final preparedValueBytes = _preparedValueBudget(
+      outputBudget,
+      resourceLimits,
+    );
     String? safePart(Object? value) => value == null
         ? null
         : _redactExportText(
@@ -483,11 +657,12 @@ extension ISpectLogDataSerialization on ISpectLogData {
             redactionService: redactionService,
             enableRedaction: enableRedaction,
             maxBytes: preparedValueBytes,
-          ).truncate();
+            resourceLimits: resourceLimits,
+          );
 
     final safeStack = captured.stackTraceText != null &&
             !identical(captured.stackTrace, StackTrace.empty)
-        ? 'StackTrace: ${safePart(captured.stackTraceText)}'.truncate()
+        ? 'StackTrace: ${safePart(captured.stackTraceText)}'
         : null;
     return _boundOutput(
       joinLogParts([
@@ -507,7 +682,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
   /// uses the library's default sensitive-key set. When supplied,
   /// [redactionService] takes precedence over [redactKeys].
   ///
-  /// Output is capped at [LogExportOutput.maxRecordBytes] by default.
+  /// Output is capped by the log's resource policy by default.
   /// [maxOutputBytes] may request a smaller cap.
   String toText({
     Set<String>? redactKeys,
@@ -516,14 +691,19 @@ extension ISpectLogDataSerialization on ISpectLogData {
     int? maxOutputBytes,
   }) {
     final captured = captureISpectLogDataForEgress(this);
-    final outputBudget = _effectiveRecordBudget(maxOutputBytes);
-    final preparedValueBytes = _preparedValueBudget(outputBudget);
+    final resourceLimits = captured.resourceLimits;
+    final outputBudget = _effectiveRecordBudget(maxOutputBytes, resourceLimits);
+    final preparedValueBytes = _preparedValueBudget(
+      outputBudget,
+      resourceLimits,
+    );
     final safeMessage = _redactExportText(
       captured.message,
       redactKeys,
       redactionService: redactionService,
       enableRedaction: enableRedaction,
       maxBytes: preparedValueBytes,
+      resourceLimits: resourceLimits,
     );
     final safeKey = captured.key == null
         ? 'null'
@@ -533,6 +713,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
             redactionService: redactionService,
             enableRedaction: enableRedaction,
             maxBytes: preparedValueBytes,
+            resourceLimits: resourceLimits,
           );
     final buffer = StringBuffer()
       ..writeln(
@@ -548,6 +729,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
         redactionService: redactionService,
         enableRedaction: enableRedaction,
         maxBytes: preparedValueBytes,
+        resourceLimits: resourceLimits,
       );
       for (final entry in sanitized.entries) {
         // Skip TraceKeys.error — raw error string may contain PII.
@@ -576,6 +758,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
           redactionService: redactionService,
           enableRedaction: enableRedaction,
           maxBytes: preparedValueBytes,
+          resourceLimits: resourceLimits,
         )}',
       );
     }
@@ -587,6 +770,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
           redactionService: redactionService,
           enableRedaction: enableRedaction,
           maxBytes: preparedValueBytes,
+          resourceLimits: resourceLimits,
         )}',
       );
     }
@@ -597,6 +781,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
         redactionService: redactionService,
         enableRedaction: enableRedaction,
         maxBytes: preparedValueBytes,
+        resourceLimits: resourceLimits,
       );
       buffer.writeln('  StackTrace:\n$traceStr');
     }
@@ -611,7 +796,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
   /// uses the library's default sensitive-key set. When supplied,
   /// [redactionService] takes precedence over [redactKeys].
   ///
-  /// Output is capped at [LogExportOutput.maxRecordBytes] by default.
+  /// Output is capped by the log's resource policy by default.
   /// [maxOutputBytes] may request a smaller cap. Truncated output never leaves
   /// an emitted fenced code block open.
   String toMarkdown({
@@ -621,14 +806,19 @@ extension ISpectLogDataSerialization on ISpectLogData {
     int? maxOutputBytes,
   }) {
     final captured = captureISpectLogDataForEgress(this);
-    final outputBudget = _effectiveRecordBudget(maxOutputBytes);
-    final preparedValueBytes = _preparedValueBudget(outputBudget);
+    final resourceLimits = captured.resourceLimits;
+    final outputBudget = _effectiveRecordBudget(maxOutputBytes, resourceLimits);
+    final preparedValueBytes = _preparedValueBudget(
+      outputBudget,
+      resourceLimits,
+    );
     final safeMessage = _redactExportText(
       captured.message,
       redactKeys,
       redactionService: redactionService,
       enableRedaction: enableRedaction,
       maxBytes: preparedValueBytes,
+      resourceLimits: resourceLimits,
     );
     final safeKey = captured.key == null
         ? 'null'
@@ -638,6 +828,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
             redactionService: redactionService,
             enableRedaction: enableRedaction,
             maxBytes: preparedValueBytes,
+            resourceLimits: resourceLimits,
           );
     final safeAdditionalData = captured.additionalData == null
         ? null
@@ -647,6 +838,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
             redactionService: redactionService,
             enableRedaction: enableRedaction,
             maxBytes: preparedValueBytes,
+            resourceLimits: resourceLimits,
           );
     final buffer = StringBuffer()
       ..writeln(
@@ -709,6 +901,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
             redactionService: redactionService,
             enableRedaction: enableRedaction,
             maxBytes: preparedValueBytes,
+            resourceLimits: resourceLimits,
           ),
         )}`',
       );
@@ -722,6 +915,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
             redactionService: redactionService,
             enableRedaction: enableRedaction,
             maxBytes: preparedValueBytes,
+            resourceLimits: resourceLimits,
           ),
         )}`',
       );
@@ -733,6 +927,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
         redactionService: redactionService,
         enableRedaction: enableRedaction,
         maxBytes: preparedValueBytes,
+        resourceLimits: resourceLimits,
       );
       buffer.writeln(
         '\n**Stack trace:**\n```\n'
@@ -757,6 +952,7 @@ String _redactExportText(
   Set<String>? redactKeys, {
   required RedactionService? redactionService,
   required bool enableRedaction,
+  required DiagnosticResourceLimits resourceLimits,
   int? maxBytes,
 }) {
   final redactionActive = enableRedaction && ISpectRedaction.enabled;
@@ -765,17 +961,21 @@ String _redactExportText(
       : LogExportOutput.boundJsonValue(
           value,
           maxBytes: maxBytes,
+          resourceLimits: resourceLimits,
           preserveTypes: redactionActive,
           replaceOversizedStrings: redactionActive,
         );
   final outbound = redactionActive
-      ? _exportRedactor(redactKeys, redactionService).redactForExport(prepared)
+      ? _exportRedactor(redactKeys, redactionService).redactForExport(
+          LogExportOutput.replaceTruncatedPrefixes(prepared),
+        )
       : prepared;
   final bounded = maxBytes == null
       ? outbound
       : LogExportOutput.boundJsonValue(
           outbound,
           maxBytes: maxBytes,
+          resourceLimits: resourceLimits,
           replaceOversizedStrings: redactionActive,
         );
   final text = _normalizedText(bounded);
@@ -791,6 +991,7 @@ Map<String, dynamic> _redactAdditionalData(
   Set<String>? redactKeys, {
   required RedactionService? redactionService,
   required bool enableRedaction,
+  required DiagnosticResourceLimits resourceLimits,
   int? maxBytes,
 }) {
   final redactionActive = enableRedaction && ISpectRedaction.enabled;
@@ -799,6 +1000,7 @@ Map<String, dynamic> _redactAdditionalData(
       : LogExportOutput.boundJsonValue(
           data,
           maxBytes: maxBytes,
+          resourceLimits: resourceLimits,
           preserveTypes: redactionActive,
           replaceOversizedStrings: redactionActive,
           stripPrivateKeys: true,
@@ -810,14 +1012,16 @@ Map<String, dynamic> _redactAdditionalData(
         )
       : <String, dynamic>{};
   final outbound = redactionActive
-      ? _exportRedactor(redactKeys, redactionService)
-          .redactForExport(normalized)
+      ? _exportRedactor(redactKeys, redactionService).redactForExport(
+          LogExportOutput.replaceTruncatedPrefixes(normalized),
+        )
       : normalized;
   final safe = maxBytes == null
       ? JsonValueNormalizer.normalize(outbound)
       : LogExportOutput.boundJsonValue(
           outbound,
           maxBytes: maxBytes,
+          resourceLimits: resourceLimits,
           replaceOversizedStrings: redactionActive,
           stripPrivateKeys: true,
         );
@@ -826,20 +1030,26 @@ Map<String, dynamic> _redactAdditionalData(
       : <String, dynamic>{};
 }
 
-int _effectiveRecordBudget(int? requestedBytes) {
-  if (requestedBytes == null) return LogExportOutput.maxRecordBytes;
+int _effectiveRecordBudget(
+  int? requestedBytes,
+  DiagnosticResourceLimits resourceLimits,
+) {
+  if (requestedBytes == null) return resourceLimits.maxLogRecordBytes;
   if (requestedBytes < 0) {
     throw RangeError.range(requestedBytes, 0, null, 'maxOutputBytes');
   }
-  return requestedBytes < LogExportOutput.maxRecordBytes
+  return requestedBytes < resourceLimits.maxLogRecordBytes
       ? requestedBytes
-      : LogExportOutput.maxRecordBytes;
+      : resourceLimits.maxLogRecordBytes;
 }
 
-int _preparedValueBudget(int outputBytes) =>
-    outputBytes < LogExportOutput.maxPreparedValueBytes
+int _preparedValueBudget(
+  int outputBytes,
+  DiagnosticResourceLimits resourceLimits,
+) =>
+    outputBytes < resourceLimits.maxCapturedValueBytes
         ? outputBytes
-        : LogExportOutput.maxPreparedValueBytes;
+        : resourceLimits.maxCapturedValueBytes;
 
 String _boundOutput(String value, int maxOutputBytes) =>
     LogExportOutput.truncateUtf8(value, maxBytes: maxOutputBytes);
@@ -988,10 +1198,15 @@ class ISpectLogDataJsonUtils {
   /// rebuilt from its string form. Original type information, file/line data,
   /// and causal chains are lost. Treat deserialized entries as display-only
   /// snapshots, not as re-throwable originals.
-  static ISpectLogData fromJson(Map<String, dynamic> json) {
+  static ISpectLogData fromJson(
+    Map<String, dynamic> json, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
     final bounded = LogExportOutput.boundJsonValue(
       json,
-      maxBytes: LogExportOutput.maxRecordBytes,
+      maxBytes: resourceLimits.maxLogRecordBytes,
+      resourceLimits: resourceLimits,
       replaceOversizedStrings: true,
     );
     if (bounded is! Map<String, Object?>) {
@@ -1026,6 +1241,7 @@ class ISpectLogDataJsonUtils {
       error: error == null ? null : _StringError(error),
       stackTrace: stackTrace == null ? null : StackTrace.fromString(stackTrace),
       id: id,
+      resourceLimits: resourceLimits,
     );
   }
 }

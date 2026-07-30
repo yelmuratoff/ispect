@@ -245,6 +245,8 @@ This is the default-policy SSOT for core logs, traces, persistence, interceptors
 A few habits that pay off on shared internal builds:
 
 - Use `metadataOnly()` or `compact` presets when a shared build needs stronger data minimization.
+- Use `DiagnosticCaptureMode.strict` when application-defined `toJson()` and
+  `toString()` methods must never run; balanced capture is the useful default.
 - Register your domain-specific redaction keys before sharing exported sessions outside the engineering team.
 - Treat exported `.json` sessions according to the data class they contain. They are plain-text artifacts and travel through the same channels as any internal log.
 - Review observer adapters before pointing them at a centralized sink. An observer sees whatever category you choose to forward.
@@ -257,11 +259,37 @@ JSON handoffs retain up to 256 KiB per structured value, 1 MiB per record, and
 `truncated`. Call `LogsJsonService.importFromJsonWithReport(...)` when the UI
 needs to disclose skipped invalid entries.
 
+These are balanced defaults, not fixed product limits. Configure capture,
+import/export, viewer, clipboard, network, database, observer, correlation,
+batching, yielding, and search budgets on the logger:
+
+```dart
+final logger = ISpectFlutter.init(
+  options: ISpectLoggerOptions(
+    resourceLimits: DiagnosticResourceLimits.constrained,
+    processingPolicy: DiagnosticProcessingPolicy.responsive,
+  ),
+);
+```
+
+Use `copyWith` for individual values or the `extended`/`throughput` profiles
+for a controlled larger session. Every profile remains bounded by validated
+host-protection ceilings, and redaction stays enabled independently.
+
+In Flutter, the Settings sheet offers Capture, Resource, and Processing
+profiles under Advanced. Capture can switch from the useful `Balanced` default
+to `Strict`, which never invokes application-defined formatters. Selections
+update capture, search, viewer, import, and export behavior immediately and are
+included in `ISpectSettingsState.toJson()`. Per-field `copyWith` values also
+round-trip through `ISpectOptions.initialSettings`; a non-preset resource or
+processing combination is shown as `Custom`.
+
 ## Hardened setup
 
 Defaults prioritize useful redacted diagnostics in internal builds. Opt into
 metadata-only network capture or compact state summaries when a build needs
-stricter minimization.
+stricter minimization. Those presets also select strict capture; logger,
+adapter, observer, and database settings expose the same mode directly.
 
 1. Add `ispect` and wrap the app with `ISpect.run(...)` and `ISpectBuilder.wrap(...)`.
 2. Run internal builds with `--dart-define=ISPECT_ENABLED=true`.

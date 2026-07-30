@@ -1,4 +1,4 @@
-import 'package:ispectify/src/network/filter/url_exclusion_filter.dart';
+import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
 final class _HostileUri implements Uri {
@@ -91,12 +91,30 @@ void main() {
       final filter = UrlExclusionFilter<Uri>(
         excludedPatterns: const ['/health'],
         urlExtractor: (value) => value,
+        captureMode: DiagnosticCaptureMode.strict,
       );
 
       expect(filter.apply(uri), isFalse);
       expect(uri.toStringCalls, 0);
       expect(uri.pathCalls, 0);
       expect(uri.runtimeTypeCalls, 0);
+    });
+
+    test('compatibility constructor filters ordinary Uri values by default',
+        () {
+      final filter = UrlExclusionFilter<Uri>(
+        excludedPatterns: const ['/health'],
+        urlExtractor: (value) => value,
+      );
+
+      expect(
+        filter.apply(Uri.parse('https://api.example.com/users')),
+        isTrue,
+      );
+      expect(
+        filter.apply(Uri.parse('https://api.example.com/health')),
+        isFalse,
+      );
     });
   });
 }

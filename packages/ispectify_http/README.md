@@ -99,17 +99,30 @@ const settings = ISpectHttpInterceptorSettings(
   logResponses: true,
   printRequestHeaders: true,
   printRequestData: true,
-  printResponseHeaders: false,
+  printResponseHeaders: true,
   printResponseData: true,
   enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 ```
+
+Balanced capture keeps ordinary URLs and prepared typed values useful through
+guarded, bounded formatting before redaction. Set
+`captureMode: DiagnosticCaptureMode.strict` when application-defined
+formatters must never run.
 
 Preset factories and a builder are also available. Use
 `ISpectHttpInterceptorSettingsBuilder.metadataOnly()` to retain request and
 response metadata while omitting bodies and headers. The `development()`,
 `staging()`, and `production()` presets remain available for environment-based
 policies.
+
+`metadataOnly()` and `production()` select strict capture. `development()` and
+`staging()` keep balanced capture. Builders also expose
+`withStrictCapture()` and `withBalancedCapture()`.
+Use `withResourceLimits(...)` for an interceptor-local budget, or
+`withInheritedResourceLimits()` to return to the logger policy.
 
 `logRequests` and `logResponses` control whether routine records are retained;
 the production preset disables both and keeps redacted errors. The `print*`
@@ -126,6 +139,14 @@ Sensitive data is masked before it reaches logs or observers. Redaction is on by
 The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
 
 Redaction works best paired with deliberate capture. Use the integration's `metadataOnly()` or compact preset when payload values are unnecessary, and register project-specific keys for the business identifiers only your application understands.
+
+The default `DiagnosticCaptureMode.balanced` keeps diagnostics useful by
+allowing guarded `toJson()` and `toString()` capture. The result is bounded
+immediately and redacted before it leaves the active pipeline. Select
+`DiagnosticCaptureMode.strict` when application-defined formatters must never
+run. Network `metadataOnly()` and `production()` presets, plus BLoC/Riverpod
+`compact`, select strict capture automatically. Persistence, export, and
+observer delivery do not re-run formatters after capture.
 
 ### Global configuration
 
@@ -175,7 +196,10 @@ final redactor = RedactionService(
 
 ### Disabling
 
-`ISpectRedaction.configure(enabled: false)` is the global content-masking opt-out. Each interceptor also accepts `enableRedaction: false` on its settings object for a local opt-out. Size limits, non-executing snapshots, private-storage checks, and the compile-time `ISPECT_ENABLED` gate remain enforced.
+`ISpectRedaction.configure(enabled: false)` is the global content-masking
+opt-out. Each interceptor also accepts `enableRedaction: false` on its settings
+object for a local opt-out. Size limits, private-storage checks, the selected
+capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 

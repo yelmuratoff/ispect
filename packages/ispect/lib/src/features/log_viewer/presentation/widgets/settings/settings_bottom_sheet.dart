@@ -10,6 +10,7 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/act
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/compact_toggle_grid.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/limit_tile.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/log_type_filter_section.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/policy_profile_tile.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/toggle_spec.dart';
 
 class ISpectSettingsBottomSheet {
@@ -100,6 +101,9 @@ class _SettingsContentState extends State<_SettingsContent> {
           forwardErrorToConsole: loggerOptions.forwardErrorToConsole,
           maxHistoryItems: loggerOptions.maxHistoryItems,
           logTruncateLength: loggerOptions.logTruncateLength,
+          captureMode: loggerOptions.captureMode,
+          resourceLimits: loggerOptions.resourceLimits,
+          processingPolicy: loggerOptions.processingPolicy,
         );
         if (existing != currentSettings) {
           widget.controller.updateSettings(currentSettings);
@@ -140,9 +144,15 @@ class _SettingsContentState extends State<_SettingsContent> {
         forwardErrorToConsole: settings.forwardErrorToConsole,
         maxHistoryItems: settings.maxHistoryItems,
         logTruncateLength: settings.logTruncateLength,
+        captureMode: settings.captureMode,
+        resourceLimits: settings.resourceLimits,
+        processingPolicy: settings.processingPolicy,
       ),
       filter: enabledTypes.isNotEmpty
-          ? ISpectFilter(logTypeKeys: enabledTypes)
+          ? ISpectFilter(
+              logTypeKeys: enabledTypes,
+              resourceLimits: settings.resourceLimits,
+            )
           : null,
     );
     widget.logger.notify();
@@ -369,6 +379,82 @@ class _SettingsContentState extends State<_SettingsContent> {
                     formatter: formatCount,
                     onChanged: (v) => _onSettingChanged(
                       currentSettings.copyWith(logTruncateLength: v),
+                    ),
+                  ),
+                  const Gap(8),
+                  PolicyProfileTile<DiagnosticCaptureMode>(
+                    label: 'Capture mode',
+                    description: 'Useful values or maximum isolation',
+                    icon: Icons.shield_outlined,
+                    value: currentSettings.captureMode,
+                    options: const [
+                      PolicyProfileOption(
+                        label: 'Balanced',
+                        description: 'Guarded formatters with bounded output',
+                        value: DiagnosticCaptureMode.balanced,
+                      ),
+                      PolicyProfileOption(
+                        label: 'Strict',
+                        description: 'Never run application formatters',
+                        value: DiagnosticCaptureMode.strict,
+                      ),
+                    ],
+                    onChanged: (value) => _onSettingChanged(
+                      currentSettings.copyWith(captureMode: value),
+                    ),
+                  ),
+                  const Gap(8),
+                  PolicyProfileTile<DiagnosticResourceLimits>(
+                    label: 'Resource profile',
+                    description: 'Capture, memory, import and export limits',
+                    icon: Icons.memory_rounded,
+                    value: currentSettings.resourceLimits,
+                    options: const [
+                      PolicyProfileOption(
+                        label: 'Constrained',
+                        description: 'Lower memory use for long sessions',
+                        value: DiagnosticResourceLimits.constrained,
+                      ),
+                      PolicyProfileOption(
+                        label: 'Balanced',
+                        description: 'Useful diagnostics with bounded cost',
+                        value: DiagnosticResourceLimits.balanced,
+                      ),
+                      PolicyProfileOption(
+                        label: 'Extended',
+                        description: 'Larger controlled internal handoffs',
+                        value: DiagnosticResourceLimits.extended,
+                      ),
+                    ],
+                    onChanged: (value) => _onSettingChanged(
+                      currentSettings.copyWith(resourceLimits: value),
+                    ),
+                  ),
+                  const Gap(8),
+                  PolicyProfileTile<DiagnosticProcessingPolicy>(
+                    label: 'Processing profile',
+                    description: 'Responsiveness and batch throughput',
+                    icon: Icons.speed_rounded,
+                    value: currentSettings.processingPolicy,
+                    options: const [
+                      PolicyProfileOption(
+                        label: 'Responsive',
+                        description: 'Yield often to keep the UI fluid',
+                        value: DiagnosticProcessingPolicy.responsive,
+                      ),
+                      PolicyProfileOption(
+                        label: 'Balanced',
+                        description: 'General-purpose scheduling',
+                        value: DiagnosticProcessingPolicy.balanced,
+                      ),
+                      PolicyProfileOption(
+                        label: 'Throughput',
+                        description: 'Larger batches for faster handoffs',
+                        value: DiagnosticProcessingPolicy.throughput,
+                      ),
+                    ],
+                    onChanged: (value) => _onSettingChanged(
+                      currentSettings.copyWith(processingPolicy: value),
                     ),
                   ),
                 ],

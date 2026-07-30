@@ -4,29 +4,44 @@ import 'dart:typed_data';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 
-/// Leaves room for the request/response envelope around a retained body.
-const httpCaptureBodyMaxBytes = LogExportOutput.maxPreparedValueBytes ~/ 2;
-
 class HttpRequestData {
-  HttpRequestData(this.requestOptions);
+  HttpRequestData(
+    this.requestOptions, {
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
+  }
 
   final BaseRequest? requestOptions;
+  final DiagnosticResourceLimits resourceLimits;
 
   Map<String, dynamic> toJson({
     bool includeData = true,
     bool includeHeaders = true,
     bool redactionActive = false,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
   }) {
     final request = requestOptions;
-    final uriSnapshot =
-        request == null ? null : NetworkUriSnapshot.fromUri(request.url);
+    final uriSnapshot = request == null
+        ? null
+        : NetworkUriSnapshot.fromUri(
+            request.url,
+            captureMode: captureMode,
+            resourceLimits: resourceLimits,
+          );
     return <String, dynamic>{
       // --- Identity: what & where ---
       NetworkJsonKeys.method: request?.method,
       NetworkJsonKeys.url: uriSnapshot?.url,
 
       // --- Payload ---
-      if (includeHeaders) NetworkJsonKeys.headers: requestOptions?.headers,
+      if (includeHeaders)
+        NetworkJsonKeys.headers: NetworkPayloadSanitizer.toStringKeyMap(
+          requestOptions?.headers,
+          captureMode: captureMode,
+          resourceLimits: resourceLimits,
+          maxEntries: resourceLimits.maxNetworkHeaders,
+        ),
       NetworkJsonKeys.encoding: switch (requestOptions) {
         final Request request => _encodingName(request),
         _ => null,
@@ -69,14 +84,15 @@ class HttpRequestData {
     }
   }
 
-  static String _boundedBody(
+  String _boundedBody(
     Request request, {
     required bool redactionActive,
   }) {
     try {
       final bytes = request.bodyBytes;
       if (bytes.isEmpty) return '';
-      final oversized = bytes.lengthInBytes > httpCaptureBodyMaxBytes;
+      final maxBodyBytes = resourceLimits.maxNetworkBodyBytes;
+      final oversized = bytes.lengthInBytes > maxBodyBytes;
       if (oversized && redactionActive) {
         return LogExportOutput.truncatedMarker;
       }
@@ -85,7 +101,7 @@ class HttpRequestData {
         LogExportOutput.truncatedMarker,
       );
       final prefixBytes = oversized
-          ? httpCaptureBodyMaxBytes - markerBytes
+          ? (maxBodyBytes - markerBytes).clamp(0, bytes.lengthInBytes)
           : bytes.lengthInBytes;
       final decoded = _decodePrefix(
         bytes,
@@ -97,7 +113,8 @@ class HttpRequestData {
           oversized ? '$decoded${LogExportOutput.truncatedMarker}' : decoded;
       final bounded = LogExportOutput.boundJsonValue(
         withMarker,
-        maxBytes: httpCaptureBodyMaxBytes,
+        maxBytes: maxBodyBytes,
+        resourceLimits: resourceLimits,
         replaceOversizedStrings: redactionActive,
       );
       return bounded is String ? bounded : JsonValueNormalizer.unprintableValue;
@@ -132,12 +149,14 @@ class HttpRequestData {
     RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     NetworkMapRedactor.redactMethod(
       map,
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     NetworkMapRedactor.redactFreeText(
       map,
@@ -145,13 +164,19 @@ class HttpRequestData {
       key: NetworkJsonKeys.encoding,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
-    NetworkMapRedactor.redactUrl(map, redactor);
+    NetworkMapRedactor.redactUrl(
+      map,
+      redactor,
+      resourceLimits: resourceLimits,
+    );
     final redactedHeaders = NetworkMapRedactor.redactHeaders(
       map,
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
     if (redactedHeaders != null) {
       map[NetworkJsonKeys.headers] =
@@ -162,6 +187,7 @@ class HttpRequestData {
       redactor,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
     );
   }
 }

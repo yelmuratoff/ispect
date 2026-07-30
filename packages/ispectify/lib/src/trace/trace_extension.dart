@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:ispectify/src/history/serialization.dart';
 import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/models/data.dart';
+import 'package:ispectify/src/models/diagnostic_capture_mode.dart';
+import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/models/log_level.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart';
 import 'package:ispectify/src/redaction/redaction_service.dart';
@@ -114,6 +116,8 @@ extension ISpectTrace on ISpectLogger {
     if (!isEnabled) return;
 
     final cfg = config ?? const ISpectTraceConfig();
+    final resourceLimits = (cfg.resourceLimits ?? options.resourceLimits)
+      ..validate();
     final isError = error != null || success == false;
 
     if (!cfg.shouldLog(localSample: sample, isError: isError)) return;
@@ -125,8 +129,15 @@ extension ISpectTrace on ISpectLogger {
       this,
       () {
         final redactor = _traceRedactor(cfg);
+        final captureMode = options.captureMode;
         String prepareText(Object? value) => _tracePayloadText(
-              _prepareTracePayload(value, redactor),
+              _prepareTracePayload(
+                value,
+                redactor,
+                captureMode,
+                resourceLimits,
+              ),
+              resourceLimits,
             );
 
         final safeCategoryId = prepareText(category.id);
@@ -147,14 +158,24 @@ extension ISpectTrace on ISpectLogger {
             );
         final message = prepareText(rawMessage);
 
-        final safeMetaValue = _prepareTracePayload(meta, redactor);
+        final safeMetaValue = _prepareTracePayload(
+          meta,
+          redactor,
+          captureMode,
+          resourceLimits,
+        );
         final safeMeta = safeMetaValue is Map<String, Object?>
             ? safeMetaValue
             : safeMetaValue is Map
                 ? Map<String, Object?>.from(safeMetaValue)
                 : null;
 
-        final safeValue = _prepareTracePayload(value, redactor);
+        final safeValue = _prepareTracePayload(
+          value,
+          redactor,
+          captureMode,
+          resourceLimits,
+        );
         final safeErrorText = error == null ? null : prepareText(error);
         final safeStackTrace = errorStackTrace == null
             ? null
@@ -164,7 +185,13 @@ extension ISpectTrace on ISpectLogger {
         final safeCorrelationId = correlationId == null
             ? null
             : _tracePayloadText(
-                _prepareTracePayload(correlationId, redactor),
+                _prepareTracePayload(
+                  correlationId,
+                  redactor,
+                  captureMode,
+                  resourceLimits,
+                ),
+                resourceLimits,
               );
 
         final rawTxnId = Zone.current[_txnZoneKey];
@@ -198,6 +225,8 @@ extension ISpectTrace on ISpectLogger {
               error is Exception ? const _PreparedTraceException() : null,
           error: error is Error ? _PreparedTraceError() : null,
           stackTrace: isError && cfg.attachStackOnError ? safeStackTrace : null,
+          captureMode: DiagnosticCaptureMode.strict,
+          resourceLimits: resourceLimits,
         );
       },
       // The snapshot already used cfg's resolved policy; a second pass would
@@ -385,11 +414,25 @@ extension ISpectTrace on ISpectLogger {
   }) {
     if (!isEnabled) return null;
     final cfg = config ?? const ISpectTraceConfig();
+    final resourceLimits = (cfg.resourceLimits ?? options.resourceLimits)
+      ..validate();
     final redactor = _traceRedactor(cfg);
+    final captureMode = options.captureMode;
     String prepareText(Object? value) => _tracePayloadText(
-          _prepareTracePayload(value, redactor),
+          _prepareTracePayload(
+            value,
+            redactor,
+            captureMode,
+            resourceLimits,
+          ),
+          resourceLimits,
         );
-    final preparedMeta = _prepareTracePayload(meta, redactor);
+    final preparedMeta = _prepareTracePayload(
+      meta,
+      redactor,
+      captureMode,
+      resourceLimits,
+    );
     return ISpectTraceToken(
       stopwatch: Stopwatch()..start(),
       category: category,
@@ -436,6 +479,7 @@ extension ISpectTrace on ISpectLogger {
         token.meta,
         meta,
         redactionActive: cfg.redact && ISpectRedaction.enabled,
+        resourceLimits: cfg.resourceLimits ?? options.resourceLimits,
       ),
       config: token.config,
       correlationId: token.correlationId,
@@ -588,18 +632,29 @@ RedactionService? _traceRedactor(ISpectTraceConfig config) {
 Object? _prepareTracePayload(
   Object? value,
   RedactionService? redactor,
+  DiagnosticCaptureMode captureMode,
+  DiagnosticResourceLimits resourceLimits,
 ) {
   final redactionActive = redactor != null;
   final prepared = LogExportOutput.boundJsonValue(
     value,
     preserveTypes: redactionActive,
     replaceOversizedStrings: redactionActive,
+    allowCustomSerialization: captureMode == DiagnosticCaptureMode.balanced,
+    allowCustomStringification: captureMode == DiagnosticCaptureMode.balanced,
+    resourceLimits: resourceLimits,
   );
   if (!redactionActive) return prepared;
-  final redacted = redactor.redactForExport(prepared);
+  final redacted = redactor.redactForExport(
+    LogExportOutput.replaceTruncatedPrefixes(
+      prepared,
+      resourceLimits: resourceLimits,
+    ),
+  );
   return LogExportOutput.boundJsonValue(
     redacted,
     replaceOversizedStrings: true,
+    resourceLimits: resourceLimits,
   );
 }
 
@@ -613,6 +668,7 @@ Map<String, Object?>? _mergeTraceMeta(
   Map<String, Object?>? start,
   Map<String, Object?>? end, {
   required bool redactionActive,
+  required DiagnosticResourceLimits resourceLimits,
 }) {
   if (start == null && end == null) return null;
   final bounded = LogExportOutput.boundJsonValue(
@@ -622,6 +678,7 @@ Map<String, Object?>? _mergeTraceMeta(
     },
     preserveTypes: redactionActive,
     replaceOversizedStrings: redactionActive,
+    resourceLimits: resourceLimits,
   );
   if (bounded is! Map) return null;
 
@@ -639,14 +696,17 @@ Map<String, Object?>? _mergeTraceMeta(
   return result;
 }
 
-String _tracePayloadText(Object? value) {
+String _tracePayloadText(
+  Object? value,
+  DiagnosticResourceLimits resourceLimits,
+) {
   if (value == null) return defaultPlaceholder;
   if (value is String) return value;
   if (value is bool || value is num) return value.toString();
   try {
     return LogExportOutput.truncateUtf8(
       jsonEncode(value),
-      maxBytes: LogExportOutput.maxPreparedValueBytes,
+      maxBytes: resourceLimits.maxCapturedValueBytes,
     );
   } catch (_) {
     return defaultPlaceholder;

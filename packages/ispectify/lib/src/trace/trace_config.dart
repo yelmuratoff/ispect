@@ -1,3 +1,4 @@
+import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/redaction/constants/key_defaults.dart';
 import 'package:ispectify/src/utils/common_utils.dart';
 import 'package:meta/meta.dart';
@@ -35,6 +36,7 @@ class ISpectTraceConfig {
     this.maxValueLength = 500,
     this.attachStackOnError = false,
     this.slowThreshold,
+    this.resourceLimits,
   });
 
   /// Sampling rate for successful operations.
@@ -65,6 +67,9 @@ class ISpectTraceConfig {
   /// Duration threshold for "slow" operations.
   final Duration? slowThreshold;
 
+  /// Optional per-trace budgets. `null` inherits the logger policy.
+  final DiagnosticResourceLimits? resourceLimits;
+
   /// Sampling precedence: error → localSample → sampleRate → null (log all).
   bool shouldLog({required bool isError, double? localSample}) {
     final rate = isError ? errorSampleRate : (localSample ?? sampleRate);
@@ -80,6 +85,7 @@ class ISpectTraceConfig {
     int? maxValueLength,
     bool? attachStackOnError,
     Duration? slowThreshold,
+    DiagnosticResourceLimits? resourceLimits,
   }) =>
       ISpectTraceConfig(
         sampleRate: sampleRate ?? this.sampleRate,
@@ -89,5 +95,6 @@ class ISpectTraceConfig {
         maxValueLength: maxValueLength ?? this.maxValueLength,
         attachStackOnError: attachStackOnError ?? this.attachStackOnError,
         slowThreshold: slowThreshold ?? this.slowThreshold,
+        resourceLimits: resourceLimits ?? this.resourceLimits,
       );
 }

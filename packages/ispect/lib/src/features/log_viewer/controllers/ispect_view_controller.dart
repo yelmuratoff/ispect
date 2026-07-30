@@ -54,18 +54,36 @@ class ISpectViewController implements Listenable {
     ISpectSettingsState? initialSettings,
     ISpectSettingsChangedCallback? onSettingsChanged,
     bool groupHttpLogs = true,
-  })  : _exportService = LogExportService(
-          onShare: onShare,
-          metadataProvider: metadataProvider,
-        ),
-        _importService = const LogImportService() {
+    DiagnosticResourceLimits? resourceLimits,
+    DiagnosticProcessingPolicy? processingPolicy,
+  }) {
+    _onShare = onShare;
+    _metadataProvider = metadataProvider;
+    final resolvedResourceLimits = resourceLimits ??
+        initialSettings?.resourceLimits ??
+        ISpect.loggerIfInitialized?.options.resourceLimits ??
+        DiagnosticResourceLimits.balanced;
+    final resolvedProcessingPolicy = processingPolicy ??
+        initialSettings?.processingPolicy ??
+        ISpect.loggerIfInitialized?.options.processingPolicy ??
+        DiagnosticProcessingPolicy.balanced;
+    resolvedResourceLimits.validate();
+    resolvedProcessingPolicy.validate();
+    _resourceLimits = resolvedResourceLimits;
+    _processingPolicy = resolvedProcessingPolicy;
+    _rebuildLogServices();
+
     _display = DisplayController(initialSettings: initialSettings);
     if (initialSettings == null) {
       _display.setInitialGroupHttpLogs(value: groupHttpLogs);
     }
 
     _filterManager = FilterManager(
-      initialFilter: ISpectFilter(),
+      initialFilter: ISpectFilter(
+        resourceLimits: resolvedResourceLimits,
+      ),
+      resourceLimits: resolvedResourceLimits,
+      processingPolicy: resolvedProcessingPolicy,
       onChanged: _onSubNotify,
     );
     _settingsManager = SettingsManager(
@@ -131,8 +149,28 @@ class ISpectViewController implements Listenable {
 
   late final FilterManager _filterManager;
   late final SettingsManager _settingsManager;
-  final LogExportService _exportService;
-  final LogImportService _importService;
+  late DiagnosticResourceLimits _resourceLimits;
+  late DiagnosticProcessingPolicy _processingPolicy;
+  late LogExportService _exportService;
+  late LogImportService _importService;
+  late final ISpectShareCallback? _onShare;
+  late final ISpectMetadataProvider? _metadataProvider;
+
+  DiagnosticResourceLimits get resourceLimits => _resourceLimits;
+  DiagnosticProcessingPolicy get processingPolicy => _processingPolicy;
+
+  void _rebuildLogServices() {
+    final logsJsonService = LogsJsonService(
+      resourceLimits: _resourceLimits,
+      processingPolicy: _processingPolicy,
+    );
+    _exportService = LogExportService(
+      onShare: _onShare,
+      metadataProvider: _metadataProvider,
+      logsJsonService: logsJsonService,
+    );
+    _importService = LogImportService(logsJsonService: logsJsonService);
+  }
 
   /// Notifier for filter/settings pipeline changes (no own state).
   final _pipelineNotifier = _SignalNotifier();
@@ -237,8 +275,28 @@ class ISpectViewController implements Listenable {
   ISpectSettingsState get settings => _settingsManager.settings;
 
   void updateSettings(ISpectSettingsState newSettings) {
+    _updateDiagnosticPolicies(
+      newSettings.resourceLimits,
+      newSettings.processingPolicy,
+    );
     _settingsManager.updateSettings(newSettings);
     _display.applyFromSettings(newSettings);
+  }
+
+  void _updateDiagnosticPolicies(
+    DiagnosticResourceLimits resourceLimits,
+    DiagnosticProcessingPolicy processingPolicy,
+  ) {
+    resourceLimits.validate();
+    processingPolicy.validate();
+    if (_resourceLimits == resourceLimits &&
+        _processingPolicy == processingPolicy) {
+      return;
+    }
+    _resourceLimits = resourceLimits;
+    _processingPolicy = processingPolicy;
+    _rebuildLogServices();
+    _filterManager.updatePolicies(resourceLimits, processingPolicy);
   }
 
   // --- Filter delegation ---
@@ -328,7 +386,11 @@ class ISpectViewController implements Listenable {
   ) {
     copyClipboard(
       context,
-      value: LogExporter.toJsonLines([logEntry], maxLogs: 1),
+      value: LogExporter.toJsonLines(
+        [logEntry],
+        maxLogs: 1,
+        resourceLimits: _resourceLimits,
+      ),
     );
   }
 
@@ -345,7 +407,10 @@ class ISpectViewController implements Listenable {
   ) {
     copyClipboard(
       context,
-      value: LogExporter.toJsonLines(logs),
+      value: LogExporter.toJsonLines(
+        logs,
+        resourceLimits: _resourceLimits,
+      ),
       title: title,
       showValue: false,
     );

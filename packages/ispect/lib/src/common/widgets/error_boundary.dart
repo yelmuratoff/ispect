@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/ispect.dart';
+import 'package:ispectify/ispectify.dart';
 
 /// A widget that catches errors thrown during [pluginBuilder] execution
 /// and displays a styled fallback instead of the default red error screen.
@@ -48,8 +50,17 @@ class _SafePluginScreenState extends State<SafePluginScreen> {
         child: widget.pluginBuilder(context),
       );
     } catch (error, stackTrace) {
-      final errorText = ISpectSafeDiagnosticSnapshot.summary(error);
-      final stackTraceText = ISpectSafeDiagnosticSnapshot.text(stackTrace);
+      final resourceLimits =
+          ISpect.loggerIfInitialized?.options.resourceLimits ??
+              DiagnosticResourceLimits.balanced;
+      final errorText = ISpectSafeDiagnosticSnapshot.summary(
+        error,
+        resourceLimits: resourceLimits,
+      );
+      final stackTraceText = ISpectSafeDiagnosticSnapshot.text(
+        stackTrace,
+        resourceLimits: resourceLimits,
+      );
       // Schedule state update — we are inside build().
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -100,7 +111,12 @@ class _ISpectErrorFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final safePluginId = ISpectSafeDiagnosticSnapshot.summary(pluginId);
+    final resourceLimits = ISpect.loggerIfInitialized?.options.resourceLimits ??
+        DiagnosticResourceLimits.balanced;
+    final safePluginId = ISpectSafeDiagnosticSnapshot.summary(
+      pluginId,
+      resourceLimits: resourceLimits,
+    );
 
     return Scaffold(
       appBar: AppBar(

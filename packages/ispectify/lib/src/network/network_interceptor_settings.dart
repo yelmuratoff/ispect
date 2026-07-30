@@ -12,6 +12,8 @@ abstract class BaseNetworkInterceptorSettings
   const BaseNetworkInterceptorSettings({
     this.enabled = true,
     this.enableRedaction = true,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits,
     this.logRequests = true,
     this.logResponses = true,
     this.printResponseData = true,
@@ -32,6 +34,12 @@ abstract class BaseNetworkInterceptorSettings
 
   /// Enable sensitive data redaction when `true` (default: `true`).
   final bool enableRedaction;
+
+  /// Controls whether application-defined payload formatters may run.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Optional adapter-specific budgets. `null` inherits the logger policy.
+  final DiagnosticResourceLimits? resourceLimits;
 
   /// Retain normal request diagnostics.
   final bool logRequests;
@@ -90,6 +98,8 @@ abstract class BaseNetworkInterceptorSettings
   BaseNetworkInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,
+    DiagnosticCaptureMode? captureMode,
+    DiagnosticResourceLimits? resourceLimits,
     bool? printResponseData,
     bool? printResponseHeaders,
     bool? printResponseMessage,

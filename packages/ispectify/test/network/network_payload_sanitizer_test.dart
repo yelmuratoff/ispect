@@ -627,6 +627,25 @@ void main() {
       expect(hostile.toJsonCalls, 0);
       expect(hostile.toStringCalls, 0);
     });
+
+    test('bounds input before invoking a custom normalizer', () {
+      final hostile = _HostileDto();
+      Object? normalizerInput;
+
+      final result = sanitizer.body(
+        hostile,
+        enableRedaction: false,
+        normalizer: (value) {
+          normalizerInput = value;
+          return value;
+        },
+      );
+
+      expect(normalizerInput, JsonValueNormalizer.unprintableValue);
+      expect(result, JsonValueNormalizer.unprintableValue);
+      expect(hostile.toJsonCalls, 0);
+      expect(hostile.toStringCalls, 0);
+    });
   });
 
   group('NetworkPayloadSanitizer.body', () {

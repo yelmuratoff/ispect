@@ -9,7 +9,8 @@ import '../../../../helpers/pump_ispect.dart';
 void main() {
   tearDown(ISpectRedaction.reset);
 
-  testWidgets('build never executes caller diagnostic methods', (tester) async {
+  testWidgets('build does not re-execute captured diagnostic methods',
+      (tester) async {
     final calls = _InvocationCounters();
     final log = ISpectLogData(
       'safe message',
@@ -21,18 +22,23 @@ void main() {
         'oversized': List<String>.filled(2 * 1024 * 1024, 'x').join(),
       },
     );
+    final toJsonCallsAtCapture = calls.toJsonCalls;
+    final toStringCallsAtCapture = calls.toStringCalls;
 
     await tester.pumpWidget(
       appShell(LogDetailView(activeData: log)),
     );
 
     expect(tester.takeException(), isNull);
-    expect(calls.toJsonCalls, 0);
-    expect(calls.toStringCalls, 0);
+    expect(calls.toJsonCalls, toJsonCallsAtCapture);
+    expect(calls.toStringCalls, toStringCallsAtCapture);
     final screen = tester.widget<JsonScreen>(find.byType(JsonScreen));
     expect(
       screen.data['additional-data'],
-      containsPair('custom', JsonValueNormalizer.unprintableValue),
+      containsPair(
+        'custom',
+        containsPair('secret', isNot('CALLER_TO_JSON_SECRET')),
+      ),
     );
   });
 

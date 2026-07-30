@@ -996,7 +996,11 @@ class _ResultView extends StatelessWidget {
 
   static Map<String, dynamic>? _jsonViewerData(NetworkReplayResult result) {
     if (result.isError && result.statusCode == null) return null;
-    final body = LogExportOutput.boundJsonValue(result.body);
+    final body = LogExportOutput.boundJsonValue(
+      result.body,
+      resourceLimits: ISpect.loggerIfInitialized?.options.resourceLimits ??
+          DiagnosticResourceLimits.balanced,
+    );
     if (body is Map<String, Object?>) {
       return Map<String, dynamic>.from(body);
     }
@@ -1005,7 +1009,12 @@ class _ResultView extends StatelessWidget {
   }
 
   static String _pretty(Object? body) {
-    final bounded = LogExportOutput.boundJsonValue(body);
+    final limits = ISpect.loggerIfInitialized?.options.resourceLimits ??
+        DiagnosticResourceLimits.balanced;
+    final bounded = LogExportOutput.boundJsonValue(
+      body,
+      resourceLimits: limits,
+    );
     if (bounded == null) return '';
     final String rendered;
     if (bounded is Map<String, Object?> || bounded is List<Object?>) {
@@ -1024,7 +1033,7 @@ class _ResultView extends StatelessWidget {
     }
     return LogExportOutput.truncateUtf8(
       rendered,
-      maxBytes: LogExportOutput.maxPreparedValueBytes,
+      maxBytes: limits.maxUiDiagnosticBytes,
     );
   }
 }

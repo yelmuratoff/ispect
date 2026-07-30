@@ -23,6 +23,9 @@ abstract final class LogFactory {
       pen: pen ?? options?.penByKey(type.key),
       logLevel: resolvedLevel,
       additionalData: additionalData,
+      captureMode: options?.captureMode ?? DiagnosticCaptureMode.balanced,
+      resourceLimits:
+          options?.resourceLimits ?? DiagnosticResourceLimits.balanced,
     );
   }
 }

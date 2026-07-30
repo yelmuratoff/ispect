@@ -29,10 +29,18 @@ class CopyButton extends StatelessWidget {
           onTap: () {
             final safeValue =
                 defaultCurlRedactor.redact(node.rawValue, keyName: node.key);
+            final limits = ISpect.loggerIfInitialized?.options.resourceLimits ??
+                DiagnosticResourceLimits.balanced;
             copyClipboard(
               context,
-              value: '${node.key}: ${JsonTruncator.pretty(safeValue)}',
+              value: '${node.key}: ${JsonTruncator.pretty(
+                safeValue,
+                maxDepth: limits.maxTraversalDepth,
+                maxIterableSize: limits.maxCollectionItems,
+                maxStringLength: limits.maxViewerBytes,
+              )}',
               redact: true,
+              resourceLimits: limits,
             );
           },
           child: Padding(

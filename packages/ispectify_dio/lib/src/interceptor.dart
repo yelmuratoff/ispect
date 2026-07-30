@@ -18,10 +18,9 @@ class ISpectDioInterceptor extends Interceptor
     RedactionService? redactor,
   })  : _settings = settings,
         _logger = logger ?? ISpectLogger(),
-        _explicitRedactor = redactor;
-
-  static const _preserveResolvedRedaction =
-      BaseNetworkInterceptor.noRedactConfig;
+        _explicitRedactor = redactor {
+    settings.resourceLimits?.validate();
+  }
 
   final ISpectLogger _logger;
   final RedactionService? _explicitRedactor;
@@ -46,11 +45,25 @@ class ISpectDioInterceptor extends Interceptor
   bool get enableRedaction => settings.enableRedaction;
 
   @override
+  DiagnosticCaptureMode get captureMode => settings.captureMode;
+
+  @override
+  DiagnosticResourceLimits get resourceLimits =>
+      settings.resourceLimits ?? _logger.options.resourceLimits;
+
+  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
+        redact: false,
+        resourceLimits: resourceLimits,
+      );
+
+  @override
   BaseNetworkInterceptorSettings get configurableSettings => _settings;
 
   @override
   void applyConfigurableSettings(BaseNetworkInterceptorSettings updated) {
-    _settings = updated as ISpectDioInterceptorSettings;
+    final typed = updated as ISpectDioInterceptorSettings;
+    typed.resourceLimits?.validate();
+    _settings = typed;
   }
 
   @override
@@ -91,7 +104,10 @@ class ISpectDioInterceptor extends Interceptor
       return;
     }
 
-    final requestData = DioRequestData(options);
+    final requestData = DioRequestData(
+      options,
+      resourceLimits: resourceLimits,
+    );
     final uriSnapshot = requestData.uriSnapshot;
     final url = uriSnapshot.isTrusted
         ? redactUrl(uriSnapshot.url, useRedaction: redactionActive)
@@ -105,13 +121,18 @@ class ISpectDioInterceptor extends Interceptor
       includeData: settings.printRequestData,
       includeHeaders: settings.printRequestHeaders,
       redactionActive: redactionActive,
+      captureMode: settings.captureMode,
     );
     if (!_requestCaptureEnabled) {
       super.onRequest(options, handler);
       return;
     }
     if (redactionActive) {
-      DioRequestData.redact(requestDataJson, redactor);
+      DioRequestData.redact(
+        requestDataJson,
+        redactor,
+        resourceLimits: resourceLimits,
+      );
     }
 
     if (!_requestCaptureEnabled) {
@@ -123,7 +144,7 @@ class ISpectDioInterceptor extends Interceptor
       operation: operation,
       target: url,
       correlationId: requestId,
-      config: _preserveResolvedRedaction,
+      config: _traceConfig,
       meta: {
         NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.requestData: requestDataJson,
@@ -158,7 +179,10 @@ class ISpectDioInterceptor extends Interceptor
     );
     if (!_responseCaptureEnabled) return;
 
-    final requestData = DioRequestData(requestOptions);
+    final requestData = DioRequestData(
+      requestOptions,
+      resourceLimits: resourceLimits,
+    );
     final uriSnapshot = requestData.uriSnapshot;
     final url = uriSnapshot.isTrusted
         ? redactUrl(uriSnapshot.url, useRedaction: redactionActive)
@@ -175,10 +199,15 @@ class ISpectDioInterceptor extends Interceptor
       includeRequestData: settings.printRequestData,
       includeRequestHeaders: settings.printRequestHeaders,
       redactionActive: redactionActive,
+      captureMode: settings.captureMode,
     );
     if (!_responseCaptureEnabled) return;
     if (redactionActive) {
-      DioResponseData.redact(responseDataJson, redactor);
+      DioResponseData.redact(
+        responseDataJson,
+        redactor,
+        resourceLimits: resourceLimits,
+      );
     }
 
     if (!_responseCaptureEnabled) return;
@@ -188,7 +217,7 @@ class ISpectDioInterceptor extends Interceptor
       target: url,
       correlationId: requestId,
       duration: duration,
-      config: _preserveResolvedRedaction,
+      config: _traceConfig,
       meta: {
         if (requestId != null) NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.statusCode: response.statusCode,
@@ -221,7 +250,10 @@ class ISpectDioInterceptor extends Interceptor
     );
     if (!_captureEnabled) return;
 
-    final requestData = DioRequestData(requestOptions);
+    final requestData = DioRequestData(
+      requestOptions,
+      resourceLimits: resourceLimits,
+    );
     final uriSnapshot = requestData.uriSnapshot;
     final url = uriSnapshot.isTrusted
         ? redactUrl(uriSnapshot.url, useRedaction: redactionActive)
@@ -242,10 +274,15 @@ class ISpectDioInterceptor extends Interceptor
       includeRequestData: settings.printRequestData,
       includeRequestHeaders: settings.printRequestHeaders,
       redactionActive: redactionActive,
+      captureMode: settings.captureMode,
     );
     if (!_captureEnabled) return;
     if (redactionActive) {
-      DioErrorData.redact(errorDataJson, redactor);
+      DioErrorData.redact(
+        errorDataJson,
+        redactor,
+        resourceLimits: resourceLimits,
+      );
     }
 
     if (!_captureEnabled) return;
@@ -253,11 +290,16 @@ class ISpectDioInterceptor extends Interceptor
     StackTrace? logStackTrace;
     if (settings.printErrorMessage) {
       if (redactionActive) {
-        logError = NetworkMapRedactor.redactFreeTextValue(err, redactor);
+        logError = NetworkMapRedactor.redactFreeTextValue(
+          err,
+          redactor,
+          resourceLimits: resourceLimits,
+        );
         if (!_captureEnabled) return;
         final redactedStackTrace = NetworkMapRedactor.redactFreeTextValue(
           err.stackTrace,
           redactor,
+          resourceLimits: resourceLimits,
         );
         if (!_captureEnabled) return;
         logStackTrace = StackTrace.fromString(redactedStackTrace);
@@ -276,7 +318,7 @@ class ISpectDioInterceptor extends Interceptor
       errorStackTrace: logStackTrace,
       correlationId: requestId,
       duration: duration,
-      config: _preserveResolvedRedaction,
+      config: _traceConfig,
       meta: {
         if (requestId != null) NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.statusCode: err.response?.statusCode,

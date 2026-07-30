@@ -21,6 +21,7 @@ class _Harness with NetworkRedactionMixin {
     this.logger, {
     required this.enableRedaction,
     required this.redactor,
+    this.captureMode = DiagnosticCaptureMode.balanced,
   });
 
   @override
@@ -28,6 +29,9 @@ class _Harness with NetworkRedactionMixin {
 
   @override
   final bool enableRedaction;
+
+  @override
+  final DiagnosticCaptureMode captureMode;
 
   @override
   RedactionService redactor;
@@ -101,14 +105,14 @@ void main() {
       expect(result.path, '/private');
     });
 
-    test('does not treat an arbitrary SDK Uri as proof of provenance', () {
+    test('captures and redacts an ordinary SDK Uri by default', () {
       final result = harness.redactUrlAndPath(
         Uri.parse('https://example.test/private?token=secret'),
         useRedaction: true,
       );
 
-      expect(result.url, JsonValueNormalizer.unprintableValue);
-      expect(result.path, JsonValueNormalizer.unprintableValue);
+      expect(result.url, isNot(contains('secret')));
+      expect(result.path, '/private');
     });
 
     for (final useRedaction in [true, false]) {
@@ -116,8 +120,14 @@ void main() {
         'never invokes hostile Uri members when redaction is $useRedaction',
         () {
           final uri = _HostileUri();
+          final strictHarness = _Harness(
+            FakeISpectLogger(),
+            enableRedaction: true,
+            redactor: RedactionService(),
+            captureMode: DiagnosticCaptureMode.strict,
+          );
 
-          final result = harness.redactUrlAndPath(
+          final result = strictHarness.redactUrlAndPath(
             uri,
             useRedaction: useRedaction,
           );
@@ -229,6 +239,7 @@ void main() {
         FakeISpectLogger(),
         enableRedaction: true,
         redactor: RedactionService(),
+        captureMode: DiagnosticCaptureMode.strict,
       );
 
       final result = harness.safeRedact(body, useRedaction: true);
@@ -245,6 +256,7 @@ void main() {
         FakeISpectLogger(),
         enableRedaction: false,
         redactor: RedactionService(),
+        captureMode: DiagnosticCaptureMode.strict,
       );
 
       final result = harness.safeRedact(body, useRedaction: false);
@@ -252,6 +264,21 @@ void main() {
       expect(result, isA<String>());
       expect(result, isNot(contains('NULL-JSON-BODY-SECRET')));
       expect(body.toJsonCalls, 0);
+      expect(body.toStringCalls, 0);
+    });
+
+    test('balanced null DTO snapshot never falls back to the raw object', () {
+      final body = _NullJsonBody();
+      final harness = _Harness(
+        FakeISpectLogger(),
+        enableRedaction: false,
+        redactor: RedactionService(),
+      );
+
+      final result = harness.safeRedact(body, useRedaction: false);
+
+      expect(result, JsonValueNormalizer.unprintableValue);
+      expect(body.toJsonCalls, 1);
       expect(body.toStringCalls, 0);
     });
 

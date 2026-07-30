@@ -78,6 +78,38 @@ void main() {
   });
 
   test(
+    'route transition hash stays stable when logger limits change',
+    () {
+      _initializeRouteCapture();
+      final transition = RouteTransition(
+        id: 'stable-hash',
+        from: const RouteMetadata(name: '/from', routeType: 'Page'),
+        to: const RouteMetadata(name: '/to', routeType: 'Page'),
+        type: TransitionType.push,
+        timestamp: DateTime(2026),
+        arguments: {'payload': 'x' * 1024},
+      );
+      final transitions = <RouteTransition>{transition};
+      final initialHash = transition.hashCode;
+
+      final logger = ISpect.logger;
+      logger.configure(
+        options: logger.options.copyWith(
+          resourceLimits: DiagnosticResourceLimits.balanced.copyWith(
+            maxCapturedValueBytes: 64,
+          ),
+        ),
+      );
+
+      expect(transition.hashCode, initialHash);
+      expect(transitions, contains(transition));
+    },
+    skip: !kISpectEnabled
+        ? 'Navigation capture requires ISPECT_ENABLED for this test.'
+        : false,
+  );
+
+  test(
     'observer remains inert after run is disposed',
     () async {
       var callbackCount = 0;

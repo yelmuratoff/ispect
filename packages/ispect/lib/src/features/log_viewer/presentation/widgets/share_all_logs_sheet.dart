@@ -6,8 +6,6 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/widgets/export_sheet.dart';
 
-const int _backgroundExportLogThreshold = 50;
-
 final class _LogsExportRequest {
   const _LogsExportRequest({
     required this.format,
@@ -15,6 +13,7 @@ final class _LogsExportRequest {
     required this.redactionService,
     required this.enableRedaction,
     required this.metadata,
+    required this.resourceLimits,
   });
 
   final ExportFormat format;
@@ -22,6 +21,7 @@ final class _LogsExportRequest {
   final RedactionService redactionService;
   final bool enableRedaction;
   final ISpectMetadata? metadata;
+  final DiagnosticResourceLimits resourceLimits;
 }
 
 String _buildNonJsonExport(_LogsExportRequest request) {
@@ -32,6 +32,7 @@ String _buildNonJsonExport(_LogsExportRequest request) {
         redactionService: request.redactionService,
         enableRedaction: request.enableRedaction,
         metadata: request.metadata,
+        resourceLimits: request.resourceLimits,
       );
     case ExportFormat.markdown:
       return LogExporter.toMarkdown(
@@ -39,12 +40,14 @@ String _buildNonJsonExport(_LogsExportRequest request) {
         redactionService: request.redactionService,
         enableRedaction: request.enableRedaction,
         metadata: request.metadata,
+        resourceLimits: request.resourceLimits,
       );
     case ExportFormat.csv:
       return LogExporter.toCsv(
         request.logs,
         redactionService: request.redactionService,
         enableRedaction: request.enableRedaction,
+        resourceLimits: request.resourceLimits,
       );
     case ExportFormat.json:
       throw ArgumentError.value(request.format, 'format');
@@ -105,8 +108,17 @@ Future<String> buildLogsExportContent(
     service: redactionService,
     sensitiveKeys: redactKeys,
   );
+  final limits = (ISpect.loggerIfInitialized?.options.resourceLimits ??
+      DiagnosticResourceLimits.balanced)
+    ..validate();
+  final scheduling = (ISpect.loggerIfInitialized?.options.processingPolicy ??
+      DiagnosticProcessingPolicy.balanced)
+    ..validate();
   if (format == ExportFormat.json) {
-    return const LogsJsonService().exportToJson(
+    return LogsJsonService(
+      resourceLimits: limits,
+      processingPolicy: scheduling,
+    ).exportToJson(
       logs,
       redactionService: effectiveRedactor,
       metadata: metadata,
@@ -119,8 +131,9 @@ Future<String> buildLogsExportContent(
     redactionService: effectiveRedactor,
     enableRedaction: ISpectRedaction.enabled,
     metadata: metadata,
+    resourceLimits: limits,
   );
-  if (logs.length < _backgroundExportLogThreshold) {
+  if (logs.length < scheduling.backgroundExportEntryThreshold) {
     return _buildNonJsonExport(request);
   }
   if (kIsWeb) {

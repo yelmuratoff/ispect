@@ -333,7 +333,7 @@ void main() {
     );
   });
 
-  test('does not inspect diagnostic metadata when no observer is registered',
+  test('does not re-inspect captured metadata without an active destination',
       () {
     final tracker = _ToStringTracker();
     final logger = ISpectLogger.testing(
@@ -344,11 +344,13 @@ void main() {
     );
     addTearDown(logger.dispose);
 
-    logger.logData(
-      ISpectLogData('safe', additionalData: {'value': tracker}),
-    );
+    final log = ISpectLogData('safe', additionalData: {'value': tracker});
+    final callsAtCapture = tracker.calls;
 
-    expect(tracker.calls, 0);
+    logger.logData(log);
+
+    expect(callsAtCapture, 1);
+    expect(tracker.calls, callsAtCapture);
   });
 
   test('does not redact when the default fan-out has no active target', () {
@@ -368,13 +370,16 @@ void main() {
     expect(strategy.calls, 0);
   });
 
-  test('handle and track never format arbitrary caller objects', () {
+  test('strict logger mode never formats arbitrary caller objects', () {
     final fallbackException = _HostileHandlerValue();
     final customMessage = _HostileHandlerValue();
     final trackedMessage = _HostileHandlerValue();
     final trackedParameter = _HostileHandlerValue();
     final logger = ISpectLogger.testing(
-      options: ISpectLoggerOptions(useConsoleLogs: false),
+      options: ISpectLoggerOptions(
+        useConsoleLogs: false,
+        captureMode: DiagnosticCaptureMode.strict,
+      ),
     );
     addTearDown(logger.dispose);
 
@@ -400,6 +405,19 @@ void main() {
     expect(customMessage.calls, 0);
     expect(trackedMessage.calls, 0);
     expect(trackedParameter.calls, 0);
+  });
+
+  test('balanced analytics capture retains a guarded object description', () {
+    final message = _ToStringTracker();
+    final logger = ISpectLogger.testing(
+      options: ISpectLoggerOptions(useConsoleLogs: false),
+    );
+    addTearDown(logger.dispose);
+
+    logger.track(message, event: 'Checkout');
+
+    expect(logger.history.single.message, 'Checkout: safe');
+    expect(message.calls, 1);
   });
 
   test('the global redaction opt-out also applies to observers', () {
@@ -526,18 +544,25 @@ void main() {
     final stack = _HostileStackTrace();
     final additional = _HostileAdditionalValue();
 
-    logger.logData(
-      ISpectLogData(
-        _largeAsciiString(4 * 1024 * 1024, 109),
-        exception: exception,
-        error: error,
-        stackTrace: stack,
-        additionalData: {
-          'value': additional,
-          'oversized': _largeAsciiString(4 * 1024 * 1024, 97),
-        },
-      ),
+    final log = ISpectLogData(
+      _largeAsciiString(4 * 1024 * 1024, 109),
+      exception: exception,
+      error: error,
+      stackTrace: stack,
+      additionalData: {
+        'value': additional,
+        'oversized': _largeAsciiString(4 * 1024 * 1024, 97),
+      },
     );
+    final callsAtCapture = (
+      exception.calls,
+      error.calls,
+      stack.calls,
+      additional.toJsonCalls,
+      additional.toStringCalls,
+    );
+
+    logger.logData(log);
 
     final streamData = await streamed;
     final outbound = observer.data!;
@@ -556,11 +581,16 @@ void main() {
       LogExportOutput.utf8Length(output.single),
       lessThanOrEqualTo(LogExportOutput.maxRecordBytes),
     );
-    expect(exception.calls, 0);
-    expect(error.calls, 0);
-    expect(stack.calls, 0);
-    expect(additional.toJsonCalls, 0);
-    expect(additional.toStringCalls, 0);
+    expect(
+      (
+        exception.calls,
+        error.calls,
+        stack.calls,
+        additional.toJsonCalls,
+        additional.toStringCalls,
+      ),
+      callsAtCapture,
+    );
   });
 
   test('opt-out egress stays non-executing and bounded', () async {
@@ -599,6 +629,13 @@ void main() {
         'oversized': _largeAsciiString(4 * 1024 * 1024, 97),
       },
     );
+    final callsAtCapture = (
+      exception.calls,
+      error.calls,
+      stack.calls,
+      additional.toJsonCalls,
+      additional.toStringCalls,
+    );
 
     logger.logData(log);
 
@@ -626,11 +663,16 @@ void main() {
       LogExportOutput.utf8Length(output.single),
       lessThanOrEqualTo(LogExportOutput.maxRecordBytes),
     );
-    expect(exception.calls, 0);
-    expect(error.calls, 0);
-    expect(stack.calls, 0);
-    expect(additional.toJsonCalls, 0);
-    expect(additional.toStringCalls, 0);
+    expect(
+      (
+        exception.calls,
+        error.calls,
+        stack.calls,
+        additional.toJsonCalls,
+        additional.toStringCalls,
+      ),
+      callsAtCapture,
+    );
   });
 
   test('console egress retains binary provenance across redaction changes', () {

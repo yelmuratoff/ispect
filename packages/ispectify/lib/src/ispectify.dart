@@ -278,7 +278,7 @@ class ISpectLogger {
     StackTrace? stackTrace,
     Object? message,
   }) {
-    if (!_isActive || !_options.enabled) return;
+    if (!hasActiveConsumers) return;
 
     final data = _errorHandler.handle(exception, stackTrace, message);
 
@@ -410,7 +410,7 @@ class ISpectLogger {
   }
 
   void good(Object? message) {
-    if (!_isActive || !_options.enabled) return;
+    if (!hasActiveConsumers) return;
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.good,
@@ -428,16 +428,20 @@ class ISpectLogger {
     String? analytics,
     Map<String, dynamic>? parameters,
   }) {
-    if (!_isActive || !_options.enabled) return;
-    const componentBudget = LogExportOutput.maxPreparedValueBytes ~/ 2;
+    if (!hasActiveConsumers) return;
+    final componentBudget = _options.resourceLimits.maxCapturedValueBytes ~/ 2;
     final safeEvent = LogExportOutput.truncateUtf8(
       event ?? 'Event',
       maxBytes: componentBudget,
     );
-    final safeMessage = LogExportOutput.truncateUtf8(
-      safeScalarText(message) ?? '',
+    final capturedMessage = LogExportOutput.boundJsonValue(
+      message,
       maxBytes: componentBudget,
+      resourceLimits: _options.resourceLimits,
+      allowCustomStringification:
+          _options.captureMode == DiagnosticCaptureMode.balanced,
     );
+    final safeMessage = safeScalarText(capturedMessage) ?? '';
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.analytics,
@@ -454,7 +458,7 @@ class ISpectLogger {
   }
 
   void print(Object? message) {
-    if (!_isActive || !_options.enabled) return;
+    if (!hasActiveConsumers) return;
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.print,
@@ -470,7 +474,7 @@ class ISpectLogger {
     Object? message, {
     String? transitionId,
   }) {
-    if (!_isActive || !_options.enabled) return;
+    if (!hasActiveConsumers) return;
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.route,
@@ -485,7 +489,7 @@ class ISpectLogger {
   }
 
   void provider(Object? message) {
-    if (!_isActive || !_options.enabled) return;
+    if (!hasActiveConsumers) return;
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.provider,
@@ -504,7 +508,7 @@ class ISpectLogger {
     AnsiPen? pen,
     Map<String, dynamic>? additionalData,
   }) {
-    if (!_isActive || !_options.enabled) return;
+    if (!hasActiveConsumers) return;
 
     final logType = type ?? ISpectLogType.fromLogLevel(logLevel);
     final data = LogFactory.fromType(
@@ -558,36 +562,50 @@ class ISpectLogger {
     required bool redact,
   }) {
     final captured = captureISpectLogDataForEgress(data);
+    final resourceLimits = captured.resourceLimits;
     final redactor =
         ISpectRedaction.enabled && redact ? ISpectRedaction.service : null;
     final safeAdditionalData = _prepareEgressValue(
       redactor,
       captured.additionalData,
+      resourceLimits,
     );
     final safeMessage = _prepareEgressText(
       redactor,
       captured.message,
+      resourceLimits,
     );
-    final safeException =
-        _prepareEgressText(redactor, captured.exceptionText) ??
-            defaultPlaceholder;
+    final safeException = _prepareEgressText(
+          redactor,
+          captured.exceptionText,
+          resourceLimits,
+        ) ??
+        defaultPlaceholder;
     final safeError = captured.error == null
         ? null
         : _ObserverRedactedError(
-            _prepareEgressText(redactor, captured.errorText) ??
+            _prepareEgressText(
+                  redactor,
+                  captured.errorText,
+                  resourceLimits,
+                ) ??
                 defaultPlaceholder,
           );
     final safeStack = captured.stackTrace == null
         ? null
         : StackTrace.fromString(
-            _prepareEgressText(redactor, captured.stackTraceText) ??
+            _prepareEgressText(
+                  redactor,
+                  captured.stackTraceText,
+                  resourceLimits,
+                ) ??
                 defaultPlaceholder,
           );
     final additionalData = safeAdditionalData is Map
         ? Map<String, dynamic>.from(safeAdditionalData)
         : null;
 
-    final safeKey = _prepareEgressText(redactor, captured.key);
+    final safeKey = _prepareEgressText(redactor, captured.key, resourceLimits);
     if (safeError != null) {
       return ISpectLogError(
         safeError,
@@ -599,6 +617,8 @@ class ISpectLogger {
         key: safeKey,
         additionalData: additionalData,
         id: captured.id,
+        captureMode: DiagnosticCaptureMode.strict,
+        resourceLimits: resourceLimits,
       );
     }
     if (captured.exception != null) {
@@ -612,6 +632,8 @@ class ISpectLogger {
         key: safeKey,
         additionalData: additionalData,
         id: captured.id,
+        captureMode: DiagnosticCaptureMode.strict,
+        resourceLimits: resourceLimits,
       );
     }
     return ISpectLogData(
@@ -623,6 +645,8 @@ class ISpectLogger {
       key: safeKey,
       additionalData: additionalData,
       id: captured.id,
+      captureMode: DiagnosticCaptureMode.strict,
+      resourceLimits: resourceLimits,
     );
   }
 
@@ -690,22 +714,30 @@ class ISpectLogger {
   }
 }
 
-String? _prepareEgressText(RedactionService? redactor, Object? value) {
-  final safe = _prepareEgressValue(redactor, value);
+String? _prepareEgressText(
+  RedactionService? redactor,
+  Object? value,
+  DiagnosticResourceLimits resourceLimits,
+) {
+  final safe = _prepareEgressValue(redactor, value, resourceLimits);
   if (safe == null) return null;
   if (safe is String) return safe;
   if (safe is bool || safe is num) return safe.toString();
   try {
     return LogExportOutput.truncateUtf8(
       jsonEncode(safe),
-      maxBytes: LogExportOutput.maxPreparedValueBytes,
+      maxBytes: resourceLimits.maxCapturedValueBytes,
     );
   } catch (_) {
     return defaultPlaceholder;
   }
 }
 
-Object? _prepareEgressValue(RedactionService? redactor, Object? value) {
+Object? _prepareEgressValue(
+  RedactionService? redactor,
+  Object? value,
+  DiagnosticResourceLimits resourceLimits,
+) {
   final byteLength = switch (value) {
     final ByteBuffer buffer => buffer.lengthInBytes,
     final TypedData data => data.lengthInBytes,
@@ -713,11 +745,20 @@ Object? _prepareEgressValue(RedactionService? redactor, Object? value) {
   };
   if (byteLength != null) return placeholders.binaryPlaceholder(byteLength);
   try {
-    if (redactor != null) return redactor.redactForExport(value);
-    return LogExportOutput.boundJsonValue(
+    final bounded = LogExportOutput.boundJsonValue(
       value,
+      resourceLimits: resourceLimits,
       preserveTypes: true,
     );
+    if (redactor != null) {
+      return redactor.redactForExport(
+        LogExportOutput.replaceTruncatedPrefixes(
+          bounded,
+          resourceLimits: resourceLimits,
+        ),
+      );
+    }
+    return bounded;
   } catch (_) {
     return defaultPlaceholder;
   }

@@ -117,14 +117,20 @@ void main() {
         }
       },
     );
+    const limits = DiagnosticResourceLimits(
+      maxCapturedValueBytes: 128,
+      maxLogRecordBytes: 256,
+      maxExportDocumentBytes: 512,
+    );
     final controller = ExportController(
       availableFormats: const [ExportFormat.json],
+      resourceLimits: limits,
     );
     addTearDown(controller.dispose);
 
     await controller.download(
       (_, {required action, redactKeys}) async => 'a'.padRight(
-        LogExportOutput.maxDocumentBytes + 1,
+        limits.maxExportDocumentBytes + 1,
         'a',
       ),
     );
@@ -134,7 +140,7 @@ void main() {
     expect(decoded['message'], LogExportOutput.truncatedMarker);
     expect(
       LogExportOutput.utf8Length(content),
-      lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
+      lessThanOrEqualTo(limits.maxExportDocumentBytes),
     );
   });
 }

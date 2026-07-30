@@ -17,7 +17,9 @@ class SettingsManager {
               useHistory: true,
             ),
         _onChanged = onChanged,
-        _onUserSettingsChanged = onUserSettingsChanged;
+        _onUserSettingsChanged = onUserSettingsChanged {
+    _settings.validate();
+  }
 
   ISpectSettingsState _settings;
   final void Function()? _onChanged;
@@ -26,6 +28,7 @@ class SettingsManager {
   ISpectSettingsState get settings => _settings;
 
   void updateSettings(ISpectSettingsState newSettings) {
+    newSettings.validate();
     if (_settings == newSettings) return;
     _settings = newSettings;
     final cb = _onChanged;

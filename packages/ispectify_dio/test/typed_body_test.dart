@@ -58,16 +58,20 @@ class _AuthBody {
 }
 
 void main() {
-  ISpectDioInterceptor buildInterceptor(ISpectLogger logger) =>
+  ISpectDioInterceptor buildInterceptor(
+    ISpectLogger logger, {
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
+  }) =>
       ISpectDioInterceptor(
         logger: logger,
-        settings: const ISpectDioInterceptorSettings(
+        settings: ISpectDioInterceptorSettings(
+          captureMode: captureMode,
           enableRedaction: false,
           printRequestData: true,
         ),
       );
 
-  test('typed body is logged as a non-executing descriptor', () {
+  test('typed body is logged as structured data by default', () {
     final logger = ISpectLogger(
       options: ISpectLoggerOptions(useConsoleLogs: false),
     );
@@ -83,13 +87,13 @@ void main() {
     expect(log.key, ISpectLogType.httpRequest.key);
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
     final requestData = meta?['request-data'] as Map?;
-    expect(requestData?['data'], isA<String>());
-    expect(requestData?['data'], isNot(contains('ABC123')));
-    expect(body.toJsonCalls, 0);
+    expect(requestData?['data'], {'referralCode': 'ABC123'});
+    expect(body.toJsonCalls, 1);
     expect(body.toStringCalls, 0);
   });
 
-  test('body without toJson fails closed without stringification', () {
+  test('body without toJson uses a bounded readable description by default',
+      () {
     final logger = ISpectLogger(
       options: ISpectLoggerOptions(useConsoleLogs: false),
     );
@@ -104,12 +108,11 @@ void main() {
     final log = logger.history.last;
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
     final requestData = meta?['request-data'] as Map?;
-    expect(requestData?['data'], isA<String>());
-    expect(requestData?['data'], isNot(contains('opaque-body')));
-    expect(body.toStringCalls, 0);
+    expect(requestData?['data'], 'opaque-body');
+    expect(body.toStringCalls, 1);
   });
 
-  test('nested DTO graph is not traversed through toJson', () {
+  test('nested DTO graph is captured through toJson by default', () {
     final logger = ISpectLogger(
       options: ISpectLoggerOptions(useConsoleLogs: false),
     );
@@ -125,16 +128,17 @@ void main() {
     final log = logger.history.last;
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
     final requestData = meta?['request-data'] as Map?;
-    expect(requestData?['data'], isA<String>());
-    expect(requestData?['data'], isNot(contains('APPLE')));
-    expect(requestData?['data'], isNot(contains('ABC123')));
-    expect(body.toJsonCalls, 0);
+    expect(requestData?['data'], {
+      'provider': 'APPLE',
+      'profile': {'referralCode': 'ABC123'},
+    });
+    expect(body.toJsonCalls, 1);
     expect(body.toStringCalls, 0);
-    expect(profile.toJsonCalls, 0);
+    expect(profile.toJsonCalls, 1);
     expect(profile.toStringCalls, 0);
   });
 
-  test('nested DTO remains non-executing when redaction is enabled', () {
+  test('nested DTO remains useful when redaction is enabled', () {
     final logger = ISpectLogger(
       options: ISpectLoggerOptions(useConsoleLogs: false),
     );
@@ -153,13 +157,37 @@ void main() {
     final log = logger.history.last;
     final meta = log.additionalData?[TraceKeys.meta] as Map?;
     final requestData = meta?['request-data'] as Map?;
-    expect(requestData?['data'], isA<String>());
-    expect(requestData?['data'], isNot(contains('APPLE')));
-    expect(requestData?['data'], isNot(contains('ABC123')));
+    expect(requestData?['data'], {
+      'provider': 'APPLE',
+      'profile': {'referralCode': 'ABC123'},
+    });
+    expect(body.toJsonCalls, 1);
+    expect(body.toStringCalls, 0);
+    expect(profile.toJsonCalls, 1);
+    expect(profile.toStringCalls, 0);
+  });
+
+  test('strict mode does not execute typed body formatters', () {
+    final logger = ISpectLogger(
+      options: ISpectLoggerOptions(useConsoleLogs: false),
+    );
+    final interceptor = buildInterceptor(
+      logger,
+      captureMode: DiagnosticCaptureMode.strict,
+    );
+    final body = _TypedBody('ABC123');
+
+    final options = RequestOptions(path: 'https://api.example.com/apply')
+      ..data = body;
+
+    interceptor.onRequest(options, RequestInterceptorHandler());
+
+    final log = logger.history.last;
+    final meta = log.additionalData?[TraceKeys.meta] as Map?;
+    final requestData = meta?['request-data'] as Map?;
+    expect(requestData?['data'], JsonValueNormalizer.unprintableValue);
     expect(body.toJsonCalls, 0);
     expect(body.toStringCalls, 0);
-    expect(profile.toJsonCalls, 0);
-    expect(profile.toStringCalls, 0);
   });
 
   test('map, string and list bodies are passed through untouched', () {

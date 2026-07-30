@@ -24,6 +24,7 @@ class DioErrorData {
     bool? includeRequestData,
     bool? includeRequestHeaders,
     bool redactionActive = false,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
   }) {
     final shouldIncludeRequestData = includeRequestData ?? includeData;
     final shouldIncludeRequestHeaders = includeRequestHeaders ?? includeHeaders;
@@ -40,11 +41,13 @@ class DioErrorData {
         includeRequestData: shouldIncludeRequestData,
         includeRequestHeaders: shouldIncludeRequestHeaders,
         redactionActive: redactionActive,
+        captureMode: captureMode,
       ),
       NetworkJsonKeys.request: requestData.toJson(
         includeData: shouldIncludeRequestData,
         includeHeaders: shouldIncludeRequestHeaders,
         redactionActive: redactionActive,
+        captureMode: captureMode,
       ),
     };
   }
@@ -58,6 +61,7 @@ class DioErrorData {
     RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
     for (final key in const [
       NetworkJsonKeys.message,
@@ -70,6 +74,7 @@ class DioErrorData {
         key: key,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
     }
 
@@ -80,6 +85,7 @@ class DioErrorData {
         redactor,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
     }
     if (map[NetworkJsonKeys.request]
@@ -89,6 +95,7 @@ class DioErrorData {
         redactor,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
     }
   }

@@ -19,12 +19,19 @@ class ExportController extends ChangeNotifier {
   ExportController({
     required this.availableFormats,
     this.onShare,
-  }) : _selectedFormat = availableFormats.first;
+    DiagnosticResourceLimits? resourceLimits,
+  })  : _selectedFormat = availableFormats.first,
+        _resourceLimits = resourceLimits ??
+            ISpect.loggerIfInitialized?.options.resourceLimits ??
+            DiagnosticResourceLimits.balanced {
+    _resourceLimits.validate();
+  }
 
   // ── Configuration (immutable after construction) ──────────────────────
 
   final List<ExportFormat> availableFormats;
   final ISpectShareCallback? onShare;
+  final DiagnosticResourceLimits _resourceLimits;
 
   bool get canShare => onShare != null;
 
@@ -86,7 +93,12 @@ class ExportController extends ChangeNotifier {
   ) async {
     await _run(ExportAction.copy, contentBuilder, (content) async {
       if (!context.mounted) return;
-      copyClipboard(context, value: content, showValue: false);
+      copyClipboard(
+        context,
+        value: content,
+        showValue: false,
+        resourceLimits: _resourceLimits,
+      );
     });
   }
 
@@ -137,15 +149,17 @@ class ExportController extends ChangeNotifier {
     }
   }
 
-  static String _safeFailureText(Object value) {
+  String _safeFailureText(Object value) {
     try {
       final prepared = LogExportOutput.boundJsonValue(
         value,
+        resourceLimits: _resourceLimits,
         replaceOversizedStrings: true,
       );
       final redacted = ISpectRedaction.service.redactForExport(prepared);
       final bounded = LogExportOutput.boundJsonValue(
         redacted,
+        resourceLimits: _resourceLimits,
         replaceOversizedStrings: true,
       );
       return switch (bounded) {
@@ -163,9 +177,9 @@ class ExportController extends ChangeNotifier {
   String _boundContent(String value) {
     if (LogExportOutput.utf8Length(
           value,
-          limit: LogExportOutput.maxDocumentBytes,
+          limit: _resourceLimits.maxExportDocumentBytes,
         ) <=
-        LogExportOutput.maxDocumentBytes) {
+        _resourceLimits.maxExportDocumentBytes) {
       return value;
     }
     return switch (_selectedFormat) {

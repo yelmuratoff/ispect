@@ -7,6 +7,8 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectHttpInterceptorSettings({
     super.enabled,
     super.enableRedaction,
+    super.captureMode,
+    super.resourceLimits,
     super.logRequests,
     super.logResponses,
     super.printResponseData,
@@ -77,6 +79,8 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
   ISpectHttpInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,
+    DiagnosticCaptureMode? captureMode,
+    DiagnosticResourceLimits? resourceLimits,
     bool? logRequests,
     bool? logResponses,
     bool? printResponseData,
@@ -103,6 +107,8 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
       ISpectHttpInterceptorSettings(
         enabled: enabled ?? this.enabled,
         enableRedaction: enableRedaction ?? this.enableRedaction,
+        captureMode: captureMode ?? this.captureMode,
+        resourceLimits: resourceLimits ?? this.resourceLimits,
         logRequests: logRequests ?? this.logRequests,
         logResponses: logResponses ?? this.logResponses,
         printResponseData: printResponseData ?? this.printResponseData,

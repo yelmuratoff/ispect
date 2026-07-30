@@ -18,6 +18,8 @@ base class ISpectLogError extends ISpectLogData {
     String? key,
     Map<String, dynamic>? additionalData,
     String? id,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) : super(
           message,
           error: error,
@@ -28,6 +30,8 @@ base class ISpectLogError extends ISpectLogData {
           key: key ?? ISpectLogType.error.key,
           additionalData: additionalData,
           id: id,
+          captureMode: captureMode,
+          resourceLimits: resourceLimits,
         );
 
   @override

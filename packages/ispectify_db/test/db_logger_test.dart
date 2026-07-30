@@ -685,7 +685,7 @@ void main() {
       expect(meta['dbError'], rawError);
     });
 
-    test('never executes DTO conversion in database diagnostics', () {
+    test('captures and redacts DTO values in database diagnostics', () {
       const secret = 'violet-db-payload';
       final dto = _HostileDto(secret);
       logger.db(
@@ -699,15 +699,15 @@ void main() {
       final meta = (logger.history.last.additionalData ?? {})['meta'] as Map;
       final namedArgs = meta['namedArgs'] as Map;
       final userMeta = meta['userMeta'] as Map;
-      expect(namedArgs['payload'], JsonValueNormalizer.unprintableValue);
-      expect(meta['value'], JsonValueNormalizer.unprintableValue);
-      expect(userMeta['payload'], JsonValueNormalizer.unprintableValue);
-      expect(dto.toJsonCalls, 0);
+      expect(namedArgs['payload'], {'password': '[REDACTED]'});
+      expect(meta['value'], {'password': '[REDACTED]'});
+      expect(userMeta['payload'], {'password': '[REDACTED]'});
+      expect(dto.toJsonCalls, 3);
       expect(dto.toStringCalls, 0);
       expect(meta.toString(), isNot(contains(secret)));
     });
 
-    test('never formats hostile errors, exceptions, or stack traces', () {
+    test('strict mode never formats errors, exceptions, or stack traces', () {
       const secret = 'HOSTILE_DB_DIAGNOSTIC_SECRET';
       final error = _HostileError(secret);
       final exception = _HostileException(secret);
@@ -720,13 +720,18 @@ void main() {
           success: false,
           error: error,
           errorStackTrace: stackTrace,
-          config: _cfg,
+          config: _cfg.copyWith(
+            captureMode: DiagnosticCaptureMode.strict,
+          ),
         )
         ..db(
           source: 'kv',
           operation: 'write',
           success: false,
           error: exception,
+          config: const ISpectDbConfig(
+            captureMode: DiagnosticCaptureMode.strict,
+          ),
         );
 
       expect(error.calls, 0);
@@ -742,7 +747,7 @@ void main() {
       );
     });
 
-    test('redaction opt-out still snapshots unknown objects safely', () {
+    test('redaction opt-out captures raw DTO values', () {
       const secret = 'violet-raw-db-payload';
       final dto = _HostileDto(secret);
       logger.db(
@@ -758,12 +763,41 @@ void main() {
       final meta = (logger.history.last.additionalData ?? {})['meta'] as Map;
       final namedArgs = meta['namedArgs'] as Map;
       final userMeta = meta['userMeta'] as Map;
-      expect(namedArgs['payload'], JsonValueNormalizer.unprintableValue);
+      expect(namedArgs['payload'], {'password': secret});
+      expect(meta['value'], {'password': secret});
+      expect(userMeta['payload'], {'password': secret});
+      expect(dto.toJsonCalls, 3);
+      expect(dto.toStringCalls, 0);
+      expect(meta.toString(), contains(secret));
+    });
+
+    test('strict mode keeps DTO values opaque without executing formatters',
+        () {
+      final dto = _HostileDto('STRICT_DB_SECRET');
+
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        namedArgs: <String, Object?>{'payload': dto},
+        value: dto,
+        meta: <String, Object?>{'payload': dto},
+        config: const ISpectDbConfig(
+          captureMode: DiagnosticCaptureMode.strict,
+        ),
+      );
+
+      final meta = (logger.history.last.additionalData ?? {})['meta'] as Map;
+      expect(
+        (meta['namedArgs'] as Map)['payload'],
+        JsonValueNormalizer.unprintableValue,
+      );
       expect(meta['value'], JsonValueNormalizer.unprintableValue);
-      expect(userMeta['payload'], JsonValueNormalizer.unprintableValue);
+      expect(
+        (meta['userMeta'] as Map)['payload'],
+        JsonValueNormalizer.unprintableValue,
+      );
       expect(dto.toJsonCalls, 0);
       expect(dto.toStringCalls, 0);
-      expect(meta.toString(), isNot(contains(secret)));
     });
 
     test('never formats hostile structured keys', () {
@@ -1464,8 +1498,7 @@ dollar-secret$audit$''',
       final entry = logger.history.last;
       expect(entry.key, 'db-error');
       final add = entry.additionalData ?? {};
-      expect(add['error'], contains('StateError'));
-      expect(add['error'], isNot(contains('sync-boom')));
+      expect(add['error'], contains('sync-boom'));
     });
 
     test('passes sizeBytes and cacheHit through', () async {
@@ -2091,6 +2124,50 @@ dollar-secret$audit$''',
       expect(result, containsPair('keepFalse', false));
       expect(result.containsKey('removeNull'), isFalse);
       expect(result.containsKey('removeEmpty'), isFalse);
+    });
+  });
+
+  group('resource limits', () {
+    test('config copyWith preserves and replaces a local policy', () {
+      const original = ISpectDbConfig(
+        resourceLimits: DiagnosticResourceLimits.constrained,
+      );
+
+      expect(
+        original.copyWith().resourceLimits,
+        same(DiagnosticResourceLimits.constrained),
+      );
+      expect(
+        original
+            .copyWith(resourceLimits: DiagnosticResourceLimits.extended)
+            .resourceLimits,
+        same(DiagnosticResourceLimits.extended),
+      );
+    });
+
+    test('local database scalar budget bounds trace fields', () {
+      final limits = DiagnosticResourceLimits.balanced.copyWith(
+        maxDatabaseScalarBytes: 64,
+        maxDatabaseDiagnosticsBytes: 128,
+        maxDatabaseMetadataBytes: 256,
+      );
+
+      logger.db(
+        source: 's' * 1024,
+        operation: 'query',
+        config: ISpectDbConfig(
+          redact: false,
+          resourceLimits: limits,
+        ),
+      );
+
+      final source = logger.history.last.additionalData?[TraceKeys.source];
+      expect(source, isA<String>());
+      expect(
+        LogExportOutput.utf8Length(source! as String),
+        lessThanOrEqualTo(64),
+      );
+      expect(source, contains(LogExportOutput.truncatedMarker));
     });
   });
 }

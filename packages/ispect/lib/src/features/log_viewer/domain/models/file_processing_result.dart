@@ -45,17 +45,25 @@ sealed class FileProcessingResult {
     Object? decodedJson,
     bool jsonDecodeAttempted = false,
     bool jsonDecodeSucceeded = false,
-  }) =>
-      _SuccessFileProcessingResult(
-        content: content,
-        displayName: displayName,
-        mimeType: mimeType,
-        fileName: fileName,
-        format: format,
-        decodedJson: decodedJson,
-        jsonDecodeAttempted: jsonDecodeAttempted,
-        jsonDecodeSucceeded: jsonDecodeSucceeded,
-      );
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+    DiagnosticProcessingPolicy processingPolicy =
+        DiagnosticProcessingPolicy.balanced,
+  }) {
+    resourceLimits.validate();
+    processingPolicy.validate();
+    return _SuccessFileProcessingResult(
+      content: content,
+      displayName: displayName,
+      mimeType: mimeType,
+      fileName: fileName,
+      format: format,
+      decodedJson: decodedJson,
+      jsonDecodeAttempted: jsonDecodeAttempted,
+      jsonDecodeSucceeded: jsonDecodeSucceeded,
+      resourceLimits: resourceLimits,
+      processingPolicy: processingPolicy,
+    );
+  }
 
   /// Create a failed result
   factory FileProcessingResult.failure({
@@ -75,7 +83,11 @@ sealed class FileProcessingResult {
           if (result._jsonDecodeAttempted) {
             if (!result._jsonDecodeSucceeded) {
               if (!context.mounted) return;
-              JsonScreen(data: {'content': content}).push(context);
+              JsonScreen(
+                data: {'content': content},
+                resourceLimits: result._resourceLimits,
+                processingPolicy: result._processingPolicy,
+              ).push(context);
               return;
             }
             decoded = result._decodedJson;
@@ -83,17 +95,26 @@ sealed class FileProcessingResult {
             try {
               decoded = JsonInputPreflight.decode(
                 content,
-                approximateNodeLimit: JsonInputPreflight.maxViewerNodes,
+                characterLimit: result._resourceLimits.maxImportCharacters,
+                encodedByteLimit: result._resourceLimits.maxImportBytes,
+                nestingDepthLimit: result._resourceLimits.maxTraversalDepth,
+                approximateNodeLimit: result._resourceLimits.maxViewerNodes,
               );
             } on JsonInputLimitException {
               if (!context.mounted) return;
               JsonScreen(
                 data: const {'content': JsonInputPreflight.rejectedContent},
+                resourceLimits: result._resourceLimits,
+                processingPolicy: result._processingPolicy,
               ).push(context);
               return;
             } on FormatException {
               if (!context.mounted) return;
-              JsonScreen(data: {'content': content}).push(context);
+              JsonScreen(
+                data: {'content': content},
+                resourceLimits: result._resourceLimits,
+                processingPolicy: result._processingPolicy,
+              ).push(context);
               return;
             }
           }
@@ -104,11 +125,20 @@ sealed class FileProcessingResult {
             _ => {'value': decoded},
           };
           if (!context.mounted) return;
-          JsonScreen(data: data).push(context);
+          JsonScreen(
+            data: data,
+            resourceLimits: result._resourceLimits,
+            processingPolicy: result._processingPolicy,
+          ).push(context);
           return;
         }
         if (!context.mounted) return;
-        JsonScreen(data: {'content': content}).push(context);
+        final result = this as _SuccessFileProcessingResult;
+        JsonScreen(
+          data: {'content': content},
+          resourceLimits: result._resourceLimits,
+          processingPolicy: result._processingPolicy,
+        ).push(context);
         return;
       case _FailureFileProcessingResult():
         // No-op for failure; callers show error separately.
@@ -134,15 +164,21 @@ final class _SuccessFileProcessingResult extends FileProcessingResult {
     Object? decodedJson,
     bool jsonDecodeAttempted = false,
     bool jsonDecodeSucceeded = false,
+    required DiagnosticResourceLimits resourceLimits,
+    required DiagnosticProcessingPolicy processingPolicy,
   })  : _decodedJson = decodedJson,
         _jsonDecodeAttempted = jsonDecodeAttempted,
         _jsonDecodeSucceeded = jsonDecodeSucceeded,
+        _resourceLimits = resourceLimits,
+        _processingPolicy = processingPolicy,
         assert(!jsonDecodeSucceeded || jsonDecodeAttempted),
         super();
 
   final Object? _decodedJson;
   final bool _jsonDecodeAttempted;
   final bool _jsonDecodeSucceeded;
+  final DiagnosticResourceLimits _resourceLimits;
+  final DiagnosticProcessingPolicy _processingPolicy;
 
   @override
   bool get success => true;

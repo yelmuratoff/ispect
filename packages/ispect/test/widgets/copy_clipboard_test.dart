@@ -188,6 +188,26 @@ void main() {
       );
       expect(clipboardText, endsWith(LogExportOutput.truncatedMarker));
     });
+
+    testWidgets('honors a local clipboard byte budget', (tester) async {
+      await tester.pumpWidget(appShell(const SizedBox.shrink()));
+      final context = tester.element(find.byType(SizedBox));
+
+      copyClipboard(
+        context,
+        value: _asciiString(1024),
+        resourceLimits: DiagnosticResourceLimits.balanced.copyWith(
+          maxClipboardBytes: 64,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        LogExportOutput.utf8Length(clipboardText!),
+        lessThanOrEqualTo(64),
+      );
+      expect(clipboardText, endsWith(LogExportOutput.truncatedMarker));
+    });
   });
 }
 

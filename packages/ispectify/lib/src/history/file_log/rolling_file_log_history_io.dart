@@ -64,7 +64,10 @@ final class RollingFileLogHistory implements FileLogHistory {
         _enabled = enabled,
         _loggerOptions = loggerOptions,
         _buffer = BoundedLogBuffer(loggerOptions),
-        _codec = FileLogCodec(redactor: redactor),
+        _codec = FileLogCodec(
+          redactor: redactor,
+          resourceLimits: loggerOptions.resourceLimits,
+        ),
         _redactorOverride = redactor,
         _sessionId = LogId.generate(),
         _timerFactory = timerFactory ?? Timer.new,
@@ -109,6 +112,21 @@ final class RollingFileLogHistory implements FileLogHistory {
 
   RedactionService get _redactor =>
       ISpectRedaction.resolveService(service: _redactorOverride);
+
+  int get _recordByteLimit =>
+      _options.maxFileSize < _loggerOptions.resourceLimits.maxLogRecordBytes
+          ? _options.maxFileSize
+          : _loggerOptions.resourceLimits.maxLogRecordBytes;
+
+  int get _importCharacterLimit =>
+      _options.maxTotalSize < _loggerOptions.resourceLimits.maxImportCharacters
+          ? _options.maxTotalSize
+          : _loggerOptions.resourceLimits.maxImportCharacters;
+
+  int get _importByteLimit =>
+      _options.maxTotalSize < _loggerOptions.resourceLimits.maxImportBytes
+          ? _options.maxTotalSize
+          : _loggerOptions.resourceLimits.maxImportBytes;
 
   int get _managedArtifactLimit {
     // Every artifact created by this implementation contains at least one
@@ -318,8 +336,17 @@ final class RollingFileLogHistory implements FileLogHistory {
 
   String _safeDiagnosticText(Object value) {
     try {
+      final prepared = LogExportOutput.replaceTruncatedPrefixes(
+        LogExportOutput.boundJsonValue(
+          value,
+          resourceLimits: _loggerOptions.resourceLimits,
+          preserveTypes: true,
+          replaceOversizedStrings: true,
+        ),
+      );
       final bounded = LogExportOutput.boundJsonValue(
-        _redactor.redactForExport(value),
+        _redactor.redactForExport(prepared),
+        resourceLimits: _loggerOptions.resourceLimits,
         replaceOversizedStrings: true,
       );
       final text = switch (bounded) {
@@ -333,7 +360,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       };
       return LogExportOutput.truncateUtf8(
         text,
-        maxBytes: LogExportOutput.maxPreparedValueBytes,
+        maxBytes: _loggerOptions.resourceLimits.maxCapturedValueBytes,
       );
     } on Object {
       return defaultPlaceholder;
@@ -379,7 +406,7 @@ final class RollingFileLogHistory implements FileLogHistory {
         final encoded = _codec.encode(
           pending.log,
           sessionId: pending.sessionId,
-          maxBytes: _options.maxFileSize,
+          maxBytes: _recordByteLimit,
         );
         await _appendRecord(pending.time, encoded.bytes);
         snapshot.remove(pending.id);
@@ -429,7 +456,7 @@ final class RollingFileLogHistory implements FileLogHistory {
         sessionId: storedSessionId is String && storedSessionId.isNotEmpty
             ? storedSessionId
             : _sessionId,
-        maxBytes: _options.maxFileSize,
+        maxBytes: _recordByteLimit,
       );
       final recordLength =
           encoded.bytes.isNotEmpty && encoded.bytes.last == 0x0a
@@ -451,13 +478,22 @@ final class RollingFileLogHistory implements FileLogHistory {
   @override
   Future<void> importFromJson(String jsonString) async {
     if (!_enabled) return;
-    final maxImportRecords =
+    final historyImportLimit =
         _loggerOptions.maxHistoryItems > 0 ? _loggerOptions.maxHistoryItems : 1;
+    final maxImportRecords =
+        historyImportLimit < _loggerOptions.resourceLimits.maxImportEntries
+            ? historyImportLimit
+            : _loggerOptions.resourceLimits.maxImportEntries;
     final maxImportNodesByRecords =
         maxImportRecords * FileLogCodec.defaultMaxNodes + 1;
-    final maxImportNodes = maxImportNodesByRecords < _options.maxTotalSize
-        ? maxImportNodesByRecords
-        : _options.maxTotalSize;
+    final nodesBoundedByStorage =
+        maxImportNodesByRecords < _options.maxTotalSize
+            ? maxImportNodesByRecords
+            : _options.maxTotalSize;
+    final maxImportNodes =
+        nodesBoundedByStorage < _loggerOptions.resourceLimits.maxImportNodes
+            ? nodesBoundedByStorage
+            : _loggerOptions.resourceLimits.maxImportNodes;
     var firstNonWhitespace = -1;
     for (var index = 0; index < jsonString.length; index++) {
       final codeUnit = jsonString.codeUnitAt(index);
@@ -471,13 +507,14 @@ final class RollingFileLogHistory implements FileLogHistory {
     }
     final maxRootCollectionItems = firstNonWhitespace == 0x5b
         ? maxImportRecords
-        : FileLogCodec.defaultMaxCollectionItems;
+        : _loggerOptions.resourceLimits.maxCollectionItems;
     try {
       BoundedJsonDecoder.validateSource(
         jsonString,
-        maxCharacters: _options.maxTotalSize,
-        maxEncodedBytes: _options.maxTotalSize,
+        maxCharacters: _importCharacterLimit,
+        maxEncodedBytes: _importByteLimit,
         maxNodes: maxImportNodes,
+        maxCollectionItems: _loggerOptions.resourceLimits.maxCollectionItems,
         maxRootCollectionItems: maxRootCollectionItems,
       );
     } on BoundedJsonException catch (error, stackTrace) {
@@ -502,12 +539,18 @@ final class RollingFileLogHistory implements FileLogHistory {
     final logs = trimmed.startsWith('[')
         ? _codec.decodeLegacyArray(
             trimmed,
-            maxCharacters: _options.maxTotalSize,
-            maxEncodedBytes: _options.maxTotalSize,
+            maxCharacters: _importCharacterLimit,
+            maxEncodedBytes: _importByteLimit,
+            maxDepth: _loggerOptions.resourceLimits.maxTraversalDepth,
             maxNodes: maxImportNodes,
+            maxCollectionItems:
+                _loggerOptions.resourceLimits.maxCollectionItems,
             maxRootCollectionItems: maxImportRecords,
           )
-        : _decodeImportJsonLines(trimmed);
+        : _decodeImportJsonLines(
+            trimmed,
+            maxImportRecords: maxImportRecords,
+          );
     final importSessionId = LogId.generate();
     for (final log in logs) {
       final withoutSession = _withoutUntrustedSessionId(log);
@@ -523,32 +566,38 @@ final class RollingFileLogHistory implements FileLogHistory {
     }
   }
 
-  List<ISpectLogData> _decodeImportJsonLines(String input) {
+  List<ISpectLogData> _decodeImportJsonLines(
+    String input, {
+    required int maxImportRecords,
+  }) {
     final logs = <ISpectLogData>[];
     var lineStart = 0;
     for (var index = 0; index <= input.length; index++) {
       if (index != input.length && input.codeUnitAt(index) != 0x0A) continue;
       final lineCharacters = index - lineStart;
-      if (lineCharacters > _options.maxFileSize ||
+      if (lineCharacters > _recordByteLimit ||
           _utf8RangeExceeds(
             input,
             lineStart,
             index,
-            _options.maxFileSize,
+            _recordByteLimit,
           )) {
         throw const FileLogLimitException(operation: 'importFromJson');
       }
       final line = input.substring(lineStart, index).trim();
       lineStart = index + 1;
       if (line.isEmpty) continue;
-      if (logs.length >= _loggerOptions.maxHistoryItems) {
+      if (logs.length >= maxImportRecords) {
         throw const FileLogLimitException(operation: 'importFromJson');
       }
       logs.add(
         _codec.decodeLine(
           line,
-          maxCharacters: _options.maxFileSize,
-          maxEncodedBytes: _options.maxFileSize,
+          maxCharacters: _recordByteLimit,
+          maxEncodedBytes: _recordByteLimit,
+          maxDepth: _loggerOptions.resourceLimits.maxTraversalDepth,
+          maxNodes: _loggerOptions.resourceLimits.maxImportNodes,
+          maxCollectionItems: _loggerOptions.resourceLimits.maxCollectionItems,
         ),
       );
     }
@@ -600,6 +649,8 @@ final class RollingFileLogHistory implements FileLogHistory {
       exception: captured.exception,
       error: captured.error,
       stackTrace: captured.stackTrace,
+      captureMode: captured.captureMode,
+      resourceLimits: captured.resourceLimits,
       additionalData: <String, dynamic>{
         for (final entry in additionalData.entries)
           if (entry.key != TraceKeys.sessionId) entry.key: entry.value,
@@ -614,12 +665,15 @@ final class RollingFileLogHistory implements FileLogHistory {
     final encoded = _codec.encode(
       data,
       sessionId: sessionId,
-      maxBytes: _options.maxFileSize,
+      maxBytes: _recordByteLimit,
     );
     return _codec.decodeLine(
       utf8.decode(encoded.bytes),
-      maxCharacters: _options.maxFileSize,
-      maxEncodedBytes: _options.maxFileSize,
+      maxCharacters: _recordByteLimit,
+      maxEncodedBytes: _recordByteLimit,
+      maxDepth: _loggerOptions.resourceLimits.maxTraversalDepth,
+      maxNodes: _loggerOptions.resourceLimits.maxImportNodes,
+      maxCollectionItems: _loggerOptions.resourceLimits.maxCollectionItems,
     );
   }
 
@@ -1249,9 +1303,12 @@ final class RollingFileLogHistory implements FileLogHistory {
           final input = await _readLegacyText(file);
           final legacyLogs = _codec.decodeLegacyArray(
             input,
-            maxCharacters: _options.maxTotalSize,
-            maxEncodedBytes: _options.maxTotalSize,
+            maxCharacters: _importCharacterLimit,
+            maxEncodedBytes: _importByteLimit,
+            maxDepth: _loggerOptions.resourceLimits.maxTraversalDepth,
             maxNodes: _publicReadNodeLimit,
+            maxCollectionItems:
+                _loggerOptions.resourceLimits.maxCollectionItems,
             maxRootCollectionItems: _publicReadRecordLimit,
           );
           for (final log in legacyLogs.reversed) {
@@ -1355,8 +1412,12 @@ final class RollingFileLogHistory implements FileLogHistory {
         try {
           final log = _codec.decodeLine(
             line,
-            maxCharacters: _options.maxFileSize,
-            maxEncodedBytes: _options.maxFileSize,
+            maxCharacters: _recordByteLimit,
+            maxEncodedBytes: _recordByteLimit,
+            maxDepth: _loggerOptions.resourceLimits.maxTraversalDepth,
+            maxNodes: _loggerOptions.resourceLimits.maxImportNodes,
+            maxCollectionItems:
+                _loggerOptions.resourceLimits.maxCollectionItems,
           );
           final storedSessionId = captureISpectLogDataForEgress(
             log,
@@ -1398,14 +1459,19 @@ final class RollingFileLogHistory implements FileLogHistory {
     // bound therefore remains comprehensive for every valid stored record
     // while placing a finite ceiling on hostile newline-dense inputs.
     const minimumValidRecordBytes = 10;
-    return _options.maxTotalSize ~/ minimumValidRecordBytes + 1;
+    final storageLimit = _options.maxTotalSize ~/ minimumValidRecordBytes + 1;
+    return storageLimit < _loggerOptions.resourceLimits.maxImportEntries
+        ? storageLimit
+        : _loggerOptions.resourceLimits.maxImportEntries;
   }
 
   int get _publicReadNodeLimit {
     final byRecords = _publicReadRecordLimit * FileLogCodec.defaultMaxNodes + 1;
-    return byRecords < _options.maxTotalSize
-        ? byRecords
-        : _options.maxTotalSize;
+    final storageLimit =
+        byRecords < _options.maxTotalSize ? byRecords : _options.maxTotalSize;
+    return storageLimit < _loggerOptions.resourceLimits.maxImportNodes
+        ? storageLimit
+        : _loggerOptions.resourceLimits.maxImportNodes;
   }
 
   Future<List<int>> _readSegmentBytes(File file) async {
