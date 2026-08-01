@@ -127,6 +127,57 @@ void main() {
     );
   });
 
+  test('accepts a read-only provider protected by a platform sandbox',
+      () async {
+    if (Platform.isWindows) {
+      markTestSkipped('POSIX permission bits are unavailable on Windows');
+      return;
+    }
+    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    addTearDown(() => root.delete(recursive: true));
+    final chmod = await Process.run('chmod', ['0755', root.path]);
+    expect(chmod.exitCode, 0);
+    final history = file_io.RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+      providerDirectoryRequiresOwnerOnly: false,
+    );
+    addTearDown(history.dispose);
+
+    await expectLater(history.getAvailableLogDates(), completion(isEmpty));
+    expect(
+      await Directory(
+        '${root.path}${Platform.pathSeparator}ispect_logs',
+      ).exists(),
+      isTrue,
+    );
+  });
+
+  test('platform sandbox still rejects a group- or world-writable provider',
+      () async {
+    if (Platform.isWindows) {
+      markTestSkipped('POSIX permission bits are unavailable on Windows');
+      return;
+    }
+    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    addTearDown(() => root.delete(recursive: true));
+    final chmod = await Process.run('chmod', ['0777', root.path]);
+    expect(chmod.exitCode, 0);
+    final history = file_io.RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+      providerDirectoryRequiresOwnerOnly: false,
+    );
+    addTearDown(history.dispose);
+
+    await expectLater(
+      history.getAvailableLogDates(),
+      throwsA(isA<FileLogAccessException>()),
+    );
+  });
+
   test('revalidates provider permissions after initialization', () async {
     if (Platform.isWindows) {
       markTestSkipped('POSIX permission bits are unavailable on Windows');

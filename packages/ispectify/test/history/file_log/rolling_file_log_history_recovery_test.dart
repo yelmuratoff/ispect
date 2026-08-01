@@ -540,6 +540,45 @@ void main() {
     expect((await history.getLogsByDate(date)).map((log) => log.id), ['A']);
   });
 
+  test('fallback reports a typed sanitized background failure', () async {
+    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    final reported =
+        Completer<({String message, Object? error, StackTrace? stackTrace})>();
+    late _TestTimer timer;
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => throw FileSystemException(
+        'unavailable',
+        root.path,
+      ),
+      timerFactory: (duration, callback) =>
+          timer = _TestTimer(duration, callback),
+      diagnosticSink: (message, {error, stackTrace}) {
+        if (!reported.isCompleted) {
+          reported.complete(
+            (message: message, error: error, stackTrace: stackTrace),
+          );
+        }
+      },
+    );
+    addTearDown(history.dispose);
+    history.add(ISpectLogData('entry', id: 'A'));
+
+    timer.fire();
+    final diagnostic = await reported.future;
+
+    expect(
+      diagnostic.message,
+      contains(
+        'FileLogHistoryException(kind: storage, operation: initialize)',
+      ),
+    );
+    expect(diagnostic.message, isNot(contains(root.path)));
+    expect(diagnostic.error, defaultPlaceholder);
+    expect('${diagnostic.stackTrace}', defaultPlaceholder);
+  });
+
   test('reads a newline-dense segment without materializing a line list',
       () async {
     final root = await Directory.systemTemp.createTemp('ispect-recovery-');

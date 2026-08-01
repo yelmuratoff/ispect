@@ -20,6 +20,12 @@ final class RollingFileLogHistory implements FileLogHistory {
     FileLogHistoryOptions options = const FileLogHistoryOptions(),
     RedactionService? redactor,
     Timer Function(Duration, void Function())? timerFactory,
+    bool? providerDirectoryRequiresOwnerOnly,
+    void Function(
+      String message, {
+      Object? error,
+      StackTrace? stackTrace,
+    })? diagnosticSink,
   }) {
     throw UnsupportedError('File log history requires dart:io');
   }

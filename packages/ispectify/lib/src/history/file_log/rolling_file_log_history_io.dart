@@ -13,6 +13,12 @@ import 'package:ispectify/src/models/log_id.dart';
 import 'package:ispectify/src/utils/bounded_json_decoder.dart';
 import 'package:meta/meta.dart';
 
+typedef _FileLogDiagnosticSink = void Function(
+  String message, {
+  Object? error,
+  StackTrace? stackTrace,
+});
+
 final class RollingFileLogHistory implements FileLogHistory {
   RollingFileLogHistory(
     ISpectLoggerOptions loggerOptions, {
@@ -28,6 +34,9 @@ final class RollingFileLogHistory implements FileLogHistory {
           timerFactory: null,
           ioHook: null,
           archiveCompressedByteLimit: null,
+          providerDirectoryRequiresOwnerOnly:
+              _defaultProviderDirectoryRequiresOwnerOnly,
+          diagnosticSink: null,
         );
 
   @visibleForTesting
@@ -39,6 +48,8 @@ final class RollingFileLogHistory implements FileLogHistory {
     Timer Function(Duration, void Function())? timerFactory,
     FutureOr<void> Function(File file, String operation)? ioHook,
     int? archiveCompressedByteLimit,
+    bool? providerDirectoryRequiresOwnerOnly,
+    _FileLogDiagnosticSink? diagnosticSink,
   }) : this._(
           loggerOptions,
           directoryProvider: directoryProvider,
@@ -48,6 +59,10 @@ final class RollingFileLogHistory implements FileLogHistory {
           timerFactory: timerFactory,
           ioHook: ioHook,
           archiveCompressedByteLimit: archiveCompressedByteLimit,
+          providerDirectoryRequiresOwnerOnly:
+              providerDirectoryRequiresOwnerOnly ??
+                  _defaultProviderDirectoryRequiresOwnerOnly,
+          diagnosticSink: diagnosticSink,
         );
 
   RollingFileLogHistory._(
@@ -59,6 +74,8 @@ final class RollingFileLogHistory implements FileLogHistory {
     required Timer Function(Duration, void Function())? timerFactory,
     required FutureOr<void> Function(File file, String operation)? ioHook,
     required int? archiveCompressedByteLimit,
+    required bool providerDirectoryRequiresOwnerOnly,
+    required _FileLogDiagnosticSink? diagnosticSink,
   })  : _directoryProvider = directoryProvider,
         _options = options,
         _enabled = enabled,
@@ -73,6 +90,9 @@ final class RollingFileLogHistory implements FileLogHistory {
         _timerFactory = timerFactory ?? Timer.new,
         _ioHook = ioHook,
         _archiveCompressedByteLimit = archiveCompressedByteLimit,
+        _providerDirectoryRequiresOwnerOnly =
+            providerDirectoryRequiresOwnerOnly,
+        _diagnosticSink = diagnosticSink ?? _developerDiagnosticSink,
         _autoSaveInterval = options.autoSaveInterval,
         _autoSaveEnabled = options.enableAutoSave {
     options.validate();
@@ -94,6 +114,9 @@ final class RollingFileLogHistory implements FileLogHistory {
       RegExp(r'^logs_(\d{4}-\d{2}-\d{2})\.json$');
   static const int _ioChunkSize = 64 * 1024;
 
+  // iOS isolates app data through its mandatory sandbox even when Library/Caches is 0755.
+  static bool get _defaultProviderDirectoryRequiresOwnerOnly => !Platform.isIOS;
+
   final FileLogDirectoryProvider _directoryProvider;
   final FileLogHistoryOptions _options;
   final bool _enabled;
@@ -105,6 +128,8 @@ final class RollingFileLogHistory implements FileLogHistory {
   final Timer Function(Duration, void Function()) _timerFactory;
   final FutureOr<void> Function(File file, String operation)? _ioHook;
   final int? _archiveCompressedByteLimit;
+  final bool _providerDirectoryRequiresOwnerOnly;
+  final _FileLogDiagnosticSink _diagnosticSink;
   final LinkedHashMap<String, _PendingLog> _pending =
       LinkedHashMap<String, _PendingLog>();
   final LinkedHashMap<String, String> _sessionIdsByLogId =
@@ -295,8 +320,25 @@ final class RollingFileLogHistory implements FileLogHistory {
         // Fall through to the internal non-reentrant diagnostic sink.
       }
     }
-    final safeText = _safeDiagnosticText(safeError);
-    developer.log('[ISpect] $safeText', name: 'ispectify.file-history');
+    final safeText = _safeDiagnosticText(safeError.toString());
+    _diagnosticSink(
+      '[ISpect] $safeText',
+      error: safeError.cause,
+      stackTrace: safeError.stackTrace,
+    );
+  }
+
+  static void _developerDiagnosticSink(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    developer.log(
+      message,
+      name: 'ispectify.file-history',
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   FileLogHistoryException _sanitizeError(FileLogHistoryException error) {
@@ -989,7 +1031,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       await _validatePrivateDirectoryPermissions(
         providerDirectory,
         operation: 'initialize',
-        requireOwnerOnly: true,
+        requireOwnerOnly: _providerDirectoryRequiresOwnerOnly,
       );
       _resolvedProviderDirectory = providerDirectory.path;
       _canonicalProviderDirectory =
@@ -1625,7 +1667,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     await _validatePrivateDirectoryPermissions(
       directory,
       operation: operation,
-      requireOwnerOnly: true,
+      requireOwnerOnly: _providerDirectoryRequiresOwnerOnly,
     );
     if (await directory.resolveSymbolicLinks() != canonicalPath) {
       throw FileLogAccessException(operation: operation);
