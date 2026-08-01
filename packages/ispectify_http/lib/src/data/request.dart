@@ -29,10 +29,16 @@ class HttpRequestData {
             captureMode: captureMode,
             resourceLimits: resourceLimits,
           );
+    final queryParameters = _queryParameters(
+      uriSnapshot,
+      captureMode: captureMode,
+      resourceLimits: resourceLimits,
+    );
     return <String, dynamic>{
       // --- Identity: what & where ---
       NetworkJsonKeys.method: request?.method,
       NetworkJsonKeys.url: uriSnapshot?.url,
+      NetworkJsonKeys.queryParameters: queryParameters,
 
       // --- Payload ---
       if (includeHeaders)
@@ -171,6 +177,14 @@ class HttpRequestData {
       redactor,
       resourceLimits: resourceLimits,
     );
+    NetworkMapRedactor.redactMapField(
+      map,
+      redactor,
+      key: NetworkJsonKeys.queryParameters,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
+    );
     final redactedHeaders = NetworkMapRedactor.redactHeaders(
       map,
       redactor,
@@ -189,5 +203,28 @@ class HttpRequestData {
       ignoredKeys: ignoredKeys,
       resourceLimits: resourceLimits,
     );
+  }
+
+  static Map<String, dynamic> _queryParameters(
+    NetworkUriSnapshot? snapshot, {
+    required DiagnosticCaptureMode captureMode,
+    required DiagnosticResourceLimits resourceLimits,
+  }) {
+    if (snapshot == null || !snapshot.isTrusted) return <String, dynamic>{};
+    try {
+      final uri = Uri.tryParse(snapshot.url);
+      if (uri == null) return <String, dynamic>{};
+      final query = <String, Object?>{
+        for (final entry in uri.queryParametersAll.entries)
+          entry.key: entry.value.length == 1 ? entry.value.single : entry.value,
+      };
+      return NetworkPayloadSanitizer.toStringKeyMap(
+        query,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
+    } on Object {
+      return <String, dynamic>{};
+    }
   }
 }

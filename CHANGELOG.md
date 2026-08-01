@@ -40,6 +40,7 @@
 - **Reliable lifecycle:** Shutdown and forced reinitialization now clean up logger state consistently, including failure paths.
 - **Host error callbacks:** Flutter, platform, and zoned callbacks continue receiving the original error and stack trace.
 - **HTTP replay:** Malformed form data and sender failures no longer leave the composer in a broken state.
+- **Network query visibility:** Dio and HTTP console logs now show non-empty, redacted query parameters for request, response, and error entries.
 - **Stable bounded settings:** Runtime validation rejects invalid persisted capacities and inspector clipboard limits in release builds, and navigation transition equality no longer changes after logger reconfiguration.
 
 ## 6.1.7

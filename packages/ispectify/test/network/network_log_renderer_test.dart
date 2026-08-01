@@ -93,6 +93,48 @@ void main() {
       expect(body, isNot(contains('authorization')));
     });
 
+    test('renders non-empty request query parameters before the body', () {
+      final entry = ISpectLogData(
+        'headline',
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          NetworkJsonKeys.requestData: {
+            NetworkJsonKeys.queryParameters: {
+              'page': 1,
+              'filter': 'active',
+            },
+            NetworkJsonKeys.data: {'username': 'alice'},
+          },
+        },
+      );
+
+      final body = NetworkLogRenderer.renderBody(entry);
+
+      expect(body, contains('Query Parameters:'));
+      expect(body, contains('"page": 1'));
+      expect(
+        body.indexOf('Query Parameters:'),
+        lessThan(body.indexOf('Data:')),
+      );
+    });
+
+    test('omits the query parameters section when the map is empty', () {
+      final entry = ISpectLogData(
+        'headline',
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          NetworkJsonKeys.requestData: {
+            NetworkJsonKeys.queryParameters: <String, dynamic>{},
+          },
+        },
+      );
+
+      expect(
+        NetworkLogRenderer.renderBody(entry),
+        isNot(contains('Query Parameters:')),
+      );
+    });
+
     test('renderBody ignores hostile additionalData getter overrides', () {
       final entry = _HostileNetworkLogGetters();
 
@@ -160,6 +202,27 @@ void main() {
       expect(body, contains('Data'));
       expect(body, contains('"id": 1'));
       expect(body, isNot(contains('Message: OK')));
+    });
+
+    test('renders query parameters from the response request reference', () {
+      final entry = ISpectLogData(
+        'headline',
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          NetworkJsonKeys.responseData: {
+            NetworkJsonKeys.statusCode: 200,
+            NetworkJsonKeys.request: {
+              NetworkJsonKeys.queryParameters: {'page': '2'},
+            },
+          },
+        },
+      );
+
+      final body = NetworkLogRenderer.renderBody(entry);
+
+      expect(body, contains('Status: 200'));
+      expect(body, contains('Query Parameters:'));
+      expect(body, contains('"page": "2"'));
     });
 
     test('printMessage hint surfaces statusMessage', () {
@@ -247,6 +310,30 @@ void main() {
       expect(body, contains('Status: 401'));
       expect(body, contains('Error: Unauthorized'));
       expect(body, contains('token expired'));
+    });
+
+    test('renders query parameters from the error request reference', () {
+      final entry = ISpectLogData(
+        'headline',
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          NetworkJsonKeys.errorData: {
+            NetworkJsonKeys.message: 'Request failed',
+            NetworkJsonKeys.request: {
+              NetworkJsonKeys.queryParameters: {'retry': 'true'},
+            },
+          },
+          NetworkLogRenderer.renderHintsKey: {
+            NetworkLogRenderer.hintPrintMessage: true,
+          },
+        },
+      );
+
+      final body = NetworkLogRenderer.renderBody(entry);
+
+      expect(body, contains('Error: Request failed'));
+      expect(body, contains('Query Parameters:'));
+      expect(body, contains('"retry": "true"'));
     });
 
     test('ignores wrong-shaped error response and message fields', () {

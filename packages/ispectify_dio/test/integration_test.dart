@@ -104,6 +104,32 @@ void main() {
       expect(responseCid, equals(requestCid));
     });
 
+    test('request and response console bodies show redacted query parameters',
+        () async {
+      const secret = 'DIO-QUERY-SECRET';
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final dio = _dioWith(
+        _FakeHttpAdapter((_) => _jsonResponse({'ok': true})),
+      )..interceptors.add(ISpectDioInterceptor(logger: logger));
+
+      await dio.get<dynamic>(
+        '/users',
+        queryParameters: {'page': 2, 'token': secret},
+      );
+
+      expect(logger.history, hasLength(2));
+      for (final entry in logger.history) {
+        final body = NetworkLogRenderer.renderBody(entry);
+        final serialized = jsonEncode(_stringify(entry.additionalData));
+        expect(body, contains('Query Parameters:'));
+        expect(body, contains('"page": 2'));
+        expect(body, isNot(contains(secret)));
+        expect(serialized, isNot(contains(secret)));
+      }
+    });
+
     test('correlation survives a downstream interceptor that copies options',
         () async {
       final logger = ISpectLogger(
@@ -177,6 +203,32 @@ void main() {
       final errors =
           logger.history.where((r) => r.key == ISpectLogType.httpError.key);
       expect(errors, isNotEmpty);
+    });
+
+    test('error console body shows the request query parameters', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final dio = _dioWith(
+        _FakeHttpAdapter(
+          (_) => _jsonResponse({'error': 'failed'}, statusCode: 500),
+        ),
+      )..interceptors.add(ISpectDioInterceptor(logger: logger));
+
+      await expectLater(
+        dio.get<dynamic>(
+          '/failure',
+          queryParameters: {'retry': true},
+        ),
+        throwsA(isA<DioException>()),
+      );
+
+      final error = logger.history
+          .firstWhere((entry) => entry.key == ISpectLogType.httpError.key);
+      expect(
+        NetworkLogRenderer.renderBody(error),
+        allOf(contains('Query Parameters:'), contains('"retry": true')),
+      );
     });
 
     test('stream sees the same records that land in history', () async {
@@ -255,6 +307,7 @@ void main() {
       const secret = 'Bearer super-secret-token-xyz';
       await dio.get<dynamic>(
         '/me',
+        queryParameters: {'token': secret},
         options: Options(headers: {'Authorization': secret}),
       );
 
@@ -294,6 +347,7 @@ void main() {
       const secret = 'Bearer super-secret-token-xyz';
       await dio.get<dynamic>(
         '/me',
+        queryParameters: {'token': secret},
         options: Options(headers: {'Authorization': secret}),
       );
 
@@ -306,6 +360,10 @@ void main() {
         isTrue,
         reason: 'With redaction globally disabled, the raw token is captured',
       );
+      final meta = request.additionalData?[TraceKeys.meta] as Map;
+      final requestData = meta[NetworkJsonKeys.requestData] as Map;
+      final query = requestData[NetworkJsonKeys.queryParameters] as Map;
+      expect(query['token'], secret);
     });
   });
 }

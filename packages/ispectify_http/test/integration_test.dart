@@ -18,10 +18,11 @@ http.Client _mockJson(
   int statusCode = 200,
 }) =>
     MockClient(
-      (_) async => http.Response(
+      (request) async => http.Response(
         jsonEncode(body),
         statusCode,
         headers: {'content-type': 'application/json'},
+        request: request,
       ),
     );
 
@@ -67,6 +68,32 @@ void main() {
       }
     });
 
+    test('request and response console bodies show redacted query parameters',
+        () async {
+      const secret = 'HTTP-QUERY-SECRET';
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final client = _clientWith(logger);
+
+      await client.get(
+        Uri.parse(
+          'https://api.test/users?page=2&token=$secret',
+        ),
+      );
+      client.close();
+
+      expect(logger.history, hasLength(2));
+      for (final entry in logger.history) {
+        final body = NetworkLogRenderer.renderBody(entry);
+        final serialized = jsonEncode(_stringify(entry.additionalData));
+        expect(body, contains('Query Parameters:'));
+        expect(body, contains('"page": "2"'));
+        expect(body, isNot(contains(secret)));
+        expect(serialized, isNot(contains(secret)));
+      }
+    });
+
     test('5xx response is logged as httpError', () async {
       final logger = ISpectLogger(
         options: ISpectLoggerOptions(useConsoleLogs: false),
@@ -82,6 +109,28 @@ void main() {
       final errors =
           logger.history.where((r) => r.key == ISpectLogType.httpError.key);
       expect(errors, isNotEmpty);
+    });
+
+    test('error console body shows the request query parameters', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final client = _clientWith(
+        logger,
+        inner: _mockJson({'error': 'server'}, statusCode: 500),
+      );
+
+      await client.get(
+        Uri.parse('https://api.test/failure?retry=true'),
+      );
+      client.close();
+
+      final error = logger.history
+          .firstWhere((entry) => entry.key == ISpectLogType.httpError.key);
+      expect(
+        NetworkLogRenderer.renderBody(error),
+        allOf(contains('Query Parameters:'), contains('"retry": "true"')),
+      );
     });
 
     test('stream and history stay in sync', () async {
@@ -138,6 +187,37 @@ void main() {
         isFalse,
         reason: 'Raw Authorization token must not leak into history',
       );
+    });
+
+    test('explicit opt-out preserves raw query parameters in history',
+        () async {
+      const secret = 'HTTP-RAW-QUERY-SECRET';
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final client = InterceptedClient.build(
+        interceptors: [
+          ISpectHttpInterceptor(
+            logger: logger,
+            settings: const ISpectHttpInterceptorSettings(
+              enableRedaction: false,
+            ),
+          ),
+        ],
+        client: _mockJson({'ok': true}),
+      );
+
+      await client.get(
+        Uri.parse('https://api.test/me?token=$secret'),
+      );
+      client.close();
+
+      final request = logger.history
+          .firstWhere((entry) => entry.key == ISpectLogType.httpRequest.key);
+      final meta = request.additionalData?[TraceKeys.meta] as Map;
+      final requestData = meta[NetworkJsonKeys.requestData] as Map;
+      final query = requestData[NetworkJsonKeys.queryParameters] as Map;
+      expect(query['token'], secret);
     });
   });
 }

@@ -33,6 +33,20 @@ void main() {
       expect(() => jsonEncode(jsonData), returnsNormally);
     });
 
+    test('HttpRequestData.toJson captures query parameters separately', () {
+      final request = http.Request(
+        'GET',
+        Uri.parse('https://example.com/search?page=2&filter=active'),
+      );
+
+      final jsonData = HttpRequestData(request).toJson();
+
+      expect(
+        jsonData[NetworkJsonKeys.queryParameters],
+        {'page': '2', 'filter': 'active'},
+      );
+    });
+
     test('HttpResponseData.toJson produces JSON-encodable data', () {
       final request =
           http.Request('GET', Uri.parse('https://example.com/test'));
@@ -88,6 +102,7 @@ void main() {
       );
 
       expect(jsonData['url'], JsonValueNormalizer.unprintableValue);
+      expect(jsonData[NetworkJsonKeys.queryParameters], isEmpty);
     });
 
     test('response capture mode applies to a prepared typed body', () {
@@ -128,6 +143,22 @@ void main() {
   });
 
   group('Redaction in JSON Export', () {
+    test('HttpRequestData redacts sensitive query parameters', () {
+      const secret = 'HTTP-QUERY-SECRET';
+      final request = http.Request(
+        'GET',
+        Uri.parse('https://example.com/search?page=2&token=$secret'),
+      );
+      final json = HttpRequestData(request).toJson();
+
+      HttpRequestData.redact(json, RedactionService());
+
+      final query =
+          json[NetworkJsonKeys.queryParameters] as Map<String, dynamic>;
+      expect(query['page'], '2');
+      expect(query['token'], isNot(secret));
+    });
+
     test(
       'HttpResponseData.toJson redacts JSON body content when redaction enabled',
       () {

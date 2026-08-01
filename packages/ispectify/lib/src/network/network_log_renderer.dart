@@ -95,6 +95,7 @@ abstract final class NetworkLogRenderer {
     int maxStringLength,
   ) =>
       _joinSections([
+        _queryParametersSection(reqData, maxStringLength),
         _section(
           enabled: h.printBody,
           label: 'Data',
@@ -123,6 +124,7 @@ abstract final class NetworkLogRenderer {
       if (statusCode != null) 'Status: $statusCode',
       if (h.printMessage && statusMessage != null && statusMessage.isNotEmpty)
         'Message: $statusMessage',
+      _queryParametersSection(respData, maxStringLength),
       _section(
         enabled: h.printBody,
         label: 'Data',
@@ -158,6 +160,7 @@ abstract final class NetworkLogRenderer {
         'Message: $statusMessage',
       if (h.printMessage && errorMessage != null && errorMessage.isNotEmpty)
         'Error: $errorMessage',
+      _queryParametersSection(errData, maxStringLength),
       _section(
         enabled: h.printBody,
         label: 'Data',
@@ -195,6 +198,39 @@ abstract final class NetworkLogRenderer {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
+
+  static String? _queryParametersSection(
+    Map<String, dynamic> data,
+    int maxStringLength,
+  ) {
+    final queryParameters = _queryParameters(data);
+    return _section(
+      enabled: true,
+      label: 'Query Parameters',
+      value: queryParameters,
+      maxStringLength: maxStringLength,
+      skipEmpty: true,
+    );
+  }
+
+  static Map<Object?, Object?>? _queryParameters(
+    Map<String, dynamic> data,
+  ) {
+    final direct = data[NetworkJsonKeys.queryParameters];
+    if (direct is Map<Object?, Object?>) return direct;
+
+    final request = data[NetworkJsonKeys.request];
+    if (request is Map<Object?, Object?>) {
+      final nested = request[NetworkJsonKeys.queryParameters];
+      if (nested is Map<Object?, Object?>) return nested;
+    }
+
+    final response = data[NetworkJsonKeys.response];
+    if (response is Map<String, dynamic>) {
+      return _queryParameters(response);
+    }
+    return null;
+  }
 
   static _RenderHints _hintsFrom(Map<String, dynamic> payload) {
     final raw = payload[renderHintsKey];
