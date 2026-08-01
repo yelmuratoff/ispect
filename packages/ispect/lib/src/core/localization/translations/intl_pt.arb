@@ -91,6 +91,7 @@
    "pleaseCheckAuthCred": "Ocorreu um erro. Por favor, verifique os dados de autorização.",
    "pleaseSelectYourProject": "Agora, por favor, selecione um projeto",
    "printLogDesc": "Mensagem impressa no console",
+   "previewTruncated": "Prévia truncada",
    "projectDomain": "Domínio do projeto",
    "projectWasSelected": "Projeto foi selecionado",
    "requestHeaders": "Cabeçalhos de solicitação",

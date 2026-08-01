@@ -2,15 +2,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 import 'package:ispectify/ispectify.dart';
 
-ISpectLogData _request({String? contentType, int? contentLength}) =>
+ISpectLogData _request({
+  String? contentType,
+  int? contentLength,
+  Object? body,
+  String? url,
+  Map<String, Object?> queryParameters = const {},
+}) =>
     ISpectLogData(
       'request',
       additionalData: {
+        if (url != null) TraceKeys.target: url,
         TraceKeys.meta: {
           NetworkJsonKeys.requestData: {
+            if (url != null) NetworkJsonKeys.url: url,
             if (contentType != null) NetworkJsonKeys.contentType: contentType,
             if (contentLength != null)
               NetworkJsonKeys.contentLength: contentLength,
+            if (body != null) NetworkJsonKeys.data: body,
+            if (queryParameters.isNotEmpty)
+              NetworkJsonKeys.queryParameters: queryParameters,
           },
         },
       },
@@ -38,6 +49,25 @@ ISpectLogData _response({
     );
 
 void main() {
+  tearDown(ISpectRedaction.reset);
+
+  group('transactionDisplayUrl', () {
+    test('appends query parameters from the captured redacted payload', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(
+          url: 'https://api.example.com/users',
+          queryParameters: const {'token': defaultPlaceholder},
+        ),
+      );
+
+      expect(
+        transactionDisplayUrl(tx),
+        'https://api.example.com/users?token=$defaultPlaceholder',
+      );
+    });
+  });
+
   group('transactionListUrl', () {
     test('strips scheme and host, keeping the path when compact', () {
       expect(
@@ -197,6 +227,15 @@ void main() {
         request: _request(),
         error: _request(),
       );
+      expect(transactionHasInlineDetails(tx), isTrue);
+    });
+
+    test('is true when a pending request has a body preview', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(body: const {'name': 'Ada'}),
+      );
+
       expect(transactionHasInlineDetails(tx), isTrue);
     });
   });

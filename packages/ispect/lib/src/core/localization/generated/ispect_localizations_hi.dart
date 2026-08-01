@@ -280,6 +280,9 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get printLogDesc => 'कंसोल में संदेश प्रिंट किया गया';
 
   @override
+  String get previewTruncated => 'पूर्वावलोकन काट दिया गया';
+
+  @override
   String get projectDomain => 'प्रोजेक्ट डोमेन';
 
   @override

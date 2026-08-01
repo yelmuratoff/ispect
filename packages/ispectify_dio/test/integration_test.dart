@@ -104,7 +104,7 @@ void main() {
       expect(responseCid, equals(requestCid));
     });
 
-    test('request and response console bodies show redacted query parameters',
+    test('request and response console URLs show redacted query parameters',
         () async {
       const secret = 'DIO-QUERY-SECRET';
       final logger = ISpectLogger(
@@ -121,11 +121,14 @@ void main() {
 
       expect(logger.history, hasLength(2));
       for (final entry in logger.history) {
-        final body = NetworkLogRenderer.renderBody(entry);
+        final output = const HumanLogEntryFormatter().format(
+          entry,
+          ConsoleSettings(enableColors: false),
+        );
         final serialized = jsonEncode(_stringify(entry.additionalData));
-        expect(body, contains('Query Parameters:'));
-        expect(body, contains('"page": 2'));
-        expect(body, isNot(contains(secret)));
+        expect(output, contains('?page=2&token=[REDACTED]'));
+        expect(output, isNot(contains('Query Parameters:')));
+        expect(output, isNot(contains(secret)));
         expect(serialized, isNot(contains(secret)));
       }
     });
@@ -205,7 +208,7 @@ void main() {
       expect(errors, isNotEmpty);
     });
 
-    test('error console body shows the request query parameters', () async {
+    test('error console URL shows the request query parameters', () async {
       final logger = ISpectLogger(
         options: ISpectLoggerOptions(useConsoleLogs: false),
       );
@@ -225,9 +228,13 @@ void main() {
 
       final error = logger.history
           .firstWhere((entry) => entry.key == ISpectLogType.httpError.key);
+      final output = const HumanLogEntryFormatter().format(
+        error,
+        ConsoleSettings(enableColors: false),
+      );
       expect(
-        NetworkLogRenderer.renderBody(error),
-        allOf(contains('Query Parameters:'), contains('"retry": true')),
+        output,
+        allOf(contains('?retry=true'), isNot(contains('Query Parameters:'))),
       );
     });
 

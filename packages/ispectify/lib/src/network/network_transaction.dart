@@ -1,5 +1,6 @@
 import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/network/network_json_keys.dart';
+import 'package:ispectify/src/network/network_log_renderer.dart';
 import 'package:ispectify/src/trace/trace_keys.dart';
 
 /// Groups a correlated HTTP request with its response or error.
@@ -102,12 +103,10 @@ class NetworkTransaction {
 
   /// Request URL.
   String? get url {
+    final displayUrl = NetworkLogRenderer.displayUrl(request);
+    if (displayUrl != null) return displayUrl;
     final additionalData =
         captureISpectLogDataForEgress(request).additionalData;
-    // v5: trace target field
-    final target = additionalData?[TraceKeys.target];
-    if (target is String) return target;
-    // v4 fallback
     final url = additionalData?['url'];
     return url is String ? url : null;
   }

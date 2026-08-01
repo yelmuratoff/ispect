@@ -170,6 +170,59 @@ void main() {
       expect(line, contains('Request:\n  curl -X GET ...'));
     });
 
+    for (final fixture in <({String key, Map<String, dynamic> meta})>[
+      (
+        key: ISpectLogType.httpRequest.key,
+        meta: const {
+          NetworkJsonKeys.requestData: {
+            NetworkJsonKeys.queryParameters: {'page': 2, 'active': true},
+          },
+        },
+      ),
+      (
+        key: ISpectLogType.httpResponse.key,
+        meta: const {
+          NetworkJsonKeys.responseData: {
+            NetworkJsonKeys.statusCode: 200,
+            NetworkJsonKeys.request: {
+              NetworkJsonKeys.queryParameters: {'page': 2, 'active': true},
+            },
+          },
+        },
+      ),
+      (
+        key: ISpectLogType.httpError.key,
+        meta: const {
+          NetworkJsonKeys.errorData: {
+            NetworkJsonKeys.request: {
+              NetworkJsonKeys.queryParameters: {'page': 2, 'active': true},
+            },
+          },
+        },
+      ),
+    ]) {
+      test('${fixture.key} renders query parameters as part of the URL', () {
+        final data = _data(
+          message: '→ GET https://api.example.com/events',
+          key: fixture.key,
+          additionalData: {
+            TraceKeys.category: TraceCategoryIds.network,
+            TraceKeys.operation: 'GET',
+            TraceKeys.target: 'https://api.example.com/events',
+            TraceKeys.meta: fixture.meta,
+          },
+        );
+
+        final line = formatter.format(data, settings);
+
+        expect(
+          line,
+          contains('https://api.example.com/events?page=2&active=true'),
+        );
+        expect(line, isNot(contains('Query Parameters:')));
+      });
+    }
+
     test('uses "(empty log message)" for blank body', () {
       final data = _data(message: '');
       final line = formatter.format(data, settings);

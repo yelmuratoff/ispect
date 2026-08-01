@@ -281,6 +281,9 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get printLogDesc => 'Сообщение выведено в консоль';
 
   @override
+  String get previewTruncated => 'Предпросмотр обрезан';
+
+  @override
   String get projectDomain => 'Домен проекта';
 
   @override

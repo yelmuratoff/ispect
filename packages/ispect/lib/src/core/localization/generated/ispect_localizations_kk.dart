@@ -280,6 +280,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get printLogDesc => 'Хабарлама консольге шығарылды';
 
   @override
+  String get previewTruncated => 'Алдын ала қарау қысқартылды';
+
+  @override
   String get projectDomain => 'Жоба домені';
 
   @override

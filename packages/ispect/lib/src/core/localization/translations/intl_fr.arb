@@ -91,6 +91,7 @@
    "pleaseCheckAuthCred": "Une erreur s'est produite. Veuillez vérifier les données d'authentification.",
    "pleaseSelectYourProject": "Maintenant, veuillez sélectionner un projet",
    "printLogDesc": "Message affiché dans la console",
+   "previewTruncated": "Aperçu tronqué",
    "projectDomain": "Domaine du projet",
    "projectWasSelected": "Projet sélectionné",
    "requestHeaders": "En-têtes de requête",

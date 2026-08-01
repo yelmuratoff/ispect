@@ -287,6 +287,9 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get printLogDesc => 'Nachricht in die Konsole ausgegeben';
 
   @override
+  String get previewTruncated => 'Vorschau gekürzt';
+
+  @override
   String get projectDomain => 'Projektdomäne';
 
   @override

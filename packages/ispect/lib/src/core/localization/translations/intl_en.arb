@@ -86,6 +86,7 @@
    "pleaseCheckAuthCred": "An error has occurred. Please check the authorization data.",
    "pleaseSelectYourProject": "Now, please select a project",
    "printLogDesc": "Message printed to console",
+   "previewTruncated": "Preview truncated",
    "projectDomain": "Project domain",
    "projectWasSelected": "Project was selected",
    "requestHeaders": "Request headers",

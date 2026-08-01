@@ -101,7 +101,9 @@ StackTrace: ${bounded(captured.stackTraceText)}]''';
       txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', ' ')}';
     }
 
-    final text = _isHttpKey(captured.key) ? toExportMessageText() : txt;
+    final text = _isHttpKey(captured.key)
+        ? NetworkLogRenderer.renderHeadline(this)
+        : txt;
 
     return text == null
         ? null

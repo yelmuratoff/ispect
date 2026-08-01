@@ -86,6 +86,7 @@
    "pleaseCheckAuthCred": "发生错误，请检查授权信息。",
    "pleaseSelectYourProject": "现在，请选择一个项目",
    "printLogDesc": "消息已输出到控制台",
+   "previewTruncated": "预览已截断",
    "projectDomain": "项目域",
    "projectWasSelected": "项目已选定",
    "requestHeaders": "请求头",

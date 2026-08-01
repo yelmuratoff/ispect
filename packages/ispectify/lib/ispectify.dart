@@ -35,6 +35,7 @@ export 'src/network/network_interceptor_settings.dart';
 export 'src/network/network_interceptor_settings_builder.dart';
 export 'src/network/network_json_keys.dart';
 export 'src/network/network_log_options.dart';
+export 'src/network/network_log_payload.dart';
 export 'src/network/network_log_renderer.dart';
 export 'src/network/network_map_redactor.dart';
 export 'src/network/network_payload_sanitizer.dart';

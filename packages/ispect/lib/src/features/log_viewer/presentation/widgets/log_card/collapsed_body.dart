@@ -197,9 +197,11 @@ class SquareIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const feedbackInset =
+        (kMinInteractiveDimension - ISpectConstants.actionControlHeight) / 2;
     final chip = SizedBox.square(
       dimension: ISpectConstants.actionControlHeight,
-      child: DecoratedBox(
+      child: Ink(
         decoration: ISpectSquircle.decoration(
           color: color.withValues(alpha: 0.06),
           radius: ISpectConstants.mediumBorderRadius,
@@ -218,21 +220,31 @@ class SquareIconButton extends StatelessWidget {
       button: true,
       label: tooltip ?? '',
       onTap: onPressed,
-      child: GestureDetector(
-        excludeFromSemantics: true,
-        behavior: HitTestBehavior.opaque,
-        onTap: onPressed,
-        child: dense
-            ? ConstrainedBox(
-                constraints:
-                    const BoxConstraints(minHeight: kMinInteractiveDimension),
-                child: Center(widthFactor: 1, child: chip),
-              )
-            : SizedBox(
-                width: kMinInteractiveDimension,
-                height: kMinInteractiveDimension,
-                child: Center(child: chip),
-              ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          excludeFromSemantics: true,
+          customBorder: ISpectSquircle.insetBorder(
+            radius: ISpectConstants.mediumBorderRadius,
+            insets: EdgeInsets.symmetric(
+              horizontal: dense ? 0 : feedbackInset,
+              vertical: feedbackInset,
+            ),
+          ),
+          onTap: onPressed,
+          child: dense
+              ? ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minHeight: kMinInteractiveDimension,
+                  ),
+                  child: Center(widthFactor: 1, child: chip),
+                )
+              : SizedBox(
+                  width: kMinInteractiveDimension,
+                  height: kMinInteractiveDimension,
+                  child: Center(child: chip),
+                ),
+        ),
       ),
     );
 

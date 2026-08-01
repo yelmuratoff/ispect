@@ -279,6 +279,9 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
   String get printLogDesc => 'پەیام چاپ کرا لە کۆنسۆڵ';
 
   @override
+  String get previewTruncated => 'پێشبینینەکە کورت کراوەتەوە';
+
+  @override
   String get projectDomain => 'دۆمەینی پڕۆژە';
 
   @override

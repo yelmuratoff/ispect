@@ -274,6 +274,9 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get printLogDesc => '콘솔에 메시지가 출력됨';
 
   @override
+  String get previewTruncated => '미리보기가 잘렸습니다';
+
+  @override
   String get projectDomain => '프로젝트 도메인';
 
   @override

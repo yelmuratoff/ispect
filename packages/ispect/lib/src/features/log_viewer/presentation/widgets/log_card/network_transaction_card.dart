@@ -98,6 +98,12 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
   Widget build(BuildContext context) {
     final color = transactionColor(tx);
     final accentColor = color.withValues(alpha: _expanded ? 0.9 : 0.7);
+    final displayUrl = transactionDisplayUrl(tx);
+
+    void toggleExpanded() {
+      setState(() => _expanded = !_expanded);
+      widget.onTap?.call();
+    }
 
     return ISpectSearchHighlightSurface(
       searchMatchState: widget.searchMatchState,
@@ -117,25 +123,22 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
               button: true,
               expanded: _expanded,
               label:
-                  '${tx.method ?? "HTTP"} ${tx.url ?? ""} — ${tx.statusCode ?? "pending"}',
-              onTap: () {
-                setState(() => _expanded = !_expanded);
-                widget.onTap?.call();
-              },
-              child: GestureDetector(
-                excludeFromSemantics: true,
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  setState(() => _expanded = !_expanded);
-                  widget.onTap?.call();
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: _MobileHeader(
-                    tx: tx,
-                    color: color,
-                    expanded: _expanded,
-                    compactUrl: widget.compactUrl,
+                  '${tx.method ?? "HTTP"} $displayUrl — ${tx.statusCode ?? "pending"}',
+              onTap: toggleExpanded,
+              child: Material(
+                type: MaterialType.transparency,
+                child: InkWell(
+                  excludeFromSemantics: true,
+                  onTap: toggleExpanded,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: _MobileHeader(
+                      tx: tx,
+                      color: color,
+                      expanded: _expanded,
+                      compactUrl: widget.compactUrl,
+                      displayUrl: displayUrl,
+                    ),
                   ),
                 ),
               ),
@@ -183,12 +186,14 @@ class _MobileHeader extends StatelessWidget {
     required this.color,
     required this.expanded,
     required this.compactUrl,
+    required this.displayUrl,
   });
 
   final NetworkTransaction tx;
   final Color color;
   final bool expanded;
   final bool compactUrl;
+  final String displayUrl;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -207,7 +212,7 @@ class _MobileHeader extends StatelessWidget {
                     const Gap(6),
                     Expanded(
                       child: Text(
-                        transactionListUrl(tx.url, compact: compactUrl),
+                        transactionListUrl(displayUrl, compact: compactUrl),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

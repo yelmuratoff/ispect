@@ -274,6 +274,9 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get printLogDesc => '消息已输出到控制台';
 
   @override
+  String get previewTruncated => '预览已截断';
+
+  @override
   String get projectDomain => '项目域';
 
   @override

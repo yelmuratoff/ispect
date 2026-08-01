@@ -276,6 +276,9 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get printLogDesc => 'تم طباعة رسالة في وحدة التحكم';
 
   @override
+  String get previewTruncated => 'تم اختصار المعاينة';
+
+  @override
   String get projectDomain => 'نطاق المشروع';
 
   @override

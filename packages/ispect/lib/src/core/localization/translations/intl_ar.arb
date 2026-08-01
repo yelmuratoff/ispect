@@ -86,6 +86,7 @@
    "pleaseCheckAuthCred": "حدث خطأ. يرجى التحقق من بيانات التفويض.",
    "pleaseSelectYourProject": "الآن، يرجى اختيار مشروع",
    "printLogDesc": "تم طباعة رسالة في وحدة التحكم",
+   "previewTruncated": "تم اختصار المعاينة",
    "projectDomain": "نطاق المشروع",
    "projectWasSelected": "تم اختيار المشروع",
    "requestHeaders": "رؤوس الطلب",

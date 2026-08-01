@@ -148,7 +148,9 @@ String _buildHeader(ISpectLogData data, ConsoleSettings settings) {
 /// for network/WS entries. Returns an empty string when there is nothing to
 /// show, letting each formatter render its own placeholder.
 String _buildBody(ISpectLogData data) {
-  final headline = data.toExportMessageText();
+  final headline = NetworkLogRenderer.isNetworkLog(data)
+      ? NetworkLogRenderer.renderHeadline(data)
+      : data.toExportMessageText();
   final networkBody = NetworkLogRenderer.isNetworkLog(data)
       ? NetworkLogRenderer.renderBody(data)
       : '';

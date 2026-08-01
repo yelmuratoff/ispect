@@ -91,6 +91,7 @@
    "pleaseCheckAuthCred": "एक त्रुटि हुई है। कृपया प्रमाणीकरण डेटा जांचें।",
    "pleaseSelectYourProject": "अब, कृपया एक प्रोजेक्ट चुनें",
    "printLogDesc": "कंसोल में संदेश प्रिंट किया गया",
+   "previewTruncated": "पूर्वावलोकन काट दिया गया",
    "projectDomain": "प्रोजेक्ट डोमेन",
    "projectWasSelected": "प्रोजेक्ट चुना गया",
    "requestHeaders": "अनुरोध हेडर",

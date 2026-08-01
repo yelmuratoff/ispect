@@ -82,7 +82,14 @@ String transactionRequestSummary(NetworkTransaction tx) {
 /// the request content type.
 bool transactionHasInlineDetails(NetworkTransaction tx) =>
     (tx.response != null && transactionStatusSummary(tx).isNotEmpty) ||
-    tx.error != null;
+    tx.error != null ||
+    (NetworkLogRenderer.requestPayload(tx.request)?.hasPreview ?? false) ||
+    (NetworkLogRenderer.responsePayload(
+          tx.response ?? tx.error ?? tx.request,
+        )?.hasPreview ??
+        false);
+
+String transactionDisplayUrl(NetworkTransaction tx) => tx.url ?? '';
 
 /// URL to render in a collapsed transaction row.
 ///

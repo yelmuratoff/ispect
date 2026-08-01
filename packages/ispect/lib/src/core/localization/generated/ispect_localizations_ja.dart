@@ -274,6 +274,9 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get printLogDesc => 'コンソールにメッセージが出力されました';
 
   @override
+  String get previewTruncated => 'プレビューを省略しました';
+
+  @override
   String get projectDomain => 'プロジェクトドメイン';
 
   @override

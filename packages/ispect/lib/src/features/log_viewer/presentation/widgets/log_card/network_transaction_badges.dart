@@ -170,6 +170,8 @@ class DetailChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const feedbackInset =
+        (kMinInteractiveDimension - ISpectConstants.actionControlHeight) / 2;
     final content = Padding(
       padding: iconOnly
           ? const EdgeInsets.all(4)
@@ -200,7 +202,7 @@ class DetailChip extends StatelessWidget {
 
     final chip = MouseRegion(
       cursor: SystemMouseCursors.click,
-      child: DecoratedBox(
+      child: Ink(
         decoration: ISpectSquircle.decoration(
           color: color.withValues(alpha: 0.08),
           radius: ISpectConstants.mediumBorderRadius,
@@ -218,19 +220,26 @@ class DetailChip extends StatelessWidget {
       button: true,
       label: label,
       onTap: onTap,
-      child: GestureDetector(
-        excludeFromSemantics: true,
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: iconOnly
-            ? Tooltip(message: label, child: chip)
-            // Pad the touch target up to the minimum on the labeled mobile
-            // chip while keeping the chip itself compact.
-            : ConstrainedBox(
-                constraints:
-                    const BoxConstraints(minHeight: kMinInteractiveDimension),
-                child: Center(widthFactor: 1, child: chip),
-              ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          excludeFromSemantics: true,
+          customBorder: ISpectSquircle.insetBorder(
+            radius: ISpectConstants.mediumBorderRadius,
+            insets: iconOnly
+                ? EdgeInsets.zero
+                : const EdgeInsets.symmetric(vertical: feedbackInset),
+          ),
+          onTap: onTap,
+          child: iconOnly
+              ? Tooltip(message: label, child: chip)
+              : ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minHeight: kMinInteractiveDimension,
+                  ),
+                  child: Center(widthFactor: 1, child: chip),
+                ),
+        ),
       ),
     );
   }
@@ -257,18 +266,21 @@ class SmallActionIcon extends StatelessWidget {
         onTap: onPressed,
         child: Tooltip(
           message: tooltip ?? '',
-          child: InkWell(
-            excludeFromSemantics: true,
-            customBorder: ISpectSquircle.border(
-              radius: ISpectConstants.smallBorderRadius,
-            ),
-            onTap: onPressed,
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: Icon(
-                icon,
-                size: 15,
-                color: color.withValues(alpha: 0.6),
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              excludeFromSemantics: true,
+              customBorder: ISpectSquircle.border(
+                radius: ISpectConstants.smallBorderRadius,
+              ),
+              onTap: onPressed,
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  icon,
+                  size: 15,
+                  color: color.withValues(alpha: 0.6),
+                ),
               ),
             ),
           ),

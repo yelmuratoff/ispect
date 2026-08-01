@@ -91,6 +91,7 @@
    "pleaseCheckAuthCred": "오류가 발생했습니다. 인증 데이터를 확인해 주세요.",
    "pleaseSelectYourProject": "이제 프로젝트를 선택해 주세요",
    "printLogDesc": "콘솔에 메시지가 출력됨",
+   "previewTruncated": "미리보기가 잘렸습니다",
    "projectDomain": "프로젝트 도메인",
    "projectWasSelected": "프로젝트가 선택됨",
    "requestHeaders": "요청 헤더",

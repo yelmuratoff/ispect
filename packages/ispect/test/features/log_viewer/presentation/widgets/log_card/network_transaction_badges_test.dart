@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
 
+import '../../../../../helpers/pump_ispect.dart';
+
 void main() {
   group('MethodBadge', () {
     const fallback = Color(0xFF4CAF50);
@@ -64,5 +66,79 @@ void main() {
         (tester) async {
       expect(await pumpBadgeColor(tester, 'HTTP'), fallback);
     });
+  });
+
+  testWidgets('transaction action controls use visible Material ripples',
+      (tester) async {
+    await tester.pumpWidget(
+      appShell(
+        Row(
+          children: [
+            DetailChip(
+              label: 'Request',
+              color: Colors.green,
+              onTap: () {},
+            ),
+            SmallActionIcon(
+              icon: Icons.share_rounded,
+              color: Colors.green,
+              tooltip: 'Share',
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+
+    for (final control in [
+      find.byType(DetailChip),
+      find.byType(SmallActionIcon),
+    ]) {
+      expect(
+        find.descendant(of: control, matching: find.byType(Material)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: control, matching: find.byType(InkWell)),
+        findsOneWidget,
+      );
+    }
+  });
+
+  testWidgets('detail chip confines its ripple to the visual surface',
+      (tester) async {
+    await tester.pumpWidget(
+      appShell(
+        Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            height: kMinInteractiveDimension,
+            child: DetailChip(
+              label: 'Request',
+              color: Colors.green,
+              onTap: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final control = find.byType(DetailChip);
+    final inkWellFinder = find.descendant(
+      of: control,
+      matching: find.byType(InkWell),
+    );
+    final surfaceFinder = find.descendant(
+      of: control,
+      matching: find.byType(Ink),
+    );
+    final inkWell = tester.widget<InkWell>(inkWellFinder);
+    final tapSize = tester.getSize(inkWellFinder);
+    final surfaceSize = tester.getSize(surfaceFinder);
+    final clipBounds =
+        inkWell.customBorder!.getOuterPath(Offset.zero & tapSize).getBounds();
+
+    expect(clipBounds.size, surfaceSize);
+    expect(clipBounds.center, (Offset.zero & tapSize).center);
   });
 }

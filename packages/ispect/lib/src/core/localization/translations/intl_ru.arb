@@ -91,6 +91,7 @@
    "pleaseCheckAuthCred": "Произошла ошибка. Пожалуйста, проверьте данные авторизации.",
    "pleaseSelectYourProject": "Теперь, пожалуйста, выберите проект",
    "printLogDesc": "Сообщение выведено в консоль",
+   "previewTruncated": "Предпросмотр обрезан",
    "projectDomain": "Домен проекта",
    "projectWasSelected": "Проект выбран",
    "requestHeaders": "Заголовки запроса",

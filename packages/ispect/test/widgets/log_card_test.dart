@@ -7,6 +7,26 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log
 
 import '../helpers/pump_ispect.dart';
 
+final class _CountingRedactionService extends RedactionService {
+  int structuredExportCalls = 0;
+
+  @override
+  Object? redactForExport(
+    Object? data, {
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    if (data is Map<Object?, Object?>) structuredExportCalls++;
+    return super.redactForExport(
+      data,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
+    );
+  }
+}
+
 void main() {
   group('LogCard', () {
     ISpectLogData makeLogData({
@@ -137,6 +157,130 @@ void main() {
     );
 
     testWidgets(
+      'expanded HTTP card previews body and reveals headers on demand',
+      (tester) async {
+        final data = ISpectLogData(
+          '→ POST https://api.example.com/users',
+          key: ISpectLogType.httpRequest.key,
+          additionalData: const {
+            TraceKeys.category: TraceCategoryIds.network,
+            TraceKeys.operation: 'POST',
+            TraceKeys.target: 'https://api.example.com/users',
+            TraceKeys.meta: {
+              NetworkJsonKeys.requestData: {
+                NetworkJsonKeys.data: {'name': 'Ada'},
+                NetworkJsonKeys.headers: {
+                  'authorization': '[REDACTED]',
+                },
+              },
+            },
+          },
+        );
+
+        await tester.pumpWidget(buildLogCard(data: data, isExpanded: true));
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('"name": "Ada"'), findsOneWidget);
+        expect(find.textContaining('[REDACTED]'), findsNothing);
+
+        await tester.tap(find.textContaining('Headers (1)'));
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('[REDACTED]'), findsOneWidget);
+      },
+    );
+
+    testWidgets('expanded HTTP card does not re-redact its payload',
+        (tester) async {
+      final redactor = _CountingRedactionService();
+      ISpectRedaction.configure(service: redactor);
+      addTearDown(ISpectRedaction.reset);
+      final data = ISpectLogData(
+        '→ POST https://api.example.com/users',
+        key: ISpectLogType.httpRequest.key,
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          TraceKeys.operation: 'POST',
+          TraceKeys.target: 'https://api.example.com/users',
+          TraceKeys.meta: {
+            NetworkJsonKeys.requestData: {
+              NetworkJsonKeys.data: {'password': defaultPlaceholder},
+              NetworkJsonKeys.headers: {
+                'Authorization': defaultPlaceholder,
+              },
+            },
+          },
+        },
+      );
+
+      await tester.pumpWidget(buildLogCard(data: data, isExpanded: true));
+      await tester.pumpAndSettle();
+
+      expect(redactor.structuredExportCalls, 0);
+    });
+
+    testWidgets('expanded HTTP card marks an overflowing body preview',
+        (tester) async {
+      final data = ISpectLogData(
+        '→ GET https://api.example.com/products',
+        key: ISpectLogType.httpResponse.key,
+        additionalData: {
+          TraceKeys.category: TraceCategoryIds.network,
+          TraceKeys.operation: 'GET',
+          TraceKeys.target: 'https://api.example.com/products',
+          TraceKeys.meta: {
+            NetworkJsonKeys.responseData: {
+              NetworkJsonKeys.statusCode: 200,
+              NetworkJsonKeys.data: {
+                'products': [
+                  for (var index = 0; index < 12; index++)
+                    {
+                      'id': index,
+                      'description':
+                          'A deliberately long product description for item $index',
+                    },
+                ],
+              },
+            },
+          },
+        },
+      );
+
+      await tester.pumpWidget(buildLogCard(data: data, isExpanded: true));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Preview truncated'), findsOneWidget);
+      expect(find.byType(ShaderMask), findsOneWidget);
+    });
+
+    testWidgets('HTTP card renders query parameters as part of the URL',
+        (tester) async {
+      final data = ISpectLogData(
+        '→ GET https://api.example.com/users',
+        key: ISpectLogType.httpRequest.key,
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          TraceKeys.operation: 'GET',
+          TraceKeys.target: 'https://api.example.com/users',
+          TraceKeys.meta: {
+            NetworkJsonKeys.requestData: {
+              NetworkJsonKeys.queryParameters: {'page': 2},
+            },
+          },
+        },
+      );
+
+      await tester.pumpWidget(buildLogCard(data: data));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('https://api.example.com/users?page=2'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Query Parameters:'), findsNothing);
+    });
+
+    testWidgets(
       'Given a collapsed LogCard, '
       'When it is rendered, '
       'Then action buttons are visible',
@@ -257,6 +401,52 @@ void main() {
       },
     );
 
+    testWidgets('SquareIconButton confines its ripple to the visual surface',
+        (tester) async {
+      await tester.pumpWidget(buildLogCard());
+      await tester.pumpAndSettle();
+
+      final buttons = find.byType(SquareIconButton);
+      expect(buttons, findsWidgets);
+      for (final element in buttons.evaluate()) {
+        final button = find.byWidget(element.widget);
+        expect(
+          find.descendant(of: button, matching: find.byType(Material)),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: button, matching: find.byType(InkWell)),
+          findsOneWidget,
+        );
+        _expectRippleMatchesInkSurface(tester, button);
+      }
+    });
+
+    testWidgets('dense SquareIconButton confines ripple to its visual surface',
+        (tester) async {
+      await tester.pumpWidget(
+        appShell(
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              height: kMinInteractiveDimension,
+              child: SquareIconButton(
+                icon: Icons.share_rounded,
+                color: Colors.green,
+                dense: true,
+                onPressed: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      _expectRippleMatchesInkSurface(
+        tester,
+        find.byType(SquareIconButton),
+      );
+    });
+
     testWidgets(
       'copy message retains binary provenance until context-menu redaction',
       (tester) async {
@@ -293,6 +483,25 @@ void main() {
       },
     );
   });
+}
+
+void _expectRippleMatchesInkSurface(WidgetTester tester, Finder control) {
+  final inkWellFinder = find.descendant(
+    of: control,
+    matching: find.byType(InkWell),
+  );
+  final surfaceFinder = find.descendant(
+    of: control,
+    matching: find.byType(Ink),
+  );
+  final inkWell = tester.widget<InkWell>(inkWellFinder);
+  final tapSize = tester.getSize(inkWellFinder);
+  final surfaceSize = tester.getSize(surfaceFinder);
+  final clipBounds =
+      inkWell.customBorder!.getOuterPath(Offset.zero & tapSize).getBounds();
+
+  expect(clipBounds.size, surfaceSize);
+  expect(clipBounds.center, (Offset.zero & tapSize).center);
 }
 
 final class _HostileRuntimeTypeError extends Error {

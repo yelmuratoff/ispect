@@ -86,6 +86,7 @@
    "pleaseCheckAuthCred": "Ha ocurrido un error. Por favor, verifica los datos de autorización.",
    "pleaseSelectYourProject": "Ahora, por favor, selecciona un proyecto",
    "printLogDesc": "Mensaje impreso en la consola",
+   "previewTruncated": "Vista previa truncada",
    "projectDomain": "Dominio del proyecto",
    "projectWasSelected": "Proyecto seleccionado",
    "requestHeaders": "Encabezados de solicitud",

@@ -91,6 +91,7 @@
    "pleaseCheckAuthCred": "Ein Fehler ist aufgetreten. Bitte überprüfen Sie die Autorisierungsdaten.",
    "pleaseSelectYourProject": "Bitte wählen Sie jetzt ein Projekt aus",
    "printLogDesc": "Nachricht in die Konsole ausgegeben",
+   "previewTruncated": "Vorschau gekürzt",
    "projectDomain": "Projektdomäne",
    "projectWasSelected": "Projekt wurde ausgewählt",
    "requestHeaders": "Anfrage-Header",

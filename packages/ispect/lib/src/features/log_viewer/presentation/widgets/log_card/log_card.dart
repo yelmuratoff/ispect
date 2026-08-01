@@ -12,6 +12,7 @@ import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_context_menu.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_payload_preview.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
 
 part 'collapsed_body.dart';
@@ -111,13 +112,11 @@ class _LogCardHeader extends StatelessWidget {
   final ISpectNavigatorObserver? observer;
   final void Function(String id)? onShowRelated;
 
-  String get _message {
-    final msg = data.isHttpLog ? data.httpLogText : data.textMessage;
-    return msg ?? '';
-  }
-
   @override
   Widget build(BuildContext context) {
+    final httpLogText = data.httpLogText;
+    final message = data.isHttpLog ? httpLogText : data.textMessage;
+
     void openDetail() {
       LogDetailView(
         activeData: data,
@@ -145,7 +144,7 @@ class _LogCardHeader extends StatelessWidget {
       button: true,
       expanded: isExpanded,
       label:
-          '${ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? "Log"}: $_message',
+          '${ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? "Log"}: ${message ?? ""}',
       onTap: onTap,
       child: Material(
         type: MaterialType.transparency,
@@ -172,8 +171,8 @@ class _LogCardHeader extends StatelessWidget {
                       data.key,
                   dateTime: data.formattedTime,
                   subtitle: _buildSubtitle(data),
-                  message: data.textMessage,
-                  errorMessage: data.httpLogText,
+                  message: message,
+                  errorMessage: httpLogText,
                   expanded: isExpanded,
                   statusCode: data.httpStatusCode,
                   slowDurationMs:
@@ -200,7 +199,8 @@ String? _buildSubtitle(ISpectLogData data) {
   if (source != null && source.isNotEmpty) parts.add(source);
 
   final op = data.traceOperation;
-  final target = data.traceTarget;
+  final target =
+      data.isHttpLog ? NetworkLogRenderer.displayUrl(data) : data.traceTarget;
   if (op != null && target != null) {
     parts.add('$op $target');
   } else if (op != null) {
@@ -299,20 +299,38 @@ class _LazyExpandedBody extends StatelessWidget {
   final bool hasStackTrace;
 
   @override
-  Widget build(BuildContext context) => _LogContentContainer(
-        hasStackTrace: hasStackTrace,
-        color: color,
-        child: _LogTextContent(
-          message: data.textMessage,
-          type: data.typeText,
-          errorMessage: data.httpLogText,
-          isHTTP: data.isHttpLog,
-          textStyle: TextStyle(
-            color: color,
-            fontSize: 12,
+  Widget build(BuildContext context) {
+    final captured = captureISpectLogDataForEgress(data);
+    final payload = data.isHttpLog ? NetworkLogRenderer.payload(data) : null;
+
+    return _LogContentContainer(
+      hasStackTrace: hasStackTrace,
+      color: color,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _LogTextContent(
+            message: data.textMessage,
+            type: data.typeText,
+            errorMessage: data.httpLogText,
+            isHTTP: data.isHttpLog,
+            textStyle: TextStyle(
+              color: color,
+              fontSize: 12,
+            ),
           ),
-        ),
-      );
+          if (payload?.hasPreview ?? false) ...[
+            const Gap(8),
+            NetworkPayloadPreview(
+              payload: payload!,
+              color: color,
+              maxStringLength: captured.resourceLimits.maxUiDiagnosticBytes,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 class _LazyStackTraceBody extends StatelessWidget {

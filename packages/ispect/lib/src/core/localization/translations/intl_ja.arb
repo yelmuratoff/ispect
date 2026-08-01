@@ -86,6 +86,7 @@
    "pleaseCheckAuthCred": "エラーが発生しました。認証データを確認してください。",
    "pleaseSelectYourProject": "プロジェクトを選択してください",
    "printLogDesc": "コンソールにメッセージが出力されました",
+   "previewTruncated": "プレビューを省略しました",
    "projectDomain": "プロジェクトドメイン",
    "projectWasSelected": "プロジェクトが選択されました",
    "requestHeaders": "リクエストヘッダー",

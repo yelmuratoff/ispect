@@ -264,11 +264,26 @@ void main() {
       final service = RedactionService();
       final headers = service.redactHeaders({
         'Authorization': 'Bearer secret-token',
+        'Set-Cookie': 'session=secret-cookie',
+        'X-API-Key': 'secret-api-key',
+        'X-XSS-Protection': '1; mode=block',
         'X-Custom': 'visible',
       });
 
       expect(headers['Authorization'], contains('[REDACTED]'));
+      expect(headers['Set-Cookie'], contains('[REDACTED]'));
+      expect(headers['X-API-Key'], contains('[REDACTED]'));
+      expect(headers['X-XSS-Protection'], '1; mode=block');
       expect(headers['X-Custom'], 'visible');
+      expect(
+        headers.keys,
+        containsAll([
+          'Authorization',
+          'Set-Cookie',
+          'X-API-Key',
+          'X-XSS-Protection',
+        ]),
+      );
     });
 
     test('scrubs data embedded in header names and arbitrary values', () {

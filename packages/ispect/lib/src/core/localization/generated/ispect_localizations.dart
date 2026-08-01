@@ -639,6 +639,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'Message printed to console'**
   String get printLogDesc;
 
+  /// No description provided for @previewTruncated.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview truncated'**
+  String get previewTruncated;
+
   /// No description provided for @projectDomain.
   ///
   /// In en, this message translates to:

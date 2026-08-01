@@ -279,6 +279,9 @@ class ISpectGeneratedLocalizationKu extends ISpectGeneratedLocalization {
   String get printLogDesc => 'پەیام ل سەر کۆنسۆلێ هاتە چاپکرن';
 
   @override
+  String get previewTruncated => 'پێشبینین هاتە کورتکرن';
+
+  @override
   String get projectDomain => 'دۆمەینێ پڕۆژەی';
 
   @override

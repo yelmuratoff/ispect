@@ -86,6 +86,7 @@
    "pleaseCheckAuthCred": "خەلەتیەک چێبوو. ژ کەرەما خۆ دانەیێن دەستووردانێ کۆنترۆل بکە.",
    "pleaseSelectYourProject": "نوکە، ژ کەرەما خۆ پڕۆژەیەک هەلبژێره",
    "printLogDesc": "پەیام ل سەر کۆنسۆلێ هاتە چاپکرن",
+   "previewTruncated": "پێشبینین هاتە کورتکرن",
    "projectDomain": "دۆمەینێ پڕۆژەی",
    "projectWasSelected": "پڕۆژە هاتە هەلبژارتن",
    "requestHeaders": "سەرپەڕێن داخوازیێ",

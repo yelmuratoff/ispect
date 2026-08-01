@@ -86,6 +86,7 @@
     "pleaseCheckAuthCred": "Қате. Авторизация деректерін тексеріп көріңіз.",
     "pleaseSelectYourProject": "Енді жобаны таңдаңыз",
     "printLogDesc": "Хабарлама консольге шығарылды",
+    "previewTruncated": "Алдын ала қарау қысқартылды",
     "projectDomain": "Жоба домені",
     "projectWasSelected": "Жоба таңдалды",
     "requestHeaders": "Запростың headers-і",

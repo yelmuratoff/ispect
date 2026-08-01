@@ -5,6 +5,7 @@ ISpectLogData _request({
   String method = 'DELETE',
   String? contentType,
   int? contentLength,
+  Map<String, Object?> queryParameters = const {},
 }) =>
     ISpectLogData(
       'request',
@@ -16,6 +17,7 @@ ISpectLogData _request({
           NetworkJsonKeys.requestId: 'rid-1',
           NetworkJsonKeys.requestData: {
             NetworkJsonKeys.method: method,
+            NetworkJsonKeys.queryParameters: queryParameters,
             if (contentType != null) NetworkJsonKeys.contentType: contentType,
             if (contentLength != null)
               NetworkJsonKeys.contentLength: contentLength,
@@ -187,6 +189,20 @@ void main() {
       expect(tx.method, isNull);
       expect(tx.url, isNull);
     });
+  });
+
+  test('url includes separately captured query parameters', () {
+    final tx = NetworkTransaction(
+      requestId: 'rid-1',
+      request: _request(
+        queryParameters: const {'page': 2, 'active': true},
+      ),
+    );
+
+    expect(
+      tx.url,
+      'https://api.example.com/products/1?page=2&active=true',
+    );
   });
 
   group('NetworkTransaction.statusMessage', () {

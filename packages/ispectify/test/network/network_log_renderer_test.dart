@@ -93,7 +93,7 @@ void main() {
       expect(body, isNot(contains('authorization')));
     });
 
-    test('renders non-empty request query parameters before the body', () {
+    test('keeps request query parameters out of the body', () {
       final entry = ISpectLogData(
         'headline',
         additionalData: const {
@@ -110,12 +110,9 @@ void main() {
 
       final body = NetworkLogRenderer.renderBody(entry);
 
-      expect(body, contains('Query Parameters:'));
-      expect(body, contains('"page": 1'));
-      expect(
-        body.indexOf('Query Parameters:'),
-        lessThan(body.indexOf('Data:')),
-      );
+      expect(body, isNot(contains('Query Parameters:')));
+      expect(body, isNot(contains('"page": 1')));
+      expect(body, contains('Data:'));
     });
 
     test('omits the query parameters section when the map is empty', () {
@@ -204,7 +201,7 @@ void main() {
       expect(body, isNot(contains('Message: OK')));
     });
 
-    test('renders query parameters from the response request reference', () {
+    test('keeps response request query parameters out of the body', () {
       final entry = ISpectLogData(
         'headline',
         additionalData: const {
@@ -221,8 +218,8 @@ void main() {
       final body = NetworkLogRenderer.renderBody(entry);
 
       expect(body, contains('Status: 200'));
-      expect(body, contains('Query Parameters:'));
-      expect(body, contains('"page": "2"'));
+      expect(body, isNot(contains('Query Parameters:')));
+      expect(body, isNot(contains('"page": "2"')));
     });
 
     test('printMessage hint surfaces statusMessage', () {
@@ -312,7 +309,7 @@ void main() {
       expect(body, contains('token expired'));
     });
 
-    test('renders query parameters from the error request reference', () {
+    test('keeps error request query parameters out of the body', () {
       final entry = ISpectLogData(
         'headline',
         additionalData: const {
@@ -332,8 +329,8 @@ void main() {
       final body = NetworkLogRenderer.renderBody(entry);
 
       expect(body, contains('Error: Request failed'));
-      expect(body, contains('Query Parameters:'));
-      expect(body, contains('"retry": "true"'));
+      expect(body, isNot(contains('Query Parameters:')));
+      expect(body, isNot(contains('"retry": "true"')));
     });
 
     test('ignores wrong-shaped error response and message fields', () {
@@ -483,6 +480,132 @@ void main() {
       );
 
       expect(NetworkLogRenderer.renderBody(entry), contains('TAIL'));
+    });
+  });
+
+  group('NetworkLogRenderer payload presentation', () {
+    test('keeps message egress redaction enabled', () {
+      final entry = ISpectLogData(
+        '→ GET https://api.example.com/users password=message-secret',
+        key: ISpectLogType.httpRequest.key,
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          TraceKeys.target: 'https://api.example.com/users',
+        },
+      );
+
+      final headline = NetworkLogRenderer.renderHeadline(entry);
+
+      expect(headline, contains('password=$defaultPlaceholder'));
+      expect(headline, isNot(contains('message-secret')));
+    });
+
+    test('reuses captured query, headers, and body values', () {
+      final entry = ISpectLogData(
+        '→ POST https://api.example.com/users',
+        key: ISpectLogType.httpRequest.key,
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          TraceKeys.target: 'https://api.example.com/users',
+          TraceKeys.meta: {
+            NetworkJsonKeys.requestData: {
+              NetworkJsonKeys.queryParameters: {
+                'token': defaultPlaceholder,
+              },
+              NetworkJsonKeys.headers: {
+                'authorization': 'Bearer [REDACTED]',
+              },
+              NetworkJsonKeys.data: {
+                'password': defaultPlaceholder,
+              },
+            },
+          },
+        },
+      );
+
+      final payload = NetworkLogRenderer.requestPayload(entry);
+      final url = NetworkLogRenderer.displayUrl(entry);
+
+      expect(
+        payload?.headers['authorization'],
+        'Bearer $defaultPlaceholder',
+      );
+      expect(
+        payload?.body,
+        <String, Object?>{'password': defaultPlaceholder},
+      );
+      expect(url, 'https://api.example.com/users?token=[REDACTED]');
+    });
+
+    test('keeps captured sensitive header names visible', () {
+      final entry = ISpectLogData(
+        '← 200 https://api.example.com/users',
+        key: ISpectLogType.httpResponse.key,
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          TraceKeys.meta: {
+            NetworkJsonKeys.responseData: {
+              NetworkJsonKeys.headers: {
+                'Set-Cookie': 'session=[REDACTED]; HttpOnly',
+                'Authorization': 'Bearer [REDACTED]',
+                'X-XSS-Protection': '0',
+              },
+            },
+          },
+        },
+      );
+
+      final payload = NetworkLogRenderer.responsePayload(entry);
+
+      expect(
+        payload?.headers.keys,
+        containsAll(['Set-Cookie', 'Authorization', 'X-XSS-Protection']),
+      );
+      expect(payload?.headers.keys, isNot(contains(defaultPlaceholder)));
+      expect(payload?.headers['Set-Cookie'], contains(defaultPlaceholder));
+      expect(payload?.headers['Authorization'], contains(defaultPlaceholder));
+      expect(payload?.headers['X-XSS-Protection'], '0');
+    });
+
+    test('preserves values from an explicit capture-time opt-out', () {
+      final entry = ISpectLogData(
+        '→ GET https://api.example.com/users',
+        key: ISpectLogType.httpRequest.key,
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          TraceKeys.target: 'https://api.example.com/users',
+          TraceKeys.meta: {
+            NetworkJsonKeys.requestData: {
+              NetworkJsonKeys.queryParameters: {'token': 'visible'},
+            },
+          },
+        },
+      );
+
+      expect(
+        NetworkLogRenderer.displayUrl(entry),
+        'https://api.example.com/users?token=visible',
+      );
+    });
+
+    test('keeps the standard redaction marker readable in an encoded URL', () {
+      final entry = ISpectLogData(
+        '→ GET https://api.example.com/users?token=%5BREDACTED%5D',
+        key: ISpectLogType.httpRequest.key,
+        additionalData: const {
+          TraceKeys.category: TraceCategoryIds.network,
+          TraceKeys.target:
+              'https://api.example.com/users?token=%5BREDACTED%5D',
+          TraceKeys.meta: {
+            NetworkJsonKeys.requestData: <String, Object?>{},
+          },
+        },
+      );
+
+      expect(
+        NetworkLogRenderer.displayUrl(entry),
+        'https://api.example.com/users?token=$defaultPlaceholder',
+      );
     });
   });
 }

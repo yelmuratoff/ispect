@@ -27,6 +27,17 @@ abstract final class ISpectSquircle {
         side: side,
       );
 
+  /// Returns a squircle clip deflated by [insets] without shrinking its
+  /// widget's layout or hit-test bounds.
+  static ShapeBorder insetBorder({
+    required EdgeInsets insets,
+    double radius = ISpectConstants.cardBorderRadius,
+  }) =>
+      _InsetShapeBorder(
+        border: border(radius: radius),
+        insets: insets,
+      );
+
   /// A [ShapeDecoration] with squircle corners for the logical [radius]; a
   /// drop-in replacement for a `BoxDecoration(borderRadius: …)` fill or border.
   static ShapeDecoration decoration({
@@ -54,6 +65,63 @@ abstract final class ISpectSquircle {
         borderRadius: BorderRadius.all(Radius.circular(radius * scale)),
         borderSide: side,
       );
+}
+
+final class _InsetShapeBorder extends ShapeBorder {
+  const _InsetShapeBorder({required this.border, required this.insets});
+
+  final ShapeBorder border;
+  final EdgeInsets insets;
+
+  @override
+  EdgeInsetsGeometry get dimensions => EdgeInsets.zero;
+
+  @override
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
+      border.getInnerPath(
+        insets.deflateRect(rect),
+        textDirection: textDirection,
+      );
+
+  @override
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) =>
+      border.getOuterPath(
+        insets.deflateRect(rect),
+        textDirection: textDirection,
+      );
+
+  @override
+  void paint(
+    Canvas canvas,
+    Rect rect, {
+    TextDirection? textDirection,
+  }) =>
+      border.paint(
+        canvas,
+        insets.deflateRect(rect),
+        textDirection: textDirection,
+      );
+
+  @override
+  ShapeBorder scale(double t) => _InsetShapeBorder(
+        border: border.scale(t),
+        insets: EdgeInsets.fromLTRB(
+          insets.left * t,
+          insets.top * t,
+          insets.right * t,
+          insets.bottom * t,
+        ),
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _InsetShapeBorder &&
+          other.border == border &&
+          other.insets == insets;
+
+  @override
+  int get hashCode => Object.hash(border, insets);
 }
 
 /// [InputBorder] that paints continuous (squircle) corners by delegating to a
