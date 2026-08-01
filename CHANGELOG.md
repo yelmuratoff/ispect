@@ -37,7 +37,7 @@
 
 ### Bug Fixes
 
-- **iOS file history:** Rolling history now initializes in the application cache sandbox, and fallback diagnostics retain typed failure context without re-entering the logger pipeline.
+- **Apple file history:** Rolling history now initializes in iOS and macOS application cache sandboxes, and fallback diagnostics retain typed failure context without re-entering the logger pipeline.
 - **Concurrent diagnostics:** Fixed BLoC event correlation and stale asynchronous log-viewer updates.
 - **Reliable lifecycle:** Shutdown and forced reinitialization now clean up logger state consistently, including failure paths.
 - **Host error callbacks:** Flutter, platform, and zoned callbacks continue receiving the original error and stack trace.

@@ -210,12 +210,13 @@ Records are redacted before they reach disk, grouped into daily rolling segments
 Disabling the global `ISpectRedaction.enabled` switch is an explicit opt-out that also disables redaction before file persistence and JSON export.
 
 The directory provider must return an existing app-private directory. On
-POSIX, the provider must be owner-only so its traversal permissions protect
-all child artifacts; managed session/date directories must not be group- or
-world-writable. Symbolic links and paths outside the managed root are rejected.
-An active process running as the same OS principal is outside the `dart:io`
-rolling-history threat model; use in-memory history or a platform-native
-storage service when that attacker is in scope.
+POSIX, the provider and managed session/date directories must not be group- or
+world-writable. Outside iOS, the provider or one of its canonical ancestors
+must also be owner-only so traversal is protected; iOS relies on its mandatory
+application sandbox. Symbolic links and paths outside the managed root are
+rejected. An active process running as the same OS principal is outside the
+`dart:io` rolling-history threat model; use in-memory history or a
+platform-native storage service when that attacker is in scope.
 
 Persistence does not invoke supplied `Exception`, `Error`, or `StackTrace`
 formatting methods after capture. Strict mode uses bounded safe descriptors;

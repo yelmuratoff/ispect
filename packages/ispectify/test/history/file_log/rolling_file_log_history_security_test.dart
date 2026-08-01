@@ -110,7 +110,7 @@ void main() {
       markTestSkipped('POSIX permission bits are unavailable on Windows');
       return;
     }
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await Directory('/tmp').createTemp('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final chmod = await Process.run('chmod', ['0755', root.path]);
     expect(chmod.exitCode, 0);
@@ -124,6 +124,38 @@ void main() {
     await expectLater(
       history.getAvailableLogDates(),
       throwsA(isA<FileLogAccessException>()),
+    );
+  });
+
+  test('accepts a read-only provider beneath an owner-only ancestor', () async {
+    if (Platform.isWindows) {
+      markTestSkipped('POSIX permission bits are unavailable on Windows');
+      return;
+    }
+    final privateRoot =
+        await Directory.systemTemp.createTemp('ispect-security-');
+    addTearDown(() => privateRoot.delete(recursive: true));
+    final privateChmod = await Process.run('chmod', ['0700', privateRoot.path]);
+    expect(privateChmod.exitCode, 0);
+    final provider = Directory(
+      '${privateRoot.path}${Platform.pathSeparator}provider',
+    );
+    await provider.create();
+    final chmod = await Process.run('chmod', ['0755', provider.path]);
+    expect(chmod.exitCode, 0);
+    final history = file_io.RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => provider.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+    );
+    addTearDown(history.dispose);
+
+    await expectLater(history.getAvailableLogDates(), completion(isEmpty));
+    expect(
+      await Directory(
+        '${provider.path}${Platform.pathSeparator}ispect_logs',
+      ).exists(),
+      isTrue,
     );
   });
 
@@ -141,7 +173,7 @@ void main() {
       ISpectLoggerOptions(useConsoleLogs: false),
       directoryProvider: () async => root.path,
       options: const FileLogHistoryOptions(enableAutoSave: false),
-      providerDirectoryRequiresOwnerOnly: false,
+      providerDirectoryRequiresOwnerOnlyProtection: false,
     );
     addTearDown(history.dispose);
 
@@ -168,7 +200,7 @@ void main() {
       ISpectLoggerOptions(useConsoleLogs: false),
       directoryProvider: () async => root.path,
       options: const FileLogHistoryOptions(enableAutoSave: false),
-      providerDirectoryRequiresOwnerOnly: false,
+      providerDirectoryRequiresOwnerOnlyProtection: false,
     );
     addTearDown(history.dispose);
 
@@ -178,7 +210,7 @@ void main() {
     );
   });
 
-  test('revalidates provider permissions after initialization', () async {
+  test('revalidates provider write permissions after initialization', () async {
     if (Platform.isWindows) {
       markTestSkipped('POSIX permission bits are unavailable on Windows');
       return;
@@ -192,8 +224,40 @@ void main() {
     );
     addTearDown(history.dispose);
     await history.getAvailableLogDates();
-    final chmod = await Process.run('chmod', ['0755', root.path]);
+    final chmod = await Process.run('chmod', ['0777', root.path]);
     expect(chmod.exitCode, 0);
+
+    await expectLater(
+      history.getAvailableLogDates(),
+      throwsA(isA<FileLogAccessException>()),
+    );
+  });
+
+  test('revalidates owner-only ancestor protection after initialization',
+      () async {
+    if (Platform.isWindows) {
+      markTestSkipped('POSIX permission bits are unavailable on Windows');
+      return;
+    }
+    final privateRoot = await Directory('/tmp').createTemp('ispect-security-');
+    addTearDown(() => privateRoot.delete(recursive: true));
+    final privateChmod = await Process.run('chmod', ['0700', privateRoot.path]);
+    expect(privateChmod.exitCode, 0);
+    final provider = Directory(
+      '${privateRoot.path}${Platform.pathSeparator}provider',
+    );
+    await provider.create();
+    final providerChmod = await Process.run('chmod', ['0755', provider.path]);
+    expect(providerChmod.exitCode, 0);
+    final history = file_io.RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => provider.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+    );
+    addTearDown(history.dispose);
+    await history.getAvailableLogDates();
+    final publicChmod = await Process.run('chmod', ['0755', privateRoot.path]);
+    expect(publicChmod.exitCode, 0);
 
     await expectLater(
       history.getAvailableLogDates(),

@@ -34,8 +34,8 @@ final class RollingFileLogHistory implements FileLogHistory {
           timerFactory: null,
           ioHook: null,
           archiveCompressedByteLimit: null,
-          providerDirectoryRequiresOwnerOnly:
-              _defaultProviderDirectoryRequiresOwnerOnly,
+          providerDirectoryRequiresOwnerOnlyProtection:
+              _defaultProviderDirectoryRequiresOwnerOnlyProtection,
           diagnosticSink: null,
         );
 
@@ -48,7 +48,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     Timer Function(Duration, void Function())? timerFactory,
     FutureOr<void> Function(File file, String operation)? ioHook,
     int? archiveCompressedByteLimit,
-    bool? providerDirectoryRequiresOwnerOnly,
+    bool? providerDirectoryRequiresOwnerOnlyProtection,
     _FileLogDiagnosticSink? diagnosticSink,
   }) : this._(
           loggerOptions,
@@ -59,9 +59,9 @@ final class RollingFileLogHistory implements FileLogHistory {
           timerFactory: timerFactory,
           ioHook: ioHook,
           archiveCompressedByteLimit: archiveCompressedByteLimit,
-          providerDirectoryRequiresOwnerOnly:
-              providerDirectoryRequiresOwnerOnly ??
-                  _defaultProviderDirectoryRequiresOwnerOnly,
+          providerDirectoryRequiresOwnerOnlyProtection:
+              providerDirectoryRequiresOwnerOnlyProtection ??
+                  _defaultProviderDirectoryRequiresOwnerOnlyProtection,
           diagnosticSink: diagnosticSink,
         );
 
@@ -74,7 +74,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     required Timer Function(Duration, void Function())? timerFactory,
     required FutureOr<void> Function(File file, String operation)? ioHook,
     required int? archiveCompressedByteLimit,
-    required bool providerDirectoryRequiresOwnerOnly,
+    required bool providerDirectoryRequiresOwnerOnlyProtection,
     required _FileLogDiagnosticSink? diagnosticSink,
   })  : _directoryProvider = directoryProvider,
         _options = options,
@@ -90,8 +90,8 @@ final class RollingFileLogHistory implements FileLogHistory {
         _timerFactory = timerFactory ?? Timer.new,
         _ioHook = ioHook,
         _archiveCompressedByteLimit = archiveCompressedByteLimit,
-        _providerDirectoryRequiresOwnerOnly =
-            providerDirectoryRequiresOwnerOnly,
+        _providerDirectoryRequiresOwnerOnlyProtection =
+            providerDirectoryRequiresOwnerOnlyProtection,
         _diagnosticSink = diagnosticSink ?? _developerDiagnosticSink,
         _autoSaveInterval = options.autoSaveInterval,
         _autoSaveEnabled = options.enableAutoSave {
@@ -113,9 +113,12 @@ final class RollingFileLogHistory implements FileLogHistory {
   static final RegExp _legacyNamePattern =
       RegExp(r'^logs_(\d{4}-\d{2}-\d{2})\.json$');
   static const int _ioChunkSize = 64 * 1024;
+  static const int _groupOrWorldPermissionBits = 0x3f;
+  static const int _groupOrWorldWriteBits = 0x12;
 
-  // iOS isolates app data through its mandatory sandbox even when Library/Caches is 0755.
-  static bool get _defaultProviderDirectoryRequiresOwnerOnly => !Platform.isIOS;
+  // iOS relies on its mandatory sandbox even when Library/Caches is 0755.
+  static bool get _defaultProviderDirectoryRequiresOwnerOnlyProtection =>
+      !Platform.isIOS;
 
   final FileLogDirectoryProvider _directoryProvider;
   final FileLogHistoryOptions _options;
@@ -128,7 +131,7 @@ final class RollingFileLogHistory implements FileLogHistory {
   final Timer Function(Duration, void Function()) _timerFactory;
   final FutureOr<void> Function(File file, String operation)? _ioHook;
   final int? _archiveCompressedByteLimit;
-  final bool _providerDirectoryRequiresOwnerOnly;
+  final bool _providerDirectoryRequiresOwnerOnlyProtection;
   final _FileLogDiagnosticSink _diagnosticSink;
   final LinkedHashMap<String, _PendingLog> _pending =
       LinkedHashMap<String, _PendingLog>();
@@ -1031,7 +1034,8 @@ final class RollingFileLogHistory implements FileLogHistory {
       await _validatePrivateDirectoryPermissions(
         providerDirectory,
         operation: 'initialize',
-        requireOwnerOnly: _providerDirectoryRequiresOwnerOnly,
+        requireOwnerOnlyProtection:
+            _providerDirectoryRequiresOwnerOnlyProtection,
       );
       _resolvedProviderDirectory = providerDirectory.path;
       _canonicalProviderDirectory =
@@ -1667,7 +1671,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     await _validatePrivateDirectoryPermissions(
       directory,
       operation: operation,
-      requireOwnerOnly: _providerDirectoryRequiresOwnerOnly,
+      requireOwnerOnlyProtection: _providerDirectoryRequiresOwnerOnlyProtection,
     );
     if (await directory.resolveSymbolicLinks() != canonicalPath) {
       throw FileLogAccessException(operation: operation);
@@ -1734,17 +1738,33 @@ final class RollingFileLogHistory implements FileLogHistory {
   Future<void> _validatePrivateDirectoryPermissions(
     Directory directory, {
     required String operation,
-    bool requireOwnerOnly = false,
+    bool requireOwnerOnlyProtection = false,
   }) async {
     if (Platform.isWindows) return;
     final stat = await directory.stat();
-    const groupOrWorldPermissionBits = 0x3f;
-    const groupOrWorldWriteBits = 0x12;
-    final forbiddenBits =
-        requireOwnerOnly ? groupOrWorldPermissionBits : groupOrWorldWriteBits;
     if (stat.type != FileSystemEntityType.directory ||
-        stat.mode & forbiddenBits != 0) {
+        stat.mode & _groupOrWorldWriteBits != 0) {
       throw FileLogAccessException(operation: operation);
+    }
+    if (!requireOwnerOnlyProtection ||
+        stat.mode & _groupOrWorldPermissionBits == 0) {
+      return;
+    }
+    if (!await _hasOwnerOnlyAncestor(directory)) {
+      throw FileLogAccessException(operation: operation);
+    }
+  }
+
+  Future<bool> _hasOwnerOnlyAncestor(Directory directory) async {
+    var current = Directory(await directory.resolveSymbolicLinks()).parent;
+    while (true) {
+      final stat = await current.stat();
+      if (stat.type != FileSystemEntityType.directory) return false;
+      if (stat.mode & _groupOrWorldPermissionBits == 0) return true;
+
+      final parent = current.parent;
+      if (parent.path == current.path) return false;
+      current = parent;
     }
   }
 

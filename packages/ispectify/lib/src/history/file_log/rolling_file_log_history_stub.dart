@@ -20,7 +20,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     FileLogHistoryOptions options = const FileLogHistoryOptions(),
     RedactionService? redactor,
     Timer Function(Duration, void Function())? timerFactory,
-    bool? providerDirectoryRequiresOwnerOnly,
+    bool? providerDirectoryRequiresOwnerOnlyProtection,
     void Function(
       String message, {
       Object? error,
