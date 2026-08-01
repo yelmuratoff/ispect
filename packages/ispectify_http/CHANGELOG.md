@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.0.0-dev4
+## 7.0.0-dev5
 
 ### Breaking Changes
 
@@ -33,13 +33,16 @@
 - **More complete diagnostic handoff:** Increased bounded payloads to 256 KiB, individual records to 1 MiB, and JSON exports to 32 MiB; exports now report actual/truncated counts and imports can report skipped records.
 - **Convenient diagnostic profiles:** Balanced defaults require no tuning; the in-app Settings sheet offers one-tap Capture, Resource, and Processing profiles for stricter, lower-memory, responsive, larger-session, or throughput-focused diagnostics.
 - **Fully configurable budgets:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` cover formatter isolation, data sizes and counts, traversal, integrations, UI, batching, yielding, background work, and search. Exact `copyWith(...)` values persist through `ISpectSettingsState`, while the layout inspector separately exposes `maxRenderTreeClipboardCharacters`.
+- **Clearer network diagnostics:** Grouped and ungrouped HTTP cards show larger bounded body previews with explicit truncation cues, keep ordinary header names visible and redacted values behind a compact disclosure, reuse capture-time payload redaction during rendering, and provide consistent ripple feedback for transaction actions.
 
 ### Bug Fixes
 
+- **Apple file history:** Rolling history now initializes in iOS and macOS application cache sandboxes, and fallback diagnostics retain typed failure context without re-entering the logger pipeline.
 - **Concurrent diagnostics:** Fixed BLoC event correlation and stale asynchronous log-viewer updates.
 - **Reliable lifecycle:** Shutdown and forced reinitialization now clean up logger state consistently, including failure paths.
 - **Host error callbacks:** Flutter, platform, and zoned callbacks continue receiving the original error and stack trace.
 - **HTTP replay:** Malformed form data and sender failures no longer leave the composer in a broken state.
+- **Network query visibility:** Dio and HTTP logs now include non-empty, redacted query parameters in the request URL across console, grouped, and ungrouped views.
 - **Stable bounded settings:** Runtime validation rejects invalid persisted capacities and inspector clipboard limits in release builds, and navigation transition equality no longer changes after logger reconfiguration.
 
 ## 6.1.7

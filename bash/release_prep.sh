@@ -29,6 +29,7 @@ Usage:
   ./bash/release_prep.sh [patch|minor|major] [options]
   ./bash/release_prep.sh --bump patch|minor|major [options]
   ./bash/release_prep.sh --skip-bump [options]
+  ./bash/release_prep.sh --carry-changelog
 
 Modes:
   patch|minor|major     Bump kind (default: patch)
