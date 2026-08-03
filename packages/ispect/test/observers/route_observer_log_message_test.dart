@@ -321,8 +321,8 @@ void main() {
           );
 
         final stored = observer.transitions.single;
-        expect(stored.from?.name, isNot(contains('alice@example.com')));
-        expect(stored.to?.name, isNot(contains('123456')));
+        expect(stored.from?.name, '/users/alice@example.com');
+        expect(stored.to?.name, '/orders/123456?[REDACTED]');
         expect(stored.to?.name, isNot(contains('QUERY_SECRET')));
         expect(stored.arguments, 'Map');
         expect(stored.toString(), isNot(contains('ARGUMENT_SECRET')));
@@ -511,35 +511,55 @@ void main() {
       expect(route.calls, 0);
     });
 
-    test('removes email, identifier, query, and fragment values', () {
+    test('removes query values while keeping the path', () {
       final message = buildRouteLogMessage(
         type: TransitionType.push,
-        route: _route(
-          name: '/users/alice@example.com/orders/123456?token=QUERY_SECRET',
-        ),
+        route: _route(name: '/orders/123456?token=QUERY_SECRET'),
         previousRoute: null,
         enableArgumentRedaction: true,
         globalRedactionEnabled: true,
       );
 
-      expect(message, isNot(contains('alice@example.com')));
-      expect(message, isNot(contains('123456')));
+      expect(message, contains('/orders/123456?[REDACTED]'));
       expect(message, isNot(contains('QUERY_SECRET')));
-      expect(message, contains('[REDACTED]'));
     });
 
-    test('removes short human-readable route slugs', () {
+    test('removes fragment values while keeping the path', () {
+      final message = buildRouteLogMessage(
+        type: TransitionType.push,
+        route: _route(name: '/orders#FRAGMENT_SECRET'),
+        previousRoute: null,
+        enableArgumentRedaction: true,
+        globalRedactionEnabled: true,
+      );
+
+      expect(message, contains('/orders#[REDACTED]'));
+      expect(message, isNot(contains('FRAGMENT_SECRET')));
+    });
+
+    test('keeps route paths that collide with filesystem path prefixes', () {
+      for (final name in const [
+        '/users/42',
+        '/home/feed',
+        '/data/reports',
+        '/app/settings',
+        '/var/experiments',
+      ]) {
+        expect(sanitizeRouteDiagnosticName(name), name);
+      }
+    });
+
+    test('keeps human-readable route paths', () {
       final message = buildRouteLogMessage(
         type: TransitionType.push,
         route: _route(name: '/users/alice'),
-        previousRoute: null,
+        previousRoute: _route(name: '/settings'),
         enableArgumentRedaction: true,
         globalRedactionEnabled: true,
       );
 
-      expect(message, isNot(contains('users')));
-      expect(message, isNot(contains('alice')));
-      expect(message, contains('[REDACTED]'));
+      expect(message, contains('/settings (Page) → /users/alice (Page)'));
+      expect(message, isNot(contains('[REDACTED]')));
     });
 
     test('keeps the raw route name after global redaction opt-out', () {
@@ -568,14 +588,14 @@ void main() {
     });
 
     test(
-      'stores a minimized route name in transition history',
+      'stores a query-minimized route name in transition history',
       () {
         final observer = ISpectNavigatorObserver()
-          ..didPush(_route(name: '/users/alice@example.com'), null);
+          ..didPush(_route(name: '/users/alice?token=QUERY_SECRET'), null);
 
         expect(
           observer.transitions.single.to?.name,
-          isNot(contains('alice@example.com')),
+          '/users/alice?[REDACTED]',
         );
       },
       skip: !kISpectEnabled

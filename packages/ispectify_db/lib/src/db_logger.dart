@@ -7,6 +7,7 @@ import 'package:ispectify_db/src/constants.dart';
 import 'package:ispectify_db/src/db_core.dart';
 import 'package:ispectify_db/src/db_preprocess_input.dart';
 import 'package:ispectify_db/src/db_token.dart';
+import 'package:ispectify_db/src/message_formatter.dart';
 import 'package:ispectify_db/src/sql_digest.dart';
 import 'package:ispectify_db/src/transaction.dart';
 
@@ -318,12 +319,17 @@ extension ISpectLoggerDb on ISpectLogger {
     final projected = _safeProject(success, projectResult, getResult);
     if (!hasActiveConsumers) return;
     try {
+      final resolvedTarget = target ??
+          DbSqlDigest.tableOf(
+            statement,
+            resourceLimits: resolvedConfig.resourceLimits!,
+          );
       final preprocessInput = DbPreprocessInput(
         cfg: resolvedConfig,
         statement: statement,
         args: args,
         namedArgs: namedArgs,
-        table: target,
+        table: resolvedTarget,
         key: key,
         value: projected,
         affected: affectedOverride,
@@ -362,7 +368,7 @@ extension ISpectLoggerDb on ISpectLogger {
           resourceLimits: resolvedConfig.resourceLimits!,
         ),
         target: _boundNullableDbText(
-          target,
+          resolvedTarget,
           shouldRedact: shouldRedact,
           resourceLimits: resolvedConfig.resourceLimits!,
         ),
@@ -383,6 +389,23 @@ extension ISpectLoggerDb on ISpectLogger {
           shouldRedact: shouldRedact,
           resourceLimits: resolvedConfig.resourceLimits!,
         ),
+        consoleMessage: _buildDbConsoleMessage(
+          operation: operation,
+          table: _boundNullableDbText(
+            resolvedTarget,
+            shouldRedact: shouldRedact,
+            resourceLimits: resolvedConfig.resourceLimits!,
+          ),
+          key: _boundNullableDbText(
+            _safeDbKey(key, shouldRedact),
+            shouldRedact: shouldRedact,
+            resourceLimits: resolvedConfig.resourceLimits!,
+          ),
+          meta: preprocessed.meta,
+          sizeBytes: sizeBytes,
+          cacheHit: cacheHit,
+          success: success,
+        ),
       );
     } catch (_) {
       assert(() {
@@ -391,6 +414,45 @@ extension ISpectLoggerDb on ISpectLogger {
         return true;
       }());
     }
+  }
+
+  static String _buildDbConsoleMessage({
+    required String operation,
+    required String? table,
+    required String? key,
+    required Map<String, Object?>? meta,
+    required int? sizeBytes,
+    required bool? cacheHit,
+    required bool success,
+  }) =>
+      DbMessageFormatter.build(
+        operation: operation,
+        table: table,
+        statement: _metaString(meta, 'statement'),
+        key: key,
+        items: _metaInt(meta, 'items'),
+        affected: _metaInt(meta, 'affected'),
+        sizeBytes: sizeBytes,
+        cacheHit: cacheHit,
+        success: success ? null : false,
+      );
+
+  static String? _metaString(Map<String, Object?>? meta, String key) {
+    final value = meta?[key];
+    return value is String && value.isNotEmpty ? value : null;
+  }
+
+  /// Reads [key] from the redacted meta, falling back to the projected result
+  /// map so a `projectResult` returning `{'affected': n}` still reports it.
+  static int? _metaInt(Map<String, Object?>? meta, String key) {
+    final direct = meta?[key];
+    if (direct is int) return direct;
+    final projected = meta?['value'];
+    if (projected is Map) {
+      final nested = projected[key];
+      if (nested is int) return nested;
+    }
+    return null;
   }
 
   /// Safely project a result value, returning null on failure.
@@ -593,6 +655,11 @@ extension ISpectLoggerDb on ISpectLogger {
       boundedStatement,
       resourceLimits: resourceLimits,
     );
+    final normalizedStmt = DbSqlDigest.normalize(
+          boundedStatement,
+          resourceLimits: resourceLimits,
+        ) ??
+        digest;
 
     final truncatedValue = ISpectDbCore.truncateValue(
       redactData(diagnostics.value, keyName: input.key),
@@ -619,7 +686,7 @@ extension ISpectLoggerDb on ISpectLogger {
 
     final dbMeta = ISpectDbCore.clean(<String, Object?>{
       'statementDigest': digest,
-      'statement': shouldRedact ? digest : truncatedStmt,
+      'statement': shouldRedact ? normalizedStmt : truncatedStmt,
       if (input.table != null)
         'table': _boundDbText(
           input.table!,

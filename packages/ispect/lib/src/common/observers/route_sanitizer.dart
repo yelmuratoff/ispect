@@ -30,46 +30,37 @@ String sanitizeRouteDiagnosticText(
       : defaultPlaceholder;
 }
 
-/// Reduces a route label to a non-content shape.
+/// Reduces a route label to its path, dropping query and fragment values.
 ///
-/// Literal segments and query/fragment values are replaced. Declared path
-/// parameters retain only their syntactic shape. Pass [enableRedaction] as
-/// false only for an explicit controlled-debugging opt-out.
+/// The path is bounded but never content-redacted; everything after the first
+/// `?` or `#` is replaced. Pass [enableRedaction] as false only for an
+/// explicit controlled-debugging opt-out.
 String sanitizeRouteDiagnosticName(
   String name, {
   bool enableRedaction = true,
   DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
 }) {
+  resourceLimits.validate();
   final redactionActive = enableRedaction && ISpectRedaction.enabled;
-  final scrubbed = sanitizeRouteDiagnosticText(
+  final prepared = LogExportOutput.boundJsonValue(
     name,
-    enableRedaction: enableRedaction,
     resourceLimits: resourceLimits,
+    replaceOversizedStrings: redactionActive,
   );
-  if (!redactionActive) return scrubbed;
+  if (prepared is! String || prepared.isEmpty) return defaultPlaceholder;
+  if (!redactionActive) return prepared;
 
-  final queryIndex = scrubbed.indexOf('?');
-  final fragmentIndex = scrubbed.indexOf('#');
+  final queryIndex = prepared.indexOf('?');
+  final fragmentIndex = prepared.indexOf('#');
   final boundaryCandidates = [
     if (queryIndex >= 0) queryIndex,
     if (fragmentIndex >= 0) fragmentIndex,
   ];
-  final boundary = boundaryCandidates.isEmpty
-      ? scrubbed.length
-      : boundaryCandidates.reduce((a, b) => a < b ? a : b);
-  final path = scrubbed.substring(0, boundary);
-  final hasSuffix = boundary < scrubbed.length;
+  if (boundaryCandidates.isEmpty) return prepared;
 
-  final safePath = path.split('/').map((segment) {
-    if (segment.isEmpty) return segment;
-    if (segment.startsWith(':')) return ':param';
-    if (segment.startsWith('{') && segment.endsWith('}')) return '{param}';
-    return defaultPlaceholder;
-  }).join('/');
-
-  return hasSuffix
-      ? '$safePath${scrubbed[boundary]}$defaultPlaceholder'
-      : safePath;
+  final boundary = boundaryCandidates.reduce((a, b) => a < b ? a : b);
+  return '${prepared.substring(0, boundary)}'
+      '${prepared[boundary]}$defaultPlaceholder';
 }
 
 /// Describes route arguments without traversing or stringifying their content.

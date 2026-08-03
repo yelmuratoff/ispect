@@ -55,6 +55,76 @@ final class DbSqlDigest {
     return 'sql:$hex';
   }
 
+  /// Returns [statement] with comments, quoted literals, and digit runs
+  /// replaced by `?`.
+  ///
+  /// Bare-word operands survive normalization, so callers must pass the result
+  /// through `RedactionService` before it leaves the process — that pass is
+  /// what masks an unquoted credential such as SQLCipher's `PRAGMA key = x`.
+  ///
+  /// Returns `null` when [statement] is `null`, empty, normalizes to nothing,
+  /// already carries [LogExportOutput.truncatedMarker], or exceeds
+  /// [DiagnosticResourceLimits.maxDatabaseDiagnosticsBytes]. Callers fall back
+  /// to [compute] so an oversized statement never reaches a log.
+  static String? normalize(
+    String? statement, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
+    if (statement == null || statement.isEmpty) return null;
+    if (LogExportOutput.utf8Length(
+          statement,
+          limit: resourceLimits.maxDatabaseDiagnosticsBytes,
+        ) >
+        resourceLimits.maxDatabaseDiagnosticsBytes) {
+      return null;
+    }
+    final normalized = _stripCommentsAndLiterals(statement)
+        .replaceAll(_digitRe, '?')
+        .replaceAll(_whitespaceRe, ' ')
+        .trim();
+    if (normalized.isEmpty ||
+        normalized.contains(LogExportOutput.truncatedMarker)) {
+      return null;
+    }
+    return normalized;
+  }
+
+  /// Returns the primary table [statement] operates on, or `null`.
+  ///
+  /// Comments and literals are stripped first, so a quoted value cannot pose
+  /// as a table. Returns `null` when no table is present, when the name
+  /// exceeds 128 characters, and when [statement] exceeds
+  /// [DiagnosticResourceLimits.maxDatabaseDiagnosticsBytes].
+  static String? tableOf(
+    String? statement, {
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
+    if (statement == null || statement.isEmpty) return null;
+    if (LogExportOutput.utf8Length(
+          statement,
+          limit: resourceLimits.maxDatabaseDiagnosticsBytes,
+        ) >
+        resourceLimits.maxDatabaseDiagnosticsBytes) {
+      return null;
+    }
+    final normalized = _stripCommentsAndLiterals(statement)
+        .replaceAll(_whitespaceRe, ' ')
+        .trim();
+    final match = _tableRe.firstMatch(normalized);
+    final table = match?.group(2);
+    if (table == null || table.isEmpty) return null;
+    return table.length > _maxTableNameLength ? null : table;
+  }
+
+  static const int _maxTableNameLength = 128;
+
+  static final RegExp _tableRe = RegExp(
+    r'\b(from|into|update|table|join)\s+([A-Za-z_][A-Za-z0-9_$.]*)',
+    caseSensitive: false,
+  );
+
   static String _stripCommentsAndLiterals(String statement) {
     final sanitized = StringBuffer();
     var index = 0;

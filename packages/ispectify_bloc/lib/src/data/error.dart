@@ -9,13 +9,27 @@ class BlocErrorData {
     required this.bloc,
     required this.error,
     required this.stackTrace,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
   });
 
   final BlocBase<dynamic> bloc;
   final Object error;
   final StackTrace stackTrace;
 
-  String get blocType => safeBlocTypeLabel(bloc);
+  /// Capture policy applied to type labels.
+  /// Mirrors `ISpectBlocSettings.captureMode`.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Budgets applied to type labels.
+  /// Mirrors `ISpectBlocSettings.resourceLimits`.
+  final DiagnosticResourceLimits resourceLimits;
+
+  String get blocType => safeBlocTypeLabel(
+        bloc,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
 
   /// Returns a raw, JSON-compatible map of the error event.
   ///

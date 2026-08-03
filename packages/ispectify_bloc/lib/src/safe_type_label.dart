@@ -1,19 +1,45 @@
 import 'package:bloc/bloc.dart';
+import 'package:ispectify/ispectify.dart';
 
-/// Returns a coarse BLoC family label without dispatching through
-/// `Object.runtimeType`.
-String safeBlocTypeLabel(BlocBase<dynamic> bloc) {
+/// Returns the concrete BLoC class name, falling back to its family label.
+///
+/// [DiagnosticCaptureMode.strict] never dispatches through the overridable
+/// `runtimeType` getter and yields `Bloc`, `Cubit`, or `BlocBase`.
+String safeBlocTypeLabel(
+  BlocBase<dynamic> bloc, {
+  DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
+  DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+}) =>
+    describeRuntimeType(
+      bloc,
+      captureMode: captureMode,
+      resourceLimits: resourceLimits,
+      fallback: _blocFamilyLabel(bloc),
+    );
+
+String _blocFamilyLabel(BlocBase<dynamic> bloc) {
   if (bloc is Bloc<dynamic, dynamic>) return 'Bloc';
   if (bloc is Cubit<dynamic>) return 'Cubit';
   return 'BlocBase';
 }
 
-/// Returns a coarse value label using type checks only.
+/// Returns the concrete value class name, falling back to a coarse family.
 ///
-/// Unknown caller-owned objects deliberately collapse to `Object`; obtaining
-/// their concrete class name would execute the overridable `runtimeType`
-/// getter.
-String safeBlocValueTypeLabel(Object? value) {
+/// [DiagnosticCaptureMode.strict] collapses unknown caller-owned objects to
+/// `Object` rather than reading the overridable `runtimeType` getter.
+String safeBlocValueTypeLabel(
+  Object? value, {
+  DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
+  DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+}) =>
+    describeRuntimeType(
+      value,
+      captureMode: captureMode,
+      resourceLimits: resourceLimits,
+      fallback: _valueFamilyLabel(value),
+    );
+
+String _valueFamilyLabel(Object? value) {
   if (value == null) return 'null';
   if (value is String) return 'String';
   if (value is bool) return 'bool';

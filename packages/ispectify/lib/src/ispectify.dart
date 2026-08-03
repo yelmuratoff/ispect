@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_pipeline.dart';
+import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/log_factory.dart';
 import 'package:ispectify/src/observer/observer_manager.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart'
@@ -579,7 +580,7 @@ class ISpectLogger {
         defaultPlaceholder;
     final safeError = captured.error == null
         ? null
-        : _ObserverRedactedError(
+        : capturedDiagnosticError(
             _prepareEgressText(
                   redactor,
                   captured.errorText,
@@ -589,7 +590,7 @@ class ISpectLogger {
           );
     final safeStack = captured.stackTrace == null
         ? null
-        : StackTrace.fromString(
+        : capturedDiagnosticStackTrace(
             _prepareEgressText(
                   redactor,
                   captured.stackTraceText,
@@ -671,7 +672,7 @@ class ISpectLogger {
     }
     if (captured.exception != null) {
       return ISpectLogException(
-        _ObserverRedactedException(safeException),
+        capturedDiagnosticException(safeException),
         message: safeMessage,
         stackTrace: safeStack,
         time: captured.time,
@@ -827,25 +828,4 @@ final class _RedactedObserverProxy implements ISpectObserver {
 
   @override
   void onLog(ISpectLogData _) => _observer.onLog(_data);
-}
-
-final class _ObserverRedactedException implements Exception {
-  const _ObserverRedactedException(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
-}
-
-final class _ObserverRedactedError extends Error {
-  _ObserverRedactedError(this.message);
-
-  final String message;
-
-  @override
-  StackTrace get stackTrace => StackTrace.empty;
-
-  @override
-  String toString() => message;
 }

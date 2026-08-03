@@ -9,18 +9,40 @@ class RiverpodAddData {
     required this.provider,
     required this.value,
     required this.includeValue,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
   });
 
   final ProviderBase<Object?> provider;
   final Object? value;
 
   /// Whether [value] should be surfaced in [toJson] or reduced to its
-  /// coarse type label. Mirrors `ISpectRiverpodSettings.printValues`.
+  /// type label. Mirrors `ISpectRiverpodSettings.printValues`.
   final bool includeValue;
 
+  /// Capture policy applied to type labels.
+  /// Mirrors `ISpectRiverpodSettings.captureMode`.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Budgets applied to type labels.
+  /// Mirrors `ISpectRiverpodSettings.resourceLimits`.
+  final DiagnosticResourceLimits resourceLimits;
+
   /// Human-readable provider label.
-  String get providerName =>
-      provider.name ?? safeRiverpodProviderTypeLabel(provider);
+  String get providerName => provider.name ?? providerType;
+
+  /// Provider class name under the configured capture policy.
+  String get providerType => safeRiverpodProviderTypeLabel(
+        provider,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
+
+  String _valueType(Object? value) => safeRiverpodValueTypeLabel(
+        value,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
 
   /// Returns a raw, JSON-compatible map of the event.
   ///
@@ -28,14 +50,12 @@ class RiverpodAddData {
   /// is required.
   Map<String, dynamic> toJson() => <String, dynamic>{
         RiverpodJsonKeys.providerName: providerName,
-        RiverpodJsonKeys.providerType: safeRiverpodProviderTypeLabel(provider),
+        RiverpodJsonKeys.providerType: providerType,
         if (provider.argument != null)
-          RiverpodJsonKeys.argument: includeValue
-              ? provider.argument
-              : safeRiverpodValueTypeLabel(provider.argument),
+          RiverpodJsonKeys.argument:
+              includeValue ? provider.argument : _valueType(provider.argument),
         if (includeValue) RiverpodJsonKeys.value: value,
-        if (!includeValue)
-          RiverpodJsonKeys.valueType: safeRiverpodValueTypeLabel(value),
+        if (!includeValue) RiverpodJsonKeys.valueType: _valueType(value),
       };
 
   /// Applies in-place redaction to a map produced by [toJson].

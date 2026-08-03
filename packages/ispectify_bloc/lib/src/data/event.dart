@@ -9,17 +9,36 @@ class BlocEventData {
     required this.bloc,
     required this.event,
     required this.includeFullData,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
   });
 
   final Bloc<dynamic, dynamic> bloc;
   final Object? event;
 
   /// Whether the raw [event] should be surfaced in [toJson] alongside its
-  /// coarse type label. Mirrors `ISpectBlocSettings.printEventFullData`.
+  /// type label. Mirrors `ISpectBlocSettings.printEventFullData`.
   final bool includeFullData;
 
-  String get blocType => safeBlocTypeLabel(bloc);
-  String get eventType => safeBlocValueTypeLabel(event);
+  /// Capture policy applied to type labels.
+  /// Mirrors `ISpectBlocSettings.captureMode`.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Budgets applied to type labels.
+  /// Mirrors `ISpectBlocSettings.resourceLimits`.
+  final DiagnosticResourceLimits resourceLimits;
+
+  String get blocType => safeBlocTypeLabel(
+        bloc,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
+
+  String get eventType => safeBlocValueTypeLabel(
+        event,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
 
   /// Returns a raw, JSON-compatible map of the event.
   ///

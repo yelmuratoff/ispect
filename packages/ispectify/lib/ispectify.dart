@@ -13,7 +13,11 @@ export 'src/logger/developer_output.dart';
 export 'src/logger/entry_formatter.dart';
 export 'src/logger/formatter.dart';
 export 'src/logger/logger.dart';
-export 'src/models/data.dart';
+export 'src/models/data.dart'
+    hide
+        capturedDiagnosticError,
+        capturedDiagnosticException,
+        capturedDiagnosticStackTrace;
 export 'src/models/data_extensions.dart';
 export 'src/models/diagnostic_capture_mode.dart';
 export 'src/models/diagnostic_processing_policy.dart';
@@ -88,6 +92,7 @@ export 'src/utils/datetime_formatter.dart';
 export 'src/utils/error_handler.dart';
 export 'src/utils/json_truncator.dart';
 export 'src/utils/json_value_normalizer.dart';
+export 'src/utils/safe_object_description.dart' show describeRuntimeType;
 export 'src/utils/string_extension.dart';
 
 /// Compile-time constant to enable/disable ISpect via `--dart-define`.

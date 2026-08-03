@@ -1,15 +1,39 @@
+import 'package:ispectify/ispectify.dart';
 import 'package:riverpod/riverpod.dart';
 
-/// Returns a coarse provider label without dispatching through
-/// `Object.runtimeType`.
-String safeRiverpodProviderTypeLabel(ProviderBase<Object?> _) => 'Provider';
-
-/// Returns a coarse value label using type checks only.
+/// Returns the concrete provider class name, falling back to `Provider`.
 ///
-/// Unknown caller-owned objects deliberately collapse to `Object`; obtaining
-/// their concrete class name would execute the overridable `runtimeType`
-/// getter.
-String safeRiverpodValueTypeLabel(Object? value) {
+/// [DiagnosticCaptureMode.strict] never dispatches through the overridable
+/// `runtimeType` getter.
+String safeRiverpodProviderTypeLabel(
+  ProviderBase<Object?> provider, {
+  DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
+  DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+}) =>
+    describeRuntimeType(
+      provider,
+      captureMode: captureMode,
+      resourceLimits: resourceLimits,
+      fallback: 'Provider',
+    );
+
+/// Returns the concrete value class name, falling back to a coarse family.
+///
+/// [DiagnosticCaptureMode.strict] collapses unknown caller-owned objects to
+/// `Object` rather than reading the overridable `runtimeType` getter.
+String safeRiverpodValueTypeLabel(
+  Object? value, {
+  DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
+  DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+}) =>
+    describeRuntimeType(
+      value,
+      captureMode: captureMode,
+      resourceLimits: resourceLimits,
+      fallback: _valueFamilyLabel(value),
+    );
+
+String _valueFamilyLabel(Object? value) {
   if (value == null) return 'null';
   if (value is String) return 'String';
   if (value is bool) return 'bool';

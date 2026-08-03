@@ -115,8 +115,16 @@ Optional hardening for shared internal builds:
   strict capture.
 - Select `DiagnosticCaptureMode.strict` directly on logger, adapter, observer,
   or database settings when application-defined formatters must never run.
+  Strict capture also stops BLoC, Cubit, Riverpod provider, event, and state
+  labels from reading the overridable `runtimeType` getter; balanced capture
+  reads it under a guard so an entry can name what it describes.
 - Project database traces to counts, IDs, timings, and status fields instead of full rows.
 - Do not pipe raw user input through `logger.info(...)`.
+- Keep identifying values out of route paths. `ISpectNavigatorObserver` records
+  the bounded route path as declared and masks only query and fragment values,
+  because a REST path is indistinguishable from a filesystem path or a
+  credential to a content scanner. Route arguments stay reduced to their
+  structural family unless `enableArgumentRedaction: false` is set.
 - Supply device model metadata only. Never attach serial numbers, advertising
   IDs, installation IDs, or another stable device identifier.
 - Export sessions only through the channels approved for the data class they contain.

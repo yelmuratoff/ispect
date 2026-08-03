@@ -9,15 +9,31 @@ class RiverpodFailData {
     required this.provider,
     required this.error,
     required this.stackTrace,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
   });
 
   final ProviderBase<Object?> provider;
   final Object error;
   final StackTrace stackTrace;
 
+  /// Capture policy applied to type labels.
+  /// Mirrors `ISpectRiverpodSettings.captureMode`.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Budgets applied to type labels.
+  /// Mirrors `ISpectRiverpodSettings.resourceLimits`.
+  final DiagnosticResourceLimits resourceLimits;
+
   /// Human-readable provider label.
-  String get providerName =>
-      provider.name ?? safeRiverpodProviderTypeLabel(provider);
+  String get providerName => provider.name ?? providerType;
+
+  /// Provider class name under the configured capture policy.
+  String get providerType => safeRiverpodProviderTypeLabel(
+        provider,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
 
   /// Returns a raw, JSON-compatible map of the event.
   ///
@@ -25,8 +41,12 @@ class RiverpodFailData {
   /// on the trace entry itself, not in `meta`.
   Map<String, dynamic> toJson() => <String, dynamic>{
         RiverpodJsonKeys.providerName: providerName,
-        RiverpodJsonKeys.providerType: safeRiverpodProviderTypeLabel(provider),
-        RiverpodJsonKeys.errorType: safeRiverpodValueTypeLabel(error),
+        RiverpodJsonKeys.providerType: providerType,
+        RiverpodJsonKeys.errorType: safeRiverpodValueTypeLabel(
+          error,
+          captureMode: captureMode,
+          resourceLimits: resourceLimits,
+        ),
       };
 
   /// Applies in-place redaction to a map produced by [toJson].

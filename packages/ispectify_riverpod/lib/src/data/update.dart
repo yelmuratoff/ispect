@@ -10,6 +10,8 @@ class RiverpodUpdateData {
     required this.previousValue,
     required this.newValue,
     required this.includeValue,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
   });
 
   final ProviderBase<Object?> provider;
@@ -20,9 +22,29 @@ class RiverpodUpdateData {
   /// type labels. Mirrors `ISpectRiverpodSettings.printValues`.
   final bool includeValue;
 
+  /// Capture policy applied to type labels.
+  /// Mirrors `ISpectRiverpodSettings.captureMode`.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Budgets applied to type labels.
+  /// Mirrors `ISpectRiverpodSettings.resourceLimits`.
+  final DiagnosticResourceLimits resourceLimits;
+
   /// Human-readable provider label.
-  String get providerName =>
-      provider.name ?? safeRiverpodProviderTypeLabel(provider);
+  String get providerName => provider.name ?? providerType;
+
+  /// Provider class name under the configured capture policy.
+  String get providerType => safeRiverpodProviderTypeLabel(
+        provider,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
+
+  String _valueType(Object? value) => safeRiverpodValueTypeLabel(
+        value,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
 
   /// Returns a raw, JSON-compatible map of the event.
   ///
@@ -30,10 +52,9 @@ class RiverpodUpdateData {
   /// is required.
   Map<String, dynamic> toJson() => <String, dynamic>{
         RiverpodJsonKeys.providerName: providerName,
-        RiverpodJsonKeys.providerType: safeRiverpodProviderTypeLabel(provider),
-        RiverpodJsonKeys.previousValueType:
-            safeRiverpodValueTypeLabel(previousValue),
-        RiverpodJsonKeys.newValueType: safeRiverpodValueTypeLabel(newValue),
+        RiverpodJsonKeys.providerType: providerType,
+        RiverpodJsonKeys.previousValueType: _valueType(previousValue),
+        RiverpodJsonKeys.newValueType: _valueType(newValue),
         if (includeValue) ...{
           RiverpodJsonKeys.previousValue: previousValue,
           RiverpodJsonKeys.newValue: newValue,

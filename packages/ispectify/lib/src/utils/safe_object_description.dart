@@ -1,3 +1,6 @@
+import 'package:ispectify/src/history/serialization.dart';
+import 'package:ispectify/src/models/diagnostic_capture_mode.dart';
+import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/utils/json_value_normalizer.dart';
 
 /// Returns a non-dispatching descriptor for an arbitrary diagnostic object.
@@ -8,6 +11,34 @@ import 'package:ispectify/src/utils/json_value_normalizer.dart';
 /// and never caller-supplied diagnostic text.
 String safeDiagnosticDescriptor(Object value) =>
     JsonValueNormalizer.diagnosticDescriptor(value);
+
+/// Returns the concrete class name of [value], bounded by [resourceLimits].
+///
+/// `runtimeType` is an overridable getter, so [DiagnosticCaptureMode.balanced]
+/// dispatches into caller code to read it while
+/// [DiagnosticCaptureMode.strict] does not. Returns [fallback] under strict
+/// capture, for a null [value], and when the getter throws or yields an empty
+/// name.
+String describeRuntimeType(
+  Object? value, {
+  required DiagnosticCaptureMode captureMode,
+  required String fallback,
+  DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+}) {
+  if (value == null || captureMode != DiagnosticCaptureMode.balanced) {
+    return fallback;
+  }
+  try {
+    final name = value.runtimeType.toString().trim();
+    if (name.isEmpty) return fallback;
+    return LogExportOutput.truncateUtf8(
+      name,
+      maxBytes: resourceLimits.maxCapturedValueBytes,
+    );
+  } on Object {
+    return fallback;
+  }
+}
 
 /// Converts only closed, non-dispatching scalar families to text.
 ///

@@ -48,6 +48,10 @@
 - **HTTP replay:** Malformed form data and sender failures no longer leave the composer in a broken state.
 - **Network query visibility:** Dio and HTTP logs now include non-empty, redacted query parameters in the request URL across console, grouped, and ungrouped views.
 - **Stable bounded settings:** Runtime validation rejects invalid persisted capacities and inspector clipboard limits in release builds, and navigation transition equality no longer changes after logger reconfiguration.
+- Base64 detection now strips only line wrapping, so an ordinary diagnostic sentence is no longer replaced with a `[base64 ~NB]` placeholder.
+- **Readable route logs:** Navigation entries keep the route path — including paths such as `/users/42` that previously collided with filesystem-path detection — and mask only query and fragment values.
+- **Named BLoC and Riverpod diagnostics:** Balanced capture reports the concrete class — `AuthCubit`, `AuthLoading`, `counterProvider` — instead of the `Bloc` / `Cubit` / `Provider` / `Object` family labels. Strict capture, `ISpectBlocSettings.compact`, and `ISpectRiverpodSettings.compact` keep the coarse labels and still never read a caller's `runtimeType`.
+- **Useful database console lines:** Database traces name the table — derived from the statement when an interceptor does not supply one — and carry affected rows, item counts, size, and cache hits. SQL text itself stays reduced to its digest under redaction.
 
 ## 6.1.7
 

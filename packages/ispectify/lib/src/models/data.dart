@@ -335,6 +335,16 @@ base class ISpectLogData {
       stackTraceText: data._stackTraceSnapshot,
     );
 
+@internal
+Error capturedDiagnosticError(String text) => _CapturedError(text);
+
+@internal
+Exception capturedDiagnosticException(String text) => _CapturedException(text);
+
+@internal
+StackTrace capturedDiagnosticStackTrace(String text) =>
+    _CapturedStackTrace(text);
+
 /// Masks a single captured field without materializing the whole masked map.
 ///
 /// Returns the captured value unchanged when the entry carries no masker.

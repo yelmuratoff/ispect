@@ -49,8 +49,11 @@ final RegExp tokenPrefixRegex = RegExp(
 /// Characters valid in standard or URL-safe Base64.
 final RegExp base64Regex = RegExp(r'^[A-Za-z0-9+/=_-]+$');
 
-/// Any whitespace character (used to sanitize before Base64 checks).
+/// Any whitespace character.
 final RegExp whitespaceRegex = RegExp(r'\s');
+
+/// Line terminators MIME and PEM use to wrap Base64 payloads.
+final RegExp base64LineBreakRegex = RegExp(r'[\r\n]');
 
 /// HTTP(S) and protocol-relative URLs embedded in free-form diagnostic text.
 final RegExp urlPattern = RegExp(

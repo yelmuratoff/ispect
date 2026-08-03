@@ -289,7 +289,7 @@ void main() {
           expect(logs, hasLength(1));
           final meta = logs.single.additionalData?[TraceKeys.meta]
               as Map<String, dynamic>;
-          expect(meta[BlocJsonKeys.blocType], 'Bloc');
+          expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
         });
 
         test('skips creation log when printCreations disabled', () {
@@ -310,7 +310,7 @@ void main() {
           expect(logs, hasLength(1));
           final meta = logs.single.additionalData?[TraceKeys.meta]
               as Map<String, dynamic>;
-          expect(meta[BlocJsonKeys.blocType], 'Bloc');
+          expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
         });
 
         test('skips close log when printClosings disabled', () {
@@ -465,7 +465,7 @@ void main() {
           expect(logs, hasLength(1));
           final meta = logs.single.additionalData?[TraceKeys.meta]
               as Map<String, dynamic>;
-          expect(meta[BlocJsonKeys.blocType], 'Bloc');
+          expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
           expect(meta[BlocJsonKeys.eventType], 'String');
         });
 
@@ -513,7 +513,7 @@ void main() {
           expect(logs, hasLength(1));
           final meta = logs.single.additionalData?[TraceKeys.meta]
               as Map<String, dynamic>;
-          expect(meta[BlocJsonKeys.blocType], 'Bloc');
+          expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
         });
 
         test('skips change log when printChanges disabled', () {
@@ -1190,7 +1190,7 @@ void main() {
           expect(eventLogs, hasLength(1));
           final meta = eventLogs.single.additionalData?[TraceKeys.meta]
               as Map<String, dynamic>;
-          expect(meta[BlocJsonKeys.blocType], 'Bloc');
+          expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
         });
 
         test('does not redact when enableRedaction is false', () {
@@ -1209,7 +1209,7 @@ void main() {
               .byOperation('create')
               .single
               .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
-          expect(meta[BlocJsonKeys.blocType], 'Bloc');
+          expect(meta[BlocJsonKeys.blocType], 'DummyBloc');
         });
 
         test('bounds multi-megabyte diagnostics before redaction and logging',
@@ -1814,9 +1814,45 @@ void main() {
           expect(logs, hasLength(1));
           final meta = logs.single.additionalData?[TraceKeys.meta]
               as Map<String, dynamic>;
+          expect(meta[BlocJsonKeys.blocType], 'CounterCubit');
+
+          cubit.close();
+        });
+
+        test('strict capture keeps the coarse family label', () {
+          final cubit = CounterCubit();
+          ISpectBlocObserver(
+            logger: logger,
+            settings: const ISpectBlocSettings(
+              captureMode: DiagnosticCaptureMode.strict,
+            ),
+          ).onChange(cubit, const Change(currentState: 0, nextState: 1));
+
+          final meta = logger
+              .byOperation('state')
+              .single
+              .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
           expect(meta[BlocJsonKeys.blocType], 'Cubit');
 
           cubit.close();
+        });
+
+        test('the compact preset keeps coarse event and state labels', () {
+          ISpectBlocObserver(
+            logger: logger,
+            settings: ISpectBlocSettings.compact,
+          ).onTransition(
+            bloc,
+            const Transition(currentState: 0, event: 'go', nextState: 1),
+          );
+
+          final meta = logger
+              .byOperation('transition')
+              .single
+              .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
+          expect(meta[BlocJsonKeys.blocType], 'Bloc');
+          expect(meta[BlocJsonKeys.currentState], 'int');
+          expect(meta[BlocJsonKeys.nextState], 'int');
         });
       });
 

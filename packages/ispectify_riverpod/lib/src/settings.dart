@@ -126,9 +126,14 @@ class ISpectRiverpodSettings {
 
   /// Formats a provider value for display based on [printValues].
   ///
-  /// Returns the full object when verbose, otherwise a coarse type label.
-  Object formatValue(Object? value) =>
-      printValues ? (value ?? 'null') : safeRiverpodValueTypeLabel(value);
+  /// Returns the full object when verbose, otherwise its type label.
+  Object formatValue(Object? value) => printValues
+      ? (value ?? 'null')
+      : safeRiverpodValueTypeLabel(
+          value,
+          captureMode: captureMode,
+          resourceLimits: resourceLimits ?? DiagnosticResourceLimits.balanced,
+        );
 
   /// Returns a copy with the provided overrides.
   ISpectRiverpodSettings copyWith({

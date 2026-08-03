@@ -10,6 +10,8 @@ class BlocDoneData {
     required this.event,
     required this.hasError,
     required this.includeFullData,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
   });
 
   final Bloc<dynamic, dynamic> bloc;
@@ -17,11 +19,30 @@ class BlocDoneData {
   final bool hasError;
 
   /// Whether the raw [event] should be surfaced in [toJson] alongside its
-  /// coarse type label. Mirrors `ISpectBlocSettings.printEventFullData`.
+  /// type label. Mirrors `ISpectBlocSettings.printEventFullData`.
   final bool includeFullData;
 
-  String get blocType => safeBlocTypeLabel(bloc);
-  String? get eventType => event == null ? null : safeBlocValueTypeLabel(event);
+  /// Capture policy applied to type labels.
+  /// Mirrors `ISpectBlocSettings.captureMode`.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Budgets applied to type labels.
+  /// Mirrors `ISpectBlocSettings.resourceLimits`.
+  final DiagnosticResourceLimits resourceLimits;
+
+  String get blocType => safeBlocTypeLabel(
+        bloc,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
+
+  String? get eventType => event == null
+      ? null
+      : safeBlocValueTypeLabel(
+          event,
+          captureMode: captureMode,
+          resourceLimits: resourceLimits,
+        );
 
   /// Returns a raw, JSON-compatible map of the completion event.
   Map<String, dynamic> toJson() => <String, dynamic>{

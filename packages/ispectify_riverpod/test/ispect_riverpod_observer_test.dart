@@ -323,9 +323,24 @@ void main() {
           expect(meta[RiverpodJsonKeys.providerName], 'counter');
         });
 
-        test('falls back to a coarse label when provider has no name', () {
+        test('falls back to the provider type when it has no name', () {
           ISpectRiverpodObserver(logger: logger)
               .didAddProvider(_unnamedProvider, 42, container);
+
+          final meta = logger
+              .byOperation('add')
+              .single
+              .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
+          expect(meta[RiverpodJsonKeys.providerName], 'Provider<int>');
+        });
+
+        test('strict capture falls back to a coarse label', () {
+          ISpectRiverpodObserver(
+            logger: logger,
+            settings: const ISpectRiverpodSettings(
+              captureMode: DiagnosticCaptureMode.strict,
+            ),
+          ).didAddProvider(_unnamedProvider, 42, container);
 
           final meta = logger
               .byOperation('add')

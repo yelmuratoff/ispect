@@ -113,7 +113,11 @@ class ISpectBlocObserver extends BlocObserver {
     final value = switch (candidate) {
       null => '',
       final String value => value,
-      final BlocBase<dynamic> bloc => safeBlocTypeLabel(bloc),
+      final BlocBase<dynamic> bloc => safeBlocTypeLabel(
+          bloc,
+          captureMode: settings.captureMode,
+          resourceLimits: _resourceLimits,
+        ),
       _ => LogExportOutput.boundJsonValue(
           candidate,
           resourceLimits: _resourceLimits,
@@ -301,6 +305,8 @@ class ISpectBlocObserver extends BlocObserver {
       bloc: bloc,
       event: event,
       includeFullData: settings.printEventFullData,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
     final meta = _prepareTraceMeta(data.toJson());
     final target = _traceTarget(meta, BlocJsonKeys.blocType, data.blocType);
@@ -359,6 +365,8 @@ class ISpectBlocObserver extends BlocObserver {
         includeEventFullData: settings.printEventFullData,
         formattedCurrentState: settings.formatState(transition.currentState),
         formattedNextState: settings.formatState(transition.nextState),
+        captureMode: settings.captureMode,
+        resourceLimits: _resourceLimits,
       );
       final meta = _prepareTraceMeta(data.toJson());
       final target = _traceTarget(meta, BlocJsonKeys.blocType, data.blocType);
@@ -415,6 +423,8 @@ class ISpectBlocObserver extends BlocObserver {
       change: change,
       formattedCurrentState: settings.formatState(change.currentState),
       formattedNextState: settings.formatState(change.nextState),
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
     final meta = _prepareTraceMeta(data.toJson());
     final target = _traceTarget(meta, BlocJsonKeys.blocType, data.blocType);
@@ -457,6 +467,8 @@ class ISpectBlocObserver extends BlocObserver {
       bloc: bloc,
       error: error,
       stackTrace: stackTrace,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
     final meta = _prepareTraceMeta(data.toJson());
     final target = _traceTarget(meta, BlocJsonKeys.blocType, data.blocType);
@@ -489,7 +501,11 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
 
-    final data = BlocLifecycleData(bloc: bloc);
+    final data = BlocLifecycleData(
+      bloc: bloc,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
+    );
     final meta = _prepareTraceMeta(data.toJson());
     final target = _traceTarget(meta, BlocJsonKeys.blocType, data.blocType);
     _logger.blocCreate(
@@ -520,7 +536,11 @@ class ISpectBlocObserver extends BlocObserver {
       return;
     }
 
-    final data = BlocLifecycleData(bloc: bloc);
+    final data = BlocLifecycleData(
+      bloc: bloc,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
+    );
     final meta = _prepareTraceMeta(data.toJson());
     final target = _traceTarget(meta, BlocJsonKeys.blocType, data.blocType);
     _logger.blocClose(
@@ -555,6 +575,8 @@ class ISpectBlocObserver extends BlocObserver {
       event: event,
       hasError: error != null,
       includeFullData: settings.printEventFullData,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
     final meta = _prepareTraceMeta(data.toJson());
     final target = _traceTarget(meta, BlocJsonKeys.blocType, data.blocType);

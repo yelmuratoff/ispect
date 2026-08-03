@@ -10,6 +10,8 @@ class BlocChangeData {
     required this.change,
     required this.formattedCurrentState,
     required this.formattedNextState,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
   });
 
   final BlocBase<dynamic> bloc;
@@ -19,7 +21,19 @@ class BlocChangeData {
   final Object formattedCurrentState;
   final Object formattedNextState;
 
-  String get blocType => safeBlocTypeLabel(bloc);
+  /// Capture policy applied to type labels.
+  /// Mirrors `ISpectBlocSettings.captureMode`.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Budgets applied to type labels.
+  /// Mirrors `ISpectBlocSettings.resourceLimits`.
+  final DiagnosticResourceLimits resourceLimits;
+
+  String get blocType => safeBlocTypeLabel(
+        bloc,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
 
   /// Returns a raw, JSON-compatible map of the change.
   Map<String, dynamic> toJson() => <String, dynamic>{

@@ -217,7 +217,12 @@ class ISpectRiverpodObserver extends ProviderObserver {
 
   String _providerName(ProviderBase<Object?> provider) =>
       LogExportOutput.truncateUtf8(
-        provider.name ?? safeRiverpodProviderTypeLabel(provider),
+        provider.name ??
+            safeRiverpodProviderTypeLabel(
+              provider,
+              captureMode: settings.captureMode,
+              resourceLimits: _resourceLimits,
+            ),
         maxBytes: _resourceLimits.maxStateTraceBytes,
       );
 
@@ -248,6 +253,8 @@ class ISpectRiverpodObserver extends ProviderObserver {
       provider: provider,
       value: value,
       includeValue: settings.printValues,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
     final meta = _prepareTraceMeta(data.toJson());
     final target = _traceTarget(
@@ -310,6 +317,8 @@ class ISpectRiverpodObserver extends ProviderObserver {
       previousValue: previousValue,
       newValue: newValue,
       includeValue: settings.printValues,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
     final meta = _prepareTraceMeta(data.toJson());
     final target = _traceTarget(
@@ -355,7 +364,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
       return;
     }
 
-    final data = RiverpodDisposeData(provider: provider);
+    final data = RiverpodDisposeData(
+      provider: provider,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
+    );
     final meta = _prepareTraceMeta(data.toJson());
     final target = _traceTarget(
       meta,
@@ -401,6 +414,8 @@ class ISpectRiverpodObserver extends ProviderObserver {
       provider: provider,
       error: error,
       stackTrace: stackTrace,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
     final meta = _prepareTraceMeta(data.toJson());
     final target = _traceTarget(

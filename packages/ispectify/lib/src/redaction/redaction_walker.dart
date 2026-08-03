@@ -269,7 +269,7 @@ final class RedactionWalker {
 
   bool _isLikelyBase64(String value) {
     if (value.length < 32) return false;
-    final sanitized = value.replaceAll(whitespaceRegex, '');
+    final sanitized = value.replaceAll(base64LineBreakRegex, '');
     if (sanitized.length < 32) return false;
     if (!base64Regex.hasMatch(sanitized)) return false;
     if (sanitized.length % 4 == 1) return false;

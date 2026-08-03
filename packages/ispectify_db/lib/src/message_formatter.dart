@@ -16,6 +16,7 @@ final class DbMessageFormatter {
     String? source,
     String? table,
     String? target,
+    String? statement,
     String? key,
     int? items,
     int? affected,
@@ -41,6 +42,7 @@ final class DbMessageFormatter {
     }
 
     final details = <String>[];
+    if (statement != null && statement.isNotEmpty) details.add(statement);
     if (key != null) details.add('${DbMessageLabels.keyPrefix}$key');
     if (value != null) details.add('${DbMessageLabels.valuePrefix}$value');
     if (items != null) details.add('${DbMessageLabels.itemsPrefix}$items');

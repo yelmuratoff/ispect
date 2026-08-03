@@ -1255,6 +1255,39 @@ void main() {
       });
     });
 
+    group('base64 content detection', () {
+      test('keeps a whitespace-separated diagnostic message readable', () {
+        const message = 'Support code decoding from a screenshot failed';
+
+        expect(RedactionService().redactForExport(message), message);
+      });
+
+      test('keeps a long prose sentence readable', () {
+        const message = 'Failed to refresh the session before the retry window';
+
+        expect(RedactionService().redactForExport(message), message);
+      });
+
+      test('replaces an unwrapped base64 payload', () {
+        final payload = base64.encode(List<int>.filled(64, 7));
+
+        expect(
+          RedactionService().redactForExport(payload),
+          '[base64 ~${payload.length}B]',
+        );
+      });
+
+      test('replaces a line-wrapped base64 payload', () {
+        final payload = base64.encode(List<int>.filled(64, 7));
+        final wrapped = '${payload.substring(0, 44)}\n${payload.substring(44)}';
+
+        expect(
+          RedactionService().redactForExport(wrapped),
+          '[base64 ~${wrapped.length}B]',
+        );
+      });
+    });
+
     group('redactForExport', () {
       test('never executes caller DTO formatters', () {
         final value = _HostileExportDto();

@@ -153,15 +153,25 @@ class ISpectBlocSettings {
 
   /// Formats an event payload for display based on [printEventFullData].
   ///
-  /// Returns the full object when verbose, otherwise a coarse type label.
-  Object formatEvent(Object? event) =>
-      printEventFullData ? (event ?? 'null') : safeBlocValueTypeLabel(event);
+  /// Returns the full object when verbose, otherwise its type label.
+  Object formatEvent(Object? event) => printEventFullData
+      ? (event ?? 'null')
+      : safeBlocValueTypeLabel(
+          event,
+          captureMode: captureMode,
+          resourceLimits: resourceLimits ?? DiagnosticResourceLimits.balanced,
+        );
 
   /// Formats a state payload for display based on [printStateFullData].
   ///
-  /// Returns the full object when verbose, otherwise a coarse type label.
-  Object formatState(Object? state) =>
-      printStateFullData ? (state ?? 'null') : safeBlocValueTypeLabel(state);
+  /// Returns the full object when verbose, otherwise its type label.
+  Object formatState(Object? state) => printStateFullData
+      ? (state ?? 'null')
+      : safeBlocValueTypeLabel(
+          state,
+          captureMode: captureMode,
+          resourceLimits: resourceLimits ?? DiagnosticResourceLimits.balanced,
+        );
 
   /// Returns a copy with the provided overrides.
   ISpectBlocSettings copyWith({
