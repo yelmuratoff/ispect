@@ -5,6 +5,7 @@ import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/models/metadata.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart';
+import 'package:ispectify/src/redaction/egress_provenance.dart';
 import 'package:ispectify/src/redaction/redaction_service.dart';
 import 'package:ispectify/src/redaction/redaction_toggle.dart';
 import 'package:ispectify/src/trace/trace_keys.dart';
@@ -320,15 +321,25 @@ abstract final class LogExporter {
   }) {
     try {
       final redactionActive = enableRedaction && ISpectRedaction.enabled;
+      final reuseCaptureRedaction = redactionActive &&
+          redactKeys == null &&
+          redactionService != null &&
+          isExportRedacted(
+            log,
+            service: redactionService,
+            resourceLimits: resourceLimits,
+          );
       final encoded = jsonEncode(
-        _prepareValue(
-          log.toExportJson(redactionActive: redactionActive),
-          redactKeys: redactKeys,
-          redactionService: redactionService,
-          enableRedaction: enableRedaction,
-          resourceLimits: resourceLimits,
-          rootValueKeys: const {'key'},
-        ),
+        reuseCaptureRedaction
+            ? log.toExportJson(redactionActive: false)
+            : _prepareValue(
+                log.toExportJson(redactionActive: redactionActive),
+                redactKeys: redactKeys,
+                redactionService: redactionService,
+                enableRedaction: enableRedaction,
+                resourceLimits: resourceLimits,
+                rootValueKeys: const {'key'},
+              ),
       );
       if (LogExportOutput.utf8Length(
             encoded,

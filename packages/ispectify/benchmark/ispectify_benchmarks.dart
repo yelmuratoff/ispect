@@ -30,6 +30,25 @@ void main(List<String> arguments) {
       maxHistoryItems: 1000,
     ).result(),
     _LoggerBenchmark(
+      'logger.metadata-only.console',
+      additionalData: null,
+      maxHistoryItems: 1000,
+      useConsoleLogs: true,
+    ).result(),
+    _LoggerBenchmark(
+      'logger.with-payload.console',
+      additionalData: _payload(1024),
+      maxHistoryItems: 1000,
+      useConsoleLogs: true,
+    ).result(),
+    _CaptureBenchmark('capture.with-payload', _payload(1024)).result(),
+    _ExportHistoryBenchmark('export.history.json-lines.100', 100).result(),
+    _ExportHistoryBenchmark(
+      'export.history.text.100',
+      100,
+      format: _HistoryExportFormat.text,
+    ).result(),
+    _LoggerBenchmark(
       'logger.history-disabled',
       additionalData: null,
       useHistory: false,
@@ -114,6 +133,7 @@ final class _LoggerBenchmark extends BenchmarkBase {
     this.maxHistoryItems = 0,
     this.captureMode = DiagnosticCaptureMode.balanced,
     this.enableRedaction = true,
+    this.useConsoleLogs = false,
   });
 
   final Map<String, Object?>? additionalData;
@@ -121,20 +141,30 @@ final class _LoggerBenchmark extends BenchmarkBase {
   final int maxHistoryItems;
   final DiagnosticCaptureMode captureMode;
   final bool enableRedaction;
+  final bool useConsoleLogs;
   late final ISpectLogger _logger;
 
   @override
   void setup() {
     ISpectRedaction.enabled = enableRedaction;
     _logger = ISpectLogger(
+      logger: ISpectBaseLogger(output: _discard),
       options: ISpectLoggerOptions(
-        useConsoleLogs: false,
+        useConsoleLogs: useConsoleLogs,
         useHistory: useHistory,
         maxHistoryItems: maxHistoryItems,
         captureMode: captureMode,
       ),
     );
   }
+
+  static void _discard(
+    String message, {
+    LogLevel? logLevel,
+    Object? error,
+    StackTrace? stackTrace,
+    DateTime? time,
+  }) {}
 
   @override
   void exercise() {
@@ -147,6 +177,79 @@ final class _LoggerBenchmark extends BenchmarkBase {
   void teardown() {
     _logger.dispose();
     ISpectRedaction.enabled = true;
+  }
+}
+
+enum _HistoryExportFormat { jsonLines, text }
+
+final class _ExportHistoryBenchmark extends BenchmarkBase {
+  _ExportHistoryBenchmark(
+    super.name,
+    this.count, {
+    this.format = _HistoryExportFormat.jsonLines,
+  });
+
+  final int count;
+  final _HistoryExportFormat format;
+  late final ISpectLogger _logger;
+  String? _result;
+
+  @override
+  void setup() {
+    _logger = ISpectLogger(
+      logger: ISpectBaseLogger(output: _LoggerBenchmark._discard),
+      options: ISpectLoggerOptions(
+        useConsoleLogs: false,
+        maxHistoryItems: count,
+      ),
+    );
+    for (var index = 0; index < count; index++) {
+      _logger.info('Benchmark log $index', additionalData: _payload(1024));
+    }
+  }
+
+  @override
+  void exercise() {
+    _result = switch (format) {
+      _HistoryExportFormat.jsonLines =>
+        LogExporter.toJsonLines(_logger.history),
+      _HistoryExportFormat.text => LogExporter.toText(_logger.history),
+    };
+  }
+
+  _BenchmarkResult result() => _BenchmarkResult(name, super.measure());
+
+  @override
+  void teardown() {
+    _logger.dispose();
+    if (_result == null) {
+      throw StateError('Export history benchmark did not produce a result');
+    }
+  }
+}
+
+final class _CaptureBenchmark extends BenchmarkBase {
+  _CaptureBenchmark(super.name, this.payload);
+
+  final Map<String, Object?> payload;
+  Object? _result;
+
+  @override
+  void exercise() {
+    _result = ISpectLogData(
+      'Benchmark event',
+      key: 'info',
+      additionalData: payload,
+    );
+  }
+
+  _BenchmarkResult result() => _BenchmarkResult(name, super.measure());
+
+  @override
+  void teardown() {
+    if (_result == null) {
+      throw StateError('Capture benchmark did not produce a result');
+    }
   }
 }
 

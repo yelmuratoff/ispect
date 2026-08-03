@@ -15,6 +15,16 @@ DiagnosticResourceLimits _validatedResourceLimits(
   return resourceLimits;
 }
 
+/// Masks a bounded diagnostic map on its way to a consumer.
+///
+/// Supplied by [ISpectLogger] when it prepares an entry for egress. Entries
+/// built directly by an application carry no masker and are returned as
+/// captured.
+typedef DiagnosticMasker = Map<String, dynamic>? Function(
+  Map<String, dynamic>? value,
+  DiagnosticResourceLimits resourceLimits,
+);
+
 /// Core log entry model. All fields are immutable after construction.
 ///
 /// Uses `base` modifier to prevent external `implements` while allowing
@@ -35,7 +45,9 @@ base class ISpectLogData {
     String? id,
     DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+    @internal DiagnosticMasker? maskAdditionalData,
   })  : _id = id ?? LogId.generate(),
+        _maskAdditionalData = maskAdditionalData,
         _captureMode = captureMode,
         _resourceLimits = _validatedResourceLimits(resourceLimits),
         _time = _captureTime(time),
@@ -83,6 +95,16 @@ base class ISpectLogData {
   final String? _errorSnapshot;
   final StackTrace? _stackTrace;
   final String? _stackTraceSnapshot;
+  final DiagnosticMasker? _maskAdditionalData;
+
+  late final Map<String, dynamic>? _maskedAdditionalData = _computeMasked();
+
+  Map<String, dynamic>? _computeMasked() {
+    final mask = _maskAdditionalData;
+    if (mask == null) return _additionalData;
+    final masked = mask(_additionalData, _resourceLimits);
+    return masked == null ? null : _freezeCapturedMap(masked);
+  }
 
   String get id => _id;
 
@@ -94,7 +116,7 @@ base class ISpectLogData {
 
   AnsiPen? get pen => _pen;
 
-  Map<String, dynamic>? get additionalData => _additionalData;
+  Map<String, dynamic>? get additionalData => _maskedAdditionalData;
 
   Object? get exception => _exception;
 
@@ -263,7 +285,7 @@ base class ISpectLogData {
       message: data._messageCapture.serialization,
       logLevel: data._logLevel,
       pen: data._pen,
-      additionalData: data._additionalData,
+      additionalData: data._maskedAdditionalData,
       exception: data._exception == null
           ? null
           : _CapturedException(
@@ -286,6 +308,45 @@ base class ISpectLogData {
                 ),
       stackTraceText: data._stackTraceSnapshot,
     );
+
+/// Reads every captured field except the payload.
+///
+/// Does not trigger the masked payload that [ISpectLogData.additionalData]
+/// computes on first read.
+({
+  DateTime time,
+  String? key,
+  LogLevel? logLevel,
+  DiagnosticResourceLimits resourceLimits,
+  Object? message,
+  String? exceptionText,
+  String? errorText,
+  StackTrace? stackTrace,
+  String? stackTraceText,
+}) captureISpectLogWithoutPayload(ISpectLogData data) => (
+      time: data._time,
+      key: data._key,
+      logLevel: data._logLevel,
+      resourceLimits: data._resourceLimits,
+      message: data._messageCapture.serialization,
+      exceptionText: data._exceptionSnapshot,
+      errorText: data._errorSnapshot,
+      stackTrace: data._stackTrace,
+      stackTraceText: data._stackTraceSnapshot,
+    );
+
+/// Masks a single captured field without materializing the whole masked map.
+///
+/// Returns the captured value unchanged when the entry carries no masker.
+Object? maskedDiagnosticField(ISpectLogData data, String key) {
+  final captured = data._additionalData;
+  if (captured == null) return null;
+  final value = captured[key];
+  if (value == null) return null;
+  final mask = data._maskAdditionalData;
+  if (mask == null) return value;
+  return mask(<String, dynamic>{key: value}, data._resourceLimits)?[key];
+}
 
 String? _captureDiagnostic(
   Object? value,
@@ -365,22 +426,45 @@ DateTime _captureTime(DateTime? value) {
   }
 }
 
+@immutable
+final class _CaptureStamp {
+  const _CaptureStamp(this.resourceLimits, {required this.oversizedReplaced});
+
+  final DiagnosticResourceLimits resourceLimits;
+  final bool oversizedReplaced;
+}
+
+final Expando<_CaptureStamp> _captureStamp =
+    Expando<_CaptureStamp>('ISpectLogData.captureStamp');
+
 Map<String, dynamic>? _captureAdditionalData(
   Map<String, dynamic>? value,
   DiagnosticCaptureMode captureMode,
   DiagnosticResourceLimits resourceLimits,
 ) {
   if (value == null) return null;
+  final oversizedReplaced = ISpectRedaction.enabled;
+  final stamp = _captureStamp[value];
+  if (stamp != null &&
+      stamp.resourceLimits == resourceLimits &&
+      stamp.oversizedReplaced == oversizedReplaced) {
+    return value;
+  }
   final bounded = LogExportOutput.boundJsonValue(
     value,
     resourceLimits: resourceLimits,
     preserveTypes: true,
-    replaceOversizedStrings: ISpectRedaction.enabled,
+    replaceOversizedStrings: oversizedReplaced,
     allowCustomSerialization: captureMode == DiagnosticCaptureMode.balanced,
     allowCustomStringification: captureMode == DiagnosticCaptureMode.balanced,
   );
   if (bounded is! Map<String, Object?>) return const {};
-  return _freezeCapturedMap(bounded);
+  final frozen = _freezeCapturedMap(bounded);
+  _captureStamp[frozen] = _CaptureStamp(
+    resourceLimits,
+    oversizedReplaced: oversizedReplaced,
+  );
+  return frozen;
 }
 
 _MessageCapture _captureMessage(

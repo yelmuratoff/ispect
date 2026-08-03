@@ -16,6 +16,36 @@ When the toolkit is on, overhead depends on what you capture:
 - High-volume BLoC and event streams need filters or sampling.
 - Long sessions need bounded history and exports limited to the relevant window.
 
+## What capture-time redaction costs
+
+Since 7.0.0 an entry is bounded when it is emitted, which severs the caller's
+object graph and caps memory. Masking runs when a consumer first reads the
+payload and is memoized on the entry, so entries nobody inspects never pay for
+it. History, the stream, observers, the console, and every export still share
+one guarantee. Indicative ratios from one macOS arm64 run of
+`./bash/run_benchmarks.sh`, useful for relative comparison rather than as an
+absolute budget:
+
+| case | µs/log |
+| --- | --- |
+| no consumer attached | 0.01 |
+| metadata-only, bounded history | 4.5 |
+| 1 KB payload, bounded history | ~30 |
+| 1 KB payload, bounded history and console | ~31 |
+
+Bounding the payload is what remains on the emit path, so the lever that matters
+is how much you capture, not how you format it. Choosing `strict` capture does
+not reduce it; capturing less does.
+
+Reach for one of these when a path is hot:
+
+- `ISpectDioInterceptorSettingsBuilder.metadataOnly()` and its http and
+  WebSocket counterparts, when you do not need bodies or headers.
+- `ISpectBlocSettings.compact` / `ISpectRiverpodSettings.compact` for chatty
+  state streams.
+- `DiagnosticResourceLimits.constrained` to shrink every budget at once.
+- A filter chain to drop noisy categories before they are captured.
+
 ## Controls
 
 - Start with the debug panel and metadata-only diagnostics.

@@ -1,4 +1,5 @@
 import 'package:ispectify/ispectify.dart';
+import 'package:meta/meta.dart';
 
 /// Log entry produced when a Dart [Error] is captured by the logger.
 ///
@@ -20,6 +21,7 @@ base class ISpectLogError extends ISpectLogData {
     String? id,
     DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+    @internal DiagnosticMasker? maskAdditionalData,
   }) : super(
           message,
           error: error,
@@ -32,6 +34,7 @@ base class ISpectLogError extends ISpectLogData {
           id: id,
           captureMode: captureMode,
           resourceLimits: resourceLimits,
+          maskAdditionalData: maskAdditionalData,
         );
 
   @override

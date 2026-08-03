@@ -78,11 +78,11 @@ StackTrace: ${bounded(captured.stackTraceText)}]''';
 
   /// Stack trace text for log display. Returns `null` if unavailable.
   String? get stackTraceLogText {
-    final captured = captureISpectLogDataForEgress(this);
+    final captured = captureISpectLogWithoutPayload(this);
     final isError = captured.logLevel == LogLevel.error ||
         captured.logLevel == LogLevel.critical ||
         ISpectLogType.isErrorKey(captured.key) ||
-        captured.additionalData?[TraceKeys.success] == false;
+        maskedDiagnosticField(this, TraceKeys.success) == false;
     final stackTraceText = captured.stackTraceText;
     return isError && stackTraceText != null && stackTraceText.isNotEmpty
         ? LogExportOutput.truncateUtf8(
@@ -113,10 +113,10 @@ StackTrace: ${bounded(captured.stackTraceText)}]''';
           );
   }
 
-  bool get isHttpLog => _isHttpKey(captureISpectLogDataForEgress(this).key);
+  bool get isHttpLog => _isHttpKey(captureISpectLogWithoutPayload(this).key);
 
   bool get isRouteLog =>
-      captureISpectLogDataForEgress(this).key == ISpectLogType.route.key;
+      captureISpectLogWithoutPayload(this).key == ISpectLogType.route.key;
 
   /// Generates a cURL command for HTTP logs, or `null` for non-HTTP entries.
   ///

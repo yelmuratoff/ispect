@@ -8,6 +8,7 @@ import 'package:ispectify/src/models/log_factory.dart';
 import 'package:ispectify/src/observer/observer_manager.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart'
     as placeholders;
+import 'package:ispectify/src/redaction/egress_provenance.dart';
 import 'package:ispectify/src/utils/safe_object_description.dart';
 import 'package:meta/meta.dart';
 
@@ -565,11 +566,6 @@ class ISpectLogger {
     final resourceLimits = captured.resourceLimits;
     final redactor =
         ISpectRedaction.enabled && redact ? ISpectRedaction.service : null;
-    final safeAdditionalData = _prepareEgressValue(
-      redactor,
-      captured.additionalData,
-      resourceLimits,
-    );
     final safeMessage = _prepareEgressText(
       redactor,
       captured.message,
@@ -601,11 +597,62 @@ class ISpectLogger {
                 ) ??
                 defaultPlaceholder,
           );
-    final additionalData = safeAdditionalData is Map
-        ? Map<String, dynamic>.from(safeAdditionalData)
-        : null;
+    final additionalData = captured.additionalData;
+    final masker = _egressMasker(redactor);
 
     final safeKey = _prepareEgressText(redactor, captured.key, resourceLimits);
+    final egress = _buildEgressData(
+      captured: captured,
+      resourceLimits: resourceLimits,
+      safeError: safeError,
+      safeException: safeException,
+      safeMessage: safeMessage,
+      safeStack: safeStack,
+      safeKey: safeKey,
+      additionalData: additionalData,
+      masker: masker,
+    );
+    if (redactor != null) {
+      markExportRedacted(egress, redactor, resourceLimits);
+    }
+    return egress;
+  }
+
+  DiagnosticMasker? _egressMasker(RedactionService? redactor) {
+    if (redactor == null) return null;
+    return (value, limits) {
+      final safe = _prepareEgressValue(redactor, value, limits);
+      return safe is Map ? Map<String, dynamic>.from(safe) : null;
+    };
+  }
+
+  ISpectLogData _buildEgressData({
+    required ({
+      String id,
+      DiagnosticCaptureMode captureMode,
+      DiagnosticResourceLimits resourceLimits,
+      DateTime time,
+      String? key,
+      Object? message,
+      LogLevel? logLevel,
+      AnsiPen? pen,
+      Map<String, dynamic>? additionalData,
+      Object? exception,
+      String? exceptionText,
+      Error? error,
+      String? errorText,
+      StackTrace? stackTrace,
+      String? stackTraceText,
+    }) captured,
+    required DiagnosticResourceLimits resourceLimits,
+    required Error? safeError,
+    required String safeException,
+    required String? safeMessage,
+    required StackTrace? safeStack,
+    required String? safeKey,
+    required Map<String, dynamic>? additionalData,
+    required DiagnosticMasker? masker,
+  }) {
     if (safeError != null) {
       return ISpectLogError(
         safeError,
@@ -619,6 +666,7 @@ class ISpectLogger {
         id: captured.id,
         captureMode: DiagnosticCaptureMode.strict,
         resourceLimits: resourceLimits,
+        maskAdditionalData: masker,
       );
     }
     if (captured.exception != null) {
@@ -634,6 +682,7 @@ class ISpectLogger {
         id: captured.id,
         captureMode: DiagnosticCaptureMode.strict,
         resourceLimits: resourceLimits,
+        maskAdditionalData: masker,
       );
     }
     return ISpectLogData(
@@ -647,6 +696,7 @@ class ISpectLogger {
       id: captured.id,
       captureMode: DiagnosticCaptureMode.strict,
       resourceLimits: resourceLimits,
+      maskAdditionalData: masker,
     );
   }
 

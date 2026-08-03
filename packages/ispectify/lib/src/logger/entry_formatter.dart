@@ -118,14 +118,13 @@ base class BoxedLogEntryFormatter implements ILogEntryFormatter {
 /// optional source/category labels, timestamp, and correlation metadata.
 /// Ends with a trailing `| ` so a message can follow inline.
 String _buildHeader(ISpectLogData data, ConsoleSettings settings) {
-  final captured = captureISpectLogDataForEgress(data);
-  final additionalData = captured.additionalData;
+  final captured = captureISpectLogWithoutPayload(data);
   final explicitLevel = captured.logLevel?.name;
   final levelFromKey = _levelFromKey(captured.key);
   final levelLabel = (explicitLevel ?? levelFromKey ?? 'log').toUpperCase();
   final paddedLevel = levelLabel.padRight(_levelColumnWidth);
 
-  final source = _readNonEmptyString(additionalData, TraceKeys.source);
+  final source = _readNonEmptyString(data, TraceKeys.source);
   final sourceLabel = source != null ? ' [$source]' : '';
 
   final keyIsLevel = captured.key != null &&
@@ -137,7 +136,7 @@ String _buildHeader(ISpectLogData data, ConsoleSettings settings) {
       ? ISpectDateTimeFormatter(captured.time).iso8601Local
       : ISpectDateTimeFormatter(captured.time).defaultFormat;
 
-  final metadata = _buildMetadata(additionalData, settings);
+  final metadata = _buildMetadata(data, settings);
   final metadataSection = metadata.isEmpty ? '' : ' $metadata |';
 
   return '$paddedLevel$sourceLabel$categoryLabel | $timestamp |$metadataSection ';
@@ -148,30 +147,29 @@ String _buildHeader(ISpectLogData data, ConsoleSettings settings) {
 /// for network/WS entries. Returns an empty string when there is nothing to
 /// show, letting each formatter render its own placeholder.
 String _buildBody(ISpectLogData data) {
-  final headline = NetworkLogRenderer.isNetworkLog(data)
+  final isNetwork = NetworkLogRenderer.isNetworkLog(data);
+  final headline = isNetwork
       ? NetworkLogRenderer.renderHeadline(data)
       : data.toExportMessageText();
-  final networkBody = NetworkLogRenderer.isNetworkLog(data)
-      ? NetworkLogRenderer.renderBody(data)
-      : '';
+  final networkBody = isNetwork ? NetworkLogRenderer.renderBody(data) : '';
   if (networkBody.isEmpty) return headline;
   return headline.isEmpty ? networkBody : '$headline\n$networkBody';
 }
 
 String _buildMetadata(
-  Map<String, dynamic>? additionalData,
+  ISpectLogData data,
   ConsoleSettings settings,
 ) {
   final parts = <String>[];
-  final tid = _readNonEmptyString(additionalData, TraceKeys.transactionId);
+  final tid = _readNonEmptyString(data, TraceKeys.transactionId);
   if (tid != null) {
     parts.add('tid=${settings.truncateTraceIds ? _shortenTraceId(tid) : tid}');
   }
-  final cid = _readNonEmptyString(additionalData, TraceKeys.correlationId);
+  final cid = _readNonEmptyString(data, TraceKeys.correlationId);
   if (cid != null) {
     parts.add('cid=${settings.truncateTraceIds ? _shortenTraceId(cid) : cid}');
   }
-  final dur = _readInt(additionalData, TraceKeys.durationMs);
+  final dur = _readInt(data, TraceKeys.durationMs);
   if (dur != null) parts.add('dur=${dur}ms');
   return parts.join(' ');
 }
@@ -195,14 +193,14 @@ String _shortenTraceId(String id) {
   return id.substring(0, _shortIdLength);
 }
 
-String? _readNonEmptyString(Map<String, dynamic>? additionalData, String key) {
-  final raw = additionalData?[key];
+String? _readNonEmptyString(ISpectLogData data, String key) {
+  final raw = maskedDiagnosticField(data, key);
   if (raw is! String || raw.isEmpty) return null;
   return raw;
 }
 
-int? _readInt(Map<String, dynamic>? additionalData, String key) {
-  final raw = additionalData?[key];
+int? _readInt(ISpectLogData data, String key) {
+  final raw = maskedDiagnosticField(data, key);
   if (raw is int) return raw;
   if (raw is num) return raw.toInt();
   if (raw is String) return int.tryParse(raw);

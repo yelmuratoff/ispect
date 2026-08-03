@@ -43,9 +43,7 @@ abstract final class NetworkLogRenderer {
   /// adapters (gRPC, GraphQL, Chopper, …) opt in automatically as soon as
   /// they tag their entries with `TraceCategoryIds.network`.
   static bool isNetworkLog(ISpectLogData entry) {
-    final category = captureISpectLogDataForEgress(
-      entry,
-    ).additionalData?[TraceKeys.category];
+    final category = maskedDiagnosticField(entry, TraceKeys.category);
     return category == TraceCategoryIds.network ||
         category == TraceCategoryIds.ws;
   }

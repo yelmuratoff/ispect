@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_parts.dart';
+import 'package:ispectify/src/redaction/egress_provenance.dart';
 import 'package:ispectify/src/utils/safe_object_description.dart';
 
 /// Shared byte limits for outbound log documents.
@@ -547,6 +548,21 @@ extension ISpectLogDataSerialization on ISpectLogData {
   /// `toString` implementations. [preserveTypes] is reserved for an in-memory
   /// redaction pass before final JSON encoding and keeps typed binary values
   /// recognizable by the redactor.
+  bool _reusesCaptureRedaction({
+    required Set<String>? redactKeys,
+    required RedactionService? redactionService,
+    required bool enableRedaction,
+    required DiagnosticResourceLimits resourceLimits,
+  }) =>
+      enableRedaction &&
+      ISpectRedaction.enabled &&
+      redactKeys == null &&
+      isExportRedacted(
+        this,
+        service: redactionService ?? ISpectRedaction.service,
+        resourceLimits: resourceLimits,
+      );
+
   Map<String, dynamic> toJson({
     bool truncated = false,
     bool preserveTypes = false,
@@ -642,7 +658,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
     bool enableRedaction = true,
     int? maxOutputBytes,
   }) {
-    final captured = captureISpectLogDataForEgress(this);
+    final captured = captureISpectLogWithoutPayload(this);
     final resourceLimits = captured.resourceLimits;
     final outputBudget = _effectiveRecordBudget(maxOutputBytes, resourceLimits);
     final preparedValueBytes = _preparedValueBudget(
@@ -730,6 +746,12 @@ extension ISpectLogDataSerialization on ISpectLogData {
         enableRedaction: enableRedaction,
         maxBytes: preparedValueBytes,
         resourceLimits: resourceLimits,
+        reuseCaptureRedaction: _reusesCaptureRedaction(
+          redactKeys: redactKeys,
+          redactionService: redactionService,
+          enableRedaction: enableRedaction,
+          resourceLimits: resourceLimits,
+        ),
       );
       for (final entry in sanitized.entries) {
         // Skip TraceKeys.error — raw error string may contain PII.
@@ -839,6 +861,12 @@ extension ISpectLogDataSerialization on ISpectLogData {
             enableRedaction: enableRedaction,
             maxBytes: preparedValueBytes,
             resourceLimits: resourceLimits,
+            reuseCaptureRedaction: _reusesCaptureRedaction(
+              redactKeys: redactKeys,
+              redactionService: redactionService,
+              enableRedaction: enableRedaction,
+              resourceLimits: resourceLimits,
+            ),
           );
     final buffer = StringBuffer()
       ..writeln(
@@ -997,6 +1025,7 @@ Map<String, dynamic> _redactAdditionalData(
   required bool enableRedaction,
   required DiagnosticResourceLimits resourceLimits,
   int? maxBytes,
+  bool reuseCaptureRedaction = false,
 }) {
   final redactionActive = enableRedaction && ISpectRedaction.enabled;
   final prepared = maxBytes == null
@@ -1015,7 +1044,7 @@ Map<String, dynamic> _redactAdditionalData(
           preserveTypes: redactionActive,
         )
       : <String, dynamic>{};
-  final outbound = redactionActive
+  final outbound = redactionActive && !reuseCaptureRedaction
       ? _exportRedactor(redactKeys, redactionService).redactForExport(
           LogExportOutput.replaceTruncatedPrefixes(
             normalized,
