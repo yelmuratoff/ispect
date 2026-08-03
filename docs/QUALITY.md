@@ -8,14 +8,22 @@ Run from the affected package directory:
 
 ```bash
 dart analyze --fatal-infos
-dart test
+flutter test --dart-define=ISPECT_ENABLED=true --coverage
 ```
 
 For Flutter packages:
 
 ```bash
 flutter analyze --fatal-infos
-flutter test --coverage
+flutter test --dart-define=ISPECT_ENABLED=true --coverage
+```
+
+Diagnostics are compiled out unless `ISPECT_ENABLED` is defined, so the suites
+need the define to reach their assertions. Packages that ship
+`test/production_safety_test.dart` assert the opposite and run without it:
+
+```bash
+dart test --run-skipped test/production_safety_test.dart
 ```
 
 Generated README files must match `docs/readme/`:
