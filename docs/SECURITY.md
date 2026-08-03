@@ -119,6 +119,11 @@ Optional hardening for shared internal builds:
   labels from reading the overridable `runtimeType` getter; balanced capture
   reads it under a guard so an entry can name what it describes.
 - Project database traces to counts, IDs, timings, and status fields instead of full rows.
+- Bind database values instead of interpolating them. A trace records the
+  normalized statement — comments, quoted literals, and digit runs replaced by
+  `?` — and then passes it through `RedactionService`, which masks
+  secret-keyed operands such as SQLCipher's `PRAGMA key`. An oversized
+  statement falls back to an opaque digest.
 - Do not pipe raw user input through `logger.info(...)`.
 - Keep identifying values out of route paths. `ISpectNavigatorObserver` records
   the bounded route path as declared and masks only query and fragment values,
