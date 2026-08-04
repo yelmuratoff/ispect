@@ -7,6 +7,13 @@ void main() {
     test('defaults to full redacted frame diagnostics', () {
       const settings = ISpectWSInterceptorSettings();
 
+      expect(NetworkInterceptorDefaults.printRequestData, isTrue);
+      expect(NetworkInterceptorDefaults.printResponseData, isTrue);
+      expect(NetworkInterceptorDefaults.printErrorData, isTrue);
+      expect(NetworkInterceptorDefaults.printRequestHeaders, isTrue);
+      expect(NetworkInterceptorDefaults.printResponseHeaders, isTrue);
+      expect(ISpectWSInterceptorDefaults.printStateData, isTrue);
+      expect(ISpectWSInterceptorDefaults.printErrorHeaders, isFalse);
       expect(settings.enableRedaction, isTrue);
       expect(settings.captureMode, DiagnosticCaptureMode.balanced);
       expect(

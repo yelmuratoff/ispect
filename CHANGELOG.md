@@ -9,6 +9,7 @@
 - **HTTP URL fields:** Throwing custom `Uri` implementations may now be omitted; strict capture deliberately keeps all caller-owned `Uri` values opaque.
 - **Custom redaction services:** Overrides of `RedactionService.redactForExport`, `redactEnvelopeForExport`, or `redactHeaders` must accept the optional `resourceLimits` parameter.
 - **Observer payloads:** Observers receive the redacted entry, with the exception, error, and stack trace delivered as scrubbed text instead of the original objects. Forward crash reports from `ISpect.run`'s error callbacks, which still receive the originals.
+- **Custom diagnostics settings:** Overrides of network, trace, BLoC, or Riverpod `copyWith`/`configure` methods must accept the newly added optional capture and inheritance parameters.
 
 ### Behavioral Changes
 
