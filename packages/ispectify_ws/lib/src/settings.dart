@@ -1,6 +1,15 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 import 'package:ispectify/ispectify.dart';
 
+/// WebSocket-specific defaults layered on [NetworkInterceptorDefaults].
+abstract final class ISpectWSInterceptorDefaults {
+  /// Connection-state diagnostics are retained by default.
+  static const printStateData = true;
+
+  /// WebSocket errors have no header collection.
+  static const printErrorHeaders = false;
+}
+
 /// WebSocket interceptor settings.
 ///
 /// Extends [BaseNetworkInterceptorSettings] to reuse shared fields
@@ -18,14 +27,14 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
     super.resourceLimits,
     super.logRequests,
     super.logResponses,
-    bool printReceivedData = true,
-    bool printReceivedMessage = true,
+    bool printReceivedData = NetworkInterceptorDefaults.printResponseData,
+    bool printReceivedMessage = NetworkInterceptorDefaults.printResponseMessage,
     super.printErrorData,
     super.printErrorMessage,
-    bool printSentData = true,
-    this.printStateData = true,
-    bool printReceivedHeaders = true,
-    bool printSentHeaders = true,
+    bool printSentData = NetworkInterceptorDefaults.printRequestData,
+    this.printStateData = ISpectWSInterceptorDefaults.printStateData,
+    bool printReceivedHeaders = NetworkInterceptorDefaults.printResponseHeaders,
+    bool printSentHeaders = NetworkInterceptorDefaults.printRequestHeaders,
     AnsiPen? sentPen,
     AnsiPen? receivedPen,
     super.errorPen,
@@ -44,7 +53,7 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
           printResponseData: printReceivedData,
           printResponseHeaders: printReceivedHeaders,
           printResponseMessage: printReceivedMessage,
-          printErrorHeaders: false,
+          printErrorHeaders: ISpectWSInterceptorDefaults.printErrorHeaders,
           requestPen: sentPen,
           responsePen: receivedPen,
         );
@@ -116,6 +125,7 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
     bool? enableRedaction,
     DiagnosticCaptureMode? captureMode,
     DiagnosticResourceLimits? resourceLimits,
+    bool inheritResourceLimits = false,
     bool? logRequests,
     bool? logResponses,
     // WS-specific names (preferred)
@@ -155,7 +165,9 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
         enabled: enabled ?? this.enabled,
         enableRedaction: enableRedaction ?? this.enableRedaction,
         captureMode: captureMode ?? this.captureMode,
-        resourceLimits: resourceLimits ?? this.resourceLimits,
+        resourceLimits: inheritResourceLimits
+            ? null
+            : resourceLimits ?? this.resourceLimits,
         logRequests: logRequests ?? this.logRequests,
         logResponses: logResponses ?? this.logResponses,
         printSentData: printSentData ?? printRequestData ?? this.printSentData,

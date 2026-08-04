@@ -1660,6 +1660,30 @@ void main() {
                 .resourceLimits,
             same(DiagnosticResourceLimits.extended),
           );
+          expect(
+            original
+                .copyWith(
+                  resourceLimits: DiagnosticResourceLimits.extended,
+                  inheritResourceLimits: true,
+                )
+                .resourceLimits,
+            isNull,
+          );
+        });
+
+        test('copyWith can restore the global redaction service', () {
+          final original = ISpectRiverpodSettings(
+            redactor: RedactionService(
+              additionalSensitiveKeys: const {'local_marker'},
+            ),
+          );
+
+          final inherited = original.copyWith(
+            redactor: RedactionService(),
+            inheritRedactionService: true,
+          );
+
+          expect(inherited.redactor, isNull);
         });
 
         test('observer rejects an invalid local resource policy', () {

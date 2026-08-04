@@ -9,13 +9,38 @@ void main() {
 
       expect(settings.enableRedaction, isTrue);
       expect(settings.captureMode, DiagnosticCaptureMode.balanced);
-      expect(settings.printSentData, isTrue);
-      expect(settings.printReceivedData, isTrue);
-      expect(settings.printStateData, isTrue);
-      expect(settings.printErrorData, isTrue);
-      expect(settings.printSentHeaders, isTrue);
-      expect(settings.printReceivedHeaders, isTrue);
-      expect(settings.printErrorHeaders, isFalse);
+      expect(
+        settings.printSentData,
+        NetworkInterceptorDefaults.printRequestData,
+      );
+      expect(
+        settings.printReceivedData,
+        NetworkInterceptorDefaults.printResponseData,
+      );
+      expect(
+        settings.printStateData,
+        ISpectWSInterceptorDefaults.printStateData,
+      );
+      expect(
+        settings.printErrorData,
+        NetworkInterceptorDefaults.printErrorData,
+      );
+      expect(
+        settings.printSentHeaders,
+        NetworkInterceptorDefaults.printRequestHeaders,
+      );
+      expect(
+        settings.printReceivedHeaders,
+        NetworkInterceptorDefaults.printResponseHeaders,
+      );
+      expect(
+        settings.printErrorHeaders,
+        ISpectWSInterceptorDefaults.printErrorHeaders,
+      );
+
+      final built = ISpectWSInterceptorSettingsBuilder().build();
+      expect(built.printStateData, settings.printStateData);
+      expect(built.printErrorHeaders, settings.printErrorHeaders);
     });
 
     test('copyWith exposes and preserves frame capture controls', () {
@@ -51,6 +76,35 @@ void main() {
       expect(direct.resourceLimits, same(DiagnosticResourceLimits.constrained));
       expect(copied.resourceLimits, same(DiagnosticResourceLimits.extended));
       expect(built.resourceLimits, same(DiagnosticResourceLimits.constrained));
+      expect(
+        direct
+            .copyWith(
+              resourceLimits: DiagnosticResourceLimits.extended,
+              inheritResourceLimits: true,
+            )
+            .resourceLimits,
+        isNull,
+      );
+    });
+
+    test('builder can omit every optional payload field', () {
+      final settings = ISpectWSInterceptorSettingsBuilder()
+          .withoutRequestData()
+          .withoutRequestHeaders()
+          .withoutResponseData()
+          .withoutResponseHeaders()
+          .withoutResponseMessage()
+          .withoutErrorData()
+          .withoutErrorMessage()
+          .build();
+
+      expect(settings.printSentData, isFalse);
+      expect(settings.printSentHeaders, isFalse);
+      expect(settings.printReceivedData, isFalse);
+      expect(settings.printReceivedHeaders, isFalse);
+      expect(settings.printReceivedMessage, isFalse);
+      expect(settings.printErrorData, isFalse);
+      expect(settings.printErrorMessage, isFalse);
     });
 
     test('presets apply the intended frame capture policy', () {

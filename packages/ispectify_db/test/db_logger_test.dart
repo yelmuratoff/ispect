@@ -2143,6 +2143,15 @@ dollar-secret$audit$''',
             .resourceLimits,
         same(DiagnosticResourceLimits.extended),
       );
+      expect(
+        original
+            .copyWith(
+              resourceLimits: DiagnosticResourceLimits.extended,
+              inheritResourceLimits: true,
+            )
+            .resourceLimits,
+        isNull,
+      );
     });
 
     test('local database scalar budget bounds trace fields', () {

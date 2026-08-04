@@ -153,6 +153,15 @@ void main() {
         config.copyWith(resourceLimits: replacement).resourceLimits,
         same(replacement),
       );
+      expect(
+        config
+            .copyWith(
+              resourceLimits: replacement,
+              inheritResourceLimits: true,
+            )
+            .resourceLimits,
+        isNull,
+      );
     });
   });
 

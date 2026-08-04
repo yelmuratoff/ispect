@@ -139,6 +139,42 @@ void main() {
       expect(settings.printErrorData, true);
     });
 
+    test('individual opt-outs omit every optional payload field', () {
+      final settings = ISpectDioInterceptorSettingsBuilder()
+          .withoutRequestData()
+          .withoutRequestHeaders()
+          .withoutResponseData()
+          .withoutResponseHeaders()
+          .withoutResponseMessage()
+          .withoutErrorData()
+          .withoutErrorHeaders()
+          .withoutErrorMessage()
+          .build();
+
+      expect(settings.printRequestData, isFalse);
+      expect(settings.printRequestHeaders, isFalse);
+      expect(settings.printResponseData, isFalse);
+      expect(settings.printResponseHeaders, isFalse);
+      expect(settings.printResponseMessage, isFalse);
+      expect(settings.printErrorData, isFalse);
+      expect(settings.printErrorHeaders, isFalse);
+      expect(settings.printErrorMessage, isFalse);
+    });
+
+    test('bulk opt-outs omit all headers and data', () {
+      final settings = ISpectDioInterceptorSettingsBuilder()
+          .withoutAllHeaders()
+          .withoutAllData()
+          .build();
+
+      expect(settings.printRequestHeaders, isFalse);
+      expect(settings.printResponseHeaders, isFalse);
+      expect(settings.printErrorHeaders, isFalse);
+      expect(settings.printRequestData, isFalse);
+      expect(settings.printResponseData, isFalse);
+      expect(settings.printErrorData, isFalse);
+    });
+
     test('withErrorsOnly() disables request/response logging', () {
       final settings =
           ISpectDioInterceptorSettingsBuilder().withErrorsOnly().build();

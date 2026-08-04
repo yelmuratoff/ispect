@@ -126,8 +126,8 @@ redacted by default. Use
 metadata without payloads, or the production preset to disable sent/received
 frame retention and keep redacted error diagnostics. `print*` fields shape
 retained records but do not re-enable a suppressed frame. Use the concrete
-settings `copyWith` or builder for retention controls; the shared base
-`configure` helper retains its legacy-compatible field set.
+settings `copyWith` or builder for retention controls. Builders provide
+matching `with*` and `without*` methods for bodies, headers, and messages.
 
 Balanced capture keeps typed frames and state objects useful through guarded,
 bounded formatting before redaction. Set `captureMode` to
@@ -136,6 +136,11 @@ bounded formatting before redaction. Set `captureMode` to
 run.
 Use `withResourceLimits(...)` for a WebSocket-local budget, or
 `withInheritedResourceLimits()` to return to the logger policy.
+Pass `inheritResourceLimits: true` to `copyWith` to clear an existing local
+override. `NetworkInterceptorDefaults` is the shared source of truth used by
+direct settings construction and every network settings builder;
+`ISpectWSInterceptorDefaults` owns the WebSocket-only state and error-header
+defaults.
 
 ## Data redaction
 

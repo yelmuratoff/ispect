@@ -136,6 +136,10 @@ class ISpectRiverpodSettings {
         );
 
   /// Returns a copy with the provided overrides.
+  ///
+  /// Set [inheritRedactionService] or [inheritResourceLimits] to `true` to
+  /// clear the corresponding local override and resume following its SSOT.
+  /// Inheritance flags take precedence over replacement values.
   ISpectRiverpodSettings copyWith({
     bool? enabled,
     bool? printAdds,
@@ -147,8 +151,10 @@ class ISpectRiverpodSettings {
     ISpectRiverpodUpdateFilter? updateFilter,
     bool? enableRedaction,
     RedactionService? redactor,
+    bool inheritRedactionService = false,
     DiagnosticCaptureMode? captureMode,
     DiagnosticResourceLimits? resourceLimits,
+    bool inheritResourceLimits = false,
   }) =>
       ISpectRiverpodSettings(
         enabled: enabled ?? this.enabled,
@@ -160,9 +166,11 @@ class ISpectRiverpodSettings {
         providerFilter: providerFilter ?? this.providerFilter,
         updateFilter: updateFilter ?? this.updateFilter,
         enableRedaction: enableRedaction ?? this.enableRedaction,
-        redactor: redactor ?? this.redactor,
+        redactor: inheritRedactionService ? null : redactor ?? this.redactor,
         captureMode: captureMode ?? this.captureMode,
-        resourceLimits: resourceLimits ?? this.resourceLimits,
+        resourceLimits: inheritResourceLimits
+            ? null
+            : resourceLimits ?? this.resourceLimits,
       );
 }
 

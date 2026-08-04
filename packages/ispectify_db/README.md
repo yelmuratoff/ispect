@@ -121,6 +121,9 @@ const dbConfig = ISpectDbConfig(
 ```
 
 `redactKeys` is an explicit local replacement for this trace. Omit it to use the current global `ISpectRedaction.service`.
+If a copied config already has local limits, use
+`dbConfig.copyWith(inheritResourceLimits: true)` to clear that override and
+resume following the logger policy.
 
 ## Data redaction
 

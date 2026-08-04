@@ -31,6 +31,7 @@
 
 ### Improvements
 
+- **Consistent diagnostics configuration:** Network settings and builders now read from one `NetworkInterceptorDefaults` contract. Dio and HTTP can reconfigure all shared capture fields at runtime, every builder has symmetric payload opt-outs, and network, trace, database, BLoC, and Riverpod overrides can return to their logger-owned resource policy. BLoC and Riverpod can also resume following the global redaction service.
 - **Idle-build performance:** Caller-owned values are not captured or formatted when no history, stream listener, console sink, or observer can consume the entry.
 - **Faster active diagnostics:** Active payload capture and batch export avoid redundant sanitization work while keeping default redaction and output bounds unchanged.
 - **Faster log sharing:** Exporting captured history reuses the redaction already applied at capture time instead of repeating it. A 100-entry JSON Lines share drops to roughly an eighth of its previous cost, and the text and Markdown formats to about a third. A custom redaction service, custom redact keys, a reconfigured global policy, or logs restored from a file are all redacted again as before, and private render hints stay stripped.

@@ -75,6 +75,8 @@ policies.
 `withStrictCapture()` and `withBalancedCapture()`.
 Use `withResourceLimits(...)` for an interceptor-local budget, or
 `withInheritedResourceLimits()` to return to the logger policy.
+`NetworkInterceptorDefaults` is the shared source of truth used by direct
+settings construction and every network settings builder.
 
 `logRequests` and `logResponses` control whether routine records are retained;
 the production preset disables both and keeps redacted errors. The `print*`
@@ -82,7 +84,9 @@ flags can omit bodies, headers, or messages from retained console and metadata
 fields. Full capture is the default and keeps redaction on; individual flags
 and the `metadataOnly()` preset provide opt-in minimization. Use the
 concrete settings `copyWith` or builder for these retention controls; the
-shared base `configure` helper retains its legacy-compatible field set.
+attached interceptor's `configure(...)` method exposes the same shared capture
+fields at runtime. Pass `inheritResourceLimits: true` to either `copyWith` or
+`configure` to return resource-budget ownership to the logger.
 
 <!-- partial:redaction -->
 

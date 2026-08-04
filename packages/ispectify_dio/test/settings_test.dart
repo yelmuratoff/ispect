@@ -117,6 +117,15 @@ void main() {
             .resourceLimits,
         same(DiagnosticResourceLimits.extended),
       );
+      expect(
+        original
+            .copyWith(
+              resourceLimits: DiagnosticResourceLimits.extended,
+              inheritResourceLimits: true,
+            )
+            .resourceLimits,
+        isNull,
+      );
     });
   });
 }

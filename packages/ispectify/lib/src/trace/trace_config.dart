@@ -76,6 +76,9 @@ class ISpectTraceConfig {
     return rate == null || samplePass(rate);
   }
 
+  /// Set [inheritResourceLimits] to `true` to clear a local override and
+  /// resume inheriting the logger policy. It takes precedence over
+  /// [resourceLimits].
   @mustBeOverridden
   ISpectTraceConfig copyWith({
     double? sampleRate,
@@ -86,6 +89,7 @@ class ISpectTraceConfig {
     bool? attachStackOnError,
     Duration? slowThreshold,
     DiagnosticResourceLimits? resourceLimits,
+    bool inheritResourceLimits = false,
   }) =>
       ISpectTraceConfig(
         sampleRate: sampleRate ?? this.sampleRate,
@@ -95,6 +99,8 @@ class ISpectTraceConfig {
         maxValueLength: maxValueLength ?? this.maxValueLength,
         attachStackOnError: attachStackOnError ?? this.attachStackOnError,
         slowThreshold: slowThreshold ?? this.slowThreshold,
-        resourceLimits: resourceLimits ?? this.resourceLimits,
+        resourceLimits: inheritResourceLimits
+            ? null
+            : resourceLimits ?? this.resourceLimits,
       );
 }

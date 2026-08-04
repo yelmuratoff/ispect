@@ -57,7 +57,8 @@ class ISpectDbConfig extends ISpectTraceConfig {
   ///
   /// Nullable fields ([sampleRate], [slowThreshold]) can be explicitly
   /// reset to `null` by passing `null`. Omitting them preserves the current
-  /// value.
+  /// value. Set [inheritResourceLimits] to `true` to clear a local resource
+  /// override and resume inheriting the logger policy.
   @override
   ISpectDbConfig copyWith({
     Object? sampleRate = _absent,
@@ -68,6 +69,7 @@ class ISpectDbConfig extends ISpectTraceConfig {
     bool? attachStackOnError,
     Object? slowThreshold = _absent,
     DiagnosticResourceLimits? resourceLimits,
+    bool inheritResourceLimits = false,
     int? maxStatementLength,
     int? maxArgsLength,
     bool? enableTransactionMarkers,
@@ -84,7 +86,9 @@ class ISpectDbConfig extends ISpectTraceConfig {
         slowThreshold: slowThreshold == _absent
             ? this.slowThreshold
             : slowThreshold as Duration?,
-        resourceLimits: resourceLimits ?? this.resourceLimits,
+        resourceLimits: inheritResourceLimits
+            ? null
+            : resourceLimits ?? this.resourceLimits,
         maxStatementLength: maxStatementLength ?? this.maxStatementLength,
         maxArgsLength: maxArgsLength ?? this.maxArgsLength,
         enableTransactionMarkers:

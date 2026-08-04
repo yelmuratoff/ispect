@@ -82,14 +82,16 @@ final staging = ISpectDioInterceptorSettingsBuilder.staging().build();
 `withStrictCapture()` or `withBalancedCapture()`.
 Use `withResourceLimits(...)` for an interceptor-local budget, or
 `withInheritedResourceLimits()` to return to the logger policy.
+`NetworkInterceptorDefaults` is the shared source of truth used by direct
+settings construction and every network settings builder.
 
 ### Builder
 
 ```dart
 final settings = ISpectDioInterceptorSettingsBuilder()
     .withoutResponses()
-    .withRequestHeaders()
-    .withResponseHeaders()
+    .withoutRequestHeaders()
+    .withoutRequestData()
     .withoutRedaction() // not recommended, see "Data redaction" below.
     .build();
 ```
@@ -100,8 +102,10 @@ redaction policy. The `print*` fields can omit specific retained fields, while
 the `metadataOnly()` preset opts into stronger data minimization without
 disabling request/response visibility.
 Concrete settings `copyWith` methods and builders expose the retention
-controls. The shared base `configure` helper keeps its legacy-compatible field
-set.
+controls. Pass `inheritResourceLimits: true` to `copyWith` to clear a local
+budget. An attached Dio interceptor can update the same shared fields at
+runtime with `configure(...)`, including `enabled`, retention, capture mode,
+resource limits, and individual payload fields.
 
 <!-- partial:redaction -->
 

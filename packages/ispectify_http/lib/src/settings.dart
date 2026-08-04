@@ -81,6 +81,7 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
     bool? enableRedaction,
     DiagnosticCaptureMode? captureMode,
     DiagnosticResourceLimits? resourceLimits,
+    bool inheritResourceLimits = false,
     bool? logRequests,
     bool? logResponses,
     bool? printResponseData,
@@ -108,7 +109,9 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
         enabled: enabled ?? this.enabled,
         enableRedaction: enableRedaction ?? this.enableRedaction,
         captureMode: captureMode ?? this.captureMode,
-        resourceLimits: resourceLimits ?? this.resourceLimits,
+        resourceLimits: inheritResourceLimits
+            ? null
+            : resourceLimits ?? this.resourceLimits,
         logRequests: logRequests ?? this.logRequests,
         logResponses: logResponses ?? this.logResponses,
         printResponseData: printResponseData ?? this.printResponseData,

@@ -25,20 +25,20 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     TErr> {
   /// Creates a builder with full diagnostics and redaction enabled.
   BaseNetworkInterceptorSettingsBuilder()
-      : enabled = true,
-        enableRedaction = true,
-        captureMode = DiagnosticCaptureMode.balanced,
-        resourceLimits = null,
-        logRequests = true,
-        logResponses = true,
-        printResponseData = true,
-        printResponseHeaders = true,
-        printResponseMessage = true,
-        printErrorData = true,
-        printErrorHeaders = true,
-        printErrorMessage = true,
-        printRequestData = true,
-        printRequestHeaders = true;
+      : enabled = NetworkInterceptorDefaults.enabled,
+        enableRedaction = NetworkInterceptorDefaults.enableRedaction,
+        captureMode = NetworkInterceptorDefaults.captureMode,
+        resourceLimits = NetworkInterceptorDefaults.resourceLimits,
+        logRequests = NetworkInterceptorDefaults.logRequests,
+        logResponses = NetworkInterceptorDefaults.logResponses,
+        printResponseData = NetworkInterceptorDefaults.printResponseData,
+        printResponseHeaders = NetworkInterceptorDefaults.printResponseHeaders,
+        printResponseMessage = NetworkInterceptorDefaults.printResponseMessage,
+        printErrorData = NetworkInterceptorDefaults.printErrorData,
+        printErrorHeaders = NetworkInterceptorDefaults.printErrorHeaders,
+        printErrorMessage = NetworkInterceptorDefaults.printErrorMessage,
+        printRequestData = NetworkInterceptorDefaults.printRequestData,
+        printRequestHeaders = NetworkInterceptorDefaults.printRequestHeaders;
 
   bool enabled;
   bool enableRedaction;
@@ -199,6 +199,54 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     return _self;
   }
 
+  /// Omits response data from diagnostics.
+  B withoutResponseData() {
+    printResponseData = false;
+    return _self;
+  }
+
+  /// Omits response headers from diagnostics.
+  B withoutResponseHeaders() {
+    printResponseHeaders = false;
+    return _self;
+  }
+
+  /// Omits response status messages from diagnostics.
+  B withoutResponseMessage() {
+    printResponseMessage = false;
+    return _self;
+  }
+
+  /// Omits error data from diagnostics.
+  B withoutErrorData() {
+    printErrorData = false;
+    return _self;
+  }
+
+  /// Omits error headers from diagnostics.
+  B withoutErrorHeaders() {
+    printErrorHeaders = false;
+    return _self;
+  }
+
+  /// Omits error messages from diagnostics.
+  B withoutErrorMessage() {
+    printErrorMessage = false;
+    return _self;
+  }
+
+  /// Omits request data from diagnostics.
+  B withoutRequestData() {
+    printRequestData = false;
+    return _self;
+  }
+
+  /// Omits request headers from diagnostics.
+  B withoutRequestHeaders() {
+    printRequestHeaders = false;
+    return _self;
+  }
+
   // Bulk toggles
 
   /// Enables printing of all headers (request, response, error).
@@ -214,6 +262,22 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     printRequestData = true;
     printResponseData = true;
     printErrorData = true;
+    return _self;
+  }
+
+  /// Omits request, response, and error headers from diagnostics.
+  B withoutAllHeaders() {
+    printRequestHeaders = false;
+    printResponseHeaders = false;
+    printErrorHeaders = false;
+    return _self;
+  }
+
+  /// Omits request, response, and error data from diagnostics.
+  B withoutAllData() {
+    printRequestData = false;
+    printResponseData = false;
+    printErrorData = false;
     return _self;
   }
 

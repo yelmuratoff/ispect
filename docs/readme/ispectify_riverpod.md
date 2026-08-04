@@ -77,6 +77,10 @@ ISpectRiverpodObserver(settings: ISpectRiverpodSettings.compact);
 `compact` uses strict capture automatically.
 Omit `resourceLimits` to inherit the logger policy; set it locally to tune
 provider-value and state-trace budgets for this observer.
+For an existing customized settings object,
+`copyWith(inheritResourceLimits: true)` restores logger-owned budgets and
+`copyWith(inheritRedactionService: true)` restores the global
+`ISpectRedaction.service`.
 
 ### Filtering noisy providers
 

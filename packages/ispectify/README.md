@@ -155,6 +155,14 @@ and `extended`/`throughput` only in controlled internal builds. Validation
 keeps finite host-protection ceilings in place; increasing a budget never
 disables redaction. Traces and supported integrations inherit the logger
 policy unless their settings provide a local `resourceLimits` override.
+Network adapters share `NetworkInterceptorDefaults` as their default capture
+contract. Settings builders restore logger-owned budgets with
+`withInheritedResourceLimits()`; immutable settings and runtime-configurable
+interceptors use `inheritResourceLimits: true`.
+Trace, database, BLoC, and Riverpod settings use the same
+`inheritResourceLimits: true` contract when a copied configuration must return
+to the logger policy. BLoC and Riverpod copies additionally support
+`inheritRedactionService: true` to resume following `ISpectRedaction.service`.
 The selected limits remain authoritative inside redaction, header
 sanitization, persistence, replay snapshots, clipboard, and export; internal
 stages do not silently fall back to `balanced`.
