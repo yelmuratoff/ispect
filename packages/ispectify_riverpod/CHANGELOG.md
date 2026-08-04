@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.0.0-dev5
+## 7.0.0-dev6
 
 ### Breaking Changes
 
@@ -8,6 +8,8 @@
 - **Custom log types:** Custom `ISpectLogData` subclasses are normalized for safety; filter them by log key instead of `TypeFilter`.
 - **HTTP URL fields:** Throwing custom `Uri` implementations may now be omitted; strict capture deliberately keeps all caller-owned `Uri` values opaque.
 - **Custom redaction services:** Overrides of `RedactionService.redactForExport`, `redactEnvelopeForExport`, or `redactHeaders` must accept the optional `resourceLimits` parameter.
+- **Observer payloads:** Observers receive the redacted entry, with the exception, error, and stack trace delivered as scrubbed text instead of the original objects. Forward crash reports from `ISpect.run`'s error callbacks, which still receive the originals.
+- **Custom diagnostics settings:** Overrides of network, trace, BLoC, or Riverpod `copyWith`/`configure` methods must accept the newly added optional capture and inheritance parameters.
 
 ### Behavioral Changes
 
@@ -16,6 +18,8 @@
 - **Explicit capture policy:** `DiagnosticCaptureMode.balanced` is the default for internal diagnostics. Select `strict` when application-defined `toJson()` and `toString()` methods must never run.
 - **Useful state diagnostics by default:** BLoC and Riverpod expose full bounded values after redaction; their `compact` presets now also select strict capture for coarse structural summaries.
 - **Native exports:** Persistent exports now use the application's private support directory.
+- **Network header capture:** `printRequestHeaders` and `printResponseHeaders` now default to `true` and are captured after redaction; set them to `false` or use `metadataOnly()` to keep headers out of diagnostics entirely.
+- **Bounding and masking split:** Entries are bounded when emitted, and payload masking now runs on first read and is memoized, so entries nobody inspects no longer pay for it. `ISpectLogData.additionalData` returns the masked view; entries an application builds itself carry no masker and are returned as captured. A payload already bounded under the same limits is also no longer bounded a second time. Console rendering, entry text, and network detection now read only the fields they print instead of materializing the whole masked payload. Together these cut the cost of logging a 1 KB payload to roughly a quarter, with or without console output enabled.
 
 ### Security
 
@@ -28,8 +32,10 @@
 
 ### Improvements
 
-- **Enabled-build performance:** Caller-owned values are not captured or formatted when no history, stream listener, console sink, or observer can consume the entry. Active consumers deliberately retain bounded capture and redaction rather than trading diagnostic safety for benchmark throughput.
+- **Consistent diagnostics configuration:** Network settings and builders now read from one `NetworkInterceptorDefaults` contract. Dio and HTTP can reconfigure all shared capture fields at runtime, every builder has symmetric payload opt-outs, and network, trace, database, BLoC, and Riverpod overrides can return to their logger-owned resource policy. BLoC and Riverpod can also resume following the global redaction service.
+- **Idle-build performance:** Caller-owned values are not captured or formatted when no history, stream listener, console sink, or observer can consume the entry.
 - **Faster active diagnostics:** Active payload capture and batch export avoid redundant sanitization work while keeping default redaction and output bounds unchanged.
+- **Faster log sharing:** Exporting captured history reuses the redaction already applied at capture time instead of repeating it. A 100-entry JSON Lines share drops to roughly an eighth of its previous cost, and the text and Markdown formats to about a third. A custom redaction service, custom redact keys, a reconfigured global policy, or logs restored from a file are all redacted again as before, and private render hints stay stripped.
 - **More complete diagnostic handoff:** Increased bounded payloads to 256 KiB, individual records to 1 MiB, and JSON exports to 32 MiB; exports now report actual/truncated counts and imports can report skipped records.
 - **Convenient diagnostic profiles:** Balanced defaults require no tuning; the in-app Settings sheet offers one-tap Capture, Resource, and Processing profiles for stricter, lower-memory, responsive, larger-session, or throughput-focused diagnostics.
 - **Fully configurable budgets:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` cover formatter isolation, data sizes and counts, traversal, integrations, UI, batching, yielding, background work, and search. Exact `copyWith(...)` values persist through `ISpectSettingsState`, while the layout inspector separately exposes `maxRenderTreeClipboardCharacters`.
@@ -44,6 +50,10 @@
 - **HTTP replay:** Malformed form data and sender failures no longer leave the composer in a broken state.
 - **Network query visibility:** Dio and HTTP logs now include non-empty, redacted query parameters in the request URL across console, grouped, and ungrouped views.
 - **Stable bounded settings:** Runtime validation rejects invalid persisted capacities and inspector clipboard limits in release builds, and navigation transition equality no longer changes after logger reconfiguration.
+- Base64 detection now strips only line wrapping, so an ordinary diagnostic sentence is no longer replaced with a `[base64 ~NB]` placeholder.
+- **Readable route logs:** Navigation entries keep the route path — including paths such as `/users/42` that previously collided with filesystem-path detection — and mask only query and fragment values.
+- **Named BLoC and Riverpod diagnostics:** Balanced capture reports the concrete class — `AuthCubit`, `AuthLoading`, `counterProvider` — instead of the `Bloc` / `Cubit` / `Provider` / `Object` family labels. Strict capture, `ISpectBlocSettings.compact`, and `ISpectRiverpodSettings.compact` keep the coarse labels and still never read a caller's `runtimeType`.
+- **Useful database console lines:** Database traces name the table — derived from the statement when an interceptor does not supply one — show the normalized SQL with every literal and digit replaced by `?`, and carry affected rows, item counts, size, and cache hits. Row counts returned through `projectResult` are now reported. Oversized statements still fall back to the opaque digest, and secret-keyed operands such as `PRAGMA key` remain masked.
 
 ## 6.1.7
 
