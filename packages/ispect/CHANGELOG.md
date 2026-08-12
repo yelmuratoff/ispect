@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.0.0-dev7
+## 7.0.0-dev8
 
 ### Breaking Changes
 
@@ -18,6 +18,9 @@
 - **Explicit capture policy:** `DiagnosticCaptureMode.balanced` is the default for internal diagnostics. Select `strict` when application-defined `toJson()` and `toString()` methods must never run.
 - **Useful state diagnostics by default:** BLoC and Riverpod expose full bounded values after redaction; their `compact` presets now also select strict capture for coarse structural summaries.
 - **Readable database statements:** Normalized SQL keeps identifiers quoted with `"` or `` ` ``, so traces from drift and other identifier-quoting clients name their tables and columns again. String literals, digits, comments, and any quoted span that does not read as a plain identifier stay masked.
+- **Readable correlation ids:** UUIDs, trace ids, and content hashes are no longer reported as opaque base64 payloads, so request, response, and error entries can still be correlated after redaction.
+- **Fewer false-positive masks:** `cache_key`, `sortKey`, `idempotency_key`, a widget `key`, `auth_state`, `token_count`, `token_type`, and a `session` object stay readable. Credentials, `PRAGMA key = …`, and `?key=` parameters remain masked.
+- **Readable route arguments:** Navigation entries keep the argument structure and its non-secret fields after redaction instead of collapsing to `Map` or `(Object)`. Sensitive values inside are masked, and caller formatters are still never invoked.
 - **Native exports:** Persistent exports now use the application's private support directory.
 - **Network header capture:** `printRequestHeaders` and `printResponseHeaders` now default to `true` and are captured after redaction; set them to `false` or use `metadataOnly()` to keep headers out of diagnostics entirely.
 - **Bounding and masking split:** Entries are bounded when emitted, and payload masking now runs on first read and is memoized, so entries nobody inspects no longer pay for it. `ISpectLogData.additionalData` returns the masked view; entries an application builds itself carry no masker and are returned as captured. A payload already bounded under the same limits is also no longer bounded a second time. Console rendering, entry text, and network detection now read only the fields they print instead of materializing the whole masked payload. Together these cut the cost of logging a 1 KB payload to roughly a quarter, with or without console output enabled.
