@@ -25,6 +25,9 @@ final class DbSqlDigest {
   /// `?`, then returns an opaque fingerprint for grouping structurally
   /// identical queries.
   ///
+  /// Quoted identifiers survive normalization, so statements against different
+  /// tables no longer collapse onto one fingerprint.
+  ///
   /// The normalized SQL is deliberately not included in the result. SQL
   /// dialects permit unquoted secrets such as encryption keys, and a readable
   /// prefix could expose those values even after ordinary literal handling.
@@ -55,8 +58,12 @@ final class DbSqlDigest {
     return 'sql:$hex';
   }
 
-  /// Returns [statement] with comments, quoted literals, and digit runs
+  /// Returns [statement] with comments, string literals, and digit runs
   /// replaced by `?`.
+  ///
+  /// Identifiers quoted with `"` or `` ` `` are preserved so the statement
+  /// still names its tables and columns; a quoted span that does not read as
+  /// a plain identifier is masked like any other literal.
   ///
   /// Bare-word operands survive normalization, so callers must pass the result
   /// through `RedactionService` before it leaves the process — that pass is
@@ -93,7 +100,8 @@ final class DbSqlDigest {
   /// Returns the primary table [statement] operates on, or `null`.
   ///
   /// Comments and literals are stripped first, so a quoted value cannot pose
-  /// as a table. Returns `null` when no table is present, when the name
+  /// as a table; a quoted identifier is read without its delimiters. Returns
+  /// `null` when no table is present, when the name
   /// exceeds 128 characters, and when [statement] exceeds
   /// [DiagnosticResourceLimits.maxDatabaseDiagnosticsBytes].
   static String? tableOf(
@@ -119,9 +127,12 @@ final class DbSqlDigest {
   }
 
   static const int _maxTableNameLength = 128;
+  static const int _maxIdentifierLength = 64;
+
+  static final RegExp _identifierRe = RegExp(r'^[A-Za-z_][A-Za-z0-9_$]*$');
 
   static final RegExp _tableRe = RegExp(
-    r'\b(from|into|update|table|join)\s+([A-Za-z_][A-Za-z0-9_$.]*)',
+    r'\b(from|into|update|table|join)\s+["`]?([A-Za-z_][A-Za-z0-9_$.]*)',
     caseSensitive: false,
   );
 
@@ -147,11 +158,17 @@ final class DbSqlDigest {
       }
 
       final codeUnit = statement.codeUnitAt(index);
-      if (codeUnit == _singleQuote ||
-          codeUnit == _doubleQuote ||
-          codeUnit == _backtick) {
+      if (codeUnit == _singleQuote) {
         index = _skipQuotedValue(statement, index + 1, codeUnit);
         sanitized.write('?');
+        continue;
+      }
+      if (codeUnit == _doubleQuote || codeUnit == _backtick) {
+        final end = _skipQuotedValue(statement, index + 1, codeUnit);
+        sanitized.write(
+          _quotedIdentifierOrMask(statement, index, end, codeUnit),
+        );
+        index = end;
         continue;
       }
 
@@ -171,6 +188,23 @@ final class DbSqlDigest {
     }
 
     return sanitized.toString();
+  }
+
+  // These delimiters quote identifiers, not values, in SQLite/Postgres/MySQL.
+  static String _quotedIdentifierOrMask(
+    String statement,
+    int start,
+    int end,
+    int delimiter,
+  ) {
+    final terminated =
+        end - 1 > start && statement.codeUnitAt(end - 1) == delimiter;
+    if (!terminated) return '?';
+    final inner = statement.substring(start + 1, end - 1);
+    if (inner.length > _maxIdentifierLength || !_identifierRe.hasMatch(inner)) {
+      return '?';
+    }
+    return statement.substring(start, end);
   }
 
   static int _skipLineComment(String statement, int startIndex) {

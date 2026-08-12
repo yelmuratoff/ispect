@@ -1087,6 +1087,13 @@ void main() {
       expect(digest, isNot(contains('bar')));
     });
 
+    test('separates statements that differ only by quoted table', () {
+      final users = DbSqlDigest.compute('DELETE FROM "users" WHERE "id" = ?');
+      final orders = DbSqlDigest.compute('DELETE FROM "orders" WHERE "id" = ?');
+
+      expect(users, isNot(orders));
+    });
+
     test('normalizes backslash and doubled-quote escapes without leaking', () {
       final digest = DbSqlDigest.compute(
         r"""SELECT 'first\'secret', 'second''secret',

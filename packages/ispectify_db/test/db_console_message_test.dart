@@ -38,10 +38,69 @@ void main() {
       );
     });
 
+    test('reads a table quoted as an identifier', () {
+      expect(
+        DbSqlDigest.tableOf('DELETE FROM "sessions" WHERE "id" = ?'),
+        'sessions',
+      );
+      expect(
+        DbSqlDigest.tableOf('SELECT * FROM `carts` WHERE `id` = ?'),
+        'carts',
+      );
+    });
+
     test('returns null when no table is present', () {
       expect(DbSqlDigest.tableOf('PRAGMA foreign_keys = ON'), isNull);
       expect(DbSqlDigest.tableOf(null), isNull);
       expect(DbSqlDigest.tableOf(''), isNull);
+    });
+  });
+
+  group('DbSqlDigest.normalize', () {
+    test('keeps quoted identifiers so the statement stays readable', () {
+      expect(
+        DbSqlDigest.normalize('DELETE FROM "cache" WHERE "key" LIKE ?;'),
+        'DELETE FROM "cache" WHERE "key" LIKE ?;',
+      );
+      expect(
+        DbSqlDigest.normalize('SELECT `total` FROM `carts`'),
+        'SELECT `total` FROM `carts`',
+      );
+    });
+
+    test('masks single-quoted literals and digits', () {
+      expect(
+        DbSqlDigest.normalize(
+          "UPDATE \"carts\" SET \"token\" = 'SQL_SECRET' WHERE \"id\" = 41",
+        ),
+        'UPDATE "carts" SET "token" = ? WHERE "id" = ?',
+      );
+    });
+
+    test('masks a double-quoted span that is not a plain identifier', () {
+      expect(
+        DbSqlDigest.normalize('INSERT INTO t VALUES ("some secret value")'),
+        'INSERT INTO t VALUES (?)',
+      );
+      expect(
+        DbSqlDigest.normalize('SELECT * FROM t WHERE a = "user@example.com"'),
+        'SELECT * FROM t WHERE a = ?',
+      );
+      expect(
+        DbSqlDigest.normalize('SELECT "${'a' * 65}" FROM t'),
+        'SELECT ? FROM t',
+      );
+    });
+
+    test('masks unterminated and escaped quoted spans', () {
+      expect(
+        DbSqlDigest.normalize('SELECT * FROM t WHERE a = "DQS_SECRET'),
+        'SELECT * FROM t WHERE a = ?',
+      );
+      expect(
+        DbSqlDigest.normalize('SELECT "esc""aped" FROM t'),
+        'SELECT ? FROM t',
+      );
     });
   });
 
@@ -98,6 +157,25 @@ void main() {
       );
 
       expect(logger.history.single.textMessage, contains('Affected: 5'));
+    });
+
+    test('names the table for a drift statement quoting its identifiers',
+        () async {
+      final logger = _logger();
+      addTearDown(logger.dispose);
+
+      await logger.dbTrace<int>(
+        source: 'drift',
+        operation: 'delete',
+        statement: 'DELETE FROM "cache_entries" WHERE "key" LIKE ?;',
+        args: <Object?>['prefix%'],
+        run: () async => 0,
+        projectResult: (n) => <String, Object?>{'affected': n},
+      );
+
+      final text = logger.history.single.textMessage;
+      expect(text, contains('delete cache_entries'));
+      expect(text, contains('DELETE FROM "cache_entries" WHERE "key" LIKE ?;'));
     });
 
     test('masks an unquoted SQLCipher key operand', () async {
