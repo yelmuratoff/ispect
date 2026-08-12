@@ -653,11 +653,25 @@ class RedactionService {
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
-      return keyed != keyless;
+      if (keyed != keyless) return true;
+      final normalized = key.trim().toLowerCase();
+      if (!_assignmentCredentialKeys.contains(normalized)) return false;
+      return !_isIgnoredKeyName(normalized, ignoredKeys);
     } on Object {
       return true;
     }
   }
+
+  /// Names that denote a credential only as the left side of an assignment,
+  /// such as SQLCipher's `PRAGMA key = x` or a `?key=` API-key parameter.
+  ///
+  /// As a structured field name `key` identifies a record — a cache entry, a
+  /// widget, a translation — so it stays readable there.
+  static const Set<String> _assignmentCredentialKeys = <String>{'key'};
+
+  bool _isIgnoredKeyName(String normalized, Set<String>? ignoredKeys) =>
+      _config.ignoredKeyNamesLower.contains(normalized) ||
+      (ignoredKeys?.any((key) => key.toLowerCase() == normalized) ?? false);
 
   static String _maskSensitiveAssignments(
     String value,

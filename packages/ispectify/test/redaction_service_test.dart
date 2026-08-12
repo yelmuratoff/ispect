@@ -231,14 +231,16 @@ void main() {
     test('redacts newly-added credential/session keys by default', () {
       final service = RedactionService();
       final out = service.redact({
-        'session': 'sess-abcdef123456',
+        'session_id': 'sess-abcdef123456',
+        'session_token': 'sess-abcdef123456',
         'passphrase': 'correct horse battery',
         'credentials': 'root:toor',
         'pincode': '4821',
         'keep': 'visible',
       })! as Map<String, Object?>;
 
-      expect(out['session'], '[REDACTED]');
+      expect(out['session_id'], '[REDACTED]');
+      expect(out['session_token'], '[REDACTED]');
       expect(out['passphrase'], '[REDACTED]');
       expect(out['credentials'], '[REDACTED]');
       expect(out['pincode'], '[REDACTED]');
@@ -258,6 +260,70 @@ void main() {
       expect(out['age'], 42);
       expect(out['address'], 'Main Office');
       expect(out['location'], 'Dashboard View');
+    });
+
+    test('keeps identifier-style keys that name no secret', () {
+      final service = RedactionService();
+      final out = service.redact({
+        'key': 'HomeScreen',
+        'cache_key': 'user_profile_v3',
+        'sortKey': 'created_at',
+        'localizationKey': 'cart.empty.title',
+        'idempotency_key': 'order-4711',
+        'auth_state': 'authenticated',
+        'session': <String, Object?>{'screen': 'cart'},
+      })! as Map<String, Object?>;
+
+      expect(out['key'], 'HomeScreen');
+      expect(out['cache_key'], 'user_profile_v3');
+      expect(out['sortKey'], 'created_at');
+      expect(out['localizationKey'], 'cart.empty.title');
+      expect(out['idempotency_key'], 'order-4711');
+      expect(out['auth_state'], 'authenticated');
+      expect(out['session'], <String, Object?>{'screen': 'cart'});
+    });
+
+    test('masks a key assigned in text but not a field named key', () {
+      final service = RedactionService();
+
+      expect(
+        service.redactForExport('PRAGMA key = SQLCIPHER_SECRET'),
+        'PRAGMA key = [REDACTED]',
+      );
+      expect(
+        service.redact(<String, Object?>{'key': 'HomeScreen'}),
+        <String, Object?>{'key': 'HomeScreen'},
+      );
+    });
+
+    test('keeps metadata about a secret while masking the secret', () {
+      final service = RedactionService();
+      final out = service.redact({
+        'access_token': 'ya29.a0AfH6SM',
+        'token_type': 'Bearer',
+        'token_count': 1284,
+        'password_length': 12,
+      })! as Map<String, Object?>;
+
+      expect(out['access_token'], '[REDACTED]');
+      expect(out['token_type'], 'Bearer');
+      expect(out['token_count'], 1284);
+      expect(out['password_length'], 12);
+    });
+
+    test('keeps signing and encryption keys masked', () {
+      final service = RedactionService();
+      final out = service.redact({
+        'signing_key': 'sig-abcdef123456',
+        'encryption_key': 'enc-abcdef123456',
+        'masterKey': 'mst-abcdef123456',
+        'blood_type': 'O+',
+      })! as Map<String, Object?>;
+
+      expect(out['signing_key'], contains('[REDACTED]'));
+      expect(out['encryption_key'], contains('[REDACTED]'));
+      expect(out['masterKey'], contains('[REDACTED]'));
+      expect(out['blood_type'], '[REDACTED]');
     });
 
     test('redacts sensitive headers by default', () {

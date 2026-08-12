@@ -96,6 +96,10 @@ final class RedactionContext {
     }
 
     final canonical = needsCanonicalization ? _canonicalizeKey(trimmed) : lower;
+    if (_describesSecretMetadata(canonical) ||
+        _describesSecretMetadata(lower)) {
+      return _noMatch;
+    }
     if (canonical != lower) {
       fullyMasked = fullyMasked || fullyMaskedKeyNamesLower.contains(canonical);
       sensitive = sensitive || _matchesSensitive(canonical);
@@ -120,6 +124,7 @@ final class RedactionContext {
   bool isSensitiveKeyLower(String lowerKey) {
     final trimmed = lowerKey.trim();
     if (isIgnoredKey(trimmed)) return false;
+    if (_describesSecretMetadata(trimmed)) return false;
     return _matchesSensitive(trimmed);
   }
 
@@ -130,6 +135,30 @@ final class RedactionContext {
   static const ({bool fullyMasked, bool sensitive}) _noMatch =
       (fullyMasked: false, sensitive: false);
   static const int _maxClassificationCacheEntries = 256;
+
+  /// Whether [key] names a property *of* a secret rather than the secret,
+  /// such as `token_count`, `token_type`, or `password_length`.
+  ///
+  /// A key listed verbatim in either set keeps its classification, so an entry
+  /// like `blood_type` is unaffected by its trailing qualifier.
+  bool _describesSecretMetadata(String key) {
+    final separator = key.lastIndexOf('_');
+    if (separator < 0) return false;
+    if (!_secretMetadataQualifiers.contains(key.substring(separator + 1))) {
+      return false;
+    }
+    return !sensitiveKeysLower.contains(key) &&
+        !fullyMaskedKeyNamesLower.contains(key);
+  }
+
+  static const Set<String> _secretMetadataQualifiers = <String>{
+    'count',
+    'format',
+    'length',
+    'scheme',
+    'size',
+    'type',
+  };
 
   bool _matchesSensitive(String lowerKey) {
     if (sensitiveKeysLower.contains(lowerKey)) return true;

@@ -224,11 +224,11 @@ void main() {
       expect(content, contains('[REDACTED]'));
     });
 
-    test('preserves the root log key but redacts nested key values', () {
+    test('preserves the root log key but redacts nested secret values', () {
       final sensitive = <String, dynamic>{
         ...data,
         'additional-data': {
-          'key': 'NESTED_KEY_SECRET',
+          'api_key': 'NESTED_KEY_SECRET',
         },
       };
 
@@ -242,7 +242,7 @@ void main() {
       final decoded = jsonDecode(content) as Map<String, dynamic>;
       final additional = decoded['additional-data'] as Map<String, dynamic>;
       expect(decoded['key'], 'info');
-      expect(additional['key'], contains(defaultPlaceholder));
+      expect(additional['api_key'], contains(defaultPlaceholder));
       expect(content, isNot(contains('NESTED_KEY_SECRET')));
     });
 

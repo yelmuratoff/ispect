@@ -604,13 +604,13 @@ void main() {
       }
     });
 
-    test('preserves the root log key but redacts nested fields named key', () {
+    test('preserves the root log key but redacts nested secret fields', () {
       final output = LogExporter.toJsonLines([
         ISpectLogData(
           'message',
           key: 'test_key_1',
           additionalData: const {
-            'nested': {'key': 'nested-secret'},
+            'nested': {'api_key': 'nested-secret'},
           },
         ),
       ]);
@@ -619,7 +619,7 @@ void main() {
       final nested = additional['nested'] as Map<String, dynamic>;
 
       expect(decoded['key'], 'test_key_1');
-      expect(nested['key'], contains(defaultPlaceholder));
+      expect(nested['api_key'], contains(defaultPlaceholder));
       expect(output, isNot(contains('nested-secret')));
     });
 

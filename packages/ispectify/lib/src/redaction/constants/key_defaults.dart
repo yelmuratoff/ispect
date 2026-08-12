@@ -31,7 +31,6 @@ const Set<String> defaultSensitiveKeys = <String>{
   'set-cookie',
   'cookie',
   'bearer_token',
-  'session',
   'session_id',
   'session.id',
   'session_token',
@@ -265,8 +264,10 @@ final List<RegExp> defaultSensitiveKeyPatterns = <RegExp>[
     r'(?:^|[_\-])(?:pass(?:word)?|passwd|pwd)(?:$|[_\-])',
     caseSensitive: false,
   ),
-  RegExp(r'(?:^|[_\-])key(?:$|[_\-])', caseSensitive: false),
-  RegExp(r'(?:^|[_\-])auth(?:$|[_\-])', caseSensitive: false),
+  RegExp(
+    r'(?:^|[_\-])(?:signing|encryption|master)[_\-]?key(?:$|[_\-])',
+    caseSensitive: false,
+  ),
 
   // Personal identification patterns
   RegExp(r'(?:^|[_\-])ssn(?:$|[_\-])', caseSensitive: false),
@@ -332,7 +333,6 @@ const Set<String> defaultFullyMaskedKeys = <String>{
   'refresh_token',
   'id_token',
   'bearer_token',
-  'session',
   'session_token',
   'session-token',
   'session_id',
