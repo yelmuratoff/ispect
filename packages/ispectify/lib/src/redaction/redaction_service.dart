@@ -662,11 +662,8 @@ class RedactionService {
     }
   }
 
-  /// Names that denote a credential only as the left side of an assignment,
-  /// such as SQLCipher's `PRAGMA key = x` or a `?key=` API-key parameter.
-  ///
-  /// As a structured field name `key` identifies a record — a cache entry, a
-  /// widget, a translation — so it stays readable there.
+  // Credential only as an assignment target: SQLCipher's `PRAGMA key = x`
+  // and the `?key=` API-key parameter convention.
   static const Set<String> _assignmentCredentialKeys = <String>{'key'};
 
   bool _isIgnoredKeyName(String normalized, Set<String>? ignoredKeys) =>

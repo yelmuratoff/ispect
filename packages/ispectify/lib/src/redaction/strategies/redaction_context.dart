@@ -136,11 +136,6 @@ final class RedactionContext {
       (fullyMasked: false, sensitive: false);
   static const int _maxClassificationCacheEntries = 256;
 
-  /// Whether [key] names a property *of* a secret rather than the secret,
-  /// such as `token_count`, `token_type`, or `password_length`.
-  ///
-  /// A key listed verbatim in either set keeps its classification, so an entry
-  /// like `blood_type` is unaffected by its trailing qualifier.
   bool _describesSecretMetadata(String key) {
     final separator = key.lastIndexOf('_');
     if (separator < 0) return false;
