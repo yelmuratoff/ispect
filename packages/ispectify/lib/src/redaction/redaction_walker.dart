@@ -273,6 +273,7 @@ final class RedactionWalker {
     if (sanitized.length < 32) return false;
     if (!base64Regex.hasMatch(sanitized)) return false;
     if (sanitized.length % 4 == 1) return false;
+    if (hexIdentifierRegex.hasMatch(sanitized)) return false;
 
     final sampleLength = sanitized.length > 256 ? 256 : sanitized.length;
     final sample = sanitized.substring(0, sampleLength);

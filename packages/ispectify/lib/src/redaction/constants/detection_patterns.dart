@@ -49,6 +49,15 @@ final RegExp tokenPrefixRegex = RegExp(
 /// Characters valid in standard or URL-safe Base64.
 final RegExp base64Regex = RegExp(r'^[A-Za-z0-9+/=_-]+$');
 
+/// Hexadecimal identifiers, optionally grouped by `-` as a UUID is.
+///
+/// Hex digits are a subset of the Base64URL alphabet, so a UUID, trace id, or
+/// content hash decodes as Base64 and would otherwise be reported as an opaque
+/// payload.
+final RegExp hexIdentifierRegex = RegExp(
+  r'^[0-9a-fA-F]+(?:-[0-9a-fA-F]+)*$',
+);
+
 /// Any whitespace character.
 final RegExp whitespaceRegex = RegExp(r'\s');
 

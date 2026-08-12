@@ -1286,6 +1286,27 @@ void main() {
           '[base64 ~${wrapped.length}B]',
         );
       });
+
+      test('keeps hexadecimal identifiers readable', () {
+        const uuid = '550e8400-e29b-41d4-a716-446655440000';
+        const traceId = '4bf92f3577b34da6a3ce929d0e0e4736';
+        const digest =
+            'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+        final service = RedactionService();
+
+        expect(service.redactForExport(uuid), uuid);
+        expect(service.redactForExport(traceId), traceId);
+        expect(service.redactForExport(digest), digest);
+      });
+
+      test('keeps a correlation id readable inside a payload', () {
+        const requestId = '550e8400-e29b-41d4-a716-446655440000';
+
+        expect(
+          RedactionService().redact(<String, Object?>{'requestId': requestId}),
+          <String, Object?>{'requestId': requestId},
+        );
+      });
     });
 
     group('redactForExport', () {
