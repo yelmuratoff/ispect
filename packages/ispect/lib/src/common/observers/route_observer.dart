@@ -337,18 +337,13 @@ class ISpectNavigatorObserver extends NavigatorObserver {
     );
   }
 
-  Object? _storedRouteArguments(Object? arguments) {
-    if (arguments == null) return null;
-    if (enableArgumentRedaction && ISpectRedaction.enabled) {
-      return summarizeRouteDiagnosticArguments(arguments);
-    }
-
-    return LogExportOutput.boundJsonValue(
-      arguments,
-      resourceLimits: _captureLogger?.options.resourceLimits ??
-          DiagnosticResourceLimits.balanced,
-    );
-  }
+  Object? _storedRouteArguments(Object? arguments) =>
+      sanitizeRouteDiagnosticArguments(
+        arguments,
+        enableRedaction: enableArgumentRedaction,
+        resourceLimits: _captureLogger?.options.resourceLimits ??
+            DiagnosticResourceLimits.balanced,
+      );
 
   /// Determines whether arriving at [route] should be logged.
   ///
@@ -421,40 +416,30 @@ String buildRouteLogMessage({
     '→ $routeName ($routeType)',
   );
 
-  final redactArguments = enableArgumentRedaction && globalRedactionEnabled;
-  switch (route?.settings.arguments) {
-    case null:
-      break;
-    case final Object args:
-      if (redactArguments) {
-        buffer.writeln(
-          'Arguments: ${summarizeRouteDiagnosticArguments(args)}',
-        );
-      } else {
-        buffer.writeln(
-          'Arguments: ${_boundedRouteArgumentText(args, resourceLimits)}',
-        );
-      }
+  final arguments = sanitizeRouteDiagnosticArguments(
+    route?.settings.arguments,
+    enableRedaction: enableArgumentRedaction && globalRedactionEnabled,
+    resourceLimits: resourceLimits,
+  );
+  if (arguments != null) {
+    buffer.writeln(
+      'Arguments: ${_routeArgumentText(arguments, resourceLimits)}',
+    );
   }
 
   return buffer.toString().trim();
 }
 
-String _boundedRouteArgumentText(
+String _routeArgumentText(
   Object value,
   DiagnosticResourceLimits resourceLimits,
 ) {
   try {
-    final bounded = LogExportOutput.boundJsonValue(
-      value,
-      resourceLimits: resourceLimits,
-    );
-    final text = switch (bounded) {
-      null => 'null',
+    final text = switch (value) {
       final String value => value,
       final bool value => value.toString(),
       final num value => value.toString(),
-      _ => jsonEncode(bounded),
+      _ => jsonEncode(value),
     };
     return LogExportOutput.truncateUtf8(
       text,

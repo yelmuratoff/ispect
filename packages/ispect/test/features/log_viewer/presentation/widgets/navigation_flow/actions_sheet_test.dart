@@ -33,7 +33,7 @@ void main() {
       final items = [
         transitionWithArgs(const {
           'token': 'super-secret-abc123',
-          'screen': 'ARGUMENT_PROFILE_SECRET',
+          'screen': 'profile',
         }),
       ];
 
@@ -46,8 +46,8 @@ void main() {
       );
 
       expect(content, isNot(contains('super-secret-abc123')));
-      expect(content, contains('Map'));
-      expect(content, isNot(contains('ARGUMENT_PROFILE_SECRET')));
+      expect(content, contains('screen'));
+      expect(content, contains('profile'));
     });
 
     test('redacts route arguments by default when keys are omitted', () {
@@ -63,7 +63,7 @@ void main() {
       );
 
       expect(content, isNot(contains('super-secret-abc123')));
-      expect(content, contains('Map'));
+      expect(content, contains(defaultPlaceholder));
     });
 
     test('fails closed when route arguments reject length inspection', () {
@@ -74,7 +74,6 @@ void main() {
         action: ExportAction.share,
       );
 
-      expect(content, contains('Map'));
       expect(content, isNot(contains('MAP_LENGTH_SECRET')));
     });
 
@@ -109,7 +108,7 @@ void main() {
 
       expect(content, startsWith('# Navigation Flow'));
       expect(content, isNot(contains('Bearer super-secret-abc123')));
-      expect(content, contains('Arguments: (String)'));
+      expect(content, contains(defaultPlaceholder));
     });
 
     test('masks arguments on the single-transition share path', () {

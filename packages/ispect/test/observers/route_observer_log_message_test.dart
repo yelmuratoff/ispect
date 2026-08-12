@@ -147,7 +147,7 @@ void main() {
   );
 
   group('route log message arguments', () {
-    test('shows only the map family when redaction is enabled', () {
+    test('keeps argument structure while masking sensitive values', () {
       final message = buildRouteLogMessage(
         type: TransitionType.push,
         route: _route(
@@ -161,14 +161,13 @@ void main() {
         globalRedactionEnabled: true,
       );
 
-      expect(message, contains('Arguments: Map'));
-      expect(message, isNot(contains('token')));
-      expect(message, isNot(contains('screen')));
+      expect(message, contains('screen'));
+      expect(message, contains('profile'));
+      expect(message, contains(defaultPlaceholder));
       expect(message, isNot(contains('secret')));
-      expect(message, isNot(contains('profile')));
     });
 
-    test('shows only a generic family for typed arguments', () {
+    test('does not serialize typed arguments through caller code', () {
       final message = buildRouteLogMessage(
         type: TransitionType.push,
         route: _route(arguments: const _TypedRouteArguments(id: 'sensitive')),
@@ -177,14 +176,15 @@ void main() {
         globalRedactionEnabled: true,
       );
 
-      expect(message, contains('Arguments: (Object)'));
       expect(message, isNot(contains('sensitive')));
     });
 
     test('does not inspect an arbitrary argument runtime type', () {
       final arguments = _HostileRuntimeTypeArguments();
 
-      expect(summarizeRouteDiagnosticArguments(arguments), '(Object)');
+      final sanitized = sanitizeRouteDiagnosticArguments(arguments);
+
+      expect(sanitized.toString(), isNot(contains('HOSTILE')));
       expect(arguments.calls, 0);
     });
 
@@ -201,7 +201,7 @@ void main() {
         globalRedactionEnabled: true,
       );
 
-      expect(message, contains('Arguments: Map'));
+      expect(message, contains('Arguments:'));
       expect(message, isNot(contains('secret-key')));
       expect(message, isNot(contains('secret-value')));
     });
@@ -215,7 +215,7 @@ void main() {
         globalRedactionEnabled: true,
       );
 
-      expect(message, contains('Arguments: Map'));
+      expect(message, contains('Arguments:'));
       expect(message, isNot(contains('MAP_LENGTH_SECRET')));
     });
 
@@ -324,7 +324,10 @@ void main() {
         expect(stored.from?.name, '/users/alice@example.com');
         expect(stored.to?.name, '/orders/123456?[REDACTED]');
         expect(stored.to?.name, isNot(contains('QUERY_SECRET')));
-        expect(stored.arguments, 'Map');
+        expect(
+          stored.arguments,
+          <String, Object?>{'token': defaultPlaceholder},
+        );
         expect(stored.toString(), isNot(contains('ARGUMENT_SECRET')));
       },
       skip: !kISpectEnabled
@@ -333,14 +336,13 @@ void main() {
     );
 
     test(
-      'retains only typed argument metadata when redaction is enabled',
+      'never serializes typed arguments through caller code',
       () {
         const arguments = _TypedRouteArguments(id: 'ROUTE_SECRET');
         final observer = ISpectNavigatorObserver()
           ..didPush(_route(arguments: arguments), null);
 
         final stored = observer.transitions.single.arguments;
-        expect(stored, '(Object)');
         expect('$stored', isNot(contains('ROUTE_SECRET')));
         expect(stored, isNot(same(arguments)));
       },
@@ -350,7 +352,7 @@ void main() {
     );
 
     test(
-      'retains only the map family',
+      'stores argument structure with sensitive values masked',
       () {
         final observer = ISpectNavigatorObserver()
           ..didPush(
@@ -364,11 +366,11 @@ void main() {
           );
 
         final stored = observer.transitions.single.arguments;
-        expect(stored, 'Map');
-        expect('$stored', isNot(contains('token')));
-        expect('$stored', isNot(contains('screen')));
+        expect(stored, <String, Object?>{
+          'token': defaultPlaceholder,
+          'screen': 'profile',
+        });
         expect('$stored', isNot(contains('ROUTE_SECRET')));
-        expect('$stored', isNot(contains('profile')));
       },
       skip: !kISpectEnabled
           ? 'Navigation capture requires ISPECT_ENABLED for this test.'

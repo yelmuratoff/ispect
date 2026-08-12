@@ -350,24 +350,20 @@ class ISpectNavigationFlowActionsSheet {
     Object? arguments, {
     required bool redactionActive,
   }) {
-    if (redactionActive) {
-      if (arguments == null) return '';
-      return _prepareSourceString(
-        summarizeRouteDiagnosticArguments(arguments),
-        redactionActive: true,
-      );
-    }
-
-    final snapshot = LogExportOutput.boundJsonValue(arguments);
-    if (snapshot is String) return snapshot;
+    final snapshot = sanitizeRouteDiagnosticArguments(
+      arguments,
+      enableRedaction: redactionActive,
+      resourceLimits: _resourceLimits,
+    );
     if (snapshot == null) return '';
+    if (snapshot is String) return snapshot;
     if (snapshot is bool || snapshot is num) {
       return snapshot.toString();
     }
     try {
       return _prepareSourceString(
         jsonEncode(snapshot),
-        redactionActive: false,
+        redactionActive: redactionActive,
       );
     } catch (_) {
       return JsonValueNormalizer.unprintableValue;

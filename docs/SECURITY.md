@@ -133,8 +133,11 @@ Optional hardening for shared internal builds:
 - Keep identifying values out of route paths. `ISpectNavigatorObserver` records
   the bounded route path as declared and masks only query and fragment values,
   because a REST path is indistinguishable from a filesystem path or a
-  credential to a content scanner. Route arguments stay reduced to their
-  structural family unless `enableArgumentRedaction: false` is set.
+  credential to a content scanner. Route arguments are bounded and passed
+  through `RedactionService`, so an argument map keeps the field names a
+  reader needs while a credential inside it is masked; caller `toJson()` and
+  `toString()` are never invoked. Set `enableArgumentRedaction: false` for an
+  explicit controlled-debugging opt-out.
 - Supply device model metadata only. Never attach serial numbers, advertising
   IDs, installation IDs, or another stable device identifier.
 - Export sessions only through the channels approved for the data class they contain.

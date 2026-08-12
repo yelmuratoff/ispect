@@ -63,12 +63,35 @@ String sanitizeRouteDiagnosticName(
       '${prepared[boundary]}$defaultPlaceholder';
 }
 
-/// Describes route arguments without traversing or stringifying their content.
-String summarizeRouteDiagnosticArguments(Object arguments) {
-  if (arguments is Map<Object?, Object?>) return 'Map';
-  if (arguments is List<Object?>) return 'List';
-  if (arguments is Set<Object?>) return 'Set';
-  if (arguments is String) return '(String)';
-  if (arguments is num || arguments is bool) return '(scalar)';
-  return '(Object)';
+/// Returns bounded route arguments with sensitive fields and values masked.
+///
+/// Caller code is never invoked: the value is bounded structurally, then
+/// `RedactionService` masks by field name and by content, so an argument map
+/// keeps the shape a reader needs while a credential inside it does not
+/// survive. Pass [enableRedaction] as false only for an explicit
+/// controlled-debugging opt-out.
+Object? sanitizeRouteDiagnosticArguments(
+  Object? arguments, {
+  bool enableRedaction = true,
+  DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+}) {
+  if (arguments == null) return null;
+  resourceLimits.validate();
+  final redactionActive = enableRedaction && ISpectRedaction.enabled;
+  final prepared = LogExportOutput.boundJsonValue(
+    arguments,
+    resourceLimits: resourceLimits,
+    replaceOversizedStrings: redactionActive,
+  );
+  if (!redactionActive) return prepared;
+
+  final redacted = ISpectRedaction.service.redactForExport(
+    prepared,
+    resourceLimits: resourceLimits,
+  );
+  return LogExportOutput.boundJsonValue(
+    redacted,
+    resourceLimits: resourceLimits,
+    replaceOversizedStrings: true,
+  );
 }
