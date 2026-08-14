@@ -17,6 +17,12 @@ Scripts:
 - `check_version_sync.sh` — ensure every package version matches `version.config`.
 - `check_dependencies.sh` — verify internal dependency constraints reference the current version.
 - `bump_version.sh` — legacy bump helper kept for backward compatibility; prefer `release_prep.sh`.
+- `run_benchmarks.sh` — AOT pure-Dart hot-path suite; writes `build/benchmarks/ispectify.json` and the generated report.
+- `measure_release_size.sh` — builds the `ispect` example with `ISPECT_ENABLED` omitted and enabled, saving APKs and `--analyze-size` reports to `build/benchmarks/release-size/`.
+
+Tests:
+
+- `tests/release_prep_test.sh` and `tests/update_versions_test.sh` — regression tests for the release scripts, run by `validate_versions.yml`.
 
 ## Quick start
 

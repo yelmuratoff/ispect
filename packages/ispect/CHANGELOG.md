@@ -58,6 +58,7 @@
 - **Readable route logs:** Navigation entries keep the route path — including paths such as `/users/42` that previously collided with filesystem-path detection — and mask only query and fragment values.
 - **Named BLoC and Riverpod diagnostics:** Balanced capture reports the concrete class — `AuthCubit`, `AuthLoading`, `counterProvider` — instead of the `Bloc` / `Cubit` / `Provider` / `Object` family labels. Strict capture, `ISpectBlocSettings.compact`, and `ISpectRiverpodSettings.compact` keep the coarse labels and still never read a caller's `runtimeType`.
 - **Useful database console lines:** Database traces name the table — derived from the statement when an interceptor does not supply one — show the normalized SQL with every literal and digit replaced by `?`, and carry affected rows, item counts, size, and cache hits. Row counts returned through `projectResult` are now reported. Oversized statements still fall back to the opaque digest, and secret-keyed operands such as `PRAGMA key` remain masked.
+- **Corrected documentation:** `ispectify_db` documented the wrong `attachStackOnError` and `sampleRate` defaults and a `db-slow-query` entry that is never emitted — `slowThreshold` adds a `slow` flag to the trace entry. The production-safety sentinel list now matches the workflow.
 
 ## 6.1.7
 

@@ -11,14 +11,18 @@ Thanks for the interest. This is the short version of how the monorepo is laid o
 
 ```
 packages/
-  ispectify/          # Core logging engine (pure Dart).
+  ispectify/          # Core logging engine.
   ispectify_dio/      # Dio HTTP interceptor.
   ispectify_http/     # http package interceptor.
   ispectify_ws/       # WebSocket traffic capture.
-  ispectify_db/       # Database operation tracing (pure Dart).
+  ispectify_db/       # Database operation tracing.
   ispectify_bloc/     # BLoC event and state observer.
+  ispectify_riverpod/ # Riverpod provider lifecycle observer.
   ispect/             # Flutter UI: inspector panel, log viewer, widgets.
+  ispect_layout/      # Visual layout inspector and color picker.
 ```
+
+Only `ispect` and `ispect_layout` depend on Flutter. Every `ispectify*` package is pure Dart.
 
 Dependency chain: `ispectify` → `ispectify_*` → `ispect`.
 
@@ -37,12 +41,22 @@ cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 
 ## Running tests and lint
 
+Diagnostics are compiled out unless `ISPECT_ENABLED` is defined, so every suite
+needs the define to reach its assertions — including the pure Dart packages:
+
 ```bash
 # Pure Dart packages.
-cd packages/ispectify && dart test && dart analyze --fatal-infos
+cd packages/ispectify && flutter test --dart-define=ISPECT_ENABLED=true && dart analyze --fatal-infos
 
 # Flutter packages.
-cd packages/ispect && flutter test && flutter analyze --fatal-infos
+cd packages/ispect && flutter test --dart-define=ISPECT_ENABLED=true && flutter analyze --fatal-infos
+```
+
+Packages that ship `test/production_safety_test.dart` assert the opposite and
+run without the define:
+
+```bash
+cd packages/ispectify && dart test --run-skipped test/production_safety_test.dart
 ```
 
 ## Version management
@@ -65,7 +79,7 @@ Build and release scripts live in `bash/`. See [bash/README.md](bash/README.md) 
 
 ## Pull request requirements
 
-1. Tests pass: `dart test` or `flutter test` for affected packages.
+1. Tests pass: `flutter test --dart-define=ISPECT_ENABLED=true` for affected packages, plus the disabled-build check where `test/production_safety_test.dart` exists.
 2. Analyzer clean: `dart analyze --fatal-infos` or `flutter analyze --fatal-infos` with zero issues.
 3. Versions in sync. Do not edit `pubspec.yaml` versions by hand.
 4. Changelog entry in the root `CHANGELOG.md` for user-facing changes.

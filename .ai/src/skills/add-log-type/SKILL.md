@@ -29,7 +29,7 @@ key shown as its raw string). Wire every item below.
    - Regenerate: `cd packages/ispect && flutter gen-l10n`. Never hand-edit `lib/src/core/localization/generated/**`. `untranslated.json` is a generated, git-ignored report — do not commit it.
 
 ## Verify
-- `cd packages/ispectify && dart analyze --fatal-infos && dart test`
+- `cd packages/ispectify && dart analyze --fatal-infos && flutter test --dart-define=ISPECT_ENABLED=true`
 - `cd packages/ispect && flutter analyze --fatal-infos && flutter test`
 - `dart format` the changed Dart files.
 

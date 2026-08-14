@@ -35,7 +35,7 @@ The toolkit is broad, and the current entry points assume the reader already kno
 
 ### Examples split by category
 
-Coverage is uneven today: `ispectify_db` and `ispectify_ws` already organize runnable variants under an `example/lib/examples/` subfolder, `ispectify_dio` / `ispectify_http` ship a single `main.dart`, and `ispectify_bloc` and `ispectify_riverpod` have no example project at all. The `ispect` showcase app already depends on every integration (its `complex_example.dart` demos Dio/HTTP/WS/DB plus Riverpod/BLoC observers in one file), so the split needs no new dependencies — it splits that combined tour into focused, category-first entry points:
+Coverage varies by package: `ispectify_db` and `ispectify_ws` organize runnable variants under an `example/lib/examples/` subfolder, while `ispectify_dio`, `ispectify_http`, `ispectify_bloc`, and `ispectify_riverpod` ship a single `main.dart`. The `ispect` showcase app already depends on every integration (its `complex_example.dart` demos Dio/HTTP/WS/DB plus Riverpod/BLoC observers in one file), so the split needs no new dependencies — it splits that combined tour into focused, category-first entry points:
 
 ```
 packages/ispect/example/lib/

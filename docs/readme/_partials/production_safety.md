@@ -53,7 +53,8 @@ CI verifies both behavior and release reachability:
   present in the enabled control: `ISpect Log Screen`,
   `ISpectScopeNotFoundError`, `[ISpect] Console logging failed safely.`,
   `Select a widget first, then press Compare.`, `statementDigest`,
-  `_ispect_started_at`, `ispect_sw`, `metrics`, `bloc_event_ids`, and
+  `_ispect_started_at`, `ispect_sw`,
+  `ISpect WebSocket frame capture failed safely.`, `bloc_event_ids`, and
   `provider-name`.
 
 Raw occurrences of the package name are reported only as diagnostic context;

@@ -10,14 +10,15 @@ Run the correct package-scoped analyzer, tests, and repo consistency checks for 
 ## Steps
 
 1. Identify the affected target from changed files or the user's package name.
-2. Use pure Dart commands for `packages/ispectify` and `packages/ispectify_db`:
+2. Use pure Dart commands for `packages/ispectify`, `packages/ispectify_db`, `packages/ispectify_dio`, `packages/ispectify_http`, `packages/ispectify_ws`, `packages/ispectify_bloc`, and `packages/ispectify_riverpod`:
    - `cd packages/<package> && dart pub get`
    - `cd packages/<package> && dart analyze --fatal-infos`
-   - `cd packages/<package> && dart test --coverage=coverage`
-3. Use Flutter commands for `packages/ispect`, `packages/ispect_layout`, `packages/ispectify_dio`, `packages/ispectify_http`, `packages/ispectify_ws`, and `packages/ispectify_bloc`:
+   - `cd packages/<package> && flutter test --dart-define=ISPECT_ENABLED=true --coverage`
+   - `cd packages/<package> && dart test --run-skipped test/production_safety_test.dart`
+3. Use Flutter commands for `packages/ispect` and `packages/ispect_layout`:
    - `cd packages/<package> && flutter pub get`
    - `cd packages/<package> && flutter analyze --fatal-infos`
-   - `cd packages/<package> && flutter test --coverage`
+   - `cd packages/<package> && flutter test --dart-define=ISPECT_ENABLED=true --coverage`
 4. Use Flutter web demo commands for `web_logs_viewer`:
    - `cd web_logs_viewer && flutter pub get`
    - `cd web_logs_viewer && flutter analyze`
