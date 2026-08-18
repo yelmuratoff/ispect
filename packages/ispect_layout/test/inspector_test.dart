@@ -66,6 +66,23 @@ Widget _buildPrecisionBody() {
   );
 }
 
+Widget _buildDefaultPrecisionBody() {
+  return MaterialApp(
+    builder: (context, child) => Inspector(child: child!),
+    home: Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Container(
+          key: _containerKey,
+          width: 100.25,
+          height: 100.75,
+          color: Colors.blue,
+        ),
+      ),
+    ),
+  );
+}
+
 Widget _buildCollapsedPanelBody() {
   return MaterialApp(
     builder: (context, child) => Inspector(
@@ -408,6 +425,23 @@ void main() {
       expect(find.text('100.125 × 100.375'), findsWidgets);
     });
 
+    testWidgets('preserves hundredths with the default precision',
+        (tester) async {
+      await tester.pumpWidget(_buildDefaultPrecisionBody());
+      await tester.tap(find.byIcon(Icons.format_shapes));
+      await tester.pump();
+
+      final container =
+          tester.renderObject(find.byKey(_containerKey)) as RenderBox;
+      final position =
+          (container.localToGlobal(Offset.zero) & container.size).center;
+
+      await tester.tapAt(position);
+      await tester.pump();
+
+      expect(find.text('100.25 × 100.75'), findsWidgets);
+    });
+
     testWidgets('render-tree copy honors the configured character budget',
         (tester) async {
       String? clipboardText;
@@ -476,16 +510,16 @@ void main() {
       await tester.pump();
 
       expect(find.textContaining('DecoratedBox'), findsWidgets);
-      expect(find.text('100.0 × 100.0'), findsWidgets);
+      expect(find.text('100.00 × 100.00'), findsWidgets);
 
       await tester.tap(find.byType(BoxInfoPanelWidget));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('50.0'), findsWidgets);
-      expect(find.text('150.0'), findsWidgets);
+      expect(find.text('50.00'), findsWidgets);
+      expect(find.text('150.00'), findsWidgets);
       expect(find.text('border radius'), findsOneWidget);
-      expect(find.text('12.0'), findsOneWidget);
+      expect(find.text('12.00'), findsOneWidget);
     });
 
     testWidgets('shows shape border radius for Material shapes',
@@ -508,7 +542,7 @@ void main() {
 
       expect(find.text('RoundedRectangleBorder'), findsOneWidget);
       expect(find.text('border radius'), findsOneWidget);
-      expect(find.text('18.0'), findsOneWidget);
+      expect(find.text('18.00'), findsOneWidget);
     });
 
     testWidgets(
@@ -530,7 +564,7 @@ void main() {
       await tester.pump();
 
       expect(find.textContaining('Flex'), findsWidgets);
-      expect(find.text('80.0 × 40.0'), findsWidgets);
+      expect(find.text('80.00 × 40.00'), findsWidgets);
     });
 
     testWidgets(
@@ -546,7 +580,7 @@ void main() {
           .tapAt((avatar.localToGlobal(Offset.zero) & avatar.size).center);
       await tester.pump();
 
-      expect(find.text('18.0 × 18.0'), findsWidgets);
+      expect(find.text('18.00 × 18.00'), findsWidgets);
       expect(find.textContaining('RenderParagraph'), findsNothing);
     });
 
@@ -569,7 +603,7 @@ void main() {
       await tester.tapAt(position);
       await tester.pump();
 
-      expect(find.text('100.0 × 100.0'), findsNothing);
+      expect(find.text('100.00 × 100.00'), findsNothing);
     });
   });
 }

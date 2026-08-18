@@ -98,7 +98,12 @@ List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
     (
       icon: Icons.crop_free,
       subtitle: 'alignment',
-      child: EllipsizedText(describeAlignment(target.alignment)),
+      child: EllipsizedText(
+        describeAlignment(
+          target.alignment,
+          decimalPlaces: decimalPlaces,
+        ),
+      ),
     ),
     if (target.width != null)
       (

@@ -6,6 +6,13 @@ import 'package:ispect_layout/src/number_format.dart';
 
 String _fmt(double v, int decimalPlaces) =>
     formatInspectorDouble(v, decimalPlaces: decimalPlaces);
+final _trailingDecimalZeroes = RegExp(r'\.?0+$');
+
+String _fmtCompact(double value, int decimalPlaces) {
+  final formatted = _fmt(value, decimalPlaces);
+  final compact = formatted.replaceFirst(_trailingDecimalZeroes, '');
+  return compact == '-0' ? '0' : compact;
+}
 
 // ─── Geometry formatters ─────────────────────────────────────────────────────
 
@@ -20,8 +27,9 @@ String formatRadius(Radius r, {int decimalPlaces = 1}) => r.x == r.y
 ({String label, String value})? formatBorderRadius(
   BorderRadiusGeometry geometry, {
   int decimalPlaces = 1,
+  TextDirection textDirection = TextDirection.ltr,
 }) {
-  final r = geometry.resolve(TextDirection.ltr);
+  final r = geometry.resolve(textDirection);
   if (r == BorderRadius.zero) return null;
   final corners = [r.topLeft, r.topRight, r.bottomRight, r.bottomLeft];
   if (corners.every((c) => c == corners.first)) {
@@ -51,8 +59,8 @@ BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
 // Flutter's AOT release build strips `toString()` overrides on several
 // painting / dart:ui types (FontWeight, TextDecoration, AlignmentGeometry,
 // SystemTextScaler, ImageFilter, ColorFilter, …), falling back to
-// `Instance of '<TypeName>'`. The helpers below read public fields or peek
-// at private discriminators so labels stay readable.
+// `Instance of '<TypeName>'`. The helpers below prefer public fields and use
+// narrowly scoped fallbacks when Flutter exposes no structured public API.
 //
 // Anything depending on Flutter internals is validated once in debug via
 // [_assertReleaseSafeContracts] — Flutter renames or shape changes fire an
@@ -62,8 +70,11 @@ BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
 /// detecting it tells us a `toString()` override was stripped by AOT.
 const _kStrippedToStringPrefix = "Instance of '";
 
-String describeAlignment(AlignmentGeometry alignment) {
-  String fmt(double v) => v.toStringAsFixed(1);
+String describeAlignment(
+  AlignmentGeometry alignment, {
+  int decimalPlaces = 2,
+}) {
+  String fmt(double v) => _fmtCompact(v, decimalPlaces);
   if (alignment is Alignment) {
     return switch ((alignment.x, alignment.y)) {
       (-1.0, -1.0) => 'topLeft',
@@ -195,16 +206,13 @@ String describeImageProvider(ImageProvider provider) {
   return provider.runtimeType.toString();
 }
 
-/// [ColorFilter] is a single class discriminated by private fields
-/// (`_type` / `_color` / `_blendMode` / `_matrix` in `dart:ui/painting.dart`).
-/// Resolves through three strategies in order, each returning `null` to
-/// delegate down: official `toString()` (debug-only), `==` against parameter-
-/// less gamma sentinels, then `dynamic` field probing.
+/// Uses Flutter's readable debug representation when available and stable
+/// equality for the two parameterless gamma filters. Other filters fall back
+/// to their public type name in AOT builds, where structured fields are not
+/// exposed.
 String describeColorFilter(ColorFilter f) {
-  assert(_assertReleaseSafeContracts());
   return _describeColorFilterFromToString(f) ??
       _describeColorFilterFromSentinel(f) ??
-      _describeColorFilterFromFields(f) ??
       'ColorFilter';
 }
 
@@ -224,23 +232,6 @@ const _srgbToLinearGamma = ColorFilter.srgbToLinearGamma();
 String? _describeColorFilterFromSentinel(ColorFilter f) {
   if (f == _linearToSrgbGamma) return 'linearToSrgbGamma';
   if (f == _srgbToLinearGamma) return 'srgbToLinearGamma';
-  return null;
-}
-
-String? _describeColorFilterFromFields(ColorFilter f) {
-  try {
-    final dyn = f as dynamic;
-    final color = dyn._color as Color?;
-    final blend = dyn._blendMode as BlendMode?;
-    if (color != null && blend != null) {
-      final hex = color.toARGB32().toRadixString(16).padLeft(8, '0');
-      return 'mode · ${blend.name} · #$hex';
-    }
-    if (dyn._matrix != null) return 'matrix';
-  } catch (_) {
-    // Field renamed upstream — debug assert in [_assertReleaseSafeContracts]
-    // surfaces this; release silently degrades to 'ColorFilter'.
-  }
   return null;
 }
 
@@ -407,15 +398,6 @@ bool _contractsValidated = false;
 bool _assertReleaseSafeContracts() {
   if (_contractsValidated) return true;
   _contractsValidated = true;
-
-  // Source: dart:ui/painting.dart, `class ColorFilter`.
-  const modeFilter = ColorFilter.mode(Color(0xFF010203), BlendMode.srcIn);
-  final dynColor = modeFilter as dynamic;
-  assert(
-    dynColor._color is Color && dynColor._blendMode is BlendMode,
-    'ColorFilter._color/_blendMode renamed in Flutter; '
-    'update _describeColorFilterFromFields in value_descriptors.dart',
-  );
 
   // Source: dart:ui/painting.dart, `_GaussianBlurImageFilter` etc.
   final blur = ImageFilter.blur(sigmaX: 1, sigmaY: 2);

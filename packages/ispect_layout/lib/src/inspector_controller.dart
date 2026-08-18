@@ -29,7 +29,7 @@ class InspectorController {
     this.isColorPickerEnabled = true,
     this.isColorSchemeHintEnabled = true,
     this.isZoomEnabled = true,
-    this.decimalPlaces = 1,
+    this.decimalPlaces = 2,
     int maxRenderTreeClipboardCharacters = 10000,
     this.theme = InspectorTheme.defaults,
     this.widgetInspectorShortcuts,

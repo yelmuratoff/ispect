@@ -13,6 +13,7 @@
 
 ### Behavioral Changes
 
+- **Layout inspector precision:** Runtime measurements now default to two decimal places; explicit `decimalPlaces` overrides remain supported.
 - **Deprecation schedule:** Deprecated compatibility aliases remain available through 7.x and are now scheduled for removal in 8.0.0.
 - **Useful diagnostics by default:** Core logs, traces, network and database payloads, BLoC, and Riverpod retain bounded application descriptions or structured `toJson()` snapshots after redaction. Exceptions, stack traces, and ordinary HTTP URLs are readable again.
 - **Explicit capture policy:** `DiagnosticCaptureMode.balanced` is the default for internal diagnostics. Select `strict` when application-defined `toJson()` and `toString()` methods must never run.
@@ -48,6 +49,7 @@
 ### Bug Fixes
 
 - **Exact typography inspection:** Text size, line height, letter spacing, and word spacing preserve hundredths without trailing zeroes, preventing values such as `0.25` from appearing as `0.3`.
+- **Reliable layout inspection:** Corrected RTL radii, fitted-box sizing, transformed padding and pivots, center-sliced image fit, color-filter handling, editable typography, flex/stack parent data, and omitted clip or directional layout fields.
 - **Apple file history:** Rolling history now initializes in iOS and macOS application cache sandboxes, and fallback diagnostics retain typed failure context without re-entering the logger pipeline.
 - **Concurrent diagnostics:** Fixed BLoC event correlation and stale asynchronous log-viewer updates.
 - **Reliable lifecycle:** Shutdown and forced reinitialization now clean up logger state consistently, including failure paths.

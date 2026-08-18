@@ -399,12 +399,12 @@ class GradientView extends StatelessWidget {
     final stops = g.stops;
     final detail = switch (g) {
       LinearGradient(:final begin, :final end, :final tileMode) => [
-          'begin:${describeAlignment(begin)}',
-          'end:${describeAlignment(end)}',
+          'begin:${describeAlignment(begin, decimalPlaces: decimalPlaces)}',
+          'end:${describeAlignment(end, decimalPlaces: decimalPlaces)}',
           if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
         ],
       RadialGradient(:final center, :final radius, :final tileMode) => [
-          'center:${describeAlignment(center)}',
+          'center:${describeAlignment(center, decimalPlaces: decimalPlaces)}',
           'r:${formatInspectorDouble(radius, decimalPlaces: decimalPlaces)}',
           if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
         ],
@@ -415,7 +415,7 @@ class GradientView extends StatelessWidget {
         :final tileMode,
       ) =>
         [
-          'center:${describeAlignment(center)}',
+          'center:${describeAlignment(center, decimalPlaces: decimalPlaces)}',
           'start:${formatInspectorDouble(startAngle, decimalPlaces: decimalPlaces)}',
           'end:${formatInspectorDouble(endAngle, decimalPlaces: decimalPlaces)}',
           if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
@@ -486,8 +486,9 @@ class GradientView extends StatelessWidget {
 Widget buildBorderRadiusChild(
   BorderRadiusGeometry geometry, {
   int decimalPlaces = 1,
+  TextDirection textDirection = TextDirection.ltr,
 }) {
-  final r = geometry.resolve(TextDirection.ltr);
+  final r = geometry.resolve(textDirection);
   final corners = [r.topLeft, r.topRight, r.bottomRight, r.bottomLeft];
   if (corners.every((c) => c == corners.first)) {
     return Text(formatRadius(corners.first, decimalPlaces: decimalPlaces));

@@ -41,7 +41,7 @@ class Inspector extends StatefulWidget {
     this.isPanelVisible = true,
     this.initialPanelExpanded = true,
     this.isEnabled,
-    this.decimalPlaces = 1,
+    this.decimalPlaces = 2,
     this.maxRenderTreeClipboardCharacters = 10000,
     this.theme,
     this.panelBuilder,

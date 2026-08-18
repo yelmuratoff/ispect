@@ -194,10 +194,16 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
       ..add(const SizedBox(height: 8))
       ..add(
         PropSection(
-          props: constraintsProps(
-            target.constraints,
-            decimalPlaces: widget.decimalPlaces,
-          ),
+          props: [
+            ...constraintsProps(
+              target.constraints,
+              decimalPlaces: widget.decimalPlaces,
+            ),
+            ...parentDataProps(
+              target,
+              decimalPlaces: widget.decimalPlaces,
+            ),
+          ],
         ),
       );
 
@@ -215,7 +221,26 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
     }
 
     if (target is RenderParagraph) {
-      out.addAll(_paragraphSections(context, target, dividerColor));
+      out.addAll(
+        _textSections(
+          context,
+          text: target.text,
+          textProps: paragraphProps(
+            target,
+            decimalPlaces: widget.decimalPlaces,
+          ),
+          dividerColor: dividerColor,
+        ),
+      );
+    } else if (target is RenderEditable && target.text != null) {
+      out.addAll(
+        _textSections(
+          context,
+          text: target.text!,
+          textProps: editableProps(target),
+          dividerColor: dividerColor,
+        ),
+      );
     } else {
       final tProps = typeProps(target, decimalPlaces: widget.decimalPlaces);
       if (tProps.isNotEmpty) {
@@ -247,16 +272,16 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
     return out;
   }
 
-  List<Widget> _paragraphSections(
-    BuildContext context,
-    RenderParagraph target,
-    Color dividerColor,
-  ) {
+  List<Widget> _textSections(
+    BuildContext context, {
+    required InlineSpan text,
+    required List<PropSpec> textProps,
+    required Color dividerColor,
+  }) {
     final theme = Theme.of(context);
     final chipBg = theme.colorScheme.surfaceContainerLow;
-    final iconGlyphs = describeAsIconGlyphs(target.text);
-    final pProps = paragraphProps(target, decimalPlaces: widget.decimalPlaces);
-    final spanSections = extractSpanStyleGroups(target.text)
+    final iconGlyphs = describeAsIconGlyphs(text);
+    final spanSections = extractSpanStyleGroups(text)
         .map(
           (g) => (
             props: spanProps(g.style, decimalPlaces: widget.decimalPlaces),
@@ -273,14 +298,14 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
         ..add(Divider(height: 20.0, color: dividerColor))
         ..add(const _SectionHeader('icon'))
         ..add(_IconGlyphPreview(glyphs: iconGlyphs, chipBg: chipBg));
-      if (pProps.isNotEmpty) {
+      if (textProps.isNotEmpty) {
         out
           ..add(const SizedBox(height: 6))
-          ..add(PropSection(props: pProps));
+          ..add(PropSection(props: textProps));
       }
     } else {
-      final preview = previewText(target.text);
-      if (preview.isNotEmpty || pProps.isNotEmpty) {
+      final preview = previewText(text);
+      if (preview.isNotEmpty || textProps.isNotEmpty) {
         out
           ..add(Divider(height: 20.0, color: dividerColor))
           ..add(const _SectionHeader('text'));
@@ -300,10 +325,10 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
               ),
             ),
           );
-          if (pProps.isNotEmpty) out.add(const SizedBox(height: 6));
+          if (textProps.isNotEmpty) out.add(const SizedBox(height: 6));
         }
-        if (pProps.isNotEmpty) {
-          out.add(PropSection(props: pProps));
+        if (textProps.isNotEmpty) {
+          out.add(PropSection(props: textProps));
         }
       }
     }
@@ -379,9 +404,14 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
         ),
       ];
     }
-    if (widget.boxInfo.decoratedBoxForDisplay?.decoration
-        case final BoxDecoration d) {
-      return decorationProps(d, decimalPlaces: widget.decimalPlaces);
+    final decoratedBox = widget.boxInfo.decoratedBoxForDisplay;
+    if (decoratedBox?.decoration case final BoxDecoration d) {
+      return decorationProps(
+        d,
+        decimalPlaces: widget.decimalPlaces,
+        textDirection:
+            decoratedBox?.configuration.textDirection ?? TextDirection.ltr,
+      );
     }
     return [];
   }

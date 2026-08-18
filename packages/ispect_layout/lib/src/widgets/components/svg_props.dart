@@ -106,7 +106,12 @@ List<PropSpec> svgProps(Widget svg, {int decimalPlaces = 1}) {
       (
         icon: Icons.crop_free,
         subtitle: 'alignment',
-        child: EllipsizedText(describeAlignment(alignment)),
+        child: EllipsizedText(
+          describeAlignment(
+            alignment,
+            decimalPlaces: decimalPlaces,
+          ),
+        ),
       ),
     );
   }
@@ -114,14 +119,11 @@ List<PropSpec> svgProps(Widget svg, {int decimalPlaces = 1}) {
   final colorFilter =
       _svgField<ColorFilter>(() => dyn.colorFilter as ColorFilter);
   if (colorFilter != null) {
-    // ColorFilter's debug toString() ('ColorFilter.mode(...)') is enough for
-    // the inspector and, unlike `describeColorFilter`, never probes dart:ui
-    // private fields — so it can't throw across the library boundary.
     props.add(
       (
         icon: Icons.filter_b_and_w,
         subtitle: 'color filter',
-        child: EllipsizedText(colorFilter.toString()),
+        child: EllipsizedText(describeColorFilter(colorFilter)),
       ),
     );
   }

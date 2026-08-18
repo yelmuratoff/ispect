@@ -33,13 +33,17 @@ String _fmtTypography(double v, int decimalPlaces) {
 
 // ─── Common chip builders ────────────────────────────────────────────────────
 
-PropSpec? _clipBehaviorProp(Clip clipBehavior) => clipBehavior == Clip.none
-    ? null
-    : (
-        icon: Icons.crop,
-        subtitle: 'clip behavior',
-        child: Text(clipBehavior.name),
-      );
+PropSpec? _clipBehaviorProp(
+  Clip clipBehavior, {
+  Clip defaultValue = Clip.none,
+}) =>
+    clipBehavior == defaultValue
+        ? null
+        : (
+            icon: Icons.crop,
+            subtitle: 'clip behavior',
+            child: Text(clipBehavior.name),
+          );
 
 /// Renders a clipper as a [shapeBorderProps] section when it is a
 /// [ShapeBorderClipper], else as a single chip with the runtime type name.
@@ -49,7 +53,11 @@ List<PropSpec> _clipperProps(
 }) {
   if (clipper == null) return const [];
   if (clipper is ShapeBorderClipper) {
-    return shapeBorderProps(clipper.shape, decimalPlaces: decimalPlaces);
+    return shapeBorderProps(
+      clipper.shape,
+      decimalPlaces: decimalPlaces,
+      textDirection: clipper.textDirection ?? TextDirection.ltr,
+    );
   }
   return [
     (
@@ -191,6 +199,7 @@ List<PropSpec> spanProps(TextStyle style, {int decimalPlaces = 1}) => [
 List<PropSpec> shapeBorderProps(
   ShapeBorder shape, {
   int decimalPlaces = 1,
+  TextDirection textDirection = TextDirection.ltr,
 }) =>
     [
       (
@@ -199,7 +208,11 @@ List<PropSpec> shapeBorderProps(
         child: Text(shape.runtimeType.toString()),
       ),
       if (extractShapeBorderRadius(shape) case final borderRadius?)
-        if (formatBorderRadius(borderRadius, decimalPlaces: decimalPlaces)
+        if (formatBorderRadius(
+          borderRadius,
+          decimalPlaces: decimalPlaces,
+          textDirection: textDirection,
+        )
             case final br?)
           (
             icon: Icons.rounded_corner,
@@ -207,11 +220,17 @@ List<PropSpec> shapeBorderProps(
             child: buildBorderRadiusChild(
               borderRadius,
               decimalPlaces: decimalPlaces,
+              textDirection: textDirection,
             ),
           ),
     ];
 
-List<PropSpec> decorationProps(BoxDecoration d, {int decimalPlaces = 1}) => [
+List<PropSpec> decorationProps(
+  BoxDecoration d, {
+  int decimalPlaces = 1,
+  TextDirection textDirection = TextDirection.ltr,
+}) =>
+    [
       if (d.color != null)
         (
           icon: Icons.palette,
@@ -221,6 +240,7 @@ List<PropSpec> decorationProps(BoxDecoration d, {int decimalPlaces = 1}) => [
       if (formatBorderRadius(
         d.borderRadius ?? BorderRadius.zero,
         decimalPlaces: decimalPlaces,
+        textDirection: textDirection,
       )
           case final br?)
         (
@@ -229,6 +249,7 @@ List<PropSpec> decorationProps(BoxDecoration d, {int decimalPlaces = 1}) => [
           child: buildBorderRadiusChild(
             d.borderRadius ?? BorderRadius.zero,
             decimalPlaces: decimalPlaces,
+            textDirection: textDirection,
           ),
         ),
       if (d.shape != BoxShape.rectangle)
@@ -249,12 +270,20 @@ List<PropSpec> decorationProps(BoxDecoration d, {int decimalPlaces = 1}) => [
         (
           icon: Icons.gradient,
           subtitle: 'gradient',
-          child: GradientView(d.gradient!, decimalPlaces: decimalPlaces),
+          child: GradientView(
+            d.gradient!,
+            decimalPlaces: decimalPlaces,
+          ),
         ),
-      if (d.image != null) ..._decorationImageProps(d.image!),
+      if (d.image != null)
+        ..._decorationImageProps(d.image!, decimalPlaces: decimalPlaces),
     ];
 
-List<PropSpec> _decorationImageProps(DecorationImage img) => [
+List<PropSpec> _decorationImageProps(
+  DecorationImage img, {
+  required int decimalPlaces,
+}) =>
+    [
       (
         icon: Icons.image,
         subtitle: 'bg image',
@@ -263,13 +292,23 @@ List<PropSpec> _decorationImageProps(DecorationImage img) => [
       (
         icon: Icons.fit_screen,
         subtitle: 'bg fit',
-        child: Text(img.fit?.name ?? 'scaleDown'),
+        child: Text(
+          img.fit?.name ??
+              (img.centerSlice == null
+                  ? BoxFit.scaleDown.name
+                  : BoxFit.fill.name),
+        ),
       ),
       if (img.alignment != Alignment.center)
         (
           icon: Icons.crop_free,
           subtitle: 'bg alignment',
-          child: EllipsizedText(describeAlignment(img.alignment)),
+          child: EllipsizedText(
+            describeAlignment(
+              img.alignment,
+              decimalPlaces: decimalPlaces,
+            ),
+          ),
         ),
       if (img.repeat != ImageRepeat.noRepeat)
         (
@@ -288,6 +327,26 @@ List<PropSpec> _decorationImageProps(DecorationImage img) => [
 // ─── Border ──────────────────────────────────────────────────────────────────
 
 List<PropSpec> _borderProps(BoxBorder border, {int decimalPlaces = 1}) {
+  if (border is BorderDirectional) {
+    final sides = <({String label, BorderSide side})>[
+      (label: 'top', side: border.top),
+      (label: 'start', side: border.start),
+      (label: 'end', side: border.end),
+      (label: 'bottom', side: border.bottom),
+    ];
+    return [
+      for (final side in sides)
+        if (_isActiveBorderSide(side.side))
+          (
+            icon: Icons.border_all,
+            subtitle: 'border ${side.label}',
+            child: BorderSideValue(
+              color: side.side.color,
+              width: _fmt(side.side.width, decimalPlaces),
+            ),
+          ),
+    ];
+  }
   if (border is! Border) {
     return [
       (
@@ -324,11 +383,9 @@ List<PropSpec> _borderProps(BoxBorder border, {int decimalPlaces = 1}) {
   ];
 }
 
-/// Color shared by every active (width > 0) side, or `null` when sides
-/// differ in color or no side is active.
 Color? _uniformActiveBorderColor(Border border) {
   final active = [border.top, border.right, border.bottom, border.left]
-      .where((s) => s.width > 0);
+      .where(_isActiveBorderSide);
   if (active.isEmpty) return null;
   final color = active.first.color;
   return active.every((s) => s.color == color) ? color : null;
@@ -347,17 +404,28 @@ List<({String label, BorderSide side})> _activeSidesWithLabels(Border border) {
   final sides = [border.top, border.right, border.bottom, border.left];
   return [
     for (var i = 0; i < sides.length; i++)
-      if (sides[i].width > 0) (label: labels[i], side: sides[i]),
+      if (_isActiveBorderSide(sides[i])) (label: labels[i], side: sides[i]),
   ];
 }
 
+bool _isActiveBorderSide(BorderSide side) => side.style != BorderStyle.none;
+
 // ─── Per-render-box extractors ───────────────────────────────────────────────
 
-List<PropSpec> stackProps(RenderStack target) => [
+List<PropSpec> stackProps(
+  RenderStack target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       (
         icon: Icons.align_vertical_bottom,
         subtitle: 'alignment',
-        child: EllipsizedText(describeAlignment(target.alignment)),
+        child: EllipsizedText(
+          describeAlignment(
+            target.alignment,
+            decimalPlaces: decimalPlaces,
+          ),
+        ),
       ),
       if (target.fit != StackFit.loose)
         (
@@ -365,6 +433,18 @@ List<PropSpec> stackProps(RenderStack target) => [
           subtitle: 'fit',
           child: Text(target.fit.name),
         ),
+      if (target.textDirection != null)
+        (
+          icon: Icons.format_textdirection_l_to_r,
+          subtitle: 'text direction',
+          child: Text(target.textDirection!.name),
+        ),
+      if (_clipBehaviorProp(
+        target.clipBehavior,
+        defaultValue: Clip.hardEdge,
+      )
+          case final c?)
+        c,
     ];
 
 List<PropSpec> wrapProps(RenderWrap target, {int decimalPlaces = 1}) => [
@@ -397,6 +477,25 @@ List<PropSpec> wrapProps(RenderWrap target, {int decimalPlaces = 1}) => [
           subtitle: 'run alignment',
           child: Text(target.runAlignment.name),
         ),
+      if (target.crossAxisAlignment != WrapCrossAlignment.start)
+        (
+          icon: Icons.vertical_align_center,
+          subtitle: 'cross axis',
+          child: Text(target.crossAxisAlignment.name),
+        ),
+      if (target.textDirection != null)
+        (
+          icon: Icons.format_textdirection_l_to_r,
+          subtitle: 'text direction',
+          child: Text(target.textDirection!.name),
+        ),
+      if (target.verticalDirection != VerticalDirection.down)
+        (
+          icon: Icons.swap_vert,
+          subtitle: 'vertical dir',
+          child: Text(target.verticalDirection.name),
+        ),
+      if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
     ];
 
 List<PropSpec> clipRRectProps(
@@ -418,22 +517,34 @@ List<PropSpec> clipRRectProps(
     ];
 
 List<PropSpec> clipRSuperellipseProps(
-  RenderClipRSuperellipse target, {
+  RenderBox target, {
   int decimalPlaces = 1,
-}) =>
-    [
-      if (formatBorderRadius(target.borderRadius, decimalPlaces: decimalPlaces)
+}) {
+  if (!_isRenderClipRSuperellipse(target)) return const [];
+  try {
+    final dynamicTarget = target as dynamic;
+    final borderRadius = dynamicTarget.borderRadius as BorderRadius;
+    final clipBehavior = dynamicTarget.clipBehavior as Clip;
+    return [
+      if (formatBorderRadius(borderRadius, decimalPlaces: decimalPlaces)
           case final br?)
         (
           icon: Icons.rounded_corner,
           subtitle: br.label,
           child: buildBorderRadiusChild(
-            target.borderRadius,
+            borderRadius,
             decimalPlaces: decimalPlaces,
           ),
         ),
-      if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+      if (_clipBehaviorProp(clipBehavior) case final c?) c,
     ];
+  } catch (_) {
+    return const [];
+  }
+}
+
+bool _isRenderClipRSuperellipse(RenderBox target) =>
+    target.runtimeType.toString() == 'RenderClipRSuperellipse';
 
 List<PropSpec> clipRectProps(RenderClipRect target) => [
       ..._clipperProps(target.clipper),
@@ -469,7 +580,11 @@ List<PropSpec> customPaintProps(RenderCustomPaint target) => [
         ),
     ];
 
-List<PropSpec> flexProps(RenderFlex target) => [
+List<PropSpec> flexProps(
+  RenderFlex target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       (
         icon: Icons.swap_horiz,
         subtitle: 'direction',
@@ -497,6 +612,25 @@ List<PropSpec> flexProps(RenderFlex target) => [
           subtitle: 'vertical dir',
           child: Text(target.verticalDirection.name),
         ),
+      if (target.spacing != 0)
+        (
+          icon: Icons.space_bar,
+          subtitle: 'spacing',
+          child: Text(_fmt(target.spacing, decimalPlaces)),
+        ),
+      if (target.textDirection != null)
+        (
+          icon: Icons.format_textdirection_l_to_r,
+          subtitle: 'text direction',
+          child: Text(target.textDirection!.name),
+        ),
+      if (target.textBaseline != null)
+        (
+          icon: Icons.format_align_left,
+          subtitle: 'text baseline',
+          child: Text(target.textBaseline!.name),
+        ),
+      if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
     ];
 
 List<PropSpec> opacityProps(RenderOpacity target, {int decimalPlaces = 1}) => [
@@ -552,6 +686,7 @@ List<PropSpec> physicalShapeProps(
         decimalPlaces: decimalPlaces,
       ),
       ..._clipperProps(target.clipper, decimalPlaces: decimalPlaces),
+      if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
     ];
 
 List<PropSpec> physicalModelProps(
@@ -583,9 +718,14 @@ List<PropSpec> physicalModelProps(
             decimalPlaces: decimalPlaces,
           ),
         ),
+      if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
     ];
 
-List<PropSpec> fittedBoxProps(RenderFittedBox target) => [
+List<PropSpec> fittedBoxProps(
+  RenderFittedBox target, {
+  int decimalPlaces = 1,
+}) =>
+    [
       (
         icon: Icons.fit_screen,
         subtitle: 'fit',
@@ -595,8 +735,14 @@ List<PropSpec> fittedBoxProps(RenderFittedBox target) => [
         (
           icon: Icons.crop_free,
           subtitle: 'alignment',
-          child: EllipsizedText(describeAlignment(target.alignment)),
+          child: EllipsizedText(
+            describeAlignment(
+              target.alignment,
+              decimalPlaces: decimalPlaces,
+            ),
+          ),
         ),
+      if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
     ];
 
 List<PropSpec> aspectRatioProps(
@@ -615,26 +761,62 @@ List<PropSpec> transformProps(
   RenderTransform target, {
   int decimalPlaces = 1,
 }) {
-  final matrix = Matrix4.identity();
+  final effectiveTransform = Matrix4.identity();
   final child = target.child;
-  if (child != null) target.applyPaintTransform(child, matrix);
+  if (child != null) {
+    target.applyPaintTransform(child, effectiveTransform);
+  }
+  final resolvedAlignment = target.alignment?.resolve(target.textDirection);
+  final alignmentOrigin =
+      resolvedAlignment?.alongSize(target.size) ?? Offset.zero;
+  final explicitOrigin = target.origin ?? Offset.zero;
+  final pivot = alignmentOrigin + explicitOrigin;
+  final matrix = Matrix4.translationValues(-pivot.dx, -pivot.dy, 0)
+    ..multiply(effectiveTransform)
+    ..multiply(Matrix4.translationValues(pivot.dx, pivot.dy, 0));
   final m = matrix.storage;
   final tx = m[12];
   final ty = m[13];
   final scaleX = math.sqrt(m[0] * m[0] + m[1] * m[1]);
-  final scaleY = math.sqrt(m[4] * m[4] + m[5] * m[5]);
+  final secondAxisLength = math.sqrt(m[4] * m[4] + m[5] * m[5]);
+  final determinant = m[0] * m[5] - m[1] * m[4];
+  final scaleY = scaleX == 0 ? 0.0 : determinant / scaleX;
   final rotationDeg = math.atan2(m[1], m[0]) * 180 / math.pi;
+  final is2dAffine = m[2].abs() <= _kTransformEpsilon &&
+      m[3].abs() <= _kTransformEpsilon &&
+      m[6].abs() <= _kTransformEpsilon &&
+      m[7].abs() <= _kTransformEpsilon &&
+      m[8].abs() <= _kTransformEpsilon &&
+      m[9].abs() <= _kTransformEpsilon &&
+      (m[10] - 1).abs() <= _kTransformEpsilon &&
+      m[11].abs() <= _kTransformEpsilon &&
+      m[14].abs() <= _kTransformEpsilon &&
+      (m[15] - 1).abs() <= _kTransformEpsilon;
+  final axesDotProduct = m[0] * m[4] + m[1] * m[5];
+  final skewTolerance =
+      _kTransformEpsilon * math.max(1, scaleX * secondAxisLength);
+  final canDecompose = is2dAffine &&
+      scaleX > _kTransformEpsilon &&
+      axesDotProduct.abs() <= skewTolerance;
   String f(double v) => _fmt(v, decimalPlaces);
 
   return [
-    if (tx.abs() > _kTransformEpsilon || ty.abs() > _kTransformEpsilon)
+    if (!canDecompose)
+      (
+        icon: Icons.grid_on,
+        subtitle: 'matrix',
+        child: EllipsizedText(_formatMatrix(matrix, decimalPlaces)),
+      ),
+    if (canDecompose &&
+        (tx.abs() > _kTransformEpsilon || ty.abs() > _kTransformEpsilon))
       (
         icon: Icons.open_with,
         subtitle: 'translate',
         child: OffsetValue(dx: f(tx), dy: f(ty)),
       ),
-    if ((scaleX - 1).abs() > _kTransformEpsilon ||
-        (scaleY - 1).abs() > _kTransformEpsilon)
+    if (canDecompose &&
+        ((scaleX - 1).abs() > _kTransformEpsilon ||
+            (scaleY - 1).abs() > _kTransformEpsilon))
       (
         icon: Icons.zoom_out_map,
         subtitle: 'scale',
@@ -642,7 +824,7 @@ List<PropSpec> transformProps(
           scaleX == scaleY ? f(scaleX) : '${f(scaleX)}, ${f(scaleY)}',
         ),
       ),
-    if (rotationDeg.abs() > _kRotationEpsilon)
+    if (canDecompose && rotationDeg.abs() > _kRotationEpsilon)
       (
         icon: Icons.rotate_right,
         subtitle: 'rotation°',
@@ -661,7 +843,18 @@ List<PropSpec> transformProps(
       (
         icon: Icons.crop_free,
         subtitle: 'alignment',
-        child: EllipsizedText(describeAlignment(target.alignment!)),
+        child: EllipsizedText(
+          describeAlignment(
+            target.alignment!,
+            decimalPlaces: decimalPlaces,
+          ),
+        ),
+      ),
+    if (target.filterQuality != null)
+      (
+        icon: Icons.tune,
+        subtitle: 'filter quality',
+        child: Text(target.filterQuality!.name),
       ),
     if (!target.transformHitTests)
       (
@@ -670,6 +863,18 @@ List<PropSpec> transformProps(
         child: const Text('untransformed'),
       ),
   ];
+}
+
+String _formatMatrix(Matrix4 matrix, int decimalPlaces) {
+  final m = matrix.storage;
+  final rows = <String>[
+    for (var row = 0; row < 4; row++)
+      [
+        for (var column = 0; column < 4; column++)
+          _fmt(m[column * 4 + row], decimalPlaces),
+      ].join(', '),
+  ];
+  return '[${rows.join('; ')}]';
 }
 
 List<PropSpec> backdropFilterProps(RenderBackdropFilter target) => [
@@ -739,6 +944,46 @@ List<PropSpec> editableProps(RenderEditable target) => [
         ),
     ];
 
+List<PropSpec> parentDataProps(
+  RenderBox target, {
+  int decimalPlaces = 1,
+}) {
+  final parentData = target.parentData;
+  if (parentData is FlexParentData) {
+    return [
+      if (parentData.flex case final flex? when flex > 0)
+        (
+          icon: Icons.expand,
+          subtitle: 'flex',
+          child: Text('$flex'),
+        ),
+      if (parentData.flex case final flex? when flex > 0)
+        (
+          icon: Icons.fit_screen,
+          subtitle: 'flex fit',
+          child: Text((parentData.fit ?? FlexFit.tight).name),
+        ),
+    ];
+  }
+  if (parentData is StackParentData) {
+    PropSpec position(String subtitle, double value) => (
+          icon: Icons.open_with,
+          subtitle: subtitle,
+          child: Text(_fmt(value, decimalPlaces)),
+        );
+
+    return [
+      if (parentData.left case final value?) position('left', value),
+      if (parentData.top case final value?) position('top', value),
+      if (parentData.right case final value?) position('right', value),
+      if (parentData.bottom case final value?) position('bottom', value),
+      if (parentData.width case final value?) position('width', value),
+      if (parentData.height case final value?) position('height', value),
+    ];
+  }
+  return const [];
+}
+
 // ─── Registry-driven dispatcher ──────────────────────────────────────────────
 //
 // Single source of truth for both [typeProps] and [hasTypeProps]. Add one
@@ -766,8 +1011,14 @@ _Rule _rule<T extends RenderBox>(
     );
 
 final List<_Rule> _propsRules = [
-  _rule<RenderStack>((b, _) => stackProps(b), wrapper: false),
-  _rule<RenderFlex>((b, _) => flexProps(b), wrapper: false),
+  _rule<RenderStack>(
+    (b, dp) => stackProps(b, decimalPlaces: dp),
+    wrapper: false,
+  ),
+  _rule<RenderFlex>(
+    (b, dp) => flexProps(b, decimalPlaces: dp),
+    wrapper: false,
+  ),
   _rule<RenderWrap>(
     (b, dp) => wrapProps(b, decimalPlaces: dp),
     wrapper: false,
@@ -797,8 +1048,9 @@ final List<_Rule> _propsRules = [
     (b, dp) => clipRRectProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  _rule<RenderClipRSuperellipse>(
-    (b, dp) => clipRSuperellipseProps(b, decimalPlaces: dp),
+  (
+    match: _isRenderClipRSuperellipse,
+    build: (b, dp) => clipRSuperellipseProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
   _rule<RenderClipRect>((b, _) => clipRectProps(b), wrapper: true),
@@ -814,7 +1066,10 @@ final List<_Rule> _propsRules = [
     wrapper: true,
     where: (b) => b.painter != null || b.foregroundPainter != null,
   ),
-  _rule<RenderFittedBox>((b, _) => fittedBoxProps(b), wrapper: true),
+  _rule<RenderFittedBox>(
+    (b, dp) => fittedBoxProps(b, decimalPlaces: dp),
+    wrapper: true,
+  ),
   _rule<RenderAspectRatio>(
     (b, dp) => aspectRatioProps(b, decimalPlaces: dp),
     wrapper: true,

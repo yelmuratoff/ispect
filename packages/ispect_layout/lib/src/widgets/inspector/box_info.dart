@@ -106,25 +106,16 @@ class BoxInfo {
   /// Calculate original padding by comparing positions in local coordinates
   EdgeInsets _calculateOriginalPadding() {
     if (containerRenderBox == null) return EdgeInsets.zero;
+    final transform = targetRenderBox.getTransformTo(containerRenderBox);
+    final targetBounds = MatrixUtils.transformRect(
+      transform,
+      Offset.zero & targetRenderBox.size,
+    );
 
-    // Get the target's position relative to the container
-    final targetOffset = targetRenderBox.localToGlobal(Offset.zero);
-    final containerOffset = containerRenderBox!.localToGlobal(Offset.zero);
-
-    // Calculate scale factor from the transformation
-    final scaledTargetSize = targetRect.size;
-    final originalTargetSize = targetRenderBox.size;
-    final scale = originalTargetSize.width > 0
-        ? scaledTargetSize.width / originalTargetSize.width
-        : 1.0;
-
-    // Calculate padding in original coordinates
-    final left = (targetOffset.dx - containerOffset.dx) / scale;
-    final top = (targetOffset.dy - containerOffset.dy) / scale;
-    final right =
-        containerRenderBox!.size.width - originalTargetSize.width - left;
-    final bottom =
-        containerRenderBox!.size.height - originalTargetSize.height - top;
+    final left = targetBounds.left;
+    final top = targetBounds.top;
+    final right = containerRenderBox!.size.width - targetBounds.right;
+    final bottom = containerRenderBox!.size.height - targetBounds.bottom;
 
     // Snap sub-pixel floating-point noise to zero.
     double snap(double v) => v.abs() < 0.5 ? 0.0 : v;
@@ -280,7 +271,7 @@ bool _isStronglyMeaningfulRenderBox(RenderBox box) =>
     box is RenderAnimatedOpacity ||
     box is RenderClipRect ||
     box is RenderClipRRect ||
-    box is RenderClipRSuperellipse ||
+    box.runtimeType.toString() == 'RenderClipRSuperellipse' ||
     box is RenderClipOval ||
     box is RenderClipPath ||
     box is RenderCustomPaint ||
