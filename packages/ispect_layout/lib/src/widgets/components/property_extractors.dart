@@ -17,9 +17,19 @@ const _kTransformEpsilon = 0.001;
 
 /// Below this magnitude (degrees) the rotation chip is suppressed.
 const _kRotationEpsilon = 0.01;
+final _trailingDecimalZeroes = RegExp(r'\.?0+$');
 
 String _fmt(double v, int decimalPlaces) =>
     formatInspectorDouble(v, decimalPlaces: decimalPlaces);
+
+String _fmtTypography(double v, int decimalPlaces) {
+  final formatted = formatInspectorDouble(
+    v,
+    decimalPlaces: math.max(decimalPlaces, 2),
+  );
+  final compact = formatted.replaceFirst(_trailingDecimalZeroes, '');
+  return compact == '-0' ? '0' : compact;
+}
 
 // ─── Common chip builders ────────────────────────────────────────────────────
 
@@ -126,7 +136,7 @@ List<PropSpec> spanProps(TextStyle style, {int decimalPlaces = 1}) => [
         (
           icon: Icons.format_size,
           subtitle: 'font size',
-          child: Text(_fmt(style.fontSize!, decimalPlaces)),
+          child: Text(_fmtTypography(style.fontSize!, decimalPlaces)),
         ),
       if (style.fontWeight != null)
         (
@@ -150,19 +160,19 @@ List<PropSpec> spanProps(TextStyle style, {int decimalPlaces = 1}) => [
         (
           icon: Icons.height,
           subtitle: 'height',
-          child: Text(_fmt(style.height!, decimalPlaces)),
+          child: Text(_fmtTypography(style.height!, decimalPlaces)),
         ),
       if (style.letterSpacing != null)
         (
           icon: Icons.horizontal_distribute,
           subtitle: 'letter spacing',
-          child: Text(_fmt(style.letterSpacing!, decimalPlaces)),
+          child: Text(_fmtTypography(style.letterSpacing!, decimalPlaces)),
         ),
       if (style.wordSpacing != null)
         (
           icon: Icons.space_bar,
           subtitle: 'word spacing',
-          child: Text(_fmt(style.wordSpacing!, decimalPlaces)),
+          child: Text(_fmtTypography(style.wordSpacing!, decimalPlaces)),
         ),
       if (style.decoration != null && style.decoration != TextDecoration.none)
         (

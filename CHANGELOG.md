@@ -47,6 +47,7 @@
 
 ### Bug Fixes
 
+- **Exact typography inspection:** Text size, line height, letter spacing, and word spacing preserve hundredths without trailing zeroes, preventing values such as `0.25` from appearing as `0.3`.
 - **Apple file history:** Rolling history now initializes in iOS and macOS application cache sandboxes, and fallback diagnostics retain typed failure context without re-entering the logger pipeline.
 - **Concurrent diagnostics:** Fixed BLoC event correlation and stale asynchronous log-viewer updates.
 - **Reliable lifecycle:** Shutdown and forced reinitialization now clean up logger state consistently, including failure paths.
