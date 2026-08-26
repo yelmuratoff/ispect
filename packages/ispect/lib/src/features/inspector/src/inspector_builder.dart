@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/logger_settings.dart';
 import 'package:ispect/src/common/widgets/error_boundary.dart';
 import 'package:ispect/src/core/res/ispect_default_palette.dart';
 import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
@@ -157,28 +158,8 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
   void _applyInitialSettings() {
     final initialSettings = widget.options?.initialSettings;
-    if (initialSettings != null) {
-      final enabledTypes = initialSettings.disabledLogTypes.isEmpty
-          ? <String>[]
-          : ISpectLogType.builtIn
-              .map((e) => e.key)
-              .where((key) => !initialSettings.disabledLogTypes.contains(key))
-              .toList();
-
-      ISpect.logger.configure(
-        options: ISpect.logger.options.copyWith(
-          enabled: initialSettings.enabled,
-          useConsoleLogs: initialSettings.useConsoleLogs,
-          useHistory: initialSettings.useHistory,
-          forwardErrorToConsole: initialSettings.forwardErrorToConsole,
-          maxHistoryItems: initialSettings.maxHistoryItems,
-          logTruncateLength: initialSettings.logTruncateLength,
-        ),
-        filter: enabledTypes.isNotEmpty
-            ? ISpectFilter(logTypeKeys: enabledTypes)
-            : null,
-      );
-    }
+    if (initialSettings == null) return;
+    applySettingsToLogger(ISpect.logger, initialSettings);
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/logger_notifier.dart';
@@ -48,6 +49,7 @@ class _LogsScreenState extends State<LogsScreen> {
   ISpectScopeModel? _scope;
   bool _scopeBootstrapped = false;
   bool _ownController = false;
+  Set<String> _lastDisabledLogTypes = const {};
 
   @override
   void initState() {
@@ -82,9 +84,13 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   void _mirrorSettingsToScope() {
+    final next = _logsViewController.settings;
+    if (!setEquals(_lastDisabledLogTypes, next.disabledLogTypes)) {
+      _lastDisabledLogTypes = next.disabledLogTypes;
+      _titleFiltersController.unselectAll();
+    }
     final scope = _scope;
     if (scope == null) return;
-    final next = _logsViewController.settings;
     if (scope.settings != next) {
       scope.settings = next;
     }
@@ -136,7 +142,6 @@ class _LogsScreenState extends State<LogsScreen> {
     final logger = ISpectLoggerNotifier(ISpect.logger);
     try {
       await ISpectSettingsBottomSheet(
-        options: widget.options,
         logger: logger,
         controller: _logsViewController,
         actions: _buildSettingsActions(context),

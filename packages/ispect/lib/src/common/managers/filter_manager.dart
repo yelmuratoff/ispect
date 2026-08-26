@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/cache/filter_cache.dart';
 
@@ -12,10 +13,14 @@ class FilterManager {
     ISpectFilter? initialFilter,
     void Function()? onChanged,
     Duration? debounceDuration,
+    Set<String> excludedLogTypeKeys = const {},
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
     DiagnosticProcessingPolicy processingPolicy =
         DiagnosticProcessingPolicy.balanced,
-  })  : _filter = initialFilter ?? ISpectFilter(resourceLimits: resourceLimits),
+  })  : _filter =
+            (initialFilter ?? ISpectFilter(resourceLimits: resourceLimits))
+                .copyWith(excludedLogTypeKeys: excludedLogTypeKeys),
+        _excludedLogTypeKeys = {...excludedLogTypeKeys},
         _onChanged = onChanged,
         _resourceLimits = resourceLimits,
         _processingPolicy = processingPolicy,
@@ -26,6 +31,7 @@ class FilterManager {
   }
 
   ISpectFilter _filter;
+  Set<String> _excludedLogTypeKeys;
   final void Function()? _onChanged;
   Duration _debounceDuration;
   DiagnosticResourceLimits _resourceLimits;
@@ -33,6 +39,10 @@ class FilterManager {
 
   DiagnosticResourceLimits get resourceLimits => _resourceLimits;
   DiagnosticProcessingPolicy get processingPolicy => _processingPolicy;
+
+  /// Log-type keys hidden by the user's settings, vetoed on top of the
+  /// transient chip and search criteria.
+  Set<String> get excludedLogTypeKeys => _excludedLogTypeKeys;
 
   final _filterCache = FilterCache();
   int _dataGeneration = 0;
@@ -65,9 +75,30 @@ class FilterManager {
   ISpectFilter get filter => _filter;
 
   set filter(ISpectFilter val) {
-    if (_filter == val) return;
-    _filter = val;
+    final merged = val.copyWith(excludedLogTypeKeys: _excludedLogTypeKeys);
+    if (_filter == merged) return;
+    _filter = merged;
     _invalidateFilterCache();
+    _notify();
+  }
+
+  bool isExcluded(String? logTypeKey) =>
+      logTypeKey != null && _excludedLogTypeKeys.contains(logTypeKey);
+
+  /// Applies the settings-level veto and drops the transient chip selection.
+  ///
+  /// The chip list is indexed by position, so changing which keys it offers
+  /// would leave the caller's selection pointing at the wrong chips. Both
+  /// sides reset together instead.
+  void updateExcludedLogTypeKeys(Set<String> keys) {
+    if (setEquals(_excludedLogTypeKeys, keys)) return;
+    _excludedLogTypeKeys = {...keys};
+    _filter = _filter.copyWith(
+      logTypeKeys: const <String>[],
+      excludedLogTypeKeys: _excludedLogTypeKeys,
+    );
+    _invalidateFilterCache();
+    _lastKeysGeneration = -1;
     _notify();
   }
 
@@ -176,6 +207,7 @@ class FilterManager {
   }) {
     final newFilter = ISpectFilter(
       logTypeKeys: logTypeKeys ?? _getCurrentLogTypeKeys(),
+      excludedLogTypeKeys: _excludedLogTypeKeys,
       types: types ?? _getCurrentTypes(),
       searchQuery: searchQuery ?? _getCurrentSearchQuery(),
       resourceLimits: resourceLimits,
@@ -197,7 +229,9 @@ class FilterManager {
     List<ISpectLogData> logsData,
   ) {
     if (logsData.isEmpty) return <ISpectLogData>[];
-    if (_filter.types.isEmpty && _filter.logTypeKeys.isEmpty) {
+    if (_filter.types.isEmpty &&
+        _filter.logTypeKeys.isEmpty &&
+        _excludedLogTypeKeys.isEmpty) {
       return logsData;
     }
     if (_noSearchResultGeneration == _outputGeneration &&
@@ -207,6 +241,7 @@ class FilterManager {
     final noSearchFilter = _cachedNoSearchFilter ??= ISpectFilter(
       types: _filter.types.toList(),
       logTypeKeys: _filter.logTypeKeys.toList(),
+      excludedLogTypeKeys: _excludedLogTypeKeys,
       resourceLimits: resourceLimits,
     );
     final result = logsData.where(noSearchFilter.apply).toList(growable: false);
@@ -263,8 +298,8 @@ class FilterManager {
     final uniqueKeysSet = <String>{};
 
     for (final data in logsData) {
-      final key = data.key;
-      if (key == null) continue;
+      final key = captureISpectLogWithoutPayload(data).key;
+      if (key == null || isExcluded(key)) continue;
       allKeys.add(key);
       uniqueKeysSet.add(key);
     }

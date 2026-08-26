@@ -601,6 +601,7 @@ class LogsJsonService {
         'logTypeKeyFiltersCount':
             filter.filters.whereType<LogTypeKeyFilter>().length,
         'typeFiltersCount': filter.filters.whereType<TypeFilter>().length,
+        'excludedLogTypeKeysCount': filter.excludedLogTypeKeys.length,
       };
 
   /// Validates JSON structure for logs import

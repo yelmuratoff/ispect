@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/managers/filter_manager.dart';
@@ -82,6 +83,8 @@ class ISpectViewController implements Listenable {
       initialFilter: ISpectFilter(
         resourceLimits: resolvedResourceLimits,
       ),
+      excludedLogTypeKeys:
+          initialSettings?.disabledLogTypes ?? const <String>{},
       resourceLimits: resolvedResourceLimits,
       processingPolicy: resolvedProcessingPolicy,
       onChanged: _onSubNotify,
@@ -279,6 +282,10 @@ class ISpectViewController implements Listenable {
       newSettings.resourceLimits,
       newSettings.processingPolicy,
     );
+    if (!setEquals(settings.disabledLogTypes, newSettings.disabledLogTypes)) {
+      _filterManager.updateExcludedLogTypeKeys(newSettings.disabledLogTypes);
+      _cachedLevelStats = null;
+    }
     _settingsManager.updateSettings(newSettings);
     _display.applyFromSettings(newSettings);
   }
@@ -353,7 +360,9 @@ class ISpectViewController implements Listenable {
     var errors = 0;
     var warnings = 0;
     for (final log in logsData) {
-      final level = log.logLevel;
+      final captured = captureISpectLogWithoutPayload(log);
+      if (_filterManager.isExcluded(captured.key)) continue;
+      final level = captured.logLevel;
       if (level == LogLevel.error || level == LogLevel.critical) {
         errors++;
       } else if (level == LogLevel.warning) {

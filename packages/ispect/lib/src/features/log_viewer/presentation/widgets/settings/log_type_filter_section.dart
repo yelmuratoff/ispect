@@ -28,8 +28,9 @@ class LogTypeFilterSection extends StatelessWidget {
   /// Callback to select all log types.
   final VoidCallback onSelectAll;
 
-  /// Callback to deselect all log types.
-  final VoidCallback onDeselectAll;
+  /// Callback to deselect every log type this section displays, given their
+  /// keys.
+  final void Function(Set<String> logTypeKeys) onDeselectAll;
 
   /// Returns true if all log types are enabled (no disabled types).
   bool get _isAllEnabled => disabledLogTypes.isEmpty;
@@ -51,7 +52,11 @@ class LogTypeFilterSection extends StatelessWidget {
     final selectAllLabel = _isAllEnabled
         ? context.ispectL10n.deselectAll
         : context.ispectL10n.selectAll;
-    final onSelectAllTap = _isAllEnabled ? onDeselectAll : onSelectAll;
+    final onSelectAllTap = _isAllEnabled
+        ? () => onDeselectAll(
+              logDescriptions.map((d) => d.key).toSet(),
+            )
+        : onSelectAll;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),

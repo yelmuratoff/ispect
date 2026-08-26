@@ -1421,6 +1421,23 @@ void main() {
         expect(metadata['appliedFilter'], isA<Map<String, dynamic>>());
       });
 
+      test('applied filter summary reports the hidden log type count', () {
+        final content = service.formatFilteredContent(
+          logs: [sensitiveLog()],
+          filteredLogs: [sensitiveLog()],
+          filter: ISpectFilter(
+            excludedLogTypeKeys: const ['riverpod-add', 'info'],
+          ),
+          fileType: 'json',
+        );
+
+        final decoded = jsonDecode(content) as Map<String, dynamic>;
+        final metadata = decoded['metadata'] as Map<String, dynamic>;
+        final applied = metadata['appliedFilter'] as Map<String, dynamic>;
+
+        expect(applied['excludedLogTypeKeysCount'], 2);
+      });
+
       test('filtered JSON redacts typed binary before normalization', () {
         final bytes = Uint8List.fromList(List<int>.filled(64, 122));
         final log = ISpectLogData(

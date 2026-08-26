@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/logger_settings.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -16,16 +17,12 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/tog
 class ISpectSettingsBottomSheet {
   const ISpectSettingsBottomSheet({
     required this.logger,
-    required this.options,
     required this.actions,
     required this.controller,
   });
 
   /// ISpectLogger implementation
   final ISpectLoggerNotifier logger;
-
-  /// Options for `ISpect`
-  final ISpectOptions options;
 
   /// Actions to display in the settings bottom sheet
   final List<ISpectActionItem> actions;
@@ -45,7 +42,6 @@ class ISpectSettingsBottomSheet {
         useRootNavigator: false,
         builder: (context, scrollController) => _SettingsContent(
           logger: logger,
-          options: options,
           actions: actions,
           controller: controller,
           externalScrollController: scrollController,
@@ -56,14 +52,12 @@ class ISpectSettingsBottomSheet {
 class _SettingsContent extends StatefulWidget {
   const _SettingsContent({
     required this.logger,
-    required this.options,
     required this.actions,
     required this.controller,
     this.externalScrollController,
   });
 
   final ISpectLoggerNotifier logger;
-  final ISpectOptions options;
   final List<ISpectActionItem> actions;
   final ISpectViewController controller;
   final ScrollController? externalScrollController;
@@ -86,28 +80,21 @@ class _SettingsContentState extends State<_SettingsContent> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      final initialSettings = widget.options.initialSettings;
-      if (initialSettings != null &&
-          widget.controller.settings != initialSettings) {
-        widget.controller.updateSettings(initialSettings);
-        _applySettingsToLogger(initialSettings);
-      } else {
-        final loggerOptions = widget.logger.value.options;
-        final existing = widget.controller.settings;
-        final currentSettings = existing.copyWith(
-          enabled: loggerOptions.enabled,
-          useConsoleLogs: loggerOptions.useConsoleLogs,
-          useHistory: loggerOptions.useHistory,
-          forwardErrorToConsole: loggerOptions.forwardErrorToConsole,
-          maxHistoryItems: loggerOptions.maxHistoryItems,
-          logTruncateLength: loggerOptions.logTruncateLength,
-          captureMode: loggerOptions.captureMode,
-          resourceLimits: loggerOptions.resourceLimits,
-          processingPolicy: loggerOptions.processingPolicy,
-        );
-        if (existing != currentSettings) {
-          widget.controller.updateSettings(currentSettings);
-        }
+      final loggerOptions = widget.logger.value.options;
+      final existing = widget.controller.settings;
+      final currentSettings = existing.copyWith(
+        enabled: loggerOptions.enabled,
+        useConsoleLogs: loggerOptions.useConsoleLogs,
+        useHistory: loggerOptions.useHistory,
+        forwardErrorToConsole: loggerOptions.forwardErrorToConsole,
+        maxHistoryItems: loggerOptions.maxHistoryItems,
+        logTruncateLength: loggerOptions.logTruncateLength,
+        captureMode: loggerOptions.captureMode,
+        resourceLimits: loggerOptions.resourceLimits,
+        processingPolicy: loggerOptions.processingPolicy,
+      );
+      if (existing != currentSettings) {
+        widget.controller.updateSettings(currentSettings);
       }
     });
   }
@@ -129,32 +116,7 @@ class _SettingsContentState extends State<_SettingsContent> {
   }
 
   void _applySettingsToLogger(ISpectSettingsState settings) {
-    final enabledTypes = settings.disabledLogTypes.isEmpty
-        ? <String>[]
-        : ISpectLogType.builtIn
-            .map((e) => e.key)
-            .where((key) => !settings.disabledLogTypes.contains(key))
-            .toList();
-
-    widget.logger.value.configure(
-      options: widget.logger.value.options.copyWith(
-        enabled: settings.enabled,
-        useConsoleLogs: settings.useConsoleLogs,
-        useHistory: settings.useHistory,
-        forwardErrorToConsole: settings.forwardErrorToConsole,
-        maxHistoryItems: settings.maxHistoryItems,
-        logTruncateLength: settings.logTruncateLength,
-        captureMode: settings.captureMode,
-        resourceLimits: settings.resourceLimits,
-        processingPolicy: settings.processingPolicy,
-      ),
-      filter: enabledTypes.isNotEmpty
-          ? ISpectFilter(
-              logTypeKeys: enabledTypes,
-              resourceLimits: settings.resourceLimits,
-            )
-          : null,
-    );
+    applySettingsToLogger(widget.logger.value, settings);
     widget.logger.notify();
   }
 
@@ -181,10 +143,9 @@ class _SettingsContentState extends State<_SettingsContent> {
     );
   }
 
-  void _onDeselectAll() {
-    final allLogTypes = ISpectLogType.builtIn.map((e) => e.key).toSet();
+  void _onDeselectAll(Set<String> logTypeKeys) {
     _onSettingChanged(
-      widget.controller.settings.copyWith(disabledLogTypes: allLogTypes),
+      widget.controller.settings.copyWith(disabledLogTypes: logTypeKeys),
     );
   }
 

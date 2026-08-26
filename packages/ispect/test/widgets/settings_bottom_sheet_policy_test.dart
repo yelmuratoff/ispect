@@ -24,7 +24,6 @@ void main() {
     });
     final sheet = ISpectSettingsBottomSheet(
       logger: logger,
-      options: const ISpectOptions(),
       actions: const [],
       controller: controller,
     );
