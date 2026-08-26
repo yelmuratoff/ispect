@@ -79,18 +79,11 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
     return msg ?? '';
   }
 
-  String get _displayTime {
-    if (widget.useRelativeTime) {
-      final l10n = context.ispectL10n;
-      return ISpectDateTimeFormatter(widget.data.time).relativeFormat(
-        justNow: l10n.relativeJustNow,
-        secondsAgo: l10n.relativeSecondsAgo,
-        minutesAgo: l10n.relativeMinutesAgo,
-        hoursAgo: l10n.relativeHoursAgo,
+  String get _displayTime => context.formatLogTime(
+        widget.data.time,
+        relative: widget.useRelativeTime,
+        absolute: widget.data.formattedTime,
       );
-    }
-    return widget.data.formattedTime;
-  }
 
   void _scheduleTooltip(String text) {
     _cancelTooltip();

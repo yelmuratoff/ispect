@@ -81,6 +81,7 @@ class LogListItem extends StatelessWidget {
         onTap: onItemTapped,
         observer: observer,
         onShowRelated: onShowRelated,
+        useRelativeTime: useRelativeTime,
       ),
     );
   }

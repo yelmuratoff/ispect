@@ -31,6 +31,25 @@ extension ISpectContextExtension on BuildContext {
 
   ISpectScopeModel get iSpect => ISpect.read(this);
 
+  /// Renders a log row's timestamp: a localized label relative to now when
+  /// [relative] is set, otherwise [absolute] as the caller already formats it.
+  ///
+  /// Entries older than a day fall back to the absolute capture time.
+  String formatLogTime(
+    DateTime? time, {
+    required bool relative,
+    required String absolute,
+  }) {
+    if (!relative || time == null) return absolute;
+    final l10n = ispectL10n;
+    return ISpectDateTimeFormatter(time).relativeFormat(
+      justNow: l10n.relativeJustNow,
+      secondsAgo: l10n.relativeSecondsAgo,
+      minutesAgo: l10n.relativeMinutesAgo,
+      hoursAgo: l10n.relativeHoursAgo,
+    );
+  }
+
   Color adjustColor(Color color) => ispectIsDark
       ? adjustColorBrightness(color, 0.9)
       : adjustColorDarken(color, 0.1);

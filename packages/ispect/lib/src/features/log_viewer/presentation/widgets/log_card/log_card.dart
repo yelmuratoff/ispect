@@ -29,6 +29,7 @@ class LogCard extends StatelessWidget {
     this.onShareTap,
     this.onShowRelated,
     this.searchMatchState = SearchMatchState.none,
+    this.useRelativeTime = false,
     super.key,
   });
 
@@ -42,6 +43,7 @@ class LogCard extends StatelessWidget {
   final ISpectNavigatorObserver? observer;
   final void Function(String id)? onShowRelated;
   final SearchMatchState searchMatchState;
+  final bool useRelativeTime;
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +76,7 @@ class LogCard extends StatelessWidget {
                 onShareTap: onShareTap,
                 observer: observer,
                 onShowRelated: onShowRelated,
+                useRelativeTime: useRelativeTime,
               ),
               AnimatedSize(
                 duration: ISpectMotion.short,
@@ -99,6 +102,7 @@ class _LogCardHeader extends StatelessWidget {
     required this.isExpanded,
     required this.onTap,
     required this.observer,
+    required this.useRelativeTime,
     this.onShareTap,
     this.onShowRelated,
   });
@@ -111,6 +115,7 @@ class _LogCardHeader extends StatelessWidget {
   final VoidCallback? onShareTap;
   final ISpectNavigatorObserver? observer;
   final void Function(String id)? onShowRelated;
+  final bool useRelativeTime;
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +174,11 @@ class _LogCardHeader extends StatelessWidget {
                   color: color,
                   title: ISpectLogType.fromKey(data.key ?? '')?.displayTitle ??
                       data.key,
-                  dateTime: data.formattedTime,
+                  dateTime: context.formatLogTime(
+                    data.time,
+                    relative: useRelativeTime,
+                    absolute: data.formattedTime,
+                  ),
                   subtitle: _buildSubtitle(data),
                   message: message,
                   errorMessage: httpLogText,

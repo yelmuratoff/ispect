@@ -47,6 +47,7 @@ void main() {
       bool isExpanded = false,
       VoidCallback? onTap,
       SearchMatchState searchMatchState = SearchMatchState.none,
+      bool useRelativeTime = false,
     }) =>
         appShell(
           SingleChildScrollView(
@@ -58,9 +59,44 @@ void main() {
               isExpanded: isExpanded,
               onTap: onTap ?? () {},
               searchMatchState: searchMatchState,
+              useRelativeTime: useRelativeTime,
             ),
           ),
         );
+
+    group('timestamp format', () {
+      testWidgets('shows the absolute capture time by default', (tester) async {
+        final data = makeLogData(time: DateTime(2024, 1, 1, 12, 34, 56, 789));
+        await tester.pumpWidget(buildLogCard(data: data));
+        await tester.pumpAndSettle();
+
+        expect(find.text('12:34:56.789'), findsOneWidget);
+      });
+
+      testWidgets('shows a relative label when relative time is enabled',
+          (tester) async {
+        final data = makeLogData(
+          time: DateTime.now().subtract(const Duration(minutes: 7)),
+        );
+        await tester.pumpWidget(
+          buildLogCard(data: data, useRelativeTime: true),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('7 min ago'), findsOneWidget);
+      });
+
+      testWidgets('falls back to the absolute time beyond a day',
+          (tester) async {
+        final data = makeLogData(time: DateTime(2024, 1, 1, 12, 34, 56, 789));
+        await tester.pumpWidget(
+          buildLogCard(data: data, useRelativeTime: true),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('12:34:56.789'), findsOneWidget);
+      });
+    });
 
     testWidgets(
       'Given a collapsed LogCard, '

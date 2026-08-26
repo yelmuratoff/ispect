@@ -25,6 +25,7 @@ class NetworkTransactionCard extends StatelessWidget {
     this.timeColumnWidth = 140,
     this.searchMatchState = SearchMatchState.none,
     this.compactUrl = true,
+    this.useRelativeTime = false,
     super.key,
   });
 
@@ -35,6 +36,7 @@ class NetworkTransactionCard extends StatelessWidget {
   final double typeColumnWidth;
   final double timeColumnWidth;
   final SearchMatchState searchMatchState;
+  final bool useRelativeTime;
 
   /// Strips the scheme and host from the collapsed-row URL, leaving the path
   /// and query. The expanded details keep the full URL.
@@ -52,6 +54,7 @@ class NetworkTransactionCard extends StatelessWidget {
         timeColumnWidth: timeColumnWidth,
         searchMatchState: searchMatchState,
         compactUrl: compactUrl,
+        useRelativeTime: useRelativeTime,
       );
     }
     return Padding(
@@ -63,6 +66,7 @@ class NetworkTransactionCard extends StatelessWidget {
         onOpenResponseDetail: onOpenResponseDetail,
         searchMatchState: searchMatchState,
         compactUrl: compactUrl,
+        useRelativeTime: useRelativeTime,
       ),
     );
   }
@@ -76,6 +80,7 @@ class _MobileTransactionCard extends StatefulWidget {
     this.onOpenResponseDetail,
     this.searchMatchState = SearchMatchState.none,
     this.compactUrl = true,
+    this.useRelativeTime = false,
   });
 
   final NetworkTransaction transaction;
@@ -84,6 +89,7 @@ class _MobileTransactionCard extends StatefulWidget {
   final VoidCallback? onOpenResponseDetail;
   final SearchMatchState searchMatchState;
   final bool compactUrl;
+  final bool useRelativeTime;
 
   @override
   State<_MobileTransactionCard> createState() => _MobileTransactionCardState();
@@ -138,6 +144,7 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
                       expanded: _expanded,
                       compactUrl: widget.compactUrl,
                       displayUrl: displayUrl,
+                      useRelativeTime: widget.useRelativeTime,
                     ),
                   ),
                 ),
@@ -187,6 +194,7 @@ class _MobileHeader extends StatelessWidget {
     required this.expanded,
     required this.compactUrl,
     required this.displayUrl,
+    required this.useRelativeTime,
   });
 
   final NetworkTransaction tx;
@@ -194,6 +202,7 @@ class _MobileHeader extends StatelessWidget {
   final bool expanded;
   final bool compactUrl;
   final String displayUrl;
+  final bool useRelativeTime;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -226,7 +235,11 @@ class _MobileHeader extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  _formatTime(tx.request.time),
+                  context.formatLogTime(
+                    tx.request.time,
+                    relative: useRelativeTime,
+                    absolute: _formatTime(tx.request.time),
+                  ),
                   maxLines: 1,
                   style: TextStyle(
                     color: context.appTheme.textColor.withValues(alpha: 0.6),

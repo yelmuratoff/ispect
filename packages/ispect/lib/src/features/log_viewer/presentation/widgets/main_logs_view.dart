@@ -520,6 +520,7 @@ class _MainLogsViewState extends State<MainLogsView> {
       typeColumnWidth: _controller.typeColumnWidth,
       timeColumnWidth: _controller.timeColumnWidth,
       compactUrl: widget.logsViewController.compactNetworkUrls,
+      useRelativeTime: widget.logsViewController.useRelativeTime,
       onTap: isDesktop
           ? () => widget.logsViewController.selectLog(entry.request)
           : null,

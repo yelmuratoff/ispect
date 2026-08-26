@@ -20,6 +20,7 @@ class NetworkTransactionDesktopRow extends StatefulWidget {
     this.onOpenResponseDetail,
     this.searchMatchState = SearchMatchState.none,
     this.compactUrl = true,
+    this.useRelativeTime = false,
     super.key,
   });
 
@@ -31,6 +32,7 @@ class NetworkTransactionDesktopRow extends StatefulWidget {
   final double timeColumnWidth;
   final SearchMatchState searchMatchState;
   final bool compactUrl;
+  final bool useRelativeTime;
 
   @override
   State<NetworkTransactionDesktopRow> createState() =>
@@ -152,7 +154,11 @@ class _NetworkTransactionDesktopRowState
                               SizedBox(
                                 width: scaled.timeWidth,
                                 child: Text(
-                                  tx.request.formattedTime,
+                                  context.formatLogTime(
+                                    tx.request.time,
+                                    relative: widget.useRelativeTime,
+                                    absolute: tx.request.formattedTime,
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(

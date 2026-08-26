@@ -78,6 +78,43 @@ void main() {
       expect(find.textContaining('secret'), findsNothing);
     });
 
+    testWidgets(
+        '${variant.name} grouped card honours the relative time setting',
+        (tester) async {
+      await tester.binding.setSurfaceSize(variant.size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final transaction = NetworkTransaction(
+        requestId: 'request-1',
+        request: ISpectLogData(
+          '→ GET https://api.example.com/users',
+          key: ISpectLogType.httpRequest.key,
+          time: DateTime.now().subtract(const Duration(minutes: 12)),
+          additionalData: const {
+            TraceKeys.category: TraceCategoryIds.network,
+            TraceKeys.operation: 'GET',
+            TraceKeys.target: 'https://api.example.com/users',
+          },
+        ),
+      );
+
+      await tester.pumpWidget(
+        appShell(NetworkTransactionCard(transaction: transaction)),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('12 min ago'), findsNothing);
+
+      await tester.pumpWidget(
+        appShell(
+          NetworkTransactionCard(
+            transaction: transaction,
+            useRelativeTime: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('12 min ago'), findsOneWidget);
+    });
+
     testWidgets('${variant.name} grouped card does not re-redact its payload',
         (tester) async {
       await tester.binding.setSurfaceSize(variant.size);
