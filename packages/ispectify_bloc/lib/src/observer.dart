@@ -319,9 +319,9 @@ class ISpectBlocObserver extends BlocObserver {
       config: _traceConfig,
       consoleMessage: _prepareTraceText(
         redactedEvent != null
-            ? '[bloc] event → $target\n'
+            ? 'event → $target\n'
                 'Event(${data.eventType}): $redactedEvent'
-            : '[bloc] event → $target (${data.eventType})',
+            : 'event → $target (${data.eventType})',
       ),
     );
   }
@@ -592,9 +592,9 @@ class ISpectBlocObserver extends BlocObserver {
       config: _traceConfig,
       consoleMessage: _prepareTraceText(
         redactedEvent != null
-            ? '[bloc] done → $target\n'
+            ? 'done → $target\n'
                 'Event(${data.eventType}): $redactedEvent'
-            : '[bloc] done → $target'
+            : 'done → $target'
                 '${data.eventType != null ? ' (${data.eventType})' : ''}',
       ),
     );
@@ -607,7 +607,7 @@ class ISpectBlocObserver extends BlocObserver {
     required Object? nextState,
     required Object? event,
   }) {
-    final buf = StringBuffer('[bloc] transition → $blocType')
+    final buf = StringBuffer('transition → $blocType')
       ..write('\n$currentState → $nextState');
     if (event != null) {
       buf.write('\nEvent($eventTypeName): $event');
@@ -622,7 +622,7 @@ class ISpectBlocObserver extends BlocObserver {
     required Object? currentState,
     required Object? nextState,
   }) =>
-      '[bloc] state → $blocType\n$currentState → $nextState';
+      'state → $blocType\n$currentState → $nextState';
 }
 
 final class _PendingEventCorrelations {
