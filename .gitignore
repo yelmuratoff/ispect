@@ -79,3 +79,6 @@ CLAUDE.md
 # --- AI SYNC GENERATED END ---
 packages/ispectify_bloc/example/pubspec.lock
 packages/ispectify_riverpod/example/pubspec.lock
+
+# Agent task bundles
+.agent-work/
