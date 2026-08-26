@@ -25,7 +25,10 @@ on:
       - 'bash/build_readme.sh'
       - 'bash/build_llms.sh'
       - 'bash/check_dependencies.sh'
+      - 'bash/bump_version.sh'
       - 'bash/check_version_sync.sh'
+      - 'bash/lib/**'
+      - 'bash/publish.sh'
       - 'bash/release_prep.sh'
       - 'bash/update_changelog.sh'
       - 'bash/update_versions.sh'
@@ -54,6 +57,8 @@ jobs:
 
       - name: Test Release Automation
         run: |
+          ./bash/tests/semver_test.sh
+          ./bash/tests/pub_api_test.sh
           ./bash/tests/update_versions_test.sh
           ./bash/tests/release_prep_test.sh
 

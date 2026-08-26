@@ -157,17 +157,18 @@ EOF
 
 create_fixture() {
   local fixture_name="$1"
-  local version="${2:-7.0.0-dev01}"
+  local version="${2:-7.0.0-dev.1}"
   local changelog_version="${3:-$version}"
   local fixture_root="$TEST_TMP/$fixture_name"
   local repo="$fixture_root/repo"
   local package
 
   mkdir -p \
-    "$repo/bash" \
+    "$repo/bash/lib" \
     "$repo/docs/readme/_partials" \
     "$repo/web_logs_viewer"
 
+  cp "$REPO_ROOT/bash/lib/semver.sh" "$repo/bash/lib/semver.sh"
   cp \
     "$REPO_ROOT/bash/release_prep.sh" \
     "$REPO_ROOT/bash/update_versions.sh" \
@@ -265,7 +266,7 @@ test_accepts_newer_flutter() {
     die "release prep rejected fake Flutter 3.44.2" "$output_file"
   fi
 
-  assert_file_contains "$repo/version.config" "VERSION=7.0.0-dev01"
+  assert_file_contains "$repo/version.config" "VERSION=7.0.0-dev.1"
 }
 
 test_rolls_back_every_artifact_after_helper_failure() {
@@ -314,13 +315,13 @@ test_skip_bump_synchronizes_artifacts_without_changing_version() {
     die "--skip-bump release prep failed" "$output_file"
   fi
 
-  [[ $(<"$repo/version.config") == "VERSION=7.0.0-dev01" ]] ||
+  [[ $(<"$repo/version.config") == "VERSION=7.0.0-dev.1" ]] ||
     die "--skip-bump changed version.config"
 
   for package in "${PACKAGES[@]}"; do
     assert_file_contains \
       "$repo/packages/$package/pubspec.yaml" \
-      "version: 7.0.0-dev01"
+      "version: 7.0.0-dev.1"
     assert_files_equal \
       "$repo/CHANGELOG.md" \
       "$repo/packages/$package/CHANGELOG.md" \
@@ -329,11 +330,11 @@ test_skip_bump_synchronizes_artifacts_without_changing_version() {
 
   assert_file_contains \
     "$repo/README.md" \
-    "Root release 7.0.0-dev01 for ispect."
+    "Root release 7.0.0-dev.1 for ispect."
   assert_file_contains \
     "$repo/packages/ispectify_ws/README.md" \
-    "Package ispectify_ws release 7.0.0-dev01."
-  assert_file_contains "$repo/llms.txt" "- Version: 7.0.0-dev01"
+    "Package ispectify_ws release 7.0.0-dev.1."
+  assert_file_contains "$repo/llms.txt" "- Version: 7.0.0-dev.1"
   assert_file_not_contains "$repo/llms.txt" "stale llms index"
 }
 
@@ -343,7 +344,7 @@ test_skip_bump_recovers_interrupted_carry_without_empty_stub() {
   local expected="$TEST_TMP/recover-carry-expected.md"
   local package
 
-  repo="$(create_fixture recover-carry 7.0.0-dev2 7.0.0-dev01)"
+  repo="$(create_fixture recover-carry 7.0.0-dev.2 7.0.0-dev.1)"
   if ! run_release \
     "$repo" \
     "3.32.6" \
@@ -353,10 +354,10 @@ test_skip_bump_recovers_interrupted_carry_without_empty_stub() {
     die "--skip-bump recovery failed" "$output_file"
   fi
 
-  [[ $(<"$repo/version.config") == "VERSION=7.0.0-dev2" ]] ||
+  [[ $(<"$repo/version.config") == "VERSION=7.0.0-dev.2" ]] ||
     die "--skip-bump recovery changed version.config"
 
-  write_expected_changelog "$expected" "7.0.0-dev2"
+  write_expected_changelog "$expected" "7.0.0-dev.2"
   assert_files_equal "$expected" "$repo/CHANGELOG.md" \
     "$TEST_TMP/recover-carry-root.diff"
   assert_file_not_contains "$repo/CHANGELOG.md" "### Added"
@@ -373,33 +374,33 @@ test_skip_bump_preserves_prerelease_history_without_recovery() {
   local repo
   local output_file="$TEST_TMP/preserve-prerelease.log"
 
-  repo="$(create_fixture preserve-prerelease 7.0.0-dev2 7.0.0-dev01)"
+  repo="$(create_fixture preserve-prerelease 7.0.0-dev.2 7.0.0-dev.1)"
   if ! run_release "$repo" "3.32.6" "$output_file" --skip-bump; then
     die "--skip-bump failed while preserving prerelease history" "$output_file"
   fi
 
-  assert_file_contains "$repo/CHANGELOG.md" "## 7.0.0-dev2"
-  assert_file_contains "$repo/CHANGELOG.md" "## 7.0.0-dev01"
+  assert_file_contains "$repo/CHANGELOG.md" "## 7.0.0-dev.2"
+  assert_file_contains "$repo/CHANGELOG.md" "## 7.0.0-dev.1"
   assert_file_contains \
     "$repo/CHANGELOG.md" \
     "- Carry these release notes unchanged."
 }
 
-test_carry_bump_preserves_padding_heading_and_notes() {
+test_carry_bump_advances_the_counter_with_heading_and_notes() {
   local repo
   local output_file="$TEST_TMP/carry-bump.log"
   local expected="$TEST_TMP/carry-bump-expected.md"
   local package
 
-  repo="$(create_fixture carry-bump 7.0.0-dev01 7.0.0-dev01)"
+  repo="$(create_fixture carry-bump 7.0.0-dev.1 7.0.0-dev.1)"
   if ! run_release "$repo" "3.32.6" "$output_file" --carry-changelog; then
     die "--carry-changelog release prep failed" "$output_file"
   fi
 
-  [[ $(<"$repo/version.config") == "VERSION=7.0.0-dev02" ]] ||
-    die "prerelease bump did not preserve dev01 -> dev02 padding"
+  [[ $(<"$repo/version.config") == "VERSION=7.0.0-dev.2" ]] ||
+    die "prerelease bump did not advance dev.1 -> dev.2"
 
-  write_expected_changelog "$expected" "7.0.0-dev02"
+  write_expected_changelog "$expected" "7.0.0-dev.2"
   assert_files_equal "$expected" "$repo/CHANGELOG.md" \
     "$TEST_TMP/carry-bump-root.diff"
 
@@ -480,7 +481,7 @@ test_rejects_symlinked_managed_target() {
     die "release prep replaced the pre-existing README symlink"
   [[ $(<"$outside_file") == "outside sentinel" ]] ||
     die "release prep wrote through the managed target symlink"
-  [[ $(<"$repo/version.config") == "VERSION=7.0.0-dev01" ]] ||
+  [[ $(<"$repo/version.config") == "VERSION=7.0.0-dev.1" ]] ||
     die "release prep wrote files before rejecting the symlink"
 }
 
@@ -537,7 +538,7 @@ test_conflicting_bump_modes_fail_before_writes() {
   fi
 
   assert_file_contains "$output_file" "Specify the bump kind only once"
-  [[ $(<"$repo/version.config") == "VERSION=7.0.0-dev01" ]] ||
+  [[ $(<"$repo/version.config") == "VERSION=7.0.0-dev.1" ]] ||
     die "conflicting bump modes wrote version.config"
 }
 
@@ -579,7 +580,7 @@ test_recovery_requires_missing_target_section() {
   assert_file_contains \
     "$output_file" \
     "--recover-changelog requires the target section to be missing"
-  assert_file_contains "$repo/CHANGELOG.md" "## 7.0.0-dev01"
+  assert_file_contains "$repo/CHANGELOG.md" "## 7.0.0-dev.1"
 }
 
 run_test() {
@@ -620,8 +621,8 @@ run_test \
   "--skip-bump preserves prerelease history without recovery" \
   test_skip_bump_preserves_prerelease_history_without_recovery
 run_test \
-  "carry bump preserves prerelease padding, heading, and notes" \
-  test_carry_bump_preserves_padding_heading_and_notes
+  "carry bump advances the prerelease counter with heading and notes" \
+  test_carry_bump_advances_the_counter_with_heading_and_notes
 run_test \
   "--edit preserves editor command arguments" \
   test_editor_command_preserves_arguments

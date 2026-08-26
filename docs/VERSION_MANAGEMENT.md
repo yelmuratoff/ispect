@@ -39,9 +39,30 @@ How versions are kept consistent across the ISpect monorepo.
 ```
 
 The default patch mode increments a stable patch version or advances the
-numeric suffix of the current prerelease. Use `--skip-bump` after editing
+counter of the current prerelease. Use `--skip-bump` after editing
 `CHANGELOG.md` or `docs/readme/**` to regenerate everything without changing
 the version.
+
+### Prerelease numbering
+
+Separate the counter from its label with a dot: `7.1.0-dev.1`, `7.1.0-dev.2`,
+… `7.1.0-dev.10`. Semantic Versioning compares a dot-separated numeric
+identifier as a number but an identifier containing letters as text, so the
+glued form `7.1.0-dev10` resolves *below* `7.1.0-dev8`: Pub keeps handing
+consumers the older code while the newer release sits on pub.dev unreachable,
+and nothing reports an error.
+
+The scripts refuse to write a version that Pub does not order above the current
+one, and warn while `VERSION` still glues its counter to the label.
+`publish.sh` additionally asks the host what it already serves and blocks a
+version that is not ranked above the peak of the same `MAJOR.MINOR` line;
+releases on other lines are ignored, so backporting `6.1.8` after `7.0.0`
+shipped still passes.
+
+A series already published in the glued form cannot be repaired by renumbering
+it — the whole dot-form family sorts below every glued version. Leave the label
+(`7.1.0-rc.1`) or the prerelease (`7.1.0`) instead. `7.0.0-dev8` through
+`7.0.0-dev11` shipped this way, and Pub ranks `7.0.0-dev9` highest of them.
 
 The command updates version metadata, internal constraints, the web-viewer
 lockfile, the root and package changelogs, generated READMEs, and `llms.txt`.

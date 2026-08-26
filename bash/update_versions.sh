@@ -6,6 +6,8 @@ IFS=$'\n\t'
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+source "$ROOT_DIR/bash/lib/semver.sh"
+
 VERSION_FILE="version.config"
 DRY_RUN=0
 BUMP_KIND=""
@@ -46,10 +48,11 @@ if [[ -z ${VERSION:-} ]]; then
   echo "[ERR] VERSION not defined in $VERSION_FILE" >&2
   exit 1
 fi
-if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?(\+[A-Za-z0-9.-]+)?$ ]]; then
+if ! semver_is_valid "$VERSION"; then
   echo "[ERR] Invalid VERSION in $VERSION_FILE: $VERSION" >&2
   exit 1
 fi
+semver_warn_glued_counter "$VERSION"
 
 usage() {
   cat <<USAGE
@@ -68,49 +71,33 @@ USAGE
 semver_bump() {
   local value="$1"
   local kind="$2"
-  local core="$value"
-  local prerelease=""
+  local core
+  local prerelease
   local major
   local minor
   local patch
+  local next
 
-  if [[ $value == *-* ]]; then
-    core="${value%%-*}"
-    prerelease="${value#*-}"
-  fi
-  if [[ ! $core =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+  core=$(semver_core "$value") || {
     echo "[ERR] Invalid semantic version: $value" >&2
     return 1
-  fi
-  major="${BASH_REMATCH[1]}"
-  minor="${BASH_REMATCH[2]}"
-  patch="${BASH_REMATCH[3]}"
+  }
+  prerelease=$(semver_prerelease "$value")
+  IFS='.' read -r major minor patch <<<"$core"
 
   case $kind in
     patch)
-      if [[ -n $prerelease && $prerelease =~ ^([A-Za-z]+)(\.?)([0-9]+)$ ]]; then
-        local label="${BASH_REMATCH[1]}"
-        local separator="${BASH_REMATCH[2]}"
-        local number="${BASH_REMATCH[3]}"
-        local width="${#number}"
-        local next_number=$((10#$number + 1))
-        local padded_number
-        printf -v padded_number "%0${width}d" "$next_number"
-        echo "${major}.${minor}.${patch}-${label}${separator}${padded_number}"
-        return 0
+      if [[ -n $prerelease ]]; then
+        next=$(semver_next_prerelease "$value") || return 1
+      else
+        next="${major}.${minor}.$((10#$patch + 1))"
       fi
-      patch=$((10#$patch + 1))
       ;;
     minor)
-      minor=$((10#$minor + 1))
-      patch=0
-      prerelease=""
+      next="${major}.$((10#$minor + 1)).0"
       ;;
     major)
-      major=$((10#$major + 1))
-      minor=0
-      patch=0
-      prerelease=""
+      next="$((10#$major + 1)).0.0"
       ;;
     *)
       echo "[ERR] Unknown bump kind: $kind" >&2
@@ -118,11 +105,11 @@ semver_bump() {
       ;;
   esac
 
-  if [[ -n $prerelease ]]; then
-    echo "${major}.${minor}.${patch}-${prerelease}"
-  else
-    echo "${major}.${minor}.${patch}"
+  if ! semver_is_greater "$next" "$value"; then
+    echo "[ERR] $kind bump of $value would produce $next, which Pub does not order above it" >&2
+    return 1
   fi
+  printf '%s\n' "$next"
 }
 
 while [[ ${1:-} != "" ]]; do

@@ -6,6 +6,8 @@ IFS=$'\n\t'
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+source "$ROOT_DIR/bash/lib/semver.sh"
+
 VERSION_FILE="version.config"
 CHANGELOG_FILE="CHANGELOG.md"
 TEMP_ROOT="$(cd "${TMPDIR:-/tmp}" && pwd -P)"
@@ -59,7 +61,7 @@ read_version() {
   local value
   [[ -f $VERSION_FILE ]] || fail "$VERSION_FILE not found"
   value=$(awk -F= '$1 == "VERSION" { print substr($0, index($0, "=") + 1); exit }' "$VERSION_FILE")
-  [[ $value =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?(\+[A-Za-z0-9.-]+)?$ ]] ||
+  semver_is_valid "$value" ||
     fail "Invalid VERSION in $VERSION_FILE: ${value:-<empty>}"
   printf '%s\n' "$value"
 }
@@ -273,42 +275,10 @@ latest_section_version() {
 is_next_prerelease() {
   local previous="$1"
   local current="$2"
-  local previous_core
-  local previous_label
-  local previous_separator
-  local previous_digits
-  local current_core
-  local current_label
-  local current_separator
-  local current_digits
-  local previous_number
-  local current_number
+  local expected
 
-  if [[ $previous =~ ^([0-9]+\.[0-9]+\.[0-9]+)-([A-Za-z]+)(\.?)([0-9]+)$ ]]; then
-    previous_core="${BASH_REMATCH[1]}"
-    previous_label="${BASH_REMATCH[2]}"
-    previous_separator="${BASH_REMATCH[3]}"
-    previous_digits="${BASH_REMATCH[4]}"
-  else
-    return 1
-  fi
-
-  if [[ $current =~ ^([0-9]+\.[0-9]+\.[0-9]+)-([A-Za-z]+)(\.?)([0-9]+)$ ]]; then
-    current_core="${BASH_REMATCH[1]}"
-    current_label="${BASH_REMATCH[2]}"
-    current_separator="${BASH_REMATCH[3]}"
-    current_digits="${BASH_REMATCH[4]}"
-  else
-    return 1
-  fi
-
-  [[ $previous_core == "$current_core" ]] || return 1
-  [[ $previous_label == "$current_label" ]] || return 1
-  [[ $previous_separator == "$current_separator" ]] || return 1
-
-  previous_number=$((10#$previous_digits))
-  current_number=$((10#$current_digits))
-  [[ $current_number -eq $((previous_number + 1)) ]]
+  expected=$(semver_next_prerelease "$previous" 2>/dev/null) || return 1
+  [[ $expected == "$current" ]]
 }
 
 rename_changelog_section() {

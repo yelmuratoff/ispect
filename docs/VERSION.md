@@ -40,6 +40,17 @@ A short overview of the version-management workflow. The full reference lives in
 ./bash/release_prep.sh --skip-bump --recover-changelog
 ```
 
+## Prerelease numbering
+
+Write the counter as its own dot-separated identifier — `7.1.0-dev.1`,
+`7.1.0-dev.2`, … `7.1.0-dev.10`. Glued to its label, the counter is compared as
+text, so `7.1.0-dev10` resolves below `7.1.0-dev8` and consumers keep getting
+the older code with no error anywhere. The scripts reject any version Pub does
+not order above the current one, and `publish.sh` blocks a release that is not
+ranked above the published peak of its `MAJOR.MINOR` line. Details and the
+escape routes for an already published glued series live in
+[VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md).
+
 ## CI process
 
 When you update `CHANGELOG.md` or `version.config`, GitHub Actions automatically:

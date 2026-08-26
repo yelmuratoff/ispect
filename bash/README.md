@@ -20,9 +20,14 @@ Scripts:
 - `run_benchmarks.sh` — AOT pure-Dart hot-path suite; writes `build/benchmarks/ispectify.json` and the generated report.
 - `measure_release_size.sh` — builds the `ispect` example with `ISPECT_ENABLED` omitted and enabled, saving APKs and `--analyze-size` reports to `build/benchmarks/release-size/`.
 
+Libraries:
+
+- `lib/semver.sh` — version parsing, comparison, and prerelease bumps, ordered exactly the way Pub resolves constraints. Sourced by `release_prep.sh`, `update_versions.sh`, `bump_version.sh`, and `publish.sh`.
+- `lib/pub_api.sh` — reads the version history the package host already published. Sourced by `publish.sh`.
+
 Tests:
 
-- `tests/release_prep_test.sh` and `tests/update_versions_test.sh` — regression tests for the release scripts, run by `validate_versions.yml`.
+- `tests/semver_test.sh`, `tests/pub_api_test.sh`, `tests/release_prep_test.sh`, and `tests/update_versions_test.sh` — regression tests for the release scripts, run by `validate_versions.yml`.
 
 ## Quick start
 
@@ -69,6 +74,26 @@ files are restored to their exact pre-run state.
 ## Version management
 
 Primary source of truth: `version.config` (line `VERSION=X.Y.Z`).
+
+### Prerelease numbering
+
+Separate the counter from its label with a dot: `7.1.0-dev.1`, `7.1.0-dev.2`,
+… `7.1.0-dev.10`. Semantic Versioning compares a dot-separated numeric
+identifier as a number, but an identifier containing letters as text — so the
+glued form `7.1.0-dev10` resolves *below* `7.1.0-dev8`, and Pub hands consumers
+the older code while the newer version sits on pub.dev unreachable.
+
+The scripts refuse to write a version that Pub does not order above the current
+one, and warn whenever `VERSION` still glues its counter to the label. A series
+already published in the glued form cannot be repaired by renumbering it: leave
+the label (`7.1.0-rc.1`) or the prerelease (`7.1.0`) instead.
+
+`publish.sh` asks the host what it already serves and refuses to publish a
+version the resolver does not rank above the peak of the same `MAJOR.MINOR`
+line — the check that catches a version which uploads successfully and then
+resolves to nobody. Releases on other lines are ignored, so backporting `6.1.8`
+after `7.0.0` shipped still passes. `--skip-pub-version-check` opts out; an
+unanswered request blocks rather than guesses.
 
 ```bash
 # Preview the low-level version sync without writing.

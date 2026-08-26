@@ -1,106 +1,89 @@
-#!/bin/bash
-# bump_version.sh - Utility to easily bump version numbers
+#!/usr/bin/env bash
+# bump_version.sh - legacy bump helper kept for backward compatibility.
 # Usage: ./bash/bump_version.sh [patch|minor|major|dev|<specific-version>]
-# Example: ./bash/bump_version.sh patch
-#          ./bash/bump_version.sh 4.2.0
-#          ./bash/bump_version.sh dev
+# Example: ./bash/bump_version.sh dev
+#          ./bash/bump_version.sh 7.1.0
+# Prefer ./bash/release_prep.sh, which also synchronizes changelogs and READMEs.
 
-# Determine the directory where the script is located
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-root_dir="$(dirname "$script_dir")"
-version_file="$root_dir/version.config"
+set -euo pipefail
 
-# Source the current version
-if [ -f "$version_file" ]; then
-  source "$version_file"
-elif [ -f "version.config" ]; then
-  source "version.config"
-fi
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
 
-if [ -z "$VERSION" ]; then
-  echo "Error: VERSION not defined in version.config"
-  exit 1
-fi
+source "$ROOT_DIR/bash/lib/semver.sh"
 
-# Function to extract version components
-parse_version() {
-  local version=$1
-  
-  # Handle dev versions like 4.1.3-dev09
-  if [[ $version =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-dev([0-9]+))?$ ]]; then
-    MAJOR="${BASH_REMATCH[1]}"
-    MINOR="${BASH_REMATCH[2]}"
-    PATCH="${BASH_REMATCH[3]}"
-    DEV_TAG="${BASH_REMATCH[4]}"
-    DEV_NUM="${BASH_REMATCH[5]}"
-    
-    if [ -z "$DEV_NUM" ]; then
-      DEV_NUM=0
-    fi
-  else
-    echo "Error: Version format not recognized: $version"
-    echo "Expected format: MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-devNN"
-    exit 1
-  fi
+VERSION_FILE="version.config"
+
+usage() {
+  cat <<'USAGE'
+bump_version.sh - bump VERSION and synchronize package versions
+
+Usage: ./bash/bump_version.sh [patch|minor|major|dev|<specific-version>]
+
+  patch|minor|major   Delegated to ./bash/update_versions.sh --bump <kind>
+  dev                 Advance the prerelease counter, or open a new prerelease
+                      series on the next patch (7.1.0 -> 7.1.1-dev.1)
+  <specific-version>  Any semantic version that Pub orders above the current one
+USAGE
 }
 
-# Parse current version
-parse_version "$VERSION"
-echo "Current version: $VERSION (Major: $MAJOR, Minor: $MINOR, Patch: $PATCH, Dev: $DEV_TAG)"
-
-# Handle version bump based on argument
-if [ -z "$1" ]; then
-  echo "Error: No version bump type specified"
-  echo "Usage: ./bash/bump_version.sh [patch|minor|major|dev|<specific-version>]"
+if [[ ! -f $VERSION_FILE ]]; then
+  echo "[ERR] $VERSION_FILE not found" >&2
   exit 1
 fi
 
+VERSION=$(awk -F= '$1 == "VERSION" { print substr($0, index($0, "=") + 1); exit }' "$VERSION_FILE")
+if ! semver_is_valid "$VERSION"; then
+  echo "[ERR] Invalid VERSION in $VERSION_FILE: ${VERSION:-<empty>}" >&2
+  exit 1
+fi
+
+if [[ -z ${1:-} ]]; then
+  echo "[ERR] No version bump type specified" >&2
+  usage >&2
+  exit 2
+fi
+
+echo "[INFO] Current version: $VERSION"
+
 case "$1" in
-  "major")
-    NEW_VERSION="$((MAJOR + 1)).0.0"
+  patch | minor | major)
+    exec bash/update_versions.sh --bump "$1"
     ;;
-  "minor")
-    NEW_VERSION="$MAJOR.$((MINOR + 1)).0"
+  --help | -h)
+    usage
+    exit 0
     ;;
-  "patch")
-    NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
-    ;;
-  "dev")
-    if [[ $VERSION =~ -dev ]]; then
-      # Already a dev version, increment dev number
-      NEW_DEV_NUM=$((DEV_NUM + 1))
-      # Format with leading zero if single digit
-      if [ "$NEW_DEV_NUM" -lt 10 ]; then
-        NEW_DEV_NUM="0$NEW_DEV_NUM"
-      fi
-      NEW_VERSION="$MAJOR.$MINOR.$PATCH-dev$NEW_DEV_NUM"
+  dev)
+    if [[ -n $(semver_prerelease "$VERSION") ]]; then
+      NEW_VERSION=$(semver_next_prerelease "$VERSION")
     else
-      # Convert to dev version
-      NEW_VERSION="$MAJOR.$MINOR.$PATCH-dev01"
+      IFS='.' read -r major minor patch <<<"$(semver_core "$VERSION")"
+      NEW_VERSION=$(semver_start_prerelease "$major.$minor.$((10#$patch + 1))" dev)
     fi
     ;;
   *)
-    # Assume it's a specific version
-    if [[ $1 =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-dev([0-9]+))?$ ]]; then
-      NEW_VERSION="$1"
-    else
-      echo "Error: Invalid version format: $1"
-      echo "Expected format: MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-devNN"
-      exit 1
+    if ! semver_is_valid "$1"; then
+      echo "[ERR] Invalid version format: $1" >&2
+      usage >&2
+      exit 2
     fi
+    NEW_VERSION="$1"
     ;;
 esac
 
-echo "Bumping version to: $NEW_VERSION"
-
-# Update version.config
-echo "VERSION=$NEW_VERSION" > version.config
-echo "Updated version.config"
-
-# Run the version update script
-if [ -f "bash/update_versions.sh" ]; then
-  echo "Running update_versions.sh..."
-  bash/update_versions.sh
-else
-  echo "Warning: update_versions.sh not found. Only version.config has been updated."
+if ! semver_is_greater "$NEW_VERSION" "$VERSION"; then
+  echo "[ERR] Pub does not order $NEW_VERSION above the current $VERSION" >&2
+  exit 1
 fi
+
+echo "[INFO] Bumping version to: $NEW_VERSION"
+version_temp_file=$(mktemp "${VERSION_FILE}.tmp.XXXXXX")
+trap 'rm -f -- "$version_temp_file"' EXIT
+cp -p "$VERSION_FILE" "$version_temp_file"
+sed -e "s/^VERSION=.*/VERSION=$NEW_VERSION/" "$VERSION_FILE" > "$version_temp_file"
+mv "$version_temp_file" "$VERSION_FILE"
+trap - EXIT
+echo "[INFO] Updated $VERSION_FILE"
+
+exec bash/update_versions.sh

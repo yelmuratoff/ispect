@@ -80,14 +80,15 @@ create_fixture() {
   local repo="$fixture_root/repo"
 
   mkdir -p \
-    "$repo/bash" \
+    "$repo/bash/lib" \
     "$repo/packages/ispect/example" \
     "$repo/packages/ispectify" \
     "$repo/web_logs_viewer"
   cp "$REPO_ROOT/bash/update_versions.sh" "$repo/bash/update_versions.sh"
+  cp "$REPO_ROOT/bash/lib/semver.sh" "$repo/bash/lib/semver.sh"
   chmod +x "$repo/bash/update_versions.sh"
 
-  printf 'VERSION=1.2.3-dev01\n' > "$repo/version.config"
+  printf 'VERSION=1.2.3-dev.1\n' > "$repo/version.config"
   printf 'pre-existing version temp\n' > "$repo/version.config.tmp"
   printf 'README must remain byte-for-byte unchanged: ispect: ^0.0.1\n' \
     > "$repo/README.md"
@@ -234,14 +235,14 @@ packages:
       path: "../packages/ispect"
       relative: true
     source: path
-    version: "1.2.3-dev02"
+    version: "1.2.3-dev.2"
   ispectify:
     dependency: "direct main"
     description:
       path: "../packages/ispectify"
       relative: true
     source: path
-    version: "1.2.3-dev02"
+    version: "1.2.3-dev.2"
 sdks:
   dart: ">=3.6.0 <4.0.0"
 EOF
@@ -250,15 +251,15 @@ EOF
     die "version update failed" "$output_file"
   fi
 
-  assert_file_contains "$repo/version.config" "VERSION=1.2.3-dev02"
+  assert_file_contains "$repo/version.config" "VERSION=1.2.3-dev.2"
   assert_file_contains "$repo/packages/ispect/pubspec.yaml" \
-    "version: 1.2.3-dev02"
+    "version: 1.2.3-dev.2"
   assert_file_contains "$repo/packages/ispect/pubspec.yaml" \
-    "  ispectify: ^1.2.3-dev02"
+    "  ispectify: ^1.2.3-dev.2"
   assert_file_contains "$repo/packages/ispect/example/pubspec.yaml" \
-    "  ispect: ^1.2.3-dev02"
+    "  ispect: ^1.2.3-dev.2"
   assert_file_contains "$repo/web_logs_viewer/pubspec.yaml" \
-    "  ispectify: ^1.2.3-dev02"
+    "  ispectify: ^1.2.3-dev.2"
   assert_files_equal \
     "$expected_lock" \
     "$repo/web_logs_viewer/pubspec.lock" \
@@ -291,9 +292,9 @@ test_dry_run_previews_target_without_writing() {
   fi
 
   assert_file_contains "$output_file" \
-    "[INFO] Target version: 1.2.3-dev02 (dry-run=1)"
+    "[INFO] Target version: 1.2.3-dev.2 (dry-run=1)"
   assert_file_contains "$output_file" \
-    "[CHG] web_logs_viewer/pubspec.lock path package versions -> 1.2.3-dev02"
+    "[CHG] web_logs_viewer/pubspec.lock path package versions -> 1.2.3-dev.2"
   assert_directories_equal \
     "$before" \
     "$repo" \

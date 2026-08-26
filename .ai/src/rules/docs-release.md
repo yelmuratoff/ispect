@@ -13,6 +13,13 @@
 - Use `./bash/update_changelog.sh` to propagate release notes to package changelogs.
 - Keep changelog sections tied to the current `VERSION` in `version.config`.
 
+## Versioning
+
+- Write prerelease counters in the dot form (`7.1.0-dev.1`, `7.1.0-dev.2`); a counter glued to its label sorts as text, so `dev10` resolves below `dev8`.
+- Let the scripts compute the next version; they reject anything Pub does not order above the current `VERSION`.
+- `7.0.0-dev8`…`7.0.0-dev11` shipped in the glued form — Pub ranks `7.0.0-dev9` highest, so the next 7.0.0 prerelease has to leave the `dev` label.
+- `./bash/publish.sh` blocks a version the resolver does not rank above the published peak of its `MAJOR.MINOR` line; treat that as a wrong version, not as a reason to pass `--skip-pub-version-check`.
+
 ## Release Scripts
 
 - Use `./bash/release_prep.sh` for standard release prep.

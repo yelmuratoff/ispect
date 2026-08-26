@@ -7,11 +7,16 @@
 #   ./bash/publish.sh --auto         # no prompts, real publish (uses --force)
 #
 # Options can be combined: --auto implies real publish; --dry-run overrides to only dry-run.
+#
+#   --skip-pub-version-check         # publish without asking the host what it already has
 
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
+
+source "$ROOT_DIR/bash/lib/semver.sh"
+source "$ROOT_DIR/bash/lib/pub_api.sh"
 
 PACKAGES=(
 	ispectify          # base logging
@@ -28,12 +33,14 @@ PACKAGES=(
 MODE_DRY_RUN=0
 MODE_AUTO=0
 MODE_VERBOSE=0
+SKIP_PUB_VERSION_CHECK=0
 
 for arg in "$@"; do
 	case "$arg" in
 		--dry-run) MODE_DRY_RUN=1 ;;
 		--auto) MODE_AUTO=1 ;;
 	--verbose|-v) MODE_VERBOSE=1 ;;
+		--skip-pub-version-check) SKIP_PUB_VERSION_CHECK=1 ;;
 		*) echo "Unknown option: $arg" >&2; exit 2 ;;
 	esac
 done
@@ -52,6 +59,9 @@ if [[ ! -f $VERSION_FILE ]]; then
 	error "version.config not found"; exit 1
 fi
 PROJECT_VERSION=$(grep '^VERSION=' "$VERSION_FILE" | cut -d'=' -f2 | tr -d '[:space:]')
+if ! semver_is_valid "$PROJECT_VERSION"; then
+	error "Invalid VERSION in $VERSION_FILE: ${PROJECT_VERSION:-<empty>}"; exit 1
+fi
 warn "Project version: $PROJECT_VERSION"
 
 # Failure tracking
@@ -78,6 +88,56 @@ check_versions() {
 		error "Version mismatch. Run ./bash/update_versions.sh first."; exit 1
 	fi
 	info "All package versions match $PROJECT_VERSION"
+}
+
+# A release only counts if the resolver ranks it above what the host already
+# serves on the same MAJOR.MINOR line. Publishing below that peak succeeds and
+# then resolves to nobody: consumers keep the older version with no error.
+check_published_version_line() {
+	if [[ $SKIP_PUB_VERSION_CHECK -eq 1 ]]; then
+		warn "Skipping the published-version check (--skip-pub-version-check)"
+		return 0
+	fi
+
+	local blocked=0
+	local pkg
+	local listing
+	local version
+	local versions
+	local peak
+
+	for pkg in "${PACKAGES[@]}"; do
+		if ! listing=$(pub_api_published_versions "$pkg"); then
+			error "Could not read the published versions of $pkg"
+			blocked=1
+			continue
+		fi
+
+		versions=()
+		while IFS= read -r version; do
+			[[ -n $version ]] && versions+=("$version")
+		done <<< "$listing"
+
+		if [[ ${#versions[@]} -eq 0 ]]; then
+			info "$pkg has no published versions yet"
+			continue
+		fi
+		if ! peak=$(semver_max_in_line "$PROJECT_VERSION" "${versions[@]}"); then
+			info "$pkg opens the $(semver_release_line "$PROJECT_VERSION") line"
+			continue
+		fi
+		if ! semver_is_greater "$PROJECT_VERSION" "$peak"; then
+			error "$pkg $PROJECT_VERSION is not ranked above the published $peak; consumers would keep resolving $peak"
+			blocked=1
+			continue
+		fi
+		info "$pkg $PROJECT_VERSION is ranked above the published $peak"
+	done
+
+	if [[ $blocked -eq 1 ]]; then
+		error "Published-version check failed. Pick a version the resolver orders above the peak of its release line."
+		exit 1
+	fi
 }
 
 ensure_clean_git() {
@@ -171,6 +231,7 @@ publish_pkg() {
 
 main() {
 	check_versions
+	check_published_version_line
 	ensure_clean_git
 	preflight_validate
 	run_format
