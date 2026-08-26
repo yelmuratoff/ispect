@@ -47,7 +47,6 @@
   </p>
 </div>
 
-
 <div align="center">
   <a href="https://github.com/yelmuratoff/ispect/blob/benchmark-data/report.md">
     <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fyelmuratoff%2Fispect%2Fbenchmark-data%2Fbadge.json&style=for-the-badge" alt="Latest benchmark result">
@@ -66,7 +65,7 @@ navigation diagnostics.
 
 ```yaml
 dependencies:
-  ispect: ^7.0.0-dev11
+  ispect: ^7.0.0-rc.1
 ```
 
 ```dart
@@ -391,10 +390,9 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
 
-
 ## Release channel
 
-The version declared in `version.config` (currently `7.0.0-dev11`) is the
+The version declared in `version.config` (currently `7.0.0-rc.1`) is the
 repository version used by package metadata and generated documentation. It
 may be a stable release or a prerelease; check pub.dev for the latest published
 stable version before pinning a production integration.
@@ -403,7 +401,7 @@ stable version before pinning a production integration.
 
 What you can verify from the repository today:
 
-- Repository metadata and generated documentation currently target `7.0.0-dev11`.
+- Repository metadata and generated documentation currently target `7.0.0-rc.1`.
 - SDK baseline is Dart `>=3.6.0 <4.0.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
 - The `production_safety` workflow runs disabled direct-API tests for every package and compares disabled/enabled release AOT probes using exact implementation sentinels.
 - Core diagnostics and supported integrations resolve one configurable default `RedactionService`; explicit integration services remain local overrides.
@@ -492,7 +490,6 @@ CI verifies both behavior and release reachability:
 Raw occurrences of the package name are reported only as diagnostic context;
 they are not used as a security threshold because compiler and dependency
 metadata can change independently of reachable diagnostics implementations.
-
 
 ## Repository
 

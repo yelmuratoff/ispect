@@ -47,7 +47,6 @@
   </p>
 </div>
 
-
 `ispectify_ws` is the provider-agnostic WebSocket diagnostics layer for the [ISpect toolkit](#the-ispect-toolkit). It captures sent and received frames, connection-state transitions, and errors — for **any** WebSocket client — and redacts sensitive data before logging. The published package depends only on `ispectify`; you keep your own WebSocket client dependency.
 
 - Frame-level capture for sent and received messages (`ws-sent` / `ws-received`).
@@ -59,8 +58,8 @@
 
 ```yaml
 dependencies:
-  ispectify: ^7.0.0-dev11
-  ispectify_ws: ^7.0.0-dev11
+  ispectify: ^7.0.0-rc.1
+  ispectify_ws: ^7.0.0-rc.1
   # plus your WebSocket client, e.g.
   # ws: ^1.0.0  |  web_socket_channel: ^3.0.0  |  socket_io_client: ^3.0.0
 ```
@@ -213,7 +212,6 @@ capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 
-
 ## The ISpect toolkit
 
 ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
@@ -229,7 +227,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

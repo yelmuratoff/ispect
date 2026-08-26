@@ -14,7 +14,7 @@ dependency_overrides:
 dependencies:
   flutter:
     sdk: flutter
-  ispectify: ^7.0.0-dev11
+  ispectify: ^7.0.0-rc.1
   ispectify_ws:
     path: ..
 

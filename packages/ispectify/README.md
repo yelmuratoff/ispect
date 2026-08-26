@@ -47,7 +47,6 @@
   </p>
 </div>
 
-
 `ispectify` is the logging core of the [ISpect toolkit](#the-ispect-toolkit). Pure Dart, no Flutter dependency. Use it in CLI tools, server-side Dart, and shared business-logic packages. You do not need `ispect` or the in-app panel to use it.
 
 - Typed log entries with explicit severity levels and log-type keys.
@@ -60,7 +59,7 @@
 
 ```yaml
 dependencies:
-  ispectify: ^7.0.0-dev11
+  ispectify: ^7.0.0-rc.1
 ```
 
 ## Logger-only quick start
@@ -386,7 +385,6 @@ capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 
-
 ## Security
 
 Exported logs are plain-text JSON. Do not write PII (emails, phone numbers, tokens) directly through `logger.info(...)`. Rely on the redaction engine when values flow through network interceptors, and sanitize user input before passing it to a manual log call. See [`docs/SECURITY.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md) for the data-handling policy.
@@ -406,7 +404,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

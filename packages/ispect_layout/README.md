@@ -47,7 +47,6 @@
   </p>
 </div>
 
-
 `ispect_layout` is a visual layout inspector for Flutter. Tap any widget at runtime to read its render box (size, constraints, padding, decoration, text styles, transform matrix, clip shape), or compare two widgets to measure the pixel gap between them.
 
 A standalone package. It works on its own, without the rest of the [ISpect toolkit](#the-ispect-toolkit).
@@ -80,7 +79,7 @@ A standalone package. It works on its own, without the rest of the [ISpect toolk
 
 ```yaml
 dependencies:
-  ispect_layout: ^7.0.0-dev11
+  ispect_layout: ^7.0.0-rc.1
 ```
 
 ## Quick start
@@ -183,7 +182,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

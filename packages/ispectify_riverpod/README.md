@@ -47,7 +47,6 @@
   </p>
 </div>
 
-
 `ispectify_riverpod` plugs the [`riverpod`](https://pub.dev/packages/riverpod) and [`flutter_riverpod`](https://pub.dev/packages/flutter_riverpod) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `ProviderObserver` forwards every provider add, update, dispose, and failure through the log pipeline, so the whole provider lifecycle shows up in the log viewer.
 
 - Adds, updates, disposes, and failures with full redacted values by default.
@@ -59,8 +58,8 @@
 ```yaml
 dependencies:
   flutter_riverpod: ^2.5.0
-  ispectify: ^7.0.0-dev11
-  ispectify_riverpod: ^7.0.0-dev11
+  ispectify: ^7.0.0-rc.1
+  ispectify_riverpod: ^7.0.0-rc.1
 ```
 
 ## Quick start
@@ -215,7 +214,6 @@ capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 
-
 Supply a custom `RedactionService` to mask sensitive provider state:
 
 ```dart
@@ -244,7 +242,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

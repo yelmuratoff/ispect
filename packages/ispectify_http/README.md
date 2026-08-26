@@ -47,7 +47,6 @@
   </p>
 </div>
 
-
 `ispectify_http` is an [`http_interceptor`](https://pub.dev/packages/http_interceptor) interceptor for the [ISpect toolkit](#the-ispect-toolkit). It captures requests made through the `package:http` client, pairs them into transactions, and redacts sensitive data before logging.
 
 - Request, response, and error capture with headers, body, status, and duration.
@@ -60,8 +59,8 @@
 dependencies:
   http: ^1.0.0
   http_interceptor: ^2.0.0
-  ispectify: ^7.0.0-dev11
-  ispectify_http: ^7.0.0-dev11
+  ispectify: ^7.0.0-rc.1
+  ispectify_http: ^7.0.0-rc.1
 ```
 
 ## Quick start
@@ -207,7 +206,6 @@ capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 
-
 Custom redactor:
 
 ```dart
@@ -234,7 +232,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

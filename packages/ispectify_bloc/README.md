@@ -47,7 +47,6 @@
   </p>
 </div>
 
-
 `ispectify_bloc` plugs the [`bloc`](https://pub.dev/packages/bloc) and [`flutter_bloc`](https://pub.dev/packages/flutter_bloc) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `BlocObserver` forwards every event, state change, transition, and error through the log pipeline, so the whole state-management timeline shows up in the log viewer.
 
 - Events, transitions, errors, and create/close lifecycle hooks.
@@ -59,8 +58,8 @@
 ```yaml
 dependencies:
   flutter_bloc: ^8.0.0
-  ispectify: ^7.0.0-dev11
-  ispectify_bloc: ^7.0.0-dev11
+  ispectify: ^7.0.0-rc.1
+  ispectify_bloc: ^7.0.0-rc.1
 ```
 
 ## Quick start
@@ -214,7 +213,6 @@ capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 
-
 ## The ISpect toolkit
 
 ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
@@ -230,7 +228,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

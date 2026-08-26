@@ -85,7 +85,7 @@ test_next_prerelease_always_rises() {
   assert_next_prerelease 7.0.0-dev.9 7.0.0-dev.10
   assert_next_prerelease 7.0.0-rc 7.0.0-rc.1
   assert_next_prerelease 7.0.0-dev9 7.0.0-dev9.1
-  assert_next_prerelease 7.0.0-dev11 7.0.0-dev11.1
+  assert_next_prerelease 7.0.0-dev11 7.0.0-rc.1
   assert_next_prerelease 7.0.0-dev01 7.0.0-dev01.1
 
   semver_next_prerelease 7.0.0 2>/dev/null &&
@@ -103,7 +103,7 @@ test_start_prerelease_uses_dot_form() {
 test_release_line_peak_ignores_other_lines() {
   local published=(6.1.6 6.1.7 7.0.0-dev8 7.0.0-dev9 7.0.0-dev10 7.0.0-dev11 7.1.0)
 
-  [[ $(semver_max_in_line 7.0.0-dev11.1 "${published[@]}") == 7.0.0-dev9 ]] ||
+  [[ $(semver_max_in_line 7.0.0-rc.1 "${published[@]}") == 7.0.0-dev9 ]] ||
     die "the 7.0 peak should be 7.0.0-dev9, the version Pub ranks highest"
   [[ $(semver_max_in_line 6.1.8 "${published[@]}") == 6.1.7 ]] ||
     die "a 6.1 backport should be judged against 6.1.7, not against 7.1.0"

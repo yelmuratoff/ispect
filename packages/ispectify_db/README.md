@@ -47,7 +47,6 @@
   </p>
 </div>
 
-
 `ispectify_db` adds passive database observability to the [ISpect toolkit](#the-ispect-toolkit). It traces SQL statements, ORM operations, and KV-store calls through a single `dbTrace` extension with timing, row counts, slow-query detection, and redaction.
 
 - Works with any driver. sqflite, drift, Isar, ObjectBox, shared_preferences, hive, and the rest. Wrap the call and the tracing is automatic.
@@ -60,8 +59,8 @@
 
 ```yaml
 dependencies:
-  ispectify: ^7.0.0-dev11
-  ispectify_db: ^7.0.0-dev11
+  ispectify: ^7.0.0-rc.1
+  ispectify_db: ^7.0.0-rc.1
 ```
 
 ## Quick start
@@ -102,15 +101,15 @@ final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
 
 ## Configuration
 
-| Field                | Default      | What it does                                                                                                  |
-| -------------------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
-| `sampleRate`         | `null`       | Fraction of successful calls to log. `null` and `1.0` both keep all of them; `0.1` keeps 10%.                 |
-| `redact`             | `true`       | Mask sensitive keys in `args` and `statement`.                                                                |
-| `redactKeys`         | built-in set | Override the redaction key list.                                                                              |
-| `captureMode`        | `balanced`   | Allow guarded, bounded typed-value and error formatting; use `strict` to disable application formatters.     |
-| `resourceLimits`     | logger policy | Override database scalar, diagnostic, metadata, traversal, and output budgets for this trace.                |
-| `attachStackOnError` | `false`      | Capture and log a stack trace on failure.                                                                     |
-| `slowThreshold`      | `null`       | Adds a `slow` flag to the trace entry, `true` when the duration exceeds the threshold. (Renamed from `slowQueryThreshold` in 5.0.) |
+| Field                | Default       | What it does                                                                                                                       |
+| -------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `sampleRate`         | `null`        | Fraction of successful calls to log. `null` and `1.0` both keep all of them; `0.1` keeps 10%.                                      |
+| `redact`             | `true`        | Mask sensitive keys in `args` and `statement`.                                                                                     |
+| `redactKeys`         | built-in set  | Override the redaction key list.                                                                                                   |
+| `captureMode`        | `balanced`    | Allow guarded, bounded typed-value and error formatting; use `strict` to disable application formatters.                           |
+| `resourceLimits`     | logger policy | Override database scalar, diagnostic, metadata, traversal, and output budgets for this trace.                                      |
+| `attachStackOnError` | `false`       | Capture and log a stack trace on failure.                                                                                          |
+| `slowThreshold`      | `null`        | Adds a `slow` flag to the trace entry, `true` when the duration exceeds the threshold. (Renamed from `slowQueryThreshold` in 5.0.) |
 
 ```dart
 const dbConfig = ISpectDbConfig(
@@ -196,7 +195,6 @@ capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 
-
 ## The ISpect toolkit
 
 ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
@@ -212,7 +210,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

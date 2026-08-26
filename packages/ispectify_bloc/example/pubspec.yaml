@@ -3,12 +3,12 @@ description: Minimal standalone BLoC observer example for ISpect.
 publish_to: none
 
 environment:
-  sdk: '>=3.6.0 <4.0.0'
+  sdk: ">=3.6.0 <4.0.0"
 
 dependencies:
   bloc: ^9.1.0
-  ispectify: ^7.0.0-dev11
-  ispectify_bloc: ^7.0.0-dev11
+  ispectify: ^7.0.0-rc.1
+  ispectify_bloc: ^7.0.0-rc.1
 
 dependency_overrides:
   ispectify:

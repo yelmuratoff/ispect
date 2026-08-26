@@ -109,7 +109,7 @@ test_peak_of_the_line_matches_pub_resolution() {
     versions+=("$version")
   done < <(FAKE_PUB_BODY="$fixture" FAKE_PUB_STATUS=200 pub_api_published_versions ispect)
 
-  [[ $(semver_max_in_line 7.0.0-dev11.1 "${versions[@]}") == 7.0.0-dev9 ]] ||
+  [[ $(semver_max_in_line 7.0.0-rc.1 "${versions[@]}") == 7.0.0-dev9 ]] ||
     die "the 7.0 line peak should be 7.0.0-dev9"
   [[ $(semver_max_in_line 6.1.8 "${versions[@]}") == 6.1.7 ]] ||
     die "the 6.1 line peak should be 6.1.7"
