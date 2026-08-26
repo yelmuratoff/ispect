@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.0.0-dev10
+## 7.0.0-dev11
 
 ### Breaking Changes
 
@@ -18,13 +18,13 @@
 - **Useful diagnostics by default:** Core logs, traces, network and database payloads, BLoC, and Riverpod retain bounded application descriptions or structured `toJson()` snapshots after redaction. Exceptions, stack traces, and ordinary HTTP URLs are readable again.
 - **Explicit capture policy:** `DiagnosticCaptureMode.balanced` is the default for internal diagnostics. Select `strict` when application-defined `toJson()` and `toString()` methods must never run.
 - **Useful state diagnostics by default:** BLoC and Riverpod expose full bounded values after redaction; their `compact` presets now also select strict capture for coarse structural summaries.
-- **Readable database statements:** Normalized SQL keeps identifiers quoted with `"` or `` ` ``, so traces from drift and other identifier-quoting clients name their tables and columns again. String literals, digits, comments, and any quoted span that does not read as a plain identifier stay masked.
-- **Readable correlation ids:** UUIDs, trace ids, and content hashes are no longer reported as opaque base64 payloads, so request, response, and error entries can still be correlated after redaction.
-- **Fewer false-positive masks:** `cache_key`, `sortKey`, `idempotency_key`, a widget `key`, `auth_state`, `token_count`, `token_type`, and a `session` object stay readable. Credentials, `PRAGMA key = …`, and `?key=` parameters remain masked.
-- **Readable route arguments:** Navigation entries keep the argument structure and its non-secret fields after redaction instead of collapsing to `Map` or `(Object)`. Sensitive values inside are masked, and caller formatters are still never invoked.
+- **Readable database statements:** Normalized SQL names tables and columns again; literals, digits, and comments stay masked.
+- **Readable correlation ids:** UUIDs, trace ids, and content hashes stay readable after redaction, so requests, responses, and errors can still be correlated.
+- **Fewer false-positive masks:** Non-secret keys such as `cache_key`, `idempotency_key`, and a widget `key` stay readable, while credentials and `?key=` parameters remain masked.
+- **Readable route arguments:** Navigation entries keep their argument structure and non-secret fields after redaction; sensitive values inside are still masked.
 - **Native exports:** Persistent exports now use the application's private support directory.
-- **Network header capture:** `printRequestHeaders` and `printResponseHeaders` now default to `true` and are captured after redaction; set them to `false` or use `metadataOnly()` to keep headers out of diagnostics entirely.
-- **Bounding and masking split:** Entries are bounded when emitted, and payload masking now runs on first read and is memoized, so entries nobody inspects no longer pay for it. `ISpectLogData.additionalData` returns the masked view; entries an application builds itself carry no masker and are returned as captured. A payload already bounded under the same limits is also no longer bounded a second time. Console rendering, entry text, and network detection now read only the fields they print instead of materializing the whole masked payload. Together these cut the cost of logging a 1 KB payload to roughly a quarter, with or without console output enabled.
+- **Network header capture:** `printRequestHeaders` and `printResponseHeaders` now default to `true` and are captured after redaction; set them to `false` or use `metadataOnly()` to opt out.
+- **Deferred payload masking:** Payloads are masked on first read instead of at capture, so entries nobody inspects cost far less — roughly a quarter of the previous cost for a 1 KB payload.
 
 ### Security
 
@@ -37,14 +37,13 @@
 
 ### Improvements
 
-- **Consistent diagnostics configuration:** Network settings and builders now read from one `NetworkInterceptorDefaults` contract. Dio and HTTP can reconfigure all shared capture fields at runtime, every builder has symmetric payload opt-outs, and network, trace, database, BLoC, and Riverpod overrides can return to their logger-owned resource policy. BLoC and Riverpod can also resume following the global redaction service.
+- **Consistent diagnostics configuration:** Network settings and builders share one `NetworkInterceptorDefaults` contract, Dio and HTTP can reconfigure capture at runtime, and every integration can return to its logger-owned resource and redaction policy.
 - **Idle-build performance:** Caller-owned values are not captured or formatted when no history, stream listener, console sink, or observer can consume the entry.
-- **Faster active diagnostics:** Active payload capture and batch export avoid redundant sanitization work while keeping default redaction and output bounds unchanged.
-- **Faster log sharing:** Exporting captured history reuses the redaction already applied at capture time instead of repeating it. A 100-entry JSON Lines share drops to roughly an eighth of its previous cost, and the text and Markdown formats to about a third. A custom redaction service, custom redact keys, a reconfigured global policy, or logs restored from a file are all redacted again as before, and private render hints stay stripped.
-- **More complete diagnostic handoff:** Increased bounded payloads to 256 KiB, individual records to 1 MiB, and JSON exports to 32 MiB; exports now report actual/truncated counts and imports can report skipped records.
-- **Convenient diagnostic profiles:** Balanced defaults require no tuning; the in-app Settings sheet offers one-tap Capture, Resource, and Processing profiles for stricter, lower-memory, responsive, larger-session, or throughput-focused diagnostics.
-- **Fully configurable budgets:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` cover formatter isolation, data sizes and counts, traversal, integrations, UI, batching, yielding, background work, and search. Exact `copyWith(...)` values persist through `ISpectSettingsState`, while the layout inspector separately exposes `maxRenderTreeClipboardCharacters`.
-- **Clearer network diagnostics:** Grouped and ungrouped HTTP cards show larger bounded body previews with explicit truncation cues, keep ordinary header names visible and redacted values behind a compact disclosure, reuse capture-time payload redaction during rendering, and provide consistent ripple feedback for transaction actions.
+- **Faster log sharing:** Exports reuse the redaction already applied at capture, cutting a 100-entry JSON Lines share to roughly an eighth of its previous cost. Custom redaction services and imported logs are still redacted again.
+- **More complete diagnostic handoff:** Larger payload, record, and export budgets; exports report actual and truncated counts, and imports can report skipped records.
+- **Convenient diagnostic profiles:** Balanced defaults require no tuning; the Settings sheet offers one-tap Capture, Resource, and Processing profiles.
+- **Fully configurable budgets:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` cover formatter isolation, data sizes, traversal, UI, batching, and search, and persist through `ISpectSettingsState`.
+- **Clearer network diagnostics:** HTTP cards show larger body previews with explicit truncation cues and keep header names visible with redacted values behind a compact disclosure.
 
 ### Bug Fixes
 
@@ -57,11 +56,15 @@
 - **HTTP replay:** Malformed form data and sender failures no longer leave the composer in a broken state.
 - **Network query visibility:** Dio and HTTP logs now include non-empty, redacted query parameters in the request URL across console, grouped, and ungrouped views.
 - **Stable bounded settings:** Runtime validation rejects invalid persisted capacities and inspector clipboard limits in release builds, and navigation transition equality no longer changes after logger reconfiguration.
-- Base64 detection now strips only line wrapping, so an ordinary diagnostic sentence is no longer replaced with a `[base64 ~NB]` placeholder.
-- **Readable route logs:** Navigation entries keep the route path — including paths such as `/users/42` that previously collided with filesystem-path detection — and mask only query and fragment values.
-- **Named BLoC and Riverpod diagnostics:** Balanced capture reports the concrete class — `AuthCubit`, `AuthLoading`, `counterProvider` — instead of the `Bloc` / `Cubit` / `Provider` / `Object` family labels. Strict capture, `ISpectBlocSettings.compact`, and `ISpectRiverpodSettings.compact` keep the coarse labels and still never read a caller's `runtimeType`.
-- **Useful database console lines:** Database traces name the table — derived from the statement when an interceptor does not supply one — show the normalized SQL with every literal and digit replaced by `?`, and carry affected rows, item counts, size, and cache hits. Row counts returned through `projectResult` are now reported. Oversized statements still fall back to the opaque digest, and secret-keyed operands such as `PRAGMA key` remain masked.
-- **Corrected documentation:** `ispectify_db` documented the wrong `attachStackOnError` and `sampleRate` defaults and a `db-slow-query` entry that is never emitted — `slowThreshold` adds a `slow` flag to the trace entry. The production-safety sentinel list now matches the workflow.
+- **Base64 detection:** An ordinary diagnostic sentence is no longer replaced with a `[base64 ~NB]` placeholder.
+- **Readable route logs:** Navigation entries keep the route path, such as `/users/42`, and mask only query and fragment values.
+- **Uncluttered BLoC console lines:** BLoC entries no longer repeat a `[bloc]` prefix that the log header and log key already carry.
+- **Named BLoC and Riverpod diagnostics:** Balanced capture reports the concrete class — `AuthCubit`, `AuthLoading`, `counterProvider` — instead of family labels. The `compact` presets keep the coarse labels.
+- **Useful database console lines:** Database traces name the table, show the normalized SQL, and carry affected rows, item counts, size, and cache hits. Oversized statements still fall back to the opaque digest.
+- **Corrected documentation:** Fixed the documented `ispectify_db` defaults for `attachStackOnError` and `sampleRate`, and a `db-slow-query` entry that is never emitted.
+- **Persistent log type filters:** Log type toggles now survive reopening the settings sheet instead of reverting to the app-start values and overwriting stored settings. `Select All` and `Deselect All` take effect, and custom log types are no longer suppressed.
+- **Disabled log types hidden immediately:** Turning a log type off now removes its entries from the viewer, the filter chips, and the error counters instead of only stopping future capture.
+- **Relative timestamps:** The `Relative time` toggle now applies to mobile log cards and grouped HTTP rows, not just the desktop table.
 
 ## 6.1.7
 
