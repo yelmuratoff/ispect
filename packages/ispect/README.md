@@ -1,7 +1,7 @@
 <!--
   GENERATED FILE — do not edit by hand.
   Source:     docs/readme/ispect.md
-  Regenerate: ./bash/build_readme.sh
+  Regenerate: dart run tool/bin/ispect_tool.dart readme
 -->
 
 <div align="center">

@@ -204,7 +204,7 @@ final class ReadmeBuilder {
       ..writeln('<!--')
       ..writeln('  GENERATED FILE — do not edit by hand.')
       ..writeln('  Source:     $_sourceDirName/${target.sourceName}.md')
-      ..writeln('  Regenerate: ./bash/build_readme.sh')
+      ..writeln('  Regenerate: dart run tool/bin/ispect_tool.dart readme')
       ..writeln('-->')
       ..writeln()
       ..write(body);
@@ -296,7 +296,7 @@ final class ReadmeBuilder {
       case ReadmeMode.check:
         if (drifted.isNotEmpty) {
           out.writeln('${_red}README drift detected in ${drifted.length} '
-              'target(s). Run ./bash/build_readme.sh to sync.$_reset');
+              'target(s). Run: ispect_tool readme$_reset');
         } else {
           out.writeln('${_green}All generated READMEs are up to date.$_reset');
         }

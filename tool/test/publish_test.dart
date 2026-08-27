@@ -281,7 +281,7 @@ void main() {
       expect(result.exitCode, 1);
       expect(result.errorLines, [
         '[ERR] ispect_layout version 6.9.0 != 7.0.0-dev.1',
-        '[ERR] Version mismatch. Run ./bash/update_versions.sh first.',
+        '[ERR] Version mismatch. Run: ispect_tool sync',
       ]);
       expect(runner.commands, isEmpty);
     });
@@ -299,7 +299,7 @@ void main() {
       expect(result.errorLines, [
         '[ERR] ispectify version 1.0.0 != 7.0.0-dev.1',
         '[ERR] ispect version 2.0.0 != 7.0.0-dev.1',
-        '[ERR] Version mismatch. Run ./bash/update_versions.sh first.',
+        '[ERR] Version mismatch. Run: ispect_tool sync',
       ]);
     });
 

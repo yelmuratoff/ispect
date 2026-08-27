@@ -13,7 +13,7 @@ const String _versionFile = 'version.config';
 const String _logDirectory = '.publish_logs';
 
 const String _usage = '''
-publish.sh - publish every package in dependency order
+ispect_tool publish - publish every package in dependency order
 
 Usage:
   ispect_tool publish                       Dry-run each package, then confirm
@@ -305,7 +305,7 @@ final class PublishRun {
     }
 
     if (mismatched) {
-      _error('Version mismatch. Run ./bash/update_versions.sh first.');
+      _error('Version mismatch. Run: ispect_tool sync');
       return 1;
     }
     _info('All package versions match $expected');
