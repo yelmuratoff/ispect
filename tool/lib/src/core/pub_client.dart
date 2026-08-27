@@ -228,6 +228,22 @@ final class BlockedByPeak extends PublishGate {
   bool get allowed => false;
 }
 
+/// The lowest version the gate would let through, given [peaks] — the highest
+/// version each package already serves on the line being released.
+///
+/// The monorepo publishes every package from one `version.config`, so the
+/// answer has to clear the highest peak among them, not each one separately.
+/// Returns null when no package has opened the line yet.
+Version? lowestPublishableAbove(Iterable<Version> peaks) {
+  final highest = peaks.isEmpty ? null : (peaks.toList()..sort()).last;
+  if (highest == null) {
+    return null;
+  }
+  return highest.isPreRelease
+      ? nextPrerelease(highest)
+      : Version(highest.major, highest.minor, highest.patch + 1);
+}
+
 /// Decides whether [target] may be released for [package] over [published].
 ///
 /// A release only counts when the resolver ranks it above the highest version

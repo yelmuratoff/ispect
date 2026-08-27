@@ -322,6 +322,59 @@ void main() {
     });
   });
 
+  group('the lowest publishable version', () {
+    test('advances the counter of the highest published prerelease', () {
+      expect(
+        lowestPublishableAbove(
+          ['7.0.0-rc.1', '7.0.0-rc.3', '7.0.0-rc.2'].map(Version.parse),
+        ),
+        Version.parse('7.0.0-rc.4'),
+      );
+    });
+
+    test('clears the highest peak, not the first one it is given', () {
+      expect(
+        lowestPublishableAbove(
+          ['7.0.0-rc.1', '7.0.0-rc.9'].map(Version.parse),
+        ),
+        Version.parse('7.0.0-rc.10'),
+      );
+    });
+
+    test('advances the patch when the highest published is stable', () {
+      expect(
+        lowestPublishableAbove([Version.parse('6.1.7')]),
+        Version.parse('6.1.8'),
+      );
+    });
+
+    test('appends a counter when the peak glues its own', () {
+      expect(
+        lowestPublishableAbove([Version.parse('7.0.0-dev9')]),
+        Version.parse('7.0.0-dev9.1'),
+      );
+    });
+
+    test('reports nothing when no package has opened the line', () {
+      expect(lowestPublishableAbove(const []), isNull);
+    });
+
+    test('always produces a version the gate then accepts', () {
+      final published =
+          ['7.0.0-rc.1', '7.0.0-rc.3'].map(Version.parse).toList();
+      final suggestion = lowestPublishableAbove(published)!;
+
+      expect(
+        publishGate(
+          package: 'ispect',
+          target: suggestion,
+          published: published,
+        ).allowed,
+        isTrue,
+      );
+    });
+  });
+
   group('the publish gate', () {
     final published = _ispectVersions.map(Version.parse).toList();
 

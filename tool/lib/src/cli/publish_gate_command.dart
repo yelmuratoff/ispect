@@ -28,6 +28,7 @@ final class CheckPublishedCommand extends Command<int> {
 
     final client = PubClient();
     var blocked = false;
+    final peaks = <Version>[];
 
     for (final package in publishOrder) {
       final List<Version> published;
@@ -54,23 +55,33 @@ final class CheckPublishedCommand extends Command<int> {
             '[ERR] $package $target is already published; bump the version '
             'before releasing again',
           );
+          peaks.add(target);
           blocked = true;
         case RisesAbovePeak(:final peak):
           stdout.writeln('[OK ] $package $target is ranked above $peak');
+          peaks.add(peak);
         case BlockedByPeak(:final peak, :final reason):
           stderr.writeln(
             '[ERR] $package $target is not ranked above the published $peak; '
             'consumers would keep resolving $peak ($reason)',
           );
+          peaks.add(peak);
           blocked = true;
       }
     }
 
     if (blocked) {
+      final suggestion = lowestPublishableAbove(peaks);
       stderr.writeln(
         '[ERR] Published-version check failed. Pick a version the resolver '
         'orders above the peak of its release line.',
       );
+      if (suggestion != null) {
+        stderr.writeln(
+          "[ERR] Lowest version that would pass: $suggestion — run "
+          "'ispect_tool version bump $suggestion'",
+        );
+      }
       return 1;
     }
     return 0;
