@@ -20,6 +20,7 @@ dart run tool/bin/ispect_tool.dart <command>
 
 | Command                           | Replaces                 | Does                                                                                       |
 | --------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
+| `check`                           | the whole CI gate        | Runs every repository check in one process — what CI and the hook call     |
 | `version check`                   | `check_version_sync.sh`  | Every package `version:` matches `version.config`                                          |
 | `version bump <kind\|dev\|X.Y.Z>` | `bump_version.sh`        | Advances `VERSION`, refusing anything Pub does not order above the current one             |
 | `sync [--bump k] [--dry-run]`     | `update_versions.sh`     | Propagates `VERSION` to manifests, internal constraints, and the web lockfile              |
@@ -33,6 +34,15 @@ dart run tool/bin/ispect_tool.dart <command>
 
 `publish --only <package>` narrows the run to one package — the way to resume a
 release after a single package failed while the rest went out.
+
+## Pre-commit hook
+
+```bash
+cp tool/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
+
+It runs `ispect_tool check`, which pays the VM start once instead of four
+times.
 
 ## Layout
 
@@ -53,10 +63,6 @@ Three kinds of test carry different weight:
   the committed `README.md`, `packages/*/README.md`, and `llms.txt` and require a
   byte-identical result. These survive the deletion of the bash scripts and are
   the strongest ongoing guarantee.
-- **Differential** — `*_differential_test.dart` and `bash_conformance_test.dart`
-  run the frozen bash script and the Dart implementation over the same fixture
-  and require identical exit codes and byte-identical trees. They are scaffolding
-  for the migration and are deleted with their subject.
 - **Unit** — behaviour and error branches per module.
 
 `publish_test.dart` never reaches pub.dev: `ProcessRunner` and

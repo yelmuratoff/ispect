@@ -7,8 +7,8 @@ How versions are kept consistent across the ISpect monorepo.
 - `version.config`, the single source of truth for the current version.
 - `CHANGELOG.md`, the source of truth for release notes.
 - `tool/`, the Dart CLI that owns every command below. Run `cd tool && dart pub get` once after a fresh clone, then `dart run tool/bin/ispect_tool.dart <command>`. See `tool/README.md` for the full command table.
-- `bash/pre-commit.sh`, Git hook that dispatches to that CLI to catch version drift before a commit lands.
-- `bash/*.sh`, the previous implementation. Frozen: retained for one release cycle as the revert path and exercised by the differential tests in `tool/test/`. Do not call or edit them.
+- `tool/hooks/pre-commit`, Git hook that runs `ispect_tool check` before a commit lands.
+- `bash/run_benchmarks.sh` and `bash/measure_release_size.sh`, fixed command sequences that stay shell.
 - `.github/workflows/sync_versions_and_changelogs.yml`, CI workflow for automatic version and changelog sync.
 - `.github/workflows/validate_versions.yml`, CI workflow that validates versions in pull requests.
 - `.github/workflows/production_safety.yml`, CI workflow that verifies release builds with `ISPECT_ENABLED` omitted.
@@ -113,7 +113,7 @@ The GitHub Actions workflows automate the rest.
 A pre-commit hook catches version drift before it lands:
 
 ```bash
-cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+cp tool/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 ```
 
 The hook:

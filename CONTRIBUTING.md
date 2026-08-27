@@ -33,10 +33,10 @@ git clone https://github.com/yelmuratoff/ispect.git
 cd ispect
 
 # Install the pre-commit hook.
-cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+cp tool/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 
 # Validate version and dependency consistency.
-dart run tool/bin/ispect_tool.dart version check && dart run tool/bin/ispect_tool.dart deps
+dart run tool/bin/ispect_tool.dart check
 ```
 
 ## Running tests and lint
@@ -75,7 +75,7 @@ See [docs/VERSION_MANAGEMENT.md](docs/VERSION_MANAGEMENT.md) for the full refere
 
 ## Automation scripts
 
-Build and release tooling is the Dart CLI in `tool/`. See [tool/README.md](tool/README.md) for the command table; run `cd tool && dart pub get` once after a fresh clone. The frozen predecessors in `bash/` are catalogued in [bash/README.md](bash/README.md).
+Build and release tooling is the Dart CLI in `tool/`. See [tool/README.md](tool/README.md) for the command table; run `cd tool && dart pub get` once after a fresh clone. `bash/` keeps only the two benchmark scripts, which stay shell because they are fixed command sequences.
 
 ## Pull request requirements
 

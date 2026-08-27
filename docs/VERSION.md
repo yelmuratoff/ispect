@@ -9,7 +9,7 @@ A short overview of the version-management workflow. The full reference lives in
 - `version.config`, the single source of truth for the current version.
 - `CHANGELOG.md`, the release notes for every version.
 - `tool/`, the Dart CLI owning every release command. `release-prep` is the single command for bumps and release synchronization; `version check` and `deps` validate versions and internal dependencies. See `tool/README.md`.
-- `bash/*.sh`, the previous implementation. Frozen and slated for deletion; the differential tests in `tool/test/` still run them to prove the two agree.
+- `bash/run_benchmarks.sh` and `bash/measure_release_size.sh`, fixed command sequences that stay shell.
 
 ### GitHub Actions workflows
 
