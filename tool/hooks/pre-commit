@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Git pre-commit hook: one process runs every repository check.
+# Install: cp tool/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+set -uo pipefail
+
+if [[ ! -d tool/.dart_tool ]]; then
+  echo "❌ Release tooling is not resolved. Run: cd tool && dart pub get"
+  exit 1
+fi
+
+if ! dart run tool/bin/ispect_tool.dart check; then
+  exit 1
+fi
+
+if [[ -f CHANGELOG.md ]]; then
+  if ! grep -q "^# Changelog" CHANGELOG.md; then
+    echo "⚠️ CHANGELOG.md does not start with '# Changelog'. Please fix the format."
+    exit 1
+  fi
+  version=$(awk -F= '$1 == "VERSION" { print $2; exit }' version.config)
+  if [[ -n $version ]] && ! grep -q "^## $version" CHANGELOG.md; then
+    echo "⚠️ Current version $version is not documented in CHANGELOG.md."
+    exit 1
+  fi
+fi

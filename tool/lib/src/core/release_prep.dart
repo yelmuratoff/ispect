@@ -21,13 +21,13 @@ const String _tempAlphabet =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 const String _usage = '''
-release_prep.sh - synchronize every release-managed artifact
+ispect_tool release-prep - synchronize every release-managed artifact
 
 Usage:
-  ./bash/release_prep.sh [patch|minor|major] [options]
-  ./bash/release_prep.sh --bump patch|minor|major [options]
-  ./bash/release_prep.sh --skip-bump [options]
-  ./bash/release_prep.sh --carry-changelog
+  ispect_tool release-prep [patch|minor|major] [options]
+  ispect_tool release-prep --bump patch|minor|major [options]
+  ispect_tool release-prep --skip-bump [options]
+  ispect_tool release-prep --carry-changelog
 
 Modes:
   patch|minor|major     Bump kind (default: patch)
@@ -53,10 +53,6 @@ to their exact pre-run state.''';
 /// which then restores every managed file to its pre-run state, so an
 /// implementation may leave a partial result behind.
 abstract interface class ReleaseSteps {
-  /// Repository-relative scripts that must exist and be executable before the
-  /// run touches anything. Shrinks to nothing once every step is Dart.
-  List<String> get requiredScripts;
-
   /// Propagates `version.config` to every manifest, first advancing it by
   /// [bump] unless [bump] is null.
   int syncVersions(BumpKind? bump);
@@ -94,9 +90,6 @@ final class DartReleaseSteps implements ReleaseSteps {
   final String repoRoot;
   final StringSink out;
   final StringSink err;
-
-  @override
-  List<String> get requiredScripts => const [];
 
   @override
   int syncVersions(BumpKind? bump) => runVersionSync(
@@ -192,6 +185,18 @@ final class DartReleaseSteps implements ReleaseSteps {
   }
 }
 
+/// The checks that decide whether the repository is in a releasable state.
+///
+/// A release run stops at the first failure because it holds a transaction
+/// open; a standalone check runs them all so one command reports everything
+/// that is wrong. Both read the set from here.
+List<int Function()> repositoryChecks(ReleaseSteps steps) => [
+      steps.checkVersionSync,
+      steps.checkDependencies,
+      steps.checkReadmes,
+      steps.checkLlms,
+    ];
+
 /// How one release run should treat the version and the changelog.
 final class ReleasePrepOptions {
   const ReleasePrepOptions({
@@ -257,7 +262,6 @@ final class ReleasePrep {
     try {
       _assertOptionsAgree(options);
       _assertChangelogShape();
-      _assertScriptsAvailable();
       previousVersion = _readVersion();
       targets = _collectReleaseTargets();
     } on ToolException catch (e) {
@@ -372,15 +376,6 @@ final class ReleasePrep {
       throw const ReleasePrepException(
         "$_changelogFile must start with '# Changelog'",
       );
-    }
-  }
-
-  void _assertScriptsAvailable() {
-    for (final script in steps.requiredScripts) {
-      final file = File(p.join(repoRoot, script));
-      if (!file.existsSync() || file.statSync().mode & 0x49 == 0) {
-        throw ReleasePrepException('Required executable not found: $script');
-      }
     }
   }
 
@@ -519,12 +514,7 @@ final class ReleasePrep {
 
   int _validateRelease(String targetVersion) {
     out.writeln('==> Validating release artifacts');
-    for (final check in [
-      steps.checkVersionSync,
-      steps.checkDependencies,
-      steps.checkReadmes,
-      steps.checkLlms,
-    ]) {
+    for (final check in repositoryChecks(steps)) {
       final status = check();
       if (status != 0) {
         return status;

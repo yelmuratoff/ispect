@@ -268,7 +268,7 @@ void main() {
 
       await expectLater(release(repo, ['--nope']), completion(2));
       expect(err.toString(), contains('Unknown argument: --nope'));
-      expect(err.toString(), contains('release_prep.sh'));
+      expect(err.toString(), contains('ispect_tool release-prep'));
     });
 
     test('a changelog without the expected first heading is rejected',
@@ -538,9 +538,6 @@ final class _FailingSteps implements ReleaseSteps {
 
   int _runOrFail(_Step step, int Function() action) =>
       step == failing ? _reportFailure() : action();
-
-  @override
-  List<String> get requiredScripts => _delegate.requiredScripts;
 
   @override
   int syncVersions(BumpKind? bump) =>

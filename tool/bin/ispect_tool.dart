@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:ispect_tool/src/cli/check_command.dart';
 import 'package:ispect_tool/src/cli/deps_command.dart';
 import 'package:ispect_tool/src/cli/docs_commands.dart';
 import 'package:ispect_tool/src/cli/publish_command.dart';
@@ -21,6 +22,7 @@ Future<void> main(List<String> arguments) async {
 
   final runner = CommandRunner<int>(
       'ispect_tool', 'Release tooling for the ISpect monorepo.')
+    ..addCommand(CheckCommand(repoRoot))
     ..addCommand(VersionCommand(repoRoot))
     ..addCommand(SyncCommand(repoRoot))
     ..addCommand(DepsCommand(repoRoot))
