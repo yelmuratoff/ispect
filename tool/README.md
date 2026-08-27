@@ -31,6 +31,9 @@ dart run tool/bin/ispect_tool.dart <command>
 | `check-published`                 | the gate in `publish.sh` | Refuses a version the resolver would not rank above the published peak of its release line |
 | `publish [--dry-run\|--auto]`     | `publish.sh`             | Publishes every package in dependency order behind its preflights                          |
 
+`publish --only <package>` narrows the run to one package — the way to resume a
+release after a single package failed while the rest went out.
+
 ## Layout
 
 `bin/` wires the `CommandRunner` and nothing else. All logic lives in

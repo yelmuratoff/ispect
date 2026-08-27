@@ -19,6 +19,13 @@ final class PublishCommand extends Command<int> {
         negatable: false,
         help: 'Publish without asking; overridden by --dry-run.',
       )
+      ..addMultiOption(
+        'only',
+        valueHelp: 'package',
+        allowed: publishOrder,
+        splitCommas: false,
+        help: 'Limit the run to the named package; repeatable.',
+      )
       ..addFlag(
         'verbose',
         abbr: 'v',

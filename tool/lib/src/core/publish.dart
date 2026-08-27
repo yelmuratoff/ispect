@@ -23,6 +23,7 @@ Usage:
 Options:
   --dry-run                 Stop after the dry-run of every package
   --auto                    Publish without asking; overridden by --dry-run
+  --only <package>          Limit the run to one package; repeatable
   --verbose, -v             Print the full dry-run output of every package
   --skip-pub-version-check  Do not ask the host what it already serves''';
 
@@ -448,8 +449,12 @@ final class PublishRun {
     final directory = p.join(repoRoot, 'packages', package);
 
     _warn('($package) pub get');
-    final get =
-        runner.run('dart', const ['pub', 'get'], workingDirectory: directory);
+    // package:realm pins analyzer ^7 against the SDK's flutter_test.
+    final get = runner.run(
+      'dart',
+      const ['pub', 'get', '--no-example'],
+      workingDirectory: directory,
+    );
     if (!get.succeeded) {
       _recordFailure(package, 'pub_get', get.output, options);
       return false;
@@ -592,13 +597,27 @@ Future<int> runPublish({
   var auto = false;
   var verbose = false;
   var skipPubVersionCheck = false;
+  final only = <String>{};
 
-  for (final argument in arguments) {
+  for (var index = 0; index < arguments.length; index++) {
+    final argument = arguments[index];
     switch (argument) {
       case '--dry-run':
         dryRun = true;
       case '--auto':
         auto = true;
+      case '--only':
+        index++;
+        if (index >= arguments.length) {
+          errors.writeln('Missing package name after --only');
+          return 2;
+        }
+        final selected = arguments[index];
+        if (!publishOrder.contains(selected)) {
+          errors.writeln('Unknown package: $selected');
+          return 2;
+        }
+        only.add(selected);
       case '--verbose' || '-v':
         verbose = true;
       case '--skip-pub-version-check':
@@ -612,6 +631,8 @@ Future<int> runPublish({
     }
   }
 
+  final selection = packages ?? publishOrder;
+
   return PublishRun(
     repoRoot: repoRoot,
     out: output,
@@ -620,7 +641,12 @@ Future<int> runPublish({
     publishedVersions: publishedVersions,
     confirmation: confirmation,
     environment: environment,
-    packages: packages,
+    packages: only.isEmpty
+        ? packages
+        : [
+            for (final package in selection)
+              if (only.contains(package)) package,
+          ],
   ).run(
     PublishOptions(
       dryRun: dryRun,

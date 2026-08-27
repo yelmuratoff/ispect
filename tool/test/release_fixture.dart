@@ -15,18 +15,6 @@ const List<String> releaseFixturePackages = [
   'ispectify_ws',
 ];
 
-/// The scripts a fixture repository needs, whether it runs the bash
-/// orchestrator or only the bridged changelog step.
-const List<String> _fixtureScripts = [
-  'release_prep.sh',
-  'update_versions.sh',
-  'update_changelog.sh',
-  'build_readme.sh',
-  'build_llms.sh',
-  'check_version_sync.sh',
-  'check_dependencies.sh',
-];
-
 /// The root changelog a fresh fixture carries, and the exact content a carry
 /// or a recovery must move onto the new version.
 String fixtureChangelog(String version) => '''
@@ -39,28 +27,14 @@ String fixtureChangelog(String version) => '''
 - Carry these release notes unchanged.
 ''';
 
-/// Builds the fixture repository `bash/tests/release_prep_test.sh` builds,
-/// under [destination], and returns its path.
+/// Builds the release fixture repository under [destination] and returns its
+/// path.
 String createReleaseFixture({
-  required String sourceRepo,
   required String destination,
   String version = '7.0.0-dev.1',
   String? changelogVersion,
 }) {
   final repo = destination;
-
-  writeFixtureFile(
-    p.join(repo, 'bash', 'lib', 'semver.sh'),
-    File(p.join(sourceRepo, 'bash', 'lib', 'semver.sh')).readAsStringSync(),
-  );
-  for (final script in _fixtureScripts) {
-    final target = p.join(repo, 'bash', script);
-    writeFixtureFile(
-      target,
-      File(p.join(sourceRepo, 'bash', script)).readAsStringSync(),
-    );
-    makeExecutable(target);
-  }
 
   writeFixtureFile(p.join(repo, 'version.config'), 'VERSION=$version\n');
   writeFixtureFile(

@@ -43,7 +43,6 @@ void main() {
     String? changelogVersion,
   }) =>
       createReleaseFixture(
-        sourceRepo: sourceRepo,
         destination: p.join(workspace.path, name, 'repo'),
         version: version,
         changelogVersion: changelogVersion,

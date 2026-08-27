@@ -86,7 +86,7 @@ final class FakeProcessRunner implements ProcessRunner {
       formatted = true;
       return formatResult;
     }
-    if (executable == 'dart' && arguments.join(' ') == 'pub get') {
+    if (executable == 'dart' && arguments.join(' ') == 'pub get --no-example') {
       return pubGetResults[package] ?? _ok;
     }
     if (executable == 'dart' && arguments.contains('--dry-run')) {
@@ -198,6 +198,72 @@ void main() {
       expect(result.exitCode, 0);
       expect(result.out, contains('ispect_tool publish --dry-run'));
       expect(runner.commands, isEmpty);
+    });
+
+    test('--only without a package name is refused', () async {
+      final result = await invoke(fixture(), const ['--only']);
+
+      expect(result.exitCode, 2);
+      expect(result.err, 'Missing package name after --only\n');
+    });
+
+    test('--only refuses a package the monorepo does not publish', () async {
+      final result = await invoke(fixture(), const ['--only', 'ispect_ui']);
+
+      expect(result.exitCode, 2);
+      expect(result.err, 'Unknown package: ispect_ui\n');
+    });
+  });
+
+  group('--only', () {
+    test('limits the run to the named package', () async {
+      final runner = FakeProcessRunner();
+
+      final result = await invoke(
+        fixture(),
+        const ['--auto', '--only', 'ispectify_db', '--skip-pub-version-check'],
+        runner: runner,
+      );
+
+      expect(result.exitCode, 0);
+      expect(runner.publishedPackages, const ['ispectify_db']);
+    });
+
+    test('keeps dependency order regardless of the order it is given',
+        () async {
+      final runner = FakeProcessRunner();
+
+      final result = await invoke(
+        fixture(),
+        const [
+          '--auto',
+          '--only',
+          'ispect',
+          '--only',
+          'ispectify',
+          '--skip-pub-version-check',
+        ],
+        runner: runner,
+      );
+
+      expect(result.exitCode, 0);
+      expect(runner.publishedPackages, const ['ispectify', 'ispect']);
+    });
+
+    test('a package left out is never asked about on the host', () async {
+      final asked = <String>[];
+
+      final result = await invoke(
+        fixture(),
+        const ['--dry-run', '--only', 'ispectify_db'],
+        publishedVersions: (package) async {
+          asked.add(package);
+          return const <Version>[];
+        },
+      );
+
+      expect(result.exitCode, 0);
+      expect(asked, const ['ispectify_db']);
     });
   });
 

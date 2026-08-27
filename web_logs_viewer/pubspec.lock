@@ -291,56 +291,56 @@ packages:
       path: "../packages/ispect"
       relative: true
     source: path
-    version: "7.0.0-rc.2"
+    version: "7.0.0-rc.3"
   ispect_layout:
     dependency: "direct overridden"
     description:
       path: "../packages/ispect_layout"
       relative: true
     source: path
-    version: "7.0.0-rc.2"
+    version: "7.0.0-rc.3"
   ispectify:
     dependency: "direct main"
     description:
       path: "../packages/ispectify"
       relative: true
     source: path
-    version: "7.0.0-rc.2"
+    version: "7.0.0-rc.3"
   ispectify_bloc:
     dependency: "direct main"
     description:
       path: "../packages/ispectify_bloc"
       relative: true
     source: path
-    version: "7.0.0-rc.2"
+    version: "7.0.0-rc.3"
   ispectify_db:
     dependency: "direct main"
     description:
       path: "../packages/ispectify_db"
       relative: true
     source: path
-    version: "7.0.0-rc.2"
+    version: "7.0.0-rc.3"
   ispectify_dio:
     dependency: "direct main"
     description:
       path: "../packages/ispectify_dio"
       relative: true
     source: path
-    version: "7.0.0-rc.2"
+    version: "7.0.0-rc.3"
   ispectify_http:
     dependency: "direct main"
     description:
       path: "../packages/ispectify_http"
       relative: true
     source: path
-    version: "7.0.0-rc.2"
+    version: "7.0.0-rc.3"
   ispectify_ws:
     dependency: "direct main"
     description:
       path: "../packages/ispectify_ws"
       relative: true
     source: path
-    version: "7.0.0-rc.2"
+    version: "7.0.0-rc.3"
   leak_tracker:
     dependency: transitive
     description:
