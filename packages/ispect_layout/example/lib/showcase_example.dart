@@ -15,10 +15,8 @@ void main() {
       themeMode: ThemeMode.system,
       builder: (context, child) => Inspector(
         isEnabled: true,
-        panelBuilder: (context, controller, content) => _CustomShowcasePanel(
-          controller: controller,
-          child: content,
-        ),
+        panelBuilder: (context, controller, content) =>
+            _CustomShowcasePanel(controller: controller, child: content),
         child: child!,
       ),
     ),
@@ -26,20 +24,15 @@ void main() {
 }
 
 class _CustomShowcasePanel extends StatelessWidget {
-  const _CustomShowcasePanel({
-    required this.controller,
-    required this.child,
-  });
+  const _CustomShowcasePanel({required this.controller, required this.child});
 
   final InspectorController controller;
   final Widget child;
 
-  void _toggleMode(
-    InspectorMode target, {
-    BuildContext? pickerContext,
-  }) {
-    final next =
-        controller.modeNotifier.value == target ? InspectorMode.none : target;
+  void _toggleMode(InspectorMode target, {BuildContext? pickerContext}) {
+    final next = controller.modeNotifier.value == target
+        ? InspectorMode.none
+        : target;
     controller.setMode(next, context: pickerContext);
   }
 
@@ -49,26 +42,32 @@ class _CustomShowcasePanel extends StatelessWidget {
       listenable: controller.modeNotifier,
       builder: (context, _) {
         final mode = controller.modeNotifier.value;
-        return DraggablePanel(
-          items: [
-            DraggablePanelItem(
+        return DraggableActionPanel(
+          actions: [
+            PanelAction(
               icon: Icons.format_shapes,
-              description: 'Inspect widgets',
-              enableBadge: mode == InspectorMode.inspector,
-              onTap: (_) => _toggleMode(InspectorMode.inspector),
+              tooltip: 'Inspect widgets',
+              badge: mode == InspectorMode.inspector
+                  ? const PanelBadge.dot()
+                  : null,
+              onPressed: () => _toggleMode(InspectorMode.inspector),
             ),
-            DraggablePanelItem(
+            PanelAction(
               icon: Icons.colorize,
-              description: 'Pick a colour from the canvas',
-              enableBadge: mode == InspectorMode.colorPicker,
-              onTap: (ctx) =>
-                  _toggleMode(InspectorMode.colorPicker, pickerContext: ctx),
+              tooltip: 'Pick a colour from the canvas',
+              badge: mode == InspectorMode.colorPicker
+                  ? const PanelBadge.dot()
+                  : null,
+              onPressed: () => _toggleMode(
+                InspectorMode.colorPicker,
+                pickerContext: context,
+              ),
             ),
-            DraggablePanelItem(
+            PanelAction(
               icon: Icons.zoom_in,
-              description: 'Magnify a region',
-              enableBadge: mode == InspectorMode.zoom,
-              onTap: (_) => _toggleMode(InspectorMode.zoom),
+              tooltip: 'Magnify a region',
+              badge: mode == InspectorMode.zoom ? const PanelBadge.dot() : null,
+              onPressed: () => _toggleMode(InspectorMode.zoom),
             ),
           ],
           child: child,
@@ -191,10 +190,7 @@ class _TypographyTab extends StatelessWidget {
                 ),
                 TextSpan(
                   text: 'with ',
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 20,
-                  ),
+                  style: TextStyle(fontStyle: FontStyle.italic, fontSize: 20),
                 ),
                 TextSpan(
                   text: 'spans',
@@ -412,7 +408,8 @@ class _LayoutTab extends StatelessWidget {
                     color: Colors.indigo.shade100,
                     padding: const EdgeInsets.all(12),
                     child: const Text(
-                        'This one is much taller because it has more content here'),
+                      'This one is much taller because it has more content here',
+                    ),
                   ),
                 ),
                 const VerticalDivider(width: 1),
@@ -562,11 +559,7 @@ class _DecoratedCard extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 100,
-          height: 80,
-          decoration: decoration,
-        ),
+        Container(width: 100, height: 80, decoration: decoration),
         const SizedBox(height: 6),
         Text(label, style: const TextStyle(fontSize: 11)),
       ],
@@ -621,25 +614,13 @@ class _SpacingTab extends StatelessWidget {
             child: Column(
               spacing: 0,
               children: [
-                Container(
-                  height: 40,
-                  color: Colors.red.shade300,
-                ),
+                Container(height: 40, color: Colors.red.shade300),
                 const SizedBox(height: 16),
-                Container(
-                  height: 40,
-                  color: Colors.blue.shade300,
-                ),
+                Container(height: 40, color: Colors.blue.shade300),
                 const SizedBox(height: 32),
-                Container(
-                  height: 40,
-                  color: Colors.green.shade300,
-                ),
+                Container(height: 40, color: Colors.green.shade300),
                 const SizedBox(height: 8),
-                Container(
-                  height: 40,
-                  color: Colors.purple.shade300,
-                ),
+                Container(height: 40, color: Colors.purple.shade300),
               ],
             ),
           ),
@@ -771,7 +752,7 @@ class _MixedTab extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       Colors.blueGrey.shade800,
-                      Colors.blueGrey.shade400
+                      Colors.blueGrey.shade400,
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -1010,7 +991,7 @@ class _TransformClipTab extends StatelessWidget {
                       Colors.red,
                       Colors.amber,
                       Colors.green,
-                      Colors.blue
+                      Colors.blue,
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -1300,7 +1281,8 @@ class _FieldsTab extends StatelessWidget {
                   ),
                 ),
                 TextSpan(
-                  text: ' and span style extraction across multiple styled '
+                  text:
+                      ' and span style extraction across multiple styled '
                       'segments — this should be long enough to trigger the '
                       'ellipsis on the preview line of the info panel.',
                 ),
@@ -1448,10 +1430,7 @@ class _ImagesTab extends StatelessWidget {
               image: const DecorationImage(
                 image: AssetImage('assets/showcase_image.png'),
                 fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.black38,
-                  BlendMode.darken,
-                ),
+                colorFilter: ColorFilter.mode(Colors.black38, BlendMode.darken),
               ),
             ),
             alignment: Alignment.center,

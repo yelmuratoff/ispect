@@ -218,10 +218,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
           child: currentChild,
         );
 
-        return ISpectScopeController(
-          model: model,
-          child: currentChild,
-        );
+        return ISpectScopeController(model: model, child: currentChild);
       },
     );
   }
@@ -246,70 +243,80 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         final data = ISpectPanelData(
           controller: _panelController,
           theme: theme.panelTheme ?? _buildDefaultPanelTheme(context),
+          actionTheme:
+              theme.panelActionTheme ?? _buildDefaultActionTheme(context),
           buttons: options.panelButtons,
           child: child,
-          items: [
+          actions: [
             if (settings.isLogPageEnabled)
-              DraggablePanelItem(
+              PanelAction(
                 icon: _logPageController.inLoggerPage
                     ? Icons.undo_rounded
                     : Icons.reorder_rounded,
-                enableBadge: _logPageController.inLoggerPage,
-                onTap: (_) => _launchInfospect(context, options),
-                description: _logPageController.inLoggerPage
+                badge: _logPageController.inLoggerPage
+                    ? const PanelBadge.dot()
+                    : null,
+                onPressed: () => _launchInfospect(context, options),
+                tooltip: _logPageController.inLoggerPage
                     ? context.ispectL10n.backToMainScreen
                     : context.ispectL10n.openLogViewer,
               ),
             if (settings.isPerformanceEnabled)
-              DraggablePanelItem(
+              PanelAction(
                 icon: Icons.monitor_heart_outlined,
-                enableBadge: iSpect.isPerformanceTrackingEnabled,
-                onTap: (_) => iSpect.togglePerformanceTracking(),
-                description: context.ispectL10n.togglePerformanceTracking,
+                badge: iSpect.isPerformanceTrackingEnabled
+                    ? const PanelBadge.dot()
+                    : null,
+                onPressed: iSpect.togglePerformanceTracking,
+                tooltip: context.ispectL10n.togglePerformanceTracking,
               ),
             if (settings.isInspectorEnabled)
-              DraggablePanelItem(
+              PanelAction(
                 icon: Icons.format_shapes_rounded,
-                enableBadge: controller.modeNotifier.value ==
-                    pkg_inspector.InspectorMode.inspector,
-                onTap: (_) => controller.setMode(
+                badge:
+                    controller.modeNotifier.value ==
+                        pkg_inspector.InspectorMode.inspector
+                    ? const PanelBadge.dot()
+                    : null,
+                onPressed: () => controller.setMode(
                   controller.modeNotifier.value ==
                           pkg_inspector.InspectorMode.inspector
                       ? pkg_inspector.InspectorMode.none
                       : pkg_inspector.InspectorMode.inspector,
                 ),
-                description: context.ispectL10n.inspectWidgets,
+                tooltip: context.ispectL10n.inspectWidgets,
               ),
             if (settings.isColorPickerEnabled)
-              DraggablePanelItem(
+              PanelAction(
                 icon: Icons.colorize_rounded,
-                enableBadge: controller.modeNotifier.value ==
-                    pkg_inspector.InspectorMode.colorPicker,
-                onTap: (ctx) => controller.setMode(
+                badge:
+                    controller.modeNotifier.value ==
+                        pkg_inspector.InspectorMode.colorPicker
+                    ? const PanelBadge.dot()
+                    : null,
+                onPressed: () => controller.setMode(
                   controller.modeNotifier.value ==
                           pkg_inspector.InspectorMode.colorPicker
                       ? pkg_inspector.InspectorMode.none
                       : pkg_inspector.InspectorMode.colorPicker,
-                  context: ctx,
+                  context: context,
                 ),
-                description: context.ispectL10n.zoomPickColor,
+                tooltip: context.ispectL10n.zoomPickColor,
               ),
             if (ISpect.senders.isNotEmpty)
-              DraggablePanelItem(
+              PanelAction(
                 icon: Icons.api_rounded,
-                enableBadge: false,
-                onTap: (ctx) => _launchComposer(ctx, options),
-                description: context.ispectL10n.composerTitle,
+                onPressed: () => _launchComposer(context, options),
+                tooltip: context.ispectL10n.composerTitle,
               ),
             ...options.panelItems,
             // Plugin-generated panel items
             for (final plugin in options.plugins)
-              DraggablePanelItem(
+              PanelAction(
                 icon: plugin.icon,
-                enableBadge: plugin.enableBadge,
-                description: plugin.description ?? plugin.title,
-                onTap: (context) =>
-                    _launchPluginScreen(context, plugin, options),
+                badge: plugin.enableBadge ? const PanelBadge.dot() : null,
+                tooltip: plugin.description ?? plugin.title,
+                onPressed: () => _launchPluginScreen(context, plugin, options),
               ),
           ],
         );
@@ -317,50 +324,97 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         final panelBuilder = options.panelBuilder;
         if (panelBuilder != null) return panelBuilder(context, data);
 
-        return DraggablePanel(
+        return DraggableActionPanel(
           theme: data.theme,
+          actionTheme: data.actionTheme,
           controller: data.controller,
-          items: data.items,
+          actions: data.actions,
           buttons: data.buttons,
+          collapsedBuilder: (context, _) => Center(
+            child: Icon(
+              Icons.zoom_out_map_rounded,
+              color: data.actionTheme.actionForegroundColor,
+            ),
+          ),
           child: data.child,
         );
       },
     );
   }
 
-  DraggablePanelTheme _buildDefaultPanelTheme(BuildContext context) {
+  DraggablePanelThemeData _buildDefaultPanelTheme(BuildContext context) {
     final theme = context.ispectTheme;
 
-    // Host-colors mode keeps the pre-6.0 behaviour: leave unset colours null so
-    // DraggablePanel falls back to its own defaults.
+    // draggable_panel resolves a null token from the ambient ColorScheme.
     if (theme.useHostColors) {
-      return DraggablePanelTheme(
-        draggableButtonColor: theme.card?.resolve(context),
-        panelBackgroundColor: theme.background?.resolve(context),
-        panelItemColor: theme.card?.resolve(context),
-        foregroundColor: theme.foreground?.resolve(context),
-        panelBorder: switch (theme.divider?.resolve(context)) {
-          final color? => Border.all(color: color),
-          null => null,
-        },
+      return DraggablePanelThemeData(
+        surfaceColor: theme.background?.resolve(context),
+        collapsedShape: _panelShape(theme.divider?.resolve(context), 16),
+        shape: _panelShape(theme.divider?.resolve(context), 24),
+        handleColor: theme.foreground?.resolve(context),
       );
     }
 
-    final dark = context.ispectIsDark;
-    Color owned(ISpectDynamicColor? override, ISpectDynamicColor fallback) =>
-        override?.resolve(context) ?? fallback.pick(isDark: dark)!;
+    final divider = _ownedColor(
+      context,
+      theme.divider,
+      ISpectDefaultPalette.divider,
+    );
 
-    return DraggablePanelTheme(
-      draggableButtonColor: owned(theme.card, ISpectDefaultPalette.card),
-      panelBackgroundColor:
-          owned(theme.background, ISpectDefaultPalette.background),
-      panelItemColor: owned(theme.card, ISpectDefaultPalette.card),
-      foregroundColor: owned(theme.foreground, ISpectDefaultPalette.foreground),
-      panelBorder: Border.all(
-        color: owned(theme.divider, ISpectDefaultPalette.divider),
+    return DraggablePanelThemeData(
+      surfaceColor: _ownedColor(
+        context,
+        theme.background,
+        ISpectDefaultPalette.background,
+      ),
+      collapsedShape: _panelShape(divider, 16),
+      shape: _panelShape(divider, 24),
+      handleColor: _ownedColor(
+        context,
+        theme.foreground,
+        ISpectDefaultPalette.foreground,
       ),
     );
   }
+
+  DraggableActionPanelThemeData _buildDefaultActionTheme(BuildContext context) {
+    final theme = context.ispectTheme;
+
+    if (theme.useHostColors) {
+      return DraggableActionPanelThemeData(
+        actionBackgroundColor: theme.card?.resolve(context),
+        actionForegroundColor: theme.foreground?.resolve(context),
+      );
+    }
+
+    return DraggableActionPanelThemeData(
+      actionBackgroundColor: _ownedColor(
+        context,
+        theme.card,
+        ISpectDefaultPalette.card,
+      ),
+      actionForegroundColor: _ownedColor(
+        context,
+        theme.foreground,
+        ISpectDefaultPalette.foreground,
+      ),
+    );
+  }
+
+  Color _ownedColor(
+    BuildContext context,
+    ISpectDynamicColor? override,
+    ISpectDynamicColor fallback,
+  ) =>
+      override?.resolve(context) ??
+      fallback.pick(isDark: context.ispectIsDark)!;
+
+  ShapeBorder? _panelShape(Color? border, double radius) => border == null
+      ? null
+      : RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+          side: BorderSide(color: border),
+        );
 
   void _enterOverlay() {
     _overlayDepth++;
@@ -445,10 +499,8 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
     final iSpect = ISpect.read(context);
     final iSpectScreen = MaterialPageRoute<dynamic>(
-      builder: (_) => LogsScreen(
-        options: options,
-        appBarTitle: iSpect.theme.pageTitle,
-      ),
+      builder: (_) =>
+          LogsScreen(options: options, appBarTitle: iSpect.theme.pageTitle),
       settings: const RouteSettings(name: 'ISpect Screen'),
     );
 
@@ -494,10 +546,8 @@ class _ISpectNavigationHost extends StatelessWidget {
     Widget overlay = HeroControllerScope.none(
       child: ValueListenableBuilder<bool>(
         valueListenable: hasOverlayRoute,
-        builder: (context, hasRoute, navigator) => IgnorePointer(
-          ignoring: !hasRoute,
-          child: navigator,
-        ),
+        builder: (context, hasRoute, navigator) =>
+            IgnorePointer(ignoring: !hasRoute, child: navigator),
         child: Navigator(
           key: navigatorKey,
           onGenerateInitialRoutes: (_, __) => [

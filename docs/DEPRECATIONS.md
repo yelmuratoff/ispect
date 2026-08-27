@@ -22,6 +22,16 @@ the next major release so a patch or minor release cannot break consumers.
 
 ## Already removed
 
+`ispect`'s panel types moved to `draggable_panel` 4.0 in the `7.0.0` prerelease.
+`DraggablePanelItem` became `PanelAction` (`enableBadge` → `badge`,
+`description` → `tooltip`, `onTap(context)` → `onPressed()`),
+`DraggablePanelButtonItem` became `PanelActionButton`, and `DraggablePanelTheme`
+split into `DraggablePanelThemeData` (surface, shape, sizing, motion) and
+`DraggableActionPanelThemeData` (action grid and buttons), surfaced as
+`ISpectTheme.panelTheme` and `ISpectTheme.panelActionTheme`. Panel positions
+are now `PanelPlacement` corners rather than stored pixel pairs; drop any
+persisted coordinates. The upstream `MIGRATION.md` maps every removed symbol.
+
 `ispectify_ws`'s client-specific `ISpectWSInterceptor` and its `ws` dependency
 were removed in the `5.2.0` prerelease. Use provider-agnostic `WsDiagnostics`
 and bind the chosen client through `WsDiagnosticsSink`; copy the matching

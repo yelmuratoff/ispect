@@ -36,17 +36,17 @@ import 'package:ispect/src/core/res/ispect_panel.dart';
 ///     ),
 ///   ],
 ///   panelItems: [
-///     ISpectPanelItem(
+///     PanelAction(
 ///       icon: Icons.bug_report,
-///       enableBadge: true,
-///       onTap: (context) => showBugReport(context),
+///       badge: PanelBadge.dot(),
+///       onPressed: showBugReport,
 ///     ),
 ///   ],
 ///   panelButtons: [
-///     ISpectPanelButtonItem(
+///     PanelActionButton(
 ///       icon: Icons.settings,
 ///       label: 'Settings',
-///       onTap: (context) => openSettings(context),
+///       onPressed: openSettings,
 ///     ),
 ///   ],
 /// );
@@ -132,39 +132,41 @@ final class ISpectOptions {
 
   /// A list of panel items displayed in the `ISpect` interface.
   ///
-  /// Each panel item is an `ISpectPanelItem` with the following properties:
+  /// Each panel item is a `PanelAction` with the following properties:
   /// - `icon`: The icon representing the panel item
-  /// - `enableBadge`: A flag to determine if a notification badge should be shown
-  /// - `onTap`: A callback function triggered when the item is tapped
-  final List<DraggablePanelItem> panelItems;
+  /// - `label`: An optional caption shown under the icon
+  /// - `badge`: An optional `PanelBadge` drawn over the icon
+  /// - `onPressed`: A callback function triggered when the item is tapped
+  final List<PanelAction> panelItems;
 
   /// A list of panel buttons for additional controls in the `ISpect` interface.
   ///
-  /// Each panel button is an `ISpectPanelButtonItem` with the following properties:
+  /// Each panel button is a `PanelActionButton` with the following properties:
   /// - `icon`: The button's icon
   /// - `label`: The text label displayed for the button
-  /// - `onTap`: A callback function triggered when the button is tapped
-  final List<DraggablePanelButtonItem> panelButtons;
+  /// - `onPressed`: A callback function triggered when the button is tapped
+  final List<PanelActionButton> panelButtons;
 
   /// Builds the entire draggable diagnostics panel, replacing ISpect's default
-  /// `DraggablePanel`.
+  /// `DraggableActionPanel`.
   ///
-  /// ISpect still assembles the items (built-in tools + [panelItems] + plugins),
-  /// [panelButtons], the controller, and the default theme, and hands them to
-  /// the builder via [ISpectPanelData]. Return a `DraggablePanel` configured
-  /// however you like — every `draggable_panel` parameter (content/shell
-  /// builders, motion, behavior flags, tooltips, sizing) is available here,
-  /// including ones added in future `draggable_panel` releases, without ISpect
-  /// forwarding each one.
+  /// ISpect still assembles the actions (built-in tools + [panelItems] +
+  /// plugins), [panelButtons], the controller, and the default themes, and
+  /// hands them to the builder via [ISpectPanelData]. Return any panel you
+  /// like — every `draggable_panel` parameter (builders, motion, behavior
+  /// flags, placement, sizing) is available here, including ones added in
+  /// future `draggable_panel` releases, without ISpect forwarding each one.
   ///
   /// ```dart
   /// ISpectOptions(
-  ///   panelBuilder: (context, data) => DraggablePanel(
+  ///   panelBuilder: (context, data) => DraggableActionPanel(
   ///     controller: data.controller,
-  ///     items: data.items,
+  ///     actions: data.actions,
   ///     buttons: data.buttons,
-  ///     theme: data.theme.copyWith(panelWidth: 240),
-  ///     panelHeight: 320,
+  ///     theme: data.theme.copyWith(
+  ///       expandedExtent: const PanelExtent.fixed(Size(280, 320)),
+  ///     ),
+  ///     actionTheme: data.actionTheme,
   ///     child: data.child,
   ///   ),
   /// )
@@ -284,8 +286,8 @@ final class ISpectOptions {
     bool? isInspectorEnabled,
     bool? isColorPickerEnabled,
     List<ISpectActionItem>? actionItems,
-    List<DraggablePanelItem>? panelItems,
-    List<DraggablePanelButtonItem>? panelButtons,
+    List<PanelAction>? panelItems,
+    List<PanelActionButton>? panelButtons,
     ISpectPanelBuilder? panelBuilder,
     List<InspectorPlugin>? plugins,
     ISpectLogDataBuilder? logBuilder,

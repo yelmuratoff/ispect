@@ -8,10 +8,7 @@ import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 @immutable
 class ISpectDynamicColor {
-  const ISpectDynamicColor({
-    this.dark,
-    this.light,
-  });
+  const ISpectDynamicColor({this.dark, this.light});
 
   factory ISpectDynamicColor.fromMap(Map<String, dynamic> map) {
     T cast<T>(String k) => map[k] is T
@@ -40,24 +37,19 @@ class ISpectDynamicColor {
   /// owned default palette, which resolves against ISpect's own brightness.
   Color? pick({required bool isDark}) => isDark ? dark : light;
 
-  ISpectDynamicColor copyWith({
-    Color? dark,
-    Color? light,
-  }) =>
-      ISpectDynamicColor(
-        dark: dark ?? this.dark,
-        light: light ?? this.light,
-      );
+  ISpectDynamicColor copyWith({Color? dark, Color? light}) =>
+      ISpectDynamicColor(dark: dark ?? this.dark, light: light ?? this.light);
 
   Map<String, dynamic> toMap() => {
-        'dark': dark?.toARGB32(),
-        'light': light?.toARGB32(),
-      };
+    'dark': dark?.toARGB32(),
+    'light': light?.toARGB32(),
+  };
 
   String toJson() => json.encode(toMap());
 
   @override
-  String toString() => '''ISpectDynamicColor(
+  String toString() =>
+      '''ISpectDynamicColor(
       dark: $dark,
       light: $light,
       )''';
@@ -119,6 +111,7 @@ class ISpectTheme {
     this.logCategories = const {},
     this.customLogTypes = const [],
     this.panelTheme,
+    this.panelActionTheme,
   });
 
   factory ISpectTheme.fromJson(String source) {
@@ -182,14 +175,20 @@ class ISpectTheme {
             )
           : null,
       logColors: parseColors(cast<Map<String, dynamic>?>('log_colors')),
-      logDescriptions: cast<Map<String, dynamic>?>('log_descriptions')
-              ?.map((k, v) => MapEntry(k, v.toString())) ??
+      logDescriptions:
+          cast<Map<String, dynamic>?>(
+            'log_descriptions',
+          )?.map((k, v) => MapEntry(k, v.toString())) ??
           const <String, String>{},
-      categoryLabels: cast<Map<String, dynamic>?>('category_labels')
-              ?.map((k, v) => MapEntry(k, v.toString())) ??
+      categoryLabels:
+          cast<Map<String, dynamic>?>(
+            'category_labels',
+          )?.map((k, v) => MapEntry(k, v.toString())) ??
           const <String, String>{},
-      logCategories: cast<Map<String, dynamic>?>('log_categories')
-              ?.map((k, v) => MapEntry(k, v.toString())) ??
+      logCategories:
+          cast<Map<String, dynamic>?>(
+            'log_categories',
+          )?.map((k, v) => MapEntry(k, v.toString())) ??
           const <String, String>{},
       customLogTypes: (map['custom_log_types'] as List<dynamic>? ?? [])
           .whereType<Map<String, dynamic>>()
@@ -270,8 +269,12 @@ class ISpectTheme {
   /// ```
   final List<ISpectLogType> customLogTypes;
 
-  /// Theme settings for draggable panels within ISpect.
-  final DraggablePanelTheme? panelTheme;
+  /// Theme settings for the draggable panel shell (surface, elevation, shape,
+  /// sizing, motion) within ISpect.
+  final DraggablePanelThemeData? panelTheme;
+
+  /// Theme settings for the panel's action grid and button column.
+  final DraggableActionPanelThemeData? panelActionTheme;
 
   /// Creates a new `ISpectTheme` instance with updated values while retaining
   /// existing ones where not specified.
@@ -304,25 +307,26 @@ class ISpectTheme {
     Map<String, String>? categoryLabels,
     Map<String, String>? logCategories,
     List<ISpectLogType>? customLogTypes,
-    DraggablePanelTheme? panelTheme,
-  }) =>
-      ISpectTheme(
-        pageTitle: pageTitle ?? this.pageTitle,
-        themeMode: themeMode ?? this.themeMode,
-        useHostColors: useHostColors ?? this.useHostColors,
-        background: background ?? this.background,
-        foreground: foreground ?? this.foreground,
-        divider: divider ?? this.divider,
-        primary: primary ?? this.primary,
-        card: card ?? this.card,
-        logColors: logColors ?? this.logColors,
-        logIcons: logIcons ?? this.logIcons,
-        logDescriptions: logDescriptions ?? this.logDescriptions,
-        categoryLabels: categoryLabels ?? this.categoryLabels,
-        logCategories: logCategories ?? this.logCategories,
-        customLogTypes: customLogTypes ?? this.customLogTypes,
-        panelTheme: panelTheme ?? this.panelTheme,
-      );
+    DraggablePanelThemeData? panelTheme,
+    DraggableActionPanelThemeData? panelActionTheme,
+  }) => ISpectTheme(
+    pageTitle: pageTitle ?? this.pageTitle,
+    themeMode: themeMode ?? this.themeMode,
+    useHostColors: useHostColors ?? this.useHostColors,
+    background: background ?? this.background,
+    foreground: foreground ?? this.foreground,
+    divider: divider ?? this.divider,
+    primary: primary ?? this.primary,
+    card: card ?? this.card,
+    logColors: logColors ?? this.logColors,
+    logIcons: logIcons ?? this.logIcons,
+    logDescriptions: logDescriptions ?? this.logDescriptions,
+    categoryLabels: categoryLabels ?? this.categoryLabels,
+    logCategories: logCategories ?? this.logCategories,
+    customLogTypes: customLogTypes ?? this.customLogTypes,
+    panelTheme: panelTheme ?? this.panelTheme,
+    panelActionTheme: panelActionTheme ?? this.panelActionTheme,
+  );
 
   /// Merges this theme with [other], giving precedence to [other] for scalar
   /// fields and combining map/list fields (entries from [other] win on key
@@ -333,26 +337,28 @@ class ISpectTheme {
   /// final effective = ISpectTheme().merge(appTheme);
   /// ```
   ISpectTheme merge(ISpectTheme other) => ISpectTheme(
-        pageTitle: other.pageTitle ?? pageTitle,
-        themeMode: other.themeMode,
-        useHostColors: other.useHostColors,
-        background: other.background ?? background,
-        foreground: other.foreground ?? foreground,
-        divider: other.divider ?? divider,
-        primary: other.primary ?? primary,
-        card: other.card ?? card,
-        logColors: {...logColors, ...other.logColors},
-        logIcons: {...logIcons, ...other.logIcons},
-        logDescriptions: {...logDescriptions, ...other.logDescriptions},
-        categoryLabels: {...categoryLabels, ...other.categoryLabels},
-        logCategories: {...logCategories, ...other.logCategories},
-        customLogTypes: [
-          ...customLogTypes,
-          ...other.customLogTypes
-              .where((t) => customLogTypes.every((e) => e.key != t.key)),
-        ],
-        panelTheme: other.panelTheme ?? panelTheme,
-      );
+    pageTitle: other.pageTitle ?? pageTitle,
+    themeMode: other.themeMode,
+    useHostColors: other.useHostColors,
+    background: other.background ?? background,
+    foreground: other.foreground ?? foreground,
+    divider: other.divider ?? divider,
+    primary: other.primary ?? primary,
+    card: other.card ?? card,
+    logColors: {...logColors, ...other.logColors},
+    logIcons: {...logIcons, ...other.logIcons},
+    logDescriptions: {...logDescriptions, ...other.logDescriptions},
+    categoryLabels: {...categoryLabels, ...other.categoryLabels},
+    logCategories: {...logCategories, ...other.logCategories},
+    customLogTypes: [
+      ...customLogTypes,
+      ...other.customLogTypes.where(
+        (t) => customLogTypes.every((e) => e.key != t.key),
+      ),
+    ],
+    panelTheme: other.panelTheme ?? panelTheme,
+    panelActionTheme: other.panelActionTheme ?? panelActionTheme,
+  );
 
   /// Validates that all [customLogTypes] have colors and icons registered.
   ///
@@ -416,9 +422,9 @@ class ISpectTheme {
   ///
   /// - Merges `logIcons` with default icons from `ISpectConstants`.
   Map<String, IconData> icons(BuildContext context) => {
-        ...ISpectConstants.typeIcons,
-        ...logIcons,
-      };
+    ...ISpectConstants.typeIcons,
+    ...logIcons,
+  };
 
   IconData getTypeIcon(BuildContext context, {required String? key}) {
     if (key == null) return Icons.bug_report_outlined;
@@ -434,10 +440,7 @@ class ISpectTheme {
       for (final desc in ISpectConstants.defaultLogDescriptions(context))
         if (desc.description != null) desc.key: desc.description!,
     };
-    return {
-      ...defaultDescriptions,
-      ...logDescriptions,
-    };
+    return {...defaultDescriptions, ...logDescriptions};
   }
 
   String? getTypeDescription(BuildContext context, {required String? key}) {
@@ -446,35 +449,36 @@ class ISpectTheme {
   }
 
   Map<String, dynamic> toMap() => {
-        'page_title': pageTitle,
-        'theme_mode': themeMode.name,
-        'use_host_colors': useHostColors,
-        'background': background?.toMap(),
-        'foreground': foreground?.toMap(),
-        'divider': divider?.toMap(),
-        'primary': primary?.toMap(),
-        'card': card?.toMap(),
-        'log_colors': logColors.map((k, v) => MapEntry(k, v.toARGB32())),
-        'log_descriptions': logDescriptions,
-        'category_labels': categoryLabels,
-        'log_categories': logCategories,
-        'custom_log_types': customLogTypes
-            .map(
-              (t) => <String, dynamic>{
-                'key': t.key,
-                'category': t.category,
-                'is_error': t.isError,
-                'level': t.level.name,
-                if (t.title != null) 'title': t.title,
-              },
-            )
-            .toList(),
-      };
+    'page_title': pageTitle,
+    'theme_mode': themeMode.name,
+    'use_host_colors': useHostColors,
+    'background': background?.toMap(),
+    'foreground': foreground?.toMap(),
+    'divider': divider?.toMap(),
+    'primary': primary?.toMap(),
+    'card': card?.toMap(),
+    'log_colors': logColors.map((k, v) => MapEntry(k, v.toARGB32())),
+    'log_descriptions': logDescriptions,
+    'category_labels': categoryLabels,
+    'log_categories': logCategories,
+    'custom_log_types': customLogTypes
+        .map(
+          (t) => <String, dynamic>{
+            'key': t.key,
+            'category': t.category,
+            'is_error': t.isError,
+            'level': t.level.name,
+            if (t.title != null) 'title': t.title,
+          },
+        )
+        .toList(),
+  };
 
   String toJson() => json.encode(toMap());
 
   @override
-  String toString() => '''ISpectTheme(
+  String toString() =>
+      '''ISpectTheme(
       pageTitle: $pageTitle,
       themeMode: $themeMode,
       useHostColors: $useHostColors,
@@ -490,6 +494,7 @@ class ISpectTheme {
       logCategories: $logCategories,
       customLogTypes: ${customLogTypes.map((t) => t.key).toList()},
       panelTheme: $panelTheme,
+      panelActionTheme: $panelActionTheme,
       )''';
 
   @override
@@ -513,7 +518,8 @@ class ISpectTheme {
         mapEquals(other.categoryLabels, categoryLabels) &&
         mapEquals(other.logCategories, logCategories) &&
         listEquals(other.customLogTypes, customLogTypes) &&
-        other.panelTheme == panelTheme;
+        other.panelTheme == panelTheme &&
+        other.panelActionTheme == panelActionTheme;
   }
 
   @override
@@ -535,6 +541,7 @@ class ISpectTheme {
       equality.hash(logCategories),
       const ListEquality<ISpectLogType>().hash(customLogTypes),
       panelTheme,
+      panelActionTheme,
     );
   }
 }
@@ -548,10 +555,7 @@ final Expando<Map<String, Color>> _darkColorsExpando =
 Map<String, Color> _getLightColors(ISpectTheme theme) {
   final cached = _lightColorsExpando[theme];
   if (cached != null) return cached;
-  final merged = {
-    ...ISpectConstants.lightTypeColors,
-    ...theme.logColors,
-  };
+  final merged = {...ISpectConstants.lightTypeColors, ...theme.logColors};
   _lightColorsExpando[theme] = merged;
   return merged;
 }
@@ -559,10 +563,7 @@ Map<String, Color> _getLightColors(ISpectTheme theme) {
 Map<String, Color> _getDarkColors(ISpectTheme theme) {
   final cached = _darkColorsExpando[theme];
   if (cached != null) return cached;
-  final merged = {
-    ...ISpectConstants.darkTypeColors,
-    ...theme.logColors,
-  };
+  final merged = {...ISpectConstants.darkTypeColors, ...theme.logColors};
   _darkColorsExpando[theme] = merged;
   return merged;
 }

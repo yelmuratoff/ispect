@@ -21,7 +21,8 @@ platforms:
   linux:
 
 environment:
-  sdk: ">=3.6.0 <4.0.0"
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.32.0"
 
 dependency_overrides:
   ispectify:
@@ -47,7 +48,7 @@ dependencies:
 
   # UI
   ispect_layout: ^7.0.0-rc.4
-  draggable_panel: ^3.0.0
+  draggable_panel: ^4.0.0-beta.2
   super_sliver_list: ^0.4.1
 
 dev_dependencies:
@@ -56,3 +57,4 @@ dev_dependencies:
 
 flutter:
   generate: true
+  uses-material-design: true

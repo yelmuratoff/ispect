@@ -87,26 +87,25 @@ void main() {
         },
       );
 
-      testWidgets(
-        'onInit is called once per plugin in options',
-        (tester) async {
-          final p1 = _TestPlugin(pluginId: 'p1');
-          final p2 = _TestPlugin(pluginId: 'p2');
+      testWidgets('onInit is called once per plugin in options', (
+        tester,
+      ) async {
+        final p1 = _TestPlugin(pluginId: 'p1');
+        final p2 = _TestPlugin(pluginId: 'p2');
 
-          await tester.pumpWidget(
-            MaterialApp(
-              localizationsDelegates: ISpectLocalizations.delegate(),
-              home: ISpectBuilder(
-                options: ISpectOptions(plugins: [p1, p2]),
-                child: const SizedBox.shrink(),
-              ),
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: ISpectLocalizations.delegate(),
+            home: ISpectBuilder(
+              options: ISpectOptions(plugins: [p1, p2]),
+              child: const SizedBox.shrink(),
             ),
-          );
+          ),
+        );
 
-          expect(p1.initCalls, 1);
-          expect(p2.initCalls, 1);
-        },
-      );
+        expect(p1.initCalls, 1);
+        expect(p2.initCalls, 1);
+      });
     });
 
     group('ErrorWidget.builder ownership', () {
@@ -203,24 +202,85 @@ void main() {
       );
     });
 
-    group('ISpectBuilder.wrap', () {
-      testWidgets(
-        'returns child directly when kISpectEnabled is false',
-        (tester) async {
-          const child = SizedBox.shrink(key: Key('wrapped-child'));
-          final wrapped = ISpectBuilder.wrap(child: child);
+    group('default panel assembly', () {
+      testWidgets('built-in tools become panel actions', (tester) async {
+        if (!kISpectEnabled) return;
 
-          // In the test environment `kISpectEnabled` is `false` by default
-          // (no `--dart-define=ISPECT_ENABLED=true`), so wrap must bypass
-          // ISpectBuilder entirely. When running tests WITH the flag, the
-          // builder is created instead.
-          if (!kISpectEnabled) {
-            expect(identical(wrapped, child), isTrue);
-          } else {
-            expect(wrapped, isA<ISpectBuilder>());
-          }
-        },
-      );
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: ISpectLocalizations.delegate(),
+            home: const ISpectBuilder(
+              options: ISpectOptions(),
+              child: SizedBox.shrink(),
+            ),
+          ),
+        );
+
+        final panel = tester.widget<DraggableActionPanel>(
+          find.byType(DraggableActionPanel),
+        );
+
+        expect(
+          panel.actions.map((a) => a.icon),
+          containsAll(<IconData>[
+            Icons.reorder_rounded,
+            Icons.monitor_heart_outlined,
+            Icons.format_shapes_rounded,
+            Icons.colorize_rounded,
+          ]),
+        );
+      });
+
+      testWidgets('consumer panel items and buttons reach the panel', (
+        tester,
+      ) async {
+        if (!kISpectEnabled) return;
+
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: ISpectLocalizations.delegate(),
+            home: ISpectBuilder(
+              options: ISpectOptions(
+                panelItems: [PanelAction(icon: Icons.cookie, onPressed: () {})],
+                panelButtons: [
+                  PanelActionButton(
+                    icon: Icons.settings,
+                    label: 'Settings',
+                    onPressed: () {},
+                  ),
+                ],
+              ),
+              child: const SizedBox.shrink(),
+            ),
+          ),
+        );
+
+        final panel = tester.widget<DraggableActionPanel>(
+          find.byType(DraggableActionPanel),
+        );
+
+        expect(panel.actions.map((a) => a.icon), contains(Icons.cookie));
+        expect(panel.buttons.single.label, 'Settings');
+      });
+    });
+
+    group('ISpectBuilder.wrap', () {
+      testWidgets('returns child directly when kISpectEnabled is false', (
+        tester,
+      ) async {
+        const child = SizedBox.shrink(key: Key('wrapped-child'));
+        final wrapped = ISpectBuilder.wrap(child: child);
+
+        // In the test environment `kISpectEnabled` is `false` by default
+        // (no `--dart-define=ISPECT_ENABLED=true`), so wrap must bypass
+        // ISpectBuilder entirely. When running tests WITH the flag, the
+        // builder is created instead.
+        if (!kISpectEnabled) {
+          expect(identical(wrapped, child), isTrue);
+        } else {
+          expect(wrapped, isA<ISpectBuilder>());
+        }
+      });
 
       testWidgets(
         'returns child directly when isISpectEnabled is false at runtime',
@@ -275,67 +335,63 @@ void main() {
         },
       );
 
-      testWidgets(
-        'explicit options.observer beats current',
-        (tester) async {
-          if (!kISpectEnabled) return;
+      testWidgets('explicit options.observer beats current', (tester) async {
+        if (!kISpectEnabled) return;
 
-          ISpectNavigatorObserver.observers();
-          final explicit = ISpectNavigatorObserver();
+        ISpectNavigatorObserver.observers();
+        final explicit = ISpectNavigatorObserver();
 
-          ISpectScopeModel? captured;
+        ISpectScopeModel? captured;
 
-          await tester.pumpWidget(
-            MaterialApp(
-              localizationsDelegates: ISpectLocalizations.delegate(),
-              home: ISpectBuilder(
-                options: ISpectOptions(observer: explicit),
-                child: Builder(
-                  builder: (context) {
-                    captured = ISpect.read(context);
-                    return const Text('child');
-                  },
-                ),
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: ISpectLocalizations.delegate(),
+            home: ISpectBuilder(
+              options: ISpectOptions(observer: explicit),
+              child: Builder(
+                builder: (context) {
+                  captured = ISpect.read(context);
+                  return const Text('child');
+                },
               ),
             ),
-          );
+          ),
+        );
 
-          expect(captured!.options.observer, same(explicit));
-        },
-      );
+        expect(captured!.options.observer, same(explicit));
+      });
     });
 
     group('scope access', () {
-      testWidgets(
-        'scope availability matches kISpectEnabled',
-        (tester) async {
-          ISpectScopeController? foundScope;
+      testWidgets('scope availability matches kISpectEnabled', (tester) async {
+        ISpectScopeController? foundScope;
 
-          await tester.pumpWidget(
-            MaterialApp(
-              localizationsDelegates: ISpectLocalizations.delegate(),
-              home: ISpectBuilder(
-                options: const ISpectOptions(),
-                child: Builder(
-                  builder: (context) {
-                    foundScope = context.dependOnInheritedWidgetOfExactType<
-                        ISpectScopeController>();
-                    return const Text('child');
-                  },
-                ),
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: ISpectLocalizations.delegate(),
+            home: ISpectBuilder(
+              options: const ISpectOptions(),
+              child: Builder(
+                builder: (context) {
+                  foundScope = context
+                      .dependOnInheritedWidgetOfExactType<
+                        ISpectScopeController
+                      >();
+                  return const Text('child');
+                },
               ),
             ),
-          );
+          ),
+        );
 
-          expect(find.text('child'), findsOneWidget);
+        expect(find.text('child'), findsOneWidget);
 
-          if (kISpectEnabled) {
-            expect(foundScope, isNotNull);
-          } else {
-            expect(foundScope, isNull);
-          }
-        },
-      );
+        if (kISpectEnabled) {
+          expect(foundScope, isNotNull);
+        } else {
+          expect(foundScope, isNull);
+        }
+      });
     });
   });
 }

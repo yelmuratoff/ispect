@@ -164,20 +164,13 @@ class _MyAppState extends State<MyApp> {
           ],
           // Extra buttons on the bottom of the draggable panel.
           panelButtons: const [
-            // DraggablePanelButtonItem(icon: Icons.bug_report, label: 'Bug', onTap: ...),
+            // PanelActionButton(icon: Icons.bug_report, label: 'Bug', onPressed: ...),
           ],
           // Icon-only items on the draggable panel.
           panelItems: const [
-            // DraggablePanelItem(icon: Icons.cookie, onTap: ...),
+            // PanelAction(icon: Icons.cookie, onPressed: ...),
           ],
           // Replace the whole draggable panel (see ISpectPanelData / panelBuilder).
-          // panelBuilder: (context, data) => DraggablePanel(
-          //   controller: data.controller,
-          //   items: data.items,
-          //   buttons: data.buttons,
-          //   theme: data.theme,
-          //   child: data.child,
-          // ),
           //
           // Plug in custom inspector pages (see InspectorPlugin).
           plugins: const [],
