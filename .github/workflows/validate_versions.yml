@@ -21,17 +21,6 @@ on:
       - 'SECURITY.md'
       - 'docs/readme/**'
       - 'docs/*.md'
-      - 'bash/README.md'
-      - 'bash/build_readme.sh'
-      - 'bash/build_llms.sh'
-      - 'bash/check_dependencies.sh'
-      - 'bash/check_version_sync.sh'
-      - 'bash/lib/**'
-      - 'bash/publish.sh'
-      - 'bash/release_prep.sh'
-      - 'bash/update_changelog.sh'
-      - 'bash/update_versions.sh'
-      - 'bash/tests/**'
       - 'tool/**'
       - '.github/workflows/validate_versions.yml'
 
@@ -62,59 +51,10 @@ jobs:
           dart analyze --fatal-infos
           dart test
 
-      - name: Test Release Automation
-        run: |
-          ./bash/tests/semver_test.sh
-          ./bash/tests/pub_api_test.sh
-          ./bash/tests/update_versions_test.sh
-          ./bash/tests/release_prep_test.sh
-
-      - name: Check Version Sync
-        id: check_versions
+      - name: Check Repository State
         run: |
           set -euo pipefail
-
-          echo "🔍 Checking version synchronization across packages..."
-          if ! dart run tool/bin/ispect_tool.dart version check; then
-            echo "❌ Version check failed. Please run 'dart run tool/bin/ispect_tool.dart release-prep --skip-bump'."
-            exit 1
-          fi
-          echo "✅ Version synchronization check passed!"
-
-      - name: Check README Sync
-        id: check_readme
-        run: |
-          set -euo pipefail
-
-          echo "🔍 Checking that generated READMEs match docs/readme/ sources..."
-          if ! dart run tool/bin/ispect_tool.dart readme --check; then
-            echo "❌ README drift detected. Please run 'dart run tool/bin/ispect_tool.dart release-prep --skip-bump' and commit the result."
-            exit 1
-          fi
-          echo "✅ README sync check passed!"
-
-      - name: Check llms.txt Sync
-        run: |
-          set -euo pipefail
-
-          echo "🔍 Checking that llms.txt matches repository metadata..."
-          if ! dart run tool/bin/ispect_tool.dart llms --check; then
-            echo "❌ llms.txt drift detected. Please run 'dart run tool/bin/ispect_tool.dart release-prep --skip-bump' and commit the result."
-            exit 1
-          fi
-          echo "✅ llms.txt sync check passed!"
-
-      - name: Check Dependencies Consistency
-        id: check_dependencies
-        run: |
-          set -euo pipefail
-
-          echo "🔍 Checking dependency version consistency..."
-          if ! dart run tool/bin/ispect_tool.dart deps; then
-            echo "❌ Dependency version check failed. Please run 'dart run tool/bin/ispect_tool.dart release-prep --skip-bump'."
-            exit 1
-          fi
-          echo "✅ Dependency consistency check passed!"
+          dart run tool/bin/ispect_tool.dart check
 
       - name: Check Web Viewer Lockfile
         run: |
