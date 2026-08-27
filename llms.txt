@@ -10,7 +10,7 @@ need on demand instead of working from memorized API. Treat each package's expor
 `lib/<package>.dart` and `README.md` as the authoritative API surface.
 
 - Repository: https://github.com/yelmuratoff/ispect
-- Version: 7.0.0-rc.1
+- Version: 7.0.0-rc.2
 
 ## Integration prompt
 
@@ -69,5 +69,5 @@ need on demand instead of working from memorized API. Treat each package's expor
 - [Quality Gates](docs/QUALITY.md)
 - [Security and Data Handling](docs/SECURITY.md)
 - [Use Cases](docs/USE_CASES.md)
-- [Version Management System](docs/VERSION_MANAGEMENT.md)
 - [ISpect Version Management](docs/VERSION.md)
+- [Version Management System](docs/VERSION_MANAGEMENT.md)

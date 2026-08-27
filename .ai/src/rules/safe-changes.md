@@ -17,7 +17,7 @@
 ## Generated Or Derived Files
 
 - Generated localization files live under `core/localization/generated`; change ARB/source config first.
-- Generated README files should be rebuilt with `./bash/build_readme.sh`.
+- Generated README files should be rebuilt with `dart run tool/bin/ispect_tool.dart readme`.
 - Coverage output and build output should remain uncommitted.
 
 ## Anti-Patterns

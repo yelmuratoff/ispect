@@ -54,15 +54,15 @@ final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
 
 ## Configuration
 
-| Field                | Default      | What it does                                                                                                  |
-| -------------------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
-| `sampleRate`         | `null`       | Fraction of successful calls to log. `null` and `1.0` both keep all of them; `0.1` keeps 10%.                 |
-| `redact`             | `true`       | Mask sensitive keys in `args` and `statement`.                                                                |
-| `redactKeys`         | built-in set | Override the redaction key list.                                                                              |
-| `captureMode`        | `balanced`   | Allow guarded, bounded typed-value and error formatting; use `strict` to disable application formatters.     |
-| `resourceLimits`     | logger policy | Override database scalar, diagnostic, metadata, traversal, and output budgets for this trace.                |
-| `attachStackOnError` | `false`      | Capture and log a stack trace on failure.                                                                     |
-| `slowThreshold`      | `null`       | Adds a `slow` flag to the trace entry, `true` when the duration exceeds the threshold. (Renamed from `slowQueryThreshold` in 5.0.) |
+| Field                | Default       | What it does                                                                                                                       |
+| -------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `sampleRate`         | `null`        | Fraction of successful calls to log. `null` and `1.0` both keep all of them; `0.1` keeps 10%.                                      |
+| `redact`             | `true`        | Mask sensitive keys in `args` and `statement`.                                                                                     |
+| `redactKeys`         | built-in set  | Override the redaction key list.                                                                                                   |
+| `captureMode`        | `balanced`    | Allow guarded, bounded typed-value and error formatting; use `strict` to disable application formatters.                           |
+| `resourceLimits`     | logger policy | Override database scalar, diagnostic, metadata, traversal, and output budgets for this trace.                                      |
+| `attachStackOnError` | `false`       | Capture and log a stack trace on failure.                                                                                          |
+| `slowThreshold`      | `null`        | Adds a `slow` flag to the trace entry, `true` when the duration exceeds the threshold. (Renamed from `slowQueryThreshold` in 5.0.) |
 
 ```dart
 const dbConfig = ISpectDbConfig(

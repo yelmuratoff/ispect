@@ -36,7 +36,7 @@ cd ispect
 cp bash/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 
 # Validate version and dependency consistency.
-./bash/check_version_sync.sh && ./bash/check_dependencies.sh
+dart run tool/bin/ispect_tool.dart version check && dart run tool/bin/ispect_tool.dart deps
 ```
 
 ## Running tests and lint
@@ -65,17 +65,17 @@ cd packages/ispectify && dart test --run-skipped test/production_safety_test.dar
 
 ```bash
 # Bump version.
-./bash/update_versions.sh --bump patch|minor|major
+dart run tool/bin/ispect_tool.dart sync --bump patch|minor|major
 
 # Validate sync.
-./bash/check_version_sync.sh
+dart run tool/bin/ispect_tool.dart version check
 ```
 
 See [docs/VERSION_MANAGEMENT.md](docs/VERSION_MANAGEMENT.md) for the full reference.
 
 ## Automation scripts
 
-Build and release scripts live in `bash/`. See [bash/README.md](bash/README.md) for the catalog.
+Build and release tooling is the Dart CLI in `tool/`. See [tool/README.md](tool/README.md) for the command table; run `cd tool && dart pub get` once after a fresh clone. The frozen predecessors in `bash/` are catalogued in [bash/README.md](bash/README.md).
 
 ## Pull request requirements
 

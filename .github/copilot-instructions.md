@@ -36,8 +36,8 @@ Captured diagnostics can contain sensitive data, so redaction and data minimizat
 - Disabled-build check: `cd packages/<package> && dart test --run-skipped test/production_safety_test.dart`
 - Web demo: `cd web_logs_viewer && flutter pub get && flutter analyze && flutter test`
 - Format changed Dart files: `dart format <paths>`
-- README drift check: `./bash/build_readme.sh --check`
-- Version/dependency checks: `./bash/check_version_sync.sh && ./bash/check_dependencies.sh`
+- README drift check: `dart run tool/bin/ispect_tool.dart readme --check`
+- Version/dependency checks: `dart run tool/bin/ispect_tool.dart version check && dart run tool/bin/ispect_tool.dart deps`
 
 ## Project Rules
 
@@ -50,8 +50,8 @@ Captured diagnostics can contain sensitive data, so redaction and data minimizat
 
 ## Do Not
 
-- Do not manually edit package versions or internal dependency constraints; use `version.config` and `bash/update_versions.sh`.
-- Do not edit generated READMEs under `packages/*/README.md` as the source of truth; change `docs/readme/*` and run `./bash/build_readme.sh`.
+- Do not manually edit package versions or internal dependency constraints; use `version.config` and `dart run tool/bin/ispect_tool.dart sync`.
+- Do not edit generated READMEs under `packages/*/README.md` as the source of truth; change `docs/readme/*` and run `dart run tool/bin/ispect_tool.dart readme`.
 - Do not pass `--dart-define=ISPECT_ENABLED=true` to public production release builds.
 - Do not introduce a monorepo tool, code generator, Redux, styled-components, or new state-management framework unless the task explicitly requires it.
 - Do not log tokens, cookies, credentials, PII, raw payloads, or database rows without redaction and a narrowly scoped debugging reason.

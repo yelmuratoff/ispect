@@ -24,9 +24,9 @@ Run the correct package-scoped analyzer, tests, and repo consistency checks for 
    - `cd web_logs_viewer && flutter analyze`
    - `cd web_logs_viewer && flutter test`
 5. If docs, changelogs, `version.config`, or package pubspecs changed, also run:
-   - `./bash/check_version_sync.sh`
-   - `./bash/check_dependencies.sh`
-   - `./bash/build_readme.sh --check`
+   - `dart run tool/bin/ispect_tool.dart version check`
+   - `dart run tool/bin/ispect_tool.dart deps`
+   - `dart run tool/bin/ispect_tool.dart readme --check`
 6. If failures occur, fix the first root-cause failure before rerunning the smallest relevant command.
 7. Summarize the exact commands run and any remaining failures.
 

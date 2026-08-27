@@ -29,14 +29,14 @@ dart test --run-skipped test/production_safety_test.dart
 Generated README files must match `docs/readme/`:
 
 ```bash
-./bash/build_readme.sh --check
+dart run tool/bin/ispect_tool.dart readme --check
 ```
 
 Package versions and internal dependencies must stay synchronized:
 
 ```bash
-./bash/check_version_sync.sh
-./bash/check_dependencies.sh
+dart run tool/bin/ispect_tool.dart version check
+dart run tool/bin/ispect_tool.dart deps
 ```
 
 ## CI signals

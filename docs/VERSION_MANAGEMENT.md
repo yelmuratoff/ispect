@@ -6,13 +6,9 @@ How versions are kept consistent across the ISpect monorepo.
 
 - `version.config`, the single source of truth for the current version.
 - `CHANGELOG.md`, the source of truth for release notes.
-- `bash/release_prep.sh`, the single user-facing command for version bumps and release synchronization.
-- `bash/update_versions.sh`, the version and dependency helper used by `release_prep.sh`.
-- `bash/update_changelog.sh`, the changelog propagation helper used by `release_prep.sh`.
-- `bash/build_readme.sh` and `bash/build_llms.sh`, the generated-document helpers used by `release_prep.sh`.
-- `bash/check_version_sync.sh`, validates version synchronization.
-- `bash/check_dependencies.sh`, validates that internal package dependencies are consistent.
-- `bash/pre-commit.sh`, Git hook that catches version drift before a commit lands.
+- `tool/`, the Dart CLI that owns every command below. Run `cd tool && dart pub get` once after a fresh clone, then `dart run tool/bin/ispect_tool.dart <command>`. See `tool/README.md` for the full command table.
+- `bash/pre-commit.sh`, Git hook that dispatches to that CLI to catch version drift before a commit lands.
+- `bash/*.sh`, the previous implementation. Frozen: retained for one release cycle as the revert path and exercised by the differential tests in `tool/test/`. Do not call or edit them.
 - `.github/workflows/sync_versions_and_changelogs.yml`, CI workflow for automatic version and changelog sync.
 - `.github/workflows/validate_versions.yml`, CI workflow that validates versions in pull requests.
 - `.github/workflows/production_safety.yml`, CI workflow that verifies release builds with `ISPECT_ENABLED` omitted.
@@ -23,19 +19,19 @@ How versions are kept consistent across the ISpect monorepo.
 
 ```bash
 # Patch bump (default).
-./bash/release_prep.sh
+dart run tool/bin/ispect_tool.dart release-prep
 
 # Explicit patch, minor, or major bump.
-./bash/release_prep.sh --bump minor
+dart run tool/bin/ispect_tool.dart release-prep --bump minor
 
 # Keep VERSION and refresh every release-managed artifact.
-./bash/release_prep.sh --skip-bump
+dart run tool/bin/ispect_tool.dart release-prep --skip-bump
 
 # Advance the current prerelease and carry its notes forward.
-./bash/release_prep.sh --carry-changelog
+dart run tool/bin/ispect_tool.dart release-prep --carry-changelog
 
 # Resume an interrupted prerelease sync without another bump.
-./bash/release_prep.sh --skip-bump --recover-changelog
+dart run tool/bin/ispect_tool.dart release-prep --skip-bump --recover-changelog
 ```
 
 The default patch mode increments a stable patch version or advances the
@@ -54,7 +50,7 @@ and nothing reports an error.
 
 The scripts refuse to write a version that Pub does not order above the current
 one, and warn while `VERSION` still glues its counter to the label.
-`publish.sh` additionally asks the host what it already serves and blocks a
+`ispect_tool publish` additionally asks the host what it already serves and blocks a
 version that is not ranked above the peak of the same `MAJOR.MINOR` line;
 releases on other lines are ignored, so backporting `6.1.8` after `7.0.0`
 shipped still passes.
@@ -81,7 +77,7 @@ The GitHub Actions workflows automate the rest.
 `sync_versions_and_changelogs.yml`:
 
 - Triggers when `version.config` or `CHANGELOG.md` changes.
-- Runs `release_prep.sh --skip-bump`, using the same workflow as local development.
+- Runs `ispect_tool release-prep --skip-bump`, using the same workflow as local development.
 - Validates the web-viewer lockfile with the CI-pinned Flutter 3.32.6 toolchain.
 - Commits and pushes the changes back.
 
@@ -96,7 +92,7 @@ The GitHub Actions workflows automate the rest.
 ## How it works
 
 1. `version.config` contains a single `VERSION` variable.
-2. `release_prep.sh` optionally bumps it, then synchronizes every package `pubspec.yaml` and internal dependency.
+2. `ispect_tool release-prep` optionally bumps it, then synchronizes every package `pubspec.yaml` and internal dependency.
 3. `CHANGELOG.md` remains the release-note source of truth and is copied to package changelogs.
 4. `docs/readme/**` remains the README source of truth; generated READMEs and `llms.txt` are rebuilt.
 5. The web-viewer manifest and lockfile are synchronized with the same version.
@@ -105,11 +101,11 @@ The GitHub Actions workflows automate the rest.
 
 ## Best practices
 
-1. Use `release_prep.sh` for every bump or no-bump synchronization.
+1. Use `ispect_tool release-prep` for every bump or no-bump synchronization.
 2. Keep user-facing notes in the root `CHANGELOG.md`.
 3. Keep README source changes under `docs/readme/**`.
 4. Install the pre-commit hook to catch version drift locally.
-5. Run `publish.sh --dry-run` before any publish attempt.
+5. Run `ispect_tool publish --dry-run` before any publish attempt.
 6. Review the generated diff before committing or publishing.
 
 ## Pre-commit hook
@@ -131,6 +127,6 @@ The hook:
 
 If you hit a sync issue:
 
-1. Run `./bash/release_prep.sh --skip-bump`.
+1. Run `dart run tool/bin/ispect_tool.dart release-prep --skip-bump`.
 2. If it fails, read the first reported error; managed files have already been restored.
-3. Use `./bash/check_version_sync.sh`, `./bash/check_dependencies.sh`, `./bash/build_readme.sh --check`, and `./bash/build_llms.sh --check` to isolate remaining drift.
+3. Use `ispect_tool version check`, `ispect_tool deps`, `ispect_tool readme --check`, and `ispect_tool llms --check` to isolate remaining drift.

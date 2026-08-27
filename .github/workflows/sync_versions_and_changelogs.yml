@@ -21,6 +21,7 @@ on:
          - "bash/build_readme.sh"
          - "bash/build_llms.sh"
          - "bash/tests/**"
+         - "tool/**"
 
 jobs:
    update-versions-changelogs-readmes:
@@ -49,8 +50,8 @@ jobs:
 
          - name: Synchronize release artifacts
            run: |
-              chmod +x bash/release_prep.sh
-              ./bash/release_prep.sh --skip-bump
+              cd tool && dart pub get && cd ..
+              dart run tool/bin/ispect_tool.dart release-prep --skip-bump
 
          - name: Validate web viewer lockfile with pinned Flutter
            working-directory: web_logs_viewer

@@ -375,6 +375,6 @@ This is a monorepo. Every package above plus the standalone web log viewer lives
 
 ## Documentation workflow
 
-Package READMEs are generated. Sources live in `docs/readme/<package>.md` and shared fragments in `docs/readme/_partials/`. Run `./bash/build_readme.sh` to regenerate, and `./bash/build_readme.sh --check` in CI to catch drift. Hand-edits to `packages/*/README.md` get overwritten on the next build.
+Package READMEs are generated. Sources live in `docs/readme/<package>.md` and shared fragments in `docs/readme/_partials/`. Run `dart run tool/bin/ispect_tool.dart readme` to regenerate, and `readme --check` in CI to catch drift. Hand-edits to `packages/*/README.md` get overwritten on the next build.
 
 <!-- partial:footer -->

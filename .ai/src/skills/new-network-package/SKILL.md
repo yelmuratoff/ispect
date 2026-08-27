@@ -226,10 +226,10 @@ Cover:
 ### Step 7: Integration
 
 1. Add `dependency_overrides` in the new package's `pubspec.yaml` for local dev.
-2. Add the package to the publish order in `bash/publish.sh`.
+2. Add the package to `publishOrder` in `tool/lib/src/core/publish.dart`.
 3. Add test commands to `.github/workflows/test.yml`.
 4. Add version validation to `.github/workflows/validate_versions.yml`.
-5. Update `bash/update_versions.sh` to include the new package.
+5. Add the package to the release tooling: it is picked up automatically by `tool/lib/src/core/version_sync.dart` from `packages/`.
 6. Update root `CLAUDE.md` monorepo structure section.
 
 ## Key Rules

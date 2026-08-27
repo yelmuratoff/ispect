@@ -4,8 +4,8 @@
 
 - Run `dart pub get` or `flutter pub get` inside the package being changed.
 - Keep local `dependency_overrides` between monorepo packages; they are intentional for development.
-- Keep internal package dependency constraints aligned with `version.config` through `./bash/update_versions.sh`.
-- Use `./bash/check_dependencies.sh` after dependency or version changes.
+- Keep internal package dependency constraints aligned with `version.config` through `dart run tool/bin/ispect_tool.dart sync`.
+- Use `dart run tool/bin/ispect_tool.dart deps` after dependency or version changes.
 
 ## Adding Dependencies
 
@@ -17,7 +17,7 @@
 
 - `version.config` is the version source of truth.
 - Do not manually edit package `version:` lines or internal `^<version>` constraints.
-- Use `./bash/update_versions.sh --dry-run` before broad version sync changes.
+- Use `dart run tool/bin/ispect_tool.dart sync --dry-run` before broad version sync changes.
 
 ## Anti-Patterns
 

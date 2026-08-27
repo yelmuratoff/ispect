@@ -8,10 +8,8 @@ A short overview of the version-management workflow. The full reference lives in
 
 - `version.config`, the single source of truth for the current version.
 - `CHANGELOG.md`, the release notes for every version.
-- `bash/release_prep.sh`, the single command for bumps and release synchronization.
-- `bash/update_versions.sh`, `bash/update_changelog.sh`, `bash/build_readme.sh`, and `bash/build_llms.sh`, internal helpers used by `release_prep.sh`.
-- `bash/check_version_sync.sh`, validates that versions are in sync.
-- `bash/check_dependencies.sh`, validates that internal dependencies are consistent.
+- `tool/`, the Dart CLI owning every release command. `release-prep` is the single command for bumps and release synchronization; `version check` and `deps` validate versions and internal dependencies. See `tool/README.md`.
+- `bash/*.sh`, the previous implementation. Frozen and slated for deletion; the differential tests in `tool/test/` still run them to prove the two agree.
 
 ### GitHub Actions workflows
 
@@ -25,19 +23,19 @@ A short overview of the version-management workflow. The full reference lives in
 
 ```bash
 # Patch bump (default).
-./bash/release_prep.sh
+dart run tool/bin/ispect_tool.dart release-prep
 
 # Explicit patch, minor, or major bump.
-./bash/release_prep.sh --bump major
+dart run tool/bin/ispect_tool.dart release-prep --bump major
 
 # Keep VERSION and refresh all release-managed files.
-./bash/release_prep.sh --skip-bump
+dart run tool/bin/ispect_tool.dart release-prep --skip-bump
 
 # Advance a prerelease and keep its current changelog notes.
-./bash/release_prep.sh --carry-changelog
+dart run tool/bin/ispect_tool.dart release-prep --carry-changelog
 
 # Resume an interrupted prerelease sync without another bump.
-./bash/release_prep.sh --skip-bump --recover-changelog
+dart run tool/bin/ispect_tool.dart release-prep --skip-bump --recover-changelog
 ```
 
 ## Prerelease numbering
@@ -74,13 +72,13 @@ The system manages dependencies between ISpect packages:
 
 - When you bump the version, internal dependencies (`ispectify: ^7.0.0` and similar) are updated.
 - All packages end up using the same version of every other internal package.
-- Run `./bash/check_dependencies.sh` to verify dependency consistency.
+- Run `dart run tool/bin/ispect_tool.dart deps` to verify dependency consistency.
 
 ## Best practices
 
-1. Use `release_prep.sh` for bumps and `release_prep.sh --skip-bump` for no-bump synchronization.
+1. Use `ispect_tool release-prep` for bumps and `ispect_tool release-prep --skip-bump` for no-bump synchronization.
 2. Edit release notes only in the root `CHANGELOG.md`.
 3. Edit README content only under `docs/readme/**`.
-4. Review the generated diff and run `publish.sh --dry-run` before publishing.
+4. Review the generated diff and run `ispect_tool publish --dry-run` before publishing.
 
 For more detail, see [`VERSION_MANAGEMENT.md`](./VERSION_MANAGEMENT.md).
