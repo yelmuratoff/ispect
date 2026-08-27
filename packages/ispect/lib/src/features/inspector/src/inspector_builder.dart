@@ -130,7 +130,11 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
     model = ISpectScopeModel();
     _logPageController = ISpectLogPageController();
-    _panelController = widget.controller ?? DraggablePanelController();
+    _panelController =
+        widget.controller ??
+        DraggablePanelController(
+          initialPlacement: const PanelPlacement.stashed(PanelEdge.end),
+        );
     _navigatorKey = GlobalKey<NavigatorState>();
     _hasOverlayRoute = ValueNotifier<bool>(false);
     _isInitialized = true;
@@ -419,6 +423,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   void _enterOverlay() {
     _overlayDepth++;
     _hasOverlayRoute.value = true;
+    _panelController.collapse();
   }
 
   void _exitOverlay() {
