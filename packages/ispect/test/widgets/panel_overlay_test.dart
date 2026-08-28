@@ -57,6 +57,25 @@ void main() {
       );
     });
 
+    testWidgets('the parked panel is drawn back into the page', (tester) async {
+      if (!kISpectEnabled) return;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: ISpectLocalizations.delegate(),
+          builder: (context, child) => ISpectBuilder.wrap(child: child!),
+          home: const ColoredBox(color: Color(0xFFFFFFFF)),
+        ),
+      );
+      await tester.pump();
+
+      final panel = tester.widget<DraggableActionPanel>(
+        find.byType(DraggableActionPanel),
+      );
+
+      expect(panel.theme?.stashedOpacity, lessThan(1));
+    });
+
     testWidgets('the panel outline carries the ISpect divider colour', (
       tester,
     ) async {

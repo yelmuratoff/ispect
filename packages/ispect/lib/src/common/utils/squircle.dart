@@ -29,15 +29,26 @@ abstract final class ISpectSquircle {
     side: side,
   );
 
-  /// A squircle that caps its radius at half the shortest side of the rect it
-  /// is painted into.
+  /// Exponent of the superellipse [adaptiveBorder] draws. `2` is a circular
+  /// arc and larger is squarer; an iOS icon sits near `5`. This one is close
+  /// to the circle, where the corner still reads as a squircle rather than as
+  /// a rounded rectangle.
+  static const double superellipseExponent = 2.6;
+
+  /// A superellipse corner whose radius is capped at half the shortest side of
+  /// the rect it is painted into.
   ///
-  /// [ContinuousRectangleBorder] clamps a radius to the whole shortest side,
+  /// Two reasons to reach for this over [border]. It rounds further:
+  /// [ContinuousRectangleBorder] is a shallow approximation that runs out of
+  /// roundness at half the shortest side, which is where the panel's collapsed
+  /// button already sits. And it stays well formed at any size:
+  /// `ContinuousRectangleBorder` clamps a radius to the whole shortest side,
   /// and past half of it `_getPath` walks each edge backwards — the top runs
-  /// from `left + radius` to `right - radius` once those cross. A visible
-  /// [BorderSide] strokes the four reversed edges as bars sticking out of the
-  /// shape. Reach for this where one shape is painted onto boxes of different
-  /// sizes, so no single radius can be right for all of them.
+  /// from `left + radius` to `right - radius` once those cross — so a visible
+  /// [BorderSide] strokes the four reversed edges as bars outside the shape.
+  ///
+  /// Use it where one shape is painted onto boxes of different sizes, so no
+  /// single radius can be right for all of them.
   static OutlinedBorder adaptiveBorder({
     double radius = ISpectConstants.cardBorderRadius,
     BorderSide side = BorderSide.none,
@@ -80,57 +91,124 @@ abstract final class ISpectSquircle {
   );
 }
 
-/// A [ContinuousRectangleBorder] sized to the rect it lands on. See
-/// [ISpectSquircle.adaptiveBorder].
+/// A true superellipse corner, sized to the rect it lands on.
+/// See [ISpectSquircle.adaptiveBorder].
 @immutable
 final class ISpectAdaptiveSquircle extends OutlinedBorder {
   const ISpectAdaptiveSquircle({
     this.radius = ISpectConstants.cardBorderRadius,
+    this.exponent = ISpectSquircle.superellipseExponent,
     super.side,
   });
 
-  /// The logical radius, before [ISpectSquircle.scale] and the per-rect cap.
+  /// Corner radius, capped at half the shortest side of the painted rect.
+  ///
+  /// Unlike [ISpectSquircle.border] this is the radius itself, with no
+  /// [ISpectSquircle.scale] correction: that factor exists to offset how far
+  /// [ContinuousRectangleBorder] falls short of a squircle, and a superellipse
+  /// does not fall short.
   final double radius;
 
-  ContinuousRectangleBorder _resolve(Rect rect) => ContinuousRectangleBorder(
-    borderRadius: BorderRadius.all(
-      Radius.circular(
-        math.min(radius * ISpectSquircle.scale, rect.shortestSide / 2),
-      ),
-    ),
-    side: side,
-  );
+  /// Superellipse exponent. `2` is a circular arc, larger is squarer.
+  final double exponent;
+
+  /// Segments per corner. A corner never exceeds half the shortest side, so a
+  /// fixed count keeps the longest arc under a pixel per segment.
+  static const int _segments = 32;
+
+  static double? _tabledExponent;
+  static List<Offset>? _table;
+
+  /// The corner sampled on a unit radius, so a paint scales the table instead
+  /// of calling [math.pow] twice per segment.
+  ///
+  /// One entry, not a map: the exponent is interpolated by [lerpFrom], so a
+  /// cache keyed by every value it passes through would grow without bound.
+  static List<Offset> _unitCorner(double exponent) {
+    final cached = _table;
+    if (cached != null && _tabledExponent == exponent) return cached;
+
+    final power = 2 / exponent;
+    final built = List<Offset>.generate(_segments + 1, (i) {
+      final t = i / _segments * (math.pi / 2);
+      return Offset(
+        math.pow(math.cos(t), power).toDouble(),
+        math.pow(math.sin(t), power).toDouble(),
+      );
+    }, growable: false);
+    _tabledExponent = exponent;
+    _table = built;
+    return built;
+  }
+
+  Path _path(Rect rect) {
+    final r = math.min(radius, rect.shortestSide / 2);
+    if (r <= 0) return Path()..addRect(rect);
+
+    final unit = _unitCorner(exponent);
+    final path = Path()..moveTo(rect.left, rect.top + r);
+    void corner(
+      double cx,
+      double cy,
+      double sx,
+      double sy, {
+      required bool forward,
+    }) {
+      for (var i = 0; i <= _segments; i++) {
+        final point = unit[forward ? i : _segments - i];
+        path.lineTo(cx + sx * (r - r * point.dx), cy + sy * (r - r * point.dy));
+      }
+    }
+
+    corner(rect.left, rect.top, 1, 1, forward: true);
+    path.lineTo(rect.right - r, rect.top);
+    corner(rect.right, rect.top, -1, 1, forward: false);
+    path.lineTo(rect.right, rect.bottom - r);
+    corner(rect.right, rect.bottom, -1, -1, forward: true);
+    path.lineTo(rect.left + r, rect.bottom);
+    corner(rect.left, rect.bottom, 1, -1, forward: false);
+    return path..close();
+  }
 
   @override
   EdgeInsetsGeometry get dimensions => EdgeInsets.all(side.width);
 
   @override
   Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
-      _resolve(rect).getInnerPath(rect, textDirection: textDirection);
+      _path(rect.deflate(side.width));
 
   @override
-  Path getOuterPath(Rect rect, {TextDirection? textDirection}) =>
-      _resolve(rect).getOuterPath(rect, textDirection: textDirection);
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) => _path(rect);
 
   @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) =>
-      _resolve(rect).paint(canvas, rect, textDirection: textDirection);
+  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
+    if (side.style == BorderStyle.none) return;
+    canvas.drawPath(_path(rect), side.toPaint());
+  }
 
   @override
-  ISpectAdaptiveSquircle copyWith({BorderSide? side, double? radius}) =>
-      ISpectAdaptiveSquircle(
-        radius: radius ?? this.radius,
-        side: side ?? this.side,
-      );
+  ISpectAdaptiveSquircle copyWith({
+    BorderSide? side,
+    double? radius,
+    double? exponent,
+  }) => ISpectAdaptiveSquircle(
+    radius: radius ?? this.radius,
+    exponent: exponent ?? this.exponent,
+    side: side ?? this.side,
+  );
 
   @override
-  ISpectAdaptiveSquircle scale(double t) =>
-      ISpectAdaptiveSquircle(radius: radius * t, side: side.scale(t));
+  ISpectAdaptiveSquircle scale(double t) => ISpectAdaptiveSquircle(
+    radius: radius * t,
+    exponent: exponent,
+    side: side.scale(t),
+  );
 
   @override
   ShapeBorder? lerpFrom(ShapeBorder? a, double t) => a is ISpectAdaptiveSquircle
       ? ISpectAdaptiveSquircle(
           radius: lerpDouble(a.radius, radius, t)!,
+          exponent: lerpDouble(a.exponent, exponent, t)!,
           side: BorderSide.lerp(a.side, side, t),
         )
       : super.lerpFrom(a, t);
@@ -139,6 +217,7 @@ final class ISpectAdaptiveSquircle extends OutlinedBorder {
   ShapeBorder? lerpTo(ShapeBorder? b, double t) => b is ISpectAdaptiveSquircle
       ? ISpectAdaptiveSquircle(
           radius: lerpDouble(radius, b.radius, t)!,
+          exponent: lerpDouble(exponent, b.exponent, t)!,
           side: BorderSide.lerp(side, b.side, t),
         )
       : super.lerpTo(b, t);
@@ -148,10 +227,11 @@ final class ISpectAdaptiveSquircle extends OutlinedBorder {
       identical(this, other) ||
       other is ISpectAdaptiveSquircle &&
           other.radius == radius &&
+          other.exponent == exponent &&
           other.side == side;
 
   @override
-  int get hashCode => Object.hash(radius, side);
+  int get hashCode => Object.hash(radius, exponent, side);
 }
 
 final class _InsetShapeBorder extends ShapeBorder {

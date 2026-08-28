@@ -353,13 +353,13 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
     // draggable_panel resolves a null token from the ambient ColorScheme.
     if (theme.useHostColors) {
-      return _panelShapes(theme.divider?.resolve(context)).copyWith(
+      return _panelShell(theme.divider?.resolve(context)).copyWith(
         surfaceColor: theme.background?.resolve(context),
         handleColor: theme.foreground?.resolve(context),
       );
     }
 
-    return _panelShapes(
+    return _panelShell(
       _ownedColor(context, theme.divider, ISpectDefaultPalette.divider),
     ).copyWith(
       surfaceColor: _ownedColor(
@@ -399,26 +399,33 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     );
   }
 
-  /// ISpect's squircle corners on every face the panel paints. One radius for
-  /// all three: the tab, the button, and the window differ by an order of
-  /// magnitude in size, and an adaptive squircle rounds each as far as its own
-  /// box allows.
-  DraggablePanelThemeData _panelShapes(Color? border) {
+  /// The panel shell ISpect owns regardless of palette: squircle corners on
+  /// every face, and a parked panel that recedes.
+  ///
+  /// One radius for all three faces — the tab, the button, and the window
+  /// differ by an order of magnitude in size, and an adaptive squircle rounds
+  /// each as far as its own box allows.
+  DraggablePanelThemeData _panelShell(Color? border) {
     final shape = _panelShape(border, ISpectConstants.panelBorderRadius);
     return DraggablePanelThemeData(
       collapsedShape: shape,
       stashedShape: shape,
       shape: shape,
+      stashedOpacity: ISpectConstants.stashedPanelOpacity,
     );
   }
 
-  DraggableActionPanelThemeData get _actionShapes =>
-      DraggableActionPanelThemeData(
-        actionShape: ISpectSquircle.adaptiveBorder(),
-        buttonStyle: ButtonStyle(
-          shape: WidgetStatePropertyAll(ISpectSquircle.adaptiveBorder()),
-        ),
-      );
+  /// The grid's own corners, a step down from the panel's so a 48-pixel tile
+  /// keeps roughly the panel's ratio of corner to side.
+  DraggableActionPanelThemeData get _actionShapes {
+    final shape = ISpectSquircle.adaptiveBorder(
+      radius: ISpectConstants.snackbarBorderRadius,
+    );
+    return DraggableActionPanelThemeData(
+      actionShape: shape,
+      buttonStyle: ButtonStyle(shape: WidgetStatePropertyAll(shape)),
+    );
+  }
 
   Color _ownedColor(
     BuildContext context,

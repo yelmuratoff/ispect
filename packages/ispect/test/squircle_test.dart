@@ -1,45 +1,48 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 
-double _outlineLength(ShapeBorder shape, Rect rect) => shape
+double _outline(ShapeBorder shape, Rect rect) => shape
     .getOuterPath(rect)
     .computeMetrics()
-    .fold(0, (sum, m) => sum + m.length);
+    .fold(0, (sum, metric) => sum + metric.length);
 
 void main() {
   group('ISpectAdaptiveSquircle', () {
-    // The collapsed panel button, where the bars first showed up.
+    // The collapsed panel button, the smallest box the panel theme paints onto.
     const button = Rect.fromLTWH(0, 0, 64, 64);
 
     test('caps the radius at half the shortest side', () {
-      const adaptive = ISpectAdaptiveSquircle(radius: 28);
-      final capped = ISpectSquircle.border(radius: 16);
+      const asked = ISpectAdaptiveSquircle(radius: 90);
+      const fits = ISpectAdaptiveSquircle(radius: 32);
 
-      expect(
-        _outlineLength(adaptive, button),
-        closeTo(_outlineLength(capped, button), 0.01),
-      );
+      expect(_outline(asked, button), closeTo(_outline(fits, button), 0.01));
     });
 
-    test('a plain squircle past that half walks a longer outline', () {
-      final overshooting = ISpectSquircle.border(radius: 28);
+    test('a circular exponent traces a circle', () {
+      const circle = ISpectAdaptiveSquircle(radius: 32, exponent: 2);
+
+      expect(_outline(circle, button), closeTo(math.pi * 64, 0.1));
+    });
+
+    test('rounds further than the continuous corner it replaces', () {
+      const superellipse = ISpectAdaptiveSquircle(radius: 32);
+      final continuous = ISpectSquircle.border(radius: 16);
 
       expect(
-        _outlineLength(overshooting, button),
-        greaterThan(
-          _outlineLength(const ISpectAdaptiveSquircle(radius: 28), button),
-        ),
+        _outline(superellipse, button),
+        lessThan(_outline(continuous, button)),
       );
     });
 
     test('leaves a roomy box at the radius it was given', () {
       const roomy = Rect.fromLTWH(0, 0, 360, 400);
-      const adaptive = ISpectAdaptiveSquircle(radius: 28);
 
       expect(
-        _outlineLength(adaptive, roomy),
-        closeTo(_outlineLength(ISpectSquircle.border(radius: 28), roomy), 0.01),
+        _outline(const ISpectAdaptiveSquircle(radius: 28), roomy),
+        lessThan(_outline(const ISpectAdaptiveSquircle(radius: 8), roomy)),
       );
     });
 

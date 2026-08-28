@@ -28,7 +28,7 @@ final class ISpectConstants {
   static const double largeBorderRadius = 10;
   static const double cardBorderRadius = 12;
   static const double snackbarBorderRadius = 16;
-  static const double panelBorderRadius = 28;
+  static const double panelBorderRadius = 24;
 
   static const double standardHorizontalPadding = 12;
   static const double standardVerticalPadding = 8;
@@ -44,6 +44,7 @@ final class ISpectConstants {
   static const double standardBackgroundOpacity = 0.08;
   static const double iconButtonBackgroundOpacity = 0.1;
   static const double disabledOpacity = 0.5;
+  static const double stashedPanelOpacity = 0.65;
 
   // ===== Colors =====
 
