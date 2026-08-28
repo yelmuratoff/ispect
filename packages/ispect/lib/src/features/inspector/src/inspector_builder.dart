@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/logger_settings.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/error_boundary.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/core/res/ispect_default_palette.dart';
 import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/features/log_viewer/controllers/log_page_controller.dart';
@@ -351,28 +353,20 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
     // draggable_panel resolves a null token from the ambient ColorScheme.
     if (theme.useHostColors) {
-      return DraggablePanelThemeData(
+      return _panelShapes(theme.divider?.resolve(context)).copyWith(
         surfaceColor: theme.background?.resolve(context),
-        collapsedShape: _panelShape(theme.divider?.resolve(context), 16),
-        shape: _panelShape(theme.divider?.resolve(context), 24),
         handleColor: theme.foreground?.resolve(context),
       );
     }
 
-    final divider = _ownedColor(
-      context,
-      theme.divider,
-      ISpectDefaultPalette.divider,
-    );
-
-    return DraggablePanelThemeData(
+    return _panelShapes(
+      _ownedColor(context, theme.divider, ISpectDefaultPalette.divider),
+    ).copyWith(
       surfaceColor: _ownedColor(
         context,
         theme.background,
         ISpectDefaultPalette.background,
       ),
-      collapsedShape: _panelShape(divider, 16),
-      shape: _panelShape(divider, 24),
       handleColor: _ownedColor(
         context,
         theme.foreground,
@@ -385,13 +379,13 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     final theme = context.ispectTheme;
 
     if (theme.useHostColors) {
-      return DraggableActionPanelThemeData(
+      return _actionShapes.copyWith(
         actionBackgroundColor: theme.card?.resolve(context),
         actionForegroundColor: theme.foreground?.resolve(context),
       );
     }
 
-    return DraggableActionPanelThemeData(
+    return _actionShapes.copyWith(
       actionBackgroundColor: _ownedColor(
         context,
         theme.card,
@@ -405,6 +399,27 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     );
   }
 
+  /// ISpect's squircle corners on every face the panel paints. One radius for
+  /// all three: the tab, the button, and the window differ by an order of
+  /// magnitude in size, and an adaptive squircle rounds each as far as its own
+  /// box allows.
+  DraggablePanelThemeData _panelShapes(Color? border) {
+    final shape = _panelShape(border, ISpectConstants.panelBorderRadius);
+    return DraggablePanelThemeData(
+      collapsedShape: shape,
+      stashedShape: shape,
+      shape: shape,
+    );
+  }
+
+  DraggableActionPanelThemeData get _actionShapes =>
+      DraggableActionPanelThemeData(
+        actionShape: ISpectSquircle.adaptiveBorder(),
+        buttonStyle: ButtonStyle(
+          shape: WidgetStatePropertyAll(ISpectSquircle.adaptiveBorder()),
+        ),
+      );
+
   Color _ownedColor(
     BuildContext context,
     ISpectDynamicColor? override,
@@ -413,12 +428,11 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       override?.resolve(context) ??
       fallback.pick(isDark: context.ispectIsDark)!;
 
-  ShapeBorder? _panelShape(Color? border, double radius) => border == null
-      ? null
-      : RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius),
-          side: BorderSide(color: border),
-        );
+  ShapeBorder _panelShape(Color? border, double radius) =>
+      ISpectSquircle.adaptiveBorder(
+        radius: radius,
+        side: border == null ? BorderSide.none : BorderSide(color: border),
+      );
 
   void _enterOverlay() {
     _overlayDepth++;

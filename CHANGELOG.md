@@ -15,6 +15,7 @@
 
 ### Behavioral Changes
 
+- **Diagnostics panel corners:** The panel, its action tiles, and its buttons take ISpect's squircle corners instead of Material's rounded rectangle, and carry the theme's divider colour as an outline.
 - **Diagnostics panel resting state:** The panel starts parked against the screen edge and collapses whenever an ISpect screen opens, so it never covers the log viewer, the composer, or a plugin screen. A panel driven by a caller-supplied `DraggablePanelController` keeps its own placement.
 - **Layout inspector precision:** Runtime measurements now default to two decimal places; explicit `decimalPlaces` overrides remain supported.
 - **Deprecation schedule:** Deprecated compatibility aliases remain available through 7.x and are now scheduled for removal in 8.0.0.

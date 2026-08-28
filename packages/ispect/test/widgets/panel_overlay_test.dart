@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
 
 void main() {
@@ -26,6 +27,56 @@ void main() {
         panel.controller?.placement,
         const PanelPlacement.stashed(PanelEdge.end),
       );
+    });
+
+    testWidgets('every panel face takes ISpect squircle corners', (
+      tester,
+    ) async {
+      if (!kISpectEnabled) return;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: ISpectLocalizations.delegate(),
+          builder: (context, child) => ISpectBuilder.wrap(child: child!),
+          home: const ColoredBox(color: Color(0xFFFFFFFF)),
+        ),
+      );
+      await tester.pump();
+
+      final panel = tester.widget<DraggableActionPanel>(
+        find.byType(DraggableActionPanel),
+      );
+
+      expect(panel.theme?.collapsedShape, isA<ISpectAdaptiveSquircle>());
+      expect(panel.theme?.shape, isA<ISpectAdaptiveSquircle>());
+      expect(panel.theme?.stashedShape, isA<ISpectAdaptiveSquircle>());
+      expect(panel.actionTheme?.actionShape, isA<ISpectAdaptiveSquircle>());
+      expect(
+        panel.actionTheme?.buttonStyle?.shape?.resolve({}),
+        isA<ISpectAdaptiveSquircle>(),
+      );
+    });
+
+    testWidgets('the panel outline carries the ISpect divider colour', (
+      tester,
+    ) async {
+      if (!kISpectEnabled) return;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: ISpectLocalizations.delegate(),
+          builder: (context, child) => ISpectBuilder.wrap(child: child!),
+          home: const ColoredBox(color: Color(0xFFFFFFFF)),
+        ),
+      );
+      await tester.pump();
+
+      final panel = tester.widget<DraggableActionPanel>(
+        find.byType(DraggableActionPanel),
+      );
+      final shape = panel.theme!.shape! as ISpectAdaptiveSquircle;
+
+      expect(shape.side.style, BorderStyle.solid);
     });
 
     testWidgets('a caller-supplied controller keeps its own placement', (
