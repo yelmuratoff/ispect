@@ -20,7 +20,7 @@ dart run tool/bin/ispect_tool.dart <command>
 
 | Command                           | Replaces                 | Does                                                                                       |
 | --------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
-| `check`                           | the whole CI gate        | Runs every repository check in one process — what CI and the hook call     |
+| `check`                           | the whole CI gate        | Runs every repository check in one process — what CI and the hook call                     |
 | `version check`                   | `check_version_sync.sh`  | Every package `version:` matches `version.config`                                          |
 | `version bump <kind\|dev\|X.Y.Z>` | `bump_version.sh`        | Advances `VERSION`, refusing anything Pub does not order above the current one             |
 | `sync [--bump k] [--dry-run]`     | `update_versions.sh`     | Propagates `VERSION` to manifests, internal constraints, and the web lockfile              |

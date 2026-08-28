@@ -133,7 +133,7 @@ packages:
     dependency: transitive
     description:
       name: draggable_panel
-      sha256: "113ebfdafaadf2e89ddadddcad3b5a76532b5819a951d64a113429a335cfd463"
+      sha256: f30a38e4d510cc4a1cdb5819c039aee2f2ddf0c58ba126b10cb6c9123ada8640
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0-beta.5"
@@ -291,56 +291,56 @@ packages:
       path: "../packages/ispect"
       relative: true
     source: path
-    version: "7.0.0-rc.4"
+    version: "7.0.0-rc.5"
   ispect_layout:
     dependency: "direct overridden"
     description:
       path: "../packages/ispect_layout"
       relative: true
     source: path
-    version: "7.0.0-rc.4"
+    version: "7.0.0-rc.5"
   ispectify:
     dependency: "direct main"
     description:
       path: "../packages/ispectify"
       relative: true
     source: path
-    version: "7.0.0-rc.4"
+    version: "7.0.0-rc.5"
   ispectify_bloc:
     dependency: "direct main"
     description:
       path: "../packages/ispectify_bloc"
       relative: true
     source: path
-    version: "7.0.0-rc.4"
+    version: "7.0.0-rc.5"
   ispectify_db:
     dependency: "direct main"
     description:
       path: "../packages/ispectify_db"
       relative: true
     source: path
-    version: "7.0.0-rc.4"
+    version: "7.0.0-rc.5"
   ispectify_dio:
     dependency: "direct main"
     description:
       path: "../packages/ispectify_dio"
       relative: true
     source: path
-    version: "7.0.0-rc.4"
+    version: "7.0.0-rc.5"
   ispectify_http:
     dependency: "direct main"
     description:
       path: "../packages/ispectify_http"
       relative: true
     source: path
-    version: "7.0.0-rc.4"
+    version: "7.0.0-rc.5"
   ispectify_ws:
     dependency: "direct main"
     description:
       path: "../packages/ispectify_ws"
       relative: true
     source: path
-    version: "7.0.0-rc.4"
+    version: "7.0.0-rc.5"
   leak_tracker:
     dependency: transitive
     description:
