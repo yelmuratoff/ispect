@@ -162,11 +162,7 @@ class WebLogsFile extends BaseLogsFile {
   }
 
   /// Determines final filename for download
-  String _determineFinalFileName(
-    Blob blob,
-    String? fileName,
-    String fileType,
-  ) {
+  String _determineFinalFileName(Blob blob, String? fileName, String fileType) {
     if (fileName != null) {
       return _processCustomFileName(fileName, fileType);
     }

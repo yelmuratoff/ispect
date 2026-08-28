@@ -40,8 +40,9 @@ ThemeData buildISpectThemeData({required bool dark}) {
     onError: Colors.white,
   );
 
-  final squircle =
-      WidgetStatePropertyAll<OutlinedBorder>(ISpectSquircle.border());
+  final squircle = WidgetStatePropertyAll<OutlinedBorder>(
+    ISpectSquircle.border(),
+  );
 
   return ThemeData(
     useMaterial3: true,
@@ -65,15 +66,14 @@ ThemeData buildISpectThemeData({required bool dark}) {
         elevation: const WidgetStatePropertyAll(0),
       ),
     ),
-    textButtonTheme: TextButtonThemeData(
-      style: ButtonStyle(shape: squircle),
-    ),
+    textButtonTheme: TextButtonThemeData(style: ButtonStyle(shape: squircle)),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(shape: squircle),
     ),
     chipTheme: ChipThemeData(
-      shape:
-          ISpectSquircle.border(radius: ISpectConstants.standardBorderRadius),
+      shape: ISpectSquircle.border(
+        radius: ISpectConstants.standardBorderRadius,
+      ),
     ),
   );
 }

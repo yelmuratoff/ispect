@@ -52,14 +52,13 @@ final class HostileExportStackTrace implements StackTrace {
   HostileExportException exception,
   HostileExportError error,
   HostileExportStackTrace stackTrace,
-}) hostileCopyLog(String secret) {
+})
+hostileCopyLog(String secret) {
   final exception = HostileExportException();
   final error = HostileExportError();
   final stackTrace = HostileExportStackTrace();
-  final message = 'token=$secret${''.padRight(
-    LogExportOutput.maxRecordBytes * 2,
-    'x',
-  )}';
+  final message =
+      'token=$secret${''.padRight(LogExportOutput.maxRecordBytes * 2, 'x')}';
   return (
     log: ISpectLogData(
       message,

@@ -40,24 +40,23 @@ final class ISpectToaster {
     BuildContext? context, {
     required String title,
     ScaffoldMessengerState? messenger,
-  }) =>
-      _showToast(
-        context,
-        title: title,
-        icon: const Row(
-          children: [
-            SizedBox.square(
-              dimension: 24,
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            ),
-            Gap(12),
-          ],
+  }) => _showToast(
+    context,
+    title: title,
+    icon: const Row(
+      children: [
+        SizedBox.square(
+          dimension: 24,
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
         ),
-        color: ISpectConstants.toastBackgroundColor,
-        messenger: messenger,
-      );
+        Gap(12),
+      ],
+    ),
+    color: ISpectConstants.toastBackgroundColor,
+    messenger: messenger,
+  );
 
   /// Displays an error toast with a red background.
   ///
@@ -77,16 +76,15 @@ final class ISpectToaster {
     Duration? duration,
     ScaffoldMessengerState? messenger,
     ISpectGeneratedLocalization? l10n,
-  }) =>
-      _showToast(
-        context,
-        title: title,
-        message: message,
-        color: Colors.red,
-        duration: duration,
-        messenger: messenger,
-        l10n: l10n,
-      );
+  }) => _showToast(
+    context,
+    title: title,
+    message: message,
+    color: Colors.red,
+    duration: duration,
+    messenger: messenger,
+    l10n: l10n,
+  );
 
   /// Displays an informational toast with a dark background.
   ///
@@ -108,17 +106,16 @@ final class ISpectToaster {
     SnackBarAction? action,
     ScaffoldMessengerState? messenger,
     ISpectGeneratedLocalization? l10n,
-  }) =>
-      _showToast(
-        context,
-        title: title,
-        message: message,
-        color: ISpectConstants.toastBackgroundColor,
-        duration: duration,
-        action: action,
-        messenger: messenger,
-        l10n: l10n,
-      );
+  }) => _showToast(
+    context,
+    title: title,
+    message: message,
+    color: ISpectConstants.toastBackgroundColor,
+    duration: duration,
+    action: action,
+    messenger: messenger,
+    l10n: l10n,
+  );
 
   /// Displays a success toast with a green background.
   ///
@@ -142,18 +139,17 @@ final class ISpectToaster {
     SnackBarAction? action,
     ScaffoldMessengerState? messenger,
     ISpectGeneratedLocalization? l10n,
-  }) =>
-      _showToast(
-        context,
-        title: title,
-        message: message,
-        color: Colors.green,
-        trailing: trailing,
-        duration: duration,
-        action: action,
-        messenger: messenger,
-        l10n: l10n,
-      );
+  }) => _showToast(
+    context,
+    title: title,
+    message: message,
+    color: Colors.green,
+    trailing: trailing,
+    duration: duration,
+    action: action,
+    messenger: messenger,
+    l10n: l10n,
+  );
 
   /// Displays a toast indicating that a value has been copied to the clipboard.
   ///
@@ -175,15 +171,14 @@ final class ISpectToaster {
     bool showValue = true,
     ScaffoldMessengerState? messenger,
     ISpectGeneratedLocalization? l10n,
-  }) =>
-      _showCopiedToast(
-        context,
-        value: value,
-        title: title,
-        showValue: showValue,
-        messenger: messenger,
-        l10n: l10n,
-      );
+  }) => _showCopiedToast(
+    context,
+    value: value,
+    title: title,
+    showValue: showValue,
+    messenger: messenger,
+    l10n: l10n,
+  );
 
   /// A private helper method to display a custom toast message.
   static Future<void> _showToast(
@@ -236,10 +231,7 @@ final class ISpectToaster {
                 ],
               ),
               if (message != null)
-                Text(
-                  message,
-                  style: const TextStyle(color: Colors.white),
-                ),
+                Text(message, style: const TextStyle(color: Colors.white)),
             ],
           ),
         ),
@@ -272,9 +264,7 @@ final class ISpectToaster {
       fontWeight: FontWeight.bold,
     );
 
-    const valueStyle = TextStyle(
-      color: Colors.grey,
-    );
+    const valueStyle = TextStyle(color: Colors.grey);
 
     final textSpans = <TextSpan>[
       TextSpan(text: copiedText, style: titleStyle),

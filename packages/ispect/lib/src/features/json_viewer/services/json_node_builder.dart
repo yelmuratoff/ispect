@@ -8,9 +8,7 @@ class JsonNodeBuilder {
 
   /// Takes a safe viewer snapshot and builds nodes from that owned graph.
   static Map<String, NodeViewModelState> buildViewModelNodes(Object? object) =>
-      buildSnapshotViewModelNodes(
-        JsonInputPreflight.snapshotForViewer(object),
-      );
+      buildSnapshotViewModelNodes(JsonInputPreflight.snapshotForViewer(object));
 
   /// Builds view model nodes without re-normalizing a proven snapshot.
   static Map<String, NodeViewModelState> buildSnapshotViewModelNodes(

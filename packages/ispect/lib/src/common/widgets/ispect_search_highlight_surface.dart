@@ -74,7 +74,10 @@ class ISpectSearchHighlightSurface extends StatelessWidget {
       // The inner left accent bar must follow the rounded corner, so the clip
       // uses the same squircle shape as the border rather than a cheaper rrect.
       child: clipContent
-          ? ClipPath(clipper: ShapeBorderClipper(shape: shape), child: child)
+          ? ClipPath(
+              clipper: ShapeBorderClipper(shape: shape),
+              child: child,
+            )
           : child,
     );
   }

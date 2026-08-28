@@ -38,7 +38,8 @@ Future<void> showLogContextMenu({
 
   final hasFilterActions = data.key != null && onTypeFilterTap != null;
   final hasNavigationFlow = onNavigationFlowTap != null;
-  final canEditResend = ISpect.senders.isNotEmpty &&
+  final canEditResend =
+      ISpect.senders.isNotEmpty &&
       HttpComposerController.seedFromLog(data) != null;
   final logKey = data.key;
   final logDescription = theme.getTypeDescription(context, key: logKey);
@@ -47,7 +48,8 @@ Future<void> showLogContextMenu({
 
   // Sheet sizing tracks tile count: 3 unconditional tiles (copy, share,
   // expand) plus the conditional ones below.
-  final tileCount = 3 +
+  final tileCount =
+      3 +
       (data.curlCommand != null ? 1 : 0) +
       (canEditResend ? 1 : 0) +
       (hasNavigationFlow ? 1 : 0) +
@@ -79,10 +81,7 @@ Future<void> showLogContextMenu({
 
   switch (action) {
     case LogContextAction.copyMessage:
-      copyClipboard(
-        context,
-        value: data.toExportMessageText(),
-      );
+      copyClipboard(context, value: data.toExportMessageText());
     case LogContextAction.share:
       onShareTap?.call();
     case LogContextAction.copyCurl:
@@ -137,107 +136,87 @@ class _LogContextMenuSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const ISpectDragHandle(),
-          const Gap(8),
-          ISpectBottomSheetHeader(
-            title: headerTitle,
-            subtitle: headerSubtitle,
-            icon: headerIcon,
-            iconColor: headerIconColor,
-          ),
-          const Gap(8),
-          Flexible(
-            child: ListView(
-              controller: scrollController,
-              shrinkWrap: true,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              children: [
-                _ActionTile(
-                  icon: Icons.content_copy_rounded,
-                  label: l10n.copy,
-                  onTap: () => Navigator.pop(
-                    context,
-                    LogContextAction.copyMessage,
-                  ),
-                ),
-                _ActionTile(
-                  icon: Icons.share_rounded,
-                  label: l10n.share,
-                  onTap: () => Navigator.pop(
-                    context,
-                    LogContextAction.share,
-                  ),
-                ),
-                if (hasCurl)
-                  _ActionTile(
-                    icon: Icons.terminal_rounded,
-                    label: l10n.copyAsCurl,
-                    onTap: () => Navigator.pop(
-                      context,
-                      LogContextAction.copyCurl,
-                    ),
-                  ),
-                if (hasEditResend)
-                  _ActionTile(
-                    icon: Icons.api_rounded,
-                    label: l10n.composerEditAndResend,
-                    onTap: () => Navigator.pop(
-                      context,
-                      LogContextAction.editAndResend,
-                    ),
-                  ),
-                _ActionTile(
-                  icon: Icons.open_in_full_rounded,
-                  label: l10n.expandLogs,
-                  onTap: () => Navigator.pop(
-                    context,
-                    LogContextAction.openDetail,
-                  ),
-                ),
-                if (hasNavigationFlow)
-                  _ActionTile(
-                    icon: Icons.compare_arrows_rounded,
-                    label: l10n.navigationFlow,
-                    onTap: () => Navigator.pop(
-                      context,
-                      LogContextAction.navigationFlow,
-                    ),
-                  ),
-                if (hasFilterActions) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Divider(
-                      height: 1,
-                      color: context.appTheme.colorScheme.onSurface
-                          .withValues(alpha: 0.08),
-                    ),
-                  ),
-                  const ISpectSectionLabel(title: 'Filter'),
-                  _ActionTile(
-                    icon: Icons.filter_alt_rounded,
-                    label: l10n.showOnlyThisType,
-                    onTap: () => Navigator.pop(
-                      context,
-                      LogContextAction.showOnlyType,
-                    ),
-                  ),
-                  _ActionTile(
-                    icon: Icons.filter_alt_off_rounded,
-                    label: l10n.hideThisType,
-                    onTap: () => Navigator.pop(
-                      context,
-                      LogContextAction.hideType,
-                    ),
-                  ),
-                ],
-              ],
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const ISpectDragHandle(),
+      const Gap(8),
+      ISpectBottomSheetHeader(
+        title: headerTitle,
+        subtitle: headerSubtitle,
+        icon: headerIcon,
+        iconColor: headerIconColor,
+      ),
+      const Gap(8),
+      Flexible(
+        child: ListView(
+          controller: scrollController,
+          shrinkWrap: true,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          children: [
+            _ActionTile(
+              icon: Icons.content_copy_rounded,
+              label: l10n.copy,
+              onTap: () => Navigator.pop(context, LogContextAction.copyMessage),
             ),
-          ),
-        ],
-      );
+            _ActionTile(
+              icon: Icons.share_rounded,
+              label: l10n.share,
+              onTap: () => Navigator.pop(context, LogContextAction.share),
+            ),
+            if (hasCurl)
+              _ActionTile(
+                icon: Icons.terminal_rounded,
+                label: l10n.copyAsCurl,
+                onTap: () => Navigator.pop(context, LogContextAction.copyCurl),
+              ),
+            if (hasEditResend)
+              _ActionTile(
+                icon: Icons.api_rounded,
+                label: l10n.composerEditAndResend,
+                onTap: () =>
+                    Navigator.pop(context, LogContextAction.editAndResend),
+              ),
+            _ActionTile(
+              icon: Icons.open_in_full_rounded,
+              label: l10n.expandLogs,
+              onTap: () => Navigator.pop(context, LogContextAction.openDetail),
+            ),
+            if (hasNavigationFlow)
+              _ActionTile(
+                icon: Icons.compare_arrows_rounded,
+                label: l10n.navigationFlow,
+                onTap: () =>
+                    Navigator.pop(context, LogContextAction.navigationFlow),
+              ),
+            if (hasFilterActions) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Divider(
+                  height: 1,
+                  color: context.appTheme.colorScheme.onSurface.withValues(
+                    alpha: 0.08,
+                  ),
+                ),
+              ),
+              const ISpectSectionLabel(title: 'Filter'),
+              _ActionTile(
+                icon: Icons.filter_alt_rounded,
+                label: l10n.showOnlyThisType,
+                onTap: () =>
+                    Navigator.pop(context, LogContextAction.showOnlyType),
+              ),
+              _ActionTile(
+                icon: Icons.filter_alt_off_rounded,
+                label: l10n.hideThisType,
+                onTap: () => Navigator.pop(context, LogContextAction.hideType),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ],
+  );
 }
 
 class _ActionTile extends StatelessWidget {
@@ -253,32 +232,32 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
-        child: ISpectBorderedSurface(
-          onTap: onTap,
-          backgroundColor: Colors.transparent,
-          semanticsLabel: label,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          child: Row(
-            children: [
-              ISpectIconBadge(icon: icon, size: ISpectIconBadgeSize.small),
-              const Gap(10),
-              Expanded(
-                child: Text(
-                  label,
-                  style: context.appTheme.textTheme.bodyMedium?.copyWith(
-                    color: context.appTheme.textColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+    padding: const EdgeInsets.symmetric(vertical: 3),
+    child: ISpectBorderedSurface(
+      onTap: onTap,
+      backgroundColor: Colors.transparent,
+      semanticsLabel: label,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      child: Row(
+        children: [
+          ISpectIconBadge(icon: icon, size: ISpectIconBadgeSize.small),
+          const Gap(10),
+          Expanded(
+            child: Text(
+              label,
+              style: context.appTheme.textTheme.bodyMedium?.copyWith(
+                color: context.appTheme.textColor,
+                fontWeight: FontWeight.w500,
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 16,
-                color: context.appTheme.textColor.withValues(alpha: 0.3),
-              ),
-            ],
+            ),
           ),
-        ),
-      );
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 16,
+            color: context.appTheme.textColor.withValues(alpha: 0.3),
+          ),
+        ],
+      ),
+    ),
+  );
 }

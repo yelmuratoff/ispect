@@ -115,8 +115,9 @@ class LogsScreenController {
 
   void onFabPressed() {
     final sc = logsScrollController;
-    final target =
-        (scrollDirection.value ?? false) ? 0.0 : sc.position.maxScrollExtent;
+    final target = (scrollDirection.value ?? false)
+        ? 0.0
+        : sc.position.maxScrollExtent;
     sc.animateTo(
       target,
       duration: const Duration(milliseconds: 300),
@@ -168,8 +169,9 @@ class LogsScreenController {
     // Simple click on type: toggle
     final currentKeys = logsViewController.filter.logTypeKeys;
     if (currentKeys.length == 1 && currentKeys.first == typeAction) {
-      logsViewController.filter =
-          logsViewController.filter.copyWith(logTypeKeys: <String>[]);
+      logsViewController.filter = logsViewController.filter.copyWith(
+        logTypeKeys: <String>[],
+      );
       titleFiltersController.unselectAll();
     } else {
       logsViewController.setOnlyLogTypeKey(typeAction);
@@ -212,7 +214,8 @@ class LogsScreenController {
       return KeyEventResult.ignored;
     }
 
-    final isMetaOrCtrl = HardwareKeyboard.instance.isMetaPressed ||
+    final isMetaOrCtrl =
+        HardwareKeyboard.instance.isMetaPressed ||
         HardwareKeyboard.instance.isControlPressed;
 
     // Ctrl/Cmd+K or "/" to focus search
@@ -280,8 +283,9 @@ class LogsScreenController {
         final currentVisualIndex = visualEntries.indexOf(activeData);
         if (currentVisualIndex == -1) return KeyEventResult.ignored;
 
-        targetVisualIndex =
-            isDown ? currentVisualIndex + 1 : currentVisualIndex - 1;
+        targetVisualIndex = isDown
+            ? currentVisualIndex + 1
+            : currentVisualIndex - 1;
         if (targetVisualIndex < 0 ||
             targetVisualIndex >= visualEntries.length) {
           return KeyEventResult.handled;
@@ -314,7 +318,8 @@ class LogsScreenController {
 
   /// Returns entries in visual display order. Cached by input identity + reverse state.
   List<ISpectLogData> getVisualEntries(List<ISpectLogData> sortedEntries) {
-    final isReversed = logsViewController.sortColumn == LogSortColumn.time &&
+    final isReversed =
+        logsViewController.sortColumn == LogSortColumn.time &&
         logsViewController.isLogOrderReversed;
 
     if (identical(sortedEntries, _lastVisualEntriesInput) &&
@@ -359,8 +364,10 @@ class LogsScreenController {
     int index,
   ) {
     if (logsViewController.sortColumn == LogSortColumn.time) {
-      final result =
-          logsViewController.getLogEntryAtIndex(sortedEntries, index);
+      final result = logsViewController.getLogEntryAtIndex(
+        sortedEntries,
+        index,
+      );
       if (result != null) return result.entry;
     }
     return sortedEntries[index];

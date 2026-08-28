@@ -43,13 +43,15 @@ void main() {
       expect(restored.useHostColors, isTrue);
     });
 
-    test('defaults to dark themeMode and owned colors (useHostColors false)',
-        () {
-      const theme = ISpectTheme();
+    test(
+      'defaults to dark themeMode and owned colors (useHostColors false)',
+      () {
+        const theme = ISpectTheme();
 
-      expect(theme.themeMode, equals(ISpectThemeMode.dark));
-      expect(theme.useHostColors, isFalse);
-    });
+        expect(theme.themeMode, equals(ISpectThemeMode.dark));
+        expect(theme.useHostColors, isFalse);
+      },
+    );
 
     test('fromMap without theme keys defaults to dark and owned colors', () {
       final map = <String, dynamic>{'page_title': 'Legacy'};
@@ -61,9 +63,7 @@ void main() {
     });
 
     test('toMap / fromMap does not serialize icons (icons are code-only)', () {
-      const theme = ISpectTheme(
-        logIcons: {'http-request': Icons.cloud_upload},
-      );
+      const theme = ISpectTheme(logIcons: {'http-request': Icons.cloud_upload});
 
       final map = theme.toMap();
       expect(map.containsKey('log_icons'), isFalse);
@@ -84,45 +84,47 @@ void main() {
       expect(theme.logIcons, isEmpty);
     });
 
-    test('toMap / fromMap roundtrip preserves customLogTypes with all fields',
-        () {
-      const custom = ISpectLogType(
-        'firebase-read',
-        category: 'firebase',
-        level: LogLevel.debug,
-        title: 'Firebase Read',
-      );
-      const customError = ISpectLogType(
-        'firebase-error',
-        category: 'firebase',
-        isError: true,
-        level: LogLevel.error,
-      );
-      const theme = ISpectTheme(
-        customLogTypes: [custom, customError],
-        logColors: {
-          'firebase-read': Color(0xFFFFA000),
-          'firebase-error': Color(0xFFD50000),
-        },
-      );
+    test(
+      'toMap / fromMap roundtrip preserves customLogTypes with all fields',
+      () {
+        const custom = ISpectLogType(
+          'firebase-read',
+          category: 'firebase',
+          level: LogLevel.debug,
+          title: 'Firebase Read',
+        );
+        const customError = ISpectLogType(
+          'firebase-error',
+          category: 'firebase',
+          isError: true,
+          level: LogLevel.error,
+        );
+        const theme = ISpectTheme(
+          customLogTypes: [custom, customError],
+          logColors: {
+            'firebase-read': Color(0xFFFFA000),
+            'firebase-error': Color(0xFFD50000),
+          },
+        );
 
-      final restored = ISpectTheme.fromMap(theme.toMap());
+        final restored = ISpectTheme.fromMap(theme.toMap());
 
-      expect(restored.customLogTypes.length, equals(2));
+        expect(restored.customLogTypes.length, equals(2));
 
-      final r1 = restored.customLogTypes[0];
-      expect(r1.key, equals('firebase-read'));
-      expect(r1.category, equals('firebase'));
-      expect(r1.isError, isFalse);
-      expect(r1.level, equals(LogLevel.debug));
-      expect(r1.title, equals('Firebase Read'));
+        final r1 = restored.customLogTypes[0];
+        expect(r1.key, equals('firebase-read'));
+        expect(r1.category, equals('firebase'));
+        expect(r1.isError, isFalse);
+        expect(r1.level, equals(LogLevel.debug));
+        expect(r1.title, equals('Firebase Read'));
 
-      final r2 = restored.customLogTypes[1];
-      expect(r2.key, equals('firebase-error'));
-      expect(r2.isError, isTrue);
-      expect(r2.level, equals(LogLevel.error));
-      expect(r2.title, isNull);
-    });
+        final r2 = restored.customLogTypes[1];
+        expect(r2.key, equals('firebase-error'));
+        expect(r2.isError, isTrue);
+        expect(r2.level, equals(LogLevel.error));
+        expect(r2.title, isNull);
+      },
+    );
 
     test('toMap / fromMap with no customLogTypes returns empty list', () {
       const theme = ISpectTheme(pageTitle: 'No customs');
@@ -166,10 +168,7 @@ void main() {
       expect(restored.customLogTypes.length, equals(1));
       expect(restored.customLogTypes.first.key, equals('my-event'));
       expect(restored.customLogTypes.first.title, equals('My Event'));
-      expect(
-        restored.logColors['my-event'],
-        equals(const Color(0xFF7C4DFF)),
-      );
+      expect(restored.logColors['my-event'], equals(const Color(0xFF7C4DFF)));
     });
 
     test('customLogType with unknown level falls back to LogLevel.info', () {
@@ -186,7 +185,7 @@ void main() {
             'category': 'general',
             'is_error': false,
             'level': 'nonexistent_level',
-          }
+          },
         ],
       };
 

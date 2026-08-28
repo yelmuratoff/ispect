@@ -2,15 +2,11 @@ import 'package:flutter/widgets.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/ispect.dart';
 
-typedef JsonStoreSelectorBuilder<T extends Object> = Widget Function(
-  BuildContext context,
-  T value,
-);
+typedef JsonStoreSelectorBuilder<T extends Object> =
+    Widget Function(BuildContext context, T value);
 
-typedef JsonStoreSelectorComparator<T extends Object> = bool Function(
-  T previous,
-  T next,
-);
+typedef JsonStoreSelectorComparator<T extends Object> =
+    bool Function(T previous, T next);
 
 /// Lightweight selector widget that listens to [JsonExplorerStore]
 /// and rebuilds only when the selected value changes.

@@ -18,7 +18,7 @@ class MethodBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final badgeColor =
         JsonColors.methodColorFor(method, Theme.of(context).brightness) ??
-            color;
+        color;
     return DecoratedBox(
       decoration: ISpectSquircle.decoration(
         color: badgeColor.withValues(alpha: 0.12),
@@ -48,23 +48,23 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: ISpectSquircle.decoration(
-          color: color.withValues(alpha: 0.12),
-          radius: ISpectConstants.mediumBorderRadius,
+    decoration: ISpectSquircle.decoration(
+      color: color.withValues(alpha: 0.12),
+      radius: ISpectConstants.mediumBorderRadius,
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          fontFeatures: const [FontFeature.tabularFigures()],
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-          child: Text(
-            text,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        ),
-      );
+      ),
+    ),
+  );
 }
 
 class DesktopStatusBadge extends StatelessWidget {
@@ -108,23 +108,23 @@ class DurationBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: ISpectSquircle.decoration(
-          color: context.appTheme.textColor.withValues(alpha: 0.06),
-          radius: ISpectConstants.smallBorderRadius,
+    decoration: ISpectSquircle.decoration(
+      color: context.appTheme.textColor.withValues(alpha: 0.06),
+      radius: ISpectConstants.smallBorderRadius,
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      child: Text(
+        formatTransactionDuration(duration),
+        style: TextStyle(
+          color: context.appTheme.textColor.withValues(alpha: 0.5),
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          fontFeatures: const [FontFeature.tabularFigures()],
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-          child: Text(
-            formatTransactionDuration(duration),
-            style: TextStyle(
-              color: context.appTheme.textColor.withValues(alpha: 0.5),
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        ),
-      );
+      ),
+    ),
+  );
 }
 
 class PendingBadge extends StatelessWidget {
@@ -134,22 +134,22 @@ class PendingBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: ISpectSquircle.decoration(
-          color: JsonColors.statusWarning.withValues(alpha: 0.12),
-          radius: ISpectConstants.smallBorderRadius,
+    decoration: ISpectSquircle.decoration(
+      color: JsonColors.statusWarning.withValues(alpha: 0.12),
+      radius: ISpectConstants.smallBorderRadius,
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: JsonColors.statusWarningDark,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: JsonColors.statusWarningDark,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      );
+      ),
+    ),
+  );
 }
 
 class DetailChip extends StatelessWidget {
@@ -261,29 +261,25 @@ class SmallActionIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-        button: true,
-        label: tooltip ?? '',
-        onTap: onPressed,
-        child: Tooltip(
-          message: tooltip ?? '',
-          child: Material(
-            type: MaterialType.transparency,
-            child: InkWell(
-              excludeFromSemantics: true,
-              customBorder: ISpectSquircle.border(
-                radius: ISpectConstants.smallBorderRadius,
-              ),
-              onTap: onPressed,
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Icon(
-                  icon,
-                  size: 15,
-                  color: color.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
+    button: true,
+    label: tooltip ?? '',
+    onTap: onPressed,
+    child: Tooltip(
+      message: tooltip ?? '',
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          excludeFromSemantics: true,
+          customBorder: ISpectSquircle.border(
+            radius: ISpectConstants.smallBorderRadius,
+          ),
+          onTap: onPressed,
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: Icon(icon, size: 15, color: color.withValues(alpha: 0.6)),
           ),
         ),
-      );
+      ),
+    ),
+  );
 }

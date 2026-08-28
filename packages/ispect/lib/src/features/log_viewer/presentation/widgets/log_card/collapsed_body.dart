@@ -38,105 +38,103 @@ class CollapsedBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 1),
-            child: DecoratedLeadingIcon(icon: icon, color: color),
-          ),
-          const Gap(ISpectConstants.standardGap),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(top: 1),
+        child: DecoratedLeadingIcon(icon: icon, color: color),
+      ),
+      const Gap(ISpectConstants.standardGap),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        title ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                          height: 1.1,
-                          letterSpacing: -0.1,
-                        ),
-                      ),
+                Flexible(
+                  child: Text(
+                    title ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      height: 1.1,
+                      letterSpacing: -0.1,
                     ),
-                    const Gap(6),
-                    Text(
-                      dateTime,
-                      maxLines: 1,
-                      style: TextStyle(
-                        color:
-                            context.appTheme.textColor.withValues(alpha: 0.45),
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w500,
-                        height: 1.1,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ],
-                ),
-                if (expanded) ...[
-                  if (subtitle != null && subtitle!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color:
-                              context.appTheme.textColor.withValues(alpha: 0.5),
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w500,
-                          height: 1.1,
-                          letterSpacing: 0.1,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ),
-                ] else
-                  _CollapsedMessage(
-                    color: color,
-                    message: message,
-                    errorMessage: errorMessage,
                   ),
+                ),
+                const Gap(6),
+                Text(
+                  dateTime,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: context.appTheme.textColor.withValues(alpha: 0.45),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w500,
+                    height: 1.1,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
               ],
             ),
-          ),
-          if (statusCode != null) ...[
-            const Gap(4),
-            _StatusCodeBadge(statusCode: statusCode!),
+            if (expanded) ...[
+              if (subtitle != null && subtitle!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: context.appTheme.textColor.withValues(alpha: 0.5),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      height: 1.1,
+                      letterSpacing: 0.1,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ),
+            ] else
+              _CollapsedMessage(
+                color: color,
+                message: message,
+                errorMessage: errorMessage,
+              ),
           ],
-          if (slowDurationMs != null) ...[
-            const Gap(4),
-            SlowBadge(durationMs: slowDurationMs!),
-          ],
-          const Gap(4),
-          SquareIconButton(
-            icon: Icons.open_in_full_rounded,
-            color: color,
-            tooltip: context.ispectL10n.expandLogs,
-            dense: true,
-            onPressed: onExpandTap,
-          ),
-          const Gap(4),
-          SquareIconButton(
-            icon: Icons.more_vert_rounded,
-            color: color,
-            tooltip: context.ispectL10n.actions,
-            dense: true,
-            onPressed: onMenuTap,
-          ),
-        ],
-      );
+        ),
+      ),
+      if (statusCode != null) ...[
+        const Gap(4),
+        _StatusCodeBadge(statusCode: statusCode!),
+      ],
+      if (slowDurationMs != null) ...[
+        const Gap(4),
+        SlowBadge(durationMs: slowDurationMs!),
+      ],
+      const Gap(4),
+      SquareIconButton(
+        icon: Icons.open_in_full_rounded,
+        color: color,
+        tooltip: context.ispectL10n.expandLogs,
+        dense: true,
+        onPressed: onExpandTap,
+      ),
+      const Gap(4),
+      SquareIconButton(
+        icon: Icons.more_vert_rounded,
+        color: color,
+        tooltip: context.ispectL10n.actions,
+        dense: true,
+        onPressed: onMenuTap,
+      ),
+    ],
+  );
 }
 
 class _CollapsedMessage extends StatelessWidget {
@@ -152,8 +150,9 @@ class _CollapsedMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayMessage =
-        (message == 'FlutterErrorDetails') ? errorMessage : message;
+    final displayMessage = (message == 'FlutterErrorDetails')
+        ? errorMessage
+        : message;
 
     if (displayMessage == null || displayMessage.isEmpty) {
       return const SizedBox.shrink();
@@ -207,11 +206,7 @@ class SquareIconButton extends StatelessWidget {
           radius: ISpectConstants.mediumBorderRadius,
         ),
         child: Center(
-          child: Icon(
-            icon,
-            size: 16,
-            color: color.withValues(alpha: 0.75),
-          ),
+          child: Icon(icon, size: 16, color: color.withValues(alpha: 0.75)),
         ),
       ),
     );
@@ -268,19 +263,15 @@ class DecoratedLeadingIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: ISpectSquircle.decoration(
-          color: color.withValues(alpha: 0.12),
-          radius: ISpectConstants.mediumBorderRadius,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(5),
-          child: Icon(
-            icon,
-            color: color,
-            size: 14,
-          ),
-        ),
-      );
+    decoration: ISpectSquircle.decoration(
+      color: color.withValues(alpha: 0.12),
+      radius: ISpectConstants.mediumBorderRadius,
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(5),
+      child: Icon(icon, color: color, size: 14),
+    ),
+  );
 }
 
 class _StatusCodeBadge extends StatelessWidget {

@@ -18,28 +18,24 @@ void main() {
     'disabled logger stops route capture before callbacks and inspection',
     () {
       final logger = ISpectLogger(
-        options: ISpectLoggerOptions(
-          enabled: false,
-          useConsoleLogs: false,
-        ),
+        options: ISpectLoggerOptions(enabled: false, useConsoleLogs: false),
       );
       expect(ISpect.initialize(logger), isTrue);
       var callbackCount = 0;
       final route = _ThrowingSettingsRoute();
-      final observer = ISpectNavigatorObserver(
-        onPush: (_, __) => callbackCount++,
-      )
-        ..didPush(route, null)
-        ..addTransition(
-          RouteTransition(
-            id: 'external',
-            from: null,
-            to: null,
-            type: TransitionType.push,
-            timestamp: DateTime(2026),
-            arguments: null,
-          ),
-        );
+      final observer =
+          ISpectNavigatorObserver(onPush: (_, __) => callbackCount++)
+            ..didPush(route, null)
+            ..addTransition(
+              RouteTransition(
+                id: 'external',
+                from: null,
+                to: null,
+                type: TransitionType.push,
+                timestamp: DateTime(2026),
+                arguments: null,
+              ),
+            );
 
       expect(callbackCount, 0);
       expect(route.calls, 0);
@@ -55,9 +51,7 @@ void main() {
     final lazy = ISpect.logger;
     var callbackCount = 0;
     final route = _ThrowingSettingsRoute();
-    final observer = ISpectNavigatorObserver(
-      onPush: (_, __) => callbackCount++,
-    )
+    final observer = ISpectNavigatorObserver(onPush: (_, __) => callbackCount++)
       ..didPush(route, null)
       ..addTransition(
         RouteTransition(
@@ -222,9 +216,7 @@ void main() {
     test('shows values when observer argument redaction is disabled', () {
       final message = buildRouteLogMessage(
         type: TransitionType.push,
-        route: _route(
-          arguments: const <String, dynamic>{'token': 'secret'},
-        ),
+        route: _route(arguments: const <String, dynamic>{'token': 'secret'}),
         previousRoute: null,
         enableArgumentRedaction: false,
         globalRedactionEnabled: true,
@@ -236,9 +228,7 @@ void main() {
     test('shows values when global redaction is disabled', () {
       final message = buildRouteLogMessage(
         type: TransitionType.push,
-        route: _route(
-          arguments: const <String, dynamic>{'token': 'secret'},
-        ),
+        route: _route(arguments: const <String, dynamic>{'token': 'secret'}),
         previousRoute: null,
         enableArgumentRedaction: true,
         globalRedactionEnabled: false,
@@ -273,9 +263,7 @@ void main() {
 
       expect(
         LogExportOutput.utf8Length(message),
-        lessThan(
-          LogExportOutput.maxPreparedValueBytes + 1024,
-        ),
+        lessThan(LogExportOutput.maxPreparedValueBytes + 1024),
       );
       expect(message, endsWith(LogExportOutput.truncatedMarker));
     });
@@ -287,9 +275,7 @@ void main() {
       );
       ISpectRedaction.configure(service: configuredService);
 
-      final sanitized = sanitizeRouteDiagnosticText(
-        'global_field=ROUTE_RAW',
-      );
+      final sanitized = sanitizeRouteDiagnosticText('global_field=ROUTE_RAW');
 
       expect(sanitized, 'global_field=<global>');
       expect(ISpectRedaction.service, same(configuredService));
@@ -324,10 +310,9 @@ void main() {
         expect(stored.from?.name, '/users/alice@example.com');
         expect(stored.to?.name, '/orders/123456?[REDACTED]');
         expect(stored.to?.name, isNot(contains('QUERY_SECRET')));
-        expect(
-          stored.arguments,
-          <String, Object?>{'token': defaultPlaceholder},
-        );
+        expect(stored.arguments, <String, Object?>{
+          'token': defaultPlaceholder,
+        });
         expect(stored.toString(), isNot(contains('ARGUMENT_SECRET')));
       },
       skip: !kISpectEnabled
@@ -381,9 +366,8 @@ void main() {
       'snapshots arguments for an explicit observer redaction opt-out',
       () {
         final arguments = _HostileRouteArguments();
-        final observer = ISpectNavigatorObserver(
-          enableArgumentRedaction: false,
-        )..didPush(_route(arguments: arguments), null);
+        final observer = ISpectNavigatorObserver(enableArgumentRedaction: false)
+          ..didPush(_route(arguments: arguments), null);
 
         final stored = observer.transitions.single.arguments;
         expect(stored, isNot(same(arguments)));
@@ -423,9 +407,8 @@ void main() {
           'screen': 'profile',
           'items': List<String>.filled(2000, 'x' * 100),
         };
-        final observer = ISpectNavigatorObserver(
-          enableArgumentRedaction: false,
-        )..didPush(_route(arguments: arguments), null);
+        final observer = ISpectNavigatorObserver(enableArgumentRedaction: false)
+          ..didPush(_route(arguments: arguments), null);
 
         final stored = observer.transitions.single.arguments;
         expect(stored, isA<Map<String, Object?>>());
@@ -457,9 +440,8 @@ void main() {
           timestamp: DateTime(2026),
           arguments: arguments,
         );
-        final observer = ISpectNavigatorObserver(
-          enableArgumentRedaction: false,
-        )..addTransition(transition);
+        final observer = ISpectNavigatorObserver(enableArgumentRedaction: false)
+          ..addTransition(transition);
 
         final stored = observer.transitions.single;
         expect(stored, isNot(same(transition)));
@@ -486,9 +468,8 @@ void main() {
       'stored opt-out maps fail closed when traversal throws',
       () {
         final arguments = _ThrowingEntriesMap();
-        final observer = ISpectNavigatorObserver(
-          enableArgumentRedaction: false,
-        )..didPush(_route(arguments: arguments), null);
+        final observer = ISpectNavigatorObserver(enableArgumentRedaction: false)
+          ..didPush(_route(arguments: arguments), null);
 
         expect(arguments.calls, 2);
         expect(observer.transitions.single.arguments, {
@@ -595,10 +576,7 @@ void main() {
         final observer = ISpectNavigatorObserver()
           ..didPush(_route(name: '/users/alice?token=QUERY_SECRET'), null);
 
-        expect(
-          observer.transitions.single.to?.name,
-          '/users/alice?[REDACTED]',
-        );
+        expect(observer.transitions.single.to?.name, '/users/alice?[REDACTED]');
       },
       skip: !kISpectEnabled
           ? 'Navigation capture requires ISPECT_ENABLED for this test.'
@@ -610,9 +588,7 @@ void main() {
 void _initializeRouteCapture() {
   if (!kISpectEnabled) return;
   final initialized = ISpect.initialize(
-    ISpectLogger(
-      options: ISpectLoggerOptions(useConsoleLogs: false),
-    ),
+    ISpectLogger(options: ISpectLoggerOptions(useConsoleLogs: false)),
   );
   expect(initialized, isTrue);
 }

@@ -93,8 +93,9 @@ class ScrollToEdgeFab extends StatelessWidget {
                   ? Icons.keyboard_arrow_up_rounded
                   : Icons.keyboard_arrow_down_rounded,
               size: 22,
-              color:
-                  context.appTheme.colorScheme.onSurface.withValues(alpha: 0.6),
+              color: context.appTheme.colorScheme.onSurface.withValues(
+                alpha: 0.6,
+              ),
             ),
           ),
         ),

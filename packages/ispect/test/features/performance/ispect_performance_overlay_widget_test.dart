@@ -4,12 +4,12 @@ import 'package:ispect/src/features/performance/src/overlay.dart';
 
 void main() {
   Widget wrap(Widget child) => Directionality(
-        textDirection: TextDirection.ltr,
-        child: MediaQuery(
-          data: const MediaQueryData(size: Size(800, 600)),
-          child: child,
-        ),
-      );
+    textDirection: TextDirection.ltr,
+    child: MediaQuery(
+      data: const MediaQueryData(size: Size(800, 600)),
+      child: child,
+    ),
+  );
 
   const childKey = Key('child');
   const childText = 'app-content';
@@ -19,8 +19,8 @@ void main() {
     late SemanticsHandle semanticsHandle;
 
     setUp(() {
-      semanticsHandle =
-          TestWidgetsFlutterBinding.ensureInitialized().ensureSemantics();
+      semanticsHandle = TestWidgetsFlutterBinding.ensureInitialized()
+          .ensureSemantics();
     });
 
     tearDown(() {
@@ -43,13 +43,12 @@ void main() {
       expect(find.bySemanticsLabel(overlayLabel), findsNothing);
     });
 
-    testWidgets('renders the overlay surface + freeze button when enabled',
-        (tester) async {
+    testWidgets('renders the overlay surface + freeze button when enabled', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         wrap(
-          const ISpectPerformanceOverlay(
-            child: Text(childText, key: childKey),
-          ),
+          const ISpectPerformanceOverlay(child: Text(childText, key: childKey)),
         ),
       );
 
@@ -58,71 +57,62 @@ void main() {
       expect(find.bySemanticsLabel(overlayLabel), findsOneWidget);
     });
 
-    testWidgets(
-      'does not render freeze button when allowFreeze is false',
-      (tester) async {
-        await tester.pumpWidget(
-          wrap(
-            const ISpectPerformanceOverlay(
-              allowFreeze: false,
-              child: Text(childText, key: childKey),
-            ),
+    testWidgets('does not render freeze button when allowFreeze is false', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        wrap(
+          const ISpectPerformanceOverlay(
+            allowFreeze: false,
+            child: Text(childText, key: childKey),
           ),
-        );
+        ),
+      );
 
-        expect(find.byIcon(Icons.pause_rounded), findsNothing);
-        expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
-        expect(find.bySemanticsLabel(overlayLabel), findsOneWidget);
-      },
-    );
+      expect(find.byIcon(Icons.pause_rounded), findsNothing);
+      expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
+      expect(find.bySemanticsLabel(overlayLabel), findsOneWidget);
+    });
 
-    testWidgets(
-      'freeze button swaps to play icon after a tap',
-      (tester) async {
-        await tester.pumpWidget(
-          wrap(
-            const ISpectPerformanceOverlay(
-              child: Text(childText, key: childKey),
-            ),
-          ),
-        );
+    testWidgets('freeze button swaps to play icon after a tap', (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          const ISpectPerformanceOverlay(child: Text(childText, key: childKey)),
+        ),
+      );
 
-        expect(find.byIcon(Icons.pause_rounded), findsOneWidget);
-        expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
+      expect(find.byIcon(Icons.pause_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
 
-        await tester.tap(find.byIcon(Icons.pause_rounded));
-        await tester.pump();
+      await tester.tap(find.byIcon(Icons.pause_rounded));
+      await tester.pump();
 
-        expect(find.byIcon(Icons.pause_rounded), findsNothing);
-        expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
-      },
-    );
+      expect(find.byIcon(Icons.pause_rounded), findsNothing);
+      expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+    });
 
-    testWidgets(
-      'exposes accessible button semantics for the freeze toggle',
-      (tester) async {
-        await tester.pumpWidget(
-          wrap(
-            const ISpectPerformanceOverlay(
-              child: Text(childText, key: childKey),
-            ),
-          ),
-        );
+    testWidgets('exposes accessible button semantics for the freeze toggle', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        wrap(
+          const ISpectPerformanceOverlay(child: Text(childText, key: childKey)),
+        ),
+      );
 
-        expect(
-          find.bySemanticsLabel('Pause performance overlay'),
-          findsOneWidget,
-        );
+      expect(
+        find.bySemanticsLabel('Pause performance overlay'),
+        findsOneWidget,
+      );
 
-        await tester.tap(find.byIcon(Icons.pause_rounded));
-        await tester.pump();
+      await tester.tap(find.byIcon(Icons.pause_rounded));
+      await tester.pump();
 
-        expect(
-          find.bySemanticsLabel('Resume performance overlay'),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(
+        find.bySemanticsLabel('Resume performance overlay'),
+        findsOneWidget,
+      );
+    });
 
     testWidgets('compact mode uses the compact default height', (tester) async {
       await tester.pumpWidget(
@@ -142,8 +132,9 @@ void main() {
       expect(overlaySize.height, lessThan(detailedDefault));
     });
 
-    testWidgets('lets taps fall through to the underlying child',
-        (tester) async {
+    testWidgets('lets taps fall through to the underlying child', (
+      tester,
+    ) async {
       var tapCount = 0;
       await tester.pumpWidget(
         wrap(

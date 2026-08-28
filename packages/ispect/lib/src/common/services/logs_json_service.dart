@@ -14,8 +14,8 @@ final class LogsImportResult {
     required List<ISpectLogData> logs,
     required this.totalEntries,
     required this.skippedEntries,
-  })  : assert(totalEntries == logs.length + skippedEntries),
-        logs = List<ISpectLogData>.unmodifiable(logs);
+  }) : assert(totalEntries == logs.length + skippedEntries),
+       logs = List<ISpectLogData>.unmodifiable(logs);
 
   /// Successfully decoded log entries.
   final List<ISpectLogData> logs;
@@ -41,10 +41,7 @@ final class LogsImportResult {
 /// - Edge case notes: Handles empty data gracefully, provides chunked processing
 class LogsJsonService {
   /// Creates a service that inherits logger policies unless locally overridden.
-  const LogsJsonService({
-    this.resourceLimits,
-    this.processingPolicy,
-  });
+  const LogsJsonService({this.resourceLimits, this.processingPolicy});
 
   final DiagnosticResourceLimits? resourceLimits;
   final DiagnosticProcessingPolicy? processingPolicy;
@@ -119,10 +116,7 @@ class LogsJsonService {
         if (!encoder.addLog(log)) break exportLoop;
       }
       processed++;
-      await Chunking.yieldEvery(
-        processed,
-        scheduling.yieldEveryExportChunks,
-      );
+      await Chunking.yieldEvery(processed, scheduling.yieldEveryExportChunks);
     }
     return encoder.finish();
   }
@@ -165,13 +159,11 @@ class LogsJsonService {
     String jsonString, {
     RedactionService? redactionService,
     bool enableRedaction = true,
-  }) async =>
-      (await importFromJsonWithReport(
-        jsonString,
-        redactionService: redactionService,
-        enableRedaction: enableRedaction,
-      ))
-          .logs;
+  }) async => (await importFromJsonWithReport(
+    jsonString,
+    redactionService: redactionService,
+    enableRedaction: enableRedaction,
+  )).logs;
 
   /// Imports logs and reports entries that could not be decoded.
   Future<LogsImportResult> importFromJsonWithReport(
@@ -182,10 +174,7 @@ class LogsJsonService {
     final limits = _resourceLimits;
     final scheduling = _processingPolicy;
     try {
-      final dynamic jsonData = _decodeJson(
-        jsonString,
-        resourceLimits: limits,
-      );
+      final dynamic jsonData = _decodeJson(jsonString, resourceLimits: limits);
 
       final logsJson = _extractLogsFromJsonData(jsonData);
 
@@ -256,10 +245,7 @@ class LogsJsonService {
     final scheduling = processingPolicy ?? _processingPolicy;
     final logs = <ISpectLogData>[];
     var processed = 0;
-    for (final chunk in Chunking.chunks(
-      logsJson,
-      scheduling.importChunkSize,
-    )) {
+    for (final chunk in Chunking.chunks(logsJson, scheduling.importChunkSize)) {
       for (final logJson in chunk) {
         try {
           if (logJson is! Map<String, dynamic>) continue;
@@ -274,10 +260,7 @@ class LogsJsonService {
         }
       }
       processed++;
-      await Chunking.yieldEvery(
-        processed,
-        scheduling.yieldEveryImportChunks,
-      );
+      await Chunking.yieldEvery(processed, scheduling.yieldEveryImportChunks);
     }
     return LogsImportResult._(
       logs: logs,
@@ -518,10 +501,7 @@ class LogsJsonService {
     );
     final outbound = redactor == null
         ? prepared
-        : redactor.redactForExport(
-            prepared,
-            resourceLimits: resourceLimits,
-          );
+        : redactor.redactForExport(prepared, resourceLimits: resourceLimits);
     return LogExportOutput.boundJsonValue(
       outbound,
       resourceLimits: resourceLimits,
@@ -596,13 +576,15 @@ class LogsJsonService {
 
   /// Creates summary of applied filter
   Map<String, dynamic> _createFilterSummary(ISpectFilter filter) => {
-        'hasSearchQuery':
-            filter.filters.any((f) => f is SearchFilter && f.query.isNotEmpty),
-        'logTypeKeyFiltersCount':
-            filter.filters.whereType<LogTypeKeyFilter>().length,
-        'typeFiltersCount': filter.filters.whereType<TypeFilter>().length,
-        'excludedLogTypeKeysCount': filter.excludedLogTypeKeys.length,
-      };
+    'hasSearchQuery': filter.filters.any(
+      (f) => f is SearchFilter && f.query.isNotEmpty,
+    ),
+    'logTypeKeyFiltersCount': filter.filters
+        .whereType<LogTypeKeyFilter>()
+        .length,
+    'typeFiltersCount': filter.filters.whereType<TypeFilter>().length,
+    'excludedLogTypeKeysCount': filter.excludedLogTypeKeys.length,
+  };
 
   /// Validates JSON structure for logs import
   ///
@@ -653,18 +635,20 @@ class LogsJsonService {
   }
 
   DiagnosticResourceLimits get _resourceLimits {
-    final limits = (resourceLimits ??
-        ISpect.loggerIfInitialized?.options.resourceLimits ??
-        DiagnosticResourceLimits.balanced)
-      ..validate();
+    final limits =
+        (resourceLimits ??
+              ISpect.loggerIfInitialized?.options.resourceLimits ??
+              DiagnosticResourceLimits.balanced)
+          ..validate();
     return limits;
   }
 
   DiagnosticProcessingPolicy get _processingPolicy {
-    final policy = (processingPolicy ??
-        ISpect.loggerIfInitialized?.options.processingPolicy ??
-        DiagnosticProcessingPolicy.balanced)
-      ..validate();
+    final policy =
+        (processingPolicy ??
+              ISpect.loggerIfInitialized?.options.processingPolicy ??
+              DiagnosticProcessingPolicy.balanced)
+          ..validate();
     return policy;
   }
 }
@@ -681,8 +665,9 @@ final class _JsonExportEncoder {
     resourceLimits.validate();
     String? encodedMetadata;
     if (includeMetadata) {
-      var effectiveMetadata =
-          metadata is Map<String, Object?> ? metadata : <String, Object?>{};
+      var effectiveMetadata = metadata is Map<String, Object?>
+          ? metadata
+          : <String, Object?>{};
       final candidate = _metadataWithStats(
         effectiveMetadata,
         exportedLogs: sourceLogCount,
@@ -690,16 +675,13 @@ final class _JsonExportEncoder {
       encodedMetadata = _encodePreparedValue(candidate);
       var metadataStats = _JsonStructureStats.scan(encodedMetadata);
       final metadataNodes = 1 + metadataStats.nodeContribution;
-      final canUseMetadata = metadataStats.maxDepth <=
-              resourceLimits.maxTraversalDepth - 1 &&
+      final canUseMetadata =
+          metadataStats.maxDepth <= resourceLimits.maxTraversalDepth - 1 &&
           _approximateNodes + metadataNodes <= resourceLimits.maxExportNodes;
       if (!canUseMetadata) {
         effectiveMetadata = const <String, Object?>{};
         encodedMetadata = _encodePreparedValue(
-          _metadataWithStats(
-            effectiveMetadata,
-            exportedLogs: sourceLogCount,
-          ),
+          _metadataWithStats(effectiveMetadata, exportedLogs: sourceLogCount),
         );
         metadataStats = _JsonStructureStats.scan(encodedMetadata);
       }
@@ -711,10 +693,7 @@ final class _JsonExportEncoder {
         : LogExportOutput.utf8Length(
             '],"${ISpectMetadata.exportKey}":$encodedMetadata}',
           );
-    _output.writeAll(
-      const ['{"logs":['],
-      reservedBytes: _metadataSuffixBytes,
-    );
+    _output.writeAll(const ['{"logs":['], reservedBytes: _metadataSuffixBytes);
   }
 
   final int totalLogCount;
@@ -748,10 +727,10 @@ final class _JsonExportEncoder {
     if (_approximateNodes + additionalNodes > resourceLimits.maxExportNodes) {
       return false;
     }
-    if (!_output.writeAll(
-      [prefix, encoded],
-      reservedBytes: _metadataSuffixBytes,
-    )) {
+    if (!_output.writeAll([
+      prefix,
+      encoded,
+    ], reservedBytes: _metadataSuffixBytes)) {
       return false;
     }
     _approximateNodes += additionalNodes;
@@ -783,13 +762,12 @@ final class _JsonExportEncoder {
   Map<String, Object?> _metadataWithStats(
     Map<String, Object?> metadata, {
     required int exportedLogs,
-  }) =>
-      <String, Object?>{
-        ...metadata,
-        'totalLogs': totalLogCount,
-        'exportedLogs': exportedLogs,
-        'truncated': exportedLogs < sourceLogCount,
-      };
+  }) => <String, Object?>{
+    ...metadata,
+    'totalLogs': totalLogCount,
+    'exportedLogs': exportedLogs,
+    'truncated': exportedLogs < sourceLogCount,
+  };
 
   String _encodePreparedValue(Object? value) {
     try {
@@ -806,10 +784,7 @@ final class _JsonExportEncoder {
     }
   }
 
-  String _encodeLog(
-    Map<String, Object?> prepared,
-    DateTime capturedTime,
-  ) {
+  String _encodeLog(Map<String, Object?> prepared, DateTime capturedTime) {
     if (!prepared.containsKey('time') && !prepared.containsKey('message')) {
       return _fallbackLog(capturedTime);
     }
@@ -829,10 +804,10 @@ final class _JsonExportEncoder {
   }
 
   static String _fallbackLog(DateTime capturedTime) => jsonEncode({
-        'time': capturedTime.toIso8601String(),
-        'message': LogExportOutput.truncatedMarker,
-        'export-error': LogExportOutput.truncatedMarker,
-      });
+    'time': capturedTime.toIso8601String(),
+    'message': LogExportOutput.truncatedMarker,
+    'export-error': LogExportOutput.truncatedMarker,
+  });
 }
 
 final class _JsonStructureStats {

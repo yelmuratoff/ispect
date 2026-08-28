@@ -20,10 +20,11 @@ class ExportController extends ChangeNotifier {
     required this.availableFormats,
     this.onShare,
     DiagnosticResourceLimits? resourceLimits,
-  })  : _selectedFormat = availableFormats.first,
-        _resourceLimits = resourceLimits ??
-            ISpect.loggerIfInitialized?.options.resourceLimits ??
-            DiagnosticResourceLimits.balanced {
+  }) : _selectedFormat = availableFormats.first,
+       _resourceLimits =
+           resourceLimits ??
+           ISpect.loggerIfInitialized?.options.resourceLimits ??
+           DiagnosticResourceLimits.balanced {
     _resourceLimits.validate();
   }
 
@@ -186,8 +187,9 @@ class ExportController extends ChangeNotifier {
       return value;
     }
     return switch (_selectedFormat) {
-      ExportFormat.json => '{"message":"${LogExportOutput.truncatedMarker}",'
-          '"export-error":"${LogExportOutput.truncatedMarker}"}',
+      ExportFormat.json =>
+        '{"message":"${LogExportOutput.truncatedMarker}",'
+            '"export-error":"${LogExportOutput.truncatedMarker}"}',
       ExportFormat.csv => 'message\n"${LogExportOutput.truncatedMarker}"\n',
       ExportFormat.markdown =>
         '````text\n${LogExportOutput.truncatedMarker}\n````\n',

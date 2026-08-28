@@ -35,8 +35,9 @@ class RootNodeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final attributeKeyStyle =
-        node.isRoot ? theme.rootKeyTextStyle : theme.propertyKeyTextStyle;
+    final attributeKeyStyle = node.isRoot
+        ? theme.rootKeyTextStyle
+        : theme.propertyKeyTextStyle;
     final text = _keyName();
 
     if (!hasSearchResults) {

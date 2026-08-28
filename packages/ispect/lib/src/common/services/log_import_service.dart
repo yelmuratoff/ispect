@@ -3,7 +3,7 @@ import 'package:ispect/ispect.dart';
 /// Service responsible for importing/validating logs content.
 class LogImportService {
   const LogImportService({LogsJsonService? logsJsonService})
-      : _logsJsonService = logsJsonService ?? const LogsJsonService();
+    : _logsJsonService = logsJsonService ?? const LogsJsonService();
 
   final LogsJsonService _logsJsonService;
 
@@ -12,8 +12,7 @@ class LogImportService {
 
   Future<LogsImportResult> importLogsFromJsonWithReport(
     String jsonContent,
-  ) async =>
-      _logsJsonService.importFromJsonWithReport(jsonContent);
+  ) async => _logsJsonService.importFromJsonWithReport(jsonContent);
 
   bool validateLogsJsonContent(String jsonContent) =>
       _logsJsonService.validateJsonStructure(jsonContent);

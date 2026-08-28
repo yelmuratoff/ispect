@@ -10,14 +10,15 @@ class SettingsManager {
     ISpectSettingsState? initialSettings,
     void Function()? onChanged,
     ISpectSettingsChangedCallback? onUserSettingsChanged,
-  })  : _settings = initialSettings ??
-            const ISpectSettingsState(
-              enabled: true,
-              useConsoleLogs: true,
-              useHistory: true,
-            ),
-        _onChanged = onChanged,
-        _onUserSettingsChanged = onUserSettingsChanged {
+  }) : _settings =
+           initialSettings ??
+           const ISpectSettingsState(
+             enabled: true,
+             useConsoleLogs: true,
+             useHistory: true,
+           ),
+       _onChanged = onChanged,
+       _onUserSettingsChanged = onUserSettingsChanged {
     _settings.validate();
   }
 

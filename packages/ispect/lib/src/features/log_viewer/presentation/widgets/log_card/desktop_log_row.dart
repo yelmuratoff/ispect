@@ -80,10 +80,10 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
   }
 
   String get _displayTime => context.formatLogTime(
-        widget.data.time,
-        relative: widget.useRelativeTime,
-        absolute: widget.data.formattedTime,
-      );
+    widget.data.time,
+    relative: widget.useRelativeTime,
+    absolute: widget.data.formattedTime,
+  );
 
   void _scheduleTooltip(String text) {
     _cancelTooltip();
@@ -131,8 +131,10 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Container(
                 constraints: const BoxConstraints(maxWidth: tooltipMaxWidth),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 child: Text(
                   text,
                   maxLines: 6,
@@ -233,12 +235,12 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                   color: isFocused
                       ? primaryColor
                       : isMatch
-                          ? primaryColor.withValues(alpha: 0.6)
-                          : widget.isSelected
-                              ? widget.color
-                              : widget.color.withValues(
-                                  alpha: severityBar(widget.data).alpha,
-                                ),
+                      ? primaryColor.withValues(alpha: 0.6)
+                      : widget.isSelected
+                      ? widget.color
+                      : widget.color.withValues(
+                          alpha: severityBar(widget.data).alpha,
+                        ),
                   width: isFocused || widget.isSelected
                       ? severityBar(widget.data).width + 1
                       : severityBar(widget.data).width,
@@ -270,11 +272,11 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                               ? SystemMouseCursors.click
                               : SystemMouseCursors.basic,
                           onEnter: (_) {
-                            final desc =
-                                ISpect.read(context).theme.getTypeDescription(
-                                      context,
-                                      key: widget.data.key,
-                                    );
+                            final desc = ISpect.read(context).theme
+                                .getTypeDescription(
+                                  context,
+                                  key: widget.data.key,
+                                );
                             if (desc != null) _scheduleTooltip(desc);
                           },
                           onExit: (_) => _cancelTooltip(),
@@ -351,10 +353,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
     );
   }
 
-  Future<void> _showContextMenu(
-    BuildContext context,
-    Offset position,
-  ) =>
+  Future<void> _showContextMenu(BuildContext context, Offset position) =>
       showLogContextMenu(
         context: context,
         position: position,
@@ -382,40 +381,39 @@ class _DesktopRowActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (data.isRouteLog && observer != null)
-            _DesktopActionIcon(
-              icon: Icons.compare_arrows_rounded,
-              color: color,
-              tooltip: context.ispectL10n.navigationFlow,
-              onPressed: () => ISpectNavigationFlowScreen(
-                observer: observer!,
-                log: data,
-              ).push(context),
-            ),
-          _DesktopActionIcon(
-            icon: Icons.share_rounded,
-            color: color,
-            tooltip: context.ispectL10n.share,
-            onPressed: onShareTap,
-          ),
-          if (data.curlCommandWith(redactor: defaultCurlRedactor)
-              case final curl?)
-            _DesktopActionIcon(
-              icon: Icons.terminal_rounded,
-              color: color,
-              tooltip: context.ispectL10n.copyAsCurl,
-              onPressed: () => copyClipboard(context, value: curl),
-            ),
-          _DesktopActionIcon(
-            icon: Icons.open_in_full_rounded,
-            color: color,
-            tooltip: context.ispectL10n.expandLogs,
-            onPressed: onOpenDetail,
-          ),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (data.isRouteLog && observer != null)
+        _DesktopActionIcon(
+          icon: Icons.compare_arrows_rounded,
+          color: color,
+          tooltip: context.ispectL10n.navigationFlow,
+          onPressed: () => ISpectNavigationFlowScreen(
+            observer: observer!,
+            log: data,
+          ).push(context),
+        ),
+      _DesktopActionIcon(
+        icon: Icons.share_rounded,
+        color: color,
+        tooltip: context.ispectL10n.share,
+        onPressed: onShareTap,
+      ),
+      if (data.curlCommandWith(redactor: defaultCurlRedactor) case final curl?)
+        _DesktopActionIcon(
+          icon: Icons.terminal_rounded,
+          color: color,
+          tooltip: context.ispectL10n.copyAsCurl,
+          onPressed: () => copyClipboard(context, value: curl),
+        ),
+      _DesktopActionIcon(
+        icon: Icons.open_in_full_rounded,
+        color: color,
+        tooltip: context.ispectL10n.expandLogs,
+        onPressed: onOpenDetail,
+      ),
+    ],
+  );
 }
 
 class _DesktopActionIcon extends StatelessWidget {
@@ -433,28 +431,24 @@ class _DesktopActionIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-        button: true,
-        label: tooltip ?? '',
-        onTap: onPressed,
-        child: Tooltip(
-          message: tooltip ?? '',
-          child: InkWell(
-            excludeFromSemantics: true,
-            customBorder: ISpectSquircle.border(
-              radius: ISpectConstants.smallBorderRadius,
-            ),
-            onTap: onPressed,
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: Icon(
-                icon,
-                size: 15,
-                color: color.withValues(alpha: 0.6),
-              ),
-            ),
-          ),
+    button: true,
+    label: tooltip ?? '',
+    onTap: onPressed,
+    child: Tooltip(
+      message: tooltip ?? '',
+      child: InkWell(
+        excludeFromSemantics: true,
+        customBorder: ISpectSquircle.border(
+          radius: ISpectConstants.smallBorderRadius,
         ),
-      );
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Icon(icon, size: 15, color: color.withValues(alpha: 0.6)),
+        ),
+      ),
+    ),
+  );
 }
 
 class _DesktopStatusCodeBadge extends StatelessWidget {
@@ -510,11 +504,7 @@ class _TypeFilterTarget extends StatelessWidget {
       typeKey ?? '',
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        color: color,
-        fontWeight: FontWeight.w600,
-        fontSize: 12,
-      ),
+      style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 12),
     );
     if (!isInteractive) {
       return text;

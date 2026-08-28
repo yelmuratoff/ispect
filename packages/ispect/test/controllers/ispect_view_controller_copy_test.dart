@@ -16,13 +16,13 @@ void main() {
     });
 
     ISpectLogData secretLog() => ISpectLogData(
-          'user action',
-          key: 'info',
-          additionalData: const {
-            'password': 'hunter2',
-            'userMeta': {'token': 'super-secret-token'},
-          },
-        );
+      'user action',
+      key: 'info',
+      additionalData: const {
+        'password': 'hunter2',
+        'userMeta': {'token': 'super-secret-token'},
+      },
+    );
 
     Future<BuildContext> pumpContext(WidgetTester tester) async {
       late BuildContext ctx;
@@ -39,8 +39,9 @@ void main() {
       return ctx;
     }
 
-    testWidgets('copyLogEntryText masks nested additionalData secrets',
-        (tester) async {
+    testWidgets('copyLogEntryText masks nested additionalData secrets', (
+      tester,
+    ) async {
       final ctx = await pumpContext(tester);
       late String captured;
 
@@ -55,8 +56,9 @@ void main() {
       expect(captured, contains('[REDACTED]'));
     });
 
-    testWidgets('copyAllLogsToClipboard masks nested additionalData secrets',
-        (tester) async {
+    testWidgets('copyAllLogsToClipboard masks nested additionalData secrets', (
+      tester,
+    ) async {
       final ctx = await pumpContext(tester);
       late String captured;
 
@@ -72,8 +74,9 @@ void main() {
       expect(captured, contains('[REDACTED]'));
     });
 
-    testWidgets('copyLogEntryText scrubs secrets in free-form messages',
-        (tester) async {
+    testWidgets('copyLogEntryText scrubs secrets in free-form messages', (
+      tester,
+    ) async {
       final ctx = await pumpContext(tester);
       late String captured;
 
@@ -90,8 +93,9 @@ void main() {
       expect(captured, contains('[REDACTED]'));
     });
 
-    testWidgets('copyAllLogsToClipboard scrubs free-form messages',
-        (tester) async {
+    testWidgets('copyAllLogsToClipboard scrubs free-form messages', (
+      tester,
+    ) async {
       final ctx = await pumpContext(tester);
       late String captured;
 
@@ -110,8 +114,9 @@ void main() {
       expect(captured, contains('[REDACTED]'));
     });
 
-    testWidgets('clipboard exports redact every typed binary container',
-        (tester) async {
+    testWidgets('clipboard exports redact every typed binary container', (
+      tester,
+    ) async {
       final ctx = await pumpContext(tester);
       late String capturedSingle;
       late String capturedAll;
@@ -145,8 +150,9 @@ void main() {
       }
     });
 
-    testWidgets('clipboard exports do not re-execute captured diagnostics',
-        (tester) async {
+    testWidgets('clipboard exports do not re-execute captured diagnostics', (
+      tester,
+    ) async {
       final ctx = await pumpContext(tester);
       final calls = _InvocationCounters();
       late String capturedSingle;
@@ -186,33 +192,36 @@ void main() {
       }
     });
 
-    testWidgets('copying many oversized logs stays within the document budget',
-        (tester) async {
-      final ctx = await pumpContext(tester);
-      late String captured;
-      ISpectRedaction.enabled = false;
-      final payload = ''.padRight(220 * 1024, 'x');
-      final logs = List<ISpectLogData>.generate(
-        160,
-        (index) => ISpectLogData('$index:$payload'),
-      );
+    testWidgets(
+      'copying many oversized logs stays within the document budget',
+      (tester) async {
+        final ctx = await pumpContext(tester);
+        late String captured;
+        ISpectRedaction.enabled = false;
+        final payload = ''.padRight(220 * 1024, 'x');
+        final logs = List<ISpectLogData>.generate(
+          160,
+          (index) => ISpectLogData('$index:$payload'),
+        );
 
-      controller.copyAllLogsToClipboard(
-        ctx,
-        logs,
-        (_, {required value, title, showValue}) => captured = value,
-        'All logs',
-      );
+        controller.copyAllLogsToClipboard(
+          ctx,
+          logs,
+          (_, {required value, title, showValue}) => captured = value,
+          'All logs',
+        );
 
-      expect(
-        LogExportOutput.utf8Length(captured),
-        lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
-      );
-      expect('\n'.allMatches(captured).length + 1, lessThan(logs.length));
-    });
+        expect(
+          LogExportOutput.utf8Length(captured),
+          lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
+        );
+        expect('\n'.allMatches(captured).length + 1, lessThan(logs.length));
+      },
+    );
 
-    testWidgets('clipboard exports honor a controller-local document budget',
-        (tester) async {
+    testWidgets('clipboard exports honor a controller-local document budget', (
+      tester,
+    ) async {
       final limits = DiagnosticResourceLimits.balanced.copyWith(
         maxCapturedValueBytes: 128,
         maxLogRecordBytes: 256,
@@ -240,8 +249,9 @@ void main() {
       );
     });
 
-    testWidgets('clipboard paths honor the global redaction opt-out',
-        (tester) async {
+    testWidgets('clipboard paths honor the global redaction opt-out', (
+      tester,
+    ) async {
       final ctx = await pumpContext(tester);
       late String capturedSingle;
       late String capturedAll;

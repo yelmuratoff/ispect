@@ -24,8 +24,9 @@ enum ExportAction { share, download, copy }
 ///
 /// [redactKeys] is an optional local policy override. A null value tells the
 /// receiving exporter to resolve the global redaction policy.
-typedef ExportContentBuilder = Future<String> Function(
-  ExportFormat format, {
-  required ExportAction action,
-  Set<String>? redactKeys,
-});
+typedef ExportContentBuilder =
+    Future<String> Function(
+      ExportFormat format, {
+      required ExportAction action,
+      Set<String>? redactKeys,
+    });

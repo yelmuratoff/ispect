@@ -35,8 +35,8 @@ final class HttpComposerController extends ChangeNotifier {
     ISpectComposerFilePicker? filePicker,
     NetworkReplayRequest? seed,
     this.resourceLimits = DiagnosticResourceLimits.balanced,
-  })  : _senders = senders,
-        _filePicker = filePicker {
+  }) : _senders = senders,
+       _filePicker = filePicker {
     resourceLimits.validate();
     if (senders.isNotEmpty) _selectedSenderId = senders.first.id;
     if (seed != null) _applySeed(seed);
@@ -209,13 +209,13 @@ final class HttpComposerController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _result = (await sender.send(request)).safeSnapshot(
-        resourceLimits: resourceLimits,
-      );
+      _result = (await sender.send(
+        request,
+      )).safeSnapshot(resourceLimits: resourceLimits);
     } catch (error) {
-      _result = NetworkReplayResult(error: error).safeSnapshot(
-        resourceLimits: resourceLimits,
-      );
+      _result = NetworkReplayResult(
+        error: error,
+      ).safeSnapshot(resourceLimits: resourceLimits);
     } finally {
       _isSending = false;
       notifyListeners();
@@ -239,13 +239,13 @@ final class HttpComposerController extends ChangeNotifier {
   }
 
   Uri _withoutQuery(Uri uri) => Uri(
-        scheme: uri.scheme,
-        userInfo: uri.userInfo.isEmpty ? null : uri.userInfo,
-        host: uri.host.isEmpty ? null : uri.host,
-        port: uri.hasPort ? uri.port : null,
-        path: uri.path,
-        fragment: uri.hasFragment ? uri.fragment : null,
-      );
+    scheme: uri.scheme,
+    userInfo: uri.userInfo.isEmpty ? null : uri.userInfo,
+    host: uri.host.isEmpty ? null : uri.host,
+    port: uri.hasPort ? uri.port : null,
+    path: uri.path,
+    fragment: uri.hasFragment ? uri.fragment : null,
+  );
 
   Map<String, String> _toMap(List<ComposerKeyValue> rows) {
     final map = <String, String>{};
@@ -324,8 +324,9 @@ final class HttpComposerController extends ChangeNotifier {
       case MultipartReplayBody(:final fields, :final files):
         _bodyKind = ComposerBodyKind.multipart;
         for (final field in fields) {
-          _multipartFields
-              .add(ComposerKeyValue(key: field.name, value: field.value));
+          _multipartFields.add(
+            ComposerKeyValue(key: field.name, value: field.value),
+          );
         }
         _multipartFiles.addAll(files);
     }

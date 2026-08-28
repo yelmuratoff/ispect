@@ -33,7 +33,8 @@ class ISpectFlatAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final toolbarHeight = context.ispectAppBarToolbarHeight;
-    final resolvedBg = backgroundColor ??
+    final resolvedBg =
+        backgroundColor ??
         context.ispectThemeBackground ??
         context.appTheme.scaffoldBackgroundColor;
 
@@ -63,19 +64,16 @@ class ISpectFlatAppBar extends StatelessWidget implements PreferredSizeWidget {
 /// Standard back-icon button that respects the ISpect AppBar density / icon
 /// size tokens. Defaults to `Navigator.pop`.
 class ISpectAppBarBackButton extends StatelessWidget {
-  const ISpectAppBarBackButton({
-    this.onPressed,
-    super.key,
-  });
+  const ISpectAppBarBackButton({this.onPressed, super.key});
 
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) => ISpectAppBarIconButton(
-        icon: Icons.arrow_back_rounded,
-        tooltip: context.ispectL10n.back,
-        onPressed: onPressed ?? () => Navigator.of(context).pop(),
-      );
+    icon: Icons.arrow_back_rounded,
+    tooltip: context.ispectL10n.back,
+    onPressed: onPressed ?? () => Navigator.of(context).pop(),
+  );
 }
 
 /// [IconButton] preset that picks up ISpect's AppBar density / icon-size
@@ -97,10 +95,10 @@ class ISpectAppBarIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => IconButton(
-        visualDensity: context.ispectAppBarButtonDensity,
-        iconSize: context.ispectAppBarIconSize,
-        onPressed: onPressed,
-        tooltip: tooltip,
-        icon: Icon(icon, color: color),
-      );
+    visualDensity: context.ispectAppBarButtonDensity,
+    iconSize: context.ispectAppBarIconSize,
+    onPressed: onPressed,
+    tooltip: tooltip,
+    icon: Icon(icon, color: color),
+  );
 }

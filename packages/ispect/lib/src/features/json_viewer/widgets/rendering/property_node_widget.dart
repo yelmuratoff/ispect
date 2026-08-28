@@ -42,8 +42,11 @@ class PropertyNodeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = _formatValue();
-    final valueColor =
-        JsonColorsUtils.valueColorByKey(context, node.key, node.value);
+    final valueColor = JsonColorsUtils.valueColorByKey(
+      context,
+      node.key,
+      node.value,
+    );
     final valueStyle = style.copyWith(color: valueColor);
 
     final isMultiLine = text.contains('\n');
@@ -53,33 +56,33 @@ class PropertyNodeWidget extends StatelessWidget {
 
     return switch (hasSearchResults) {
       false => Row(
-          children: [
-            wrap(
-              JsonCard(
-                backgroundColor: valueColor,
-                child: Text(text, style: valueStyle),
-              ),
+        children: [
+          wrap(
+            JsonCard(
+              backgroundColor: valueColor,
+              child: Text(text, style: valueStyle),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
       true => Row(
-          children: [
-            wrap(
-              JsonCard(
-                backgroundColor: valueColor,
-                child: HighlightedText(
-                  key: ValueKey('highlight-value-$text'),
-                  text: text,
-                  highlightedText: searchTerm,
-                  style: valueStyle,
-                  primaryMatchStyle: focusedSearchHighlightStyle,
-                  secondaryMatchStyle: searchHighlightStyle,
-                  focusedSearchMatchIndex: focusedSearchMatchIndex,
-                ),
+        children: [
+          wrap(
+            JsonCard(
+              backgroundColor: valueColor,
+              child: HighlightedText(
+                key: ValueKey('highlight-value-$text'),
+                text: text,
+                highlightedText: searchTerm,
+                style: valueStyle,
+                primaryMatchStyle: focusedSearchHighlightStyle,
+                secondaryMatchStyle: searchHighlightStyle,
+                focusedSearchMatchIndex: focusedSearchMatchIndex,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
     };
   }
 }

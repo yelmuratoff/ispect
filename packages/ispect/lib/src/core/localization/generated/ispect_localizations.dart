@@ -75,13 +75,15 @@ import 'ispect_localizations_zh.dart';
 /// property.
 abstract class ISpectGeneratedLocalization {
   ISpectGeneratedLocalization(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
   static ISpectGeneratedLocalization? of(BuildContext context) {
     return Localizations.of<ISpectGeneratedLocalization>(
-        context, ISpectGeneratedLocalization);
+      context,
+      ISpectGeneratedLocalization,
+    );
   }
 
   static const LocalizationsDelegate<ISpectGeneratedLocalization> delegate =
@@ -99,11 +101,11 @@ abstract class ISpectGeneratedLocalization {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -120,7 +122,7 @@ abstract class ISpectGeneratedLocalization {
     Locale('ku'),
     Locale('pt'),
     Locale('ru'),
-    Locale('zh')
+    Locale('zh'),
   ];
 
   /// No description provided for @actions.
@@ -2141,26 +2143,27 @@ class _ISpectGeneratedLocalizationDelegate
   @override
   Future<ISpectGeneratedLocalization> load(Locale locale) {
     return SynchronousFuture<ISpectGeneratedLocalization>(
-        lookupISpectGeneratedLocalization(locale));
+      lookupISpectGeneratedLocalization(locale),
+    );
   }
 
   @override
   bool isSupported(Locale locale) => <String>[
-        'ar',
-        'ckb',
-        'de',
-        'en',
-        'es',
-        'fr',
-        'hi',
-        'ja',
-        'kk',
-        'ko',
-        'ku',
-        'pt',
-        'ru',
-        'zh'
-      ].contains(locale.languageCode);
+    'ar',
+    'ckb',
+    'de',
+    'en',
+    'es',
+    'fr',
+    'hi',
+    'ja',
+    'kk',
+    'ko',
+    'ku',
+    'pt',
+    'ru',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_ISpectGeneratedLocalizationDelegate old) => false;
@@ -2200,8 +2203,9 @@ ISpectGeneratedLocalization lookupISpectGeneratedLocalization(Locale locale) {
   }
 
   throw FlutterError(
-      'ISpectGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'ISpectGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

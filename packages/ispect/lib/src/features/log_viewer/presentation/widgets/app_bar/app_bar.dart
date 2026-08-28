@@ -128,7 +128,8 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
-        backgroundColor: widget.backgroundColor ??
+        backgroundColor:
+            widget.backgroundColor ??
             context.ispectThemeBackground ??
             context.appTheme.scaffoldBackgroundColor,
         actions: [
@@ -260,7 +261,8 @@ class _AppBarTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasCounter = (totalCount ?? 0) > 0 ||
+    final hasCounter =
+        (totalCount ?? 0) > 0 ||
         (errorCount ?? 0) > 0 ||
         (warningCount ?? 0) > 0;
     return Semantics(

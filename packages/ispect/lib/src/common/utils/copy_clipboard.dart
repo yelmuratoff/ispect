@@ -48,18 +48,20 @@ void copyClipboard(
   ISpectGeneratedLocalization? l10n,
   ScaffoldMessengerState? messenger,
 }) {
-  final limits = (resourceLimits ??
-      ISpect.loggerIfInitialized?.options.resourceLimits ??
-      DiagnosticResourceLimits.balanced)
-    ..validate();
+  final limits =
+      (resourceLimits ??
+            ISpect.loggerIfInitialized?.options.resourceLimits ??
+            DiagnosticResourceLimits.balanced)
+        ..validate();
   final prepared = LogExportOutput.boundJsonValue(
     value,
     resourceLimits: limits,
     maxBytes: limits.maxClipboardBytes,
     replaceOversizedStrings: redact,
   );
-  final boundedInput =
-      prepared is String ? prepared : LogExportOutput.truncatedMarker;
+  final boundedInput = prepared is String
+      ? prepared
+      : LogExportOutput.truncatedMarker;
   final sanitized = redact
       ? _redactClipboardValue(
           boundedInput,
@@ -75,28 +77,31 @@ void copyClipboard(
   );
 
   final capturedL10n = l10n ?? context?.ispectL10n;
-  final capturedMessenger = messenger ??
+  final capturedMessenger =
+      messenger ??
       (context != null ? ScaffoldMessenger.maybeOf(context) : null);
 
   unawaited(
-    Clipboard.setData(ClipboardData(text: truncatedValue)).then((_) {
-      ISpectToaster.showCopiedToast(
-        null,
-        value: truncatedValue,
-        title: title,
-        showValue: showValue,
-        messenger: capturedMessenger,
-        l10n: capturedL10n,
-      );
-    }).catchError((Object _) {
-      if (capturedMessenger != null) {
-        ISpectToaster.showErrorToast(
-          null,
-          title: 'Failed to copy to clipboard',
-          messenger: capturedMessenger,
-        );
-      }
-    }),
+    Clipboard.setData(ClipboardData(text: truncatedValue))
+        .then((_) {
+          ISpectToaster.showCopiedToast(
+            null,
+            value: truncatedValue,
+            title: title,
+            showValue: showValue,
+            messenger: capturedMessenger,
+            l10n: capturedL10n,
+          );
+        })
+        .catchError((Object _) {
+          if (capturedMessenger != null) {
+            ISpectToaster.showErrorToast(
+              null,
+              title: 'Failed to copy to clipboard',
+              messenger: capturedMessenger,
+            );
+          }
+        }),
   );
 }
 
@@ -110,10 +115,7 @@ String _redactClipboardValue(
     final redacted = ISpectRedaction.resolveService(
       service: redactionService,
       sensitiveKeys: redactKeys,
-    ).redactForExport(
-      value,
-      resourceLimits: resourceLimits,
-    );
+    ).redactForExport(value, resourceLimits: resourceLimits);
     return redacted is String ? redacted : defaultPlaceholder;
   } on Object {
     return defaultPlaceholder;

@@ -17,15 +17,13 @@ class FilterManager {
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
     DiagnosticProcessingPolicy processingPolicy =
         DiagnosticProcessingPolicy.balanced,
-  })  : _filter =
-            (initialFilter ?? ISpectFilter(resourceLimits: resourceLimits))
-                .copyWith(excludedLogTypeKeys: excludedLogTypeKeys),
-        _excludedLogTypeKeys = {...excludedLogTypeKeys},
-        _onChanged = onChanged,
-        _resourceLimits = resourceLimits,
-        _processingPolicy = processingPolicy,
-        _debounceDuration =
-            debounceDuration ?? processingPolicy.searchDebounce {
+  }) : _filter = (initialFilter ?? ISpectFilter(resourceLimits: resourceLimits))
+           .copyWith(excludedLogTypeKeys: excludedLogTypeKeys),
+       _excludedLogTypeKeys = {...excludedLogTypeKeys},
+       _onChanged = onChanged,
+       _resourceLimits = resourceLimits,
+       _processingPolicy = processingPolicy,
+       _debounceDuration = debounceDuration ?? processingPolicy.searchDebounce {
     resourceLimits.validate();
     processingPolicy.validate();
   }
@@ -146,8 +144,9 @@ class FilterManager {
 
   void removeFilterType(Type type) {
     final currentTypes = _getCurrentTypes();
-    final updatedTypes =
-        currentTypes.where((t) => t != type).toList(growable: false);
+    final updatedTypes = currentTypes
+        .where((t) => t != type)
+        .toList(growable: false);
     if (updatedTypes.length == currentTypes.length) return;
     _updateFilter(types: updatedTypes);
   }
@@ -160,8 +159,9 @@ class FilterManager {
 
   void removeLogTypeKeyFilter(String key) {
     final currentKeys = _getCurrentLogTypeKeys();
-    final updatedKeys =
-        currentKeys.where((k) => k != key).toList(growable: false);
+    final updatedKeys = currentKeys
+        .where((k) => k != key)
+        .toList(growable: false);
     if (updatedKeys.length == currentKeys.length) return;
     _updateFilter(logTypeKeys: updatedKeys);
   }
@@ -182,11 +182,7 @@ class FilterManager {
   /// Clear all filters (log type keys, types, search query).
   void clearAllFilters() {
     _filterDebounce?.cancel();
-    _updateFilter(
-      logTypeKeys: <String>[],
-      types: <Type>[],
-      searchQuery: '',
-    );
+    _updateFilter(logTypeKeys: <String>[], types: <Type>[], searchQuery: '');
   }
 
   void clearLogTypeKeyFilters() {
@@ -225,9 +221,7 @@ class FilterManager {
 
   /// Applies only log type key/type filters (no search query).
   /// Returns a stable reference on cache hits for [identical] checks.
-  List<ISpectLogData> applyFiltersWithoutSearch(
-    List<ISpectLogData> logsData,
-  ) {
+  List<ISpectLogData> applyFiltersWithoutSearch(List<ISpectLogData> logsData) {
     if (logsData.isEmpty) return <ISpectLogData>[];
     if (_filter.types.isEmpty &&
         _filter.logTypeKeys.isEmpty &&
@@ -263,12 +257,10 @@ class FilterManager {
         identical(logsData, _lastSearchMatchInput)) {
       return _cachedSearchMatches;
     }
-    final searchFilter = SearchFilter(
-      query,
-      resourceLimits: resourceLimits,
-    );
-    _cachedSearchMatches =
-        logsData.where(searchFilter.apply).toList(growable: false);
+    final searchFilter = SearchFilter(query, resourceLimits: resourceLimits);
+    _cachedSearchMatches = logsData
+        .where(searchFilter.apply)
+        .toList(growable: false);
     _searchMatchesGeneration = _outputGeneration;
     _lastSearchMatchQuery = query;
     _lastSearchMatchInput = logsData;

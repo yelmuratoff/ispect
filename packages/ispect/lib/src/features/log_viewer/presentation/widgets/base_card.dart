@@ -19,14 +19,12 @@ class ISpectBaseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Ink(
-          width: double.infinity,
-          padding: padding,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-          ),
-          child: child,
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    child: Ink(
+      width: double.infinity,
+      padding: padding,
+      decoration: BoxDecoration(color: backgroundColor),
+      child: child,
+    ),
+  );
 }

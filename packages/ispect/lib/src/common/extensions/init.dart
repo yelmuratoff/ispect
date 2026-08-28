@@ -40,7 +40,8 @@ extension ISpectFlutter on ISpectLogger {
       );
     }
     final resolvedOptions = options ?? ISpectLoggerOptions();
-    final resolvedHistory = history ??
+    final resolvedHistory =
+        history ??
         (fileHistory == null
             ? null
             : createFlutterFileLogHistory(

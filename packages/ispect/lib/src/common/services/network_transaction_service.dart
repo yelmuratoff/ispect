@@ -1,10 +1,7 @@
 import 'package:ispectify/ispectify.dart';
 
 class GroupedLogEntries {
-  const GroupedLogEntries({
-    required this.entries,
-    required this.transactions,
-  });
+  const GroupedLogEntries({required this.entries, required this.transactions});
 
   final List<Object> entries;
   final Map<String, NetworkTransaction> transactions;
@@ -77,9 +74,7 @@ const httpTransactionMatcher = TransactionMatcher(
 );
 
 class NetworkTransactionService {
-  NetworkTransactionService({
-    this.matcher = httpTransactionMatcher,
-  });
+  NetworkTransactionService({this.matcher = httpTransactionMatcher});
 
   final TransactionMatcher matcher;
 
@@ -177,9 +172,6 @@ class NetworkTransactionService {
       }
     }
 
-    return GroupedLogEntries(
-      entries: entries,
-      transactions: transactions,
-    );
+    return GroupedLogEntries(entries: entries, transactions: transactions);
   }
 }

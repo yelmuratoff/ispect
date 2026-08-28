@@ -188,8 +188,9 @@ List<Widget> buildActionWidgets({
   final theme = ISpect.read(context).theme;
   final widgets = <Widget>[];
 
-  final redactedCurl =
-      tx.request.curlCommandWith(redactor: defaultCurlRedactor);
+  final redactedCurl = tx.request.curlCommandWith(
+    redactor: defaultCurlRedactor,
+  );
   if (useDesktopStyle) {
     widgets.add(
       SmallActionIcon(
@@ -234,7 +235,8 @@ List<Widget> buildActionWidgets({
     }
   }
 
-  final canEditResend = ISpect.senders.isNotEmpty &&
+  final canEditResend =
+      ISpect.senders.isNotEmpty &&
       HttpComposerController.seedFromLog(tx.request) != null;
   if (canEditResend) {
     void openComposer() => HttpComposerScreen.openFromLog(context, tx.request);
@@ -265,7 +267,7 @@ List<Widget> buildActionWidgets({
         label: l10n.httpRequest,
         color:
             theme.getTypeColor(context, key: ISpectLogType.httpRequest.key) ??
-                color,
+            color,
         icon: compactDetailChips
             ? Icons.arrow_upward_rounded
             : Icons.open_in_new_rounded,

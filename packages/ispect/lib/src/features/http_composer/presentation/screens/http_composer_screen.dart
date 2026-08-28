@@ -78,13 +78,16 @@ class _HttpComposerScreenState extends State<HttpComposerScreen> {
     senders: widget.senders,
     filePicker: widget.onPickComposerFile,
     seed: widget.seed,
-    resourceLimits: ISpect.loggerIfInitialized?.options.resourceLimits ??
+    resourceLimits:
+        ISpect.loggerIfInitialized?.options.resourceLimits ??
         DiagnosticResourceLimits.balanced,
   );
-  late final TextEditingController _urlController =
-      TextEditingController(text: _controller.url);
-  late final TextEditingController _bodyController =
-      TextEditingController(text: _controller.bodyText);
+  late final TextEditingController _urlController = TextEditingController(
+    text: _controller.url,
+  );
+  late final TextEditingController _bodyController = TextEditingController(
+    text: _controller.bodyText,
+  );
 
   double _splitRatio = 0.5;
 
@@ -101,26 +104,24 @@ class _HttpComposerScreenState extends State<HttpComposerScreen> {
       ISpectThemeScope(child: Builder(builder: _buildScaffold));
 
   Widget _buildScaffold(BuildContext context) => Scaffold(
-        backgroundColor: context.ispectThemeBackground,
-        appBar: ISpectFlatAppBar(
-          title: ISpectAppBarTitle(
-            child: Text(context.ispectL10n.composerTitle),
-          ),
-          leading: const ISpectAppBarBackButton(),
+    backgroundColor: context.ispectThemeBackground,
+    appBar: ISpectFlatAppBar(
+      title: ISpectAppBarTitle(child: Text(context.ispectL10n.composerTitle)),
+      leading: const ISpectAppBarBackButton(),
+    ),
+    body: SafeArea(
+      child: ListenableBuilder(
+        listenable: _controller,
+        builder: (context, _) => _ComposerBody(
+          controller: _controller,
+          urlController: _urlController,
+          bodyController: _bodyController,
+          initialSplitRatio: _splitRatio,
+          onSplitRatioChanged: (ratio) => _splitRatio = ratio,
         ),
-        body: SafeArea(
-          child: ListenableBuilder(
-            listenable: _controller,
-            builder: (context, _) => _ComposerBody(
-              controller: _controller,
-              urlController: _urlController,
-              bodyController: _bodyController,
-              initialSplitRatio: _splitRatio,
-              onSplitRatioChanged: (ratio) => _splitRatio = ratio,
-            ),
-          ),
-        ),
-      );
+      ),
+    ),
+  );
 }
 
 class _ComposerBody extends StatelessWidget {
@@ -277,9 +278,9 @@ class _ResponsePane extends StatelessWidget {
     const lineHeight = ISpectInputStyle.fontSize * 1.4;
     const chromeHeight = 140.0;
     return ((paneHeight - chromeHeight) / lineHeight).floor().clamp(
-          _kInlinePreviewMaxLines,
-          400,
-        );
+      _kInlinePreviewMaxLines,
+      400,
+    );
   }
 }
 
@@ -290,28 +291,26 @@ class _ComposerFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(color: context.ispectSubtleBorderColor),
-          ),
+    decoration: BoxDecoration(
+      border: Border(top: BorderSide(color: context.ispectSubtleBorderColor)),
+    ),
+    child: SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (controller.validationError != null) ...[
+              _ValidationText(error: controller.validationError!),
+              const Gap(12),
+            ],
+            _SendButton(controller: controller),
+          ],
         ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (controller.validationError != null) ...[
-                  _ValidationText(error: controller.validationError!),
-                  const Gap(12),
-                ],
-                _SendButton(controller: controller),
-              ],
-            ),
-          ),
-        ),
-      );
+      ),
+    ),
+  );
 }
 
 class _RequestHeaderCard extends StatelessWidget {
@@ -346,8 +345,9 @@ class _RequestHeaderCard extends StatelessWidget {
           prefixIcon: Icon(
             Icons.link_rounded,
             size: 18,
-            color:
-                context.appTheme.colorScheme.onSurface.withValues(alpha: 0.4),
+            color: context.appTheme.colorScheme.onSurface.withValues(
+              alpha: 0.4,
+            ),
           ),
           suffixIcon: controller.url.isEmpty
               ? null
@@ -355,8 +355,9 @@ class _RequestHeaderCard extends StatelessWidget {
                   icon: const Icon(Icons.close_rounded, size: 18),
                   splashRadius: 18,
                   visualDensity: VisualDensity.compact,
-                  color: context.appTheme.colorScheme.onSurface
-                      .withValues(alpha: 0.5),
+                  color: context.appTheme.colorScheme.onSurface.withValues(
+                    alpha: 0.5,
+                  ),
                   onPressed: () {
                     urlController.clear();
                     controller.setUrl('');
@@ -376,14 +377,14 @@ class _MethodPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _SelectPill<String>(
-        value: controller.method,
-        items: _httpMethods,
-        labelOf: (method) => method,
-        accentOf: (method) =>
-            JsonColors.methodColorFor(method, Theme.of(context).brightness) ??
-            context.ispectPrimaryColor,
-        onSelected: controller.setMethod,
-      );
+    value: controller.method,
+    items: _httpMethods,
+    labelOf: (method) => method,
+    accentOf: (method) =>
+        JsonColors.methodColorFor(method, Theme.of(context).brightness) ??
+        context.ispectPrimaryColor,
+    onSelected: controller.setMethod,
+  );
 }
 
 class _ClientPill extends StatelessWidget {
@@ -445,8 +446,9 @@ class _SelectPill<T> extends StatelessWidget {
       style: MenuStyle(
         backgroundColor: WidgetStatePropertyAll(context.ispectCardColor),
         elevation: const WidgetStatePropertyAll(8),
-        padding:
-            const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
+        padding: const WidgetStatePropertyAll(
+          EdgeInsets.symmetric(vertical: 6),
+        ),
         shape: WidgetStatePropertyAll(
           ISpectSquircle.border(
             side: BorderSide(color: context.ispectSubtleBorderColor),
@@ -509,8 +511,9 @@ class _SelectMenuItem<T> extends StatelessWidget {
     final primary = context.ispectPrimaryColor;
     return MenuItemButton(
       onPressed: onPressed,
-      trailingIcon:
-          selected ? Icon(Icons.check_rounded, size: 18, color: primary) : null,
+      trailingIcon: selected
+          ? Icon(Icons.check_rounded, size: 18, color: primary)
+          : null,
       child: Text(
         label,
         style: TextStyle(
@@ -535,16 +538,16 @@ class _ComposerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _SectionHeader(title: title, count: count),
-          ISpectBorderedSurface(
-            backgroundColor: context.ispectCardColor,
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-            child: child,
-          ),
-        ],
-      );
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _SectionHeader(title: title, count: count),
+      ISpectBorderedSurface(
+        backgroundColor: context.ispectCardColor,
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+        child: child,
+      ),
+    ],
+  );
 }
 
 class _KeyValueSection extends StatelessWidget {
@@ -679,26 +682,23 @@ class _BodyEditor extends StatelessWidget {
     final editor = switch (kind) {
       ComposerBodyKind.none => null,
       ComposerBodyKind.json || ComposerBodyKind.text => ISpectTextField(
-          controller: bodyController,
-          minLines: 4,
-          maxLines: 12,
-          onChanged: controller.setBodyText,
-        ),
+        controller: bodyController,
+        minLines: 4,
+        maxLines: 12,
+        onChanged: controller.setBodyText,
+      ),
       ComposerBodyKind.formUrlEncoded => _KeyValueEditor(
-          rows: controller.formFields,
-          addLabel: l10n.composerAddField,
-          onAdd: controller.addFormField,
-          onRemove: controller.removeFormFieldAt,
-        ),
+        rows: controller.formFields,
+        addLabel: l10n.composerAddField,
+        onAdd: controller.addFormField,
+        onRemove: controller.removeFormFieldAt,
+      ),
       ComposerBodyKind.multipart => _MultipartEditor(controller: controller),
     };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _BodyKindSelector(
-          selected: kind,
-          onSelected: controller.setBodyKind,
-        ),
+        _BodyKindSelector(selected: kind, onSelected: controller.setBodyKind),
         if (editor != null) ...[const Gap(12), editor],
       ],
     );
@@ -713,25 +713,25 @@ class _BodyKindSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final kind in ComposerBodyKind.values)
-            _ChoicePill(
-              label: _bodyKindLabel(kind),
-              selected: kind == selected,
-              onTap: () => onSelected(kind),
-            ),
-        ],
-      );
+    spacing: 8,
+    runSpacing: 8,
+    children: [
+      for (final kind in ComposerBodyKind.values)
+        _ChoicePill(
+          label: _bodyKindLabel(kind),
+          selected: kind == selected,
+          onTap: () => onSelected(kind),
+        ),
+    ],
+  );
 
   static String _bodyKindLabel(ComposerBodyKind kind) => switch (kind) {
-        ComposerBodyKind.none => 'None',
-        ComposerBodyKind.json => 'JSON',
-        ComposerBodyKind.text => 'Text',
-        ComposerBodyKind.formUrlEncoded => 'Form',
-        ComposerBodyKind.multipart => 'Multipart',
-      };
+    ComposerBodyKind.none => 'None',
+    ComposerBodyKind.json => 'JSON',
+    ComposerBodyKind.text => 'Text',
+    ComposerBodyKind.formUrlEncoded => 'Form',
+    ComposerBodyKind.multipart => 'Multipart',
+  };
 }
 
 class _ChoicePill extends StatelessWidget {
@@ -750,8 +750,9 @@ class _ChoicePill extends StatelessWidget {
     final primary = context.ispectPrimaryColor;
     return ISpectBorderedSurface(
       onTap: onTap,
-      backgroundColor:
-          selected ? primary.withValues(alpha: 0.14) : Colors.transparent,
+      backgroundColor: selected
+          ? primary.withValues(alpha: 0.14)
+          : Colors.transparent,
       borderColor: selected ? primary.withValues(alpha: 0.45) : null,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
@@ -766,8 +767,9 @@ class _ChoicePill extends StatelessWidget {
             style: TextStyle(
               color: selected
                   ? primary
-                  : context.appTheme.colorScheme.onSurface
-                      .withValues(alpha: 0.8),
+                  : context.appTheme.colorScheme.onSurface.withValues(
+                      alpha: 0.8,
+                    ),
               fontWeight: FontWeight.w600,
               fontSize: 13,
             ),
@@ -896,19 +898,19 @@ class _SendButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FilledButton.icon(
-        onPressed: controller.isSending ? null : controller.send,
-        icon: controller.isSending
-            ? const SizedBox.square(
-                dimension: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.send_rounded),
-        label: Text(context.ispectL10n.composerSend),
-        style: FilledButton.styleFrom(
-          minimumSize: const Size(double.infinity, 50),
-          shape: ISpectSquircle.border(),
-        ),
-      );
+    onPressed: controller.isSending ? null : controller.send,
+    icon: controller.isSending
+        ? const SizedBox.square(
+            dimension: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        : const Icon(Icons.send_rounded),
+    label: Text(context.ispectL10n.composerSend),
+    style: FilledButton.styleFrom(
+      minimumSize: const Size(double.infinity, 50),
+      shape: ISpectSquircle.border(),
+    ),
+  );
 }
 
 class _ValidationText extends StatelessWidget {
@@ -930,7 +932,9 @@ class _ValidationText extends StatelessWidget {
       children: [
         Icon(Icons.error_outline_rounded, size: 18, color: color),
         const Gap(8),
-        Expanded(child: Text(message, style: TextStyle(color: color))),
+        Expanded(
+          child: Text(message, style: TextStyle(color: color)),
+        ),
       ],
     );
   }
@@ -965,8 +969,9 @@ class _ResultView extends StatelessWidget {
                 Text(
                   '${result.durationMs} ms',
                   style: TextStyle(
-                    color: context.appTheme.colorScheme.onSurface
-                        .withValues(alpha: 0.5),
+                    color: context.appTheme.colorScheme.onSurface.withValues(
+                      alpha: 0.5,
+                    ),
                     fontSize: 12,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
@@ -1000,7 +1005,8 @@ class _ResultView extends StatelessWidget {
     if (result.isError && result.statusCode == null) return null;
     final body = LogExportOutput.boundJsonValue(
       result.body,
-      resourceLimits: ISpect.loggerIfInitialized?.options.resourceLimits ??
+      resourceLimits:
+          ISpect.loggerIfInitialized?.options.resourceLimits ??
           DiagnosticResourceLimits.balanced,
     );
     if (body is Map<String, Object?>) {
@@ -1011,7 +1017,8 @@ class _ResultView extends StatelessWidget {
   }
 
   static String _pretty(Object? body) {
-    final limits = ISpect.loggerIfInitialized?.options.resourceLimits ??
+    final limits =
+        ISpect.loggerIfInitialized?.options.resourceLimits ??
         DiagnosticResourceLimits.balanced;
     final bounded = LogExportOutput.boundJsonValue(
       body,
@@ -1128,10 +1135,10 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        text,
-        style: (context.appTheme.textTheme.titleSmall ?? const TextStyle())
-            .copyWith(fontWeight: FontWeight.w600),
-      );
+    text,
+    style: (context.appTheme.textTheme.titleSmall ?? const TextStyle())
+        .copyWith(fontWeight: FontWeight.w600),
+  );
 }
 
 class _CenteredMessage extends StatelessWidget {

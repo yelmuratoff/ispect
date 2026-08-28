@@ -4,11 +4,11 @@ import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controlle
 
 void main() {
   ISpectSettingsState settingsWith(Set<String> disabled) => ISpectSettingsState(
-        enabled: true,
-        useConsoleLogs: false,
-        useHistory: true,
-        disabledLogTypes: disabled,
-      );
+    enabled: true,
+    useConsoleLogs: false,
+    useHistory: true,
+    disabledLogTypes: disabled,
+  );
 
   final logs = [
     ISpectLogData('added', key: 'riverpod-add'),
@@ -26,10 +26,10 @@ void main() {
 
       controller.updateSettings(settingsWith({'riverpod-add'}));
 
-      expect(
-        keysOf(controller.applyCurrentFilters(logs)),
-        {'riverpod-update', 'http-request'},
-      );
+      expect(keysOf(controller.applyCurrentFilters(logs)), {
+        'riverpod-update',
+        'http-request',
+      });
     });
 
     test('hydrates the exclusion from initialSettings', () {
@@ -38,10 +38,10 @@ void main() {
       );
       addTearDown(controller.dispose);
 
-      expect(
-        keysOf(controller.applyCurrentFilters(logs)),
-        {'riverpod-add', 'riverpod-update'},
-      );
+      expect(keysOf(controller.applyCurrentFilters(logs)), {
+        'riverpod-add',
+        'riverpod-update',
+      });
     });
 
     test('keeps hiding a disabled type while a chip filter is active', () {
@@ -65,10 +65,10 @@ void main() {
         ..addLogTypeKeyFilter('http-request')
         ..clearAllFilters();
 
-      expect(
-        keysOf(controller.applyCurrentFilters(logs)),
-        {'riverpod-update', 'http-request'},
-      );
+      expect(keysOf(controller.applyCurrentFilters(logs)), {
+        'riverpod-update',
+        'http-request',
+      });
     });
 
     test('hides a disabled type on the default highlight-mode path', () {
@@ -78,27 +78,29 @@ void main() {
       expect(controller.searchMode, SearchMode.highlight);
       controller.updateSettings(settingsWith({'riverpod-add'}));
 
-      expect(
-        keysOf(controller.applyFiltersWithoutSearch(logs)),
-        {'riverpod-update', 'http-request'},
-      );
+      expect(keysOf(controller.applyFiltersWithoutSearch(logs)), {
+        'riverpod-update',
+        'http-request',
+      });
     });
 
-    test('recomputes the highlight-mode result when the disabled set changes',
-        () {
-      final controller = ISpectViewController();
-      addTearDown(controller.dispose);
+    test(
+      'recomputes the highlight-mode result when the disabled set changes',
+      () {
+        final controller = ISpectViewController();
+        addTearDown(controller.dispose);
 
-      controller.updateSettings(settingsWith({'riverpod-add'}));
-      expect(controller.applyFiltersWithoutSearch(logs), hasLength(2));
+        controller.updateSettings(settingsWith({'riverpod-add'}));
+        expect(controller.applyFiltersWithoutSearch(logs), hasLength(2));
 
-      controller.updateSettings(settingsWith({'http-request'}));
+        controller.updateSettings(settingsWith({'http-request'}));
 
-      expect(
-        keysOf(controller.applyFiltersWithoutSearch(logs)),
-        {'riverpod-add', 'riverpod-update'},
-      );
-    });
+        expect(keysOf(controller.applyFiltersWithoutSearch(logs)), {
+          'riverpod-add',
+          'riverpod-update',
+        });
+      },
+    );
 
     test('re-enabling a type shows its logs again', () {
       final controller = ISpectViewController();
@@ -165,10 +167,10 @@ void main() {
         ..updateSettings(settingsWith({'riverpod-add'}));
 
       expect(controller.filter.logTypeKeys, isEmpty);
-      expect(
-        keysOf(controller.applyCurrentFilters(logs)),
-        {'riverpod-update', 'http-request'},
-      );
+      expect(keysOf(controller.applyCurrentFilters(logs)), {
+        'riverpod-update',
+        'http-request',
+      });
     });
 
     test('keeps the chip filter when the disabled set does not change', () {

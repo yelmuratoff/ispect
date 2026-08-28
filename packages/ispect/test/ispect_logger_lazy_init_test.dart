@@ -73,82 +73,63 @@ void main() {
       skip: !kISpectEnabled,
     );
 
-    test(
-      'forced initialization disposes the replaced logger',
-      () async {
-        await ISpect.dispose();
-        final original = ISpectLogger(
-          options: ISpectLoggerOptions(useConsoleLogs: false),
-        );
-        final replacement = ISpectLogger(
-          options: ISpectLoggerOptions(useConsoleLogs: false),
-        );
+    test('forced initialization disposes the replaced logger', () async {
+      await ISpect.dispose();
+      final original = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final replacement = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
 
-        expect(ISpect.initialize(original), isTrue);
-        expect(ISpect.initialize(replacement, force: true), isTrue);
+      expect(ISpect.initialize(original), isTrue);
+      expect(ISpect.initialize(replacement, force: true), isTrue);
 
-        expect(original.isDisposed, isTrue);
-        expect(replacement.isDisposed, isFalse);
-        expect(ISpect.logger, same(replacement));
-      },
-      skip: !kISpectEnabled,
-    );
+      expect(original.isDisposed, isTrue);
+      expect(replacement.isDisposed, isFalse);
+      expect(ISpect.logger, same(replacement));
+    }, skip: !kISpectEnabled);
 
-    test(
-      'forced initialization keeps the same logger active',
-      () async {
-        await ISpect.dispose();
-        final logger = ISpectLogger(
-          options: ISpectLoggerOptions(useConsoleLogs: false),
-        );
+    test('forced initialization keeps the same logger active', () async {
+      await ISpect.dispose();
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
 
-        expect(ISpect.initialize(logger), isTrue);
-        expect(ISpect.initialize(logger, force: true), isTrue);
+      expect(ISpect.initialize(logger), isTrue);
+      expect(ISpect.initialize(logger, force: true), isTrue);
 
-        expect(logger.isDisposed, isFalse);
-        expect(ISpect.logger, same(logger));
-      },
-      skip: !kISpectEnabled,
-    );
+      expect(logger.isDisposed, isFalse);
+      expect(ISpect.logger, same(logger));
+    }, skip: !kISpectEnabled);
 
-    test(
-      'initialization rejects an already disposed logger',
-      () async {
-        await ISpect.dispose();
-        final disposed = ISpectLogger(
-          options: ISpectLoggerOptions(useConsoleLogs: false),
-        );
-        await disposed.dispose();
+    test('initialization rejects an already disposed logger', () async {
+      await ISpect.dispose();
+      final disposed = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      await disposed.dispose();
 
-        expect(ISpect.initialize(disposed), isFalse);
-        expect(
-          () => ISpect.run(() {}, logger: disposed),
-          throwsStateError,
-        );
-        expect(ISpect.loggerIfInitialized, isNull);
-      },
-      skip: !kISpectEnabled,
-    );
+      expect(ISpect.initialize(disposed), isFalse);
+      expect(() => ISpect.run(() {}, logger: disposed), throwsStateError);
+      expect(ISpect.loggerIfInitialized, isNull);
+    }, skip: !kISpectEnabled);
 
-    test(
-      'a retired logger cannot be installed again',
-      () async {
-        await ISpect.dispose();
-        final original = ISpectLogger(
-          options: ISpectLoggerOptions(useConsoleLogs: false),
-        );
-        final replacement = ISpectLogger(
-          options: ISpectLoggerOptions(useConsoleLogs: false),
-        );
+    test('a retired logger cannot be installed again', () async {
+      await ISpect.dispose();
+      final original = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final replacement = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
 
-        expect(ISpect.initialize(original), isTrue);
-        expect(ISpect.initialize(replacement, force: true), isTrue);
-        expect(original.isDisposed, isTrue);
+      expect(ISpect.initialize(original), isTrue);
+      expect(ISpect.initialize(replacement, force: true), isTrue);
+      expect(original.isDisposed, isTrue);
 
-        expect(ISpect.initialize(original, force: true), isFalse);
-        expect(ISpect.logger, same(replacement));
-      },
-      skip: !kISpectEnabled,
-    );
+      expect(ISpect.initialize(original, force: true), isFalse);
+      expect(ISpect.logger, same(replacement));
+    }, skip: !kISpectEnabled);
   });
 }

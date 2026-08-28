@@ -28,13 +28,13 @@ class ISpectAlertDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        backgroundColor: context.ispectBackgroundColor,
-        surfaceTintColor: Colors.transparent,
-        title: title,
-        content: content,
-        actions: actions,
-        titlePadding: titlePadding,
-        contentPadding: contentPadding,
-        actionsPadding: actionsPadding,
-      );
+    backgroundColor: context.ispectBackgroundColor,
+    surfaceTintColor: Colors.transparent,
+    title: title,
+    content: content,
+    actions: actions,
+    titlePadding: titlePadding,
+    contentPadding: contentPadding,
+    actionsPadding: actionsPadding,
+  );
 }

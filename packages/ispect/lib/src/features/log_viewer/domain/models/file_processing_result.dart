@@ -9,10 +9,7 @@ import 'package:ispect/src/features/log_viewer/domain/models/models.dart';
 /// Result of file processing operation
 @immutable
 sealed class FileProcessingResult {
-  const FileProcessingResult({
-    required this.fileName,
-    required this.format,
-  });
+  const FileProcessingResult({required this.fileName, required this.format});
 
   /// Original file name
   final String fileName;
@@ -166,13 +163,13 @@ final class _SuccessFileProcessingResult extends FileProcessingResult {
     bool jsonDecodeSucceeded = false,
     required DiagnosticResourceLimits resourceLimits,
     required DiagnosticProcessingPolicy processingPolicy,
-  })  : _decodedJson = decodedJson,
-        _jsonDecodeAttempted = jsonDecodeAttempted,
-        _jsonDecodeSucceeded = jsonDecodeSucceeded,
-        _resourceLimits = resourceLimits,
-        _processingPolicy = processingPolicy,
-        assert(!jsonDecodeSucceeded || jsonDecodeAttempted),
-        super();
+  }) : _decodedJson = decodedJson,
+       _jsonDecodeAttempted = jsonDecodeAttempted,
+       _jsonDecodeSucceeded = jsonDecodeSucceeded,
+       _resourceLimits = resourceLimits,
+       _processingPolicy = processingPolicy,
+       assert(!jsonDecodeSucceeded || jsonDecodeAttempted),
+       super();
 
   final Object? _decodedJson;
   final bool _jsonDecodeAttempted;
@@ -207,13 +204,8 @@ final class _SuccessFileProcessingResult extends FileProcessingResult {
   }
 
   @override
-  int get hashCode => Object.hash(
-        content,
-        displayName,
-        mimeType,
-        fileName,
-        format,
-      );
+  int get hashCode =>
+      Object.hash(content, displayName, mimeType, fileName, format);
 }
 
 @immutable

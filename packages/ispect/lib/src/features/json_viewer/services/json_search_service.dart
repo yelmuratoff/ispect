@@ -17,10 +17,7 @@ abstract interface class SearchStrategy {
 
 /// Interface for search match finder following SRP
 abstract interface class SearchMatchFinder {
-  List<SearchResult> findMatches(
-    NodeViewModelState node,
-    String searchTerm,
-  );
+  List<SearchResult> findMatches(NodeViewModelState node, String searchTerm);
 }
 
 /// Interface for search progress tracker following SRP
@@ -33,10 +30,7 @@ abstract interface class SearchProgressTracker {
 /// Concrete implementation for basic search match finding
 class DefaultSearchMatchFinder implements SearchMatchFinder {
   @override
-  List<SearchResult> findMatches(
-    NodeViewModelState node,
-    String searchTerm,
-  ) {
+  List<SearchResult> findMatches(NodeViewModelState node, String searchTerm) {
     final results = <SearchResult>[];
 
     // Process key matches
@@ -106,11 +100,7 @@ class DefaultSearchMatchFinder implements SearchMatchFinder {
       if (index == -1) break;
 
       results.add(
-        SearchResult(
-          node,
-          matchLocation: location,
-          matchIndex: index,
-        ),
+        SearchResult(node, matchLocation: location, matchIndex: index),
       );
       startIndex = index + pattern.length;
     }
@@ -162,8 +152,8 @@ class StandardBatchSearchStrategy implements SearchStrategy {
     SearchMatchFinder? matchFinder,
     SearchProgressTracker? progressTracker,
     this.processingPolicy = DiagnosticProcessingPolicy.balanced,
-  })  : _matchFinder = matchFinder ?? DefaultSearchMatchFinder(),
-        _progressTracker = progressTracker {
+  }) : _matchFinder = matchFinder ?? DefaultSearchMatchFinder(),
+       _progressTracker = progressTracker {
     processingPolicy.validate();
   }
 
@@ -190,7 +180,8 @@ class StandardBatchSearchStrategy implements SearchStrategy {
     final batchSize = _calculateBatchSize(nodes.length);
     final totalNodes = nodes.length;
 
-    final tracker = _progressTracker ??
+    final tracker =
+        _progressTracker ??
         DefaultSearchProgressTracker(
           onProgressUpdate: onProgressUpdate,
           yieldInterval: processingPolicy.searchYieldInterval,
@@ -223,10 +214,10 @@ class StandardBatchSearchStrategy implements SearchStrategy {
 
   int _calculateBatchSize(int nodeCount) =>
       nodeCount > processingPolicy.veryLargeSearchNodeThreshold
-          ? processingPolicy.veryLargeSearchBatchSize
-          : nodeCount > processingPolicy.largeSearchNodeThreshold
-              ? processingPolicy.largeSearchBatchSize
-              : processingPolicy.searchBatchSize;
+      ? processingPolicy.veryLargeSearchBatchSize
+      : nodeCount > processingPolicy.largeSearchNodeThreshold
+      ? processingPolicy.largeSearchBatchSize
+      : processingPolicy.searchBatchSize;
 }
 
 /// Concrete strategy for optimized search with short terms
@@ -323,9 +314,9 @@ class JsonSearchService {
     SearchMatchFinder? matchFinder,
     SearchProgressTracker? progressTracker,
     this.processingPolicy = DiagnosticProcessingPolicy.balanced,
-  })  : _strategy = strategy,
-        _matchFinder = matchFinder ?? DefaultSearchMatchFinder(),
-        _progressTracker = progressTracker {
+  }) : _strategy = strategy,
+       _matchFinder = matchFinder ?? DefaultSearchMatchFinder(),
+       _progressTracker = progressTracker {
     processingPolicy.validate();
   }
 
@@ -341,7 +332,8 @@ class JsonSearchService {
     required bool Function() isMounted,
     void Function()? onProgressUpdate,
   }) async {
-    final effectiveStrategy = _strategy ??
+    final effectiveStrategy =
+        _strategy ??
         SearchStrategyFactory.createStrategy(
           nodeCount: allNodes.length,
           searchTermLength: searchTerm.length,
@@ -377,8 +369,8 @@ class JsonSearchService {
     final now = DateTime.now();
     if (lastSearchTime != null) {
       final timeSinceLastSearch = now.difference(lastSearchTime);
-      final adjustedDebounceTime = nodeCount >
-                  processingPolicy.veryLargeSearchNodeThreshold &&
+      final adjustedDebounceTime =
+          nodeCount > processingPolicy.veryLargeSearchNodeThreshold &&
               searchTerm.length < 3
           ? processingPolicy.searchDebounce + const Duration(milliseconds: 50)
           : processingPolicy.searchDebounce;

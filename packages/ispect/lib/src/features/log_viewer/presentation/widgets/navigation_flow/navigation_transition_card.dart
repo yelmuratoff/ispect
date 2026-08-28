@@ -66,8 +66,9 @@ class NavigationTransitionCard extends StatelessWidget {
                     child: Text(
                       transition.transitionText,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight:
-                            _isSpecial ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: _isSpecial
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                       ),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
@@ -113,7 +114,8 @@ class NavigationTransitionCard extends StatelessWidget {
         color: context.ispectTheme.card?.resolve(context),
         radius: ISpectConstants.standardBorderRadius,
         side: BorderSide(
-          color: context.ispectTheme.divider?.resolve(context) ??
+          color:
+              context.ispectTheme.divider?.resolve(context) ??
               colorScheme.onSurface.withValues(alpha: 0.2),
         ),
       ),

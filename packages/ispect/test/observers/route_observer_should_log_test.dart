@@ -9,9 +9,9 @@ import 'package:ispect/ispect.dart';
 
 void main() {
   PageRoute<void> pageRoute({String? name}) => MaterialPageRoute<void>(
-        settings: name == null ? null : RouteSettings(name: name),
-        builder: (_) => const SizedBox.shrink(),
-      );
+    settings: name == null ? null : RouteSettings(name: name),
+    builder: (_) => const SizedBox.shrink(),
+  );
 
   group('ISpectNavigatorObserver.shouldLog', () {
     test('logs page destinations when isLogPages is true', () {
@@ -97,8 +97,7 @@ class _FakePopupRoute extends PopupRoute<void> {
     BuildContext context,
     Animation<double> animation,
     Animation<double> secondaryAnimation,
-  ) =>
-      const SizedBox.shrink();
+  ) => const SizedBox.shrink();
 }
 
 class _FakeRoute extends Route<void> {}

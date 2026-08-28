@@ -10,10 +10,7 @@ void main() {
     addTearDown(controller.dispose);
     final content = jsonEncode({
       'logs': [
-        {
-          'message': 'Imported',
-          'time': DateTime.utc(2025).toIso8601String(),
-        },
+        {'message': 'Imported', 'time': DateTime.utc(2025).toIso8601String()},
         const {'invalid': true},
       ],
     });

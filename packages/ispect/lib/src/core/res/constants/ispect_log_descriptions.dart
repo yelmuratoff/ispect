@@ -3,50 +3,17 @@ part of 'ispect_constants.dart';
 List<LogDescription> _buildDefaultLogDescriptions(BuildContext context) {
   final l10n = context.ispectL10n;
   return [
-    LogDescription(
-      key: 'error',
-      description: l10n.errorLogDesc,
-    ),
-    LogDescription(
-      key: 'critical',
-      description: l10n.criticalLogDesc,
-    ),
-    LogDescription(
-      key: 'info',
-      description: l10n.infoLogDesc,
-    ),
-    LogDescription(
-      key: 'debug',
-      description: l10n.debugLogDesc,
-    ),
-    LogDescription(
-      key: 'verbose',
-      description: l10n.verboseLogDesc,
-    ),
-    LogDescription(
-      key: 'warning',
-      description: l10n.warningLogDesc,
-    ),
-    LogDescription(
-      key: 'exception',
-      description: l10n.exceptionLogDesc,
-    ),
-    LogDescription(
-      key: 'good',
-      description: l10n.goodLogDesc,
-    ),
-    LogDescription(
-      key: 'print',
-      description: l10n.printLogDesc,
-    ),
-    LogDescription(
-      key: 'provider',
-      description: l10n.providerLogDesc,
-    ),
-    LogDescription(
-      key: 'analytics',
-      description: l10n.analyticsLogDesc,
-    ),
+    LogDescription(key: 'error', description: l10n.errorLogDesc),
+    LogDescription(key: 'critical', description: l10n.criticalLogDesc),
+    LogDescription(key: 'info', description: l10n.infoLogDesc),
+    LogDescription(key: 'debug', description: l10n.debugLogDesc),
+    LogDescription(key: 'verbose', description: l10n.verboseLogDesc),
+    LogDescription(key: 'warning', description: l10n.warningLogDesc),
+    LogDescription(key: 'exception', description: l10n.exceptionLogDesc),
+    LogDescription(key: 'good', description: l10n.goodLogDesc),
+    LogDescription(key: 'print', description: l10n.printLogDesc),
+    LogDescription(key: 'provider', description: l10n.providerLogDesc),
+    LogDescription(key: 'analytics', description: l10n.analyticsLogDesc),
     LogDescription(
       key: 'http-error',
       title: 'HTTP Error',
@@ -117,10 +84,7 @@ List<LogDescription> _buildDefaultLogDescriptions(BuildContext context) {
       title: 'Riverpod Fail',
       description: l10n.riverpodFailLogDesc,
     ),
-    LogDescription(
-      key: 'route',
-      description: l10n.routeLogDesc,
-    ),
+    LogDescription(key: 'route', description: l10n.routeLogDesc),
     LogDescription(
       key: 'ws-sent',
       title: 'WebSocket Sent',
@@ -156,54 +120,24 @@ List<LogDescription> _buildDefaultLogDescriptions(BuildContext context) {
       title: 'WebSocket Error',
       description: l10n.wsErrorLogDesc,
     ),
-    LogDescription(
-      key: 'auth-success',
-      description: l10n.authSuccessLogDesc,
-    ),
-    LogDescription(
-      key: 'auth-error',
-      description: l10n.authErrorLogDesc,
-    ),
+    LogDescription(key: 'auth-success', description: l10n.authSuccessLogDesc),
+    LogDescription(key: 'auth-error', description: l10n.authErrorLogDesc),
     LogDescription(
       key: 'storage-result',
       description: l10n.storageResultLogDesc,
     ),
-    LogDescription(
-      key: 'storage-query',
-      description: l10n.storageQueryLogDesc,
-    ),
-    LogDescription(
-      key: 'storage-error',
-      description: l10n.storageErrorLogDesc,
-    ),
-    LogDescription(
-      key: 'push-received',
-      description: l10n.pushReceivedLogDesc,
-    ),
-    LogDescription(
-      key: 'push-sent',
-      description: l10n.pushSentLogDesc,
-    ),
-    LogDescription(
-      key: 'push-error',
-      description: l10n.pushErrorLogDesc,
-    ),
+    LogDescription(key: 'storage-query', description: l10n.storageQueryLogDesc),
+    LogDescription(key: 'storage-error', description: l10n.storageErrorLogDesc),
+    LogDescription(key: 'push-received', description: l10n.pushReceivedLogDesc),
+    LogDescription(key: 'push-sent', description: l10n.pushSentLogDesc),
+    LogDescription(key: 'push-error', description: l10n.pushErrorLogDesc),
     LogDescription(
       key: 'payment-success',
       description: l10n.paymentSuccessLogDesc,
     ),
-    LogDescription(
-      key: 'payment-error',
-      description: l10n.paymentErrorLogDesc,
-    ),
-    LogDescription(
-      key: 'state-change',
-      description: l10n.stateChangeLogDesc,
-    ),
-    LogDescription(
-      key: 'state-error',
-      description: l10n.stateErrorLogDesc,
-    ),
+    LogDescription(key: 'payment-error', description: l10n.paymentErrorLogDesc),
+    LogDescription(key: 'state-change', description: l10n.stateChangeLogDesc),
+    LogDescription(key: 'state-error', description: l10n.stateErrorLogDesc),
     LogDescription(
       key: 'sse-received',
       title: 'SSE Received',

@@ -20,23 +20,21 @@ class ISpectScopeModel extends ChangeNotifier {
     ISpectTheme theme = const ISpectTheme(),
     NavigatorObserver? observer,
     ISpectSettingsState? settings,
-  })  : assert(_debugValidateTheme(theme)),
-        _isISpectEnabled = isISpectEnabled,
-        _isPerformanceTrackingEnabled = isPerformanceTrackingEnabled,
-        _options = options ?? ISpectOptions(observer: observer),
-        _theme = theme.copyWith(
-          logIcons: {
-            ...ISpectConstants.typeIcons,
-            ...theme.logIcons,
-          },
-        ),
-        _observer = observer,
-        _settings = settings ??
-            const ISpectSettingsState(
-              enabled: true,
-              useConsoleLogs: true,
-              useHistory: true,
-            );
+  }) : assert(_debugValidateTheme(theme)),
+       _isISpectEnabled = isISpectEnabled,
+       _isPerformanceTrackingEnabled = isPerformanceTrackingEnabled,
+       _options = options ?? ISpectOptions(observer: observer),
+       _theme = theme.copyWith(
+         logIcons: {...ISpectConstants.typeIcons, ...theme.logIcons},
+       ),
+       _observer = observer,
+       _settings =
+           settings ??
+           const ISpectSettingsState(
+             enabled: true,
+             useConsoleLogs: true,
+             useHistory: true,
+           );
 
   /// Runs [ISpectTheme.debugValidate] and prints any warnings via [debugPrint].
   /// Always returns `true` so it can be used inside an `assert`.
@@ -73,10 +71,10 @@ class ISpectScopeModel extends ChangeNotifier {
   /// Indicates whether performance tracking is enabled.
   bool get isPerformanceTrackingEnabled => _isPerformanceTrackingEnabled;
   set isPerformanceTrackingEnabled(bool value) => _updateValue(
-        _isPerformanceTrackingEnabled,
-        value,
-        (v) => _isPerformanceTrackingEnabled = v,
-      );
+    _isPerformanceTrackingEnabled,
+    value,
+    (v) => _isPerformanceTrackingEnabled = v,
+  );
 
   /// Configuration options for ISpect.
   ISpectOptions get options => _options;
@@ -93,10 +91,7 @@ class ISpectScopeModel extends ChangeNotifier {
       return true;
     }());
     final updatedTheme = value.copyWith(
-      logIcons: {
-        ...ISpectConstants.typeIcons,
-        ...value.logIcons,
-      },
+      logIcons: {...ISpectConstants.typeIcons, ...value.logIcons},
     );
     _updateValue(_theme, updatedTheme, (v) => _theme = v);
   }

@@ -133,9 +133,10 @@ class _MainLogsViewState extends State<MainLogsView> {
 
     final isReversed =
         widget.logsViewController.sortColumn == LogSortColumn.time &&
-            widget.logsViewController.isLogOrderReversed;
+        widget.logsViewController.isLogOrderReversed;
 
-    final shouldGroupLogs = widget.logsViewController.groupHttpLogs &&
+    final shouldGroupLogs =
+        widget.logsViewController.groupHttpLogs &&
         widget.logsViewController.filter.logTypeKeys.isEmpty;
     final groupedEntries = shouldGroupLogs
         ? _transactionService.getGroupedEntries(
@@ -164,8 +165,9 @@ class _MainLogsViewState extends State<MainLogsView> {
     } else {
       _clearSearchTargetVisualIndexes();
     }
-    final logTypeKeys =
-        widget.logsViewController.getLogTypeKeys(widget.logsData);
+    final logTypeKeys = widget.logsViewController.getLogTypeKeys(
+      widget.logsData,
+    );
 
     final options = ISpect.read(context).options;
     final isDesktop = context.screenSize.isDesktop;
@@ -190,8 +192,8 @@ class _MainLogsViewState extends State<MainLogsView> {
     final sortColumnIdx = widget.logsViewController.sortColumn.index;
     final sortDirIdx =
         widget.logsViewController.sortColumn == LogSortColumn.time
-            ? (widget.logsViewController.isLogOrderReversed ? 1 : 0)
-            : widget.logsViewController.sortDirection.index;
+        ? (widget.logsViewController.isLogOrderReversed ? 1 : 0)
+        : widget.logsViewController.sortDirection.index;
 
     Widget body = Stack(
       children: [
@@ -211,8 +213,9 @@ class _MainLogsViewState extends State<MainLogsView> {
                 onSettingsTap: widget.onSettingsTap,
                 onToggleTitle: (key, selected) => widget.logsViewController
                     .handleLogTypeKeyFilterToggle(key, isSelected: selected),
-                backgroundColor:
-                    widget.iSpectTheme.theme.background?.resolve(context),
+                backgroundColor: widget.iSpectTheme.theme.background?.resolve(
+                  context,
+                ),
                 filteredCount: isHighlightMode
                     ? widget.logsViewController.searchMatchCount
                     : filteredLogEntries.length,
@@ -228,8 +231,10 @@ class _MainLogsViewState extends State<MainLogsView> {
                   pinned: true,
                   delegate: _StickyHeaderDelegate(
                     child: DesktopLogTableHeader(
-                      backgroundColor: widget.iSpectTheme.theme.background
-                              ?.resolve(context) ??
+                      backgroundColor:
+                          widget.iSpectTheme.theme.background?.resolve(
+                            context,
+                          ) ??
                           context.appTheme.scaffoldBackgroundColor,
                       sortColumn: sortColumnIdx,
                       sortDirection: sortDirIdx,
@@ -253,9 +258,7 @@ class _MainLogsViewState extends State<MainLogsView> {
                 ),
               if (!isDesktop) const SliverGap(4),
               if (sortedEntries.isEmpty)
-                const SliverToBoxAdapter(
-                  child: EmptyLogsWidget(),
-                ),
+                const SliverToBoxAdapter(child: EmptyLogsWidget()),
               if (groupedEntries != null)
                 _buildGroupedList(
                   groupedEntries.entries,
@@ -330,12 +333,8 @@ class _MainLogsViewState extends State<MainLogsView> {
       body = Focus(
         focusNode: _controller.keyboardFocusNode,
         autofocus: true,
-        onKeyEvent: (node, event) => _controller.handleKeyEvent(
-          node,
-          event,
-          widget.logsData,
-          context,
-        ),
+        onKeyEvent: (node, event) =>
+            _controller.handleKeyEvent(node, event, widget.logsData, context),
         child: body,
       );
     }
@@ -360,11 +359,13 @@ class _MainLogsViewState extends State<MainLogsView> {
       key: key,
       logData: logEntry,
       itemIndex: index,
-      statusIcon:
-          widget.iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
+      statusIcon: widget.iSpectTheme.theme.getTypeIcon(
+        context,
+        key: logEntry.key,
+      ),
       statusColor:
           widget.iSpectTheme.theme.getTypeColor(context, key: logEntry.key) ??
-              Colors.grey,
+          Colors.grey,
       isExpanded: isSelected || widget.logsViewController.expandedLogs,
       searchMatchState: widget.logsViewController.matchStateFor(logEntry),
       observer: observer,
@@ -410,8 +411,9 @@ class _MainLogsViewState extends State<MainLogsView> {
     final visualIndexes = <String, int>{};
     if (groupedEntries case final entries?) {
       for (var visualIndex = 0; visualIndex < entries.length; visualIndex++) {
-        final dataIndex =
-            isReversed ? entries.length - 1 - visualIndex : visualIndex;
+        final dataIndex = isReversed
+            ? entries.length - 1 - visualIndex
+            : visualIndex;
         final entry = entries[dataIndex];
         if (entry is ISpectLogData) {
           visualIndexes[entry.id] = visualIndex;
@@ -426,11 +428,15 @@ class _MainLogsViewState extends State<MainLogsView> {
         }
       }
     } else {
-      for (var visualIndex = 0;
-          visualIndex < sortedEntries.length;
-          visualIndex++) {
-        final entry =
-            _controller.getEntryAtVisualIndex(sortedEntries, visualIndex);
+      for (
+        var visualIndex = 0;
+        visualIndex < sortedEntries.length;
+        visualIndex++
+      ) {
+        final entry = _controller.getEntryAtVisualIndex(
+          sortedEntries,
+          visualIndex,
+        );
         visualIndexes[entry.id] = visualIndex;
       }
     }
@@ -452,60 +458,57 @@ class _MainLogsViewState extends State<MainLogsView> {
     List<ISpectLogData> sortedEntries,
     bool isDesktop,
     ISpectOptions options,
-  ) =>
-      SuperSliverList.builder(
-        listController: _controller.listController,
-        itemCount: sortedEntries.length,
-        findChildIndexCallback: (key) {
-          if (key is! ValueKey<String>) return null;
-          final id = key.value;
-          for (var i = 0; i < sortedEntries.length; i++) {
-            if (sortedEntries[i].id == id) return i;
-          }
-          return null;
-        },
-        itemBuilder: (context, index) {
-          final logEntry =
-              _controller.getEntryAtVisualIndex(sortedEntries, index);
-          return _buildLogListItem(
-            context: context,
-            logEntry: logEntry,
-            index: index,
-            isDesktop: isDesktop,
-            options: options,
-            key: ValueKey(logEntry.id),
-          );
-        },
+  ) => SuperSliverList.builder(
+    listController: _controller.listController,
+    itemCount: sortedEntries.length,
+    findChildIndexCallback: (key) {
+      if (key is! ValueKey<String>) return null;
+      final id = key.value;
+      for (var i = 0; i < sortedEntries.length; i++) {
+        if (sortedEntries[i].id == id) return i;
+      }
+      return null;
+    },
+    itemBuilder: (context, index) {
+      final logEntry = _controller.getEntryAtVisualIndex(sortedEntries, index);
+      return _buildLogListItem(
+        context: context,
+        logEntry: logEntry,
+        index: index,
+        isDesktop: isDesktop,
+        options: options,
+        key: ValueKey(logEntry.id),
       );
+    },
+  );
 
   Widget _buildGroupedList(
     List<Object> entries,
     bool isReversed,
     bool isDesktop,
     ISpectOptions options,
-  ) =>
-      SuperSliverList.builder(
-        listController: _controller.listController,
-        itemCount: entries.length,
-        itemBuilder: (context, index) {
-          final visualIndex = isReversed ? entries.length - 1 - index : index;
-          final entry = entries[visualIndex];
+  ) => SuperSliverList.builder(
+    listController: _controller.listController,
+    itemCount: entries.length,
+    itemBuilder: (context, index) {
+      final visualIndex = isReversed ? entries.length - 1 - index : index;
+      final entry = entries[visualIndex];
 
-          if (entry is NetworkTransaction) {
-            return _buildTransactionCard(entry, isDesktop: isDesktop);
-          }
+      if (entry is NetworkTransaction) {
+        return _buildTransactionCard(entry, isDesktop: isDesktop);
+      }
 
-          final logEntry = entry as ISpectLogData;
-          return _buildLogListItem(
-            context: context,
-            logEntry: logEntry,
-            index: index,
-            isDesktop: isDesktop,
-            options: options,
-            key: ObjectKey(logEntry),
-          );
-        },
+      final logEntry = entry as ISpectLogData;
+      return _buildLogListItem(
+        context: context,
+        logEntry: logEntry,
+        index: index,
+        isDesktop: isDesktop,
+        options: options,
+        key: ObjectKey(logEntry),
       );
+    },
+  );
 
   Widget _buildTransactionCard(
     NetworkTransaction entry, {
@@ -515,8 +518,9 @@ class _MainLogsViewState extends State<MainLogsView> {
     return NetworkTransactionCard(
       key: ValueKey(entry.requestId),
       transaction: entry,
-      searchMatchState:
-          widget.logsViewController.matchStateForTransaction(entry),
+      searchMatchState: widget.logsViewController.matchStateForTransaction(
+        entry,
+      ),
       typeColumnWidth: _controller.typeColumnWidth,
       timeColumnWidth: _controller.timeColumnWidth,
       compactUrl: widget.logsViewController.compactNetworkUrls,
@@ -527,23 +531,22 @@ class _MainLogsViewState extends State<MainLogsView> {
       onOpenRequestDetail: isDesktop
           ? () => widget.logsViewController.selectAndFollowDetail(entry.request)
           : () => LogDetailView(
-                activeData: entry.request,
-                correlatedLog: responseOrError,
-                correlationDuration: entry.duration,
-                onShowRelated: widget.logsViewController.searchByCorrelationId,
-              ).push(context),
+              activeData: entry.request,
+              correlatedLog: responseOrError,
+              correlationDuration: entry.duration,
+              onShowRelated: widget.logsViewController.searchByCorrelationId,
+            ).push(context),
       onOpenResponseDetail: responseOrError == null
           ? null
           : isDesktop
-              ? () => widget.logsViewController
-                  .selectAndFollowDetail(responseOrError)
-              : () => LogDetailView(
-                    activeData: responseOrError,
-                    correlatedLog: entry.request,
-                    correlationDuration: entry.duration,
-                    onShowRelated:
-                        widget.logsViewController.searchByCorrelationId,
-                  ).push(context),
+          ? () =>
+                widget.logsViewController.selectAndFollowDetail(responseOrError)
+          : () => LogDetailView(
+              activeData: responseOrError,
+              correlatedLog: entry.request,
+              correlationDuration: entry.duration,
+              onShowRelated: widget.logsViewController.searchByCorrelationId,
+            ).push(context),
     );
   }
 }
@@ -567,8 +570,7 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
     BuildContext context,
     double shrinkOffset,
     bool overlapsContent,
-  ) =>
-      SizedBox(height: _height, child: child);
+  ) => SizedBox(height: _height, child: child);
 
   @override
   bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) =>

@@ -10,8 +10,9 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/set
 import '../helpers/pump_ispect.dart';
 
 void main() {
-  testWidgets('policy profiles update settings, viewer, and logger',
-      (tester) async {
+  testWidgets('policy profiles update settings, viewer, and logger', (
+    tester,
+  ) async {
     final loggerValue = ISpectLogger.testing(
       options: ISpectLoggerOptions(useConsoleLogs: false),
     );
@@ -57,10 +58,7 @@ void main() {
       controller.settings.resourceLimits,
       DiagnosticResourceLimits.constrained,
     );
-    expect(
-      controller.resourceLimits,
-      DiagnosticResourceLimits.constrained,
-    );
+    expect(controller.resourceLimits, DiagnosticResourceLimits.constrained);
     expect(
       loggerValue.options.resourceLimits,
       DiagnosticResourceLimits.constrained,
@@ -82,10 +80,7 @@ void main() {
       controller.settings.processingPolicy,
       DiagnosticProcessingPolicy.responsive,
     );
-    expect(
-      controller.processingPolicy,
-      DiagnosticProcessingPolicy.responsive,
-    );
+    expect(controller.processingPolicy, DiagnosticProcessingPolicy.responsive);
     expect(
       loggerValue.options.processingPolicy,
       DiagnosticProcessingPolicy.responsive,
@@ -103,13 +98,7 @@ void main() {
     await tester.tap(find.text('Strict').last);
     await tester.pumpAndSettle();
 
-    expect(
-      controller.settings.captureMode,
-      DiagnosticCaptureMode.strict,
-    );
-    expect(
-      loggerValue.options.captureMode,
-      DiagnosticCaptureMode.strict,
-    );
+    expect(controller.settings.captureMode, DiagnosticCaptureMode.strict);
+    expect(loggerValue.options.captureMode, DiagnosticCaptureMode.strict);
   });
 }

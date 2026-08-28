@@ -32,12 +32,8 @@ class JsonCard extends StatelessWidget {
   const JsonCard({
     required this.child,
     this.backgroundColor,
-    this.padding = const EdgeInsets.symmetric(
-      horizontal: 4,
-    ),
-    this.borderRadius = const BorderRadius.all(
-      Radius.circular(4),
-    ),
+    this.padding = const EdgeInsets.symmetric(horizontal: 4),
+    this.borderRadius = const BorderRadius.all(Radius.circular(4)),
     this.borderSide,
     super.key,
   });
@@ -50,16 +46,13 @@ class JsonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: ShapeDecoration(
-          color: backgroundColor?.withAlphaPercent(0.2),
-          shape: ContinuousRectangleBorder(
-            borderRadius: borderRadius * ISpectSquircle.scale,
-            side: borderSide ?? BorderSide.none,
-          ),
-        ),
-        child: Padding(
-          padding: padding,
-          child: child,
-        ),
-      );
+    decoration: ShapeDecoration(
+      color: backgroundColor?.withAlphaPercent(0.2),
+      shape: ContinuousRectangleBorder(
+        borderRadius: borderRadius * ISpectSquircle.scale,
+        side: borderSide ?? BorderSide.none,
+      ),
+    ),
+    child: Padding(padding: padding, child: child),
+  );
 }

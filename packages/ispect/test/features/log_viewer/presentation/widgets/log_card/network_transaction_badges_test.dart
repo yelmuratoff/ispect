@@ -46,8 +46,11 @@ void main() {
     });
 
     testWidgets('uses the lighter dark palette on dark theme', (tester) async {
-      final color =
-          await pumpBadgeColor(tester, 'DELETE', brightness: Brightness.dark);
+      final color = await pumpBadgeColor(
+        tester,
+        'DELETE',
+        brightness: Brightness.dark,
+      );
       expect(color, JsonColors.methodColorFor('DELETE', Brightness.dark));
       expect(
         color,
@@ -62,23 +65,21 @@ void main() {
       );
     });
 
-    testWidgets('falls back to the provided color for unknown methods',
-        (tester) async {
+    testWidgets('falls back to the provided color for unknown methods', (
+      tester,
+    ) async {
       expect(await pumpBadgeColor(tester, 'HTTP'), fallback);
     });
   });
 
-  testWidgets('transaction action controls use visible Material ripples',
-      (tester) async {
+  testWidgets('transaction action controls use visible Material ripples', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       appShell(
         Row(
           children: [
-            DetailChip(
-              label: 'Request',
-              color: Colors.green,
-              onTap: () {},
-            ),
+            DetailChip(label: 'Request', color: Colors.green, onTap: () {}),
             SmallActionIcon(
               icon: Icons.share_rounded,
               color: Colors.green,
@@ -105,8 +106,9 @@ void main() {
     }
   });
 
-  testWidgets('detail chip confines its ripple to the visual surface',
-      (tester) async {
+  testWidgets('detail chip confines its ripple to the visual surface', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       appShell(
         Align(
@@ -135,8 +137,9 @@ void main() {
     final inkWell = tester.widget<InkWell>(inkWellFinder);
     final tapSize = tester.getSize(inkWellFinder);
     final surfaceSize = tester.getSize(surfaceFinder);
-    final clipBounds =
-        inkWell.customBorder!.getOuterPath(Offset.zero & tapSize).getBounds();
+    final clipBounds = inkWell.customBorder!
+        .getOuterPath(Offset.zero & tapSize)
+        .getBounds();
 
     expect(clipBounds.size, surfaceSize);
     expect(clipBounds.center, (Offset.zero & tapSize).center);

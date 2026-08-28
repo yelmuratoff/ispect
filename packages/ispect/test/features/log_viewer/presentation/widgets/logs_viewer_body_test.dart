@@ -31,64 +31,63 @@ void main() {
     },
   );
 
-  testWidgets(
-    'search navigation scrolls to matches in grouped HTTP logs',
-    (tester) async {
-      await tester.binding.setSurfaceSize(const Size(1400, 600));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(appShell(const _ViewerHarness()));
-      await tester.pumpAndSettle();
+  testWidgets('search navigation scrolls to matches in grouped HTTP logs', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1400, 600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(appShell(const _ViewerHarness()));
+    await tester.pumpAndSettle();
 
-      final logs = <ISpectLogData>[
-        _plainLog('needle alpha', id: 'MATCH-ALPHA'),
-        ..._httpTransactions(0, 40),
-        _plainLog('needle beta', id: 'MATCH-BETA'),
-        ..._httpTransactions(40, 80),
-      ];
-      final harness = tester.state<_ViewerHarnessState>(
-        find.byType(_ViewerHarness),
-      )..showLogs(logs);
-      await tester.pumpAndSettle();
+    final logs = <ISpectLogData>[
+      _plainLog('needle alpha', id: 'MATCH-ALPHA'),
+      ..._httpTransactions(0, 40),
+      _plainLog('needle beta', id: 'MATCH-BETA'),
+      ..._httpTransactions(40, 80),
+    ];
+    final harness = tester.state<_ViewerHarnessState>(
+      find.byType(_ViewerHarness),
+    )..showLogs(logs);
+    await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(SearchBar), 'needle');
-      await tester.pump(const Duration(milliseconds: 301));
-      await tester.pump(const Duration(milliseconds: 301));
-      await tester.pumpAndSettle();
-      expect(harness.logsViewController.searchMatchCount, 2);
-      expect(harness.logsViewController.focusedMatchPosition, 1);
-      harness.rebuildViewer();
-      await tester.pumpAndSettle();
+    await tester.enterText(find.byType(SearchBar), 'needle');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(harness.logsViewController.searchMatchCount, 2);
+    expect(harness.logsViewController.focusedMatchPosition, 1);
+    harness.rebuildViewer();
+    await tester.pumpAndSettle();
 
-      final nextMatchButton = find.descendant(
-        of: find.byType(SearchBar),
-        matching: find.byIcon(Icons.keyboard_arrow_down_rounded),
-      );
-      final previousMatchButton = find.descendant(
-        of: find.byType(SearchBar),
-        matching: find.byIcon(Icons.keyboard_arrow_up_rounded),
-      );
-      final nextIconButton = find.ancestor(
-        of: nextMatchButton,
-        matching: find.byType(IconButton),
-      );
-      expect(tester.widget<IconButton>(nextIconButton).onPressed, isNotNull);
+    final nextMatchButton = find.descendant(
+      of: find.byType(SearchBar),
+      matching: find.byIcon(Icons.keyboard_arrow_down_rounded),
+    );
+    final previousMatchButton = find.descendant(
+      of: find.byType(SearchBar),
+      matching: find.byIcon(Icons.keyboard_arrow_up_rounded),
+    );
+    final nextIconButton = find.ancestor(
+      of: nextMatchButton,
+      matching: find.byType(IconButton),
+    );
+    expect(tester.widget<IconButton>(nextIconButton).onPressed, isNotNull);
 
-      await tester.tap(nextIconButton);
-      await tester.pumpAndSettle();
+    await tester.tap(nextIconButton);
+    await tester.pumpAndSettle();
 
-      expect(harness.logsViewController.focusedMatchId, 'MATCH-ALPHA');
-      expect(harness.logsScrollController.offset, greaterThan(0));
-      expect(find.text('needle alpha'), findsOneWidget);
-      final alphaOffset = harness.logsScrollController.offset;
+    expect(harness.logsViewController.focusedMatchId, 'MATCH-ALPHA');
+    expect(harness.logsScrollController.offset, greaterThan(0));
+    expect(find.text('needle alpha'), findsOneWidget);
+    final alphaOffset = harness.logsScrollController.offset;
 
-      await tester.tap(previousMatchButton);
-      await tester.pumpAndSettle();
+    await tester.tap(previousMatchButton);
+    await tester.pumpAndSettle();
 
-      expect(harness.logsViewController.focusedMatchId, 'MATCH-BETA');
-      expect(harness.logsScrollController.offset, lessThan(alphaOffset));
-      expect(find.text('needle beta'), findsOneWidget);
-    },
-  );
+    expect(harness.logsViewController.focusedMatchId, 'MATCH-BETA');
+    expect(harness.logsScrollController.offset, lessThan(alphaOffset));
+    expect(find.text('needle beta'), findsOneWidget);
+  });
 
   testWidgets(
     'opening log details preserves the focused search match and scroll offset',
@@ -145,11 +144,11 @@ void main() {
 }
 
 ISpectLogData _plainLog(String message, {required String id}) => ISpectLogData(
-      message,
-      id: id,
-      key: ISpectLogType.info.key,
-      logLevel: LogLevel.info,
-    );
+  message,
+  id: id,
+  key: ISpectLogType.info.key,
+  logLevel: LogLevel.info,
+);
 
 Iterable<ISpectLogData> _httpTransactions(int start, int end) sync* {
   for (var index = start; index < end; index++) {
@@ -207,15 +206,15 @@ final class _ViewerHarnessState extends State<_ViewerHarness> {
 
   @override
   Widget build(BuildContext context) => ISpectThemeScope(
-        child: Builder(
-          builder: (context) => LogsViewerBody(
-            logsData: _logs,
-            controller: _logsViewController,
-            iSpectTheme: ISpect.read(context),
-            titleFiltersController: _titleFiltersController,
-            searchFocusNode: _searchFocusNode,
-            logsScrollController: _logsScrollController,
-          ),
-        ),
-      );
+    child: Builder(
+      builder: (context) => LogsViewerBody(
+        logsData: _logs,
+        controller: _logsViewController,
+        iSpectTheme: ISpect.read(context),
+        titleFiltersController: _titleFiltersController,
+        searchFocusNode: _searchFocusNode,
+        logsScrollController: _logsScrollController,
+      ),
+    ),
+  );
 }

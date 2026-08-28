@@ -32,8 +32,9 @@ void main() {
     (name: 'mobile', size: const Size(400, 800)),
     (name: 'desktop', size: const Size(1200, 800)),
   ]) {
-    testWidgets('${variant.name} grouped card shows a redacted query URL',
-        (tester) async {
+    testWidgets('${variant.name} grouped card shows a redacted query URL', (
+      tester,
+    ) async {
       await tester.binding.setSurfaceSize(variant.size);
       addTearDown(() => tester.binding.setSurfaceSize(null));
       final request = ISpectLogData(
@@ -61,10 +62,7 @@ void main() {
 
       await tester.pumpWidget(
         appShell(
-          NetworkTransactionCard(
-            transaction: transaction,
-            compactUrl: false,
-          ),
+          NetworkTransactionCard(transaction: transaction, compactUrl: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -79,44 +77,46 @@ void main() {
     });
 
     testWidgets(
-        '${variant.name} grouped card honours the relative time setting',
-        (tester) async {
-      await tester.binding.setSurfaceSize(variant.size);
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-      final transaction = NetworkTransaction(
-        requestId: 'request-1',
-        request: ISpectLogData(
-          '→ GET https://api.example.com/users',
-          key: ISpectLogType.httpRequest.key,
-          time: DateTime.now().subtract(const Duration(minutes: 12)),
-          additionalData: const {
-            TraceKeys.category: TraceCategoryIds.network,
-            TraceKeys.operation: 'GET',
-            TraceKeys.target: 'https://api.example.com/users',
-          },
-        ),
-      );
-
-      await tester.pumpWidget(
-        appShell(NetworkTransactionCard(transaction: transaction)),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('12 min ago'), findsNothing);
-
-      await tester.pumpWidget(
-        appShell(
-          NetworkTransactionCard(
-            transaction: transaction,
-            useRelativeTime: true,
+      '${variant.name} grouped card honours the relative time setting',
+      (tester) async {
+        await tester.binding.setSurfaceSize(variant.size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final transaction = NetworkTransaction(
+          requestId: 'request-1',
+          request: ISpectLogData(
+            '→ GET https://api.example.com/users',
+            key: ISpectLogType.httpRequest.key,
+            time: DateTime.now().subtract(const Duration(minutes: 12)),
+            additionalData: const {
+              TraceKeys.category: TraceCategoryIds.network,
+              TraceKeys.operation: 'GET',
+              TraceKeys.target: 'https://api.example.com/users',
+            },
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('12 min ago'), findsOneWidget);
-    });
+        );
 
-    testWidgets('${variant.name} grouped card does not re-redact its payload',
-        (tester) async {
+        await tester.pumpWidget(
+          appShell(NetworkTransactionCard(transaction: transaction)),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('12 min ago'), findsNothing);
+
+        await tester.pumpWidget(
+          appShell(
+            NetworkTransactionCard(
+              transaction: transaction,
+              useRelativeTime: true,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('12 min ago'), findsOneWidget);
+      },
+    );
+
+    testWidgets('${variant.name} grouped card does not re-redact its payload', (
+      tester,
+    ) async {
       await tester.binding.setSurfaceSize(variant.size);
       addTearDown(() => tester.binding.setSurfaceSize(null));
       final redactor = _CountingRedactionService();
@@ -132,12 +132,8 @@ void main() {
             TraceKeys.target: 'https://api.example.com/users',
             TraceKeys.meta: {
               NetworkJsonKeys.requestData: {
-                NetworkJsonKeys.queryParameters: {
-                  'token': defaultPlaceholder,
-                },
-                NetworkJsonKeys.headers: {
-                  'Authorization': defaultPlaceholder,
-                },
+                NetworkJsonKeys.queryParameters: {'token': defaultPlaceholder},
+                NetworkJsonKeys.headers: {'Authorization': defaultPlaceholder},
               },
             },
           },
@@ -146,10 +142,7 @@ void main() {
 
       await tester.pumpWidget(
         appShell(
-          NetworkTransactionCard(
-            transaction: transaction,
-            compactUrl: false,
-          ),
+          NetworkTransactionCard(transaction: transaction, compactUrl: false),
         ),
       );
       await tester.pumpAndSettle();
@@ -159,8 +152,9 @@ void main() {
       expect(redactor.structuredExportCalls, 0);
     });
 
-    testWidgets('${variant.name} grouped card uses a Material ripple on tap',
-        (tester) async {
+    testWidgets('${variant.name} grouped card uses a Material ripple on tap', (
+      tester,
+    ) async {
       await tester.binding.setSurfaceSize(variant.size);
       addTearDown(() => tester.binding.setSurfaceSize(null));
       var tapCount = 0;
@@ -188,10 +182,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final card = find.byType(NetworkTransactionCard);
-      final ripple = find.descendant(
-        of: card,
-        matching: find.byType(InkWell),
-      );
+      final ripple = find.descendant(of: card, matching: find.byType(InkWell));
       expect(ripple, findsOneWidget);
       expect(
         find.descendant(of: card, matching: find.byType(Material)),

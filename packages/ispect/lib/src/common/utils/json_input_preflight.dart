@@ -175,9 +175,7 @@ abstract final class JsonInputPreflight {
       );
     }
     if (snapshotter.issues.contains(_JsonSnapshotIssue.invalidKey)) {
-      throw const JsonInputLimitException(
-        'JSON objects must use string keys.',
-      );
+      throw const JsonInputLimitException('JSON objects must use string keys.');
     }
     if (snapshotter.issues.contains(_JsonSnapshotIssue.unprintable)) {
       throw const JsonInputLimitException(
@@ -200,23 +198,13 @@ abstract final class JsonInputPreflight {
     int encodedByteLimit = maxViewerEncodedBytes,
   }) {
     if (nestingDepthLimit < 0) {
-      throw RangeError.range(
-        nestingDepthLimit,
-        0,
-        null,
-        'nestingDepthLimit',
-      );
+      throw RangeError.range(nestingDepthLimit, 0, null, 'nestingDepthLimit');
     }
     if (nodeLimit < 1) {
       throw RangeError.range(nodeLimit, 1, null, 'nodeLimit');
     }
     if (encodedByteLimit < 2) {
-      throw RangeError.range(
-        encodedByteLimit,
-        2,
-        null,
-        'encodedByteLimit',
-      );
+      throw RangeError.range(encodedByteLimit, 2, null, 'encodedByteLimit');
     }
 
     return JsonInputSnapshot._(
@@ -259,25 +247,18 @@ final class JsonInputSnapshot {
   final Object? value;
 }
 
-enum _JsonSnapshotIssue {
-  bytes,
-  nodes,
-  depth,
-  cycle,
-  invalidKey,
-  unprintable,
-}
+enum _JsonSnapshotIssue { bytes, nodes, depth, cycle, invalidKey, unprintable }
 
 final class _JsonViewerSnapshotter {
   _JsonViewerSnapshotter({
     required int maxBytes,
     required this.maxDepth,
     required int maxNodes,
-  })  : _initialBytes = maxBytes,
-        _initialNodes = maxNodes,
-        _remainingBytes = maxBytes,
-        _remainingNodes = maxNodes,
-        _remainingTraversalSteps = maxNodes;
+  }) : _initialBytes = maxBytes,
+       _initialNodes = maxNodes,
+       _remainingBytes = maxBytes,
+       _remainingNodes = maxNodes,
+       _remainingTraversalSteps = maxNodes;
 
   static const int _maxKeyEncodedBytes = 4 * 1024;
   static const _noSnapshot = _NoJsonSnapshot();
@@ -359,10 +340,7 @@ final class _JsonViewerSnapshotter {
     String? lastKey;
     if (!_ancestors.add(source)) {
       issues.add(_JsonSnapshotIssue.cycle);
-      return _addMapDiagnostic(
-        result,
-        JsonInputPreflight.circularReference,
-      )
+      return _addMapDiagnostic(result, JsonInputPreflight.circularReference)
           ? Map<String, dynamic>.unmodifiable(result)
           : _noSnapshot;
     }
@@ -373,10 +351,7 @@ final class _JsonViewerSnapshotter {
         iterator = source.entries.iterator;
       } on Object {
         issues.add(_JsonSnapshotIssue.unprintable);
-        if (!_addMapDiagnostic(
-          result,
-          JsonInputPreflight.unprintableValue,
-        )) {
+        if (!_addMapDiagnostic(result, JsonInputPreflight.unprintableValue)) {
           return _noSnapshot;
         }
         return Map<String, dynamic>.unmodifiable(result);
@@ -384,10 +359,7 @@ final class _JsonViewerSnapshotter {
 
       while (true) {
         if (!_takeTraversalStep()) {
-          if (!_addMapDiagnostic(
-            result,
-            JsonInputPreflight.maxNodesReached,
-          )) {
+          if (!_addMapDiagnostic(result, JsonInputPreflight.maxNodesReached)) {
             return _noSnapshot;
           }
           break;
@@ -398,10 +370,7 @@ final class _JsonViewerSnapshotter {
           hasNext = iterator.moveNext();
         } on Object {
           issues.add(_JsonSnapshotIssue.unprintable);
-          if (!_addMapDiagnostic(
-            result,
-            JsonInputPreflight.unprintableValue,
-          )) {
+          if (!_addMapDiagnostic(result, JsonInputPreflight.unprintableValue)) {
             return _noSnapshot;
           }
           break;
@@ -413,20 +382,14 @@ final class _JsonViewerSnapshotter {
           current = iterator.current;
         } on Object {
           issues.add(_JsonSnapshotIssue.unprintable);
-          if (!_addMapDiagnostic(
-            result,
-            JsonInputPreflight.unprintableValue,
-          )) {
+          if (!_addMapDiagnostic(result, JsonInputPreflight.unprintableValue)) {
             return _noSnapshot;
           }
           break;
         }
         if (current is! MapEntry<dynamic, dynamic>) {
           issues.add(_JsonSnapshotIssue.unprintable);
-          if (!_addMapDiagnostic(
-            result,
-            JsonInputPreflight.unprintableValue,
-          )) {
+          if (!_addMapDiagnostic(result, JsonInputPreflight.unprintableValue)) {
             return _noSnapshot;
           }
           break;
@@ -439,10 +402,7 @@ final class _JsonViewerSnapshotter {
           rawValue = current.value;
         } on Object {
           issues.add(_JsonSnapshotIssue.unprintable);
-          if (!_addMapDiagnostic(
-            result,
-            JsonInputPreflight.unprintableValue,
-          )) {
+          if (!_addMapDiagnostic(result, JsonInputPreflight.unprintableValue)) {
             return _noSnapshot;
           }
           break;
@@ -450,10 +410,7 @@ final class _JsonViewerSnapshotter {
 
         if (rawKey is! String) {
           issues.add(_JsonSnapshotIssue.invalidKey);
-          if (!_addMapDiagnostic(
-            result,
-            JsonInputPreflight.invalidObjectKey,
-          )) {
+          if (!_addMapDiagnostic(result, JsonInputPreflight.invalidObjectKey)) {
             return _noSnapshot;
           }
           continue;
@@ -462,10 +419,7 @@ final class _JsonViewerSnapshotter {
         final checkpoint = _checkpoint();
         if (result.isNotEmpty && !_takeBytes(1)) {
           _restore(checkpoint);
-          if (!_addMapDiagnostic(
-            result,
-            JsonInputPreflight.truncatedValue,
-          )) {
+          if (!_addMapDiagnostic(result, JsonInputPreflight.truncatedValue)) {
             return _noSnapshot;
           }
           break;
@@ -476,10 +430,7 @@ final class _JsonViewerSnapshotter {
         );
         if (identical(copiedKey, _noSnapshot) || !_takeBytes(1)) {
           _restore(checkpoint);
-          if (!_addMapDiagnostic(
-            result,
-            JsonInputPreflight.truncatedValue,
-          )) {
+          if (!_addMapDiagnostic(result, JsonInputPreflight.truncatedValue)) {
             return _noSnapshot;
           }
           break;
@@ -502,10 +453,7 @@ final class _JsonViewerSnapshotter {
         }
         if (identical(copiedValue, _noSnapshot)) {
           _restore(checkpoint);
-          if (!_addMapDiagnostic(
-            result,
-            JsonInputPreflight.truncatedValue,
-          )) {
+          if (!_addMapDiagnostic(result, JsonInputPreflight.truncatedValue)) {
             return _noSnapshot;
           }
           break;
@@ -515,10 +463,7 @@ final class _JsonViewerSnapshotter {
         if (result.containsKey(key)) {
           _restore(checkpoint);
           issues.add(_JsonSnapshotIssue.invalidKey);
-          if (!_addMapDiagnostic(
-            result,
-            JsonInputPreflight.invalidObjectKey,
-          )) {
+          if (!_addMapDiagnostic(result, JsonInputPreflight.invalidObjectKey)) {
             return _noSnapshot;
           }
           continue;
@@ -547,10 +492,7 @@ final class _JsonViewerSnapshotter {
     final result = <dynamic>[];
     if (!_ancestors.add(source)) {
       issues.add(_JsonSnapshotIssue.cycle);
-      return _addListDiagnostic(
-        result,
-        JsonInputPreflight.circularReference,
-      )
+      return _addListDiagnostic(result, JsonInputPreflight.circularReference)
           ? List<dynamic>.unmodifiable(result)
           : _noSnapshot;
     }
@@ -561,10 +503,7 @@ final class _JsonViewerSnapshotter {
         iterator = source.iterator;
       } on Object {
         issues.add(_JsonSnapshotIssue.unprintable);
-        if (!_addListDiagnostic(
-          result,
-          JsonInputPreflight.unprintableValue,
-        )) {
+        if (!_addListDiagnostic(result, JsonInputPreflight.unprintableValue)) {
           return _noSnapshot;
         }
         return List<dynamic>.unmodifiable(result);
@@ -572,10 +511,7 @@ final class _JsonViewerSnapshotter {
 
       while (true) {
         if (!_takeTraversalStep()) {
-          if (!_addListDiagnostic(
-            result,
-            JsonInputPreflight.maxNodesReached,
-          )) {
+          if (!_addListDiagnostic(result, JsonInputPreflight.maxNodesReached)) {
             return _noSnapshot;
           }
           break;
@@ -613,10 +549,7 @@ final class _JsonViewerSnapshotter {
         final checkpoint = _checkpoint();
         if (result.isNotEmpty && !_takeBytes(1)) {
           _restore(checkpoint);
-          if (!_addListDiagnostic(
-            result,
-            JsonInputPreflight.truncatedValue,
-          )) {
+          if (!_addListDiagnostic(result, JsonInputPreflight.truncatedValue)) {
             return _noSnapshot;
           }
           break;
@@ -639,10 +572,7 @@ final class _JsonViewerSnapshotter {
         }
         if (identical(copied, _noSnapshot)) {
           _restore(checkpoint);
-          if (!_addListDiagnostic(
-            result,
-            JsonInputPreflight.truncatedValue,
-          )) {
+          if (!_addListDiagnostic(result, JsonInputPreflight.truncatedValue)) {
             return _noSnapshot;
           }
           break;
@@ -663,8 +593,8 @@ final class _JsonViewerSnapshotter {
   }) {
     final available =
         maxEncodedBytes == null || _remainingBytes < maxEncodedBytes
-            ? _remainingBytes
-            : maxEncodedBytes;
+        ? _remainingBytes
+        : maxEncodedBytes;
     if (available < 2) {
       issues.add(_JsonSnapshotIssue.bytes);
       return _noSnapshot;
@@ -766,10 +696,8 @@ final class _JsonViewerSnapshotter {
     return false;
   }
 
-  ({int bytes, int nodes}) _checkpoint() => (
-        bytes: _remainingBytes,
-        nodes: _remainingNodes,
-      );
+  ({int bytes, int nodes}) _checkpoint() =>
+      (bytes: _remainingBytes, nodes: _remainingNodes);
 
   void _restore(({int bytes, int nodes}) checkpoint) {
     _remainingBytes = checkpoint.bytes;

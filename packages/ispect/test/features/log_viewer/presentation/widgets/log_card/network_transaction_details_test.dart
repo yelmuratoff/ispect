@@ -9,46 +9,40 @@ ISpectLogData _request({
   String? contentType,
   Object? body,
   Map<String, Object?> headers = const {},
-}) =>
-    ISpectLogData(
-      'request',
-      additionalData: {
-        TraceKeys.meta: {
-          NetworkJsonKeys.requestData: {
-            if (contentType != null) NetworkJsonKeys.contentType: contentType,
-            if (body != null) NetworkJsonKeys.data: body,
-            if (headers.isNotEmpty) NetworkJsonKeys.headers: headers,
-          },
-        },
+}) => ISpectLogData(
+  'request',
+  additionalData: {
+    TraceKeys.meta: {
+      NetworkJsonKeys.requestData: {
+        if (contentType != null) NetworkJsonKeys.contentType: contentType,
+        if (body != null) NetworkJsonKeys.data: body,
+        if (headers.isNotEmpty) NetworkJsonKeys.headers: headers,
       },
-    );
+    },
+  },
+);
 
 ISpectLogData _response({
   int? contentLength,
   Object? body,
   Map<String, Object?> headers = const {},
-}) =>
-    ISpectLogData(
-      'response',
-      additionalData: {
-        TraceKeys.meta: {
-          NetworkJsonKeys.statusCode: 200,
-          NetworkJsonKeys.responseData: {
-            NetworkJsonKeys.statusCode: 200,
-            NetworkJsonKeys.statusMessage: 'OK',
-            if (contentLength != null)
-              NetworkJsonKeys.contentLength: contentLength,
-            if (body != null) NetworkJsonKeys.data: body,
-            if (headers.isNotEmpty) NetworkJsonKeys.headers: headers,
-          },
-        },
+}) => ISpectLogData(
+  'response',
+  additionalData: {
+    TraceKeys.meta: {
+      NetworkJsonKeys.statusCode: 200,
+      NetworkJsonKeys.responseData: {
+        NetworkJsonKeys.statusCode: 200,
+        NetworkJsonKeys.statusMessage: 'OK',
+        if (contentLength != null) NetworkJsonKeys.contentLength: contentLength,
+        if (body != null) NetworkJsonKeys.data: body,
+        if (headers.isNotEmpty) NetworkJsonKeys.headers: headers,
       },
-    );
+    },
+  },
+);
 
-ISpectLogData _error({
-  Object? body,
-  Map<String, Object?> headers = const {},
-}) =>
+ISpectLogData _error({Object? body, Map<String, Object?> headers = const {}}) =>
     ISpectLogData(
       'FAILED\n→ POST /users',
       key: ISpectLogType.httpError.key,
@@ -67,47 +61,43 @@ ISpectLogData _error({
 
 void main() {
   group('TransactionDetails', () {
-    testWidgets(
-      'Given a successful response with no summary, '
-      'When rendered, '
-      'Then neither the request nor the response row is shown',
-      (tester) async {
-        final tx = NetworkTransaction(
-          requestId: 'r',
-          request: _request(contentType: 'application/json'),
-          response: _response(),
-        );
+    testWidgets('Given a successful response with no summary, '
+        'When rendered, '
+        'Then neither the request nor the response row is shown', (
+      tester,
+    ) async {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(contentType: 'application/json'),
+        response: _response(),
+      );
 
-        await tester.pumpWidget(
-          appShell(TransactionDetails(tx: tx, color: Colors.blue)),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        appShell(TransactionDetails(tx: tx, color: Colors.blue)),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.arrow_upward_rounded), findsNothing);
-        expect(find.byIcon(Icons.arrow_downward_rounded), findsNothing);
-      },
-    );
+      expect(find.byIcon(Icons.arrow_upward_rounded), findsNothing);
+      expect(find.byIcon(Icons.arrow_downward_rounded), findsNothing);
+    });
 
-    testWidgets(
-      'Given a response that reports a size, '
-      'When rendered, '
-      'Then the request row joins the response row',
-      (tester) async {
-        final tx = NetworkTransaction(
-          requestId: 'r',
-          request: _request(contentType: 'application/json'),
-          response: _response(contentLength: 1024),
-        );
+    testWidgets('Given a response that reports a size, '
+        'When rendered, '
+        'Then the request row joins the response row', (tester) async {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(contentType: 'application/json'),
+        response: _response(contentLength: 1024),
+      );
 
-        await tester.pumpWidget(
-          appShell(TransactionDetails(tx: tx, color: Colors.blue)),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        appShell(TransactionDetails(tx: tx, color: Colors.blue)),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.arrow_downward_rounded), findsOneWidget);
-        expect(find.byIcon(Icons.arrow_upward_rounded), findsOneWidget);
-      },
-    );
+      expect(find.byIcon(Icons.arrow_downward_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_upward_rounded), findsOneWidget);
+    });
 
     testWidgets(
       'shows body previews and keeps headers collapsed until requested',
@@ -157,8 +147,9 @@ void main() {
       },
     );
 
-    testWidgets('marks a response body preview only when it overflows',
-        (tester) async {
+    testWidgets('marks a response body preview only when it overflows', (
+      tester,
+    ) async {
       final tx = NetworkTransaction(
         requestId: 'r',
         request: _request(),
@@ -180,9 +171,7 @@ void main() {
         appShell(
           SingleChildScrollView(
             child: MediaQuery(
-              data: const MediaQueryData(
-                textScaler: TextScaler.linear(2),
-              ),
+              data: const MediaQueryData(textScaler: TextScaler.linear(2)),
               child: TransactionDetails(tx: tx, color: Colors.green),
             ),
           ),
@@ -195,26 +184,27 @@ void main() {
     });
 
     testWidgets(
-        'keeps an eighteen-line response body visible without truncation',
-        (tester) async {
-      final tx = NetworkTransaction(
-        requestId: 'r',
-        request: _request(),
-        response: _response(
-          body: {
-            for (var index = 0; index < 16; index++) 'item$index': index,
-          },
-        ),
-      );
+      'keeps an eighteen-line response body visible without truncation',
+      (tester) async {
+        final tx = NetworkTransaction(
+          requestId: 'r',
+          request: _request(),
+          response: _response(
+            body: {
+              for (var index = 0; index < 16; index++) 'item$index': index,
+            },
+          ),
+        );
 
-      await tester.pumpWidget(
-        appShell(TransactionDetails(tx: tx, color: Colors.green)),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          appShell(TransactionDetails(tx: tx, color: Colors.green)),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Preview truncated'), findsNothing);
-      expect(find.byType(ShaderMask), findsNothing);
-    });
+        expect(find.text('Preview truncated'), findsNothing);
+        expect(find.byType(ShaderMask), findsNothing);
+      },
+    );
 
     testWidgets('shows an error response body preview', (tester) async {
       final tx = NetworkTransaction(

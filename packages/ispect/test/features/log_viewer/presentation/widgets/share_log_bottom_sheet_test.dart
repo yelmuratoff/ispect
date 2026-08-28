@@ -15,15 +15,11 @@ final class _ThrowingRedactionStrategy implements RedactionStrategy {
     Object? node, {
     required RedactionContext context,
     String? keyName,
-  }) =>
-      throw StateError('synthetic redaction failure');
+  }) => throw StateError('synthetic redaction failure');
 }
 
 final class _CountingExtraMap extends MapBase<String, Object?> {
-  _CountingExtraMap({
-    required this.entryCount,
-    required this.value,
-  });
+  _CountingExtraMap({required this.entryCount, required this.value});
 
   final int entryCount;
   final String value;
@@ -227,9 +223,7 @@ void main() {
     test('preserves the root log key but redacts nested secret values', () {
       final sensitive = <String, dynamic>{
         ...data,
-        'additional-data': {
-          'api_key': 'NESTED_KEY_SECRET',
-        },
+        'additional-data': {'api_key': 'NESTED_KEY_SECRET'},
       };
 
       final content = ISpectShareLogBottomSheet.buildContent(
@@ -316,10 +310,7 @@ void main() {
       final additional = decoded['additional-data'] as Map<String, dynamic>;
 
       for (final key in const ['bytes', 'words', 'buffer']) {
-        expect(
-          additional[key],
-          utf8.encode('[binary 64 bytes]'),
-        );
+        expect(additional[key], utf8.encode('[binary 64 bytes]'));
       }
       expect(content, isNot(contains('60000')));
       expect(content, isNot(contains('211, 211, 211')));
@@ -350,9 +341,7 @@ void main() {
     });
 
     test('fails closed when export redaction cannot return a safe map', () {
-      final sensitive = <String, dynamic>{
-        'password': 'SHARE_FAIL_OPEN_SECRET',
-      };
+      final sensitive = <String, dynamic>{'password': 'SHARE_FAIL_OPEN_SECRET'};
 
       final content = ISpectShareLogBottomSheet.buildContent(
         data: sensitive,
@@ -365,10 +354,7 @@ void main() {
       );
 
       expect(content, isNot(contains('SHARE_FAIL_OPEN_SECRET')));
-      expect(
-        jsonDecode(content),
-        {'diagnostic': defaultPlaceholder},
-      );
+      expect(jsonDecode(content), {'diagnostic': defaultPlaceholder});
     });
 
     test('neutralizes formulas and control-prefixed formulas in CSV', () {
@@ -387,62 +373,55 @@ void main() {
       expect(content, isNot(contains('"\r=1+1')));
     });
 
-    test(
-      'bounds many-leaf metadata and preserves every format framing',
-      () {
-        final extra = _CountingExtraMap(
-          entryCount: 100000,
-          value: List<String>.filled(256, '\u0000').join(),
-        );
-        final contents = {
-          for (final format in ExportFormat.values)
-            format: ISpectShareLogBottomSheet.buildContent(
-              data: data,
-              truncatedData: data,
-              format: format,
-              action: ExportAction.share,
-              metadata: ISpectMetadata(extra: extra),
-            ),
-        };
-
-        for (final content in contents.values) {
-          _expectWithinSingleRecordLimit(content);
-        }
-
-        expect(
-          jsonDecode(contents[ExportFormat.json]!),
-          isA<Map<String, dynamic>>(),
-        );
-        final csvRows = _parseCsv(contents[ExportFormat.csv]!);
-        expect(csvRows, isNotEmpty);
-        expect(csvRows.first, ['Key', 'Value']);
-        expect(csvRows.every((row) => row.length == 2), isTrue);
-        _expectClosedMarkdownFence(contents[ExportFormat.markdown]!);
-        expect(
-          extra.visitedEntries,
-          lessThanOrEqualTo(
-            JsonValueNormalizer.defaultMaxCollectionItems *
-                ExportFormat.values.length,
+    test('bounds many-leaf metadata and preserves every format framing', () {
+      final extra = _CountingExtraMap(
+        entryCount: 100000,
+        value: List<String>.filled(256, '\u0000').join(),
+      );
+      final contents = {
+        for (final format in ExportFormat.values)
+          format: ISpectShareLogBottomSheet.buildContent(
+            data: data,
+            truncatedData: data,
+            format: format,
+            action: ExportAction.share,
+            metadata: ISpectMetadata(extra: extra),
           ),
-        );
-      },
-    );
+      };
+
+      for (final content in contents.values) {
+        _expectWithinSingleRecordLimit(content);
+      }
+
+      expect(
+        jsonDecode(contents[ExportFormat.json]!),
+        isA<Map<String, dynamic>>(),
+      );
+      final csvRows = _parseCsv(contents[ExportFormat.csv]!);
+      expect(csvRows, isNotEmpty);
+      expect(csvRows.first, ['Key', 'Value']);
+      expect(csvRows.every((row) => row.length == 2), isTrue);
+      _expectClosedMarkdownFence(contents[ExportFormat.markdown]!);
+      expect(
+        extra.visitedEntries,
+        lessThanOrEqualTo(
+          JsonValueNormalizer.defaultMaxCollectionItems *
+              ExportFormat.values.length,
+        ),
+      );
+    });
 
     test('replaces oversized metadata before active redaction', () {
       const secret = 'OVERSIZED_METADATA_SECRET';
-      final oversized = '$secret${''.padRight(
-        LogExportOutput.maxPreparedValueBytes * 2,
-        'x',
-      )}';
+      final oversized =
+          '$secret${''.padRight(LogExportOutput.maxPreparedValueBytes * 2, 'x')}';
 
       final content = ISpectShareLogBottomSheet.buildContent(
         data: data,
         truncatedData: data,
         format: ExportFormat.json,
         action: ExportAction.share,
-        metadata: ISpectMetadata(
-          extra: {'diagnostic-note': oversized},
-        ),
+        metadata: ISpectMetadata(extra: {'diagnostic-note': oversized}),
       );
 
       expect(jsonDecode(content), isA<Map<String, dynamic>>());
@@ -453,19 +432,15 @@ void main() {
 
     test('keeps explicit opt-out content visible but bounded', () {
       const visiblePrefix = 'OPT_OUT_METADATA_PREFIX';
-      final oversized = '$visiblePrefix${''.padRight(
-        LogExportOutput.maxRecordBytes * 2,
-        'x',
-      )}';
+      final oversized =
+          '$visiblePrefix${''.padRight(LogExportOutput.maxRecordBytes * 2, 'x')}';
 
       final content = ISpectShareLogBottomSheet.buildContent(
         data: data,
         truncatedData: data,
         format: ExportFormat.json,
         action: ExportAction.share,
-        metadata: ISpectMetadata(
-          extra: {'diagnostic-note': oversized},
-        ),
+        metadata: ISpectMetadata(extra: {'diagnostic-note': oversized}),
         enableRedaction: false,
       );
 
@@ -495,12 +470,8 @@ void main() {
 
     test('uses a Markdown fence that hostile content cannot close', () {
       final content = ISpectShareLogBottomSheet.buildContent(
-        data: const {
-          'message': '`````` injected fence',
-        },
-        truncatedData: const {
-          'message': '`````` injected fence',
-        },
+        data: const {'message': '`````` injected fence'},
+        truncatedData: const {'message': '`````` injected fence'},
         format: ExportFormat.markdown,
         action: ExportAction.share,
         enableRedaction: false,

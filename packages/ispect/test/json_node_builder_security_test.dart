@@ -42,21 +42,14 @@ void main() {
   });
 
   test('stops building at the node budget with a safe marker', () {
-    final wide = List<Object?>.filled(
-      JsonNodeBuilder.maxBuildNodes + 1,
-      null,
-    );
+    final wide = List<Object?>.filled(JsonNodeBuilder.maxBuildNodes + 1, null);
 
     final nodes = JsonNodeBuilder.buildViewModelNodes(wide);
     final flattened = allNodes(nodes.values).toList();
 
     expect(
       flattened,
-      hasLength(
-        lessThanOrEqualTo(
-          JsonNodeBuilder.maxBuildNodes,
-        ),
-      ),
+      hasLength(lessThanOrEqualTo(JsonNodeBuilder.maxBuildNodes)),
     );
     expect(
       flattened.map((node) => node.value),
@@ -79,9 +72,9 @@ void main() {
   test('does not retain or stringify hostile leaves', () {
     final hostile = _HostileLeaf();
 
-    final nodes = JsonNodeBuilder.buildViewModelNodes(
-      <String, Object?>{'hostile': hostile},
-    );
+    final nodes = JsonNodeBuilder.buildViewModelNodes(<String, Object?>{
+      'hostile': hostile,
+    });
     final node = nodes['hostile']!;
 
     expect(node.value, isA<String>());

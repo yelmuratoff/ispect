@@ -75,10 +75,7 @@ class ISpectSearchClearButton extends StatelessWidget {
       padding: EdgeInsets.zero,
       onPressed: onPressed,
       tooltip: context.ispectL10n.clearSearch,
-      icon: Icon(
-        Icons.close_rounded,
-        color: onSurface.withValues(alpha: 0.5),
-      ),
+      icon: Icon(Icons.close_rounded, color: onSurface.withValues(alpha: 0.5)),
     );
   }
 }
@@ -153,8 +150,9 @@ class _SearchMatchNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = context.ispectPrimaryColor;
-    final mutedColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.3);
+    final mutedColor = context.appTheme.colorScheme.onSurface.withValues(
+      alpha: 0.3,
+    );
     final hasMatches = totalMatches > 0;
 
     return Row(
@@ -201,13 +199,13 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => IconButton(
-        iconSize: 16,
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-        onPressed: onPressed,
-        tooltip: tooltip,
-        icon: Icon(icon, color: color),
-      );
+    iconSize: 16,
+    padding: EdgeInsets.zero,
+    constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+    onPressed: onPressed,
+    tooltip: tooltip,
+    icon: Icon(icon, color: color),
+  );
 }
 
 // ---------------------------------------------------------------------------

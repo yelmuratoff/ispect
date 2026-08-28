@@ -12,27 +12,27 @@ extension ISpectRouteExtension on Route<dynamic>? {
   /// - Otherwise, returns a label based on route type (`PageRoute`, `ModalRoute`, `PopupRoute`).
   /// - Returns a generic label for other route implementations.
   String get routeName => switch (this) {
-        null => 'Unknown',
-        final Route<dynamic> route => switch ((
-            route.settings.name?.trim(),
-            route
-          )) {
-            (final String name, _) when name.isNotEmpty => name,
-            (_, PageRoute()) => 'Unnamed Page',
-            (_, PopupRoute()) => 'Unnamed Popup',
-            (_, ModalRoute()) => 'Unnamed Modal',
-            _ => 'Unnamed Route',
-          },
-      };
+    null => 'Unknown',
+    final Route<dynamic> route => switch ((
+      route.settings.name?.trim(),
+      route,
+    )) {
+      (final String name, _) when name.isNotEmpty => name,
+      (_, PageRoute()) => 'Unnamed Page',
+      (_, PopupRoute()) => 'Unnamed Popup',
+      (_, ModalRoute()) => 'Unnamed Modal',
+      _ => 'Unnamed Route',
+    },
+  };
 
   /// Returns a bounded route family or 'Null' if the route is null.
   String get routeType => switch (this) {
-        null => 'Null',
-        PageRoute() => 'Page',
-        PopupRoute() => 'Popup',
-        ModalRoute() => 'Modal',
-        _ => 'Other',
-      };
+    null => 'Null',
+    PageRoute() => 'Page',
+    PopupRoute() => 'Popup',
+    ModalRoute() => 'Modal',
+    _ => 'Other',
+  };
 }
 
 extension ISpectTransitionListExtension on List<RouteTransition> {
@@ -53,15 +53,10 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
     return _fullTransitionsText();
   }
 
-  String transitionsText({
-    bool isTruncated = false,
-  }) =>
+  String transitionsText({bool isTruncated = false}) =>
       transitionsDescription(isTruncated: isTruncated);
 
-  String transitionsToId(
-    String id, {
-    bool isTruncated = true,
-  }) =>
+  String transitionsToId(String id, {bool isTruncated = true}) =>
       transitionsDescription(isTruncated: isTruncated, id: id);
 
   String _fullTransitionsText() {
@@ -70,15 +65,9 @@ extension ISpectTransitionListExtension on List<RouteTransition> {
     for (var i = 0; i < length; i++) {
       final transition = this[i];
       buffer
-        ..writeln(
-          _transitionSuffix(i, i == lastIndex),
-        )
-        ..writeln(
-          _routeTimestampFormatter.format(transition.timestamp),
-        )
-        ..writeln(
-          '${transition.transitionText} (${transition.type.title})',
-        );
+        ..writeln(_transitionSuffix(i, i == lastIndex))
+        ..writeln(_routeTimestampFormatter.format(transition.timestamp))
+        ..writeln('${transition.transitionText} (${transition.type.title})');
       if (transition.arguments != null) {
         buffer.writeln('Arguments: ${transition.prettyArguments}');
       }

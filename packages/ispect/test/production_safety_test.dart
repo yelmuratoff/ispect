@@ -73,9 +73,7 @@ void main() {
       final baseLogger = _TrackingBaseLogger();
       final directLogger = ISpectFlutter.init(
         logger: baseLogger,
-        options: ISpectLoggerOptions(
-          useConsoleLogs: false,
-        ),
+        options: ISpectLoggerOptions(useConsoleLogs: false),
         fileHistory: const FileLogHistoryOptions(),
       );
       addTearDown(directLogger.dispose);
@@ -102,24 +100,25 @@ void main() {
       ISpect.logger.info('synthetic builder diagnostic');
       ISpect.registerSender(_ProductionSafetySender());
       var routeCallbackCount = 0;
-      final routeObserver = ISpectNavigatorObserver(
-        isLogGestures: true,
-        onPush: (_, __) => routeCallbackCount++,
-        onReplace: ({newRoute, oldRoute}) => routeCallbackCount++,
-        onPop: (_, __) => routeCallbackCount++,
-        onRemove: (_, __) => routeCallbackCount++,
-        onStartUserGesture: (_, __) => routeCallbackCount++,
-        onStopUserGesture: () => routeCallbackCount++,
-      )..addTransition(
-          RouteTransition(
-            id: 'synthetic-transition',
-            from: null,
-            to: null,
-            type: TransitionType.push,
-            timestamp: DateTime(2026),
-            arguments: const {'token': 'synthetic-route-secret'},
-          ),
-        );
+      final routeObserver =
+          ISpectNavigatorObserver(
+            isLogGestures: true,
+            onPush: (_, __) => routeCallbackCount++,
+            onReplace: ({newRoute, oldRoute}) => routeCallbackCount++,
+            onPop: (_, __) => routeCallbackCount++,
+            onRemove: (_, __) => routeCallbackCount++,
+            onStartUserGesture: (_, __) => routeCallbackCount++,
+            onStopUserGesture: () => routeCallbackCount++,
+          )..addTransition(
+            RouteTransition(
+              id: 'synthetic-transition',
+              from: null,
+              to: null,
+              type: TransitionType.push,
+              timestamp: DateTime(2026),
+              arguments: const {'token': 'synthetic-route-secret'},
+            ),
+          );
       final route = MaterialPageRoute<void>(
         settings: const RouteSettings(
           name: '/production-safety',
@@ -158,8 +157,9 @@ void main() {
   test(
     'disabled initialization creates no native share-cleanup state',
     () async {
-      final cache =
-          await Directory.systemTemp.createTemp('ispect_disabled_cleanup_');
+      final cache = await Directory.systemTemp.createTemp(
+        'ispect_disabled_cleanup_',
+      );
       addTearDown(() async {
         await ISpect.dispose();
         if (await cache.exists()) await cache.delete(recursive: true);
@@ -168,9 +168,9 @@ void main() {
       const channel = MethodChannel('plugins.flutter.io/path_provider');
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (_) async {
-        pathProviderCalls++;
-        return cache.path;
-      });
+            pathProviderCalls++;
+            return cache.path;
+          });
       addTearDown(() {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(channel, null);

@@ -16,23 +16,20 @@ enum TransitionType {
   stopUserGesture;
 
   String get title => switch (this) {
-        TransitionType.push => 'Push',
-        TransitionType.pop => 'Pop',
-        TransitionType.replace => 'Replace',
-        TransitionType.remove => 'Remove',
-        TransitionType.startUserGesture => 'Start User Gesture',
-        TransitionType.stopUserGesture => 'Stop User Gesture',
-      };
+    TransitionType.push => 'Push',
+    TransitionType.pop => 'Pop',
+    TransitionType.replace => 'Replace',
+    TransitionType.remove => 'Remove',
+    TransitionType.startUserGesture => 'Start User Gesture',
+    TransitionType.stopUserGesture => 'Stop User Gesture',
+  };
 }
 
 /// Lightweight metadata extracted from a [Route] to avoid retaining
 /// the entire Route object (and its associated widget/render tree).
 @immutable
 class RouteMetadata {
-  const RouteMetadata({
-    required this.name,
-    required this.routeType,
-  });
+  const RouteMetadata({required this.name, required this.routeType});
 
   /// The resolved display name (from settings or fallback).
   final String name;
@@ -91,17 +88,18 @@ class RouteTransition {
       final bool value => value.toString(),
       final num value => value.toString(),
       final Map<String, Object?> map => JsonTruncator.pretty(
-          map,
-          maxDepth: limits.maxTraversalDepth,
-          maxIterableSize: limits.maxCollectionItems,
-          maxStringLength: limits.maxUiDiagnosticBytes,
-        ),
+        map,
+        maxDepth: limits.maxTraversalDepth,
+        maxIterableSize: limits.maxCollectionItems,
+        maxStringLength: limits.maxUiDiagnosticBytes,
+      ),
       _ => jsonEncode(snapshot),
     };
   }
 
   @override
-  String toString() => 'RouteTransition('
+  String toString() =>
+      'RouteTransition('
       'id: $id, '
       'from: $from, '
       'to: $to, '
@@ -131,13 +129,13 @@ class RouteTransition {
 
   @override
   int get hashCode => Object.hash(
-        id,
-        from,
-        to,
-        type,
-        timestamp,
-        _equality.hash(_equalityArgumentsSnapshot(arguments)),
-      );
+    id,
+    from,
+    to,
+    type,
+    timestamp,
+    _equality.hash(_equalityArgumentsSnapshot(arguments)),
+  );
 
   RouteTransition copyWith({
     String? id,
@@ -146,15 +144,14 @@ class RouteTransition {
     TransitionType? type,
     DateTime? timestamp,
     Object? arguments,
-  }) =>
-      RouteTransition(
-        id: id ?? this.id,
-        from: from ?? this.from,
-        to: to ?? this.to,
-        type: type ?? this.type,
-        timestamp: timestamp ?? this.timestamp,
-        arguments: arguments ?? this.arguments,
-      );
+  }) => RouteTransition(
+    id: id ?? this.id,
+    from: from ?? this.from,
+    to: to ?? this.to,
+    type: type ?? this.type,
+    timestamp: timestamp ?? this.timestamp,
+    arguments: arguments ?? this.arguments,
+  );
 }
 
 DiagnosticResourceLimits _routeResourceLimits() =>
@@ -162,16 +159,12 @@ DiagnosticResourceLimits _routeResourceLimits() =>
     DiagnosticResourceLimits.balanced;
 
 Object? _equalityArgumentsSnapshot(Object? arguments) =>
-    _safeRouteArgumentsSnapshot(
-      arguments,
-      DiagnosticResourceLimits.balanced,
-    );
+    _safeRouteArgumentsSnapshot(arguments, DiagnosticResourceLimits.balanced);
 
 Object? _safeRouteArgumentsSnapshot(
   Object? arguments, [
   DiagnosticResourceLimits? resourceLimits,
-]) =>
-    LogExportOutput.boundJsonValue(
-      arguments,
-      resourceLimits: resourceLimits ?? _routeResourceLimits(),
-    );
+]) => LogExportOutput.boundJsonValue(
+  arguments,
+  resourceLimits: resourceLimits ?? _routeResourceLimits(),
+);

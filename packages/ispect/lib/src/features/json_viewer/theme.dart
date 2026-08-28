@@ -16,27 +16,33 @@ class JsonExplorerTheme {
     this.highlightColor,
     this.indentationPadding = 8.0,
     this.propertyIndentationPaddingFactor = 2,
-  })  : rootKeyTextStyle = rootKeyTextStyle ??
-            (propertyKeyTextStyle ??
-                JsonExplorerTheme.defaultTheme.rootKeyTextStyle),
-        propertyKeyTextStyle = propertyKeyTextStyle ??
-            JsonExplorerTheme.defaultTheme.propertyKeyTextStyle,
-        keySearchHighlightTextStyle = keySearchHighlightTextStyle ??
-            JsonExplorerTheme.defaultTheme.keySearchHighlightTextStyle,
-        valueTextStyle =
-            valueTextStyle ?? JsonExplorerTheme.defaultTheme.valueTextStyle,
-        valueSearchHighlightTextStyle = valueSearchHighlightTextStyle ??
-            JsonExplorerTheme.defaultTheme.valueSearchHighlightTextStyle,
-        focusedKeySearchNodeHighlightTextStyle =
-            focusedKeySearchHighlightTextStyle ??
-                (keySearchHighlightTextStyle ??
-                    JsonExplorerTheme
-                        .defaultTheme.focusedKeySearchNodeHighlightTextStyle),
-        focusedValueSearchHighlightTextStyle =
-            focusedValueSearchHighlightTextStyle ??
-                (valueSearchHighlightTextStyle ??
-                    JsonExplorerTheme
-                        .defaultTheme.focusedValueSearchHighlightTextStyle);
+  }) : rootKeyTextStyle =
+           rootKeyTextStyle ??
+           (propertyKeyTextStyle ??
+               JsonExplorerTheme.defaultTheme.rootKeyTextStyle),
+       propertyKeyTextStyle =
+           propertyKeyTextStyle ??
+           JsonExplorerTheme.defaultTheme.propertyKeyTextStyle,
+       keySearchHighlightTextStyle =
+           keySearchHighlightTextStyle ??
+           JsonExplorerTheme.defaultTheme.keySearchHighlightTextStyle,
+       valueTextStyle =
+           valueTextStyle ?? JsonExplorerTheme.defaultTheme.valueTextStyle,
+       valueSearchHighlightTextStyle =
+           valueSearchHighlightTextStyle ??
+           JsonExplorerTheme.defaultTheme.valueSearchHighlightTextStyle,
+       focusedKeySearchNodeHighlightTextStyle =
+           focusedKeySearchHighlightTextStyle ??
+           (keySearchHighlightTextStyle ??
+               JsonExplorerTheme
+                   .defaultTheme
+                   .focusedKeySearchNodeHighlightTextStyle),
+       focusedValueSearchHighlightTextStyle =
+           focusedValueSearchHighlightTextStyle ??
+           (valueSearchHighlightTextStyle ??
+               JsonExplorerTheme
+                   .defaultTheme
+                   .focusedValueSearchHighlightTextStyle);
 
   const JsonExplorerTheme._({
     required this.rootKeyTextStyle,
@@ -107,10 +113,7 @@ class JsonExplorerTheme {
       color: Colors.black54,
       fontWeight: FontWeight.bold,
     ),
-    valueTextStyle: TextStyle(
-      fontSize: 14,
-      color: Colors.redAccent,
-    ),
+    valueTextStyle: TextStyle(fontSize: 14, color: Colors.redAccent),
     keySearchHighlightTextStyle: TextStyle(
       fontSize: 14,
       color: Colors.black,
@@ -152,8 +155,9 @@ class JsonExplorerTheme {
     const highlightFg = Colors.black87;
 
     // Focused match: more saturated, bolder — stands out from secondary
-    final focusedBg =
-        isDark ? const Color.fromARGB(240, 255, 160, 0) : Colors.yellow;
+    final focusedBg = isDark
+        ? const Color.fromARGB(240, 255, 160, 0)
+        : Colors.yellow;
     const focusedFg = Colors.black;
 
     final keyColor = context.ispectPrimaryColor;
@@ -163,10 +167,7 @@ class JsonExplorerTheme {
         color: keyColor,
         fontWeight: FontWeight.bold,
       ),
-      rootKeyTextStyle: TextStyle(
-        color: keyColor,
-        fontWeight: FontWeight.bold,
-      ),
+      rootKeyTextStyle: TextStyle(color: keyColor, fontWeight: FontWeight.bold),
       valueSearchHighlightTextStyle: TextStyle(
         color: highlightFg,
         backgroundColor: highlightBg,
@@ -203,27 +204,27 @@ class JsonExplorerTheme {
     Color? highlightColor,
     double? indentationPadding,
     double? propertyIndentationPaddingFactor,
-  }) =>
-      JsonExplorerTheme(
-        rootKeyTextStyle: rootKeyTextStyle ?? this.rootKeyTextStyle,
-        propertyKeyTextStyle: propertyKeyTextStyle ?? this.propertyKeyTextStyle,
-        keySearchHighlightTextStyle:
-            keySearchHighlightTextStyle ?? this.keySearchHighlightTextStyle,
-        valueTextStyle: valueTextStyle ?? this.valueTextStyle,
-        valueSearchHighlightTextStyle:
-            valueSearchHighlightTextStyle ?? this.valueSearchHighlightTextStyle,
-        indentationLineColor: indentationLineColor ?? this.indentationLineColor,
-        highlightColor: highlightColor ?? this.highlightColor,
-        indentationPadding: indentationPadding ?? this.indentationPadding,
-        propertyIndentationPaddingFactor: propertyIndentationPaddingFactor ??
-            this.propertyIndentationPaddingFactor,
-        focusedKeySearchHighlightTextStyle:
-            focusedKeySearchNodeHighlightTextStyle ??
-                this.focusedKeySearchNodeHighlightTextStyle,
-        focusedValueSearchHighlightTextStyle:
-            focusedValueSearchHighlightTextStyle ??
-                this.focusedValueSearchHighlightTextStyle,
-      );
+  }) => JsonExplorerTheme(
+    rootKeyTextStyle: rootKeyTextStyle ?? this.rootKeyTextStyle,
+    propertyKeyTextStyle: propertyKeyTextStyle ?? this.propertyKeyTextStyle,
+    keySearchHighlightTextStyle:
+        keySearchHighlightTextStyle ?? this.keySearchHighlightTextStyle,
+    valueTextStyle: valueTextStyle ?? this.valueTextStyle,
+    valueSearchHighlightTextStyle:
+        valueSearchHighlightTextStyle ?? this.valueSearchHighlightTextStyle,
+    indentationLineColor: indentationLineColor ?? this.indentationLineColor,
+    highlightColor: highlightColor ?? this.highlightColor,
+    indentationPadding: indentationPadding ?? this.indentationPadding,
+    propertyIndentationPaddingFactor:
+        propertyIndentationPaddingFactor ??
+        this.propertyIndentationPaddingFactor,
+    focusedKeySearchHighlightTextStyle:
+        focusedKeySearchNodeHighlightTextStyle ??
+        this.focusedKeySearchNodeHighlightTextStyle,
+    focusedValueSearchHighlightTextStyle:
+        focusedValueSearchHighlightTextStyle ??
+        this.focusedValueSearchHighlightTextStyle,
+  );
 
   @override
   bool operator ==(Object other) {
@@ -249,16 +250,16 @@ class JsonExplorerTheme {
 
   @override
   int get hashCode => Object.hash(
-        rootKeyTextStyle,
-        propertyKeyTextStyle,
-        valueTextStyle,
-        indentationLineColor,
-        highlightColor,
-        indentationPadding,
-        propertyIndentationPaddingFactor,
-        keySearchHighlightTextStyle,
-        valueSearchHighlightTextStyle,
-        focusedKeySearchNodeHighlightTextStyle,
-        focusedValueSearchHighlightTextStyle,
-      );
+    rootKeyTextStyle,
+    propertyKeyTextStyle,
+    valueTextStyle,
+    indentationLineColor,
+    highlightColor,
+    indentationPadding,
+    propertyIndentationPaddingFactor,
+    keySearchHighlightTextStyle,
+    valueSearchHighlightTextStyle,
+    focusedKeySearchNodeHighlightTextStyle,
+    focusedValueSearchHighlightTextStyle,
+  );
 }

@@ -81,8 +81,9 @@ void main() {
 
   Set<String?> capturedKeys() => loggerValue.history.map((e) => e.key).toSet();
 
-  testWidgets('a disabled log type survives closing and reopening the sheet',
-      (tester) async {
+  testWidgets('a disabled log type survives closing and reopening the sheet', (
+    tester,
+  ) async {
     await pumpShell(tester);
     await openSheet(tester);
     await tapInSheet(tester, 'Riverpod Add');
@@ -103,8 +104,9 @@ void main() {
     expect(capturedKeys(), isNot(contains('riverpod-add')));
   });
 
-  testWidgets('re-enabling every type lets the disabled logs through again',
-      (tester) async {
+  testWidgets('re-enabling every type lets the disabled logs through again', (
+    tester,
+  ) async {
     await pumpShell(tester);
     await openSheet(tester);
     await tapInSheet(tester, 'Riverpod Add');
@@ -116,8 +118,9 @@ void main() {
     expect(capturedKeys(), contains('riverpod-add'));
   });
 
-  testWidgets('deselecting all types blocks every displayed log type',
-      (tester) async {
+  testWidgets('deselecting all types blocks every displayed log type', (
+    tester,
+  ) async {
     await pumpShell(tester);
     await openSheet(tester);
     await tapInSheet(tester, 'Deselect All');

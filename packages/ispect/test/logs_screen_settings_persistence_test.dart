@@ -70,8 +70,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('a log type disabled through the real screen stays disabled',
-      (tester) async {
+  testWidgets('a log type disabled through the real screen stays disabled', (
+    tester,
+  ) async {
     await pumpLogsScreen(tester);
     await openSettings(tester);
     await tapInSheet(tester, 'Riverpod Add');
@@ -92,14 +93,12 @@ void main() {
     await closeSettings(tester);
 
     logger.logData(ISpectLogData('added', key: 'riverpod-add'));
-    expect(
-      logger.history.map((e) => e.key),
-      isNot(contains('riverpod-add')),
-    );
+    expect(logger.history.map((e) => e.key), isNot(contains('riverpod-add')));
   });
 
-  testWidgets('the scope keeps the disabled set after the sheet closes',
-      (tester) async {
+  testWidgets('the scope keeps the disabled set after the sheet closes', (
+    tester,
+  ) async {
     await pumpLogsScreen(tester);
     await openSettings(tester);
     await tapInSheet(tester, 'Deselect All');

@@ -166,15 +166,15 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   final bool isLogInternalRoutes;
 
   final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
-      onPush;
+  onPush;
   final void Function({Route<dynamic>? newRoute, Route<dynamic>? oldRoute})?
-      onReplace;
+  onReplace;
   final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
-      onPop;
+  onPop;
   final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
-      onRemove;
+  onRemove;
   final void Function(Route<dynamic> route, Route<dynamic>? previousRoute)?
-      onStartUserGesture;
+  onStartUserGesture;
   final VoidCallback? onStopUserGesture;
 
   /// When true, route arguments are reduced to a generic structural family.
@@ -341,7 +341,8 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       sanitizeRouteDiagnosticArguments(
         arguments,
         enableRedaction: enableArgumentRedaction,
-        resourceLimits: _captureLogger?.options.resourceLimits ??
+        resourceLimits:
+            _captureLogger?.options.resourceLimits ??
             DiagnosticResourceLimits.balanced,
       );
 

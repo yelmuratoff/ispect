@@ -75,7 +75,8 @@ final class LogDescription {
           .join(' ');
 
   @override
-  String toString() => '''LogDescription(
+  String toString() =>
+      '''LogDescription(
       key: $key,
       title: $title,
       description: $description,

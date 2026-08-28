@@ -6,11 +6,11 @@ import 'package:ispect/ispect.dart';
 /// `ISpectSettingsState` so values persist across sessions.
 class DisplayController extends ChangeNotifier {
   DisplayController({ISpectSettingsState? initialSettings})
-      : _expandedLogs = initialSettings?.expandedLogs ?? false,
-        _isLogOrderReversed = initialSettings?.isLogOrderReversed ?? true,
-        _groupHttpLogs = initialSettings?.groupHttpLogs ?? true,
-        _useRelativeTime = initialSettings?.useRelativeTime ?? false,
-        _compactNetworkUrls = initialSettings?.compactNetworkUrls ?? true;
+    : _expandedLogs = initialSettings?.expandedLogs ?? false,
+      _isLogOrderReversed = initialSettings?.isLogOrderReversed ?? true,
+      _groupHttpLogs = initialSettings?.groupHttpLogs ?? true,
+      _useRelativeTime = initialSettings?.useRelativeTime ?? false,
+      _compactNetworkUrls = initialSettings?.compactNetworkUrls ?? true;
 
   bool _expandedLogs;
   bool _isLogOrderReversed;
@@ -90,7 +90,8 @@ class DisplayController extends ChangeNotifier {
   }
 
   void applyFromSettings(ISpectSettingsState settings) {
-    final changed = _expandedLogs != settings.expandedLogs ||
+    final changed =
+        _expandedLogs != settings.expandedLogs ||
         _isLogOrderReversed != settings.isLogOrderReversed ||
         _groupHttpLogs != settings.groupHttpLogs ||
         _useRelativeTime != settings.useRelativeTime ||

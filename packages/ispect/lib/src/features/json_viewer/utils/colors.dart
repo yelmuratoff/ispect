@@ -11,16 +11,15 @@ class JsonColorsUtils {
     Object? value,
     Color defaultColor,
     Brightness brightness,
-  ) =>
-      switch (value) {
-        null => JsonColors.nullColorFor(brightness),
-        int() || double() || num() => JsonColors.numColorFor(brightness),
-        bool() => JsonColors.boolColorFor(brightness),
-        String() => JsonColors.stringColorFor(brightness),
-        Iterable() || List() => JsonColors.arrayColorFor(brightness),
-        Map() => JsonColors.objectColorFor(brightness),
-        _ => defaultColor,
-      };
+  ) => switch (value) {
+    null => JsonColors.nullColorFor(brightness),
+    int() || double() || num() => JsonColors.numColorFor(brightness),
+    bool() => JsonColors.boolColorFor(brightness),
+    String() => JsonColors.stringColorFor(brightness),
+    Iterable() || List() => JsonColors.arrayColorFor(brightness),
+    Map() => JsonColors.objectColorFor(brightness),
+    _ => defaultColor,
+  };
 
   /// Resolves the display color of the value based on the `keyName`.
   static Color valueColorByKey(
@@ -42,11 +41,10 @@ class JsonColorsUtils {
       'real-uri' ||
       'location' ||
       'path' ||
-      'Authorization' =>
-        JsonColors.stringColorFor(brightness),
+      'Authorization' => JsonColors.stringColorFor(brightness),
       'status_code' => JsonColors.statusColor(
-          value is int ? value : int.tryParse(value.toString()),
-        ),
+        value is int ? value : int.tryParse(value.toString()),
+      ),
       'exception' => theme.getTypeColor(context, key: 'exception'),
       'error' => theme.getTypeColor(context, key: 'error'),
       'stack-trace' => theme.getTypeColor(context, key: 'error'),

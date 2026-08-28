@@ -9,10 +9,7 @@ void main() {
     test('accepts reasonable JSON and ignores delimiters inside strings', () {
       const source = '{"message":"[{nested:true}]","items":[1,2]}';
 
-      expect(
-        JsonInputPreflight.decode(source),
-        isA<Map<String, dynamic>>(),
-      );
+      expect(JsonInputPreflight.decode(source), isA<Map<String, dynamic>>());
     });
 
     test('rejects encoded bytes independently of character count', () {
@@ -69,10 +66,7 @@ void main() {
 
     test('snapshots without retaining caller containers or hostile leaves', () {
       final hostile = _HostileLeaf();
-      final nested = <String, Object?>{
-        'name': 'before',
-        'hostile': hostile,
-      };
+      final nested = <String, Object?>{'name': 'before', 'hostile': hostile};
       final source = <String, Object?>{'nested': nested};
 
       final snapshot = JsonInputPreflight.snapshotForViewer(source);
@@ -108,10 +102,7 @@ void main() {
       final captured = snapshot.value! as Map<String, dynamic>;
       final encoded = jsonEncode(captured);
 
-      expect(
-        captured['record'],
-        JsonInputPreflight.unprintableValue,
-      );
+      expect(captured['record'], JsonInputPreflight.unprintableValue);
       expect(encoded, isNot(contains(secret)));
       expect(
         utf8.encode(encoded).length,
@@ -163,13 +154,11 @@ void main() {
         7: 'invalid-key-value',
       };
 
-      final captured = JsonInputPreflight.snapshotForViewer(source).value!
-          as Map<String, dynamic>;
+      final captured =
+          JsonInputPreflight.snapshotForViewer(source).value!
+              as Map<String, dynamic>;
 
-      expect(
-        captured[JsonInputPreflight.traversalMarkerKey],
-        'caller-value',
-      );
+      expect(captured[JsonInputPreflight.traversalMarkerKey], 'caller-value');
       expect(
         captured['${JsonInputPreflight.traversalMarkerKey}-1'],
         JsonInputPreflight.invalidObjectKey,
@@ -203,9 +192,7 @@ void main() {
     test('counts unpaired UTF-16 surrogates as JSON escapes', () {
       const byteLimit = 4096;
       final source = <String, Object?>{
-        'value': String.fromCharCodes(
-          List<int>.filled(byteLimit, 0xd800),
-        ),
+        'value': String.fromCharCodes(List<int>.filled(byteLimit, 0xd800)),
       };
 
       final snapshot = JsonInputPreflight.snapshotForViewer(
@@ -215,41 +202,37 @@ void main() {
       final encoded = utf8.encode(jsonEncode(snapshot.value));
 
       expect(encoded.length, lessThanOrEqualTo(byteLimit));
-      expect(
-        utf8.decode(encoded),
-        contains(JsonInputPreflight.truncatedValue),
-      );
+      expect(utf8.decode(encoded), contains(JsonInputPreflight.truncatedValue));
     });
 
-    test('fails closed when a map or list exactly exhausts the byte budget',
-        () {
-      const byteLimit = 128;
-      final mapSnapshot = JsonInputPreflight.snapshotForViewer(
-        <String, Object?>{
-          'a': 'x' * (byteLimit - 8),
-          'securityRelevantTrailing': true,
-        },
-        encodedByteLimit: byteLimit,
-      );
-      final listSnapshot = JsonInputPreflight.snapshotForViewer(
-        <Object?>[
+    test(
+      'fails closed when a map or list exactly exhausts the byte budget',
+      () {
+        const byteLimit = 128;
+        final mapSnapshot = JsonInputPreflight.snapshotForViewer(
+          <String, Object?>{
+            'a': 'x' * (byteLimit - 8),
+            'securityRelevantTrailing': true,
+          },
+          encodedByteLimit: byteLimit,
+        );
+        final listSnapshot = JsonInputPreflight.snapshotForViewer(<Object?>[
           'x' * (byteLimit - 4),
           true,
-        ],
-        encodedByteLimit: byteLimit,
-      );
+        ], encodedByteLimit: byteLimit);
 
-      expect(mapSnapshot.value, JsonInputPreflight.rejectedContent);
-      expect(listSnapshot.value, JsonInputPreflight.rejectedContent);
-      expect(
-        utf8.encode(jsonEncode(mapSnapshot.value)).length,
-        lessThanOrEqualTo(byteLimit),
-      );
-      expect(
-        utf8.encode(jsonEncode(listSnapshot.value)).length,
-        lessThanOrEqualTo(byteLimit),
-      );
-    });
+        expect(mapSnapshot.value, JsonInputPreflight.rejectedContent);
+        expect(listSnapshot.value, JsonInputPreflight.rejectedContent);
+        expect(
+          utf8.encode(jsonEncode(mapSnapshot.value)).length,
+          lessThanOrEqualTo(byteLimit),
+        );
+        expect(
+          utf8.encode(jsonEncode(listSnapshot.value)).length,
+          lessThanOrEqualTo(byteLimit),
+        );
+      },
+    );
 
     test('bounds diagnostics for many invalid object keys', () {
       const nodeLimit = 4000;

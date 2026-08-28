@@ -37,8 +37,9 @@ class DesktopStatusBar extends StatelessWidget {
     final borderColor = onSurface.withValues(alpha: 0.1);
     final labelColor = onSurface.withValues(alpha: 0.55);
 
-    final countText =
-        isFiltered ? '$filteredCount / $totalCount' : '$totalCount';
+    final countText = isFiltered
+        ? '$filteredCount / $totalCount'
+        : '$totalCount';
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -86,8 +87,9 @@ class DesktopStatusBar extends StatelessWidget {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color:
-                                          Colors.green.withValues(alpha: 0.4),
+                                      color: Colors.green.withValues(
+                                        alpha: 0.4,
+                                      ),
                                       blurRadius: 4,
                                     ),
                                   ],
@@ -112,11 +114,7 @@ class DesktopStatusBar extends StatelessWidget {
                   ),
                   const Gap(10),
                 ],
-                Icon(
-                  Icons.list_alt_rounded,
-                  size: 14,
-                  color: labelColor,
-                ),
+                Icon(Icons.list_alt_rounded, size: 14, color: labelColor),
                 const Gap(6),
                 Text(
                   '$countText logs',
@@ -231,16 +229,13 @@ class _KeyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _KeyBadge(label: badge),
-          const Gap(4),
-          Text(
-            label,
-            style: TextStyle(fontSize: 11, color: labelColor),
-          ),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      _KeyBadge(label: badge),
+      const Gap(4),
+      Text(label, style: TextStyle(fontSize: 11, color: labelColor)),
+    ],
+  );
 }
 
 class _KeyBadge extends StatelessWidget {

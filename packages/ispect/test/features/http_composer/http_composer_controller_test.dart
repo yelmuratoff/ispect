@@ -4,9 +4,7 @@ import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
 
 class _RecordingSender implements NetworkRequestSender {
-  _RecordingSender({
-    this.result = const NetworkReplayResult(statusCode: 200),
-  });
+  _RecordingSender({this.result = const NetworkReplayResult(statusCode: 200)});
 
   final NetworkReplayResult result;
   NetworkReplayRequest? lastRequest;
@@ -41,12 +39,11 @@ HttpComposerController _controller({
   List<NetworkRequestSender>? senders,
   NetworkReplayRequest? seed,
   DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
-}) =>
-    HttpComposerController(
-      senders: senders ?? [_RecordingSender()],
-      seed: seed,
-      resourceLimits: resourceLimits,
-    );
+}) => HttpComposerController(
+  senders: senders ?? [_RecordingSender()],
+  seed: seed,
+  resourceLimits: resourceLimits,
+);
 
 void main() {
   group('HttpComposerController.buildReplayRequest', () {
@@ -153,15 +150,17 @@ void main() {
       expect(controller.isSending, isFalse);
     });
 
-    test('does nothing and flags an error when no client is registered',
-        () async {
-      final controller = _controller(senders: [])..setUrl('https://api.test');
+    test(
+      'does nothing and flags an error when no client is registered',
+      () async {
+        final controller = _controller(senders: [])..setUrl('https://api.test');
 
-      await controller.send();
+        await controller.send();
 
-      expect(controller.result, isNull);
-      expect(controller.validationError, ComposerValidation.noClient);
-    });
+        expect(controller.result, isNull);
+        expect(controller.validationError, ComposerValidation.noClient);
+      },
+    );
 
     test('retains a detached bounded snapshot of the sender result', () async {
       final headers = <String, String>{'x-request-id': 'req-1'};
@@ -186,51 +185,52 @@ void main() {
 
       final result = controller.result!;
       expect(result.headers, <String, String>{'x-request-id': 'req-1'});
-      expect(
-        result.body,
-        <String, Object?>{
-          'message': 'safe',
-          'items': <Object?>[1, 2],
-        },
-      );
+      expect(result.body, <String, Object?>{
+        'message': 'safe',
+        'items': <Object?>[1, 2],
+      });
       expect(result.headers, isNot(same(headers)));
       expect(result.body, isNot(same(body)));
     });
 
-    test('applies the configured resource limits to response snapshots',
-        () async {
-      final body = List<String>.filled(10000, 'safe-value').join('|');
-      final sender = _RecordingSender(
-        result: NetworkReplayResult(body: body),
-      );
-      final controller = _controller(
-        senders: [sender],
-        resourceLimits: DiagnosticResourceLimits.constrained,
-      )..setUrl('https://api.test/ping');
+    test(
+      'applies the configured resource limits to response snapshots',
+      () async {
+        final body = List<String>.filled(10000, 'safe-value').join('|');
+        final sender = _RecordingSender(
+          result: NetworkReplayResult(body: body),
+        );
+        final controller = _controller(
+          senders: [sender],
+          resourceLimits: DiagnosticResourceLimits.constrained,
+        )..setUrl('https://api.test/ping');
 
-      await controller.send();
+        await controller.send();
 
-      final resultBody = controller.result!.body! as String;
-      expect(
-        LogExportOutput.utf8Length(resultBody),
-        lessThanOrEqualTo(
-          DiagnosticResourceLimits.constrained.maxCapturedValueBytes,
-        ),
-      );
-      expect(resultBody, isNot(body));
-    });
+        final resultBody = controller.result!.body! as String;
+        expect(
+          LogExportOutput.utf8Length(resultBody),
+          lessThanOrEqualTo(
+            DiagnosticResourceLimits.constrained.maxCapturedValueBytes,
+          ),
+        );
+        expect(resultBody, isNot(body));
+      },
+    );
 
-    test('resets sending state and captures an unexpected sender failure',
-        () async {
-      final controller = _controller(senders: [_ThrowingSender()])
-        ..setUrl('https://api.test/ping');
+    test(
+      'resets sending state and captures an unexpected sender failure',
+      () async {
+        final controller = _controller(senders: [_ThrowingSender()])
+          ..setUrl('https://api.test/ping');
 
-      await controller.send();
+        await controller.send();
 
-      expect(controller.isSending, isFalse);
-      expect(controller.result, isNotNull);
-      expect(controller.result!.isError, isTrue);
-    });
+        expect(controller.isSending, isFalse);
+        expect(controller.result, isNotNull);
+        expect(controller.result!.isError, isTrue);
+      },
+    );
   });
 
   group('HttpComposerController seed', () {
@@ -251,26 +251,26 @@ void main() {
       expect(controller.bodyText, contains('"a": 1'));
     });
 
-    test('splits seeded query parameters into editable rows and a clean url',
-        () {
-      final controller = _controller(
-        seed: NetworkReplayRequest(
-          method: 'GET',
-          uri: Uri.parse('https://api.test/search?q=phone&page=2'),
-        ),
-      );
+    test(
+      'splits seeded query parameters into editable rows and a clean url',
+      () {
+        final controller = _controller(
+          seed: NetworkReplayRequest(
+            method: 'GET',
+            uri: Uri.parse('https://api.test/search?q=phone&page=2'),
+          ),
+        );
 
-      expect(controller.url, 'https://api.test/search');
-      expect(
-        {
-          for (final row in controller.queryParams) row.key: row.value,
-        },
-        {'q': 'phone', 'page': '2'},
-      );
+        expect(controller.url, 'https://api.test/search');
+        expect(
+          {for (final row in controller.queryParams) row.key: row.value},
+          {'q': 'phone', 'page': '2'},
+        );
 
-      final request = controller.buildReplayRequest();
-      expect(request!.uri.queryParameters, {'q': 'phone', 'page': '2'});
-    });
+        final request = controller.buildReplayRequest();
+        expect(request!.uri.queryParameters, {'q': 'phone', 'page': '2'});
+      },
+    );
   });
 
   group('HttpComposerController.seedFromLog', () {

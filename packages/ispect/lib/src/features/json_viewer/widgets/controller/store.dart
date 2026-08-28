@@ -203,7 +203,8 @@ class JsonExplorerStore extends ChangeNotifier {
     // For large JSON objects, process asynchronously
     final jsonObject = snapshot.value;
     final threshold = processingPolicy.viewerBuildYieldThreshold;
-    final isLargeJson = (jsonObject is Map && jsonObject.length > threshold) ||
+    final isLargeJson =
+        (jsonObject is Map && jsonObject.length > threshold) ||
         (jsonObject is List && jsonObject.length > threshold);
 
     if (isLargeJson) {
@@ -276,8 +277,10 @@ class JsonExplorerStore extends ChangeNotifier {
 
     _searchResults.addAll(results.cast<SearchResult>());
     if (_searchResults.isNotEmpty) {
-      _focusedSearchResultIndex =
-          _focusedSearchResultIndex.clamp(0, _searchResults.length - 1);
+      _focusedSearchResultIndex = _focusedSearchResultIndex.clamp(
+        0,
+        _searchResults.length - 1,
+      );
     } else {
       _focusedSearchResultIndex = 0;
     }

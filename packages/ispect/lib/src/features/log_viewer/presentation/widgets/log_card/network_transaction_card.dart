@@ -206,78 +206,74 @@ class _MobileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        children: [
-          Expanded(
-            child: Column(
+    children: [
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    MethodBadge(
-                      method: tx.method ?? 'HTTP',
-                      color: color,
+                MethodBadge(method: tx.method ?? 'HTTP', color: color),
+                const Gap(6),
+                Expanded(
+                  child: Text(
+                    transactionListUrl(displayUrl, compact: compactUrl),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: context.appTheme.textColor.withValues(alpha: 0.7),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
                     ),
-                    const Gap(6),
-                    Expanded(
-                      child: Text(
-                        transactionListUrl(displayUrl, compact: compactUrl),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color:
-                              context.appTheme.textColor.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w500,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  context.formatLogTime(
-                    tx.request.time,
-                    relative: useRelativeTime,
-                    absolute: _formatTime(tx.request.time),
-                  ),
-                  maxLines: 1,
-                  style: TextStyle(
-                    color: context.appTheme.textColor.withValues(alpha: 0.6),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
-          ),
-          if (tx.statusCode case final code?) ...[
-            const Gap(4),
-            StatusBadge(text: '$code', color: color),
-          ],
-          if (tx.duration case final duration?) ...[
-            const Gap(4),
-            StatusBadge(
-              text: formatTransactionDuration(duration),
-              color: context.appTheme.textColor.withValues(alpha: 0.5),
+            Text(
+              context.formatLogTime(
+                tx.request.time,
+                relative: useRelativeTime,
+                absolute: _formatTime(tx.request.time),
+              ),
+              maxLines: 1,
+              style: TextStyle(
+                color: context.appTheme.textColor.withValues(alpha: 0.6),
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
-          if (tx.isPending) ...[
-            const Gap(4),
-            StatusBadge(
-              text: ISpectLocalization.of(context).pending,
-              color: JsonColors.statusWarning,
-            ),
-          ],
-          const Gap(4),
-          Icon(
-            expanded
-                ? Icons.keyboard_arrow_up_rounded
-                : Icons.keyboard_arrow_down_rounded,
-            size: 18,
-            color: color.withValues(alpha: 0.5),
-          ),
-        ],
-      );
+        ),
+      ),
+      if (tx.statusCode case final code?) ...[
+        const Gap(4),
+        StatusBadge(text: '$code', color: color),
+      ],
+      if (tx.duration case final duration?) ...[
+        const Gap(4),
+        StatusBadge(
+          text: formatTransactionDuration(duration),
+          color: context.appTheme.textColor.withValues(alpha: 0.5),
+        ),
+      ],
+      if (tx.isPending) ...[
+        const Gap(4),
+        StatusBadge(
+          text: ISpectLocalization.of(context).pending,
+          color: JsonColors.statusWarning,
+        ),
+      ],
+      const Gap(4),
+      Icon(
+        expanded
+            ? Icons.keyboard_arrow_up_rounded
+            : Icons.keyboard_arrow_down_rounded,
+        size: 18,
+        color: color.withValues(alpha: 0.5),
+      ),
+    ],
+  );
 
   static String _formatTime(DateTime time) {
     final h = time.hour.toString().padLeft(2, '0');

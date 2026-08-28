@@ -6,10 +6,7 @@ import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 
 class BreadcrumbBar extends StatefulWidget {
-  const BreadcrumbBar({
-    required this.node,
-    required this.onSegmentTap,
-  });
+  const BreadcrumbBar({required this.node, required this.onSegmentTap});
 
   final NodeViewModelState node;
   final ValueChanged<NodeViewModelState> onSegmentTap;
@@ -84,11 +81,7 @@ class BreadcrumbBarState extends State<BreadcrumbBar> {
             height: 22,
             child: Row(
               children: [
-                Icon(
-                  Icons.account_tree_outlined,
-                  size: 13,
-                  color: mutedColor,
-                ),
+                Icon(Icons.account_tree_outlined, size: 13, color: mutedColor),
                 const Gap(8),
                 Expanded(
                   child: ListView.separated(
@@ -111,8 +104,9 @@ class BreadcrumbBarState extends State<BreadcrumbBar> {
                         type: MaterialType.transparency,
                         child: InkWell(
                           onTap: () => widget.onSegmentTap(segment),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(4)),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(4),
+                          ),
                           child: Center(
                             child: Padding(
                               padding: const EdgeInsetsGeometry.symmetric(

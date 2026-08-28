@@ -22,10 +22,7 @@ abstract final class ISpectSafeDiagnosticSnapshot {
       );
       final scrubbed = redactor == null
           ? prepared
-          : redactor.redactForExport(
-              prepared,
-              resourceLimits: resourceLimits,
-            );
+          : redactor.redactForExport(prepared, resourceLimits: resourceLimits);
       final bounded = LogExportOutput.boundJsonValue(
         scrubbed,
         maxBytes: maxBytes,
@@ -39,10 +36,7 @@ abstract final class ISpectSafeDiagnosticSnapshot {
         final num primitive => primitive.toString(),
         _ => jsonEncode(bounded),
       };
-      return LogExportOutput.truncateUtf8(
-        rendered,
-        maxBytes: maxBytes,
-      );
+      return LogExportOutput.truncateUtf8(rendered, maxBytes: maxBytes);
     } on Object {
       return defaultPlaceholder;
     }
@@ -51,8 +45,8 @@ abstract final class ISpectSafeDiagnosticSnapshot {
   static String summary(
     Object? value, {
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
-  }) =>
-      text(value, resourceLimits: resourceLimits)
-          .replaceAll(RegExp(r'[\r\n\u2028\u2029]+'), ' ')
-          .trim();
+  }) => text(
+    value,
+    resourceLimits: resourceLimits,
+  ).replaceAll(RegExp(r'[\r\n\u2028\u2029]+'), ' ').trim();
 }

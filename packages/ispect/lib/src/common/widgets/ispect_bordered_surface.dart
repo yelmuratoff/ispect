@@ -47,7 +47,8 @@ class ISpectBorderedSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedBg = backgroundColor ??
+    final resolvedBg =
+        backgroundColor ??
         (_isInteractive ? context.ispectCardColor : Colors.transparent);
     final resolvedBorder = borderColor ?? context.ispectSubtleBorderColor;
 
@@ -65,11 +66,7 @@ class ISpectBorderedSurface extends StatelessWidget {
     );
 
     if (!_isInteractive) {
-      return Material(
-        color: resolvedBg,
-        shape: shape,
-        child: shell,
-      );
+      return Material(color: resolvedBg, shape: shape, child: shell);
     }
 
     final inkWell = InkWell(

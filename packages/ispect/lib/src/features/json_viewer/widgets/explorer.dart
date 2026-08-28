@@ -7,10 +7,8 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 
 /// Signature for a function that creates a widget based on a
 /// `NodeViewModelState` state.
-typedef NodeBuilder = Widget Function(
-  BuildContext context,
-  NodeViewModelState node,
-);
+typedef NodeBuilder =
+    Widget Function(BuildContext context, NodeViewModelState node);
 
 /// Signature for a function that takes a generic value and converts it to a
 /// string.
@@ -22,10 +20,8 @@ typedef Formatter = String Function(Object? value);
 ///
 /// See also:
 /// * `PropertyStyle`
-typedef StyleBuilder = PropertyOverrides Function(
-  Object? value,
-  TextStyle style,
-);
+typedef StyleBuilder =
+    PropertyOverrides Function(Object? value, TextStyle style);
 
 /// Holds information about a property value style and interaction.
 class PropertyOverrides {
@@ -143,36 +139,36 @@ class JsonExplorer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SelectionArea(
-        child: SuperListView.builder(
-          itemCount: nodes.length,
-          controller: scrollController,
-          listController: listController,
-          itemBuilder: (context, index) {
-            final node = nodes[index];
-            final item = _JsonAttributeItem(
-              node: node,
-              store: store,
-              theme: theme,
-              rootInformationBuilder: rootInformationBuilder,
-              collapsableToggleBuilder: collapsableToggleBuilder,
-              trailingBuilder: trailingBuilder,
-              rootNameFormatter: rootNameFormatter,
-              propertyNameFormatter: propertyNameFormatter,
-              valueFormatter: valueFormatter,
-              valueStyleBuilder: valueStyleBuilder,
-              itemSpacing: itemSpacing,
-              maxRootNodeWidth: maxRootNodeWidth,
-            );
-            if (onNodeTap == null) return item;
-            return GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () => onNodeTap!(node),
-              child: item,
-            );
-          },
-          physics: physics,
-        ),
-      );
+    child: SuperListView.builder(
+      itemCount: nodes.length,
+      controller: scrollController,
+      listController: listController,
+      itemBuilder: (context, index) {
+        final node = nodes[index];
+        final item = _JsonAttributeItem(
+          node: node,
+          store: store,
+          theme: theme,
+          rootInformationBuilder: rootInformationBuilder,
+          collapsableToggleBuilder: collapsableToggleBuilder,
+          trailingBuilder: trailingBuilder,
+          rootNameFormatter: rootNameFormatter,
+          propertyNameFormatter: propertyNameFormatter,
+          valueFormatter: valueFormatter,
+          valueStyleBuilder: valueStyleBuilder,
+          itemSpacing: itemSpacing,
+          maxRootNodeWidth: maxRootNodeWidth,
+        );
+        if (onNodeTap == null) return item;
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => onNodeTap!(node),
+          child: item,
+        );
+      },
+      physics: physics,
+    ),
+  );
 }
 
 /// A wrapper widget that caches the JsonAttribute widget inside an AnimatedBuilder

@@ -31,22 +31,22 @@ class ISpectSettingsBottomSheet {
   final ISpectViewController controller;
 
   Future<void> show(BuildContext context) => showISpectSheet(
-        context,
-        fitContent: false,
-        initialChildSize: 0.8,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        dialogWidth: MediaQuery.sizeOf(context).width * 0.8,
-        topOnlyRadius: true,
-        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),
-        useRootNavigator: false,
-        builder: (context, scrollController) => _SettingsContent(
-          logger: logger,
-          actions: actions,
-          controller: controller,
-          externalScrollController: scrollController,
-        ),
-      );
+    context,
+    fitContent: false,
+    initialChildSize: 0.8,
+    minChildSize: 0.3,
+    maxChildSize: 0.9,
+    dialogWidth: MediaQuery.sizeOf(context).width * 0.8,
+    topOnlyRadius: true,
+    routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),
+    useRootNavigator: false,
+    builder: (context, scrollController) => _SettingsContent(
+      logger: logger,
+      actions: actions,
+      controller: controller,
+      externalScrollController: scrollController,
+    ),
+  );
 }
 
 class _SettingsContent extends StatefulWidget {
@@ -160,9 +160,7 @@ class _SettingsContentState extends State<_SettingsContent> {
       child: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          const SliverToBoxAdapter(
-            child: ISpectDragHandle(),
-          ),
+          const SliverToBoxAdapter(child: ISpectDragHandle()),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -183,9 +181,8 @@ class _SettingsContentState extends State<_SettingsContent> {
                   title: context.ispectL10n.enabled,
                   icon: Icons.power_settings_new_rounded,
                   enabled: currentSettings.enabled,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(enabled: v),
-                  ),
+                  onChanged: (v) =>
+                      _onSettingChanged(currentSettings.copyWith(enabled: v)),
                 ),
                 ToggleSpec(
                   title: context.ispectL10n.useConsoleLogs,
@@ -208,9 +205,7 @@ class _SettingsContentState extends State<_SettingsContent> {
               ],
             ),
           ),
-          const SliverToBoxAdapter(
-            child: ISpectSectionLabel(title: 'Display'),
-          ),
+          const SliverToBoxAdapter(child: ISpectSectionLabel(title: 'Display')),
           SliverToBoxAdapter(
             child: CompactToggleGrid(
               tiles: [
@@ -257,9 +252,7 @@ class _SettingsContentState extends State<_SettingsContent> {
               ],
             ),
           ),
-          const SliverToBoxAdapter(
-            child: ISpectSectionLabel(title: 'Tools'),
-          ),
+          const SliverToBoxAdapter(child: ISpectSectionLabel(title: 'Tools')),
           SliverToBoxAdapter(
             child: CompactToggleGrid(
               tiles: [
@@ -311,7 +304,8 @@ class _SettingsContentState extends State<_SettingsContent> {
                       title: 'Forward errors to dart:developer',
                       icon: Icons.bug_report_rounded,
                       enabled: currentSettings.forwardErrorToConsole,
-                      canEdit: currentSettings.enabled &&
+                      canEdit:
+                          currentSettings.enabled &&
                           currentSettings.useConsoleLogs,
                       onChanged: (v) => _onSettingChanged(
                         currentSettings.copyWith(forwardErrorToConsole: v),
@@ -424,9 +418,7 @@ class _SettingsContentState extends State<_SettingsContent> {
           ),
           if (widget.actions.isNotEmpty) ...[
             SliverToBoxAdapter(
-              child: ISpectSectionLabel(
-                title: context.ispectL10n.actions,
-              ),
+              child: ISpectSectionLabel(title: context.ispectL10n.actions),
             ),
             SliverToBoxAdapter(
               child: Padding(
@@ -460,9 +452,7 @@ class _SettingsContentState extends State<_SettingsContent> {
               onDeselectAll: _onDeselectAll,
             ),
           ),
-          const SliverToBoxAdapter(
-            child: Gap(32),
-          ),
+          const SliverToBoxAdapter(child: Gap(32)),
         ],
       ),
     );

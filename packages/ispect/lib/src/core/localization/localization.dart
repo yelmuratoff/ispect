@@ -18,11 +18,11 @@ final class ISpectLocalization {
 
   /// List of localization delegates.
   static List<LocalizationsDelegate<void>> get localizationDelegates => [
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        _delegate,
-      ];
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    _delegate,
+  ];
 
   static ISpectLocalization? get current => _current;
 

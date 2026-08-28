@@ -16,11 +16,10 @@ final class DecorationUtils {
   static ShapeDecoration roundedBorder({
     required Color color,
     double? borderRadius,
-  }) =>
-      ISpectSquircle.decoration(
-        radius: borderRadius ?? ISpectConstants.largeBorderRadius,
-        side: BorderSide(color: color),
-      );
+  }) => ISpectSquircle.decoration(
+    radius: borderRadius ?? ISpectConstants.largeBorderRadius,
+    side: BorderSide(color: color),
+  );
 
   /// Creates a squircle background decoration with a colored background.
   ///
@@ -29,21 +28,20 @@ final class DecorationUtils {
     required Color color,
     double? borderRadius,
     double? opacity,
-  }) =>
-      ISpectSquircle.decoration(
-        color: color.withValues(
-          alpha: opacity ?? ISpectConstants.iconButtonBackgroundOpacity,
-        ),
-        radius: borderRadius ?? ISpectConstants.standardBorderRadius,
-      );
+  }) => ISpectSquircle.decoration(
+    color: color.withValues(
+      alpha: opacity ?? ISpectConstants.iconButtonBackgroundOpacity,
+    ),
+    radius: borderRadius ?? ISpectConstants.standardBorderRadius,
+  );
 
   /// Creates a standard border radius used in icon buttons and small components.
   static BorderRadius get standardBorderRadius => const BorderRadius.all(
-        Radius.circular(ISpectConstants.standardBorderRadius),
-      );
+    Radius.circular(ISpectConstants.standardBorderRadius),
+  );
 
   /// Creates a large border radius used in containers and cards.
   static BorderRadius get largeBorderRadius => const BorderRadius.all(
-        Radius.circular(ISpectConstants.largeBorderRadius),
-      );
+    Radius.circular(ISpectConstants.largeBorderRadius),
+  );
 }

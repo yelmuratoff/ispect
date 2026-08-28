@@ -136,10 +136,7 @@ Future<void> main(List<String> arguments) async {
       expect(paths, hasLength(2));
       expect(
         await Future.wait(files.map(handler.readAsString)),
-        containsAll([
-          'first persistent export',
-          'second persistent export',
-        ]),
+        containsAll(['first persistent export', 'second persistent export']),
       );
     });
 
@@ -153,8 +150,9 @@ Future<void> main(List<String> arguments) async {
           await logsDirectory.delete(recursive: true);
         }
 
-        final outside =
-            await Directory.systemTemp.createTemp('ispect_outside_logs_');
+        final outside = await Directory.systemTemp.createTemp(
+          'ispect_outside_logs_',
+        );
         final sentinel = File(
           '${outside.path}${Platform.pathSeparator}sentinel.txt',
         );
@@ -162,10 +160,7 @@ Future<void> main(List<String> arguments) async {
         final logsLink = Link(logsPath);
         await logsLink.create(outside.path);
         addTearDown(() async {
-          if (await FileSystemEntity.type(
-                logsPath,
-                followLinks: false,
-              ) ==
+          if (await FileSystemEntity.type(logsPath, followLinks: false) ==
               FileSystemEntityType.link) {
             await logsLink.delete();
           }
@@ -185,10 +180,7 @@ Future<void> main(List<String> arguments) async {
         addTearDown(createdFile.delete);
 
         expect(await sentinel.readAsString(), 'outside logs sentinel');
-        expect(
-          await outside.list(followLinks: false).length,
-          1,
-        );
+        expect(await outside.list(followLinks: false).length, 1);
         expect(createdFile.parent.path, isNot(outside.path));
       },
       skip: Platform.isWindows
@@ -285,9 +277,7 @@ Future<void> main(List<String> arguments) async {
         containsAll(['first log content', 'second log content']),
       );
 
-      await Future.wait(
-        sharedPaths.map((path) => File(path).delete()),
-      );
+      await Future.wait(sharedPaths.map((path) => File(path).delete()));
     });
 
     test('holds the OS lease lock while a share callback is pending', () async {
@@ -373,40 +363,39 @@ Future<void> main(List<String> arguments) async {
         '${Platform.pathSeparator}.active-share',
       );
 
-      expect(
-        await _probeLeaseLock(lockProbeHelper, successorLease),
-        'blocked',
-      );
+      expect(await _probeLeaseLock(lockProbeHelper, successorLease), 'blocked');
 
       releaseSecond.complete();
       await secondShare;
     });
 
-    test('recreates the private share directory after external cleanup',
-        () async {
-      late String firstPath;
-      late String secondPath;
+    test(
+      'recreates the private share directory after external cleanup',
+      () async {
+        late String firstPath;
+        late String secondPath;
 
-      await LogsFileFactory.shareFile(
-        'first share',
-        fileName: 'removed_parent',
-        onShare: (request) async => firstPath = request.filePaths.single,
-      );
-      final firstDirectory = File(firstPath).parent;
-      await firstDirectory.delete(recursive: true);
+        await LogsFileFactory.shareFile(
+          'first share',
+          fileName: 'removed_parent',
+          onShare: (request) async => firstPath = request.filePaths.single,
+        );
+        final firstDirectory = File(firstPath).parent;
+        await firstDirectory.delete(recursive: true);
 
-      await LogsFileFactory.shareFile(
-        'second share',
-        fileName: 'recreated_parent',
-        onShare: (request) async => secondPath = request.filePaths.single,
-      );
-      final secondFile = File(secondPath);
+        await LogsFileFactory.shareFile(
+          'second share',
+          fileName: 'recreated_parent',
+          onShare: (request) async => secondPath = request.filePaths.single,
+        );
+        final secondFile = File(secondPath);
 
-      expect(await secondFile.exists(), isTrue);
-      expect(secondFile.parent.path, isNot(firstDirectory.path));
-      expect(await secondFile.readAsString(), 'second share');
-      await secondFile.delete();
-    });
+        expect(await secondFile.exists(), isTrue);
+        expect(secondFile.parent.path, isNot(firstDirectory.path));
+        expect(await secondFile.readAsString(), 'second share');
+        await secondFile.delete();
+      },
+    );
 
     test(
       'rejects a linked share root without writing outside cache',
@@ -415,8 +404,9 @@ Future<void> main(List<String> arguments) async {
           '${testRoot.path}${Platform.pathSeparator}ispect_share',
         );
         if (await root.exists()) await root.delete(recursive: true);
-        final outside =
-            await Directory.systemTemp.createTemp('ispect_outside_root_');
+        final outside = await Directory.systemTemp.createTemp(
+          'ispect_outside_root_',
+        );
         final sentinel = File(
           '${outside.path}${Platform.pathSeparator}sentinel.txt',
         );
@@ -476,8 +466,9 @@ Future<void> main(List<String> arguments) async {
         expect(await lease.exists(), isTrue);
         await lease.delete();
 
-        final outside =
-            await Directory.systemTemp.createTemp('ispect_outside_lease_');
+        final outside = await Directory.systemTemp.createTemp(
+          'ispect_outside_lease_',
+        );
         final sentinel = File(
           '${outside.path}${Platform.pathSeparator}sentinel.txt',
         );
@@ -508,246 +499,261 @@ Future<void> main(List<String> arguments) async {
           : false,
     );
 
-    test('ignores lookalike share directories outside the managed root',
-        () async {
-      final foreignDirectory = await testRoot.createTemp('ispect_share_');
-      final foreignFile = File(
-        '${foreignDirectory.path}${Platform.pathSeparator}foreign.json',
-      );
-      final foreignLease = File(
-        '${foreignDirectory.path}${Platform.pathSeparator}.active-share',
-      );
-      await foreignFile.writeAsString('foreign diagnostics');
-      await foreignLease.writeAsString('foreign-owner');
-      await foreignFile.setLastModified(
-        DateTime.now().subtract(const Duration(hours: 2)),
-      );
-      addTearDown(() async {
-        if (await foreignDirectory.exists()) {
-          await foreignDirectory.delete(recursive: true);
-        }
-      });
-      late String sharedPath;
-
-      await LogsFileFactory.shareFile(
-        'current share',
-        fileName: 'cross_process_sweep',
-        onShare: (request) async => sharedPath = request.filePaths.single,
-      );
-
-      expect(await foreignFile.exists(), isTrue);
-      expect(await foreignLease.exists(), isTrue);
-      await File(sharedPath).delete();
-    });
-
-    test('removes crashed-process diagnostics after its lease expires',
-        () async {
-      final root = Directory(
-        '${testRoot.path}${Platform.pathSeparator}ispect_share',
-      );
-      await root.create(recursive: true);
-      final staleDirectory = await root.createTemp('process_');
-      final staleFile = File(
-        '${staleDirectory.path}${Platform.pathSeparator}stale.json',
-      );
-      final staleLease = File(
-        '${staleDirectory.path}${Platform.pathSeparator}.active-share',
-      );
-      await staleFile.writeAsString('stale diagnostics');
-      await staleLease.writeAsString('crashed-owner');
-      final old = DateTime.now().subtract(const Duration(hours: 2));
-      await staleFile.setLastModified(old);
-      await staleLease.setLastModified(old);
-      addTearDown(() async {
-        if (await staleDirectory.exists()) {
-          await staleDirectory.delete(recursive: true);
-        }
-      });
-      late String sharedPath;
-
-      await LogsFileFactory.shareFile(
-        'current share',
-        fileName: 'stale_process_sweep',
-        onShare: (request) async => sharedPath = request.filePaths.single,
-      );
-
-      expect(await staleFile.exists(), isFalse);
-      expect(await staleDirectory.exists(), isTrue);
-      expect(await staleLease.exists(), isTrue);
-      await File(sharedPath).delete();
-    });
-
-    test('a fresh foreign lease protects an active cross-process share',
-        () async {
-      final root = Directory(
-        '${testRoot.path}${Platform.pathSeparator}ispect_share',
-      );
-      await root.create(recursive: true);
-      final activeDirectory = await root.createTemp('process_');
-      final activeFile = File(
-        '${activeDirectory.path}${Platform.pathSeparator}active.json',
-      );
-      final activeLease = File(
-        '${activeDirectory.path}${Platform.pathSeparator}.active-share',
-      );
-      await activeFile.writeAsString('active diagnostics');
-      await activeFile.setLastModified(
-        DateTime.now().subtract(const Duration(hours: 2)),
-      );
-      await activeLease.writeAsString('active-owner');
-      addTearDown(() async {
-        if (await activeDirectory.exists()) {
-          await activeDirectory.delete(recursive: true);
-        }
-      });
-      late String sharedPath;
-
-      await LogsFileFactory.shareFile(
-        'current share',
-        fileName: 'active_process_sweep',
-        onShare: (request) async => sharedPath = request.filePaths.single,
-      );
-
-      expect(await activeFile.exists(), isTrue);
-      expect(await activeLease.exists(), isTrue);
-      await File(sharedPath).delete();
-    });
-
-    test('stale sweep preserves a file with a pending share callback',
-        () async {
-      final callbackStarted = Completer<String>();
-      final releaseCallback = Completer<void>();
-      String? firstPath;
-      String? secondPath;
-
-      final firstShare = LogsFileFactory.shareFile(
-        'pending share content',
-        fileName: 'pending_share',
-        onShare: (request) async {
-          final path = request.filePaths.single;
-          firstPath = path;
-          callbackStarted.complete(path);
-          await releaseCallback.future;
-        },
-      );
-      addTearDown(() async {
-        if (!releaseCallback.isCompleted) releaseCallback.complete();
-        await firstShare;
-        for (final path in [firstPath, secondPath]) {
-          if (path == null) continue;
-          final file = File(path);
-          if (await file.exists()) await file.delete();
-        }
-      });
-
-      firstPath = await callbackStarted.future;
-      final firstFile = File(firstPath!);
-      await firstFile.setLastModified(
-        DateTime.now().subtract(const Duration(hours: 2)),
-      );
-
-      await LogsFileFactory.shareFile(
-        'second share content',
-        fileName: 'sweep_trigger',
-        onShare: (request) async {
-          secondPath = request.filePaths.single;
-        },
-      );
-
-      expect(await firstFile.exists(), isTrue);
-
-      releaseCallback.complete();
-      await firstShare;
-    });
-
-    test('a freshly created lease-less process directory gets a grace period',
-        () async {
-      final root = Directory(
-        '${testRoot.path}${Platform.pathSeparator}ispect_share',
-      );
-      await root.create(recursive: true);
-      final foreignDirectory = await root.createTemp('process_');
-      final foreignFile = File(
-        '${foreignDirectory.path}${Platform.pathSeparator}foreign.json',
-      );
-      await foreignFile.writeAsString('foreign diagnostics');
-      await foreignFile.setLastModified(
-        DateTime.now().subtract(const Duration(hours: 2)),
-      );
-      addTearDown(() async {
-        if (await foreignDirectory.exists()) {
-          await foreignDirectory.delete(recursive: true);
-        }
-      });
-      late String sharedPath;
-
-      await LogsFileFactory.shareFile(
-        'current share',
-        fileName: 'lease_less_grace',
-        onShare: (request) async => sharedPath = request.filePaths.single,
-      );
-
-      expect(await foreignDirectory.exists(), isTrue);
-      expect(await foreignFile.exists(), isTrue);
-      expect(
-        await File(
+    test(
+      'ignores lookalike share directories outside the managed root',
+      () async {
+        final foreignDirectory = await testRoot.createTemp('ispect_share_');
+        final foreignFile = File(
+          '${foreignDirectory.path}${Platform.pathSeparator}foreign.json',
+        );
+        final foreignLease = File(
           '${foreignDirectory.path}${Platform.pathSeparator}.active-share',
-        ).exists(),
-        isFalse,
-      );
-      await File(sharedPath).delete();
-    });
+        );
+        await foreignFile.writeAsString('foreign diagnostics');
+        await foreignLease.writeAsString('foreign-owner');
+        await foreignFile.setLastModified(
+          DateTime.now().subtract(const Duration(hours: 2)),
+        );
+        addTearDown(() async {
+          if (await foreignDirectory.exists()) {
+            await foreignDirectory.delete(recursive: true);
+          }
+        });
+        late String sharedPath;
 
-    test('never opens another isolate directory from the current process',
-        () async {
-      final root = Directory(
-        '${testRoot.path}${Platform.pathSeparator}ispect_share',
-      );
-      await root.create(recursive: true);
-      final sameProcessDirectory = await root.createTemp('process_${pid}_');
-      final sameProcessFile = File(
-        '${sameProcessDirectory.path}${Platform.pathSeparator}active.json',
-      );
-      final sameProcessLease = File(
-        '${sameProcessDirectory.path}${Platform.pathSeparator}.active-share',
-      );
-      await sameProcessFile.writeAsString('same-process diagnostics');
-      await sameProcessLease.writeAsString('owner=other-isolate\nversion=1\n');
-      final old = DateTime.now().subtract(const Duration(hours: 2));
-      await sameProcessFile.setLastModified(old);
-      await sameProcessLease.setLastModified(old);
-      final sameProcessHandle =
-          await sameProcessLease.open(mode: FileMode.append);
-      await sameProcessHandle.lock();
-      var handleClosed = false;
-      addTearDown(() async {
-        if (!handleClosed) {
-          await sameProcessHandle.unlock();
-          await sameProcessHandle.close();
-        }
-        if (await sameProcessDirectory.exists()) {
-          await sameProcessDirectory.delete(recursive: true);
-        }
-      });
-      late String sharedPath;
+        await LogsFileFactory.shareFile(
+          'current share',
+          fileName: 'cross_process_sweep',
+          onShare: (request) async => sharedPath = request.filePaths.single,
+        );
 
-      await LogsFileFactory.shareFile(
-        'current isolate share',
-        fileName: 'same_process_isolate',
-        onShare: (request) async => sharedPath = request.filePaths.single,
-      );
+        expect(await foreignFile.exists(), isTrue);
+        expect(await foreignLease.exists(), isTrue);
+        await File(sharedPath).delete();
+      },
+    );
 
-      expect(await sameProcessFile.exists(), isTrue);
-      expect(await sameProcessLease.exists(), isTrue);
-      expect(
-        await _probeLeaseLock(lockProbeHelper, sameProcessLease),
-        'blocked',
-      );
-      await sameProcessHandle.unlock();
-      await sameProcessHandle.close();
-      handleClosed = true;
-      await File(sharedPath).delete();
-    });
+    test(
+      'removes crashed-process diagnostics after its lease expires',
+      () async {
+        final root = Directory(
+          '${testRoot.path}${Platform.pathSeparator}ispect_share',
+        );
+        await root.create(recursive: true);
+        final staleDirectory = await root.createTemp('process_');
+        final staleFile = File(
+          '${staleDirectory.path}${Platform.pathSeparator}stale.json',
+        );
+        final staleLease = File(
+          '${staleDirectory.path}${Platform.pathSeparator}.active-share',
+        );
+        await staleFile.writeAsString('stale diagnostics');
+        await staleLease.writeAsString('crashed-owner');
+        final old = DateTime.now().subtract(const Duration(hours: 2));
+        await staleFile.setLastModified(old);
+        await staleLease.setLastModified(old);
+        addTearDown(() async {
+          if (await staleDirectory.exists()) {
+            await staleDirectory.delete(recursive: true);
+          }
+        });
+        late String sharedPath;
+
+        await LogsFileFactory.shareFile(
+          'current share',
+          fileName: 'stale_process_sweep',
+          onShare: (request) async => sharedPath = request.filePaths.single,
+        );
+
+        expect(await staleFile.exists(), isFalse);
+        expect(await staleDirectory.exists(), isTrue);
+        expect(await staleLease.exists(), isTrue);
+        await File(sharedPath).delete();
+      },
+    );
+
+    test(
+      'a fresh foreign lease protects an active cross-process share',
+      () async {
+        final root = Directory(
+          '${testRoot.path}${Platform.pathSeparator}ispect_share',
+        );
+        await root.create(recursive: true);
+        final activeDirectory = await root.createTemp('process_');
+        final activeFile = File(
+          '${activeDirectory.path}${Platform.pathSeparator}active.json',
+        );
+        final activeLease = File(
+          '${activeDirectory.path}${Platform.pathSeparator}.active-share',
+        );
+        await activeFile.writeAsString('active diagnostics');
+        await activeFile.setLastModified(
+          DateTime.now().subtract(const Duration(hours: 2)),
+        );
+        await activeLease.writeAsString('active-owner');
+        addTearDown(() async {
+          if (await activeDirectory.exists()) {
+            await activeDirectory.delete(recursive: true);
+          }
+        });
+        late String sharedPath;
+
+        await LogsFileFactory.shareFile(
+          'current share',
+          fileName: 'active_process_sweep',
+          onShare: (request) async => sharedPath = request.filePaths.single,
+        );
+
+        expect(await activeFile.exists(), isTrue);
+        expect(await activeLease.exists(), isTrue);
+        await File(sharedPath).delete();
+      },
+    );
+
+    test(
+      'stale sweep preserves a file with a pending share callback',
+      () async {
+        final callbackStarted = Completer<String>();
+        final releaseCallback = Completer<void>();
+        String? firstPath;
+        String? secondPath;
+
+        final firstShare = LogsFileFactory.shareFile(
+          'pending share content',
+          fileName: 'pending_share',
+          onShare: (request) async {
+            final path = request.filePaths.single;
+            firstPath = path;
+            callbackStarted.complete(path);
+            await releaseCallback.future;
+          },
+        );
+        addTearDown(() async {
+          if (!releaseCallback.isCompleted) releaseCallback.complete();
+          await firstShare;
+          for (final path in [firstPath, secondPath]) {
+            if (path == null) continue;
+            final file = File(path);
+            if (await file.exists()) await file.delete();
+          }
+        });
+
+        firstPath = await callbackStarted.future;
+        final firstFile = File(firstPath!);
+        await firstFile.setLastModified(
+          DateTime.now().subtract(const Duration(hours: 2)),
+        );
+
+        await LogsFileFactory.shareFile(
+          'second share content',
+          fileName: 'sweep_trigger',
+          onShare: (request) async {
+            secondPath = request.filePaths.single;
+          },
+        );
+
+        expect(await firstFile.exists(), isTrue);
+
+        releaseCallback.complete();
+        await firstShare;
+      },
+    );
+
+    test(
+      'a freshly created lease-less process directory gets a grace period',
+      () async {
+        final root = Directory(
+          '${testRoot.path}${Platform.pathSeparator}ispect_share',
+        );
+        await root.create(recursive: true);
+        final foreignDirectory = await root.createTemp('process_');
+        final foreignFile = File(
+          '${foreignDirectory.path}${Platform.pathSeparator}foreign.json',
+        );
+        await foreignFile.writeAsString('foreign diagnostics');
+        await foreignFile.setLastModified(
+          DateTime.now().subtract(const Duration(hours: 2)),
+        );
+        addTearDown(() async {
+          if (await foreignDirectory.exists()) {
+            await foreignDirectory.delete(recursive: true);
+          }
+        });
+        late String sharedPath;
+
+        await LogsFileFactory.shareFile(
+          'current share',
+          fileName: 'lease_less_grace',
+          onShare: (request) async => sharedPath = request.filePaths.single,
+        );
+
+        expect(await foreignDirectory.exists(), isTrue);
+        expect(await foreignFile.exists(), isTrue);
+        expect(
+          await File(
+            '${foreignDirectory.path}${Platform.pathSeparator}.active-share',
+          ).exists(),
+          isFalse,
+        );
+        await File(sharedPath).delete();
+      },
+    );
+
+    test(
+      'never opens another isolate directory from the current process',
+      () async {
+        final root = Directory(
+          '${testRoot.path}${Platform.pathSeparator}ispect_share',
+        );
+        await root.create(recursive: true);
+        final sameProcessDirectory = await root.createTemp('process_${pid}_');
+        final sameProcessFile = File(
+          '${sameProcessDirectory.path}${Platform.pathSeparator}active.json',
+        );
+        final sameProcessLease = File(
+          '${sameProcessDirectory.path}${Platform.pathSeparator}.active-share',
+        );
+        await sameProcessFile.writeAsString('same-process diagnostics');
+        await sameProcessLease.writeAsString(
+          'owner=other-isolate\nversion=1\n',
+        );
+        final old = DateTime.now().subtract(const Duration(hours: 2));
+        await sameProcessFile.setLastModified(old);
+        await sameProcessLease.setLastModified(old);
+        final sameProcessHandle = await sameProcessLease.open(
+          mode: FileMode.append,
+        );
+        await sameProcessHandle.lock();
+        var handleClosed = false;
+        addTearDown(() async {
+          if (!handleClosed) {
+            await sameProcessHandle.unlock();
+            await sameProcessHandle.close();
+          }
+          if (await sameProcessDirectory.exists()) {
+            await sameProcessDirectory.delete(recursive: true);
+          }
+        });
+        late String sharedPath;
+
+        await LogsFileFactory.shareFile(
+          'current isolate share',
+          fileName: 'same_process_isolate',
+          onShare: (request) async => sharedPath = request.filePaths.single,
+        );
+
+        expect(await sameProcessFile.exists(), isTrue);
+        expect(await sameProcessLease.exists(), isTrue);
+        expect(
+          await _probeLeaseLock(lockProbeHelper, sameProcessLease),
+          'blocked',
+        );
+        await sameProcessHandle.unlock();
+        await sameProcessHandle.close();
+        handleClosed = true;
+        await File(sharedPath).delete();
+      },
+    );
 
     test('a stale but actively locked foreign lease is never swept', () async {
       final root = Directory(
@@ -829,21 +835,18 @@ Future<void> main(List<String> arguments) async {
         const channel = MethodChannel('plugins.flutter.io/path_provider');
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(channel, (_) async {
-          cleanupAttempts++;
-          if (cleanupAttempts == 1) {
-            throw MissingPluginException(
-              'Binding/provider was not ready for early lazy cleanup.',
-            );
-          }
-          return testRoot.path;
-        });
+              cleanupAttempts++;
+              if (cleanupAttempts == 1) {
+                throw MissingPluginException(
+                  'Binding/provider was not ready for early lazy cleanup.',
+                );
+              }
+              return testRoot.path;
+            });
         addTearDown(() async {
           await ISpect.dispose();
           TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-              .setMockMethodCallHandler(
-            channel,
-            (_) async => testRoot.path,
-          );
+              .setMockMethodCallHandler(channel, (_) async => testRoot.path);
           if (await staleDirectory.exists()) {
             await staleDirectory.delete(recursive: true);
           }
@@ -883,10 +886,10 @@ Future<void> _waitUntil(
 }
 
 Future<String> _probeLeaseLock(File helper, File lease) async {
-  final result = await Process.run(
-    Platform.isWindows ? 'dart.exe' : 'dart',
-    [helper.path, lease.path],
-  ).timeout(const Duration(seconds: 10));
+  final result = await Process.run(Platform.isWindows ? 'dart.exe' : 'dart', [
+    helper.path,
+    lease.path,
+  ]).timeout(const Duration(seconds: 10));
   if (result.exitCode != 0) {
     throw ProcessException(
       helper.path,

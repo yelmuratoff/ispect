@@ -54,10 +54,11 @@ class ISpectShareLogBottomSheet {
     RedactionService? redactionService,
     DiagnosticResourceLimits? resourceLimits,
   }) {
-    final limits = (resourceLimits ??
-        ISpect.loggerIfInitialized?.options.resourceLimits ??
-        DiagnosticResourceLimits.balanced)
-      ..validate();
+    final limits =
+        (resourceLimits ??
+              ISpect.loggerIfInitialized?.options.resourceLimits ??
+              DiagnosticResourceLimits.balanced)
+          ..validate();
     final source = action == ExportAction.copy ? truncatedData : data;
     final maxDepth = action == ExportAction.copy
         ? _minimum(10, limits.maxTraversalDepth)
@@ -81,14 +82,15 @@ class ISpectShareLogBottomSheet {
     var redactedEnvelope = preparedEnvelope;
     if (redactionActive) {
       try {
-        redactedEnvelope = ISpectRedaction.resolveService(
-          service: redactionService,
-          sensitiveKeys: redactKeys,
-        ).redactEnvelopeForExport(
-          preparedEnvelope,
-          rootValueKeys: const {'key'},
-          resourceLimits: limits,
-        );
+        redactedEnvelope =
+            ISpectRedaction.resolveService(
+              service: redactionService,
+              sensitiveKeys: redactKeys,
+            ).redactEnvelopeForExport(
+              preparedEnvelope,
+              rootValueKeys: const {'key'},
+              resourceLimits: limits,
+            );
       } catch (_) {
         redactedEnvelope = null;
       }
@@ -101,9 +103,7 @@ class ISpectShareLogBottomSheet {
     );
     final outboundData = boundedEnvelope is Map<String, Object?>
         ? Map<String, dynamic>.from(boundedEnvelope)
-        : <String, dynamic>{
-            'diagnostic': defaultPlaceholder,
-          };
+        : <String, dynamic>{'diagnostic': defaultPlaceholder};
 
     return _formatSingleLog(
       outboundData,
@@ -128,9 +128,7 @@ class ISpectShareLogBottomSheet {
     );
     final envelope = boundedSource is Map<String, Object?>
         ? Map<String, Object?>.from(boundedSource)
-        : <String, Object?>{
-            'diagnostic': defaultPlaceholder,
-          };
+        : <String, Object?>{'diagnostic': defaultPlaceholder};
     if (metadata == null) return envelope;
 
     final metadataMap = _boundedMetadata(
@@ -199,9 +197,7 @@ class ISpectShareLogBottomSheet {
       case ExportFormat.json:
         return _fitsOutput(prettyJson, resourceLimits)
             ? prettyJson
-            : jsonEncode({
-                'diagnostic': LogExportOutput.truncatedMarker,
-              });
+            : jsonEncode({'diagnostic': LogExportOutput.truncatedMarker});
       case ExportFormat.text:
         return LogExportOutput.truncateUtf8(
           prettyJson,
@@ -261,7 +257,8 @@ class ISpectShareLogBottomSheet {
     final output = StringBuffer(header);
     var outputBytes = LogExportOutput.utf8Length(header);
     for (final entry in logData.entries) {
-      final row = '${LogExporter.escapeCsvValue(entry.key)},'
+      final row =
+          '${LogExporter.escapeCsvValue(entry.key)},'
           '${LogExporter.escapeCsvValue(_csvValue(entry.value, resourceLimits))}\n';
       final remaining = maxOutputBytes - outputBytes;
       final rowBytes = LogExportOutput.utf8Length(row, limit: remaining);
@@ -306,14 +303,10 @@ class ISpectShareLogBottomSheet {
   static Object? _jsonCompatible(Object? value) {
     if (value is double && !value.isFinite) return value.toString();
     if (value is Map<String, dynamic>) {
-      return value.map(
-        (key, child) => MapEntry(key, _jsonCompatible(child)),
-      );
+      return value.map((key, child) => MapEntry(key, _jsonCompatible(child)));
     }
     if (value is Map<String, Object?>) {
-      return value.map(
-        (key, child) => MapEntry(key, _jsonCompatible(child)),
-      );
+      return value.map((key, child) => MapEntry(key, _jsonCompatible(child)));
     }
     if (value is List<Object?>) {
       return value.map(_jsonCompatible).toList(growable: false);
@@ -333,15 +326,15 @@ class ISpectShareLogBottomSheet {
 
   static int _maxSingleLogOutputBytes(
     DiagnosticResourceLimits resourceLimits,
-  ) =>
-      _minimum(
-        resourceLimits.maxLogRecordBytes,
-        resourceLimits.maxExportDocumentBytes,
-      );
+  ) => _minimum(
+    resourceLimits.maxLogRecordBytes,
+    resourceLimits.maxExportDocumentBytes,
+  );
 
   static int _minimum(int first, int second) => first < second ? first : second;
 
-  static const String _markdownFallback = '# Log Entry\n\n```json\n'
+  static const String _markdownFallback =
+      '# Log Entry\n\n```json\n'
       '{"diagnostic":"${LogExportOutput.truncatedMarker}"}\n'
       '```\n';
 }

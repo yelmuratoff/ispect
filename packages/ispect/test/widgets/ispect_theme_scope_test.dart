@@ -35,8 +35,9 @@ void main() {
       return injected;
     }
 
-    testWidgets('injects the owned dark theme by default over a light host',
-        (tester) async {
+    testWidgets('injects the owned dark theme by default over a light host', (
+      tester,
+    ) async {
       final injected = await pumpAndReadTheme(
         tester,
         theme: const ISpectTheme(),
@@ -51,8 +52,9 @@ void main() {
       expect(injected.colorScheme.primary, ISpectDefaultPalette.primary.dark);
     });
 
-    testWidgets('renders the owned light variant when themeMode is light',
-        (tester) async {
+    testWidgets('renders the owned light variant when themeMode is light', (
+      tester,
+    ) async {
       final injected = await pumpAndReadTheme(
         tester,
         theme: const ISpectTheme(themeMode: ISpectThemeMode.light),
@@ -66,8 +68,9 @@ void main() {
       );
     });
 
-    testWidgets('passes the host theme through when useHostColors is set',
-        (tester) async {
+    testWidgets('passes the host theme through when useHostColors is set', (
+      tester,
+    ) async {
       final host = ThemeData.light();
       final injected = await pumpAndReadTheme(
         tester,

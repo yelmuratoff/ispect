@@ -6,20 +6,16 @@ import 'package:ispect/src/features/log_viewer/domain/models/file_processing_res
 
 FileProcessingResult _processPastedContentInBackground(
   ({String content, DiagnosticResourceLimits resourceLimits}) input,
-) =>
-    FileProcessingService(
-      resourceLimits: input.resourceLimits,
-    ).processPastedContent(input.content);
+) => FileProcessingService(
+  resourceLimits: input.resourceLimits,
+).processPastedContent(input.content);
 
 /// Service that normalizes and validates raw log content.
 ///
 /// This service follows SOLID principles by having a single responsibility:
 /// processing and validating content format.
 class FileProcessingService {
-  const FileProcessingService({
-    this.resourceLimits,
-    this.processingPolicy,
-  });
+  const FileProcessingService({this.resourceLimits, this.processingPolicy});
 
   final DiagnosticResourceLimits? resourceLimits;
   final DiagnosticProcessingPolicy? processingPolicy;
@@ -31,20 +27,15 @@ class FileProcessingService {
     final scheduling = _processingPolicy;
     if (content.length > limits.maxImportCharacters ||
         content.length < scheduling.backgroundProcessingThresholdBytes) {
-      return Future<FileProcessingResult>.value(
-        processPastedContent(content),
-      );
+      return Future<FileProcessingResult>.value(processPastedContent(content));
     }
     if (kIsWeb) {
-      return Future<FileProcessingResult>(
-        () => processPastedContent(content),
-      );
+      return Future<FileProcessingResult>(() => processPastedContent(content));
     }
-    return compute(
-      _processPastedContentInBackground,
-      (content: content, resourceLimits: limits),
-      debugLabel: 'ISpect JSON import',
-    );
+    return compute(_processPastedContentInBackground, (
+      content: content,
+      resourceLimits: limits,
+    ), debugLabel: 'ISpect JSON import');
   }
 
   /// Process pasted content with auto-detected format
@@ -130,14 +121,13 @@ class FileProcessingService {
   static Object? _decodeForViewer(
     String content,
     DiagnosticResourceLimits resourceLimits,
-  ) =>
-      JsonInputPreflight.decode(
-        content,
-        characterLimit: resourceLimits.maxImportCharacters,
-        encodedByteLimit: resourceLimits.maxImportBytes,
-        nestingDepthLimit: resourceLimits.maxTraversalDepth,
-        approximateNodeLimit: resourceLimits.maxViewerNodes,
-      );
+  ) => JsonInputPreflight.decode(
+    content,
+    characterLimit: resourceLimits.maxImportCharacters,
+    encodedByteLimit: resourceLimits.maxImportBytes,
+    nestingDepthLimit: resourceLimits.maxTraversalDepth,
+    approximateNodeLimit: resourceLimits.maxViewerNodes,
+  );
 
   /// Validate JSON content
   bool isValidJson(String content) {
@@ -157,18 +147,20 @@ class FileProcessingService {
       (content.startsWith('[') && content.endsWith(']'));
 
   DiagnosticResourceLimits get _resourceLimits {
-    final limits = (resourceLimits ??
-        ISpect.loggerIfInitialized?.options.resourceLimits ??
-        DiagnosticResourceLimits.balanced)
-      ..validate();
+    final limits =
+        (resourceLimits ??
+              ISpect.loggerIfInitialized?.options.resourceLimits ??
+              DiagnosticResourceLimits.balanced)
+          ..validate();
     return limits;
   }
 
   DiagnosticProcessingPolicy get _processingPolicy {
-    final policy = (processingPolicy ??
-        ISpect.loggerIfInitialized?.options.processingPolicy ??
-        DiagnosticProcessingPolicy.balanced)
-      ..validate();
+    final policy =
+        (processingPolicy ??
+              ISpect.loggerIfInitialized?.options.processingPolicy ??
+              DiagnosticProcessingPolicy.balanced)
+          ..validate();
     return policy;
   }
 }

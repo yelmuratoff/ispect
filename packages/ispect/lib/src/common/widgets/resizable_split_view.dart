@@ -56,48 +56,42 @@ class _ResizableSplitViewState extends State<ResizableSplitView> {
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, constraints) {
-          final totalWidth = constraints.maxWidth;
-          final dividerHalf = widget.dividerWidth / 2;
-          final leftWidth = (totalWidth * _ratio) - dividerHalf;
-          final rightWidth = totalWidth * (1 - _ratio) - dividerHalf;
+    builder: (context, constraints) {
+      final totalWidth = constraints.maxWidth;
+      final dividerHalf = widget.dividerWidth / 2;
+      final leftWidth = (totalWidth * _ratio) - dividerHalf;
+      final rightWidth = totalWidth * (1 - _ratio) - dividerHalf;
 
-          return Row(
-            children: [
-              SizedBox(
-                width: leftWidth.clamp(0, totalWidth),
-                child: widget.left,
-              ),
-              _DragDivider(
-                width: widget.dividerWidth,
-                isDragging: _isDragging,
-                isHovered: _isHovered,
-                dividerColor: widget.dividerColor ??
-                    context.ispectTheme.divider?.resolve(context),
-                onHoverChanged: (hovered) =>
-                    setState(() => _isHovered = hovered),
-                onDragStart: () => setState(() => _isDragging = true),
-                onDragUpdate: (dx) {
-                  setState(() {
-                    _ratio = (_ratio + dx / totalWidth).clamp(
-                      widget.minRatio,
-                      widget.maxRatio,
-                    );
-                  });
-                },
-                onDragEnd: () {
-                  setState(() => _isDragging = false);
-                  widget.onRatioChanged?.call(_ratio);
-                },
-              ),
-              SizedBox(
-                width: rightWidth.clamp(0, totalWidth),
-                child: widget.right,
-              ),
-            ],
-          );
-        },
+      return Row(
+        children: [
+          SizedBox(width: leftWidth.clamp(0, totalWidth), child: widget.left),
+          _DragDivider(
+            width: widget.dividerWidth,
+            isDragging: _isDragging,
+            isHovered: _isHovered,
+            dividerColor:
+                widget.dividerColor ??
+                context.ispectTheme.divider?.resolve(context),
+            onHoverChanged: (hovered) => setState(() => _isHovered = hovered),
+            onDragStart: () => setState(() => _isDragging = true),
+            onDragUpdate: (dx) {
+              setState(() {
+                _ratio = (_ratio + dx / totalWidth).clamp(
+                  widget.minRatio,
+                  widget.maxRatio,
+                );
+              });
+            },
+            onDragEnd: () {
+              setState(() => _isDragging = false);
+              widget.onRatioChanged?.call(_ratio);
+            },
+          ),
+          SizedBox(width: rightWidth.clamp(0, totalWidth), child: widget.right),
+        ],
       );
+    },
+  );
 }
 
 class _DragDivider extends StatelessWidget {
@@ -126,8 +120,9 @@ class _DragDivider extends StatelessWidget {
     final isActive = isDragging || isHovered;
     final primaryColor = context.ispectPrimaryColor;
     final defaultColor = context.ispectSubtleBorderColor;
-    final lineColor =
-        isActive ? primaryColor.withValues(alpha: 0.5) : defaultColor;
+    final lineColor = isActive
+        ? primaryColor.withValues(alpha: 0.5)
+        : defaultColor;
 
     return Semantics(
       label: 'Resize divider',

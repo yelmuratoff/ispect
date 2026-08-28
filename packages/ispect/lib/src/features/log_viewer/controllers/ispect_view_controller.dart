@@ -60,11 +60,13 @@ class ISpectViewController implements Listenable {
   }) {
     _onShare = onShare;
     _metadataProvider = metadataProvider;
-    final resolvedResourceLimits = resourceLimits ??
+    final resolvedResourceLimits =
+        resourceLimits ??
         initialSettings?.resourceLimits ??
         ISpect.loggerIfInitialized?.options.resourceLimits ??
         DiagnosticResourceLimits.balanced;
-    final resolvedProcessingPolicy = processingPolicy ??
+    final resolvedProcessingPolicy =
+        processingPolicy ??
         initialSettings?.processingPolicy ??
         ISpect.loggerIfInitialized?.options.processingPolicy ??
         DiagnosticProcessingPolicy.balanced;
@@ -80,9 +82,7 @@ class ISpectViewController implements Listenable {
     }
 
     _filterManager = FilterManager(
-      initialFilter: ISpectFilter(
-        resourceLimits: resolvedResourceLimits,
-      ),
+      initialFilter: ISpectFilter(resourceLimits: resolvedResourceLimits),
       excludedLogTypeKeys:
           initialSettings?.disabledLogTypes ?? const <String>{},
       resourceLimits: resolvedResourceLimits,
@@ -253,8 +253,7 @@ class ISpectViewController implements Listenable {
   ({ISpectLogData entry, int actualIndex})? getLogEntryAtIndex(
     List<ISpectLogData> filteredEntries,
     int index,
-  ) =>
-      _sorting.getLogEntryAtIndex(filteredEntries, index);
+  ) => _sorting.getLogEntryAtIndex(filteredEntries, index);
 
   // --- Display delegation ---
 
@@ -338,9 +337,7 @@ class ISpectViewController implements Listenable {
   List<ISpectLogData> applyCurrentFilters(List<ISpectLogData> logsData) =>
       _filterManager.applyCurrentFilters(logsData);
 
-  List<ISpectLogData> applyFiltersWithoutSearch(
-    List<ISpectLogData> logsData,
-  ) =>
+  List<ISpectLogData> applyFiltersWithoutSearch(List<ISpectLogData> logsData) =>
       _filterManager.applyFiltersWithoutSearch(logsData);
 
   void onDataChanged() => _filterManager.onDataChanged();
@@ -411,15 +408,13 @@ class ISpectViewController implements Listenable {
       required String value,
       String? title,
       bool? showValue,
-    }) copyClipboard,
+    })
+    copyClipboard,
     String title,
   ) {
     copyClipboard(
       context,
-      value: LogExporter.toJsonLines(
-        logs,
-        resourceLimits: _resourceLimits,
-      ),
+      value: LogExporter.toJsonLines(logs, resourceLimits: _resourceLimits),
       title: title,
       showValue: false,
     );
@@ -468,8 +463,7 @@ class ISpectViewController implements Listenable {
 
   Future<LogsImportResult> importLogsFromJsonWithReport(
     String jsonContent,
-  ) async =>
-      _importService.importLogsFromJsonWithReport(jsonContent);
+  ) async => _importService.importLogsFromJsonWithReport(jsonContent);
 
   bool validateLogsJsonContent(String jsonContent) =>
       _importService.validateLogsJsonContent(jsonContent);

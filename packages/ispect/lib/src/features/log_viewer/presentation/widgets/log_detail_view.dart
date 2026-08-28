@@ -110,10 +110,12 @@ class _LogDetailViewState extends State<LogDetailView> {
         : _viewerText(captureISpectLogDataForEgress(correlatedLog).message);
     final correlationId = activeData.additionalData?[TraceKeys.correlationId];
     final transactionId = activeData.additionalData?[TraceKeys.transactionId];
-    _correlationId =
-        _viewerTraceId(correlationId is String ? correlationId : null);
-    _transactionId =
-        _viewerTraceId(transactionId is String ? transactionId : null);
+    _correlationId = _viewerTraceId(
+      correlationId is String ? correlationId : null,
+    );
+    _transactionId = _viewerTraceId(
+      transactionId is String ? transactionId : null,
+    );
     _isViewingRequest = activeData.key == ISpectLogType.httpRequest.key;
     final json = _viewerSnapshot();
     _jsonScreen = JsonScreen(
@@ -150,12 +152,8 @@ class _LogDetailViewState extends State<LogDetailView> {
     };
   }
 
-  ({String display, String raw})? _viewerTraceId(String? value) => value == null
-      ? null
-      : (
-          display: _viewerText(value),
-          raw: value,
-        );
+  ({String display, String raw})? _viewerTraceId(String? value) =>
+      value == null ? null : (display: _viewerText(value), raw: value);
 
   String _viewerText(Object? value) {
     if (value == null) return '';
@@ -193,8 +191,8 @@ class _LogDetailViewState extends State<LogDetailView> {
   Widget build(BuildContext context) {
     final hasTraceCorrelation =
         (_correlationId != null || _transactionId != null) &&
-            !(widget.correlatedLog != null &&
-                widget.onNavigateToCorrelated != null);
+        !(widget.correlatedLog != null &&
+            widget.onNavigateToCorrelated != null);
 
     return Column(
       children: [
@@ -212,11 +210,7 @@ class _LogDetailViewState extends State<LogDetailView> {
             transactionId: _transactionId,
             onShowRelated: widget.onShowRelated,
           ),
-        Expanded(
-          child: RepaintBoundary(
-            child: _jsonScreen,
-          ),
-        ),
+        Expanded(child: RepaintBoundary(child: _jsonScreen)),
       ],
     );
   }
@@ -283,9 +277,7 @@ class _TraceCorrelationBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.06),
         border: Border(
-          bottom: BorderSide(
-            color: color.withValues(alpha: 0.15),
-          ),
+          bottom: BorderSide(color: color.withValues(alpha: 0.15)),
         ),
       ),
       child: Padding(
@@ -298,13 +290,7 @@ class _TraceCorrelationBanner extends StatelessWidget {
               color: color.withValues(alpha: 0.7),
             ),
             const Gap(6),
-            Expanded(
-              child: Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: chips,
-              ),
-            ),
+            Expanded(child: Wrap(spacing: 6, runSpacing: 4, children: chips)),
           ],
         ),
       ),
@@ -329,45 +315,41 @@ class _IdChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: MouseRegion(
-          cursor: onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
-          child: DecoratedBox(
-            decoration: ISpectSquircle.decoration(
-              color: color.withValues(alpha: 0.1),
-              radius: ISpectConstants.mediumBorderRadius,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      '$label: $value',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
+    onTap: onTap,
+    child: MouseRegion(
+      cursor: onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+      child: DecoratedBox(
+        decoration: ISpectSquircle.decoration(
+          color: color.withValues(alpha: 0.1),
+          radius: ISpectConstants.mediumBorderRadius,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  '$label: $value',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
-                  if (onTap != null) ...[
-                    const Gap(4),
-                    Icon(
-                      actionIcon,
-                      size: 11,
-                      color: color,
-                    ),
-                  ],
-                ],
+                ),
               ),
-            ),
+              if (onTap != null) ...[
+                const Gap(4),
+                Icon(actionIcon, size: 11, color: color),
+              ],
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class _CorrelationBanner extends StatelessWidget {
@@ -392,16 +374,15 @@ class _CorrelationBanner extends StatelessWidget {
     final targetKey = isViewingRequest
         ? ISpectLogType.httpResponse.key
         : ISpectLogType.httpRequest.key;
-    final targetColor = theme.getTypeColor(context, key: targetKey) ??
+    final targetColor =
+        theme.getTypeColor(context, key: targetKey) ??
         context.ispectPrimaryColor;
 
     return DecoratedBox(
       decoration: BoxDecoration(
         color: targetColor.withValues(alpha: 0.06),
         border: Border(
-          bottom: BorderSide(
-            color: targetColor.withValues(alpha: 0.15),
-          ),
+          bottom: BorderSide(color: targetColor.withValues(alpha: 0.15)),
         ),
       ),
       child: Padding(
@@ -486,37 +467,33 @@ class _GoToButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: DecoratedBox(
-            decoration: ISpectSquircle.decoration(
-              color: color.withValues(alpha: 0.1),
-              radius: ISpectConstants.mediumBorderRadius,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Gap(4),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 12,
-                    color: color,
-                  ),
-                ],
+    onTap: onTap,
+    child: MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: DecoratedBox(
+        decoration: ISpectSquircle.decoration(
+          color: color.withValues(alpha: 0.1),
+          radius: ISpectConstants.mediumBorderRadius,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
+              const Gap(4),
+              Icon(Icons.arrow_forward_rounded, size: 12, color: color),
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 }

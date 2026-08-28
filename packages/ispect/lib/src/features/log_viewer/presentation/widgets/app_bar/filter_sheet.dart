@@ -60,9 +60,7 @@ class ISpectFilterSheet extends StatelessWidget {
             // Log type chips
             if (uniqTitles.isNotEmpty) ...[
               const Gap(4),
-              ISpectSectionLabel(
-                title: context.ispectL10n.logTypes,
-              ),
+              ISpectSectionLabel(title: context.ispectL10n.logTypes),
               _LogTypeChipsWrap(
                 titles: titles,
                 uniqTitles: uniqTitles,
@@ -75,8 +73,10 @@ class ISpectFilterSheet extends StatelessWidget {
             // Clear all — only when chips are selected
             if (hasSelectedChips)
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
@@ -89,8 +89,9 @@ class ISpectFilterSheet extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: context.appTheme.colorScheme.error,
                       side: BorderSide(
-                        color: context.appTheme.colorScheme.error
-                            .withValues(alpha: 0.3),
+                        color: context.appTheme.colorScheme.error.withValues(
+                          alpha: 0.3,
+                        ),
                       ),
                       shape: ISpectSquircle.border(),
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -111,10 +112,7 @@ class ISpectFilterSheet extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _SearchModeSection extends StatelessWidget {
-  const _SearchModeSection({
-    required this.searchMode,
-    required this.onChanged,
-  });
+  const _SearchModeSection({required this.searchMode, required this.onChanged});
 
   final SearchMode searchMode;
   final ValueChanged<SearchMode> onChanged;
@@ -150,8 +148,9 @@ class _SearchModeSection extends StatelessWidget {
                   icon: Icon(
                     Icons.filter_list_rounded,
                     size: 18,
-                    color:
-                        searchMode == SearchMode.filter ? primaryColor : null,
+                    color: searchMode == SearchMode.filter
+                        ? primaryColor
+                        : null,
                   ),
                   label: Text(context.ispectL10n.filters),
                 ),
@@ -270,8 +269,9 @@ class _LogTypeChip extends StatelessWidget {
             color: isSelected ? typeColor.withValues(alpha: 0.1) : cardColor,
             radius: ISpectConstants.largeBorderRadius,
             side: BorderSide(
-              color:
-                  isSelected ? typeColor.withValues(alpha: 0.4) : borderColor,
+              color: isSelected
+                  ? typeColor.withValues(alpha: 0.4)
+                  : borderColor,
             ),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),

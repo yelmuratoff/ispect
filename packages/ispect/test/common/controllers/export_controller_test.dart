@@ -32,9 +32,7 @@ void main() {
   late ISpectLogger logger;
 
   setUp(() {
-    logger = ISpectLogger(
-      options: ISpectLoggerOptions(useConsoleLogs: false),
-    );
+    logger = ISpectLogger(options: ISpectLoggerOptions(useConsoleLogs: false));
     ISpect.initialize(logger, force: true);
   });
 
@@ -45,8 +43,7 @@ void main() {
     ExportFormat _, {
     required ExportAction action,
     Set<String>? redactKeys,
-  }) =>
-      Future<String>.error(error);
+  }) => Future<String>.error(error);
 
   test('snapshots export exceptions without retaining their text', () async {
     final controller = ExportController(
@@ -81,20 +78,13 @@ void main() {
 
     await expectLater(
       controller.share(
-        (format, {required action, redactKeys}) => failWith(
-          failure,
-          format,
-          action: action,
-          redactKeys: redactKeys,
-        ),
+        (format, {required action, redactKeys}) =>
+            failWith(failure, format, action: action, redactKeys: redactKeys),
       ),
       completes,
     );
 
-    expect(
-      logger.history.last.message,
-      contains('Exception'),
-    );
+    expect(logger.history.last.message, contains('Exception'));
     expect(
       logger.history.last.message,
       isNot(contains('EXPORT_TOSTRING_SECRET')),
@@ -103,20 +93,19 @@ void main() {
   });
 
   test('bounds generic builder output before file egress', () async {
-    final testRoot =
-        await Directory.systemTemp.createTemp('ispect_export_controller_');
+    final testRoot = await Directory.systemTemp.createTemp(
+      'ispect_export_controller_',
+    );
     const pathProvider = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(pathProvider, (_) async => testRoot.path);
-    addTearDown(
-      () async {
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(pathProvider, null);
-        if (await testRoot.exists()) {
-          await testRoot.delete(recursive: true);
-        }
-      },
-    );
+    addTearDown(() async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(pathProvider, null);
+      if (await testRoot.exists()) {
+        await testRoot.delete(recursive: true);
+      }
+    });
     const limits = DiagnosticResourceLimits(
       maxCapturedValueBytes: 128,
       maxLogRecordBytes: 256,
@@ -129,10 +118,8 @@ void main() {
     addTearDown(controller.dispose);
 
     await controller.download(
-      (_, {required action, redactKeys}) async => 'a'.padRight(
-        limits.maxExportDocumentBytes + 1,
-        'a',
-      ),
+      (_, {required action, redactKeys}) async =>
+          'a'.padRight(limits.maxExportDocumentBytes + 1, 'a'),
     );
 
     final content = await File(controller.resultPath).readAsString();

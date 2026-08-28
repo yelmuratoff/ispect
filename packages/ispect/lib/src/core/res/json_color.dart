@@ -74,13 +74,13 @@ class JsonColors {
   /// - `5xx` (Server Errors) → Red
   /// - Other / Unknown → Grey
   static Color statusColor(int? statusCode) => switch (statusCode) {
-        null => Colors.grey,
-        >= 200 && < 300 => Colors.green,
-        >= 300 && < 400 => Colors.orange,
-        >= 400 && < 500 => Colors.red,
-        >= 500 => Colors.red,
-        _ => Colors.grey,
-      };
+    null => Colors.grey,
+    >= 200 && < 300 => Colors.green,
+    >= 300 && < 400 => Colors.orange,
+    >= 400 && < 500 => Colors.red,
+    >= 500 => Colors.red,
+    _ => Colors.grey,
+  };
 
   /// HTTP method colors for the light theme.
   ///
@@ -122,9 +122,8 @@ class JsonColors {
   ///
   /// Returns `null` for unknown methods so callers can supply a fallback.
   static Color? methodColorFor(String method, Brightness brightness) =>
-      (brightness == Brightness.dark
-          ? methodColorsDark
-          : methodColors)[method.toUpperCase()];
+      (brightness == Brightness.dark ? methodColorsDark : methodColors)[method
+          .toUpperCase()];
 
   /// Semantic status palette (`base` / `dark` pairs) shared by network badges,
   /// status indicators, and slow-call warnings.

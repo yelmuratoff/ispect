@@ -9,8 +9,9 @@ import '../../../../helpers/pump_ispect.dart';
 void main() {
   tearDown(ISpectRedaction.reset);
 
-  testWidgets('build does not re-execute captured diagnostic methods',
-      (tester) async {
+  testWidgets('build does not re-execute captured diagnostic methods', (
+    tester,
+  ) async {
     final calls = _InvocationCounters();
     final log = ISpectLogData(
       'safe message',
@@ -25,9 +26,7 @@ void main() {
     final toJsonCallsAtCapture = calls.toJsonCalls;
     final toStringCallsAtCapture = calls.toStringCalls;
 
-    await tester.pumpWidget(
-      appShell(LogDetailView(activeData: log)),
-    );
+    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
 
     expect(tester.takeException(), isNull);
     expect(calls.toJsonCalls, toJsonCallsAtCapture);
@@ -42,21 +41,21 @@ void main() {
     );
   });
 
-  testWidgets('build honors the explicit global redaction opt-out',
-      (tester) async {
+  testWidgets('build honors the explicit global redaction opt-out', (
+    tester,
+  ) async {
     ISpectRedaction.enabled = false;
     final log = ISpectLogData('RAW_DETAIL_VALUE');
 
-    await tester.pumpWidget(
-      appShell(LogDetailView(activeData: log)),
-    );
+    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
 
     final screen = tester.widget<JsonScreen>(find.byType(JsonScreen));
     expect(screen.data['message'], 'RAW_DETAIL_VALUE');
   });
 
-  testWidgets('malformed trace identifiers do not break the detail view',
-      (tester) async {
+  testWidgets('malformed trace identifiers do not break the detail view', (
+    tester,
+  ) async {
     final log = ISpectLogData(
       'malformed imported trace metadata',
       additionalData: const {
@@ -65,16 +64,15 @@ void main() {
       },
     );
 
-    await tester.pumpWidget(
-      appShell(LogDetailView(activeData: log)),
-    );
+    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
 
     expect(tester.takeException(), isNull);
     expect(find.byType(JsonScreen), findsOneWidget);
   });
 
-  testWidgets('reuses the bounded snapshot when the same log rebuilds',
-      (tester) async {
+  testWidgets('reuses the bounded snapshot when the same log rebuilds', (
+    tester,
+  ) async {
     final log = ISpectLogData(
       'stable detail',
       additionalData: const {
@@ -83,12 +81,14 @@ void main() {
     );
 
     await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
-    final firstSnapshot =
-        tester.widget<JsonScreen>(find.byType(JsonScreen)).data;
+    final firstSnapshot = tester
+        .widget<JsonScreen>(find.byType(JsonScreen))
+        .data;
 
     await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
-    final rebuiltSnapshot =
-        tester.widget<JsonScreen>(find.byType(JsonScreen)).data;
+    final rebuiltSnapshot = tester
+        .widget<JsonScreen>(find.byType(JsonScreen))
+        .data;
 
     expect(identical(rebuiltSnapshot, firstSnapshot), isTrue);
   });
@@ -102,25 +102,21 @@ void main() {
 
       await tester.pumpWidget(
         appShell(
-          LogDetailView(
-            activeData: log,
-            onClose: () => firstCallbackCalls++,
-          ),
+          LogDetailView(activeData: log, onClose: () => firstCallbackCalls++),
         ),
       );
-      final firstSnapshot =
-          tester.widget<JsonScreen>(find.byType(JsonScreen)).data;
+      final firstSnapshot = tester
+          .widget<JsonScreen>(find.byType(JsonScreen))
+          .data;
 
       await tester.pumpWidget(
         appShell(
-          LogDetailView(
-            activeData: log,
-            onClose: () => latestCallbackCalls++,
-          ),
+          LogDetailView(activeData: log, onClose: () => latestCallbackCalls++),
         ),
       );
-      final rebuiltSnapshot =
-          tester.widget<JsonScreen>(find.byType(JsonScreen)).data;
+      final rebuiltSnapshot = tester
+          .widget<JsonScreen>(find.byType(JsonScreen))
+          .data;
 
       expect(identical(rebuiltSnapshot, firstSnapshot), isTrue);
       final closeButton = tester.widget<IconButton>(
@@ -136,8 +132,9 @@ void main() {
     },
   );
 
-  testWidgets('a replacement global redaction policy refreshes the snapshot',
-      (tester) async {
+  testWidgets('a replacement global redaction policy refreshes the snapshot', (
+    tester,
+  ) async {
     const policyKey = 'policy_specific_field';
     const rawValue = 'visible project value';
     final log = ISpectLogData(
@@ -156,9 +153,7 @@ void main() {
         firstScreen.data['additional-data']! as Map<String, dynamic>;
 
     ISpectRedaction.configure(
-      service: RedactionService(
-        additionalSensitiveKeys: const {policyKey},
-      ),
+      service: RedactionService(additionalSensitiveKeys: const {policyKey}),
     );
     await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
     final replacementScreen = tester.widget<JsonScreen>(
@@ -172,13 +167,13 @@ void main() {
     expect(replacementScreen.key, isNot(firstScreen.key));
   });
 
-  testWidgets('an in-place policy mutation invalidates the cached snapshot',
-      (tester) async {
+  testWidgets('an in-place policy mutation invalidates the cached snapshot', (
+    tester,
+  ) async {
     const policyKey = 'mutable_policy_field';
     const rawValue = 'visible mutable value';
-    final service = RedactionService(
-      additionalSensitiveKeys: const {policyKey},
-    )..ignoreKey(policyKey);
+    final service = RedactionService(additionalSensitiveKeys: const {policyKey})
+      ..ignoreKey(policyKey);
     ISpectRedaction.configure(service: service);
     final log = ISpectLogData(
       'mutable policy detail',
@@ -203,13 +198,11 @@ void main() {
     expect(replacementScreen.key, isNot(firstScreen.key));
   });
 
-  testWidgets('correlation banner follows the global redaction policy',
-      (tester) async {
+  testWidgets('correlation banner follows the global redaction policy', (
+    tester,
+  ) async {
     const rawSecret = 'CORRELATED_BANNER_SECRET';
-    final active = ISpectLogData(
-      'request',
-      key: ISpectLogType.httpRequest.key,
-    );
+    final active = ISpectLogData('request', key: ISpectLogType.httpRequest.key);
     final correlated = ISpectLogData(
       'GET https://api.example.test/items?token=$rawSecret',
       key: ISpectLogType.httpResponse.key,
@@ -239,8 +232,9 @@ void main() {
     expect(find.textContaining(rawSecret), findsOneWidget);
   });
 
-  testWidgets('trace chips display and copy redacted identifiers',
-      (tester) async {
+  testWidgets('trace chips display and copy redacted identifiers', (
+    tester,
+  ) async {
     const correlationSecret = 'TRACE_CORRELATION_SECRET';
     const transactionSecret = 'TRACE_TRANSACTION_SECRET';
     String? copiedText;
@@ -283,31 +277,28 @@ void main() {
     expect(find.textContaining(transactionSecret), findsWidgets);
   });
 
-  testWidgets('a throwing view redactor fails closed unless globally disabled',
-      (tester) async {
-    const rawSecret = 'THROWING_VIEW_REDACTOR_SECRET';
-    ISpectRedaction.configure(service: _ThrowingViewRedactionService());
-    final log = ISpectLogData(
-      rawSecret,
-      additionalData: const {
-        TraceKeys.correlationId: 'Bearer $rawSecret',
-      },
-    );
+  testWidgets(
+    'a throwing view redactor fails closed unless globally disabled',
+    (tester) async {
+      const rawSecret = 'THROWING_VIEW_REDACTOR_SECRET';
+      ISpectRedaction.configure(service: _ThrowingViewRedactionService());
+      final log = ISpectLogData(
+        rawSecret,
+        additionalData: const {TraceKeys.correlationId: 'Bearer $rawSecret'},
+      );
 
-    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
-    expect(tester.takeException(), isNull);
-    expect(find.textContaining(rawSecret), findsNothing);
-    final screen = tester.widget<JsonScreen>(find.byType(JsonScreen));
-    expect(
-      screen.data['message'],
-      JsonValueNormalizer.unprintableValue,
-    );
+      await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining(rawSecret), findsNothing);
+      final screen = tester.widget<JsonScreen>(find.byType(JsonScreen));
+      expect(screen.data['message'], JsonValueNormalizer.unprintableValue);
 
-    ISpectRedaction.enabled = false;
-    await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
-    expect(tester.takeException(), isNull);
-    expect(find.textContaining(rawSecret), findsWidgets);
-  });
+      ISpectRedaction.enabled = false;
+      await tester.pumpWidget(appShell(LogDetailView(activeData: log)));
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining(rawSecret), findsWidgets);
+    },
+  );
 }
 
 final class _InvocationCounters {
@@ -340,8 +331,7 @@ final class _ThrowingViewRedactionService extends RedactionService {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
-  }) =>
-      throw StateError('view envelope redaction failed');
+  }) => throw StateError('view envelope redaction failed');
 
   @override
   Object? redactForExport(
@@ -349,8 +339,7 @@ final class _ThrowingViewRedactionService extends RedactionService {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
-  }) =>
-      throw StateError('view text redaction failed');
+  }) => throw StateError('view text redaction failed');
 }
 
 final class _HostileException implements Exception {

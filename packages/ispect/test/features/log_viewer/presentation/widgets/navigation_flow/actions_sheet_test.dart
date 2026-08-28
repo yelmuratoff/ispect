@@ -20,35 +20,37 @@ void main() {
     });
 
     RouteTransition transitionWithArgs(Object? arguments) => RouteTransition(
-          id: 'corr-1',
-          from: const RouteMetadata(name: '/home', routeType: 'Page'),
-          to: const RouteMetadata(name: '/profile', routeType: 'Page'),
-          type: TransitionType.push,
-          timestamp: DateTime(2025, 1, 1, 12),
-          arguments: arguments,
+      id: 'corr-1',
+      from: const RouteMetadata(name: '/home', routeType: 'Page'),
+      to: const RouteMetadata(name: '/profile', routeType: 'Page'),
+      type: TransitionType.push,
+      timestamp: DateTime(2025, 1, 1, 12),
+      arguments: arguments,
+    );
+
+    test(
+      'masks sensitive route-argument values on export when redactKeys set',
+      () {
+        final items = [
+          transitionWithArgs(const {
+            'token': 'super-secret-abc123',
+            'screen': 'profile',
+          }),
+        ];
+
+        final content = ISpectNavigationFlowActionsSheet.buildContent(
+          transition: null,
+          items: items,
+          format: ExportFormat.text,
+          action: ExportAction.share,
+          redactKeys: const {'token'},
         );
 
-    test('masks sensitive route-argument values on export when redactKeys set',
-        () {
-      final items = [
-        transitionWithArgs(const {
-          'token': 'super-secret-abc123',
-          'screen': 'profile',
-        }),
-      ];
-
-      final content = ISpectNavigationFlowActionsSheet.buildContent(
-        transition: null,
-        items: items,
-        format: ExportFormat.text,
-        action: ExportAction.share,
-        redactKeys: const {'token'},
-      );
-
-      expect(content, isNot(contains('super-secret-abc123')));
-      expect(content, contains('screen'));
-      expect(content, contains('profile'));
-    });
+        expect(content, isNot(contains('super-secret-abc123')));
+        expect(content, contains('screen'));
+        expect(content, contains('profile'));
+      },
+    );
 
     test('redacts route arguments by default when keys are omitted', () {
       final items = [
@@ -156,10 +158,7 @@ void main() {
 
     test('bounds a lazy history before materializing all transitions', () {
       final item = transitionWithArgs(null);
-      final items = _LazyTransitionList(
-        item,
-        virtualLength: 1000000,
-      );
+      final items = _LazyTransitionList(item, virtualLength: 1000000);
 
       final content = ISpectNavigationFlowActionsSheet.buildContent(
         transition: null,
@@ -178,10 +177,7 @@ void main() {
 
     test('bounds reverse traversal for a copied navigation path', () {
       final item = transitionWithArgs(null);
-      final items = _LazyTransitionList(
-        item,
-        virtualLength: 1000000,
-      );
+      final items = _LazyTransitionList(item, virtualLength: 1000000);
       final target = RouteTransition(
         id: 'not-in-window',
         from: item.from,
@@ -209,10 +205,8 @@ void main() {
     test('fails closed on oversized route text before redaction', () {
       const leadingSecret = 'OVERSIZED_ROUTE_SECRET';
       const trailingSecret = 'OVERSIZED_ROUTE_TAIL_SECRET';
-      final hugeRoute = '$leadingSecret${''.padRight(
-        LogExportOutput.maxRecordBytes * 2,
-        'x',
-      )}$trailingSecret';
+      final hugeRoute =
+          '$leadingSecret${''.padRight(LogExportOutput.maxRecordBytes * 2, 'x')}$trailingSecret';
       final item = RouteTransition(
         id: 'oversized',
         from: const RouteMetadata(name: '/home', routeType: 'Page'),
@@ -243,10 +237,8 @@ void main() {
     test('keeps only a bounded prefix after explicit redaction opt-out', () {
       const visiblePrefix = 'CONTROLLED_DEBUG_PREFIX';
       const omittedTail = 'CONTROLLED_DEBUG_OMITTED_TAIL';
-      final hugeRoute = '$visiblePrefix${''.padRight(
-        LogExportOutput.maxRecordBytes * 2,
-        'x',
-      )}$omittedTail';
+      final hugeRoute =
+          '$visiblePrefix${''.padRight(LogExportOutput.maxRecordBytes * 2, 'x')}$omittedTail';
       final item = RouteTransition(
         id: 'oversized-opt-out',
         from: const RouteMetadata(name: '/home', routeType: 'Page'),
@@ -280,7 +272,8 @@ void main() {
         id: 'markdown-fence',
         from: const RouteMetadata(name: '/home', routeType: 'Page'),
         to: const RouteMetadata(
-          name: '/route\n```\nBACKTICK_INJECTION\n```\n'
+          name:
+              '/route\n```\nBACKTICK_INJECTION\n```\n'
               '~~~\nTILDE_INJECTION\n~~~',
           routeType: 'Page',
         ),
@@ -385,10 +378,7 @@ final class _ThrowingLengthMap extends MapBase<Object?, Object?> {
 }
 
 final class _LazyTransitionList extends ListBase<RouteTransition> {
-  _LazyTransitionList(
-    this.item, {
-    required this.virtualLength,
-  });
+  _LazyTransitionList(this.item, {required this.virtualLength});
 
   final RouteTransition item;
   final int virtualLength;
@@ -429,17 +419,15 @@ final class _HostileDiagnostic {
 }
 
 final class _HostileFormatterTransition extends RouteTransition {
-  _HostileFormatterTransition({
-    required Object arguments,
-    required this.calls,
-  }) : super(
-          id: 'hostile-formatter',
-          from: const RouteMetadata(name: '/home', routeType: 'Page'),
-          to: const RouteMetadata(name: '/profile', routeType: 'Page'),
-          type: TransitionType.push,
-          timestamp: DateTime(2025),
-          arguments: arguments,
-        );
+  _HostileFormatterTransition({required Object arguments, required this.calls})
+    : super(
+        id: 'hostile-formatter',
+        from: const RouteMetadata(name: '/home', routeType: 'Page'),
+        to: const RouteMetadata(name: '/profile', routeType: 'Page'),
+        type: TransitionType.push,
+        timestamp: DateTime(2025),
+        arguments: arguments,
+      );
 
   final _FormatterCallTracker calls;
 

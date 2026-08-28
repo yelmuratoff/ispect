@@ -67,14 +67,8 @@ class ISpectNavigationFlowActionsSheet {
             items: items,
             redactionActive: redactionActive,
           )
-        : _buildHistory(
-            items,
-            redactionActive: redactionActive,
-          );
-    final text = _redactAndBound(
-      rawText,
-      redactor: redactor,
-    );
+        : _buildHistory(items, redactionActive: redactionActive);
+    final text = _redactAndBound(rawText, redactor: redactor);
 
     switch (format) {
       case ExportFormat.json:
@@ -193,9 +187,11 @@ class ISpectNavigationFlowActionsSheet {
     String? lastAdded;
     var inspected = 0;
     var found = false;
-    for (var index = itemCount - 1;
-        index >= 0 && inspected < _maxSourceItems && !output.isExhausted;
-        index--) {
+    for (
+      var index = itemCount - 1;
+      index >= 0 && inspected < _maxSourceItems && !output.isExhausted;
+      index--
+    ) {
       final RouteTransition current;
       try {
         current = items[index];
@@ -280,10 +276,7 @@ class ISpectNavigationFlowActionsSheet {
       output
         ..writeStatic('Arguments: ')
         ..writeDiagnostic(
-          _argumentsText(
-            arguments.value,
-            redactionActive: redactionActive,
-          ),
+          _argumentsText(arguments.value, redactionActive: redactionActive),
         )
         ..writeStatic('\n');
     } else if (!arguments.available) {
@@ -400,11 +393,7 @@ class ISpectNavigationFlowActionsSheet {
     try {
       final id = transition.id;
       final maxBytes = _resourceLimits.maxCapturedValueBytes;
-      if (LogExportOutput.utf8Length(
-            id,
-            limit: maxBytes,
-          ) >
-          maxBytes) {
+      if (LogExportOutput.utf8Length(id, limit: maxBytes) > maxBytes) {
         return null;
       }
       return id;
@@ -429,8 +418,9 @@ class ISpectNavigationFlowActionsSheet {
     String rawText, {
     required RedactionService? redactor,
   }) {
-    final safeText =
-        redactor == null ? rawText : _redactedText(rawText, redactor);
+    final safeText = redactor == null
+        ? rawText
+        : _redactedText(rawText, redactor);
     return LogExportOutput.truncateUtf8(
       safeText,
       maxBytes: _maxNavigationOutputBytes,
@@ -493,7 +483,7 @@ class ISpectNavigationFlowActionsSheet {
 
   static DiagnosticResourceLimits get _resourceLimits =>
       (ISpect.loggerIfInitialized?.options.resourceLimits ??
-          DiagnosticResourceLimits.balanced)
+            DiagnosticResourceLimits.balanced)
         ..validate();
 
   static int get _maxSourceItems => _resourceLimits.maxCollectionItems;
@@ -505,7 +495,8 @@ class ISpectNavigationFlowActionsSheet {
         : limits.maxExportDocumentBytes;
   }
 
-  static const String _markdownFallback = '# Navigation Flow\n\n```\n'
+  static const String _markdownFallback =
+      '# Navigation Flow\n\n```\n'
       '${LogExportOutput.truncatedMarker}\n'
       '```\n';
 }
@@ -527,10 +518,7 @@ final class _BoundedNavigationBuffer {
   void writeStatic(String value) {
     if (isExhausted || value.isEmpty) return;
     final remaining = maxBytes - _bytes;
-    final bounded = LogExportOutput.truncateUtf8(
-      value,
-      maxBytes: remaining,
-    );
+    final bounded = LogExportOutput.truncateUtf8(value, maxBytes: remaining);
     _buffer.write(bounded);
     _bytes += LogExportOutput.utf8Length(bounded);
     if (bounded.length != value.length) _sealed = true;
@@ -548,10 +536,7 @@ final class _BoundedNavigationBuffer {
       writeTruncationMarker();
       return;
     }
-    final bounded = LogExportOutput.truncateUtf8(
-      value,
-      maxBytes: remaining,
-    );
+    final bounded = LogExportOutput.truncateUtf8(value, maxBytes: remaining);
     _buffer.write(bounded);
     _bytes += LogExportOutput.utf8Length(bounded);
     _sealed = true;

@@ -81,8 +81,8 @@ class ISpectShareAllLogsBottomSheet {
       context,
       controller: controller,
       contentBuilder: (format, {required action, redactKeys}) async {
-        final metadata =
-            await (metadataProvider ?? options.metadataProvider)?.call();
+        final metadata = await (metadataProvider ?? options.metadataProvider)
+            ?.call();
         return buildLogsExportContent(
           format,
           logs: logs ?? ISpect.logger.history,
@@ -108,12 +108,14 @@ Future<String> buildLogsExportContent(
     service: redactionService,
     sensitiveKeys: redactKeys,
   );
-  final limits = (ISpect.loggerIfInitialized?.options.resourceLimits ??
-      DiagnosticResourceLimits.balanced)
-    ..validate();
-  final scheduling = (ISpect.loggerIfInitialized?.options.processingPolicy ??
-      DiagnosticProcessingPolicy.balanced)
-    ..validate();
+  final limits =
+      (ISpect.loggerIfInitialized?.options.resourceLimits ??
+            DiagnosticResourceLimits.balanced)
+        ..validate();
+  final scheduling =
+      (ISpect.loggerIfInitialized?.options.processingPolicy ??
+            DiagnosticProcessingPolicy.balanced)
+        ..validate();
   if (format == ExportFormat.json) {
     return LogsJsonService(
       resourceLimits: limits,

@@ -45,14 +45,11 @@ class _SafePluginScreenState extends State<SafePluginScreen> {
     }
 
     try {
-      return KeyedSubtree(
-        key: _childKey,
-        child: widget.pluginBuilder(context),
-      );
+      return KeyedSubtree(key: _childKey, child: widget.pluginBuilder(context));
     } catch (error, stackTrace) {
       final resourceLimits =
           ISpect.loggerIfInitialized?.options.resourceLimits ??
-              DiagnosticResourceLimits.balanced;
+          DiagnosticResourceLimits.balanced;
       final errorText = ISpectSafeDiagnosticSnapshot.summary(
         error,
         resourceLimits: resourceLimits,
@@ -111,7 +108,8 @@ class _ISpectErrorFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final resourceLimits = ISpect.loggerIfInitialized?.options.resourceLimits ??
+    final resourceLimits =
+        ISpect.loggerIfInitialized?.options.resourceLimits ??
         DiagnosticResourceLimits.balanced;
     final safePluginId = ISpectSafeDiagnosticSnapshot.summary(
       pluginId,
@@ -130,11 +128,7 @@ class _ISpectErrorFallback extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: colorScheme.error,
-                ),
+                Icon(Icons.error_outline, size: 64, color: colorScheme.error),
                 const SizedBox(height: 16),
                 Text(
                   'Failed to render plugin screen',

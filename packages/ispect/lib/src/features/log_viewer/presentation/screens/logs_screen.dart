@@ -55,7 +55,8 @@ class _LogsScreenState extends State<LogsScreen> {
   void initState() {
     super.initState();
     _ownController = widget.controller == null;
-    _logsViewController = widget.controller ??
+    _logsViewController =
+        widget.controller ??
         ISpectViewController(
           onShare: widget.options.onShare,
           metadataProvider: widget.options.metadataProvider,
@@ -115,25 +116,25 @@ class _LogsScreenState extends State<LogsScreen> {
   Widget _buildScaffold(BuildContext context) {
     final iSpect = ISpect.read(context);
     Widget buildViewer(List<ISpectLogData> data) => LogsViewerBody(
-          logsData: data,
-          controller: _logsViewController,
-          iSpectTheme: iSpect,
-          titleFiltersController: _titleFiltersController,
-          searchFocusNode: _searchFocusNode,
-          logsScrollController: _logsScrollController,
-          appBarTitle: widget.appBarTitle,
-          onSettingsTap: () => _openLogsSettings(context),
-        );
+      logsData: data,
+      controller: _logsViewController,
+      iSpectTheme: iSpect,
+      titleFiltersController: _titleFiltersController,
+      searchFocusNode: _searchFocusNode,
+      logsScrollController: _logsScrollController,
+      appBarTitle: widget.appBarTitle,
+      onSettingsTap: () => _openLogsSettings(context),
+    );
 
     return Scaffold(
       backgroundColor: context.ispectThemeBackground,
       body: switch (widget.logs) {
         final logs? => buildViewer(logs),
         null => ISpectLogsBuilder(
-            logger: ISpect.logger,
-            controller: _logsViewController,
-            builder: (_, data) => buildViewer(data),
-          ),
+          logger: ISpect.logger,
+          controller: _logsViewController,
+          builder: (_, data) => buildViewer(data),
+        ),
       },
     );
   }
@@ -152,17 +153,17 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   List<ISpectActionItem> _buildSettingsActions(BuildContext context) => [
-        _buildReverseLogsAction(context),
-        _buildGroupHttpAction(context),
-        _buildShareLogsAction(context),
-        _buildExpandLogsAction(context),
-        _buildClearHistoryAction(context),
-        if (widget.options.observer case final ISpectNavigatorObserver observer)
-          _buildNavigationFlowAction(observer),
-        if (ISpect.logger.fileLogHistory != null) _buildDailySessionsAction(),
-        _buildLogViewerAction(),
-        ...widget.options.actionItems,
-      ];
+    _buildReverseLogsAction(context),
+    _buildGroupHttpAction(context),
+    _buildShareLogsAction(context),
+    _buildExpandLogsAction(context),
+    _buildClearHistoryAction(context),
+    if (widget.options.observer case final ISpectNavigatorObserver observer)
+      _buildNavigationFlowAction(observer),
+    if (ISpect.logger.fileLogHistory != null) _buildDailySessionsAction(),
+    _buildLogViewerAction(),
+    ...widget.options.actionItems,
+  ];
 
   ISpectActionItem _buildGroupHttpAction(BuildContext context) {
     final isGrouped = _logsViewController.groupHttpLogs;
@@ -171,8 +172,9 @@ class _LogsScreenState extends State<LogsScreen> {
       title: isGrouped
           ? context.ispectL10n.ungroupHttpLogs
           : context.ispectL10n.groupHttpLogs,
-      icon:
-          isGrouped ? Icons.account_tree_rounded : Icons.account_tree_outlined,
+      icon: isGrouped
+          ? Icons.account_tree_rounded
+          : Icons.account_tree_outlined,
       description: isGrouped
           ? context.ispectL10n.ungroupHttpLogsDesc
           : context.ispectL10n.groupHttpLogsDesc,
@@ -225,31 +227,29 @@ class _LogsScreenState extends State<LogsScreen> {
 
   ISpectActionItem _buildNavigationFlowAction(
     ISpectNavigatorObserver observer,
-  ) =>
-      ISpectActionItem(
-        title: context.ispectL10n.navigationFlow,
-        icon: Icons.route_rounded,
-        description: context.ispectL10n.navigationFlowDesc,
-        onTap: (context) => ISpectNavigationFlowScreen(
-          observer: observer,
-        ).push(context),
-      );
+  ) => ISpectActionItem(
+    title: context.ispectL10n.navigationFlow,
+    icon: Icons.route_rounded,
+    description: context.ispectL10n.navigationFlowDesc,
+    onTap: (context) =>
+        ISpectNavigationFlowScreen(observer: observer).push(context),
+  );
 
   ISpectActionItem _buildDailySessionsAction() => ISpectActionItem(
-        title: context.ispectL10n.dailySessions,
-        icon: Icons.history_rounded,
-        description: context.ispectL10n.dailySessionsDesc,
-        onTap: (context) => DailySessionsScreen(
-          history: ISpect.logger.fileLogHistory,
-        ).push(context),
-      );
+    title: context.ispectL10n.dailySessions,
+    icon: Icons.history_rounded,
+    description: context.ispectL10n.dailySessionsDesc,
+    onTap: (context) => DailySessionsScreen(
+      history: ISpect.logger.fileLogHistory,
+    ).push(context),
+  );
 
   ISpectActionItem _buildLogViewerAction() => ISpectActionItem(
-        title: context.ispectL10n.logViewer,
-        icon: Icons.developer_mode_rounded,
-        description: context.ispectL10n.logViewerDesc,
-        onTap: (_) => _handleLogViewerTap(),
-      );
+    title: context.ispectL10n.logViewer,
+    icon: Icons.developer_mode_rounded,
+    description: context.ispectL10n.logViewerDesc,
+    onTap: (_) => _handleLogViewerTap(),
+  );
 
   Future<void> _handleLogViewerTap() async {
     if (!mounted) return;
@@ -278,9 +278,8 @@ class _LogsScreenState extends State<LogsScreen> {
     if (!mounted) return;
     showDialog<void>(
       context: context,
-      builder: (context) => PasteContentDialog(
-        onContentProcessed: _processPastedContent,
-      ),
+      builder: (context) =>
+          PasteContentDialog(onContentProcessed: _processPastedContent),
     );
   }
 

@@ -119,11 +119,7 @@ final class _HostileServiceJsonValue {
 
 final class _HostileServiceLogGetters extends ISpectLogData {
   _HostileServiceLogGetters()
-      : super(
-          'trusted message',
-          id: 'trusted-id',
-          time: DateTime.utc(2025),
-        );
+    : super('trusted message', id: 'trusted-id', time: DateTime.utc(2025));
 
   final List<int> _getterCalls = [0];
 
@@ -193,20 +189,24 @@ void main() {
       expect(logs.length, equals(3));
     });
 
-    test('should export logs to JSON without metadata when specified',
-        () async {
-      // Act
-      final jsonString =
-          await service.exportToJson(sampleLogs, includeMetadata: false);
-      final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
+    test(
+      'should export logs to JSON without metadata when specified',
+      () async {
+        // Act
+        final jsonString = await service.exportToJson(
+          sampleLogs,
+          includeMetadata: false,
+        );
+        final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
 
-      // Assert
-      expect(jsonData.containsKey('metadata'), isFalse);
-      expect(jsonData.containsKey('logs'), isTrue);
+        // Assert
+        expect(jsonData.containsKey('metadata'), isFalse);
+        expect(jsonData.containsKey('logs'), isTrue);
 
-      final logs = jsonData['logs'] as List<dynamic>;
-      expect(logs.length, equals(3));
-    });
+        final logs = jsonData['logs'] as List<dynamic>;
+        expect(logs.length, equals(3));
+      },
+    );
 
     test('should import logs from JSON with metadata', () async {
       // Arrange
@@ -239,35 +239,38 @@ void main() {
       expect(importedLogs[0].message, equals('Test log message 1'));
     });
 
-    test('import redacts sensitive fields and embedded URL tokens by default',
-        () async {
-      const headerSecret = 'IMPORT_HEADER_SECRET';
-      const querySecret = 'IMPORT_QUERY_SECRET';
-      const nestedSecret = 'IMPORT_NESTED_SECRET';
-      final json = jsonEncode({
-        'logs': [
-          {
-            'message': 'GET https://api.example.test/items?token=$querySecret',
-            'time': '2025-01-01T12:00:00.000Z',
-            'key': 'http-request',
-            'additional-data': {
-              'headers': {'Authorization': 'Bearer $headerSecret'},
-              'nested': {'password': nestedSecret},
+    test(
+      'import redacts sensitive fields and embedded URL tokens by default',
+      () async {
+        const headerSecret = 'IMPORT_HEADER_SECRET';
+        const querySecret = 'IMPORT_QUERY_SECRET';
+        const nestedSecret = 'IMPORT_NESTED_SECRET';
+        final json = jsonEncode({
+          'logs': [
+            {
+              'message':
+                  'GET https://api.example.test/items?token=$querySecret',
+              'time': '2025-01-01T12:00:00.000Z',
+              'key': 'http-request',
+              'additional-data': {
+                'headers': {'Authorization': 'Bearer $headerSecret'},
+                'nested': {'password': nestedSecret},
+              },
             },
-          },
-        ],
-      });
+          ],
+        });
 
-      final imported = await service.importFromJson(json);
-      final log = imported.single;
-      final serialized = jsonEncode(log.toJson());
+        final imported = await service.importFromJson(json);
+        final log = imported.single;
+        final serialized = jsonEncode(log.toJson());
 
-      expect(log.key, 'http-request');
-      expect(serialized, isNot(contains(headerSecret)));
-      expect(serialized, isNot(contains(querySecret)));
-      expect(serialized, isNot(contains(nestedSecret)));
-      expect(serialized, contains('[REDACTED]'));
-    });
+        expect(log.key, 'http-request');
+        expect(serialized, isNot(contains(headerSecret)));
+        expect(serialized, isNot(contains(querySecret)));
+        expect(serialized, isNot(contains(nestedSecret)));
+        expect(serialized, contains('[REDACTED]'));
+      },
+    );
 
     test('import opt-out retains a bounded raw prefix', () async {
       const rawPrefix = 'RAW_IMPORT_SECRET';
@@ -277,10 +280,7 @@ void main() {
       );
       final json = jsonEncode({
         'logs': [
-          {
-            'message': '$rawPrefix$padding',
-            'time': '2025-01-01T12:00:00.000Z',
-          },
+          {'message': '$rawPrefix$padding', 'time': '2025-01-01T12:00:00.000Z'},
         ],
       });
 
@@ -302,10 +302,7 @@ void main() {
       const secret = 'THROWING_IMPORT_SECRET';
       final json = jsonEncode({
         'logs': [
-          {
-            'message': secret,
-            'time': '2025-01-01T12:00:00.000Z',
-          },
+          {'message': secret, 'time': '2025-01-01T12:00:00.000Z'},
         ],
       });
 
@@ -321,10 +318,7 @@ void main() {
       const secret = 'NULL_IMPORT_SECRET';
       final json = jsonEncode({
         'logs': [
-          {
-            'message': secret,
-            'time': '2025-01-01T12:00:00.000Z',
-          },
+          {'message': secret, 'time': '2025-01-01T12:00:00.000Z'},
         ],
       });
 
@@ -478,68 +472,63 @@ void main() {
       }
     });
 
-    test('exports and round-trips more than 1000 logs without truncation',
-        () async {
-      final logs = List.generate(
-        1005,
-        (index) => ISpectLogData(
-          'Bulk log $index',
-          time: DateTime(2025).add(Duration(seconds: index)),
-          key: 'bulk_key_$index',
-        ),
-      );
+    test(
+      'exports and round-trips more than 1000 logs without truncation',
+      () async {
+        final logs = List.generate(
+          1005,
+          (index) => ISpectLogData(
+            'Bulk log $index',
+            time: DateTime(2025).add(Duration(seconds: index)),
+            key: 'bulk_key_$index',
+          ),
+        );
 
-      final jsonString = await service.exportToJson(logs);
-      final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
-      final exportedLogs = decoded['logs'] as List<dynamic>;
-      final metadata = decoded['metadata'] as Map<String, dynamic>;
-      final importedLogs = await service.importFromJson(jsonString);
+        final jsonString = await service.exportToJson(logs);
+        final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
+        final exportedLogs = decoded['logs'] as List<dynamic>;
+        final metadata = decoded['metadata'] as Map<String, dynamic>;
+        final importedLogs = await service.importFromJson(jsonString);
 
-      expect(exportedLogs, hasLength(logs.length));
-      expect(metadata['totalLogs'], logs.length);
-      expect(importedLogs, hasLength(logs.length));
-      expect(importedLogs.first.message, 'Bulk log 0');
-      expect(importedLogs.last.message, 'Bulk log 1004');
-    });
+        expect(exportedLogs, hasLength(logs.length));
+        expect(metadata['totalLogs'], logs.length);
+        expect(importedLogs, hasLength(logs.length));
+        expect(importedLogs.first.message, 'Bulk log 0');
+        expect(importedLogs.last.message, 'Bulk log 1004');
+      },
+    );
 
     group('export output budgets', () {
-      test('oversized sensitive records fail closed as valid bounded JSON',
-          () async {
-        const secret = 'OVERSIZED_JSON_EXPORT_SECRET';
-        final padding = ''.padRight(LogExportOutput.maxRecordBytes * 2, 'x');
-        final json = await service.exportToJson([
-          ISpectLogData(
-            'token=$secret$padding',
-            time: DateTime(2025),
-          ),
-        ]);
-        final decoded = jsonDecode(json) as Map<String, dynamic>;
-        final exportedLog =
-            (decoded['logs'] as List<dynamic>).single as Map<String, dynamic>;
+      test(
+        'oversized sensitive records fail closed as valid bounded JSON',
+        () async {
+          const secret = 'OVERSIZED_JSON_EXPORT_SECRET';
+          final padding = ''.padRight(LogExportOutput.maxRecordBytes * 2, 'x');
+          final json = await service.exportToJson([
+            ISpectLogData('token=$secret$padding', time: DateTime(2025)),
+          ]);
+          final decoded = jsonDecode(json) as Map<String, dynamic>;
+          final exportedLog =
+              (decoded['logs'] as List<dynamic>).single as Map<String, dynamic>;
 
-        expect(json, isNot(contains(secret)));
-        expect(
-          exportedLog['message'],
-          equals(LogExportOutput.truncatedMarker),
-        );
-        expect(
-          utf8.encode(json).length,
-          lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
-        );
-      });
+          expect(json, isNot(contains(secret)));
+          expect(
+            exportedLog['message'],
+            equals(LogExportOutput.truncatedMarker),
+          );
+          expect(
+            utf8.encode(json).length,
+            lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
+          );
+        },
+      );
 
       test('explicit opt-out retains a bounded raw prefix', () async {
         const prefix = 'RAW_JSON_EXPORT_PREFIX';
         final padding = ''.padRight(LogExportOutput.maxRecordBytes * 2, 'x');
-        final json = await service.exportToJson(
-          [
-            ISpectLogData(
-              '$prefix$padding',
-              time: DateTime(2025),
-            ),
-          ],
-          enableRedaction: false,
-        );
+        final json = await service.exportToJson([
+          ISpectLogData('$prefix$padding', time: DateTime(2025)),
+        ], enableRedaction: false);
         final decoded = jsonDecode(json) as Map<String, dynamic>;
         final exportedLog =
             (decoded['logs'] as List<dynamic>).single as Map<String, dynamic>;
@@ -553,146 +542,137 @@ void main() {
         );
       });
 
-      test('huge-id opt-out export retains a field required for import',
-          () async {
-        final hugeId = ''.padRight(LogExportOutput.maxRecordBytes * 2, 'i');
-        final json = await service.exportToJson(
-          [
-            ISpectLogData(
-              'safe',
-              id: hugeId,
-              time: DateTime.utc(2025),
+      test(
+        'huge-id opt-out export retains a field required for import',
+        () async {
+          final hugeId = ''.padRight(LogExportOutput.maxRecordBytes * 2, 'i');
+          final json = await service.exportToJson([
+            ISpectLogData('safe', id: hugeId, time: DateTime.utc(2025)),
+          ], enableRedaction: false);
+          final decoded = jsonDecode(json) as Map<String, dynamic>;
+          final exportedLog =
+              (decoded['logs'] as List<dynamic>).single as Map<String, dynamic>;
+          final importedLogs = await service.importFromJson(json);
+
+          expect(exportedLog['time'], DateTime.utc(2025).toIso8601String());
+          expect(exportedLog['id'], contains(LogExportOutput.truncatedMarker));
+          expect(importedLogs, hasLength(1));
+          expect(importedLogs.single.time, DateTime.utc(2025));
+        },
+      );
+
+      test(
+        'many-record regular and filtered exports stay valid and bounded',
+        () async {
+          final message = 'bounded-${''.padRight(200 * 1024, 'x')}';
+          final logs = List.generate(
+            180,
+            (index) => ISpectLogData(
+              message,
+              time: DateTime(2025).add(Duration(seconds: index)),
             ),
-          ],
-          enableRedaction: false,
-        );
-        final decoded = jsonDecode(json) as Map<String, dynamic>;
-        final exportedLog =
-            (decoded['logs'] as List<dynamic>).single as Map<String, dynamic>;
-        final importedLogs = await service.importFromJson(json);
-
-        expect(exportedLog['time'], DateTime.utc(2025).toIso8601String());
-        expect(
-          exportedLog['id'],
-          contains(LogExportOutput.truncatedMarker),
-        );
-        expect(importedLogs, hasLength(1));
-        expect(importedLogs.single.time, DateTime.utc(2025));
-      });
-
-      test('many-record regular and filtered exports stay valid and bounded',
-          () async {
-        final message = 'bounded-${''.padRight(200 * 1024, 'x')}';
-        final logs = List.generate(
-          180,
-          (index) => ISpectLogData(
-            message,
-            time: DateTime(2025).add(Duration(seconds: index)),
-          ),
-        );
-        final outputs = [
-          await service.exportToJson(
-            logs,
-            enableRedaction: false,
-          ),
-          service.formatFilteredContent(
-            logs: logs,
-            filteredLogs: logs,
-            filter: ISpectFilter(),
-            fileType: 'json',
-            enableRedaction: false,
-          ),
-        ];
-
-        for (final output in outputs) {
-          final decoded = jsonDecode(output) as Map<String, dynamic>;
-          final exportedLogs = decoded['logs'] as List<dynamic>;
-          final metadata = decoded['metadata'] as Map<String, dynamic>;
-
-          expect(
-            utf8.encode(output).length,
-            lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
           );
-          expect(exportedLogs.length, greaterThan(100));
-          expect(exportedLogs.length, lessThan(logs.length));
-          expect(metadata['totalLogs'], logs.length);
-          expect(metadata['exportedLogs'], exportedLogs.length);
-          expect(metadata['truncated'], isTrue);
-        }
+          final outputs = [
+            await service.exportToJson(logs, enableRedaction: false),
+            service.formatFilteredContent(
+              logs: logs,
+              filteredLogs: logs,
+              filter: ISpectFilter(),
+              fileType: 'json',
+              enableRedaction: false,
+            ),
+          ];
 
-        final regularExport = jsonDecode(outputs.first) as Map<String, dynamic>;
-        final regularLogs = regularExport['logs'] as List<dynamic>;
-        final imported = await service.importFromJson(outputs.first);
-        expect(imported, hasLength(regularLogs.length));
-      });
+          for (final output in outputs) {
+            final decoded = jsonDecode(output) as Map<String, dynamic>;
+            final exportedLogs = decoded['logs'] as List<dynamic>;
+            final metadata = decoded['metadata'] as Map<String, dynamic>;
 
-      test('never executes caller formatters in regular or filtered JSON',
-          () async {
-        final hostileDateTime = _HostileServiceDateTime();
-        final hostileUri = _HostileServiceUri();
-        final hostileException = _HostileServiceException();
-        final hostileError = _HostileServiceError();
-        final hostileStackTrace = _HostileServiceStackTrace();
-        final hostileJson = _HostileServiceJsonValue();
-        final log = ISpectLogData(
-          'safe',
-          exception: hostileException,
-          error: hostileError,
-          stackTrace: hostileStackTrace,
-          additionalData: {
-            'dateTime': hostileDateTime,
-            'uri': hostileUri,
-            'json': hostileJson,
-          },
-        );
-        final metadata = ISpectMetadata(
-          extra: {
-            'dateTime': hostileDateTime,
-            'uri': hostileUri,
-            'json': hostileJson,
-            'exception': hostileException,
-            'error': hostileError,
-            'stackTrace': hostileStackTrace,
-          },
-        );
-        final callsAtCapture = [
-          hostileDateTime.calls,
-          hostileUri.calls,
-          hostileException.calls,
-          hostileError.calls,
-          hostileStackTrace.calls,
-          hostileJson.calls,
-        ];
-        final outputs = [
-          await service.exportToJson([log], metadata: metadata),
-          service.formatFilteredContent(
-            logs: [log],
-            filteredLogs: [log],
-            filter: ISpectFilter(),
-            fileType: 'json',
-            metadata: metadata,
-          ),
-        ];
+            expect(
+              utf8.encode(output).length,
+              lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
+            );
+            expect(exportedLogs.length, greaterThan(100));
+            expect(exportedLogs.length, lessThan(logs.length));
+            expect(metadata['totalLogs'], logs.length);
+            expect(metadata['exportedLogs'], exportedLogs.length);
+            expect(metadata['truncated'], isTrue);
+          }
 
-        for (final output in outputs) {
-          expect(() => jsonDecode(output), returnsNormally);
-          expect(
-            utf8.encode(output).length,
-            lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
+          final regularExport =
+              jsonDecode(outputs.first) as Map<String, dynamic>;
+          final regularLogs = regularExport['logs'] as List<dynamic>;
+          final imported = await service.importFromJson(outputs.first);
+          expect(imported, hasLength(regularLogs.length));
+        },
+      );
+
+      test(
+        'never executes caller formatters in regular or filtered JSON',
+        () async {
+          final hostileDateTime = _HostileServiceDateTime();
+          final hostileUri = _HostileServiceUri();
+          final hostileException = _HostileServiceException();
+          final hostileError = _HostileServiceError();
+          final hostileStackTrace = _HostileServiceStackTrace();
+          final hostileJson = _HostileServiceJsonValue();
+          final log = ISpectLogData(
+            'safe',
+            exception: hostileException,
+            error: hostileError,
+            stackTrace: hostileStackTrace,
+            additionalData: {
+              'dateTime': hostileDateTime,
+              'uri': hostileUri,
+              'json': hostileJson,
+            },
           );
-        }
-        expect(
-          [
+          final metadata = ISpectMetadata(
+            extra: {
+              'dateTime': hostileDateTime,
+              'uri': hostileUri,
+              'json': hostileJson,
+              'exception': hostileException,
+              'error': hostileError,
+              'stackTrace': hostileStackTrace,
+            },
+          );
+          final callsAtCapture = [
             hostileDateTime.calls,
             hostileUri.calls,
             hostileException.calls,
             hostileError.calls,
             hostileStackTrace.calls,
             hostileJson.calls,
-          ],
-          callsAtCapture,
-        );
-      });
+          ];
+          final outputs = [
+            await service.exportToJson([log], metadata: metadata),
+            service.formatFilteredContent(
+              logs: [log],
+              filteredLogs: [log],
+              filter: ISpectFilter(),
+              fileType: 'json',
+              metadata: metadata,
+            ),
+          ];
+
+          for (final output in outputs) {
+            expect(() => jsonDecode(output), returnsNormally);
+            expect(
+              utf8.encode(output).length,
+              lessThanOrEqualTo(LogExportOutput.maxDocumentBytes),
+            );
+          }
+          expect([
+            hostileDateTime.calls,
+            hostileUri.calls,
+            hostileException.calls,
+            hostileError.calls,
+            hostileStackTrace.calls,
+            hostileJson.calls,
+          ], callsAtCapture);
+        },
+      );
 
       test('caps aggregate nodes so every export remains importable', () async {
         final additionalData = {
@@ -707,102 +687,100 @@ void main() {
           ),
         );
 
-        final json = await service.exportToJson(
-          logs,
-          enableRedaction: false,
-        );
+        final json = await service.exportToJson(logs, enableRedaction: false);
         final decoded = jsonDecode(json) as Map<String, dynamic>;
         final exportedLogs = decoded['logs'] as List<dynamic>;
         final importedLogs = await service.importFromJson(json);
 
-        expect(
-          () => JsonInputPreflight.validate(json),
-          returnsNormally,
-        );
+        expect(() => JsonInputPreflight.validate(json), returnsNormally);
         expect(exportedLogs.length, greaterThan(80));
         expect(exportedLogs.length, lessThan(logs.length));
         expect(importedLogs.length, exportedLogs.length);
       });
 
-      test('deep records and oversized fallback fields remain importable',
-          () async {
-        Object nested = 'leaf';
-        for (var depth = 0;
+      test(
+        'deep records and oversized fallback fields remain importable',
+        () async {
+          Object nested = 'leaf';
+          for (
+            var depth = 0;
             depth < JsonInputPreflight.maxNestingDepth + 8;
-            depth++) {
-          nested = {'child': nested};
-        }
-        final hugeId = ''.padRight(LogExportOutput.maxRecordBytes * 2, 'i');
-        final json = await service.exportToJson([
-          ISpectLogData(
-            'deep',
-            id: hugeId,
-            additionalData: {'nested': nested},
-          ),
-        ]);
-        final decoded = jsonDecode(json) as Map<String, dynamic>;
-        final exportedLog =
-            (decoded['logs'] as List<dynamic>).single as Map<String, dynamic>;
-        final importedLogs = await service.importFromJson(json);
+            depth++
+          ) {
+            nested = {'child': nested};
+          }
+          final hugeId = ''.padRight(LogExportOutput.maxRecordBytes * 2, 'i');
+          final json = await service.exportToJson([
+            ISpectLogData(
+              'deep',
+              id: hugeId,
+              additionalData: {'nested': nested},
+            ),
+          ]);
+          final decoded = jsonDecode(json) as Map<String, dynamic>;
+          final exportedLog =
+              (decoded['logs'] as List<dynamic>).single as Map<String, dynamic>;
+          final importedLogs = await service.importFromJson(json);
 
-        expect(
-          () => JsonInputPreflight.validate(json),
-          returnsNormally,
-        );
-        expect(exportedLog['export-error'], LogExportOutput.truncatedMarker);
-        expect(exportedLog.containsKey('id'), isFalse);
-        expect(importedLogs, hasLength(1));
-        expect(
-          utf8.encode(jsonEncode(exportedLog)).length,
-          lessThanOrEqualTo(LogExportOutput.maxRecordBytes),
-        );
-      });
+          expect(() => JsonInputPreflight.validate(json), returnsNormally);
+          expect(exportedLog['export-error'], LogExportOutput.truncatedMarker);
+          expect(exportedLog.containsKey('id'), isFalse);
+          expect(importedLogs, hasLength(1));
+          expect(
+            utf8.encode(jsonEncode(exportedLog)).length,
+            lessThanOrEqualTo(LogExportOutput.maxRecordBytes),
+          );
+        },
+      );
 
-      test('fallback uses package-owned time without invoking hostile getters',
-          () async {
-        final hostileLog = _HostileServiceLogGetters();
+      test(
+        'fallback uses package-owned time without invoking hostile getters',
+        () async {
+          final hostileLog = _HostileServiceLogGetters();
 
-        final json = await service.exportToJson(
-          [hostileLog],
-          redactionService: _EmptyEnvelopeRedactionService(),
-        );
-        final decoded = jsonDecode(json) as Map<String, dynamic>;
-        final exportedLog =
-            (decoded['logs'] as List<dynamic>).single as Map<String, dynamic>;
+          final json = await service.exportToJson([
+            hostileLog,
+          ], redactionService: _EmptyEnvelopeRedactionService());
+          final decoded = jsonDecode(json) as Map<String, dynamic>;
+          final exportedLog =
+              (decoded['logs'] as List<dynamic>).single as Map<String, dynamic>;
 
-        expect(exportedLog['time'], DateTime.utc(2025).toIso8601String());
-        expect(exportedLog['export-error'], LogExportOutput.truncatedMarker);
-        expect(hostileLog.getterCalls, 0);
-      });
+          expect(exportedLog['time'], DateTime.utc(2025).toIso8601String());
+          expect(exportedLog['export-error'], LogExportOutput.truncatedMarker);
+          expect(hostileLog.getterCalls, 0);
+        },
+      );
 
-      test('normalizes non-finite numbers before encoding a huge-id log',
-          () async {
-        final hugeId = ''.padRight(LogExportOutput.maxRecordBytes * 2, 'i');
-        final json = await service.exportToJson([
-          ISpectLogData(
-            'non-finite',
-            id: hugeId,
-            additionalData: const {
-              'nan': double.nan,
-              'positiveInfinity': double.infinity,
-              'negativeInfinity': double.negativeInfinity,
-            },
-          ),
-        ]);
-        final decoded = jsonDecode(json) as Map<String, dynamic>;
-        final exportedLog =
-            (decoded['logs'] as List<dynamic>).single as Map<String, dynamic>;
-        final additional =
-            exportedLog['additional-data'] as Map<String, dynamic>;
+      test(
+        'normalizes non-finite numbers before encoding a huge-id log',
+        () async {
+          final hugeId = ''.padRight(LogExportOutput.maxRecordBytes * 2, 'i');
+          final json = await service.exportToJson([
+            ISpectLogData(
+              'non-finite',
+              id: hugeId,
+              additionalData: const {
+                'nan': double.nan,
+                'positiveInfinity': double.infinity,
+                'negativeInfinity': double.negativeInfinity,
+              },
+            ),
+          ]);
+          final decoded = jsonDecode(json) as Map<String, dynamic>;
+          final exportedLog =
+              (decoded['logs'] as List<dynamic>).single as Map<String, dynamic>;
+          final additional =
+              exportedLog['additional-data'] as Map<String, dynamic>;
 
-        expect(additional['nan'], 'NaN');
-        expect(additional['positiveInfinity'], 'Infinity');
-        expect(additional['negativeInfinity'], '-Infinity');
-        expect(
-          utf8.encode(jsonEncode(exportedLog)).length,
-          lessThanOrEqualTo(LogExportOutput.maxRecordBytes),
-        );
-      });
+          expect(additional['nan'], 'NaN');
+          expect(additional['positiveInfinity'], 'Infinity');
+          expect(additional['negativeInfinity'], '-Infinity');
+          expect(
+            utf8.encode(jsonEncode(exportedLog)).length,
+            lessThanOrEqualTo(LogExportOutput.maxRecordBytes),
+          );
+        },
+      );
     });
 
     test('should throw FormatException for completely invalid JSON', () async {
@@ -830,21 +808,23 @@ void main() {
     });
 
     group('hostile JSON preflight', () {
-      test('rejects oversized content across import and inspection APIs',
-          () async {
-        final oversizedPrefix = '{"logs":[],"padding":"'.padRight(
-          LogsJsonService.maxJsonSize,
-          'x',
-        );
-        final oversizedJson = '$oversizedPrefix"}';
+      test(
+        'rejects oversized content across import and inspection APIs',
+        () async {
+          final oversizedPrefix = '{"logs":[],"padding":"'.padRight(
+            LogsJsonService.maxJsonSize,
+            'x',
+          );
+          final oversizedJson = '$oversizedPrefix"}';
 
-        await expectLater(
-          service.importFromJson(oversizedJson),
-          throwsA(isA<JsonInputLimitException>()),
-        );
-        expect(service.validateJsonStructure(oversizedJson), isFalse);
-        expect(service.getMetadataFromJson(oversizedJson), isNull);
-      });
+          await expectLater(
+            service.importFromJson(oversizedJson),
+            throwsA(isA<JsonInputLimitException>()),
+          );
+          expect(service.validateJsonStructure(oversizedJson), isFalse);
+          expect(service.getMetadataFromJson(oversizedJson), isNull);
+        },
+      );
 
       test('rejects deep content across import and inspection APIs', () async {
         final openings = List<String>.filled(
@@ -884,13 +864,8 @@ void main() {
     test('reports invalid log entries skipped during import', () async {
       final mixedJson = jsonEncode({
         'logs': [
-          {
-            'message': 'Valid log',
-            'time': DateTime.now().toIso8601String(),
-          },
-          {
-            'invalid': 'log without required fields',
-          },
+          {'message': 'Valid log', 'time': DateTime.now().toIso8601String()},
+          {'invalid': 'log without required fields'},
           {
             'message': 'Another valid log',
             'time': DateTime.now().toIso8601String(),
@@ -908,20 +883,18 @@ void main() {
       expect(result.logs[1].message, equals('Another valid log'));
     });
 
-    test('should handle empty logs gracefully in shareLogsAsJsonFile',
-        () async {
-      // Act & Assert - should not throw
-      await expectLater(
-        service.shareLogsAsJsonFile(
-          [],
-          onShare: (_) async {},
-        ),
-        completes,
-      );
-    });
-
     test(
-        'exportToJson applies redactionService when provided alongside '
+      'should handle empty logs gracefully in shareLogsAsJsonFile',
+      () async {
+        // Act & Assert - should not throw
+        await expectLater(
+          service.shareLogsAsJsonFile([], onShare: (_) async {}),
+          completes,
+        );
+      },
+    );
+
+    test('exportToJson applies redactionService when provided alongside '
         'enableRedaction', () async {
       final sensitiveLog = ISpectLogData(
         'Sensitive payload',
@@ -933,14 +906,14 @@ void main() {
         },
       );
 
-      final jsonString = await service.exportToJson(
-        [sensitiveLog],
-        redactionService: RedactionService(),
-      );
+      final jsonString = await service.exportToJson([
+        sensitiveLog,
+      ], redactionService: RedactionService());
       final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
       final logs = jsonData['logs'] as List<dynamic>;
-      final additional = (logs.first as Map<String, dynamic>)['additional-data']
-          as Map<String, dynamic>;
+      final additional =
+          (logs.first as Map<String, dynamic>)['additional-data']
+              as Map<String, dynamic>;
 
       expect(
         additional['authorization'],
@@ -955,34 +928,36 @@ void main() {
         time: DateTime(2025, 1, 1, 12),
       );
 
-      final jsonString = await service.exportToJson(
-        [sensitiveLog],
-        redactionService: RedactionService(),
-      );
+      final jsonString = await service.exportToJson([
+        sensitiveLog,
+      ], redactionService: RedactionService());
 
       expect(jsonString, isNot(contains('password')));
       expect(jsonString, isNot(contains('JSON_EXPORT_SECRET')));
       expect(jsonString, contains('[REDACTED]'));
     });
 
-    test('exportToJson redacts by default when no service is supplied',
-        () async {
-      final sensitiveLog = ISpectLogData(
-        'Sensitive payload',
-        time: DateTime(2025, 1, 1, 12),
-        logLevel: LogLevel.info,
-        additionalData: const {'authorization': 'Bearer raw'},
-      );
+    test(
+      'exportToJson redacts by default when no service is supplied',
+      () async {
+        final sensitiveLog = ISpectLogData(
+          'Sensitive payload',
+          time: DateTime(2025, 1, 1, 12),
+          logLevel: LogLevel.info,
+          additionalData: const {'authorization': 'Bearer raw'},
+        );
 
-      final jsonString = await service.exportToJson([sensitiveLog]);
-      final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
-      final logs = jsonData['logs'] as List<dynamic>;
-      final additional = (logs.first as Map<String, dynamic>)['additional-data']
-          as Map<String, dynamic>;
+        final jsonString = await service.exportToJson([sensitiveLog]);
+        final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
+        final logs = jsonData['logs'] as List<dynamic>;
+        final additional =
+            (logs.first as Map<String, dynamic>)['additional-data']
+                as Map<String, dynamic>;
 
-      expect(additional['authorization'], isNot(equals('Bearer raw')));
-      expect(additional['authorization'], contains('[REDACTED]'));
-    });
+        expect(additional['authorization'], isNot(equals('Bearer raw')));
+        expect(additional['authorization'], contains('[REDACTED]'));
+      },
+    );
 
     test('exportToJson resolves the global custom redaction policy', () async {
       final globalService = RedactionService(
@@ -1002,8 +977,9 @@ void main() {
       final jsonString = await service.exportToJson([sensitiveLog]);
       final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
       final logs = jsonData['logs'] as List<dynamic>;
-      final additional = (logs.first as Map<String, dynamic>)['additional-data']
-          as Map<String, dynamic>;
+      final additional =
+          (logs.first as Map<String, dynamic>)['additional-data']
+              as Map<String, dynamic>;
 
       expect('${additional['global_field']}', contains('<global>'));
       expect('${additional['global_field']}', isNot(contains('GLOBAL_RAW')));
@@ -1029,14 +1005,14 @@ void main() {
         },
       );
 
-      final jsonString = await service.exportToJson(
-        [sensitiveLog],
-        redactionService: localService,
-      );
+      final jsonString = await service.exportToJson([
+        sensitiveLog,
+      ], redactionService: localService);
       final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
       final logs = jsonData['logs'] as List<dynamic>;
-      final additional = (logs.first as Map<String, dynamic>)['additional-data']
-          as Map<String, dynamic>;
+      final additional =
+          (logs.first as Map<String, dynamic>)['additional-data']
+              as Map<String, dynamic>;
 
       expect(additional['global_field'], 'GLOBAL_RAW');
       expect('${additional['local_field']}', contains('<local>'));
@@ -1044,21 +1020,22 @@ void main() {
       expect(ISpectRedaction.service, same(globalService));
     });
 
-    test('exportToJson honors an explicit per-export redaction opt-out',
-        () async {
-      final sensitiveLog = ISpectLogData(
-        'Sensitive payload',
-        time: DateTime(2025, 1, 1, 12),
-        additionalData: const {'authorization': 'Bearer raw'},
-      );
+    test(
+      'exportToJson honors an explicit per-export redaction opt-out',
+      () async {
+        final sensitiveLog = ISpectLogData(
+          'Sensitive payload',
+          time: DateTime(2025, 1, 1, 12),
+          additionalData: const {'authorization': 'Bearer raw'},
+        );
 
-      final jsonString = await service.exportToJson(
-        [sensitiveLog],
-        enableRedaction: false,
-      );
+        final jsonString = await service.exportToJson([
+          sensitiveLog,
+        ], enableRedaction: false);
 
-      expect(jsonString, contains('Bearer raw'));
-    });
+        expect(jsonString, contains('Bearer raw'));
+      },
+    );
 
     test('exportToJson honors the global redaction opt-out', () async {
       ISpectRedaction.enabled = false;
@@ -1067,31 +1044,31 @@ void main() {
         time: DateTime(2025, 1, 1, 12),
       );
 
-      final jsonString = await service.exportToJson(
-        [sensitiveLog],
-        redactionService: RedactionService(),
-      );
+      final jsonString = await service.exportToJson([
+        sensitiveLog,
+      ], redactionService: RedactionService());
 
       expect(jsonString, contains('JSON_GLOBAL_RAW'));
     });
 
     test(
-        'should handle empty filtered logs gracefully in shareFilteredLogsAsJsonFile',
-        () async {
-      // Arrange
-      final filter = ISpectFilter();
+      'should handle empty filtered logs gracefully in shareFilteredLogsAsJsonFile',
+      () async {
+        // Arrange
+        final filter = ISpectFilter();
 
-      // Act & Assert - should not throw
-      await expectLater(
-        service.shareFilteredLogsAsJsonFile(
-          [],
-          [],
-          filter,
-          onShare: (_) async {},
-        ),
-        completes,
-      );
-    });
+        // Act & Assert - should not throw
+        await expectLater(
+          service.shareFilteredLogsAsJsonFile(
+            [],
+            [],
+            filter,
+            onShare: (_) async {},
+          ),
+          completes,
+        );
+      },
+    );
 
     group('environment metadata', () {
       test('merges supplied metadata into the export metadata block', () async {
@@ -1148,10 +1125,7 @@ void main() {
 
       test('redacts typed binary before JSON normalization', () async {
         final bytes = Uint8List.fromList(List<int>.filled(64, 122));
-        final log = ISpectLogData(
-          'binary',
-          additionalData: {'payload': bytes},
-        );
+        final log = ISpectLogData('binary', additionalData: {'payload': bytes});
         final metadata = ISpectMetadata(extra: {'diagnosticBytes': bytes});
 
         final json = await service.exportToJson([log], metadata: metadata);
@@ -1173,32 +1147,34 @@ void main() {
         }
       });
 
-      test('host metadata cannot replace authoritative export fields',
-          () async {
-        final json = await service.exportToJson(
-          sampleLogs,
-          metadata: const ISpectMetadata(
-            extra: {
-              'exportedAt': 'attacker-controlled',
-              'version': '999.0.0',
-              'totalLogs': -1,
-              'exportedLogs': -1,
-              'truncated': true,
-              'platform': 'spoofed',
-            },
-          ),
-        );
+      test(
+        'host metadata cannot replace authoritative export fields',
+        () async {
+          final json = await service.exportToJson(
+            sampleLogs,
+            metadata: const ISpectMetadata(
+              extra: {
+                'exportedAt': 'attacker-controlled',
+                'version': '999.0.0',
+                'totalLogs': -1,
+                'exportedLogs': -1,
+                'truncated': true,
+                'platform': 'spoofed',
+              },
+            ),
+          );
 
-        final decoded = jsonDecode(json) as Map<String, dynamic>;
-        final metadata = decoded['metadata'] as Map<String, dynamic>;
+          final decoded = jsonDecode(json) as Map<String, dynamic>;
+          final metadata = decoded['metadata'] as Map<String, dynamic>;
 
-        expect(metadata['exportedAt'], isNot('attacker-controlled'));
-        expect(metadata['version'], '1.0.0');
-        expect(metadata['totalLogs'], sampleLogs.length);
-        expect(metadata['exportedLogs'], sampleLogs.length);
-        expect(metadata['truncated'], isFalse);
-        expect(metadata['platform'], 'ispect');
-      });
+          expect(metadata['exportedAt'], isNot('attacker-controlled'));
+          expect(metadata['version'], '1.0.0');
+          expect(metadata['totalLogs'], sampleLogs.length);
+          expect(metadata['exportedLogs'], sampleLogs.length);
+          expect(metadata['truncated'], isFalse);
+          expect(metadata['platform'], 'ispect');
+        },
+      );
 
       test('omits environment fields when no metadata is supplied', () async {
         final json = await service.exportToJson(sampleLogs);
@@ -1213,39 +1189,40 @@ void main() {
 
     group('filtered JSON redaction (H6)', () {
       ISpectLogData sensitiveLog() => ISpectLogData(
-            'Sensitive filtered payload',
-            time: DateTime(2025, 1, 1, 12),
-            logLevel: LogLevel.info,
-            additionalData: const {
-              'authorization': 'Bearer super-secret-token',
-              'safe': 'visible',
-            },
-          );
+        'Sensitive filtered payload',
+        time: DateTime(2025, 1, 1, 12),
+        logLevel: LogLevel.info,
+        additionalData: const {
+          'authorization': 'Bearer super-secret-token',
+          'safe': 'visible',
+        },
+      );
 
       String jsonContentFor(
         List<ISpectLogData> logs, {
         bool enableRedaction = true,
         Set<String>? redactKeys,
-      }) =>
-          service.formatFilteredContent(
-            logs: logs,
-            filteredLogs: logs,
-            filter: ISpectFilter(),
-            fileType: 'json',
-            enableRedaction: enableRedaction,
-            redactKeys: redactKeys,
+      }) => service.formatFilteredContent(
+        logs: logs,
+        filteredLogs: logs,
+        filter: ISpectFilter(),
+        fileType: 'json',
+        enableRedaction: enableRedaction,
+        redactKeys: redactKeys,
+      );
+
+      test(
+        'masks sensitive values in filtered JSON when redactKeys is set',
+        () {
+          final content = jsonContentFor(
+            [sensitiveLog()],
+            redactKeys: const {'authorization'},
           );
 
-      test('masks sensitive values in filtered JSON when redactKeys is set',
-          () {
-        final content = jsonContentFor(
-          [sensitiveLog()],
-          redactKeys: const {'authorization'},
-        );
-
-        expect(content, isNot(contains('super-secret-token')));
-        expect(content, contains('visible'));
-      });
+          expect(content, isNot(contains('super-secret-token')));
+          expect(content, contains('visible'));
+        },
+      );
 
       test('redacts default sensitive keys in filtered JSON by default', () {
         final log = ISpectLogData(
@@ -1282,10 +1259,9 @@ void main() {
       });
 
       test('keeps filtered JSON raw when redaction is disabled (opt-out)', () {
-        final content = jsonContentFor(
-          [sensitiveLog()],
-          enableRedaction: false,
-        );
+        final content = jsonContentFor([
+          sensitiveLog(),
+        ], enableRedaction: false);
 
         expect(content, contains('super-secret-token'));
       });
@@ -1440,10 +1416,7 @@ void main() {
 
       test('filtered JSON redacts typed binary before normalization', () {
         final bytes = Uint8List.fromList(List<int>.filled(64, 122));
-        final log = ISpectLogData(
-          'binary',
-          additionalData: {'payload': bytes},
-        );
+        final log = ISpectLogData('binary', additionalData: {'payload': bytes});
 
         final content = service.formatFilteredContent(
           logs: [log],
@@ -1510,8 +1483,7 @@ final class _NullRedactionService extends RedactionService {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
-  }) =>
-      null;
+  }) => null;
 }
 
 final class _ThrowingRedactionService extends RedactionService {
@@ -1521,8 +1493,7 @@ final class _ThrowingRedactionService extends RedactionService {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
-  }) =>
-      throw StateError('redaction failed');
+  }) => throw StateError('redaction failed');
 }
 
 final class _EmptyEnvelopeRedactionService extends RedactionService {
@@ -1533,8 +1504,7 @@ final class _EmptyEnvelopeRedactionService extends RedactionService {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
-  }) =>
-      const <String, Object?>{};
+  }) => const <String, Object?>{};
 }
 
 final class _NullEnvelopeRedactionService extends RedactionService {
@@ -1545,8 +1515,7 @@ final class _NullEnvelopeRedactionService extends RedactionService {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
-  }) =>
-      null;
+  }) => null;
 }
 
 final class _ThrowingEnvelopeRedactionService extends RedactionService {
@@ -1557,6 +1526,5 @@ final class _ThrowingEnvelopeRedactionService extends RedactionService {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
-  }) =>
-      throw StateError('import redaction failed');
+  }) => throw StateError('import redaction failed');
 }

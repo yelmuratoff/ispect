@@ -2,17 +2,15 @@ import 'package:ispect/ispect.dart';
 
 /// Filters this helper installed, so re-enabling every log type clears only
 /// ISpect's own veto and leaves a host-configured filter in place.
-final Expando<ISpectFilter> _installedFilters =
-    Expando<ISpectFilter>('ispect.settingsFilter');
+final Expando<ISpectFilter> _installedFilters = Expando<ISpectFilter>(
+  'ispect.settingsFilter',
+);
 
 /// Applies the logger-owned half of [settings] to [logger].
 ///
 /// Disabled log types become a filter veto, so keys the settings sheet never
 /// listed — custom and adapter-registered ones — keep capturing.
-void applySettingsToLogger(
-  ISpectLogger logger,
-  ISpectSettingsState settings,
-) {
+void applySettingsToLogger(ISpectLogger logger, ISpectSettingsState settings) {
   logger.configure(
     options: logger.options.copyWith(
       enabled: settings.enabled,

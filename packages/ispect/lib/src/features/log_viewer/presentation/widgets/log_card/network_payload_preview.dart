@@ -18,23 +18,23 @@ class NetworkPayloadPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (payload.hasBody)
-            _BodyPreview(
-              body: payload.body,
-              color: color,
-              maxStringLength: maxStringLength,
-            ),
-          if (payload.hasBody && payload.hasHeaders) const Gap(6),
-          if (payload.hasHeaders)
-            _HeadersDisclosure(
-              headers: payload.headers,
-              color: color,
-              maxStringLength: maxStringLength,
-            ),
-        ],
-      );
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      if (payload.hasBody)
+        _BodyPreview(
+          body: payload.body,
+          color: color,
+          maxStringLength: maxStringLength,
+        ),
+      if (payload.hasBody && payload.hasHeaders) const Gap(6),
+      if (payload.hasHeaders)
+        _HeadersDisclosure(
+          headers: payload.headers,
+          color: color,
+          maxStringLength: maxStringLength,
+        ),
+    ],
+  );
 }
 
 class _BodyPreview extends StatelessWidget {
@@ -136,8 +136,9 @@ class _BodyPreview extends StatelessWidget {
                             context.ispectL10n.previewTruncated,
                             textAlign: TextAlign.end,
                             style: TextStyle(
-                              color: context.appTheme.textColor
-                                  .withValues(alpha: 0.58),
+                              color: context.appTheme.textColor.withValues(
+                                alpha: 0.58,
+                              ),
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                             ),
@@ -216,8 +217,9 @@ class _HeadersDisclosureState extends State<_HeadersDisclosure> {
                           child: Text(
                             label,
                             style: TextStyle(
-                              color: context.appTheme.textColor
-                                  .withValues(alpha: 0.72),
+                              color: context.appTheme.textColor.withValues(
+                                alpha: 0.72,
+                              ),
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -250,8 +252,9 @@ class _HeadersDisclosureState extends State<_HeadersDisclosure> {
                           maxStringLength: widget.maxStringLength,
                         ),
                         style: TextStyle(
-                          color: context.appTheme.textColor
-                              .withValues(alpha: 0.76),
+                          color: context.appTheme.textColor.withValues(
+                            alpha: 0.76,
+                          ),
                           fontSize: 10.5,
                           height: 1.35,
                           fontFamily: 'monospace',

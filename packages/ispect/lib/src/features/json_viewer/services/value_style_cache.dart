@@ -16,13 +16,12 @@ class ValueStyleCache {
     required Object? value,
     required TextStyle defaultStyle,
     required StyleBuilder? styleBuilder,
-  }) =>
-      _cachedValueStyle ??= styleBuilder?.call(value, defaultStyle) ??
-          PropertyOverrides(style: defaultStyle);
+  }) => _cachedValueStyle ??=
+      styleBuilder?.call(value, defaultStyle) ??
+      PropertyOverrides(style: defaultStyle);
 
   bool resolveHasInteraction({
     required bool isRoot,
     required PropertyOverrides valueStyle,
-  }) =>
-      _cachedHasInteraction ??= isRoot || valueStyle.onTap != null;
+  }) => _cachedHasInteraction ??= isRoot || valueStyle.onTap != null;
 }

@@ -94,10 +94,9 @@ final class ISpect {
     _retirements.putIfAbsent(
       logger,
       () => logger.dispose().then<(Object, StackTrace)?>(
-            (_) => null,
-            onError: (Object error, StackTrace stackTrace) =>
-                (error, stackTrace),
-          ),
+        (_) => null,
+        onError: (Object error, StackTrace stackTrace) => (error, stackTrace),
+      ),
     );
   }
 
@@ -123,9 +122,7 @@ final class ISpect {
     }
 
     late final Future<void> cleanup;
-    cleanup = Future<void>(
-      LogsFileFactory.cleanupStaleShareFiles,
-    );
+    cleanup = Future<void>(LogsFileFactory.cleanupStaleShareFiles);
     _shareCleanupFuture = cleanup;
     unawaited(
       cleanup.then<void>(
@@ -249,8 +246,8 @@ final class ISpect {
   /// Throws an [ISpectScopeNotFoundError] if no `ISpectScopeController` is an
   /// ancestor — ensure `ISpectBuilder` wraps the widget that uses this context.
   static ISpectScopeModel read(BuildContext context) {
-    final inherited =
-        context.dependOnInheritedWidgetOfExactType<ISpectScopeController>();
+    final inherited = context
+        .dependOnInheritedWidgetOfExactType<ISpectScopeController>();
     if (inherited == null || inherited.notifier == null) {
       throw ISpectScopeNotFoundError();
     }
@@ -362,8 +359,10 @@ final class ISpect {
       throw StateError('ISpect initialization failed.');
     }
     _errorHandler?.dispose();
-    _errorHandler =
-        ErrorHandlerService(logger: effectiveLogger, filters: filters);
+    _errorHandler = ErrorHandlerService(
+      logger: effectiveLogger,
+      filters: filters,
+    );
 
     _errorHandler!.setupErrorHandling(
       options: options,

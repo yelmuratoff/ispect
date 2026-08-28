@@ -118,15 +118,13 @@ void main() {
       final payload = List<String>.filled(300 * 1024, 'x').join();
       final content = '{"payload":"$payload"}';
       final completionOrder = <String>[];
-      final queuedUiWork = Future<void>(
-        () => completionOrder.add('ui'),
-      );
-      final operation = service.processPastedContentAsync(content).then(
-        (result) {
-          completionOrder.add('processed');
-          return result;
-        },
-      );
+      final queuedUiWork = Future<void>(() => completionOrder.add('ui'));
+      final operation = service.processPastedContentAsync(content).then((
+        result,
+      ) {
+        completionOrder.add('processed');
+        return result;
+      });
 
       final result = await operation;
       await queuedUiWork;
@@ -144,9 +142,7 @@ void main() {
         ),
       );
 
-      final result = constrained.processPastedContent(
-        '{"value":"1234567890"}',
-      );
+      final result = constrained.processPastedContent('{"value":"1234567890"}');
 
       expect(result.success, false);
       expect(result.error, contains('16'));

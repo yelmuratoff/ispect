@@ -9,23 +9,25 @@ import 'package:ispect/src/common/utils/squircle.dart';
 abstract final class ISpectInputStyle {
   static const double radius = 10;
   static const double fontSize = 14;
-  static const EdgeInsets denseContentPadding =
-      EdgeInsets.symmetric(horizontal: 12, vertical: 12);
+  static const EdgeInsets denseContentPadding = EdgeInsets.symmetric(
+    horizontal: 12,
+    vertical: 12,
+  );
 
   /// Default text style for ISpect inputs.
   ///
   /// Callers can override `fontWeight` per-input (e.g. numeric editors that
   /// want a bolder value) by passing a custom `textStyle`.
   static TextStyle textStyle(BuildContext context) => TextStyle(
-        fontSize: fontSize,
-        color: context.appTheme.colorScheme.onSurface,
-      );
+    fontSize: fontSize,
+    color: context.appTheme.colorScheme.onSurface,
+  );
 
   /// Hint/placeholder text style for ISpect inputs.
   static TextStyle hintStyle(BuildContext context) => TextStyle(
-        fontSize: fontSize,
-        color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.5),
-      );
+    fontSize: fontSize,
+    color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.5),
+  );
 }
 
 /// Returns an [InputDecoration] that matches the rest of ISpect's surfaces:
@@ -115,25 +117,25 @@ class ISpectTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => TextField(
-        controller: controller,
-        focusNode: focusNode,
-        autofocus: autofocus,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        maxLines: maxLines,
-        minLines: minLines,
-        expands: expands,
-        textAlignVertical: textAlignVertical,
-        onChanged: onChanged,
-        onSubmitted: onSubmitted,
-        style: textStyle ?? ISpectInputStyle.textStyle(context),
-        decoration: ispectInputDecoration(
-          context,
-          hintText: hintText,
-          labelText: labelText,
-          errorText: errorText,
-          prefixIcon: prefixIcon,
-          suffixIcon: suffixIcon,
-        ),
-      );
+    controller: controller,
+    focusNode: focusNode,
+    autofocus: autofocus,
+    keyboardType: keyboardType,
+    inputFormatters: inputFormatters,
+    maxLines: maxLines,
+    minLines: minLines,
+    expands: expands,
+    textAlignVertical: textAlignVertical,
+    onChanged: onChanged,
+    onSubmitted: onSubmitted,
+    style: textStyle ?? ISpectInputStyle.textStyle(context),
+    decoration: ispectInputDecoration(
+      context,
+      hintText: hintText,
+      labelText: labelText,
+      errorText: errorText,
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+    ),
+  );
 }

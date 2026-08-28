@@ -24,8 +24,9 @@ class ISpectFilterButton extends StatelessWidget {
     final cardColor = context.ispectCardColor;
     final size = context.ispectSquareControlSize;
     final hasCount = activeFilterCount > 0;
-    final badgeLabel =
-        activeFilterCount > 9 ? '9+' : activeFilterCount.toString();
+    final badgeLabel = activeFilterCount > 9
+        ? '9+'
+        : activeFilterCount.toString();
 
     return Tooltip(
       message: context.ispectL10n.filters,
@@ -33,8 +34,9 @@ class ISpectFilterButton extends StatelessWidget {
         width: size,
         height: size,
         child: Material(
-          color:
-              hasActiveState ? primaryColor.withValues(alpha: 0.12) : cardColor,
+          color: hasActiveState
+              ? primaryColor.withValues(alpha: 0.12)
+              : cardColor,
           shape: ISpectSquircle.border(),
           child: Semantics(
             button: true,
@@ -53,8 +55,9 @@ class ISpectFilterButton extends StatelessWidget {
                     size: 18,
                     color: hasActiveState
                         ? primaryColor
-                        : context.appTheme.colorScheme.onSurface
-                            .withValues(alpha: 0.6),
+                        : context.appTheme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
                   ),
                   if (hasCount)
                     Positioned(
@@ -97,8 +100,8 @@ class _FilterCountBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final onColor =
         ThemeData.estimateBrightnessForColor(color) == Brightness.dark
-            ? Colors.white
-            : Colors.black;
+        ? Colors.white
+        : Colors.black;
     return Container(
       constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
       padding: const EdgeInsets.symmetric(horizontal: 3),

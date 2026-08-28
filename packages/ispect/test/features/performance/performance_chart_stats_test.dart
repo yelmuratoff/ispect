@@ -52,10 +52,10 @@ void main() {
     });
 
     test('p99 collapses to the worst frame in a 2-sample window', () {
-      final stats = PerformanceChartStats.fromMicroseconds(
-        [us(4), us(40)],
-        us(16),
-      );
+      final stats = PerformanceChartStats.fromMicroseconds([
+        us(4),
+        us(40),
+      ], us(16));
 
       expect(stats.p99, ms(40));
       expect(stats.p90, ms(40));
@@ -113,10 +113,7 @@ void main() {
 
     test('a single 30 ms hitch is visible in a 10-frame window on 120Hz', () {
       // Previous formula stayed pinned at 120; the new one drops it.
-      final totalSpans = [
-        for (var i = 0; i < 9; i++) us(8.333),
-        us(30),
-      ];
+      final totalSpans = [for (var i = 0; i < 9; i++) us(8.333), us(30)];
 
       final fps = computeSmoothFps(totalSpans, 120);
 

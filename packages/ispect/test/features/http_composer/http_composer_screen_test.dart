@@ -43,12 +43,11 @@ final class _HostileReplayError implements Exception {
 
 void main() {
   group('HttpComposerScreen', () {
-    testWidgets('sends the composed request and shows the response status',
-        (tester) async {
+    testWidgets('sends the composed request and shows the response status', (
+      tester,
+    ) async {
       final sender = _FakeSender();
-      await tester.pumpWidget(
-        appShell(HttpComposerScreen(senders: [sender])),
-      );
+      await tester.pumpWidget(appShell(HttpComposerScreen(senders: [sender])));
 
       await tester.enterText(
         find.byType(TextField).first,
@@ -62,17 +61,16 @@ void main() {
       expect(find.text('200'), findsOneWidget);
     });
 
-    testWidgets('opens the JSON viewer for a JSON response body',
-        (tester) async {
+    testWidgets('opens the JSON viewer for a JSON response body', (
+      tester,
+    ) async {
       final sender = _FakeSender(
         result: const NetworkReplayResult(
           statusCode: 200,
           body: {'name': 'Ada'},
         ),
       );
-      await tester.pumpWidget(
-        appShell(HttpComposerScreen(senders: [sender])),
-      );
+      await tester.pumpWidget(appShell(HttpComposerScreen(senders: [sender])));
 
       await tester.enterText(
         find.byType(TextField).first,
@@ -92,17 +90,17 @@ void main() {
       expect(find.byType(JsonScreen), findsOneWidget);
     });
 
-    testWidgets('hides the send button when no client is registered',
-        (tester) async {
-      await tester.pumpWidget(
-        appShell(const HttpComposerScreen(senders: [])),
-      );
+    testWidgets('hides the send button when no client is registered', (
+      tester,
+    ) async {
+      await tester.pumpWidget(appShell(const HttpComposerScreen(senders: [])));
 
       expect(find.byIcon(Icons.send_rounded), findsNothing);
     });
 
-    testWidgets('splits request and response into two panes on desktop',
-        (tester) async {
+    testWidgets('splits request and response into two panes on desktop', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1400, 900);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
@@ -113,9 +111,7 @@ void main() {
           body: {'name': 'Ada'},
         ),
       );
-      await tester.pumpWidget(
-        appShell(HttpComposerScreen(senders: [sender])),
-      );
+      await tester.pumpWidget(appShell(HttpComposerScreen(senders: [sender])));
 
       expect(find.byType(ResizableSplitView), findsOneWidget);
       expect(find.byIcon(Icons.inbox_rounded), findsOneWidget);
@@ -142,9 +138,7 @@ void main() {
       addTearDown(tester.view.reset);
 
       final sender = _FakeSender();
-      await tester.pumpWidget(
-        appShell(HttpComposerScreen(senders: [sender])),
-      );
+      await tester.pumpWidget(appShell(HttpComposerScreen(senders: [sender])));
 
       expect(find.byType(ResizableSplitView), findsNothing);
 
@@ -158,15 +152,12 @@ void main() {
       expect(find.text('200'), findsOneWidget);
     });
 
-    testWidgets('renders a hostile sender error without invoking formatters',
-        (tester) async {
+    testWidgets('renders a hostile sender error without invoking formatters', (
+      tester,
+    ) async {
       final error = _HostileReplayError();
-      final sender = _FakeSender(
-        result: NetworkReplayResult(error: error),
-      );
-      await tester.pumpWidget(
-        appShell(HttpComposerScreen(senders: [sender])),
-      );
+      final sender = _FakeSender(result: NetworkReplayResult(error: error));
+      await tester.pumpWidget(appShell(HttpComposerScreen(senders: [sender])));
 
       await tester.enterText(
         find.byType(TextField).first,

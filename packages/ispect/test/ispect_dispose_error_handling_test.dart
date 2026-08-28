@@ -29,9 +29,7 @@ void main() {
 
     ISpect.run(
       () {},
-      logger: ISpectLogger(
-        options: ISpectLoggerOptions(useConsoleLogs: false),
-      ),
+      logger: ISpectLogger(options: ISpectLoggerOptions(useConsoleLogs: false)),
     );
 
     expect(identical(FlutterError.presentError, hostPresent), isFalse);
@@ -105,9 +103,7 @@ void main() {
         // ignore: avoid_print
         print('host print after dispose');
       })
-      ..runGuarded(
-        () => throw StateError('host error after dispose'),
-      );
+      ..runGuarded(() => throw StateError('host error after dispose'));
     await Future<void>.delayed(Duration.zero);
 
     expect(hostPrints, contains('host print after dispose'));
@@ -123,9 +119,7 @@ void main() {
 
     ISpect.run(
       () {},
-      logger: ISpectLogger(
-        options: ISpectLoggerOptions(useConsoleLogs: false),
-      ),
+      logger: ISpectLogger(options: ISpectLoggerOptions(useConsoleLogs: false)),
       redactionEnabled: false,
     );
     expect(ISpectRedaction.enabled, isFalse);
@@ -135,9 +129,7 @@ void main() {
 
     ISpect.run(
       () {},
-      logger: ISpectLogger(
-        options: ISpectLoggerOptions(useConsoleLogs: false),
-      ),
+      logger: ISpectLogger(options: ISpectLoggerOptions(useConsoleLogs: false)),
     );
     expect(ISpectRedaction.enabled, isTrue);
   });
@@ -156,9 +148,7 @@ void main() {
 
     ISpect.run(
       () {},
-      logger: ISpectLogger(
-        options: ISpectLoggerOptions(useConsoleLogs: false),
-      ),
+      logger: ISpectLogger(options: ISpectLoggerOptions(useConsoleLogs: false)),
       redactionEnabled: false,
       redactionService: runService,
     );
@@ -172,105 +162,103 @@ void main() {
     expect(ISpectRedaction.service, same(hostService));
   });
 
-  test('dispose restores the redaction policy when logger disposal fails',
-      () async {
-    await ISpect.dispose();
-    final hostService = RedactionService(
-      sensitiveKeys: const {'host_field'},
-      placeholder: '<host>',
-    );
-    final runService = RedactionService(
-      sensitiveKeys: const {'run_field'},
-      placeholder: '<run>',
-    );
-    ISpectRedaction.configure(service: hostService);
-    final history = _ThrowingFileLogHistory();
-    final failedLogger = ISpectLogger.testing(
-      options: ISpectLoggerOptions(useConsoleLogs: false),
-      history: history,
-    );
-
-    ISpect.run(
-      () {},
-      logger: failedLogger,
-      redactionService: runService,
-    );
-    expect(ISpectRedaction.service, same(runService));
-
-    await expectLater(ISpect.dispose(), throwsA(isA<StateError>()));
-
-    expect(history.serviceDuringSave, same(runService));
-    expect(ISpectRedaction.enabled, isTrue);
-    expect(ISpectRedaction.service, same(hostService));
-  });
-
-  test('repeated run flushes the retired logger with its original policy',
-      () async {
-    await ISpect.dispose();
-    final runService = RedactionService(
-      sensitiveKeys: const {'run_field'},
-      placeholder: '<run>',
-    );
-    final history = _DelayedFileLogHistory();
-    addTearDown(history.unblock);
-    final original = ISpectLogger.testing(
-      options: ISpectLoggerOptions(useConsoleLogs: false),
-      history: history,
-    );
-
-    ISpect.run(
-      () {},
-      logger: original,
-      redactionService: runService,
-    );
-    ISpect.run(
-      () {},
-      logger: ISpectLogger(
+  test(
+    'dispose restores the redaction policy when logger disposal fails',
+    () async {
+      await ISpect.dispose();
+      final hostService = RedactionService(
+        sensitiveKeys: const {'host_field'},
+        placeholder: '<host>',
+      );
+      final runService = RedactionService(
+        sensitiveKeys: const {'run_field'},
+        placeholder: '<run>',
+      );
+      ISpectRedaction.configure(service: hostService);
+      final history = _ThrowingFileLogHistory();
+      final failedLogger = ISpectLogger.testing(
         options: ISpectLoggerOptions(useConsoleLogs: false),
-      ),
-      redactionEnabled: false,
-    );
+        history: history,
+      );
 
-    await history.started.future;
-    history.unblock();
-    await history.finished.future;
+      ISpect.run(() {}, logger: failedLogger, redactionService: runService);
+      expect(ISpectRedaction.service, same(runService));
 
-    expect(history.enabledDuringSave, isTrue);
-    expect(history.serviceDuringSave, same(runService));
-  });
+      await expectLater(ISpect.dispose(), throwsA(isA<StateError>()));
 
-  test('dispose waits for retired loggers and surfaces their flush failure',
-      () async {
-    await ISpect.dispose();
-    final history = _DelayedFileLogHistory(
-      error: StateError('retired flush failed'),
-    );
-    addTearDown(history.unblock);
-    final original = ISpectLogger.testing(
-      options: ISpectLoggerOptions(useConsoleLogs: false),
-      history: history,
-    );
-    final replacement = ISpectLogger(
-      options: ISpectLoggerOptions(useConsoleLogs: false),
-    );
-    expect(ISpect.initialize(original), isTrue);
-    expect(ISpect.initialize(replacement, force: true), isTrue);
-    await history.started.future;
+      expect(history.serviceDuringSave, same(runService));
+      expect(ISpectRedaction.enabled, isTrue);
+      expect(ISpectRedaction.service, same(hostService));
+    },
+  );
 
-    final disposal = ISpect.dispose();
-    history.unblock();
+  test(
+    'repeated run flushes the retired logger with its original policy',
+    () async {
+      await ISpect.dispose();
+      final runService = RedactionService(
+        sensitiveKeys: const {'run_field'},
+        placeholder: '<run>',
+      );
+      final history = _DelayedFileLogHistory();
+      addTearDown(history.unblock);
+      final original = ISpectLogger.testing(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+        history: history,
+      );
 
-    await expectLater(
-      disposal,
-      throwsA(
-        isA<StateError>().having(
-          (error) => error.message,
-          'message',
-          'retired flush failed',
+      ISpect.run(() {}, logger: original, redactionService: runService);
+      ISpect.run(
+        () {},
+        logger: ISpectLogger(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
         ),
-      ),
-    );
-  });
+        redactionEnabled: false,
+      );
+
+      await history.started.future;
+      history.unblock();
+      await history.finished.future;
+
+      expect(history.enabledDuringSave, isTrue);
+      expect(history.serviceDuringSave, same(runService));
+    },
+  );
+
+  test(
+    'dispose waits for retired loggers and surfaces their flush failure',
+    () async {
+      await ISpect.dispose();
+      final history = _DelayedFileLogHistory(
+        error: StateError('retired flush failed'),
+      );
+      addTearDown(history.unblock);
+      final original = ISpectLogger.testing(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+        history: history,
+      );
+      final replacement = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      expect(ISpect.initialize(original), isTrue);
+      expect(ISpect.initialize(replacement, force: true), isTrue);
+      await history.started.future;
+
+      final disposal = ISpect.dispose();
+      history.unblock();
+
+      await expectLater(
+        disposal,
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            'retired flush failed',
+          ),
+        ),
+      );
+    },
+  );
 
   test('concurrent dispose calls join and reject initialization', () async {
     await ISpect.dispose();
@@ -291,10 +279,7 @@ void main() {
 
     expect(identical(first, second), isTrue);
     expect(ISpect.initialize(replacement, force: true), isFalse);
-    expect(
-      () => ISpect.run(() {}, logger: replacement),
-      throwsStateError,
-    );
+    expect(() => ISpect.run(() {}, logger: replacement), throwsStateError);
 
     history.unblock();
     await Future.wait([first, second]);

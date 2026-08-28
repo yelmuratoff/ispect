@@ -81,35 +81,36 @@ class ISpectBottomSheetHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 12, 4),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _HeaderTitleSection(
-                title: title,
-                subtitle: subtitle,
-                icon: icon,
-                iconColor: iconColor,
-              ),
-            ),
-            IconButton(
-              onPressed: onClose ?? () => Navigator.pop(context),
-              tooltip: context.ispectL10n.close,
-              style: IconButton.styleFrom(
-                backgroundColor: context.appTheme.colorScheme.onSurface
-                    .withValues(alpha: 0.06),
-                shape: const CircleBorder(),
-              ),
-              icon: Icon(
-                Icons.close_rounded,
-                color: context.appTheme.textColor.withValues(alpha: 0.6),
-                size: 20,
-              ),
-            ),
-          ],
+    padding: const EdgeInsets.fromLTRB(20, 0, 12, 4),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: _HeaderTitleSection(
+            title: title,
+            subtitle: subtitle,
+            icon: icon,
+            iconColor: iconColor,
+          ),
         ),
-      );
+        IconButton(
+          onPressed: onClose ?? () => Navigator.pop(context),
+          tooltip: context.ispectL10n.close,
+          style: IconButton.styleFrom(
+            backgroundColor: context.appTheme.colorScheme.onSurface.withValues(
+              alpha: 0.06,
+            ),
+            shape: const CircleBorder(),
+          ),
+          icon: Icon(
+            Icons.close_rounded,
+            color: context.appTheme.textColor.withValues(alpha: 0.6),
+            size: 20,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Dialog title row mirroring [ISpectBottomSheetHeader] without a close
@@ -132,11 +133,11 @@ class ISpectDialogHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _HeaderTitleSection(
-        title: title,
-        subtitle: subtitle,
-        icon: icon,
-        iconColor: iconColor,
-      );
+    title: title,
+    subtitle: subtitle,
+    icon: icon,
+    iconColor: iconColor,
+  );
 }
 
 /// A small drag indicator bar for bottom sheets.
@@ -219,27 +220,27 @@ class ISpectSheetActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Opacity(
-        opacity: onPressed == null ? 0.4 : 1.0,
-        child: ISpectBorderedSurface(
-          onTap: onPressed,
-          semanticsLabel: label,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 16, color: context.ispectPrimaryColor),
-              const Gap(8),
-              Flexible(
-                child: Text(
-                  label,
-                  style: context.appTheme.textTheme.labelMedium?.copyWith(
-                    color: context.appTheme.textColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+    opacity: onPressed == null ? 0.4 : 1.0,
+    child: ISpectBorderedSurface(
+      onTap: onPressed,
+      semanticsLabel: label,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: context.ispectPrimaryColor),
+          const Gap(8),
+          Flexible(
+            child: Text(
+              label,
+              style: context.appTheme.textTheme.labelMedium?.copyWith(
+                color: context.appTheme.textColor,
+                fontWeight: FontWeight.w500,
               ),
-            ],
+            ),
           ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 }

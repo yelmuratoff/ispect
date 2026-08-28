@@ -62,10 +62,7 @@ final class _CountingError extends Error {
 
 final class _CountingDiagnosticsNode extends DiagnosticsNode {
   _CountingDiagnosticsNode()
-      : super(
-          name: 'hostile',
-          style: DiagnosticsTreeStyle.singleLine,
-        );
+    : super(name: 'hostile', style: DiagnosticsTreeStyle.singleLine);
 
   int descriptionCalls = 0;
   int runtimeTypeCalls = 0;
@@ -102,10 +99,8 @@ final class _CountingDiagnosticsNode extends DiagnosticsNode {
   }
 }
 
-String _oversizedDiagnosticText(String secret) => '$secret${''.padRight(
-      LogExportOutput.maxPreparedValueBytes * 2,
-      'x',
-    )}';
+String _oversizedDiagnosticText(String secret) =>
+    '$secret${''.padRight(LogExportOutput.maxPreparedValueBytes * 2, 'x')}';
 
 Iterable<String> _unboundedLines() sync* {
   var index = 0;
@@ -182,31 +177,31 @@ void main() {
       expect('${entry.stackTrace}', isNot(contains('STACK_SECRET')));
     });
 
-    test('keeps host callback values while sanitizing retained diagnostics',
-        () {
-      Object? forwarded;
-      StackTrace? forwardedStack;
+    test(
+      'keeps host callback values while sanitizing retained diagnostics',
+      () {
+        Object? forwarded;
+        StackTrace? forwardedStack;
 
-      service().handleZoneError(
-        'password=CALLBACK_SECRET',
-        StackTrace.fromString(
-          'file:///Users/alice/project/auth.dart:12:3',
-        ),
-        onZonedError: null,
-        onUncaughtError: (error, stack) {
-          forwarded = error;
-          forwardedStack = stack;
-        },
-        isUncaughtErrorsHandlingEnabled: true,
-      );
+        service().handleZoneError(
+          'password=CALLBACK_SECRET',
+          StackTrace.fromString('file:///Users/alice/project/auth.dart:12:3'),
+          onZonedError: null,
+          onUncaughtError: (error, stack) {
+            forwarded = error;
+            forwardedStack = stack;
+          },
+          isUncaughtErrorsHandlingEnabled: true,
+        );
 
-      expect('$forwarded', contains('CALLBACK_SECRET'));
-      expect('$forwardedStack', contains('/Users/alice'));
-      expect(
-        logger.history.single.textMessage,
-        isNot(contains('/Users/alice')),
-      );
-    });
+        expect('$forwarded', contains('CALLBACK_SECRET'));
+        expect('$forwardedStack', contains('/Users/alice'));
+        expect(
+          logger.history.single.textMessage,
+          isNot(contains('/Users/alice')),
+        );
+      },
+    );
 
     test('contains an exception formatter that throws', () {
       const exception = _ThrowingDiagnostic();
@@ -329,9 +324,7 @@ void main() {
       expect(zonedValue, same(diagnostic));
       expect(uncaughtValue, same(diagnostic));
       expect(
-        LogExportOutput.utf8Length(
-          '${logger.history.single.exception}',
-        ),
+        LogExportOutput.utf8Length('${logger.history.single.exception}'),
         lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
       );
       expect(
@@ -362,10 +355,7 @@ void main() {
         LogExportOutput.utf8Length(entry.message!),
         lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
       );
-      expect(
-        entry.textMessage,
-        isNot(contains('OVERSIZED_DIAGNOSTIC_SECRET')),
-      );
+      expect(entry.textMessage, isNot(contains('OVERSIZED_DIAGNOSTIC_SECRET')));
     });
 
     test('filters do not re-execute captured diagnostic formatters', () {
@@ -704,8 +694,9 @@ void main() {
       expect(received, same(details));
     });
 
-    testWidgets('presentError logs details.exception after the frame',
-        (tester) async {
+    testWidgets('presentError logs details.exception after the frame', (
+      tester,
+    ) async {
       ErrorHandlerService(logger: logger, filters: const []).setupErrorHandling(
         options: const ISpectErrorHandlerOptions(
           isFlutterErrorHandlingEnabled: false,
@@ -724,14 +715,16 @@ void main() {
       tester.binding.scheduleFrame();
       await tester.pump();
 
-      final entry = logger.history
-          .singleWhere((e) => e.message == 'Flutter error presented');
+      final entry = logger.history.singleWhere(
+        (e) => e.message == 'Flutter error presented',
+      );
       expect(entry.exception, isNot(same(exception)));
       expect('${entry.exception}', 'TestException: present');
     });
 
-    testWidgets('presentError forwards original callback details',
-        (tester) async {
+    testWidgets('presentError forwards original callback details', (
+      tester,
+    ) async {
       FlutterErrorDetails? received;
       ErrorHandlerService(logger: logger, filters: const []).setupErrorHandling(
         options: const ISpectErrorHandlerOptions(
@@ -773,8 +766,9 @@ void main() {
       );
 
       expect(handled, isTrue);
-      final entry = logger.history
-          .singleWhere((e) => e.message == 'Platform error caught');
+      final entry = logger.history.singleWhere(
+        (e) => e.message == 'Platform error caught',
+      );
       expect(entry.exception, isNot(same(exception)));
       expect('${entry.exception}', 'TestException: platform');
     });
@@ -825,9 +819,7 @@ void main() {
         PlatformDispatcher.instance.onError = previousPlatform;
       });
       ErrorHandlerService(logger: logger, filters: const [])
-        ..setupErrorHandling(
-          options: const ISpectErrorHandlerOptions(),
-        )
+        ..setupErrorHandling(options: const ISpectErrorHandlerOptions())
         ..dispose();
 
       expect(identical(FlutterError.presentError, hostPresent), isTrue);
@@ -839,9 +831,7 @@ void main() {
       FlutterError.presentError(
         const FlutterErrorDetails(exception: 'present'),
       );
-      FlutterError.onError!(
-        const FlutterErrorDetails(exception: 'flutter'),
-      );
+      FlutterError.onError!(const FlutterErrorDetails(exception: 'flutter'));
       final handled = PlatformDispatcher.instance.onError!(
         'platform',
         StackTrace.empty,
@@ -884,8 +874,10 @@ void main() {
         () => print(line),
         zoneSpecification: ZoneSpecification(
           print: (self, parent, zone, printed) {
-            ErrorHandlerService(logger: logger, filters: const [])
-                .handleZonePrint(
+            ErrorHandlerService(
+              logger: logger,
+              filters: const [],
+            ).handleZonePrint(
               zone,
               parent,
               zone,

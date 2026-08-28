@@ -33,7 +33,5 @@ final class ISpectLogPageController extends ChangeNotifier {
 
 /// Renamed to [ISpectLogPageController] in 5.0.0 for consistency with the
 /// ISpect* package prefix. Will be removed in 8.0.0.
-@Deprecated(
-  'Use ISpectLogPageController instead. Will be removed in 8.0.0.',
-)
+@Deprecated('Use ISpectLogPageController instead. Will be removed in 8.0.0.')
 typedef LogPageController = ISpectLogPageController;

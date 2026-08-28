@@ -35,53 +35,49 @@ class ISpectExportSheet extends StatelessWidget {
     required ExportController controller,
     required ExportContentBuilder contentBuilder,
     IconData icon = Icons.ios_share_rounded,
-  }) =>
-      showISpectSheet(
-        context,
-        topOnlyRadius: true,
-        builder: (sheetContext, _) => ISpectExportSheet(
-          controller: controller,
-          contentBuilder: contentBuilder,
-          icon: icon,
-        ),
-      );
+  }) => showISpectSheet(
+    context,
+    topOnlyRadius: true,
+    builder: (sheetContext, _) => ISpectExportSheet(
+      controller: controller,
+      contentBuilder: contentBuilder,
+      icon: icon,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-        listenable: controller,
-        builder: (context, _) => Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const ISpectDragHandle(),
-              const Gap(8),
-              ISpectBottomSheetHeader(
-                title: context.ispectL10n.share,
-                icon: icon,
-              ),
-              const Gap(16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (controller.availableFormats.length > 1)
-                      _FormatChips(controller: controller),
-                    const Gap(8),
-                    _ActionButtons(
-                      controller: controller,
-                      contentBuilder: contentBuilder,
-                    ),
-                  ],
+    listenable: controller,
+    builder: (context, _) => Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const ISpectDragHandle(),
+          const Gap(8),
+          ISpectBottomSheetHeader(title: context.ispectL10n.share, icon: icon),
+          const Gap(16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (controller.availableFormats.length > 1)
+                  _FormatChips(controller: controller),
+                const Gap(8),
+                _ActionButtons(
+                  controller: controller,
+                  contentBuilder: contentBuilder,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 }
 
 // ── Format chips ──────────────────────────────────────────────────────────
@@ -93,8 +89,9 @@ class _FormatChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = context.ispectPrimaryColor;
-    final outlineColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.12);
+    final outlineColor = context.appTheme.colorScheme.onSurface.withValues(
+      alpha: 0.12,
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -111,8 +108,9 @@ class _FormatChips extends StatelessWidget {
                     format.label,
                     style: TextStyle(
                       color: isSelected ? primaryColor : null,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                     ),
                   ),
                   avatar: Icon(

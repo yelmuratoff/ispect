@@ -98,10 +98,7 @@ void main() {
       ),
     );
 
-    expect(
-      utf8.encode(jsonEncode(screen.data)).length,
-      lessThanOrEqualTo(64),
-    );
+    expect(utf8.encode(jsonEncode(screen.data)).length, lessThanOrEqualTo(64));
     expect(screen.data.toString(), contains(JsonInputPreflight.truncatedValue));
   });
 }

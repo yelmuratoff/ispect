@@ -380,10 +380,7 @@ class NativeLogsFile extends BaseLogsFile {
       return directory;
     } catch (_) {
       try {
-        if (await FileSystemEntity.type(
-              created.path,
-              followLinks: false,
-            ) ==
+        if (await FileSystemEntity.type(created.path, followLinks: false) ==
             FileSystemEntityType.directory) {
           await created.delete();
         }
@@ -497,9 +494,7 @@ class NativeLogsFile extends BaseLogsFile {
   static Future<void> cleanupStaleShareFiles() =>
       _sweepStaleShareFiles(ignoreRootErrors: false);
 
-  static Future<void> _sweepStaleShareFiles({
-    bool ignoreRootErrors = true,
-  }) =>
+  static Future<void> _sweepStaleShareFiles({bool ignoreRootErrors = true}) =>
       _serializeLeaseAction<void>(() async {
         try {
           final root = await _shareRootDir();
@@ -566,10 +561,7 @@ class NativeLogsFile extends BaseLogsFile {
           await lease.create(exclusive: true);
           createdLease = true;
         } on FileSystemException {
-          if (await FileSystemEntity.type(
-                lease.path,
-                followLinks: false,
-              ) ==
+          if (await FileSystemEntity.type(lease.path, followLinks: false) ==
               FileSystemEntityType.notFound) {
             return;
           }
@@ -721,9 +713,8 @@ class NativeLogsFile extends BaseLogsFile {
     await _releaseCurrentShareLease();
   }
 
-  static File _shareLeaseFile(Directory directory) => File(
-        '${directory.path}${Platform.pathSeparator}$_activeLeaseName',
-      );
+  static File _shareLeaseFile(Directory directory) =>
+      File('${directory.path}${Platform.pathSeparator}$_activeLeaseName');
 
   static Future<void> _ensureCurrentShareLease(Directory directory) =>
       _serializeLeaseAction<void>(
@@ -833,9 +824,7 @@ class NativeLogsFile extends BaseLogsFile {
   }
 
   static Future<void> _releaseCurrentShareLease() =>
-      _serializeLeaseAction<void>(
-        _releaseCurrentShareLeaseUnlocked,
-      );
+      _serializeLeaseAction<void>(_releaseCurrentShareLeaseUnlocked);
 
   static Future<void> _releaseCurrentShareLeaseUnlocked() async {
     final handle = _shareLeaseHandle;
@@ -846,10 +835,7 @@ class NativeLogsFile extends BaseLogsFile {
     await _closeLockedLease(handle);
   }
 
-  static String _leaseRecord({
-    required String owner,
-    required int version,
-  }) =>
+  static String _leaseRecord({required String owner, required int version}) =>
       'owner=$owner\n'
       'version=$version\n'
       'updated=${DateTime.now().toUtc().toIso8601String()}\n';
@@ -925,8 +911,9 @@ class NativeLogsFile extends BaseLogsFile {
     final stat = await directory.stat();
     const groupOrWorldPermissionBits = 0x3f;
     const groupOrWorldWriteBits = 0x12;
-    final forbiddenBits =
-        requireOwnerOnly ? groupOrWorldPermissionBits : groupOrWorldWriteBits;
+    final forbiddenBits = requireOwnerOnly
+        ? groupOrWorldPermissionBits
+        : groupOrWorldWriteBits;
     if (stat.type != FileSystemEntityType.directory ||
         stat.mode & forbiddenBits != 0) {
       throw FileSystemException(
@@ -990,10 +977,7 @@ class NativeLogsFile extends BaseLogsFile {
     required Directory parent,
     required String label,
   }) async {
-    final type = await FileSystemEntity.type(
-      file.path,
-      followLinks: false,
-    );
+    final type = await FileSystemEntity.type(file.path, followLinks: false);
     if (type != FileSystemEntityType.file) {
       throw FileSystemException(
         'Native $label must be a real file.',
@@ -1027,9 +1011,7 @@ class NativeLogsFile extends BaseLogsFile {
     return Platform.isWindows ? normalized.toLowerCase() : normalized;
   }
 
-  static Future<T> _serializeLeaseAction<T>(
-    Future<T> Function() action,
-  ) {
+  static Future<T> _serializeLeaseAction<T>(Future<T> Function() action) {
     final previous = _leaseSerial;
     final released = Completer<void>();
     _leaseSerial = released.future;
@@ -1044,9 +1026,7 @@ class NativeLogsFile extends BaseLogsFile {
     })();
   }
 
-  static Future<T> _serializeLifecycleAction<T>(
-    Future<T> Function() action,
-  ) {
+  static Future<T> _serializeLifecycleAction<T>(Future<T> Function() action) {
     final previous = _lifecycleSerial;
     final released = Completer<void>();
     _lifecycleSerial = released.future;

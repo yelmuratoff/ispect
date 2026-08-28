@@ -22,9 +22,8 @@ typedef ISpectOpenFileCallback = Future<void> Function(String path);
 /// source (file picker, clipboard, URL, etc.).
 ///
 /// Return the raw log content as a string, or `null` if the user cancelled.
-typedef ISpectLoadLogContentCallback = Future<String?> Function(
-  BuildContext context,
-);
+typedef ISpectLoadLogContentCallback =
+    Future<String?> Function(BuildContext context);
 
 /// Supplies environment metadata embedded into exported log files.
 ///
@@ -57,9 +56,8 @@ typedef ISpectMetadataProvider = FutureOr<ISpectMetadata> Function();
 ///   await storage.write('ispect_settings', settings.toJson());
 /// },
 /// ```
-typedef ISpectSettingsChangedCallback = void Function(
-  ISpectSettingsState settings,
-);
+typedef ISpectSettingsChangedCallback =
+    void Function(ISpectSettingsState settings);
 
 /// Supplies a file for a composed multipart request in the HTTP composer.
 ///
@@ -101,11 +99,8 @@ final class ISpectSettingsState {
     this.isPerformanceEnabled = true,
     this.isInspectorEnabled = true,
     this.isColorPickerEnabled = true,
-  })  : assert(maxHistoryItems >= 0, 'maxHistoryItems must be non-negative'),
-        assert(
-          logTruncateLength >= 0,
-          'logTruncateLength must be non-negative',
-        );
+  }) : assert(maxHistoryItems >= 0, 'maxHistoryItems must be non-negative'),
+       assert(logTruncateLength >= 0, 'logTruncateLength must be non-negative');
 
   final bool enabled;
   final bool useConsoleLogs;
@@ -248,7 +243,8 @@ final class ISpectSettingsState {
       resourceLimits: _resourceLimitsFromMap(map['resource_limits']),
       processingPolicy: _processingPolicyFromMap(map['processing_policy']),
       disabledLogTypes: Set<String>.from(
-          cast<Iterable<dynamic>?>('disabled_log_types') ?? const <String>{}),
+        cast<Iterable<dynamic>?>('disabled_log_types') ?? const <String>{},
+      ),
       expandedLogs: cast<bool?>('expanded_logs') ?? false,
       isLogOrderReversed: cast<bool?>('is_log_order_reversed') ?? false,
       groupHttpLogs: cast<bool?>('group_http_logs') ?? false,
@@ -418,11 +414,7 @@ final class ISpectShareRequest {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'subject': subject,
-      'text': text,
-      'file_paths': filePaths,
-    };
+    return {'subject': subject, 'text': text, 'file_paths': filePaths};
   }
 
   factory ISpectShareRequest.fromMap(Map<String, dynamic> map) {
@@ -432,8 +424,9 @@ final class ISpectShareRequest {
     return ISpectShareRequest(
       subject: cast<String?>('subject'),
       text: cast<String?>('text'),
-      filePaths:
-          List<String>.from(cast<List<dynamic>?>('file_paths') ?? const []),
+      filePaths: List<String>.from(
+        cast<List<dynamic>?>('file_paths') ?? const [],
+      ),
     );
   }
 
@@ -443,7 +436,8 @@ final class ISpectShareRequest {
       ISpectShareRequest.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() => '''ISpectShareRequest(
+  String toString() =>
+      '''ISpectShareRequest(
       subject: $subject,
       text: $text,
       filePaths: $filePaths

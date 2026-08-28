@@ -8,10 +8,7 @@ void main() {
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.system,
-      builder: (context, child) => Inspector(
-        isEnabled: true,
-        child: child!,
-      ),
+      builder: (context, child) => Inspector(isEnabled: true, child: child!),
     ),
   );
 }
@@ -44,19 +41,14 @@ class _ExampleAppState extends State<ExampleApp> {
           ),
         ),
       ),
-      trailing: IconButton(
-        icon: const Icon(Icons.add),
-        onPressed: () {},
-      ),
+      trailing: IconButton(icon: const Icon(Icons.add), onPressed: () {}),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Example'),
-      ),
+      appBar: AppBar(title: const Text('Example')),
       body: ListView.builder(
         itemCount: 100,
         itemBuilder: (context, i) => _buildListItem(i),

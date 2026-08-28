@@ -11,10 +11,7 @@ import 'package:ispectify/ispectify.dart';
 /// failure through [ISpectLogger.handle]. Host callbacks keep the original
 /// errors and stacks so application recovery and crash reporting still work.
 final class ErrorHandlerService {
-  ErrorHandlerService({
-    required this.logger,
-    required this.filters,
-  });
+  ErrorHandlerService({required this.logger, required this.filters});
 
   final ISpectLogger logger;
   final List<String> filters;
@@ -250,10 +247,7 @@ final class ErrorHandlerService {
     }
   }
 
-  _DiagnosticSnapshot _captureDiagnostic(
-    Object exception,
-    StackTrace? stack,
-  ) {
+  _DiagnosticSnapshot _captureDiagnostic(Object exception, StackTrace? stack) {
     final redactionActive = ISpectRedaction.enabled;
     final preparedException = _prepareDiagnosticValue(
       exception,
@@ -266,8 +260,9 @@ final class ErrorHandlerService {
             replaceOversizedStrings: redactionActive,
           );
     final filterExceptionText = _diagnosticSnapshotText(preparedException);
-    final filterStackText =
-        preparedStack == null ? '' : _diagnosticSnapshotText(preparedStack);
+    final filterStackText = preparedStack == null
+        ? ''
+        : _diagnosticSnapshotText(preparedStack);
     return _DiagnosticSnapshot(
       filterExceptionText: filterExceptionText,
       filterStackText: filterStackText,

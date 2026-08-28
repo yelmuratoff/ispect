@@ -53,11 +53,7 @@ class LogsFileFactory {
     String fileType = 'json',
   }) async {
     final handler = create();
-    return handler.saveToDevice(
-      logs,
-      fileName: fileName,
-      fileType: fileType,
-    );
+    return handler.saveToDevice(logs, fileName: fileName, fileType: fileType);
   }
 
   /// Creates a log file and hands it to the platform's share mechanism.

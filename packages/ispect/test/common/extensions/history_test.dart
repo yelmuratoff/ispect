@@ -28,10 +28,8 @@ void main() {
     );
     final logs = List.generate(
       10,
-      (index) => ISpectLogData(
-        'message-$index-${'x' * 100}',
-        resourceLimits: limits,
-      ),
+      (index) =>
+          ISpectLogData('message-$index-${'x' * 100}', resourceLimits: limits),
     );
 
     final output = logs.formattedTextWith(resourceLimits: limits);

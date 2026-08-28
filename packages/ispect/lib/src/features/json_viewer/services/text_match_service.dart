@@ -7,7 +7,7 @@ import 'package:ispect/src/features/json_viewer/services/json_cache_service.dart
 /// indices (in source text coordinates).
 class TextMatchService {
   TextMatchService._({int maxEntries = 500})
-      : _cache = LRUCache<String, List<int>>(maxEntries: maxEntries);
+    : _cache = LRUCache<String, List<int>>(maxEntries: maxEntries);
 
   static final TextMatchService instance = TextMatchService._();
 

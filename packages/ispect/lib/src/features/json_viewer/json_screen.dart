@@ -35,14 +35,16 @@ class JsonScreen extends StatefulWidget {
     DiagnosticProcessingPolicy? processingPolicy,
     Key? key,
   }) {
-    final limits = (resourceLimits ??
-        ISpect.loggerIfInitialized?.options.resourceLimits ??
-        DiagnosticResourceLimits.balanced)
-      ..validate();
-    final scheduling = (processingPolicy ??
-        ISpect.loggerIfInitialized?.options.processingPolicy ??
-        DiagnosticProcessingPolicy.balanced)
-      ..validate();
+    final limits =
+        (resourceLimits ??
+              ISpect.loggerIfInitialized?.options.resourceLimits ??
+              DiagnosticResourceLimits.balanced)
+          ..validate();
+    final scheduling =
+        (processingPolicy ??
+              ISpect.loggerIfInitialized?.options.processingPolicy ??
+              DiagnosticProcessingPolicy.balanced)
+          ..validate();
     JsonInputSnapshot snapshot(Object? value) =>
         JsonInputPreflight.snapshotForViewer(
           value,
@@ -55,15 +57,15 @@ class JsonScreen extends StatefulWidget {
     final truncatedDataSnapshot = truncatedData == null
         ? null
         : identical(truncatedData, data)
-            ? dataSnapshot
-            : snapshot(truncatedData);
+        ? dataSnapshot
+        : snapshot(truncatedData);
     final correlatedLogDataSnapshot = correlatedLogData == null
         ? null
         : identical(correlatedLogData, data)
-            ? dataSnapshot
-            : identical(correlatedLogData, truncatedData)
-                ? truncatedDataSnapshot
-                : snapshot(correlatedLogData);
+        ? dataSnapshot
+        : identical(correlatedLogData, truncatedData)
+        ? truncatedDataSnapshot
+        : snapshot(correlatedLogData);
 
     return JsonScreen._(
       dataSnapshot: dataSnapshot,
@@ -86,9 +88,9 @@ class JsonScreen extends StatefulWidget {
     required this.correlationDuration,
     required this.processingPolicy,
     super.key,
-  })  : _dataSnapshot = dataSnapshot,
-        _truncatedDataSnapshot = truncatedDataSnapshot,
-        _correlatedLogDataSnapshot = correlatedLogDataSnapshot;
+  }) : _dataSnapshot = dataSnapshot,
+       _truncatedDataSnapshot = truncatedDataSnapshot,
+       _correlatedLogDataSnapshot = correlatedLogDataSnapshot;
 
   final JsonInputSnapshot _dataSnapshot;
   final JsonInputSnapshot? _truncatedDataSnapshot;
@@ -108,8 +110,8 @@ class JsonScreen extends StatefulWidget {
   /// Optional correlated log data for cross-navigation (e.g. request ↔ response).
   Map<String, dynamic>? get correlatedLogData =>
       _correlatedLogDataSnapshot == null
-          ? null
-          : _mapFromSnapshot(_correlatedLogDataSnapshot);
+      ? null
+      : _mapFromSnapshot(_correlatedLogDataSnapshot);
 
   /// Label for the navigation chip (e.g. "Request" or "Response").
   final String? correlatedLogLabel;
@@ -298,12 +300,13 @@ class _JsonScreenState extends State<JsonScreen> {
                     ),
                   ),
                   JsonStoreSelector<
-                      ({
-                        int count,
-                        int focusedIndex,
-                        bool hasSearchTerm,
-                        bool isSearching,
-                      })>(
+                    ({
+                      int count,
+                      int focusedIndex,
+                      bool hasSearchTerm,
+                      bool isSearching,
+                    })
+                  >(
                     store: _store,
                     selector: (s) => (
                       count: s.searchResults.length,
@@ -323,11 +326,11 @@ class _JsonScreenState extends State<JsonScreen> {
                       return switch (count) {
                         0 => _NoResultsLabel(),
                         _ => _SearchNavigation(
-                            store: _store,
-                            scrollToSearchMatch: _scrollToSearchMatch,
-                            focusedIndex: focusedIndex + 1,
-                            totalCount: count,
-                          ),
+                          store: _store,
+                          scrollToSearchMatch: _scrollToSearchMatch,
+                          focusedIndex: focusedIndex + 1,
+                          totalCount: count,
+                        ),
                       };
                     },
                   ),
@@ -414,9 +417,11 @@ class _JsonScreenState extends State<JsonScreen> {
         return;
     }
 
-    for (var currentNode = searchResult.node.parent;
-        currentNode != null;
-        currentNode = currentNode.parent) {
+    for (
+      var currentNode = searchResult.node.parent;
+      currentNode != null;
+      currentNode = currentNode.parent
+    ) {
       final parentIndex = displayNodes.indexOf(currentNode);
       switch (parentIndex) {
         case -1:
@@ -462,8 +467,9 @@ class _SearchNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mutedColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.5);
+    final mutedColor = context.appTheme.colorScheme.onSurface.withValues(
+      alpha: 0.5,
+    );
 
     return Padding(
       padding: const EdgeInsets.only(left: 8),
@@ -520,55 +526,51 @@ class _SearchLoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color:
-                context.appTheme.colorScheme.onSurface.withValues(alpha: 0.4),
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(left: 12),
+    child: SizedBox(
+      width: 16,
+      height: 16,
+      child: CircularProgressIndicator(
+        strokeWidth: 2,
+        color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.4),
+      ),
+    ),
+  );
 }
 
 class _NoResultsLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(left: 8),
-        child: Text(
-          '0/0',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: context.appTheme.colorScheme.error.withValues(alpha: 0.7),
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(left: 8),
+    child: Text(
+      '0/0',
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: context.appTheme.colorScheme.error.withValues(alpha: 0.7),
+      ),
+    ),
+  );
 }
 
 class _NavButton extends StatelessWidget {
-  const _NavButton({
-    required this.icon,
-    required this.onPressed,
-  });
+  const _NavButton({required this.icon, required this.onPressed});
 
   final IconData icon;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        width: 28,
-        height: 28,
-        child: IconButton(
-          icon: Icon(icon, size: 20),
-          onPressed: onPressed,
-          padding: EdgeInsets.zero,
-          visualDensity: VisualDensity.compact,
-          color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.6),
-        ),
-      );
+    width: 28,
+    height: 28,
+    child: IconButton(
+      icon: Icon(icon, size: 20),
+      onPressed: onPressed,
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+      color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.6),
+    ),
+  );
 }
 
 /// Banner for navigating to a correlated request/response log.
@@ -591,7 +593,7 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
     final correlatedKey = correlatedLogData['key']?.toString();
     final targetColor =
         iSpect.theme.getTypeColor(context, key: correlatedKey) ??
-            context.ispectPrimaryColor;
+        context.ispectPrimaryColor;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -617,8 +619,10 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
                   radius: ISpectConstants.smallBorderRadius,
                 ),
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   child: Text(
                     d.inMilliseconds < 1000
                         ? '${d.inMilliseconds}ms'

@@ -7,8 +7,9 @@ import 'package:ispectify/ispectify.dart';
 import '../../../../../helpers/pump_ispect.dart';
 
 void main() {
-  testWidgets('body and headers use card-level squircle roundness',
-      (tester) async {
+  testWidgets('body and headers use card-level squircle roundness', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       appShell(
         NetworkPayloadPreview(
@@ -41,8 +42,9 @@ void main() {
     }
   });
 
-  testWidgets('headers disclosure uses a visible Material ripple',
-      (tester) async {
+  testWidgets('headers disclosure uses a visible Material ripple', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       appShell(
         NetworkPayloadPreview(

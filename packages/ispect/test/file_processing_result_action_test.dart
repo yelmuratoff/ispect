@@ -11,20 +11,17 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   Widget appShell(VoidCallback onPressed) => ISpectScopeController(
-        model: ISpectScopeModel(isISpectEnabled: true),
-        child: MaterialApp(
-          localizationsDelegates: ISpectLocalization.localizationDelegates,
-          supportedLocales: ISpectLocalization.supportedLocales,
-          home: Scaffold(
-            body: Center(
-              child: ElevatedButton(
-                onPressed: onPressed,
-                child: const Text('go'),
-              ),
-            ),
-          ),
+    model: ISpectScopeModel(isISpectEnabled: true),
+    child: MaterialApp(
+      localizationsDelegates: ISpectLocalization.localizationDelegates,
+      supportedLocales: ISpectLocalization.supportedLocales,
+      home: Scaffold(
+        body: Center(
+          child: ElevatedButton(onPressed: onPressed, child: const Text('go')),
         ),
-      );
+      ),
+    ),
+  );
 
   Future<void> expectRejectedContent(
     WidgetTester tester,
@@ -42,9 +39,7 @@ void main() {
 
     await tester.pumpWidget(
       appShell(
-        () => result.action(
-          tester.element(find.byType(ElevatedButton)),
-        ),
+        () => result.action(tester.element(find.byType(ElevatedButton))),
       ),
     );
 
@@ -52,15 +47,13 @@ void main() {
     await tester.pumpAndSettle();
 
     final screen = tester.widget<JsonScreen>(find.byType(JsonScreen));
-    expect(
-      screen.data,
-      const {'content': JsonInputPreflight.rejectedContent},
-    );
+    expect(screen.data, const {'content': JsonInputPreflight.rejectedContent});
   }
 
   group('FileProcessingResult.action JSON handling', () {
-    testWidgets('opens JsonScreen with array wrapped under data',
-        (tester) async {
+    testWidgets('opens JsonScreen with array wrapped under data', (
+      tester,
+    ) async {
       final content = jsonEncode([
         {'a': 1},
         {'b': 2},
@@ -76,9 +69,7 @@ void main() {
 
       await tester.pumpWidget(
         appShell(
-          () => result.action(
-            tester.element(find.byType(ElevatedButton)),
-          ),
+          () => result.action(tester.element(find.byType(ElevatedButton))),
         ),
       );
 
@@ -93,8 +84,9 @@ void main() {
       expect((screen.data['data'] as List).length, 2);
     });
 
-    testWidgets('opens JsonScreen with primitive wrapped under value',
-        (tester) async {
+    testWidgets('opens JsonScreen with primitive wrapped under value', (
+      tester,
+    ) async {
       const content = '123';
       final result = FileProcessingResult.success(
         content: content,
@@ -106,9 +98,7 @@ void main() {
 
       await tester.pumpWidget(
         appShell(
-          () => result.action(
-            tester.element(find.byType(ElevatedButton)),
-          ),
+          () => result.action(tester.element(find.byType(ElevatedButton))),
         ),
       );
 
@@ -122,8 +112,9 @@ void main() {
       expect(screen.data['value'], 123);
     });
 
-    testWidgets('shows toast and falls back to raw content for invalid JSON',
-        (tester) async {
+    testWidgets('shows toast and falls back to raw content for invalid JSON', (
+      tester,
+    ) async {
       const content = '{invalid json}';
       final result = FileProcessingResult.success(
         content: content,
@@ -135,9 +126,7 @@ void main() {
 
       await tester.pumpWidget(
         appShell(
-          () => result.action(
-            tester.element(find.byType(ElevatedButton)),
-          ),
+          () => result.action(tester.element(find.byType(ElevatedButton))),
         ),
       );
 
@@ -188,8 +177,9 @@ void main() {
       await expectRejectedContent(tester, '$openings$closings');
     });
 
-    testWidgets('does not decode JSON wider than the viewer budget',
-        (tester) async {
+    testWidgets('does not decode JSON wider than the viewer budget', (
+      tester,
+    ) async {
       final values = List<String>.filled(
         JsonInputPreflight.maxViewerNodes,
         'null',

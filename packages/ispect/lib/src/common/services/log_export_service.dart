@@ -6,9 +6,9 @@ class LogExportService {
     ISpectShareCallback? onShare,
     ISpectMetadataProvider? metadataProvider,
     LogsJsonService? logsJsonService,
-  })  : _onShare = onShare,
-        _metadataProvider = metadataProvider,
-        _logsJsonService = logsJsonService ?? const LogsJsonService();
+  }) : _onShare = onShare,
+       _metadataProvider = metadataProvider,
+       _logsJsonService = logsJsonService ?? const LogsJsonService();
 
   final ISpectShareCallback? _onShare;
   final ISpectMetadataProvider? _metadataProvider;

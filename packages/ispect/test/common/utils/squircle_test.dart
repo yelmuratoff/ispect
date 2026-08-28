@@ -89,8 +89,9 @@ void main() {
     test('copyWith overrides only the given field', () {
       const side = BorderSide(color: Color(0xFFFF0000));
 
-      final border =
-          ISpectSquircle.inputBorder(radius: 10).copyWith(borderSide: side);
+      final border = ISpectSquircle.inputBorder(
+        radius: 10,
+      ).copyWith(borderSide: side);
 
       expect(border.borderSide, side);
       expect(

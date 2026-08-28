@@ -10,7 +10,8 @@ import 'package:ispectify/ispectify.dart';
 /// - everything else → 3 px
 ({double width, double alpha}) severityBar(ISpectLogData data) {
   final captured = captureISpectLogDataForEgress(data);
-  final isError = captured.logLevel == LogLevel.error ||
+  final isError =
+      captured.logLevel == LogLevel.error ||
       captured.logLevel == LogLevel.critical ||
       ISpectLogType.isErrorKey(captured.key) ||
       captured.additionalData?[TraceKeys.success] == false;

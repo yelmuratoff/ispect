@@ -8,10 +8,11 @@ extension HistoryListFlutterText on List<ISpectLogData> {
   /// Formats history with an optional local resource-policy override.
   String formattedTextWith({DiagnosticResourceLimits? resourceLimits}) {
     if (isEmpty) return '';
-    final limits = (resourceLimits ??
-        ISpect.loggerIfInitialized?.options.resourceLimits ??
-        captureISpectLogDataForEgress(first).resourceLimits)
-      ..validate();
+    final limits =
+        (resourceLimits ??
+              ISpect.loggerIfInitialized?.options.resourceLimits ??
+              captureISpectLogDataForEgress(first).resourceLimits)
+          ..validate();
     final sb = StringBuffer();
     for (final data in this) {
       final pretty = JsonTruncator.pretty(
@@ -22,10 +23,7 @@ extension HistoryListFlutterText on List<ISpectLogData> {
       );
       sb
         ..writeln(
-          '\n${LogExportOutput.truncateUtf8(
-            pretty,
-            maxBytes: limits.maxUiDiagnosticBytes,
-          )}',
+          '\n${LogExportOutput.truncateUtf8(pretty, maxBytes: limits.maxUiDiagnosticBytes)}',
         )
         ..writeln('\n${ConsoleUtils.bottomLine(100)}');
     }

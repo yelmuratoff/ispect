@@ -63,10 +63,11 @@ void main() {
     test('message column sorts ascending by text', () {
       controller.toggleSort(LogSortColumn.message);
       final result = controller.applySorting([c, a, b]);
-      expect(
-        result.map((e) => e.message).toList(),
-        ['alpha', 'bravo', 'charlie'],
-      );
+      expect(result.map((e) => e.message).toList(), [
+        'alpha',
+        'bravo',
+        'charlie',
+      ]);
     });
   });
 

@@ -144,26 +144,22 @@ class _PolicyProfileDialog<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ISpectAlertDialog(
-        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-        title: ISpectDialogHeader(
-          title: label,
-          subtitle: description,
-          icon: icon,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var index = 0; index < options.length; index++) ...[
-              _PolicyProfileOptionTile<T>(
-                option: options[index],
-                selected: options[index].value == value,
-              ),
-              if (index < options.length - 1) const Gap(8),
-            ],
-          ],
-        ),
-      );
+    titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+    contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+    title: ISpectDialogHeader(title: label, subtitle: description, icon: icon),
+    content: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var index = 0; index < options.length; index++) ...[
+          _PolicyProfileOptionTile<T>(
+            option: options[index],
+            selected: options[index].value == value,
+          ),
+          if (index < options.length - 1) const Gap(8),
+        ],
+      ],
+    ),
+  );
 }
 
 class _PolicyProfileOptionTile<T> extends StatelessWidget {
