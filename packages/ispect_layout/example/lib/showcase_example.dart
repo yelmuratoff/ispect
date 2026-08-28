@@ -103,7 +103,7 @@ class ShowcaseApp extends StatelessWidget {
                   opaque: false,
                   barrierColor: Colors.black.withValues(alpha: 0.55),
                   barrierDismissible: true,
-                  pageBuilder: (_, __, ___) => const _PushedTransparentPage(),
+                  pageBuilder: (_, _, _) => const _PushedTransparentPage(),
                 ),
               ),
             ),
@@ -1410,7 +1410,7 @@ class _ImagesTab extends StatelessWidget {
             fit: BoxFit.cover,
             loadingBuilder: (_, child, progress) =>
                 progress == null ? child : networkFallback,
-            errorBuilder: (_, __, ___) => networkFallback,
+            errorBuilder: (_, _, _) => networkFallback,
           ),
           const Text('RenderImage with color tint'),
           Image.asset(
