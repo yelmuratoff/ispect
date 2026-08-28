@@ -136,7 +136,7 @@ packages:
       sha256: "4586ffa17c0bb6b9fec860b24b7fe5cab288fdeffcf255db8b363655485c2436"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0-beta.2"
+    version: "4.0.0-beta.3"
   fake_async:
     dependency: transitive
     description:
