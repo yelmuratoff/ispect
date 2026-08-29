@@ -132,7 +132,10 @@ extension InspectorControllerModes on InspectorController {
   }
 
   void _cleanupMode(
-      InspectorMode oldMode, InspectorMode newMode, BuildContext? context) {
+    InspectorMode oldMode,
+    InspectorMode newMode,
+    BuildContext? context,
+  ) {
     switch (oldMode) {
       case InspectorMode.inspector:
       case InspectorMode.inspectAndCompare:

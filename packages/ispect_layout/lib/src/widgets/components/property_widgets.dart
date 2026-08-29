@@ -19,17 +19,17 @@ class ColorDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 14,
-        height: 14,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-          border: Border.all(
-            color: Colors.black.withValues(alpha: 0.18),
-            width: 1.0,
-          ),
-        ),
-      );
+    width: 14,
+    height: 14,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: color,
+      border: Border.all(
+        color: Colors.black.withValues(alpha: 0.18),
+        width: 1.0,
+      ),
+    ),
+  );
 }
 
 /// Color dot + hex label. Tapping copies the hex value to the clipboard.
@@ -83,12 +83,8 @@ class EllipsizedText extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) => Text(
-        value,
-        maxLines: 4,
-        overflow: TextOverflow.ellipsis,
-        softWrap: true,
-      );
+  Widget build(BuildContext context) =>
+      Text(value, maxLines: 4, overflow: TextOverflow.ellipsis, softWrap: true);
 }
 
 // ─── Chip + section ──────────────────────────────────────────────────────────
@@ -229,7 +225,7 @@ class OffsetValue extends StatelessWidget {
           spacing: 2,
           children: [
             Text('x:', style: labelStyle),
-            Text(dx, style: valueStyle)
+            Text(dx, style: valueStyle),
           ],
         ),
         Row(
@@ -237,7 +233,7 @@ class OffsetValue extends StatelessWidget {
           spacing: 2,
           children: [
             Text('y:', style: labelStyle),
-            Text(dy, style: valueStyle)
+            Text(dy, style: valueStyle),
           ],
         ),
       ],
@@ -247,11 +243,7 @@ class OffsetValue extends StatelessWidget {
 
 /// Color swatch + muted `width:` label + value for a single border side.
 class BorderSideValue extends StatelessWidget {
-  const BorderSideValue({
-    super.key,
-    required this.color,
-    required this.width,
-  });
+  const BorderSideValue({super.key, required this.color, required this.width});
 
   final Color color;
   final String width;
@@ -293,8 +285,9 @@ class ShadowsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final separatorColor =
-        theme.colorScheme.outlineVariant.withValues(alpha: 0.35);
+    final separatorColor = theme.colorScheme.outlineVariant.withValues(
+      alpha: 0.35,
+    );
     final valueStyle = theme.textTheme.bodySmall?.copyWith(
       fontFeatures: const [FontFeature.tabularFigures()],
     );
@@ -307,13 +300,13 @@ class ShadowsView extends StatelessWidget {
         formatInspectorDouble(v, decimalPlaces: decimalPlaces);
 
     Widget kv(String label, String value) => Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 2,
-          children: [
-            Text(label, style: labelStyle),
-            Text(value, style: valueStyle),
-          ],
-        );
+      mainAxisSize: MainAxisSize.min,
+      spacing: 2,
+      children: [
+        Text(label, style: labelStyle),
+        Text(value, style: valueStyle),
+      ],
+    );
 
     final items = <Widget>[];
     for (var i = 0; i < shadows.length; i++) {
@@ -341,10 +334,7 @@ class ShadowsView extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               spacing: 8,
-              children: [
-                kv('x:', f(s.offset.dx)),
-                kv('y:', f(s.offset.dy)),
-              ],
+              children: [kv('x:', f(s.offset.dx)), kv('y:', f(s.offset.dy))],
             ),
           ],
         ),
@@ -366,17 +356,17 @@ class GradientPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 64,
-        height: 14,
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(3),
-          border: Border.all(
-            color: Colors.black.withValues(alpha: 0.15),
-            width: 0.5,
-          ),
-        ),
-      );
+    width: 64,
+    height: 14,
+    decoration: BoxDecoration(
+      gradient: gradient,
+      borderRadius: BorderRadius.circular(3),
+      border: Border.all(
+        color: Colors.black.withValues(alpha: 0.15),
+        width: 0.5,
+      ),
+    ),
+  );
 }
 
 /// Full gradient breakdown: preview, type label, color stops, and
@@ -399,15 +389,15 @@ class GradientView extends StatelessWidget {
     final stops = g.stops;
     final detail = switch (g) {
       LinearGradient(:final begin, :final end, :final tileMode) => [
-          'begin:${describeAlignment(begin, decimalPlaces: decimalPlaces)}',
-          'end:${describeAlignment(end, decimalPlaces: decimalPlaces)}',
-          if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
-        ],
+        'begin:${describeAlignment(begin, decimalPlaces: decimalPlaces)}',
+        'end:${describeAlignment(end, decimalPlaces: decimalPlaces)}',
+        if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
+      ],
       RadialGradient(:final center, :final radius, :final tileMode) => [
-          'center:${describeAlignment(center, decimalPlaces: decimalPlaces)}',
-          'r:${formatInspectorDouble(radius, decimalPlaces: decimalPlaces)}',
-          if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
-        ],
+        'center:${describeAlignment(center, decimalPlaces: decimalPlaces)}',
+        'r:${formatInspectorDouble(radius, decimalPlaces: decimalPlaces)}',
+        if (tileMode != TileMode.clamp) 'tile:${tileMode.name}',
+      ],
       SweepGradient(
         :final center,
         :final startAngle,
@@ -433,13 +423,13 @@ class GradientView extends StatelessWidget {
     );
 
     Widget kv(String label, String value) => Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 2,
-          children: [
-            Text(label, style: labelStyle),
-            Text(value, style: valueStyle),
-          ],
-        );
+      mainAxisSize: MainAxisSize.min,
+      spacing: 2,
+      children: [
+        Text(label, style: labelStyle),
+        Text(value, style: valueStyle),
+      ],
+    );
 
     // Split 'key:value' detail strings into muted label + normal value.
     Widget detailRow(String entry) {
@@ -467,10 +457,7 @@ class GradientView extends StatelessWidget {
               if (stops != null && i < stops.length)
                 kv(
                   '@',
-                  formatInspectorDouble(
-                    stops[i],
-                    decimalPlaces: decimalPlaces,
-                  ),
+                  formatInspectorDouble(stops[i], decimalPlaces: decimalPlaces),
                 ),
             ],
           ),
@@ -532,13 +519,13 @@ class BorderRadiusGrid extends StatelessWidget {
     String f(Radius r) => formatRadius(r, decimalPlaces: decimalPlaces);
 
     Widget cell(String label, Radius r) => Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 2,
-          children: [
-            Text(label, style: labelStyle),
-            Text(f(r), style: valueStyle),
-          ],
-        );
+      mainAxisSize: MainAxisSize.min,
+      spacing: 2,
+      children: [
+        Text(label, style: labelStyle),
+        Text(f(r), style: valueStyle),
+      ],
+    );
 
     return Column(
       mainAxisSize: MainAxisSize.min,

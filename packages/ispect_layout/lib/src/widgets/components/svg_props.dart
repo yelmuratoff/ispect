@@ -69,8 +69,9 @@ String? _svgSourceLabel(Object loader) {
   }
   final url = _svgField<String>(() => dyn.url as String);
   if (url != null) return url;
-  final filePath =
-      _svgField<String>(() => (dyn.file as dynamic).path as String);
+  final filePath = _svgField<String>(
+    () => (dyn.file as dynamic).path as String,
+  );
   if (filePath != null) return filePath;
   return loader.runtimeType.toString();
 }
@@ -85,69 +86,59 @@ List<PropSpec> svgProps(Widget svg, {int decimalPlaces = 1}) {
   if (loader != null) {
     final source = _svgSourceLabel(loader);
     if (source != null) {
-      props.add(
-        (icon: Icons.image, subtitle: 'source', child: EllipsizedText(source)),
-      );
+      props.add((
+        icon: Icons.image,
+        subtitle: 'source',
+        child: EllipsizedText(source),
+      ));
     }
   }
 
   final fit = _svgField<BoxFit>(() => dyn.fit as BoxFit);
   if (fit != null) {
-    props.add(
-      (icon: Icons.fit_screen, subtitle: 'fit', child: Text(fit.name)),
-    );
+    props.add((icon: Icons.fit_screen, subtitle: 'fit', child: Text(fit.name)));
   }
 
   final alignment = _svgField<AlignmentGeometry>(
     () => dyn.alignment as AlignmentGeometry,
   );
   if (alignment != null && alignment != Alignment.center) {
-    props.add(
-      (
-        icon: Icons.crop_free,
-        subtitle: 'alignment',
-        child: EllipsizedText(
-          describeAlignment(
-            alignment,
-            decimalPlaces: decimalPlaces,
-          ),
-        ),
+    props.add((
+      icon: Icons.crop_free,
+      subtitle: 'alignment',
+      child: EllipsizedText(
+        describeAlignment(alignment, decimalPlaces: decimalPlaces),
       ),
-    );
+    ));
   }
 
-  final colorFilter =
-      _svgField<ColorFilter>(() => dyn.colorFilter as ColorFilter);
+  final colorFilter = _svgField<ColorFilter>(
+    () => dyn.colorFilter as ColorFilter,
+  );
   if (colorFilter != null) {
-    props.add(
-      (
-        icon: Icons.filter_b_and_w,
-        subtitle: 'color filter',
-        child: EllipsizedText(describeColorFilter(colorFilter)),
-      ),
-    );
+    props.add((
+      icon: Icons.filter_b_and_w,
+      subtitle: 'color filter',
+      child: EllipsizedText(describeColorFilter(colorFilter)),
+    ));
   }
 
   final width = _svgField<double>(() => dyn.width as double);
   if (width != null) {
-    props.add(
-      (
-        icon: Icons.swap_horiz,
-        subtitle: 'width',
-        child: Text(_fmt(width, decimalPlaces)),
-      ),
-    );
+    props.add((
+      icon: Icons.swap_horiz,
+      subtitle: 'width',
+      child: Text(_fmt(width, decimalPlaces)),
+    ));
   }
 
   final height = _svgField<double>(() => dyn.height as double);
   if (height != null) {
-    props.add(
-      (
-        icon: Icons.swap_vert,
-        subtitle: 'height',
-        child: Text(_fmt(height, decimalPlaces)),
-      ),
-    );
+    props.add((
+      icon: Icons.swap_vert,
+      subtitle: 'height',
+      child: Text(_fmt(height, decimalPlaces)),
+    ));
   }
 
   return props;

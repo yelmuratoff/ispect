@@ -593,6 +593,21 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String get backToMainScreen => 'Zurück zum Hauptbildschirm';
 
   @override
+  String get logs => 'Protokolle';
+
+  @override
+  String get performance => 'Leistung';
+
+  @override
+  String get inspector => 'Inspektor';
+
+  @override
+  String get colorPicker => 'Farbe';
+
+  @override
+  String get composer => 'Composer';
+
+  @override
   String get navigationFlow => 'Navigationsfluss';
 
   @override

@@ -584,6 +584,21 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get backToMainScreen => 'Вернуться на главный экран';
 
   @override
+  String get logs => 'Логи';
+
+  @override
+  String get performance => 'Производительность';
+
+  @override
+  String get inspector => 'Инспектор';
+
+  @override
+  String get colorPicker => 'Цвет';
+
+  @override
+  String get composer => 'Композер';
+
+  @override
   String get navigationFlow => 'Поток навигации';
 
   @override

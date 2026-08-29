@@ -12,24 +12,26 @@ PropSpec? _prop(List<PropSpec> props, String subtitle) {
 }
 
 String? _text(PropSpec? prop) => switch (prop?.child) {
-      Text(:final data) => data,
-      _ => null,
-    };
+  Text(:final data) => data,
+  _ => null,
+};
 
 void main() {
-  test('center-sliced decoration image reports Flutter default BoxFit.fill',
-      () {
-    final props = decorationProps(
-      const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('nine-patch.png'),
-          centerSlice: Rect.fromLTWH(2, 2, 4, 4),
+  test(
+    'center-sliced decoration image reports Flutter default BoxFit.fill',
+    () {
+      final props = decorationProps(
+        const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('nine-patch.png'),
+            centerSlice: Rect.fromLTWH(2, 2, 4, 4),
+          ),
         ),
-      ),
-    );
+      );
 
-    expect(_text(_prop(props, 'bg fit')), 'fill');
-  });
+      expect(_text(_prop(props, 'bg fit')), 'fill');
+    },
+  );
 
   test('BorderDirectional exposes its active semantic sides', () {
     final props = decorationProps(
@@ -118,9 +120,7 @@ void main() {
   });
 
   test('FittedBox exposes non-default clipping', () {
-    final props = fittedBoxProps(
-      RenderFittedBox(clipBehavior: Clip.antiAlias),
-    );
+    final props = fittedBoxProps(RenderFittedBox(clipBehavior: Clip.antiAlias));
 
     expect(_text(_prop(props, 'clip behavior')), 'antiAlias');
   });
@@ -138,8 +138,9 @@ void main() {
     expect(_text(_prop(props, 'clip behavior')), 'antiAlias');
   });
 
-  testWidgets('aligned rotation does not fabricate a translation',
-      (tester) async {
+  testWidgets('aligned rotation does not fabricate a translation', (
+    tester,
+  ) async {
     const transformKey = ValueKey('transform');
     await tester.pumpWidget(
       Directionality(

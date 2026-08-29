@@ -579,6 +579,21 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
   String get backToMainScreen => 'گەڕانەوە بۆ شاشەی سەرەکی';
 
   @override
+  String get logs => 'تۆمارەکان';
+
+  @override
+  String get performance => 'کارایی';
+
+  @override
+  String get inspector => 'پشکنەر';
+
+  @override
+  String get colorPicker => 'ڕەنگ';
+
+  @override
+  String get composer => 'دروستکەر';
+
+  @override
   String get navigationFlow => 'ڕەوتی گەشتکردن';
 
   @override

@@ -48,8 +48,8 @@ class JsonCard extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
     decoration: ShapeDecoration(
       color: backgroundColor?.withAlphaPercent(0.2),
-      shape: ContinuousRectangleBorder(
-        borderRadius: borderRadius * ISpectSquircle.scale,
+      shape: ISpectSquircle.borderOf(
+        borderRadius,
         side: borderSide ?? BorderSide.none,
       ),
     ),

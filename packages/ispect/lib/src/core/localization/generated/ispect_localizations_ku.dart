@@ -580,6 +580,21 @@ class ISpectGeneratedLocalizationKu extends ISpectGeneratedLocalization {
   String get backToMainScreen => 'ڤەگەرە بۆ شاشەیا سەرەکی';
 
   @override
+  String get logs => 'تومار';
+
+  @override
+  String get performance => 'کارایی';
+
+  @override
+  String get inspector => 'کۆنترۆلکەر';
+
+  @override
+  String get colorPicker => 'ڕەنگ';
+
+  @override
+  String get composer => 'Composer';
+
+  @override
   String get navigationFlow => 'ڕەوتێ گەریانێ';
 
   @override

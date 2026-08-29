@@ -175,8 +175,9 @@ void main() {
   });
 
   group('Y key compare toggle', () {
-    testWidgets('Y key enters compareSelect after widget is selected',
-        (tester) async {
+    testWidgets('Y key enters compareSelect after widget is selected', (
+      tester,
+    ) async {
       // Given
       await tester.pumpWidget(_buildBody());
       await _enterInspectorAndSelectA(tester);
@@ -233,8 +234,9 @@ void main() {
       expect(controller.comparedRenderBoxNotifier.value, isNull);
     });
 
-    testWidgets('Y key up does not exit compareSelect (no hold behaviour)',
-        (tester) async {
+    testWidgets('Y key up does not exit compareSelect (no hold behaviour)', (
+      tester,
+    ) async {
       // Given
       await tester.pumpWidget(_buildBody());
       await _enterInspectorAndSelectA(tester);

@@ -125,10 +125,7 @@ class _ActionsRow extends StatelessWidget {
                 showValue: !isCompact,
               ),
             if (mode == InspectorMode.colorPicker)
-              _ColorPreviewChip(
-                controller: controller,
-                isCompact: isCompact,
-              ),
+              _ColorPreviewChip(controller: controller, isCompact: isCompact),
             _ConfirmButton(
               label: _confirmLabel,
               controller: controller,
@@ -160,7 +157,8 @@ class _ConfirmButton extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller.selectedColorStateNotifier,
       builder: (context, _) {
-        final isEnabled = mode != InspectorMode.colorPicker ||
+        final isEnabled =
+            mode != InspectorMode.colorPicker ||
             controller.selectedColorStateNotifier.value != null;
         return _BarButton(
           label: label,
@@ -233,10 +231,7 @@ class _ZoomStepperButtons extends StatelessWidget {
 }
 
 class _ColorPreviewChip extends StatelessWidget {
-  const _ColorPreviewChip({
-    required this.controller,
-    required this.isCompact,
-  });
+  const _ColorPreviewChip({required this.controller, required this.isCompact});
 
   final InspectorController controller;
   final bool isCompact;
@@ -265,15 +260,18 @@ class _ColorPreviewChip extends StatelessWidget {
         final hex = hasColor ? colorToDisplayHex(color) : '—';
 
         return Material(
-          color: controller.theme.chromeOnSurfaceColor
-              .withValues(alpha: hasColor ? 0.12 : 0.06),
+          color: controller.theme.chromeOnSurfaceColor.withValues(
+            alpha: hasColor ? 0.12 : 0.06,
+          ),
           shape: InspectorSquircle.border(radius: 12),
           child: InkWell(
             onTap: hasColor ? () => _copyHex(context, color) : null,
             customBorder: InspectorSquircle.border(radius: 12),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -304,8 +302,9 @@ class _ColorPreviewChip extends StatelessWidget {
                       size: 14.0,
                       color: hasColor
                           ? controller.theme.chromeOnSurfaceColor
-                          : controller.theme.chromeOnSurfaceColor
-                              .withValues(alpha: 0.5),
+                          : controller.theme.chromeOnSurfaceColor.withValues(
+                              alpha: 0.5,
+                            ),
                       semanticLabel: 'Copy hex',
                     ),
                   ],
@@ -338,11 +337,7 @@ class _Swatch extends StatelessWidget {
         ),
       ),
       child: color == null
-          ? const Icon(
-              Icons.colorize,
-              size: 12.0,
-              color: Colors.white60,
-            )
+          ? const Icon(Icons.colorize, size: 12.0, color: Colors.white60)
           : null,
     );
   }

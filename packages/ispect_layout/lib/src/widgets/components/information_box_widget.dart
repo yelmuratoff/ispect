@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect_layout/src/number_format.dart';
 
 class InformationBoxWidget extends StatelessWidget {
-  const InformationBoxWidget({
-    super.key,
-    required this.child,
-    this.color,
-  });
+  const InformationBoxWidget({super.key, required this.child, this.color});
 
   factory InformationBoxWidget.size({
     Key? key,
@@ -30,9 +26,7 @@ class InformationBoxWidget extends StatelessWidget {
     return InformationBoxWidget(
       key: key,
       color: color,
-      child: Text(
-        formatInspectorDouble(number, decimalPlaces: decimalPlaces),
-      ),
+      child: Text(formatInspectorDouble(number, decimalPlaces: decimalPlaces)),
     );
   }
 
@@ -51,10 +45,7 @@ class InformationBoxWidget extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
       child: DefaultTextStyle(
-        style: const TextStyle(
-          fontSize: 14.0,
-          color: Colors.white,
-        ),
+        style: const TextStyle(fontSize: 14.0, color: Colors.white),
         maxLines: 1,
         overflow: TextOverflow.visible,
         child: child,

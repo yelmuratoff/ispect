@@ -29,8 +29,9 @@ class PixelCapture {
     final boundary = context.findRenderObject()! as RenderRepaintBoundary;
     final pixelRatio = MediaQuery.of(context).devicePixelRatio;
     final image = await boundary.toImage(pixelRatio: pixelRatio);
-    final byteData =
-        await image.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+    final byteData = await image.toByteData(
+      format: ui.ImageByteFormat.rawStraightRgba,
+    );
     return (image: image, byteData: byteData);
   }
 

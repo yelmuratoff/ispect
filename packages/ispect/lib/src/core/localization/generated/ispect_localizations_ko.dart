@@ -574,6 +574,21 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get backToMainScreen => '메인 화면으로 돌아가기';
 
   @override
+  String get logs => '로그';
+
+  @override
+  String get performance => '성능';
+
+  @override
+  String get inspector => '인스펙터';
+
+  @override
+  String get colorPicker => '색상';
+
+  @override
+  String get composer => '컴포저';
+
+  @override
   String get navigationFlow => '네비게이션 플로우';
 
   @override

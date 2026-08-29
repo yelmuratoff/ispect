@@ -5,7 +5,7 @@
 ### Breaking Changes
 
 - **Floating panel:** The diagnostics panel is now a Picture-in-Picture window that springs to corners, parks at edges, and grows in place. `panelItems` takes `PanelAction`, `panelButtons` takes `PanelActionButton`, `ISpectTheme.panelTheme` takes `DraggablePanelThemeData` alongside the new `panelActionTheme`, and `panelBuilder` receives `ISpectPanelData.actions` and may return any widget.
-- **Minimum SDK:** `ispect` now requires Dart 3.8 and Flutter 3.32.
+- **Minimum SDK:** `ispect` and `ispect_layout` now require Dart 3.8 and Flutter 3.32, the release that introduced the `RoundedSuperellipseBorder` both packages draw their squircle corners with.
 - **`JsonScreen` construction:** `JsonScreen(...)` is no longer const; remove the `const` keyword from existing call sites.
 - **Custom log types:** Custom `ISpectLogData` subclasses are normalized for safety; filter them by log key instead of `TypeFilter`.
 - **HTTP URL fields:** Throwing custom `Uri` implementations may now be omitted; strict capture deliberately keeps all caller-owned `Uri` values opaque.
@@ -16,7 +16,7 @@
 ### Behavioral Changes
 
 - **Diagnostics panel corners:** The panel, its action tiles, and its buttons take ISpect's squircle corners instead of Material's rounded rectangle, and carry the theme's divider colour as an outline.
-- **Diagnostics panel resting state:** The panel starts parked against the screen edge and collapses whenever an ISpect screen opens, so it never covers the log viewer, the composer, or a plugin screen. A panel driven by a caller-supplied `DraggablePanelController` keeps its own placement.
+- **Diagnostics panel resting state:** The panel has two stages instead of three — parked at the screen edge or open — and parks whenever an ISpect screen opens, so it never covers the log viewer, the composer, or a plugin screen. A panel driven by a caller-supplied `DraggablePanelController` keeps its own placement.
 - **Layout inspector precision:** Runtime measurements now default to two decimal places; explicit `decimalPlaces` overrides remain supported.
 - **Deprecation schedule:** Deprecated compatibility aliases remain available through 7.x and are now scheduled for removal in 8.0.0.
 - **Useful diagnostics by default:** Core logs, traces, network and database payloads, BLoC, and Riverpod retain bounded application descriptions or structured `toJson()` snapshots after redaction. Exceptions, stack traces, and ordinary HTTP URLs are readable again.
@@ -48,6 +48,7 @@
 - **Convenient diagnostic profiles:** Balanced defaults require no tuning; the Settings sheet offers one-tap Capture, Resource, and Processing profiles.
 - **Fully configurable budgets:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` cover formatter isolation, data sizes, traversal, UI, batching, and search, and persist through `ISpectSettingsState`.
 - **Clearer network diagnostics:** HTTP cards show larger body previews with explicit truncation cues and keep header names visible with redacted values behind a compact disclosure.
+- **Readable diagnostics panel:** The open panel carries a header with the `pageTitle` and a close control that parks it, and every action tile shows a localized caption under its icon.
 
 ### Bug Fixes
 

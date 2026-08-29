@@ -39,19 +39,13 @@ void main() {
 
   group('contrastRatio / wcagLevel', () {
     test('white on black is 21:1 (AAA)', () {
-      final r = contrastRatio(
-        const Color(0xFFFFFFFF),
-        const Color(0xFF000000),
-      );
+      final r = contrastRatio(const Color(0xFFFFFFFF), const Color(0xFF000000));
       expect(r, closeTo(21.0, 0.01));
       expect(wcagLevel(r), 'AAA');
     });
 
     test('identical colours have ratio 1.0 (Fail)', () {
-      final r = contrastRatio(
-        const Color(0xFF808080),
-        const Color(0xFF808080),
-      );
+      final r = contrastRatio(const Color(0xFF808080), const Color(0xFF808080));
       expect(r, closeTo(1.0, 0.01));
       expect(wcagLevel(r), 'Fail');
     });
@@ -92,11 +86,7 @@ void main() {
     }
 
     test('reads RGBA channels at origin', () {
-      final bytes = buildBuffer(
-        width: 1,
-        height: 1,
-        rgba: [10, 20, 30, 40],
-      );
+      final bytes = buildBuffer(width: 1, height: 1, rgba: [10, 20, 30, 40]);
       final c = getPixelFromByteData(bytes, width: 1, height: 1, x: 0, y: 0);
       expect(c, isNotNull);
       expect(c!.r * 255, closeTo(10, 0.5));
@@ -175,12 +165,14 @@ void main() {
       expect(imagePixelIndex(3.99, 10), 3);
     });
 
-    test('samples the crosshair pixel, not the neighbour, at the half boundary',
-        () {
-      // Round would jump to pixel 4 here; the crosshair still sits inside
-      // cell [3, 4), so the sampled pixel must stay 3.
-      expect(imagePixelIndex(3.5, 10), 3);
-    });
+    test(
+      'samples the crosshair pixel, not the neighbour, at the half boundary',
+      () {
+        // Round would jump to pixel 4 here; the crosshair still sits inside
+        // cell [3, 4), so the sampled pixel must stay 3.
+        expect(imagePixelIndex(3.5, 10), 3);
+      },
+    );
 
     test('clamps coordinates at or past the right edge to the last pixel', () {
       expect(imagePixelIndex(10.0, 10), 9);

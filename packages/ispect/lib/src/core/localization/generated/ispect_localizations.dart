@@ -1157,6 +1157,36 @@ abstract class ISpectGeneratedLocalization {
   /// **'Back to the main screen'**
   String get backToMainScreen;
 
+  /// No description provided for @logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs'**
+  String get logs;
+
+  /// No description provided for @performance.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance'**
+  String get performance;
+
+  /// No description provided for @inspector.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspector'**
+  String get inspector;
+
+  /// No description provided for @colorPicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get colorPicker;
+
+  /// No description provided for @composer.
+  ///
+  /// In en, this message translates to:
+  /// **'Composer'**
+  String get composer;
+
   /// No description provided for @navigationFlow.
   ///
   /// In en, this message translates to:

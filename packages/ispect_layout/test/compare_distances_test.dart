@@ -102,19 +102,21 @@ void main() {
       }
     });
 
-    test('partial overlap — aligned edges produce zero distances (filtered)',
-        () {
-      // Given: same top/bottom edges, different left/right
-      final result = computeCompareDistances(
-        const Rect.fromLTWH(0, 0, 100, 100),
-        const Rect.fromLTWH(10, 0, 80, 100), // top=0, bottom=100 same
-      );
+    test(
+      'partial overlap — aligned edges produce zero distances (filtered)',
+      () {
+        // Given: same top/bottom edges, different left/right
+        final result = computeCompareDistances(
+          const Rect.fromLTWH(0, 0, 100, 100),
+          const Rect.fromLTWH(10, 0, 80, 100), // top=0, bottom=100 same
+        );
 
-      // top and bottom should be 0 → filtered; left=10, right=10
-      expect(result.length, 2);
-      expect(result.any((d) => d.side == CompareSide.top), false);
-      expect(result.any((d) => d.side == CompareSide.bottom), false);
-    });
+        // top and bottom should be 0 → filtered; left=10, right=10
+        expect(result.length, 2);
+        expect(result.any((d) => d.side == CompareSide.top), false);
+        expect(result.any((d) => d.side == CompareSide.bottom), false);
+      },
+    );
   });
 
   group('computeCompareDistances — scale', () {

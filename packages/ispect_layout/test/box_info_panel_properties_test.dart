@@ -5,10 +5,7 @@ import 'package:ispect_layout/src/widgets/components/box_info_panel_widget.dart'
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
 import 'package:ispect_layout/src/widgets/inspector/box_info.dart';
 
-Future<void> _pumpPanel(
-  WidgetTester tester,
-  RenderBox target,
-) async {
+Future<void> _pumpPanel(WidgetTester tester, RenderBox target) async {
   await tester.pumpWidget(
     MaterialApp(
       home: Scaffold(
@@ -28,8 +25,9 @@ Future<void> _pumpPanel(
 }
 
 void main() {
-  testWidgets('RenderEditable exposes its effective typography',
-      (tester) async {
+  testWidgets('RenderEditable exposes its effective typography', (
+    tester,
+  ) async {
     const editableKey = ValueKey('editable');
     RenderEditable? editable;
     late StateSetter rebuild;
@@ -82,8 +80,9 @@ void main() {
     expect(find.text('0.25'), findsOneWidget);
   });
 
-  testWidgets('directional radius is resolved with decoration text direction',
-      (tester) async {
+  testWidgets('directional radius is resolved with decoration text direction', (
+    tester,
+  ) async {
     const decoratedKey = ValueKey('decorated');
     await tester.pumpWidget(
       const Directionality(
@@ -106,9 +105,7 @@ void main() {
 
     await _pumpPanel(tester, decorated);
 
-    final grid = tester.widget<BorderRadiusGrid>(
-      find.byType(BorderRadiusGrid),
-    );
+    final grid = tester.widget<BorderRadiusGrid>(find.byType(BorderRadiusGrid));
     expect(grid.topLeft, const Radius.circular(8));
     expect(grid.topRight, const Radius.circular(4));
   });

@@ -45,14 +45,14 @@ class Inspector extends StatefulWidget {
     this.maxRenderTreeClipboardCharacters = 10000,
     this.theme,
     this.panelBuilder,
-  })  : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0'),
-        assert(
-          maxRenderTreeClipboardCharacters > 0 &&
-              maxRenderTreeClipboardCharacters <=
-                  InspectorController.maxAllowedRenderTreeClipboardCharacters,
-          'maxRenderTreeClipboardCharacters must be between 1 and '
-          '${InspectorController.maxAllowedRenderTreeClipboardCharacters}',
-        );
+  }) : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0'),
+       assert(
+         maxRenderTreeClipboardCharacters > 0 &&
+             maxRenderTreeClipboardCharacters <=
+                 InspectorController.maxAllowedRenderTreeClipboardCharacters,
+         'maxRenderTreeClipboardCharacters must be between 1 and '
+         '${InspectorController.maxAllowedRenderTreeClipboardCharacters}',
+       );
 
   final Widget child;
   final InspectorController? controller;
@@ -73,8 +73,11 @@ class Inspector extends StatefulWidget {
   final InspectorTheme? theme;
 
   final Widget Function(
-          BuildContext context, InspectorController controller, Widget child)?
-      panelBuilder;
+    BuildContext context,
+    InspectorController controller,
+    Widget child,
+  )?
+  panelBuilder;
 
   @override
   InspectorState createState() => InspectorState();
@@ -123,7 +126,8 @@ class InspectorState extends State<Inspector> {
     _isPanelVisible = widget.isPanelVisible;
     super.initState();
 
-    _controller = widget.controller ??
+    _controller =
+        widget.controller ??
         InspectorController(
           isEnabled: _isEnabled,
           decimalPlaces: widget.decimalPlaces,
@@ -141,8 +145,9 @@ class InspectorState extends State<Inspector> {
     final isEnabledChanged = oldWidget.isEnabled != widget.isEnabled;
     final decimalPlacesChanged =
         oldWidget.decimalPlaces != widget.decimalPlaces &&
-            widget.controller == null;
-    final clipboardLimitChanged = oldWidget.maxRenderTreeClipboardCharacters !=
+        widget.controller == null;
+    final clipboardLimitChanged =
+        oldWidget.maxRenderTreeClipboardCharacters !=
             widget.maxRenderTreeClipboardCharacters &&
         widget.controller == null;
 
@@ -155,7 +160,8 @@ class InspectorState extends State<Inspector> {
       if (oldWidget.controller == null) {
         _controller.dispose();
       }
-      _controller = widget.controller ??
+      _controller =
+          widget.controller ??
           InspectorController(
             isEnabled: _isEnabled,
             decimalPlaces: widget.decimalPlaces,
@@ -249,9 +255,7 @@ class InspectorState extends State<Inspector> {
                           child: child,
                         ),
                         if (isIgnoringPointer)
-                          const Positioned.fill(
-                            child: IgnoreTapGesture(),
-                          ),
+                          const Positioned.fill(child: IgnoreTapGesture()),
                       ],
                     ),
                   ),
@@ -293,10 +297,14 @@ class InspectorState extends State<Inspector> {
               return const SizedBox.shrink();
             }
 
-            final pickerLeft =
-                offset.dx.clamp(0.0, screenSize.width - overlaySize);
-            final pickerTop = (offset.dy - overlaySize - _overlayOffsetY)
-                .clamp(0.0, screenSize.height - overlaySize);
+            final pickerLeft = offset.dx.clamp(
+              0.0,
+              screenSize.width - overlaySize,
+            );
+            final pickerTop = (offset.dy - overlaySize - _overlayOffsetY).clamp(
+              0.0,
+              screenSize.height - overlaySize,
+            );
 
             // Pick the side of the disc where the HUD chip fully fits in
             // the on-screen bounds (minus the bottom action-bar / safe area).
@@ -319,7 +327,7 @@ class InspectorState extends State<Inspector> {
                 image: image,
                 imageOffset:
                     _controller.selectedColorImageOffsetNotifier.value ??
-                        Offset.zero,
+                    Offset.zero,
                 overlaySize: overlaySize,
                 zoomScale: zoomScale,
                 pixelRatio: MediaQuery.devicePixelRatioOf(context),
@@ -346,8 +354,8 @@ class InspectorState extends State<Inspector> {
             final isCompareActive = mode == InspectorMode.compareSelect;
             final onCompare = _controller.isWidgetInspectAndCompareEnabled
                 ? (isCompareActive
-                    ? _controller.exitCompareMode
-                    : _controller.enterCompareMode)
+                      ? _controller.exitCompareMode
+                      : _controller.enterCompareMode)
                 : null;
 
             return LayoutBuilder(
@@ -396,10 +404,14 @@ class InspectorState extends State<Inspector> {
                 )!
                 .toDouble();
             final screenSize = MediaQuery.sizeOf(context);
-            final left = (offset.dx - overlaySize / 2)
-                .clamp(0.0, screenSize.width - overlaySize);
-            final top = (offset.dy - overlaySize / 2)
-                .clamp(0.0, screenSize.height - overlaySize);
+            final left = (offset.dx - overlaySize / 2).clamp(
+              0.0,
+              screenSize.width - overlaySize,
+            );
+            final top = (offset.dy - overlaySize / 2).clamp(
+              0.0,
+              screenSize.height - overlaySize,
+            );
 
             return Positioned(
               left: left,
@@ -453,10 +465,7 @@ class InspectorState extends State<Inspector> {
         // TextFields or other interactive descendants. Shortcuts still fire
         // as long as the focus tree includes this node, which it always does
         // (the Focus sits above the whole app tree).
-        child: Focus(
-          onKeyEvent: _handleKeyEvent,
-          child: content,
-        ),
+        child: Focus(onKeyEvent: _handleKeyEvent, child: content),
       ),
     );
 
@@ -509,8 +518,9 @@ class InspectorState extends State<Inspector> {
         pickerTop - _hudAxialGap - _hudHeight >= 0 && fitsHorizontally(centerX);
     final fitsBelow =
         pickerTop + overlaySize + _hudAxialGap + _hudHeight <= bottomLimit &&
-            fitsHorizontally(centerX);
-    final fitsRight = pickerLeft + overlaySize + _hudLateralGap + _hudWidth <=
+        fitsHorizontally(centerX);
+    final fitsRight =
+        pickerLeft + overlaySize + _hudLateralGap + _hudWidth <=
             screenSize.width &&
         fitsVertically(centerY);
     final fitsLeft =
@@ -581,13 +591,17 @@ class InspectorState extends State<Inspector> {
   }
 
   bool _shouldReleaseInspectorShortcut(
-          KeyEvent event, HardwareKeyboard state) =>
+    KeyEvent event,
+    HardwareKeyboard state,
+  ) =>
       event is KeyUpEvent &&
       _controller.modeNotifier.value == InspectorMode.inspector &&
       !_controller.isWidgetInspectorShortcutStillPressed(state);
 
   bool _shouldReleaseColorPickerShortcut(
-          KeyEvent event, HardwareKeyboard state) =>
+    KeyEvent event,
+    HardwareKeyboard state,
+  ) =>
       event is KeyUpEvent &&
       _controller.modeNotifier.value == InspectorMode.colorPicker &&
       !_controller.isColorPickerShortcutStillPressed(state);

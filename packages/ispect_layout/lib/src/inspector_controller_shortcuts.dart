@@ -3,18 +3,18 @@ part of 'inspector_controller.dart';
 extension InspectorControllerShortcuts on InspectorController {
   List<ShortcutActivator> get effectiveWidgetInspectorShortcutActivators =>
       isEnabled
-          ? _shortcuts.effectiveInspectorActivators
-          : const <ShortcutActivator>[];
+      ? _shortcuts.effectiveInspectorActivators
+      : const <ShortcutActivator>[];
 
   List<ShortcutActivator>
-      get effectiveWidgetInspectAndCompareShortcutActivators => isEnabled
-          ? _shortcuts.effectiveCompareActivators
-          : const <ShortcutActivator>[];
+  get effectiveWidgetInspectAndCompareShortcutActivators => isEnabled
+      ? _shortcuts.effectiveCompareActivators
+      : const <ShortcutActivator>[];
 
   List<ShortcutActivator> get effectiveColorPickerShortcutActivators =>
       isEnabled
-          ? _shortcuts.effectiveColorPickerActivators
-          : const <ShortcutActivator>[];
+      ? _shortcuts.effectiveColorPickerActivators
+      : const <ShortcutActivator>[];
 
   List<ShortcutActivator> get effectiveZoomShortcutActivators => isEnabled
       ? _shortcuts.effectiveZoomActivators

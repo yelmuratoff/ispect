@@ -103,8 +103,9 @@ void main() {
   });
 
   group('resolveImageProvider', () {
-    testWidgets('recovers the provider from the Image ancestor of RawImage',
-        (tester) async {
+    testWidgets('recovers the provider from the Image ancestor of RawImage', (
+      tester,
+    ) async {
       const provider = _IdleImageProvider();
 
       await tester.pumpWidget(
@@ -134,8 +135,7 @@ class _IdleImageProvider extends ImageProvider<_IdleImageProvider> {
   ImageStreamCompleter loadImage(
     _IdleImageProvider key,
     ImageDecoderCallback decode,
-  ) =>
-      _IdleImageStreamCompleter();
+  ) => _IdleImageStreamCompleter();
 }
 
 class _IdleImageStreamCompleter extends ImageStreamCompleter {}

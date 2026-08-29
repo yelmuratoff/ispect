@@ -38,17 +38,17 @@ class ZoomableColorPickerStyle {
 
   @override
   int get hashCode => Object.hash(
-        outerRingWidth,
-        colorRingWidth,
-        innerRingWidth,
-        shadowBlur,
-        shadowSpread,
-        shadowColor,
-        crosshairThickness,
-        crosshairLength,
-        crosshairGap,
-        backgroundColor,
-      );
+    outerRingWidth,
+    colorRingWidth,
+    innerRingWidth,
+    shadowBlur,
+    shadowSpread,
+    shadowColor,
+    crosshairThickness,
+    crosshairLength,
+    crosshairGap,
+    backgroundColor,
+  );
 
   final double outerRingWidth;
   final double colorRingWidth;
@@ -137,9 +137,7 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
                             backgroundColor: style.backgroundColor,
                           ),
                         ),
-                        Positioned.fill(
-                          child: _PickerCrosshair(style: style),
-                        ),
+                        Positioned.fill(child: _PickerCrosshair(style: style)),
                         Align(
                           alignment: Alignment.bottomCenter,
                           child: Padding(
@@ -158,10 +156,7 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
             // The caller picks a different side when there's no room — e.g.
             // when the picker hugs the top of the screen.
             _hudPositioned(
-              child: _PickerHud(
-                color: color,
-                surface: colorScheme.surface,
-              ),
+              child: _PickerHud(color: color, surface: colorScheme.surface),
             ),
           ],
         ),
@@ -467,10 +462,7 @@ class _CrosshairPainter extends CustomPainter {
 /// they do, the layout shift jerks the picker. The match is surfaced in the
 /// commit snackbar instead, where it has room and timing on its side.
 class _PickerHud extends StatelessWidget {
-  const _PickerHud({
-    required this.color,
-    required this.surface,
-  });
+  const _PickerHud({required this.color, required this.surface});
 
   final Color color;
   final Color surface;

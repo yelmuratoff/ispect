@@ -8,8 +8,9 @@ import 'package:flutter/material.dart';
 class ColorSchemeInspector {
   ColorSchemeInspector._();
 
-  static final Expando<Map<int, List<String>>> _cache =
-      Expando('ColorSchemeInspector.reverseLookup');
+  static final Expando<Map<int, List<String>>> _cache = Expando(
+    'ColorSchemeInspector.reverseLookup',
+  );
 
   /// Returns all `ColorScheme` tokens that exactly match [color], or an empty
   /// list if none match. Multiple tokens can share a value (e.g.
@@ -24,10 +25,7 @@ class ColorSchemeInspector {
   /// `colorScheme.foo, colorScheme.bar`. Returns empty string when no match.
   ///
   /// Prefer [matchingTokens] for new code — it preserves structure for the UI.
-  static String identifyColorSchemeMatch(
-    Color color,
-    ColorScheme colorScheme,
-  ) {
+  static String identifyColorSchemeMatch(Color color, ColorScheme colorScheme) {
     final names = matchingTokens(color, colorScheme);
     if (names.isEmpty) return '';
     return names.map((n) => 'colorScheme.$n').join(', ');

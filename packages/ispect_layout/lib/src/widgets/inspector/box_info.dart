@@ -48,11 +48,11 @@ class BoxInfo {
   /// user pick any ancestor from the hit-test path (Row/Column/Stack/Padding)
   /// without re-running pointer detection.
   BoxInfo withTarget(RenderBox newTarget) => BoxInfo(
-        targetRenderBox: newTarget,
-        containerRenderBox: _findContainerFor(hitTestPath, newTarget),
-        overlayOffset: overlayOffset,
-        hitTestPath: hitTestPath,
-      );
+    targetRenderBox: newTarget,
+    containerRenderBox: _findContainerFor(hitTestPath, newTarget),
+    overlayOffset: overlayOffset,
+    hitTestPath: hitTestPath,
+  );
 
   final RenderBox targetRenderBox;
   final RenderBox? containerRenderBox;
@@ -120,7 +120,11 @@ class BoxInfo {
     // Snap sub-pixel floating-point noise to zero.
     double snap(double v) => v.abs() < 0.5 ? 0.0 : v;
     return EdgeInsets.fromLTRB(
-        snap(left), snap(top), snap(right), snap(bottom));
+      snap(left),
+      snap(top),
+      snap(right),
+      snap(bottom),
+    );
   }
 
   Rect? get paddingRectLeft => containerRect != null
@@ -202,8 +206,8 @@ class BoxInfo {
 
   RenderDecoratedBox? _findSelectedDecoratedBox() =>
       targetRenderBox is RenderDecoratedBox
-          ? targetRenderBox as RenderDecoratedBox
-          : null;
+      ? targetRenderBox as RenderDecoratedBox
+      : null;
 
   RenderDecoratedBox? _findNearestDecoratedBoxFromHitTestPath() {
     for (final box in hitTestPath) {
@@ -319,9 +323,9 @@ RenderBox? _findContainerFor(List<RenderBox> hitTestPath, RenderBox target) {
 /// gracefully degrades and the [ColoredBox] color simply isn't surfaced.
 final Type? _coloredBoxRuntimeType = (() {
   try {
-    return const ColoredBox(color: Color(0x00000000))
-        .createRenderObject(_NoopBuildContext())
-        .runtimeType;
+    return const ColoredBox(
+      color: Color(0x00000000),
+    ).createRenderObject(_NoopBuildContext()).runtimeType;
   } catch (_) {
     return null;
   }

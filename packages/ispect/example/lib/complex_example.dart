@@ -247,6 +247,10 @@ class _MyAppState extends State<MyApp> {
         options: ISpectOptions(
           observer: _observer,
           enableJankLogging: true,
+          panelButtons: [
+            PanelActionButton(
+                icon: Icons.bug_report, label: 'Bug', onPressed: () {}),
+          ],
           onSettingsChanged: (settings) {
             ISpect.logger.log('Settings changed: ${settings.toString()}',
                 additionalData: settings.toMap());

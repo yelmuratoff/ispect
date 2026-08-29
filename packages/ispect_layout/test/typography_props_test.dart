@@ -17,9 +17,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: Column(
-          children: [for (final prop in props) prop.child],
-        ),
+        home: Column(children: [for (final prop in props) prop.child]),
       ),
     );
 

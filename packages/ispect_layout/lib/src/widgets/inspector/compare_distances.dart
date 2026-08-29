@@ -74,14 +74,16 @@ List<CompareDistance> computeCompareDistances(
     final value = (lineEnd - lineStart) / scale;
     if (value >= 0.5) {
       final y = (from.center.dy + to.center.dy) / 2;
-      result.add(CompareDistance(
-        side: side,
-        value: value,
-        icon: icon,
-        startOffset: Offset(lineStart, y),
-        endOffset: Offset(lineEnd, y),
-        isHorizontal: true,
-      ));
+      result.add(
+        CompareDistance(
+          side: side,
+          value: value,
+          icon: icon,
+          startOffset: Offset(lineStart, y),
+          endOffset: Offset(lineEnd, y),
+          isHorizontal: true,
+        ),
+      );
     }
   }
 
@@ -105,14 +107,16 @@ List<CompareDistance> computeCompareDistances(
     final value = (lineEnd - lineStart) / scale;
     if (value >= 0.5) {
       final x = (from.center.dx + to.center.dx) / 2;
-      result.add(CompareDistance(
-        side: side,
-        value: value,
-        icon: icon,
-        startOffset: Offset(x, lineStart),
-        endOffset: Offset(x, lineEnd),
-        isHorizontal: false,
-      ));
+      result.add(
+        CompareDistance(
+          side: side,
+          value: value,
+          icon: icon,
+          startOffset: Offset(x, lineStart),
+          endOffset: Offset(x, lineEnd),
+          isHorizontal: false,
+        ),
+      );
     }
   }
 
@@ -127,57 +131,66 @@ List<CompareDistance> computeCompareDistances(
     if (leftDiff >= 0.5) {
       final minX = math.min(from.left, to.left);
       final maxX = math.max(from.left, to.left);
-      result.add(CompareDistance(
-        side: CompareSide.left,
-        value: leftDiff,
-        icon: from.left < to.left ? Icons.arrow_forward : Icons.arrow_back,
-        startOffset: Offset(minX, midY),
-        endOffset: Offset(maxX, midY),
-        isHorizontal: true,
-      ));
+      result.add(
+        CompareDistance(
+          side: CompareSide.left,
+          value: leftDiff,
+          icon: from.left < to.left ? Icons.arrow_forward : Icons.arrow_back,
+          startOffset: Offset(minX, midY),
+          endOffset: Offset(maxX, midY),
+          isHorizontal: true,
+        ),
+      );
     }
 
     final topDiff = (from.top - to.top).abs() / scale;
     if (topDiff >= 0.5) {
       final minY = math.min(from.top, to.top);
       final maxY = math.max(from.top, to.top);
-      result.add(CompareDistance(
-        side: CompareSide.top,
-        value: topDiff,
-        icon: from.top < to.top ? Icons.arrow_downward : Icons.arrow_upward,
-        startOffset: Offset(midX, minY),
-        endOffset: Offset(midX, maxY),
-        isHorizontal: false,
-      ));
+      result.add(
+        CompareDistance(
+          side: CompareSide.top,
+          value: topDiff,
+          icon: from.top < to.top ? Icons.arrow_downward : Icons.arrow_upward,
+          startOffset: Offset(midX, minY),
+          endOffset: Offset(midX, maxY),
+          isHorizontal: false,
+        ),
+      );
     }
 
     final rightDiff = (from.right - to.right).abs() / scale;
     if (rightDiff >= 0.5) {
       final minX = math.min(from.right, to.right);
       final maxX = math.max(from.right, to.right);
-      result.add(CompareDistance(
-        side: CompareSide.right,
-        value: rightDiff,
-        icon: from.right > to.right ? Icons.arrow_forward : Icons.arrow_back,
-        startOffset: Offset(minX, midY),
-        endOffset: Offset(maxX, midY),
-        isHorizontal: true,
-      ));
+      result.add(
+        CompareDistance(
+          side: CompareSide.right,
+          value: rightDiff,
+          icon: from.right > to.right ? Icons.arrow_forward : Icons.arrow_back,
+          startOffset: Offset(minX, midY),
+          endOffset: Offset(maxX, midY),
+          isHorizontal: true,
+        ),
+      );
     }
 
     final bottomDiff = (from.bottom - to.bottom).abs() / scale;
     if (bottomDiff >= 0.5) {
       final minY = math.min(from.bottom, to.bottom);
       final maxY = math.max(from.bottom, to.bottom);
-      result.add(CompareDistance(
-        side: CompareSide.bottom,
-        value: bottomDiff,
-        icon:
-            from.bottom > to.bottom ? Icons.arrow_downward : Icons.arrow_upward,
-        startOffset: Offset(midX, minY),
-        endOffset: Offset(midX, maxY),
-        isHorizontal: false,
-      ));
+      result.add(
+        CompareDistance(
+          side: CompareSide.bottom,
+          value: bottomDiff,
+          icon: from.bottom > to.bottom
+              ? Icons.arrow_downward
+              : Icons.arrow_upward,
+          startOffset: Offset(midX, minY),
+          endOffset: Offset(midX, maxY),
+          isHorizontal: false,
+        ),
+      );
     }
   }
 

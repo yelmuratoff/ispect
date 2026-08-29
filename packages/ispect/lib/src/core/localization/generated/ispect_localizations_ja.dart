@@ -574,6 +574,21 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get backToMainScreen => 'メイン画面に戻る';
 
   @override
+  String get logs => 'ログ';
+
+  @override
+  String get performance => 'パフォーマンス';
+
+  @override
+  String get inspector => 'インスペクタ';
+
+  @override
+  String get colorPicker => '色';
+
+  @override
+  String get composer => 'コンポーザー';
+
+  @override
   String get navigationFlow => 'ナビゲーションフロー';
 
   @override

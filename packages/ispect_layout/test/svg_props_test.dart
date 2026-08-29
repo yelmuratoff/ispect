@@ -73,8 +73,9 @@ void main() {
   });
 
   group('resolveSvgPicture', () {
-    testWidgets('recovers an SvgPicture from the creator chain',
-        (tester) async {
+    testWidgets('recovers an SvgPicture from the creator chain', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const Directionality(
           textDirection: TextDirection.ltr,
@@ -93,8 +94,9 @@ void main() {
       expect(svg.runtimeType.toString(), 'SvgPicture');
     });
 
-    testWidgets('returns null when no SvgPicture is in the chain',
-        (tester) async {
+    testWidgets('returns null when no SvgPicture is in the chain', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const Directionality(
           textDirection: TextDirection.ltr,

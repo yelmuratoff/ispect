@@ -34,9 +34,9 @@ void main() {
     for (final surface in surfaces) {
       expect(surface.decoration, isA<ShapeDecoration>());
       final shape = (surface.decoration as ShapeDecoration).shape;
-      expect(shape, isA<ContinuousRectangleBorder>());
+      expect(shape, isA<RoundedSuperellipseBorder>());
       expect(
-        (shape as ContinuousRectangleBorder).borderRadius,
+        (shape as RoundedSuperellipseBorder).borderRadius,
         ISpectSquircle.border().borderRadius,
       );
     }

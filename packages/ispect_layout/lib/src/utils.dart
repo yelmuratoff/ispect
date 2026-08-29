@@ -47,7 +47,8 @@ class InspectorUtils {
     if (filtered.isEmpty) return const <RenderBox>[];
 
     filtered.sort(
-        (a, b) => _depthFromRoot(a, root).compareTo(_depthFromRoot(b, root)));
+      (a, b) => _depthFromRoot(a, root).compareTo(_depthFromRoot(b, root)),
+    );
     return List<RenderBox>.unmodifiable(filtered);
   }
 

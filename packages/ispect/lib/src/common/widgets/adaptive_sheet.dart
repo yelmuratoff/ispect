@@ -49,12 +49,10 @@ Future<T?> showISpectSheet<T>(
             : ISpectDefaultPalette.background.pick(
                 isDark: context.ispectIsDark,
               )!);
-    final borderRadius =
-        (topOnlyRadius
-            ? const BorderRadius.vertical(top: Radius.circular(16))
-            : const BorderRadius.all(Radius.circular(16))) *
-        ISpectSquircle.scale;
-    final sheetShape = ContinuousRectangleBorder(borderRadius: borderRadius);
+    final borderRadius = topOnlyRadius
+        ? const BorderRadius.vertical(top: Radius.circular(16))
+        : const BorderRadius.all(Radius.circular(16));
+    final sheetShape = ISpectSquircle.borderOf(borderRadius);
 
     if (fitContent) {
       return showModalBottomSheet<T>(

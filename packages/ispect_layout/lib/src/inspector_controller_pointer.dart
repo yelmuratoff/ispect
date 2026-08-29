@@ -140,7 +140,9 @@ extension InspectorControllerPointer on InspectorController {
     if (ignoringPointerKey.currentContext == null) return null;
 
     final boxes = InspectorUtils.findRenderObjectsAt(
-        ignoringPointerKey.currentContext!, offset);
+      ignoringPointerKey.currentContext!,
+      offset,
+    );
 
     if (boxes.isEmpty) return null;
 

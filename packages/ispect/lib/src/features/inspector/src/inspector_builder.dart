@@ -263,6 +263,9 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
                     ? const PanelBadge.dot()
                     : null,
                 onPressed: () => _launchInfospect(context, options),
+                label: _logPageController.inLoggerPage
+                    ? context.ispectL10n.back
+                    : context.ispectL10n.logs,
                 tooltip: _logPageController.inLoggerPage
                     ? context.ispectL10n.backToMainScreen
                     : context.ispectL10n.openLogViewer,
@@ -274,6 +277,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
                     ? const PanelBadge.dot()
                     : null,
                 onPressed: iSpect.togglePerformanceTracking,
+                label: context.ispectL10n.performance,
                 tooltip: context.ispectL10n.togglePerformanceTracking,
               ),
             if (settings.isInspectorEnabled)
@@ -290,6 +294,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
                       ? pkg_inspector.InspectorMode.none
                       : pkg_inspector.InspectorMode.inspector,
                 ),
+                label: context.ispectL10n.inspector,
                 tooltip: context.ispectL10n.inspectWidgets,
               ),
             if (settings.isColorPickerEnabled)
@@ -307,12 +312,14 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
                       : pkg_inspector.InspectorMode.colorPicker,
                   context: context,
                 ),
+                label: context.ispectL10n.colorPicker,
                 tooltip: context.ispectL10n.zoomPickColor,
               ),
             if (ISpect.senders.isNotEmpty)
               PanelAction(
                 icon: Icons.api_rounded,
                 onPressed: () => _launchComposer(context, options),
+                label: context.ispectL10n.composer,
                 tooltip: context.ispectL10n.composerTitle,
               ),
             ...options.panelItems,
@@ -321,6 +328,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
               PanelAction(
                 icon: plugin.icon,
                 badge: plugin.enableBadge ? const PanelBadge.dot() : null,
+                label: plugin.title,
                 tooltip: plugin.description ?? plugin.title,
                 onPressed: () => _launchPluginScreen(context, plugin, options),
               ),
@@ -336,12 +344,9 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
           controller: data.controller,
           actions: data.actions,
           buttons: data.buttons,
-          collapsedBuilder: (context, _) => Center(
-            child: Icon(
-              Icons.zoom_out_map_rounded,
-              color: data.actionTheme.actionForegroundColor,
-            ),
-          ),
+          title: iSpect.theme.pageTitle,
+          onClose: data.controller.stash,
+          behavior: const PanelBehavior(collapsible: false),
           child: data.child,
         );
       },
@@ -377,34 +382,42 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
   DraggableActionPanelThemeData _buildDefaultActionTheme(BuildContext context) {
     final theme = context.ispectTheme;
+    final materialTheme = Theme.of(context);
+    final useHost = theme.useHostColors;
 
-    if (theme.useHostColors) {
-      return _actionShapes.copyWith(
-        actionBackgroundColor: theme.card?.resolve(context),
-        actionForegroundColor: theme.foreground?.resolve(context),
-      );
-    }
+    final background = useHost
+        ? theme.card?.resolve(context)
+        : _ownedColor(context, theme.card, ISpectDefaultPalette.card);
+    final foreground = useHost
+        ? theme.foreground?.resolve(context)
+        : _ownedColor(
+            context,
+            theme.foreground,
+            ISpectDefaultPalette.foreground,
+          );
 
     return _actionShapes.copyWith(
-      actionBackgroundColor: _ownedColor(
-        context,
-        theme.card,
-        ISpectDefaultPalette.card,
+      actionBackgroundColor: background,
+      actionForegroundColor: foreground,
+      collapsedIconColor: foreground,
+      headerStyle: materialTheme.textTheme.titleSmall?.copyWith(
+        color: foreground,
       ),
-      actionForegroundColor: _ownedColor(
-        context,
-        theme.foreground,
-        ISpectDefaultPalette.foreground,
-      ),
+      closeButtonStyle:
+          DraggableActionPanelThemeData.defaults(
+            materialTheme.colorScheme,
+          ).closeButtonStyle?.copyWith(
+            foregroundColor: foreground == null
+                ? null
+                : WidgetStatePropertyAll(foreground),
+            shape: WidgetStatePropertyAll(_gridShape),
+          ),
     );
   }
 
   /// The panel shell ISpect owns regardless of palette: squircle corners on
   /// every face, and a parked panel that recedes.
   ///
-  /// One radius for all three faces — the tab, the button, and the window
-  /// differ by an order of magnitude in size, and an adaptive squircle rounds
-  /// each as far as its own box allows.
   DraggablePanelThemeData _panelShell(Color? border) {
     final shape = _panelShape(border, ISpectConstants.panelBorderRadius);
     return DraggablePanelThemeData(
@@ -415,17 +428,14 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     );
   }
 
-  /// The grid's own corners, a step down from the panel's so a 48-pixel tile
-  /// keeps roughly the panel's ratio of corner to side.
-  DraggableActionPanelThemeData get _actionShapes {
-    final shape = ISpectSquircle.adaptiveBorder(
-      radius: ISpectConstants.snackbarBorderRadius,
-    );
-    return DraggableActionPanelThemeData(
-      actionShape: shape,
-      buttonStyle: ButtonStyle(shape: WidgetStatePropertyAll(shape)),
-    );
-  }
+  /// The grid's own corners, a step down from the panel's.
+  OutlinedBorder get _gridShape => ISpectSquircle.border();
+
+  DraggableActionPanelThemeData get _actionShapes =>
+      DraggableActionPanelThemeData(
+        actionShape: _gridShape,
+        buttonStyle: ButtonStyle(shape: WidgetStatePropertyAll(_gridShape)),
+      );
 
   Color _ownedColor(
     BuildContext context,
@@ -436,7 +446,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       fallback.pick(isDark: context.ispectIsDark)!;
 
   ShapeBorder _panelShape(Color? border, double radius) =>
-      ISpectSquircle.adaptiveBorder(
+      ISpectSquircle.border(
         radius: radius,
         side: border == null ? BorderSide.none : BorderSide(color: border),
       );

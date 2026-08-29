@@ -40,12 +40,12 @@ class InspectorController {
     this.widgetInspectAndCompareShortcutActivators,
     this.colorPickerShortcutActivators,
     this.zoomShortcutActivators,
-  })  : isEnabled = kISpectLayoutEnabled && isEnabled,
-        maxRenderTreeClipboardCharacters =
-            _validateRenderTreeClipboardCharacters(
-          maxRenderTreeClipboardCharacters,
-        ),
-        assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0') {
+  }) : isEnabled = kISpectLayoutEnabled && isEnabled,
+       maxRenderTreeClipboardCharacters =
+           _validateRenderTreeClipboardCharacters(
+             maxRenderTreeClipboardCharacters,
+           ),
+       assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0') {
     // Keep the sealed `stateNotifier` in sync with the legacy granular
     // notifiers. Legacy notifiers remain the mutation surface — internal
     // logic writes to them, and we recompute the union state here.
@@ -73,11 +73,13 @@ class InspectorController {
   /// multi-key chords and the full [ShortcutActivator] API. Will be removed
   /// in 8.0.0.
   @Deprecated(
-      'Use widgetInspectorShortcutActivators. Will be removed in 8.0.0.')
+    'Use widgetInspectorShortcutActivators. Will be removed in 8.0.0.',
+  )
   final List<LogicalKeyboardKey>? widgetInspectorShortcuts;
 
   @Deprecated(
-      'Use widgetInspectAndCompareShortcutActivators. Will be removed in 8.0.0.')
+    'Use widgetInspectAndCompareShortcutActivators. Will be removed in 8.0.0.',
+  )
   final List<LogicalKeyboardKey>? widgetInspectAndCompareShortcuts;
 
   @Deprecated('Use colorPickerShortcutActivators. Will be removed in 8.0.0.')
@@ -114,8 +116,9 @@ class InspectorController {
   /// Consolidated sealed-state view. Updated automatically whenever any of
   /// the legacy granular notifiers changes. Exists alongside the legacy
   /// notifiers for callers who prefer exhaustive `switch`.
-  final stateNotifier =
-      ValueNotifier<InspectorUiState>(const InspectorIdleState());
+  final stateNotifier = ValueNotifier<InspectorUiState>(
+    const InspectorIdleState(),
+  );
 
   late final List<Listenable> _allStateInputs = [
     modeNotifier,

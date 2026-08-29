@@ -65,16 +65,18 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
 
   @override
   Widget build(BuildContext context) => Theme(
-        data: _panelTheme,
-        child: Builder(builder: _buildPanel),
-      );
+    data: _panelTheme,
+    child: Builder(builder: _buildPanel),
+  );
 
   Widget _buildPanel(BuildContext context) {
     final theme = Theme.of(context);
     final target = widget.boxInfo.targetRenderBox;
-    final dividerColor =
-        theme.colorScheme.outlineVariant.withValues(alpha: 0.4);
-    final hasCompare = target.attached &&
+    final dividerColor = theme.colorScheme.outlineVariant.withValues(
+      alpha: 0.4,
+    );
+    final hasCompare =
+        target.attached &&
         widget.comparedBoxInfo?.targetRenderBox.attached == true;
     final breadcrumb = _buildBreadcrumb();
 
@@ -129,8 +131,12 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
-                  children:
-                      _buildSections(context, target, dividerColor, hasCompare),
+                  children: _buildSections(
+                    context,
+                    target,
+                    dividerColor,
+                    hasCompare,
+                  ),
                 ),
               ),
             ),
@@ -141,23 +147,23 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
   }
 
   Widget _buildTrailing(ThemeData theme) => AnimatedRotation(
-        turns: _isExpanded ? 0.5 : 0.0,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
-        child: Container(
-          width: 28,
-          height: 28,
-          decoration: InspectorSquircle.decoration(
-            color: theme.colorScheme.surfaceContainerHighest,
-            radius: 8,
-          ),
-          child: Icon(
-            Icons.keyboard_arrow_down_rounded,
-            size: 18,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      );
+    turns: _isExpanded ? 0.5 : 0.0,
+    duration: const Duration(milliseconds: 250),
+    curve: Curves.easeInOut,
+    child: Container(
+      width: 28,
+      height: 28,
+      decoration: InspectorSquircle.decoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        radius: 8,
+      ),
+      child: Icon(
+        Icons.keyboard_arrow_down_rounded,
+        size: 18,
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+    ),
+  );
 
   /// The breadcrumb only earns space when there is somewhere to navigate to —
   /// a single meaningful entry means the chips would just echo the title.
@@ -186,10 +192,7 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
     out
       ..add(const _SectionHeader('layout'))
       ..add(
-        _MainRow(
-          boxInfo: widget.boxInfo,
-          decimalPlaces: widget.decimalPlaces,
-        ),
+        _MainRow(boxInfo: widget.boxInfo, decimalPlaces: widget.decimalPlaces),
       )
       ..add(const SizedBox(height: 8))
       ..add(
@@ -199,10 +202,7 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
               target.constraints,
               decimalPlaces: widget.decimalPlaces,
             ),
-            ...parentDataProps(
-              target,
-              decimalPlaces: widget.decimalPlaces,
-            ),
+            ...parentDataProps(target, decimalPlaces: widget.decimalPlaces),
           ],
         ),
       );
@@ -318,8 +318,9 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
               expandChild: true,
               child: Text(
                 '"$preview"',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(fontStyle: FontStyle.italic),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -355,8 +356,9 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
                   fontSize: 10,
-                  color: theme.colorScheme.onSurfaceVariant
-                      .withValues(alpha: 0.55),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.55,
+                  ),
                 ),
               ),
             ),
@@ -378,14 +380,9 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
         const _SectionHeader('wrapper'),
         Padding(
           padding: const EdgeInsets.only(bottom: 6),
-          child: Text(
-            _describeIdentity(box),
-            style: theme.textTheme.bodySmall,
-          ),
+          child: Text(_describeIdentity(box), style: theme.textTheme.bodySmall),
         ),
-        PropSection(
-          props: typeProps(box, decimalPlaces: widget.decimalPlaces),
-        ),
+        PropSection(props: typeProps(box, decimalPlaces: widget.decimalPlaces)),
       ],
     ];
   }
@@ -483,8 +480,9 @@ class _PanelTitleBar extends StatelessWidget {
                     ' #${shortHash(target)}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 10,
-                      color: theme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.45),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.45,
+                      ),
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
@@ -556,8 +554,8 @@ class _PanelTitleBar extends StatelessWidget {
     const marker = '\n…';
     final truncated = full.length > limit
         ? limit <= marker.length
-            ? marker.substring(0, limit)
-            : '${full.substring(0, limit - marker.length)}$marker'
+              ? marker.substring(0, limit)
+              : '${full.substring(0, limit - marker.length)}$marker'
         : full;
 
     await Clipboard.setData(ClipboardData(text: truncated));
@@ -630,8 +628,9 @@ class _ComparedRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final originalWidth = boxInfo.targetRenderBox.size.width;
-    final scale =
-        originalWidth > 0 ? boxInfo.targetRect.width / originalWidth : 1.0;
+    final scale = originalWidth > 0
+        ? boxInfo.targetRect.width / originalWidth
+        : 1.0;
     final distances = computeCompareDistances(
       boxInfo.targetRect,
       comparedBoxInfo.targetRect,
@@ -689,7 +688,8 @@ class _IconGlyphPreview extends StatelessWidget {
             child: Text(
               glyphs.codePointsLabel,
               style: theme.textTheme.bodySmall?.copyWith(
-                  fontFeatures: const [FontFeature.tabularFigures()]),
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -723,13 +723,13 @@ class _PaddingBoxModel extends StatelessWidget {
         formatInspectorDouble(v, decimalPlaces: decimalPlaces);
 
     Widget cell(String label, double v) => Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 2,
-          children: [
-            Text(label, style: labelStyle),
-            Text(f(v), style: valueStyle),
-          ],
-        );
+      mainAxisSize: MainAxisSize.min,
+      spacing: 2,
+      children: [
+        Text(label, style: labelStyle),
+        Text(f(v), style: valueStyle),
+      ],
+    );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -844,28 +844,29 @@ class _HitTestBreadcrumbState extends State<_HitTestBreadcrumb> {
     _chipKeys.removeWhere((box, _) => !inPath.contains(box));
 
     final theme = Theme.of(context);
-    final separatorColor =
-        theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6);
+    final separatorColor = theme.colorScheme.onSurfaceVariant.withValues(
+      alpha: 0.6,
+    );
 
     final children = <Widget>[];
     for (var i = 0; i < widget.path.length; i++) {
       if (i > 0) {
-        children.add(Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2.0),
-          child: Icon(
-            Icons.chevron_right,
-            size: 14.0,
-            color: separatorColor,
+        children.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+            child: Icon(Icons.chevron_right, size: 14.0, color: separatorColor),
           ),
-        ));
+        );
       }
       final box = widget.path[i];
-      children.add(_BreadcrumbChip(
-        key: _keyFor(box),
-        box: box,
-        isSelected: identical(box, widget.currentTarget),
-        onTap: () => widget.onSelect(box),
-      ));
+      children.add(
+        _BreadcrumbChip(
+          key: _keyFor(box),
+          box: box,
+          isSelected: identical(box, widget.currentTarget),
+          onTap: () => widget.onSelect(box),
+        ),
+      );
     }
 
     return Padding(

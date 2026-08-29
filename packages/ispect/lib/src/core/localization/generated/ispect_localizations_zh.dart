@@ -574,6 +574,21 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get backToMainScreen => '返回主屏幕';
 
   @override
+  String get logs => '日志';
+
+  @override
+  String get performance => '性能';
+
+  @override
+  String get inspector => '检查器';
+
+  @override
+  String get colorPicker => '颜色';
+
+  @override
+  String get composer => '构造器';
+
+  @override
   String get navigationFlow => '导航流程';
 
   @override

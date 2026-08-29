@@ -78,11 +78,7 @@ List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
   final rawImage = target.image;
   return [
     if (source != null)
-      (
-        icon: Icons.image,
-        subtitle: 'source',
-        child: EllipsizedText(source),
-      ),
+      (icon: Icons.image, subtitle: 'source', child: EllipsizedText(source)),
     if (rawImage != null)
       (
         icon: Icons.photo_size_select_large,
@@ -90,19 +86,12 @@ List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
         child: Text(_rawPixelLabel(rawImage.width, rawImage.height)),
       ),
     if (target.fit != null)
-      (
-        icon: Icons.fit_screen,
-        subtitle: 'fit',
-        child: Text(target.fit!.name),
-      ),
+      (icon: Icons.fit_screen, subtitle: 'fit', child: Text(target.fit!.name)),
     (
       icon: Icons.crop_free,
       subtitle: 'alignment',
       child: EllipsizedText(
-        describeAlignment(
-          target.alignment,
-          decimalPlaces: decimalPlaces,
-        ),
+        describeAlignment(target.alignment, decimalPlaces: decimalPlaces),
       ),
     ),
     if (target.width != null)
@@ -131,11 +120,7 @@ List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
         child: Text(target.filterQuality.name),
       ),
     if (target.repeat != ImageRepeat.noRepeat)
-      (
-        icon: Icons.repeat,
-        subtitle: 'repeat',
-        child: Text(target.repeat.name),
-      ),
+      (icon: Icons.repeat, subtitle: 'repeat', child: Text(target.repeat.name)),
     if (target.centerSlice != null)
       (
         icon: Icons.crop_din,
@@ -167,10 +152,6 @@ List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
         child: const Text('on'),
       ),
     if (target.isAntiAlias)
-      (
-        icon: Icons.deblur,
-        subtitle: 'anti-alias',
-        child: const Text('on'),
-      ),
+      (icon: Icons.deblur, subtitle: 'anti-alias', child: const Text('on')),
   ];
 }

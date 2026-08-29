@@ -59,9 +59,7 @@ class ISpectSearchHighlightSurface extends StatelessWidget {
         boxShadow = null;
     }
 
-    final shape = ContinuousRectangleBorder(
-      borderRadius: borderRadius * ISpectSquircle.scale,
-    );
+    final shape = ISpectSquircle.borderOf(borderRadius);
 
     return DecoratedBox(
       decoration: ShapeDecoration(

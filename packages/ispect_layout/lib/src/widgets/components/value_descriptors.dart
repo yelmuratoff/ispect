@@ -51,6 +51,7 @@ BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
   if (shape is RoundedRectangleBorder) return shape.borderRadius;
   if (shape is BeveledRectangleBorder) return shape.borderRadius;
   if (shape is ContinuousRectangleBorder) return shape.borderRadius;
+  if (shape is RoundedSuperellipseBorder) return shape.borderRadius;
   return null;
 }
 
@@ -70,10 +71,7 @@ BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
 /// detecting it tells us a `toString()` override was stripped by AOT.
 const _kStrippedToStringPrefix = "Instance of '";
 
-String describeAlignment(
-  AlignmentGeometry alignment, {
-  int decimalPlaces = 2,
-}) {
+String describeAlignment(AlignmentGeometry alignment, {int decimalPlaces = 2}) {
   String fmt(double v) => _fmtCompact(v, decimalPlaces);
   if (alignment is Alignment) {
     return switch ((alignment.x, alignment.y)) {
@@ -138,7 +136,9 @@ String describeImageFilter(ImageFilter filter) {
   assert(_assertReleaseSafeContracts());
   final raw = filter.toString();
   if (!raw.startsWith(_kStrippedToStringPrefix)) {
-    return raw.replaceFirst('ImageFilter.', '').replaceAllMapped(
+    return raw
+        .replaceFirst('ImageFilter.', '')
+        .replaceAllMapped(
           RegExp(r',\s*(TileMode\.\w+|unspecified)\)$'),
           (_) => ')',
         );
@@ -312,10 +312,7 @@ String previewText(InlineSpan span) {
 /// packs). Recognised so the inspector can show the actual glyph instead
 /// of tofu under the default text preview.
 class IconGlyphPreview {
-  const IconGlyphPreview({
-    required this.codePoints,
-    required this.fontFamily,
-  });
+  const IconGlyphPreview({required this.codePoints, required this.fontFamily});
 
   final List<int> codePoints;
 

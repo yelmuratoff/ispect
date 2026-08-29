@@ -46,10 +46,7 @@ Widget _buildBody({int maxRenderTreeClipboardCharacters = 10000}) {
 
 Widget _buildPrecisionBody() {
   return MaterialApp(
-    builder: (context, child) => Inspector(
-      decimalPlaces: 3,
-      child: child!,
-    ),
+    builder: (context, child) => Inspector(decimalPlaces: 3, child: child!),
     home: Scaffold(
       backgroundColor: Colors.black,
       body: Center(
@@ -57,9 +54,7 @@ Widget _buildPrecisionBody() {
           key: _containerKey,
           width: 100.125,
           height: 100.375,
-          decoration: const BoxDecoration(
-            color: Colors.blue,
-          ),
+          decoration: const BoxDecoration(color: Colors.blue),
         ),
       ),
     ),
@@ -85,10 +80,8 @@ Widget _buildDefaultPrecisionBody() {
 
 Widget _buildCollapsedPanelBody() {
   return MaterialApp(
-    builder: (context, child) => Inspector(
-      initialPanelExpanded: false,
-      child: child!,
-    ),
+    builder: (context, child) =>
+        Inspector(initialPanelExpanded: false, child: child!),
     home: Scaffold(
       backgroundColor: Colors.black,
       body: const SizedBox.expand(),
@@ -101,11 +94,7 @@ Widget _buildCustomShortcutBody() {
     builder: (context, child) => Inspector(
       controller: InspectorController(
         zoomShortcutActivators: const [
-          SingleActivator(
-            LogicalKeyboardKey.keyZ,
-            alt: true,
-            meta: true,
-          ),
+          SingleActivator(LogicalKeyboardKey.keyZ, alt: true, meta: true),
         ],
       ),
       child: child!,
@@ -207,10 +196,7 @@ Widget _buildChipIconBody() {
             height: 18.0,
             child: ColoredBox(color: Colors.red),
           ),
-          label: const Text(
-            'Error',
-            key: _chipLabelKey,
-          ),
+          label: const Text('Error', key: _chipLabelKey),
           onPressed: () {},
         ),
       ),
@@ -425,8 +411,9 @@ void main() {
       expect(find.text('100.125 × 100.375'), findsWidgets);
     });
 
-    testWidgets('preserves hundredths with the default precision',
-        (tester) async {
+    testWidgets('preserves hundredths with the default precision', (
+      tester,
+    ) async {
       await tester.pumpWidget(_buildDefaultPrecisionBody());
       await tester.tap(find.byIcon(Icons.format_shapes));
       await tester.pump();
@@ -442,27 +429,23 @@ void main() {
       expect(find.text('100.25 × 100.75'), findsWidgets);
     });
 
-    testWidgets('render-tree copy honors the configured character budget',
-        (tester) async {
+    testWidgets('render-tree copy honors the configured character budget', (
+      tester,
+    ) async {
       String? clipboardText;
       final messenger =
           TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-      messenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        (call) async {
-          if (call.method == 'Clipboard.setData') {
-            clipboardText = (call.arguments as Map?)?['text'] as String?;
-          }
-          return null;
-        },
-      );
+      messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+        if (call.method == 'Clipboard.setData') {
+          clipboardText = (call.arguments as Map?)?['text'] as String?;
+        }
+        return null;
+      });
       addTearDown(
         () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
       );
 
-      await tester.pumpWidget(
-        _buildBody(maxRenderTreeClipboardCharacters: 40),
-      );
+      await tester.pumpWidget(_buildBody(maxRenderTreeClipboardCharacters: 40));
       await tester.tap(find.byIcon(Icons.format_shapes));
       await tester.pump();
 
@@ -522,14 +505,16 @@ void main() {
       expect(find.text('12.00'), findsOneWidget);
     });
 
-    testWidgets('shows shape border radius for Material shapes',
-        (tester) async {
+    testWidgets('shows shape border radius for Material shapes', (
+      tester,
+    ) async {
       await tester.pumpWidget(_buildMaterialShapeBody());
       await tester.tap(find.byIcon(Icons.format_shapes));
       await tester.pump();
 
-      final child = tester.renderObject(find.byKey(_roundedMaterialChildKey))
-          as RenderBox;
+      final child =
+          tester.renderObject(find.byKey(_roundedMaterialChildKey))
+              as RenderBox;
 
       final position = (child.localToGlobal(Offset.zero) & child.size).center;
 
@@ -546,64 +531,69 @@ void main() {
     });
 
     testWidgets(
-        'breadcrumb lets the user reselect an ancestor Row from a Text tap',
-        (tester) async {
-      await tester.pumpWidget(_buildBreadcrumbBody());
+      'breadcrumb lets the user reselect an ancestor Row from a Text tap',
+      (tester) async {
+        await tester.pumpWidget(_buildBreadcrumbBody());
 
-      await tester.tap(find.byIcon(Icons.format_shapes));
-      await tester.pump();
-      await tester.tapAt(tester.getCenter(find.byKey(_rowTextKey)));
-      await tester.pump();
+        await tester.tap(find.byIcon(Icons.format_shapes));
+        await tester.pump();
+        await tester.tapAt(tester.getCenter(find.byKey(_rowTextKey)));
+        await tester.pump();
 
-      expect(find.textContaining('Paragraph'), findsWidgets);
+        expect(find.textContaining('Paragraph'), findsWidgets);
 
-      final flexChip = find.text('Flex');
-      expect(flexChip, findsOneWidget);
+        final flexChip = find.text('Flex');
+        expect(flexChip, findsOneWidget);
 
-      await tester.tap(flexChip);
-      await tester.pump();
+        await tester.tap(flexChip);
+        await tester.pump();
 
-      expect(find.textContaining('Flex'), findsWidgets);
-      expect(find.text('80.00 × 40.00'), findsWidgets);
-    });
-
-    testWidgets(
-        "selects a chip's avatar icon instead of routing every tap to the label",
-        (tester) async {
-      // _RenderChip tests child centers, requiring a second hit test for avatars.
-      await tester.pumpWidget(_buildChipIconBody());
-      await tester.tap(find.byIcon(Icons.format_shapes));
-      await tester.pump();
-
-      final avatar = tester.renderObject(find.byKey(_chipIconKey)) as RenderBox;
-      await tester
-          .tapAt((avatar.localToGlobal(Offset.zero) & avatar.size).center);
-      await tester.pump();
-
-      expect(find.text('18.00 × 18.00'), findsWidgets);
-      expect(find.textContaining('RenderParagraph'), findsNothing);
-    });
+        expect(find.textContaining('Flex'), findsWidgets);
+        expect(find.text('80.00 × 40.00'), findsWidgets);
+      },
+    );
 
     testWidgets(
-        'does not hit-test widgets from routes underneath the active one',
-        (tester) async {
-      await tester.pumpWidget(_buildNavigationStackBody());
+      "selects a chip's avatar icon instead of routing every tap to the label",
+      (tester) async {
+        // _RenderChip tests child centers, requiring a second hit test for avatars.
+        await tester.pumpWidget(_buildChipIconBody());
+        await tester.tap(find.byIcon(Icons.format_shapes));
+        await tester.pump();
 
-      await tester.tap(find.byKey(_pushButtonKey));
-      await tester.pumpAndSettle();
-      expect(find.byKey(_page2ContainerKey), findsOneWidget);
+        final avatar =
+            tester.renderObject(find.byKey(_chipIconKey)) as RenderBox;
+        await tester.tapAt(
+          (avatar.localToGlobal(Offset.zero) & avatar.size).center,
+        );
+        await tester.pump();
 
-      await tester.tap(find.byIcon(Icons.format_shapes));
-      await tester.pump();
+        expect(find.text('18.00 × 18.00'), findsWidgets);
+        expect(find.textContaining('RenderParagraph'), findsNothing);
+      },
+    );
 
-      final page1 =
-          tester.renderObject(find.byKey(_page1ContainerKey)) as RenderBox;
-      final position = (page1.localToGlobal(Offset.zero) & page1.size).center;
+    testWidgets(
+      'does not hit-test widgets from routes underneath the active one',
+      (tester) async {
+        await tester.pumpWidget(_buildNavigationStackBody());
 
-      await tester.tapAt(position);
-      await tester.pump();
+        await tester.tap(find.byKey(_pushButtonKey));
+        await tester.pumpAndSettle();
+        expect(find.byKey(_page2ContainerKey), findsOneWidget);
 
-      expect(find.text('100.00 × 100.00'), findsNothing);
-    });
+        await tester.tap(find.byIcon(Icons.format_shapes));
+        await tester.pump();
+
+        final page1 =
+            tester.renderObject(find.byKey(_page1ContainerKey)) as RenderBox;
+        final position = (page1.localToGlobal(Offset.zero) & page1.size).center;
+
+        await tester.tapAt(position);
+        await tester.pump();
+
+        expect(find.text('100.00 × 100.00'), findsNothing);
+      },
+    );
   });
 }

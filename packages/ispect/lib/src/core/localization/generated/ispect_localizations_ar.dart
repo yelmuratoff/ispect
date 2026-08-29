@@ -576,6 +576,21 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get backToMainScreen => 'العودة إلى الشاشة الرئيسية';
 
   @override
+  String get logs => 'السجلات';
+
+  @override
+  String get performance => 'الأداء';
+
+  @override
+  String get inspector => 'الفاحص';
+
+  @override
+  String get colorPicker => 'اللون';
+
+  @override
+  String get composer => 'المنشئ';
+
+  @override
   String get navigationFlow => 'تدفق التنقل';
 
   @override

@@ -581,6 +581,21 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get backToMainScreen => 'Негізгі экранға оралу';
 
   @override
+  String get logs => 'Логтар';
+
+  @override
+  String get performance => 'Өнімділік';
+
+  @override
+  String get inspector => 'Инспектор';
+
+  @override
+  String get colorPicker => 'Түс';
+
+  @override
+  String get composer => 'Композер';
+
+  @override
   String get navigationFlow => 'Навигация ағыны';
 
   @override

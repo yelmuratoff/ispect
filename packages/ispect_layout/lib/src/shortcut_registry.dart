@@ -46,29 +46,29 @@ class InspectorShortcuts {
   ];
 
   List<ShortcutActivator> get effectiveInspectorActivators => _resolve(
-        explicit: inspectorActivators,
-        legacyKeys: inspectorLegacyKeys,
-        defaultActivators: _defaultInspector,
-      );
+    explicit: inspectorActivators,
+    legacyKeys: inspectorLegacyKeys,
+    defaultActivators: _defaultInspector,
+  );
 
   List<ShortcutActivator> get effectiveCompareActivators => _resolve(
-        explicit: compareActivators,
-        legacyKeys: compareLegacyKeys,
-        defaultActivators: _defaultCompare,
-        legacyFactory: _legacyToggleActivator,
-      );
+    explicit: compareActivators,
+    legacyKeys: compareLegacyKeys,
+    defaultActivators: _defaultCompare,
+    legacyFactory: _legacyToggleActivator,
+  );
 
   List<ShortcutActivator> get effectiveColorPickerActivators => _resolve(
-        explicit: colorPickerActivators,
-        legacyKeys: colorPickerLegacyKeys,
-        defaultActivators: _defaultColorPicker,
-      );
+    explicit: colorPickerActivators,
+    legacyKeys: colorPickerLegacyKeys,
+    defaultActivators: _defaultColorPicker,
+  );
 
   List<ShortcutActivator> get effectiveZoomActivators => _resolve(
-        explicit: zoomActivators,
-        legacyKeys: zoomLegacyKeys,
-        defaultActivators: _defaultZoom,
-      );
+    explicit: zoomActivators,
+    legacyKeys: zoomLegacyKeys,
+    defaultActivators: _defaultZoom,
+  );
 
   bool acceptsInspector(KeyEvent event, HardwareKeyboard state) =>
       _matchesAny(effectiveInspectorActivators, event, state);
@@ -141,9 +141,9 @@ class InspectorShortcuts {
     if (activator is LogicalKeySet) {
       final requiredKeys = activator.keys
           .map(
-            (key) =>
-                LogicalKeyboardKey.collapseSynonyms(<LogicalKeyboardKey>{key})
-                    .single,
+            (key) => LogicalKeyboardKey.collapseSynonyms(<LogicalKeyboardKey>{
+              key,
+            }).single,
           )
           .toSet();
       final pressedKeys = LogicalKeyboardKey.collapseSynonyms(pressed);

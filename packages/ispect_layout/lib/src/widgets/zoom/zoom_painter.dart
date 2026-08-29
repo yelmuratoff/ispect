@@ -24,8 +24,8 @@ class ZoomPainter extends CustomPainter {
     this.showPixelGrid = true,
     this.pixelGridThreshold = 8.0,
     this.pixelGridColor = const Color(0x33000000),
-  })  : _backgroundPaint = Paint()..color = backgroundColor,
-        _imagePaint = Paint()..filterQuality = FilterQuality.none;
+  }) : _backgroundPaint = Paint()..color = backgroundColor,
+       _imagePaint = Paint()..filterQuality = FilterQuality.none;
 
   final ui.Image image;
   final Offset imageOffset;
@@ -180,10 +180,8 @@ class _ZoomLevelIndicatorState extends State<ZoomLevelIndicator> {
 
   @override
   Widget build(BuildContext context) => AnimatedOpacity(
-        opacity: _isVisible ? 1.0 : 0.0,
-        duration: widget.fadeDuration,
-        child: InformationBoxWidget(
-          child: Text('x${widget.zoomScale}'),
-        ),
-      );
+    opacity: _isVisible ? 1.0 : 0.0,
+    duration: widget.fadeDuration,
+    child: InformationBoxWidget(child: Text('x${widget.zoomScale}')),
+  );
 }

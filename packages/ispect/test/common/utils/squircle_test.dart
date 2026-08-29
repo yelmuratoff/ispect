@@ -5,13 +5,10 @@ import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 void main() {
   group('ISpectSquircle.border', () {
-    test('scales the logical radius up by the squircle scale factor', () {
+    test('keeps the logical radius as the corner radius', () {
       final border = ISpectSquircle.border(radius: 10);
 
-      expect(
-        border.borderRadius,
-        const BorderRadius.all(Radius.circular(10 * ISpectSquircle.scale)),
-      );
+      expect(border.borderRadius, const BorderRadius.all(Radius.circular(10)));
     });
 
     test('defaults to the card border radius when none is given', () {
@@ -20,9 +17,7 @@ void main() {
       expect(
         border.borderRadius,
         const BorderRadius.all(
-          Radius.circular(
-            ISpectConstants.cardBorderRadius * ISpectSquircle.scale,
-          ),
+          Radius.circular(ISpectConstants.cardBorderRadius),
         ),
       );
     });
@@ -37,18 +32,15 @@ void main() {
   });
 
   group('ISpectSquircle.decoration', () {
-    test('builds a ShapeDecoration with a scaled squircle shape', () {
+    test('builds a ShapeDecoration with the squircle shape', () {
       final decoration = ISpectSquircle.decoration(
         color: const Color(0xFF222222),
         radius: 8,
       );
 
-      final shape = decoration.shape as ContinuousRectangleBorder;
+      final shape = decoration.shape as RoundedSuperellipseBorder;
       expect(decoration.color, const Color(0xFF222222));
-      expect(
-        shape.borderRadius,
-        const BorderRadius.all(Radius.circular(8 * ISpectSquircle.scale)),
-      );
+      expect(shape.borderRadius, const BorderRadius.all(Radius.circular(8)));
     });
 
     test('passes shadows through to the ShapeDecoration', () {
@@ -61,14 +53,11 @@ void main() {
   });
 
   group('ISpectSquircle.inputBorder', () {
-    test('scales the radius and reports as an outline border', () {
+    test('carries the radius and reports as an outline border', () {
       final border = ISpectSquircle.inputBorder(radius: 10);
 
       expect(border.isOutline, isTrue);
-      expect(
-        border.borderRadius,
-        const BorderRadius.all(Radius.circular(10 * ISpectSquircle.scale)),
-      );
+      expect(border.borderRadius, const BorderRadius.all(Radius.circular(10)));
     });
 
     test('applies the side', () {
@@ -94,10 +83,7 @@ void main() {
       ).copyWith(borderSide: side);
 
       expect(border.borderSide, side);
-      expect(
-        border.borderRadius,
-        const BorderRadius.all(Radius.circular(10 * ISpectSquircle.scale)),
-      );
+      expect(border.borderRadius, const BorderRadius.all(Radius.circular(10)));
     });
   });
 }
