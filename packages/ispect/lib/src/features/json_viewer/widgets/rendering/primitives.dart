@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/default_curl_redactor.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
@@ -21,7 +23,9 @@ class CopyButton extends StatelessWidget {
     label: 'Copy ${node.key}',
     child: InkWell(
       excludeFromSemantics: true,
-      borderRadius: const BorderRadius.all(Radius.circular(4)),
+      customBorder: ISpectSquircle.border(
+        radius: ISpectConstants.smallBorderRadius,
+      ),
       onTap: () {
         final safeValue = defaultCurlRedactor.redact(
           node.rawValue,

@@ -62,7 +62,9 @@ class DesktopStatusBar extends StatelessWidget {
                         ? 'Resume live tail'
                         : 'Pause live tail',
                     child: InkWell(
-                      borderRadius: const BorderRadius.all(Radius.circular(4)),
+                      customBorder: ISpectSquircle.border(
+                        radius: ISpectConstants.smallBorderRadius,
+                      ),
                       onTap: onToggleLiveTail,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -150,7 +152,9 @@ class DesktopStatusBar extends StatelessWidget {
                 Tooltip(
                   message: useRelativeTime ? 'Absolute time' : 'Relative time',
                   child: InkWell(
-                    borderRadius: const BorderRadius.all(Radius.circular(4)),
+                    customBorder: ISpectSquircle.border(
+                      radius: ISpectConstants.smallBorderRadius,
+                    ),
                     onTap: onToggleTimestamp,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(

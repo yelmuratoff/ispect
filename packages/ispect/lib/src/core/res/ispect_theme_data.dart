@@ -97,18 +97,12 @@ ThemeData buildISpectThemeData({required bool dark}) {
     menuTheme: MenuThemeData(style: MenuStyle(shape: squircle)),
     dropdownMenuTheme: DropdownMenuThemeData(
       menuStyle: MenuStyle(shape: squircle),
-      inputDecorationTheme: InputDecorationTheme(
-        border: ISpectSquircle.inputBorder(),
-      ),
     ),
     snackBarTheme: SnackBarThemeData(shape: cardShape),
     dialogTheme: DialogThemeData(shape: surfaceShape),
     bottomSheetTheme: BottomSheetThemeData(shape: surfaceShape),
     searchBarTheme: SearchBarThemeData(shape: squircle),
     searchViewTheme: SearchViewThemeData(shape: surfaceShape),
-    inputDecorationTheme: InputDecorationTheme(
-      border: ISpectSquircle.inputBorder(),
-    ),
     tooltipTheme: TooltipThemeData(
       decoration: ISpectSquircle.decoration(
         color: card,

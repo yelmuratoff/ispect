@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 
 /// Indicator shown when new logs arrive while user is scrolled away.
 class NewLogsIndicator extends StatelessWidget {
@@ -21,11 +22,15 @@ class NewLogsIndicator extends StatelessWidget {
     return Center(
       child: Material(
         color: primary,
-        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        shape: ISpectSquircle.border(
+          radius: ISpectConstants.snackbarBorderRadius,
+        ),
         elevation: 4,
         shadowColor: Colors.black26,
         child: InkWell(
-          borderRadius: const BorderRadius.all(Radius.circular(16)),
+          customBorder: ISpectSquircle.border(
+            radius: ISpectConstants.snackbarBorderRadius,
+          ),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),

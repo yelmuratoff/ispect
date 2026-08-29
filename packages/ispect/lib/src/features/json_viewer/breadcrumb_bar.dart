@@ -104,8 +104,8 @@ class BreadcrumbBarState extends State<BreadcrumbBar> {
                         type: MaterialType.transparency,
                         child: InkWell(
                           onTap: () => widget.onSegmentTap(segment),
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(4),
+                          customBorder: ISpectSquircle.border(
+                            radius: ISpectConstants.smallBorderRadius,
                           ),
                           child: Center(
                             child: Padding(

@@ -34,14 +34,4 @@ final class DecorationUtils {
     ),
     radius: borderRadius ?? ISpectConstants.standardBorderRadius,
   );
-
-  /// Creates a standard border radius used in icon buttons and small components.
-  static BorderRadius get standardBorderRadius => const BorderRadius.all(
-    Radius.circular(ISpectConstants.standardBorderRadius),
-  );
-
-  /// Creates a large border radius used in containers and cards.
-  static BorderRadius get largeBorderRadius => const BorderRadius.all(
-    Radius.circular(ISpectConstants.largeBorderRadius),
-  );
 }
