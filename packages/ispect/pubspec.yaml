@@ -22,7 +22,7 @@ platforms:
 
 environment:
   sdk: ">=3.8.0 <4.0.0"
-  flutter: ">=3.32.0"
+  flutter: ">=3.35.0"
 
 dependency_overrides:
   ispectify:

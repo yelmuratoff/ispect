@@ -5,7 +5,7 @@
 ### Breaking Changes
 
 - **Floating panel:** The diagnostics panel is now a Picture-in-Picture window that springs to corners, parks at edges, and grows in place. `panelItems` takes `PanelAction`, `panelButtons` takes `PanelActionButton`, `ISpectTheme.panelTheme` takes `DraggablePanelThemeData` alongside the new `panelActionTheme`, and `panelBuilder` receives `ISpectPanelData.actions` and may return any widget.
-- **Minimum SDK:** `ispect` and `ispect_layout` now require Dart 3.8 and Flutter 3.32, the release that introduced the `RoundedSuperellipseBorder` both packages draw their squircle corners with.
+- **Minimum SDK:** `ispect_layout` now requires Dart 3.8 and Flutter 3.32, the release that introduced the `RoundedSuperellipseBorder` both packages draw their squircle corners with. `ispect` requires Flutter 3.35, the floor its `draggable_panel` dependency actually builds against.
 - **`JsonScreen` construction:** `JsonScreen(...)` is no longer const; remove the `const` keyword from existing call sites.
 - **Custom log types:** Custom `ISpectLogData` subclasses are normalized for safety; filter them by log key instead of `TypeFilter`.
 - **HTTP URL fields:** Throwing custom `Uri` implementations may now be omitted; strict capture deliberately keeps all caller-owned `Uri` values opaque.
@@ -16,6 +16,7 @@
 ### Behavioral Changes
 
 - **Diagnostics panel corners:** The panel, its action tiles, and its buttons take ISpect's squircle corners instead of Material's rounded rectangle, and carry the theme's divider colour as an outline.
+- **Squircle everywhere:** Every ISpect surface now draws the same corner — buttons, icon buttons, chips, cards, list tiles, dialogs, sheets, menus, snackbars, segmented controls, inputs, and tooltips — through Flutter's `RoundedSuperellipseBorder`. Corners no longer break on narrow surfaces, and the tooltip takes ISpect's own colours instead of Material's light default.
 - **Diagnostics panel resting state:** The panel has two stages instead of three — parked at the screen edge or open — and parks whenever an ISpect screen opens, so it never covers the log viewer, the composer, or a plugin screen. A panel driven by a caller-supplied `DraggablePanelController` keeps its own placement.
 - **Layout inspector precision:** Runtime measurements now default to two decimal places; explicit `decimalPlaces` overrides remain supported.
 - **Deprecation schedule:** Deprecated compatibility aliases remain available through 7.x and are now scheduled for removal in 8.0.0.
