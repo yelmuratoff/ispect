@@ -79,7 +79,7 @@ A standalone package. It works on its own, without the rest of the [ISpect toolk
 
 ```yaml
 dependencies:
-  ispect_layout: ^7.0.0-rc.6
+  ispect_layout: ^7.0.0-rc.7
 ```
 
 ## Quick start
