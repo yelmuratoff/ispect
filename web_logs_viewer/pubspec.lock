@@ -133,10 +133,10 @@ packages:
     dependency: transitive
     description:
       name: draggable_panel
-      sha256: "8947a05c986eecc79a233969ebb6ab805f50944780d6b5cd315c7fb9f159324f"
+      sha256: "962556727835b281e66b8b0928aa65240c26e3d19cc64314afd950b4ea147510"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0-beta.7"
+    version: "4.0.0"
   fake_async:
     dependency: transitive
     description:

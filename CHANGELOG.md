@@ -5,6 +5,7 @@
 ### Breaking Changes
 
 - **Floating panel:** The diagnostics panel is now a Picture-in-Picture window that springs to corners, parks at edges, and grows in place. `panelItems` takes `PanelAction`, `panelButtons` takes `PanelActionButton`, `ISpectTheme.panelTheme` takes `DraggablePanelThemeData` alongside the new `panelActionTheme`, and `panelBuilder` receives `ISpectPanelData.actions` and may return any widget.
+- **Panel package:** `ispect` now depends on the stable `draggable_panel` 4.0.0. `PanelStyle` is internal to that package and is no longer re-exported; author panel tokens through `ISpectTheme.panelTheme`.
 - **Minimum SDK:** `ispect_layout` now requires Dart 3.8 and Flutter 3.32, the release that introduced the `RoundedSuperellipseBorder` both packages draw their squircle corners with. `ispect` requires Flutter 3.35, the floor its `draggable_panel` dependency actually builds against.
 - **`JsonScreen` construction:** `JsonScreen(...)` is no longer const; remove the `const` keyword from existing call sites.
 - **Custom log types:** Custom `ISpectLogData` subclasses are normalized for safety; filter them by log key instead of `TypeFilter`.

@@ -282,6 +282,30 @@ void main() {
       expect(panel.behavior.collapsible, isFalse);
     });
 
+    testWidgets('leaving the park opens the panel outright', (tester) async {
+      if (!kISpectEnabled) return;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: ISpectLocalizations.delegate(),
+          builder: (context, child) => ISpectBuilder.wrap(child: child!),
+          home: const ColoredBox(color: Color(0xFFFFFFFF)),
+        ),
+      );
+      await tester.pump();
+
+      final controller = tester
+          .widget<DraggableActionPanel>(find.byType(DraggableActionPanel))
+          .controller!;
+      expect(controller.phase, PanelPhase.stashed);
+
+      controller.unstash();
+      await tester.pumpAndSettle();
+
+      expect(controller.phase, PanelPhase.expanded);
+      expect(find.byType(ActionCell), findsWidgets);
+    });
+
     testWidgets('the panel parks when the log viewer opens, and stays', (
       tester,
     ) async {

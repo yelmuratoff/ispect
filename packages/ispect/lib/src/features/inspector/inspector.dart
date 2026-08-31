@@ -33,7 +33,6 @@ export 'package:draggable_panel/draggable_panel.dart'
         PanelSemantics,
         PanelSnapPolicy,
         PanelStatus,
-        PanelStyle,
         PanelViewport,
         StashedPlacement;
 export 'package:ispect_layout/ispect_layout.dart';
