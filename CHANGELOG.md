@@ -4,51 +4,42 @@
 
 ### Breaking Changes
 
-- **Floating panel:** The diagnostics panel is now a Picture-in-Picture window that springs to corners, parks at edges, and grows in place. `panelItems` takes `PanelAction`, `panelButtons` takes `PanelActionButton`, `ISpectTheme.panelTheme` takes `DraggablePanelThemeData` alongside the new `panelActionTheme`, and `panelBuilder` receives `ISpectPanelData.actions` and may return any widget.
-- **Panel package:** `ispect` now depends on the stable `draggable_panel` 4.0.0. `PanelStyle` is internal to that package and is no longer re-exported; author panel tokens through `ISpectTheme.panelTheme`.
-- **Minimum SDK:** `ispect_layout` now requires Dart 3.8 and Flutter 3.32, the release that introduced the `RoundedSuperellipseBorder` both packages draw their squircle corners with. `ispect` requires Flutter 3.35, the floor its `draggable_panel` dependency actually builds against.
+- **Floating panel:** The diagnostics panel is now a floating window that springs to corners, parks at edges, and grows in place, built on `draggable_panel` 4.0.0. `panelItems` takes `PanelAction`, `panelButtons` takes `PanelActionButton`, `ISpectTheme.panelTheme` takes `DraggablePanelThemeData` alongside the new `panelActionTheme`, and `panelBuilder` receives `ISpectPanelData.actions` and may return any widget.
+- **Minimum SDK:** `ispect` requires Flutter 3.35; `ispect_layout` requires Dart 3.8 and Flutter 3.32.
 - **`JsonScreen` construction:** `JsonScreen(...)` is no longer const; remove the `const` keyword from existing call sites.
 - **Custom log types:** Custom `ISpectLogData` subclasses are normalized for safety; filter them by log key instead of `TypeFilter`.
-- **HTTP URL fields:** Throwing custom `Uri` implementations may now be omitted; strict capture deliberately keeps all caller-owned `Uri` values opaque.
+- **HTTP URL fields:** Custom `Uri` implementations that throw may be omitted from logs; strict capture keeps caller-owned `Uri` values opaque.
 - **Custom redaction services:** Overrides of `RedactionService.redactForExport`, `redactEnvelopeForExport`, or `redactHeaders` must accept the optional `resourceLimits` parameter.
-- **Observer payloads:** Observers receive the redacted entry, with the exception, error, and stack trace delivered as scrubbed text instead of the original objects. Forward crash reports from `ISpect.run`'s error callbacks, which still receive the originals.
-- **Custom diagnostics settings:** Overrides of network, trace, BLoC, or Riverpod `copyWith`/`configure` methods must accept the newly added optional capture and inheritance parameters.
+- **Custom diagnostics settings:** Overrides of network, trace, BLoC, or Riverpod `copyWith`/`configure` methods must accept the new optional capture and inheritance parameters.
+- **Observer payloads:** Observers receive the redacted entry, with exception, error, and stack trace as scrubbed text. `ISpect.run`'s error callbacks still receive the originals for crash reporting.
 
 ### Behavioral Changes
 
-- **Diagnostics panel corners:** The panel, its action tiles, and its buttons take ISpect's squircle corners instead of Material's rounded rectangle, and carry the theme's divider colour as an outline.
-- **Squircle everywhere:** Every ISpect surface now draws the same corner — buttons, icon buttons, chips, cards, list tiles, dialogs, sheets, menus, snackbars, segmented controls, inputs, and tooltips — through Flutter's `RoundedSuperellipseBorder`. Corners no longer break on narrow surfaces, and the tooltip takes ISpect's own colours instead of Material's light default.
-- **Diagnostics panel resting state:** The panel has two stages instead of three — parked at the screen edge or open — and parks whenever an ISpect screen opens, so it never covers the log viewer, the composer, or a plugin screen. A panel driven by a caller-supplied `DraggablePanelController` keeps its own placement.
-- **Layout inspector precision:** Runtime measurements now default to two decimal places; explicit `decimalPlaces` overrides remain supported.
-- **Deprecation schedule:** Deprecated compatibility aliases remain available through 7.x and are now scheduled for removal in 8.0.0.
-- **Useful diagnostics by default:** Core logs, traces, network and database payloads, BLoC, and Riverpod retain bounded application descriptions or structured `toJson()` snapshots after redaction. Exceptions, stack traces, and ordinary HTTP URLs are readable again.
-- **Explicit capture policy:** `DiagnosticCaptureMode.balanced` is the default for internal diagnostics. Select `strict` when application-defined `toJson()` and `toString()` methods must never run.
-- **Useful state diagnostics by default:** BLoC and Riverpod expose full bounded values after redaction; their `compact` presets now also select strict capture for coarse structural summaries.
-- **Readable database statements:** Normalized SQL names tables and columns again; literals, digits, and comments stay masked.
-- **Readable correlation ids:** UUIDs, trace ids, and content hashes stay readable after redaction, so requests, responses, and errors can still be correlated.
+- **Squircle surfaces:** Every ISpect surface draws the same corner — panel, buttons, chips, cards, list tiles, dialogs, sheets, menus, snackbars, segmented controls, inputs, and tooltips — and the tooltip takes ISpect's own colours instead of Material's light default.
+- **Diagnostics panel resting state:** The panel is either parked at the screen edge or open, and parks whenever an ISpect screen opens, so it never covers the log viewer, the composer, or a plugin screen. A caller-supplied `DraggablePanelController` keeps its own placement.
+- **Useful diagnostics by default:** Logs, traces, network and database payloads, BLoC, and Riverpod retain bounded descriptions or `toJson()` snapshots after redaction. Exceptions, stack traces, ordinary HTTP URLs, SQL table and column names, correlation ids, and route paths are readable again.
 - **Fewer false-positive masks:** Non-secret keys such as `cache_key`, `idempotency_key`, and a widget `key` stay readable, while credentials and `?key=` parameters remain masked.
-- **Readable route arguments:** Navigation entries keep their argument structure and non-secret fields after redaction; sensitive values inside are still masked.
-- **Native exports:** Persistent exports now use the application's private support directory.
+- **Explicit capture policy:** `DiagnosticCaptureMode.balanced` is the default; select `strict` when application-defined `toJson()` and `toString()` methods must never run. The BLoC and Riverpod `compact` presets now select strict capture.
 - **Network header capture:** `printRequestHeaders` and `printResponseHeaders` now default to `true` and are captured after redaction; set them to `false` or use `metadataOnly()` to opt out.
-- **Deferred payload masking:** Payloads are masked on first read instead of at capture, so entries nobody inspects cost far less — roughly a quarter of the previous cost for a 1 KB payload.
+- **Deferred payload masking:** Payloads are masked on first read instead of at capture, so entries nobody inspects cost far less.
+- **Layout inspector precision:** Runtime measurements now default to two decimal places; explicit `decimalPlaces` overrides remain supported.
+- **Native exports:** Persistent exports now use the application's private support directory.
 
 ### Security
 
 - **Unified redaction:** `ISpectRedaction.configure(...)` now controls masking across built-in logging, adapters, observers, persistence, and exports.
 - **Redacted full capture:** Network adapters capture headers and payloads by default after bounded redaction; use their `metadataOnly()` presets for stricter minimization.
-- **Strict hardening remains available:** Network `metadataOnly()` and `production()` presets, plus BLoC/Riverpod `compact`, avoid application-defined formatters. Builders and settings expose the same strict opt-in directly.
+- **Strict hardening remains available:** Network `metadataOnly()` and `production()` presets, plus BLoC/Riverpod `compact`, avoid application-defined formatters.
 - **Protected diagnostic data:** Imports, exports, clipboard, cURL, observers, and stored logs are bounded and redacted by default.
-- **Consistent diagnostic budgets:** Custom `DiagnosticResourceLimits` now remain authoritative through redaction, headers, replay results, observers, persistence, clipboard, and exports instead of falling back to balanced limits.
+- **Consistent diagnostic budgets:** Custom `DiagnosticResourceLimits` now remain authoritative through redaction, headers, replay results, observers, persistence, clipboard, and exports.
 - **Production gate:** Diagnostics remain inactive when `ISPECT_ENABLED` is omitted.
 
 ### Improvements
 
 - **Consistent diagnostics configuration:** Network settings and builders share one `NetworkInterceptorDefaults` contract, Dio and HTTP can reconfigure capture at runtime, and every integration can return to its logger-owned resource and redaction policy.
-- **Idle-build performance:** Caller-owned values are not captured or formatted when no history, stream listener, console sink, or observer can consume the entry.
-- **Faster log sharing:** Exports reuse the redaction already applied at capture, cutting a 100-entry JSON Lines share to roughly an eighth of its previous cost. Custom redaction services and imported logs are still redacted again.
+- **Configurable budgets:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` cover formatter isolation, data sizes, traversal, UI, batching, and search, and persist through `ISpectSettingsState`. The Settings sheet offers one-tap Capture, Resource, and Processing profiles.
+- **Faster logging and sharing:** Caller-owned values are not captured when no history, stream listener, console sink, or observer can consume the entry, and exports reuse the redaction already applied at capture.
 - **More complete diagnostic handoff:** Larger payload, record, and export budgets; exports report actual and truncated counts, and imports can report skipped records.
-- **Convenient diagnostic profiles:** Balanced defaults require no tuning; the Settings sheet offers one-tap Capture, Resource, and Processing profiles.
-- **Fully configurable budgets:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` cover formatter isolation, data sizes, traversal, UI, batching, and search, and persist through `ISpectSettingsState`.
 - **Clearer network diagnostics:** HTTP cards show larger body previews with explicit truncation cues and keep header names visible with redacted values behind a compact disclosure.
 - **Readable diagnostics panel:** The open panel carries a header with the `pageTitle` and a close control that parks it, and every action tile shows a localized caption under its icon.
 
@@ -56,7 +47,7 @@
 
 - **Exact typography inspection:** Text size, line height, letter spacing, and word spacing preserve hundredths without trailing zeroes, preventing values such as `0.25` from appearing as `0.3`.
 - **Reliable layout inspection:** Corrected RTL radii, fitted-box sizing, transformed padding and pivots, center-sliced image fit, color-filter handling, editable typography, flex/stack parent data, and omitted clip or directional layout fields.
-- **Apple file history:** Rolling history now initializes in iOS and macOS application cache sandboxes, and fallback diagnostics retain typed failure context without re-entering the logger pipeline.
+- **Apple file history:** Rolling history now initializes in iOS and macOS application cache sandboxes, and fallback diagnostics retain typed failure context.
 - **Concurrent diagnostics:** Fixed BLoC event correlation and stale asynchronous log-viewer updates.
 - **Reliable lifecycle:** Shutdown and forced reinitialization now clean up logger state consistently, including failure paths.
 - **Host error callbacks:** Flutter, platform, and zoned callbacks continue receiving the original error and stack trace.
@@ -64,14 +55,16 @@
 - **Network query visibility:** Dio and HTTP logs now include non-empty, redacted query parameters in the request URL across console, grouped, and ungrouped views.
 - **Stable bounded settings:** Runtime validation rejects invalid persisted capacities and inspector clipboard limits in release builds, and navigation transition equality no longer changes after logger reconfiguration.
 - **Base64 detection:** An ordinary diagnostic sentence is no longer replaced with a `[base64 ~NB]` placeholder.
-- **Readable route logs:** Navigation entries keep the route path, such as `/users/42`, and mask only query and fragment values.
-- **Uncluttered BLoC console lines:** BLoC entries no longer repeat a `[bloc]` prefix that the log header and log key already carry.
-- **Named BLoC and Riverpod diagnostics:** Balanced capture reports the concrete class — `AuthCubit`, `AuthLoading`, `counterProvider` — instead of family labels. The `compact` presets keep the coarse labels.
-- **Useful database console lines:** Database traces name the table, show the normalized SQL, and carry affected rows, item counts, size, and cache hits. Oversized statements still fall back to the opaque digest.
-- **Corrected documentation:** Fixed the documented `ispectify_db` defaults for `attachStackOnError` and `sampleRate`, and a `db-slow-query` entry that is never emitted.
-- **Persistent log type filters:** Log type toggles now survive reopening the settings sheet instead of reverting to the app-start values and overwriting stored settings. `Select All` and `Deselect All` take effect, and custom log types are no longer suppressed.
+- **Named BLoC and Riverpod diagnostics:** Balanced capture reports the concrete class — `AuthCubit`, `AuthLoading`, `counterProvider` — instead of family labels, and entries no longer repeat a `[bloc]` prefix the log header already carries.
+- **Useful database console lines:** Database traces name the table, show the normalized SQL, and carry affected rows, item counts, size, and cache hits.
+- **Persistent log type filters:** Log type toggles now survive reopening the settings sheet, `Select All` and `Deselect All` take effect, and custom log types are no longer suppressed.
 - **Disabled log types hidden immediately:** Turning a log type off now removes its entries from the viewer, the filter chips, and the error counters instead of only stopping future capture.
 - **Relative timestamps:** The `Relative time` toggle now applies to mobile log cards and grouped HTTP rows, not just the desktop table.
+- **Corrected documentation:** Fixed the documented `ispectify_db` defaults for `attachStackOnError` and `sampleRate`, and a `db-slow-query` entry that is never emitted.
+
+### Code Quality
+
+- **Deprecation schedule:** Deprecated compatibility aliases remain available through 7.x and are now scheduled for removal in 8.0.0.
 
 ## 6.1.7
 
