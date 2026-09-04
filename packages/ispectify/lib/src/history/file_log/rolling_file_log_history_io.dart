@@ -961,6 +961,7 @@ final class RollingFileLogHistory implements FileLogHistory {
         ),
         FileLogLayout.segmentName(0),
       );
+      await _retention.apply();
     } on FileLogHistoryException {
       rethrow;
     } catch (error, stackTrace) {

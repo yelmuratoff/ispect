@@ -8,6 +8,45 @@ import 'package:ispectify/src/history/file_log/rolling_file_log_history_io.dart'
 import 'package:test/test.dart';
 
 void main() {
+  test('applies retention on first access before any new record is written',
+      () async {
+    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    addTearDown(() => root.delete(recursive: true));
+    final seed = file_io.RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(
+        maxSessionDays: 10,
+        enableAutoSave: false,
+      ),
+    );
+    addTearDown(seed.dispose);
+    for (var day = 3; day <= 10; day++) {
+      seed.add(
+        ISpectLogData(
+          'day-$day',
+          id: 'ID-$day',
+          time: DateTime(2026, 7, day, 9),
+        ),
+      );
+    }
+    await seed.saveToDailyFile();
+
+    final history = file_io.RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(
+        maxSessionDays: 3,
+        enableAutoSave: false,
+      ),
+    );
+    addTearDown(history.dispose);
+
+    expect(await history.getAvailableLogDates(), [
+      for (var day = 8; day <= 10; day++) DateTime(2026, 7, day),
+    ]);
+  });
+
   test('keeps only the newest configured number of dates', () async {
     final root = await Directory.systemTemp.createTemp('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
