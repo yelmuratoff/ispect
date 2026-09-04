@@ -33,8 +33,22 @@
 - **Protected diagnostic data:** Imports, exports, clipboard, cURL, observers, and stored logs are bounded and redacted by default.
 - **Consistent diagnostic budgets:** Custom `DiagnosticResourceLimits` now remain authoritative through redaction, headers, replay results, observers, persistence, clipboard, and exports.
 - **Production gate:** Diagnostics remain inactive when `ISPECT_ENABLED` is omitted.
+- **URL path tokens:** Provider tokens and JWTs embedded in a URL path segment are masked in history, streams, and observers, not only in exports.
+- **Cancel-token capture:** Dio records whether a request carried a cancel token instead of the token object, so a custom `toString()` never runs under strict capture.
+- **Composer URL allowlist:** The HTTP composer accepts only `http` and `https` URLs.
 
 ### Improvements
+
+- **Diagnostics never break the host:** Dio, http, WebSocket, and database capture run inside `guardDiagnostics`; a throwing filter or an internal failure becomes a warning that names the error type.
+- **History bounds on reconfigure:** Lowering `maxHistoryItems` at runtime trims the retained entries.
+- **Faster hot paths:** Excluded log keys skip capture and redaction entirely; trace scalars, console headers, and network provenance each take one redaction pass; the layout inspector caches element lookups and coalesces hover samples per frame; the log list keys rows by id, re-renders only rows on relative-time ticks, and memoizes body previews.
+- **Adapter record shapes:** http error responses store their payload under `error-data` like Dio, and the Dio error record no longer duplicates the request blob at top level; read it from `response.request`.
+- **WebSocket correlation:** `onSent` and `onReceived` accept a `messageId` to pair a frame with its reply instead of the whole session.
+- **Shared adapter primitives:** `StateTracePreparer`, `BoundedByteBody`, `MultipartCapture`, `safeValueTypeLabel`, and `BaseNetworkInterceptorSettings.isRedactionActive` replace per-package copies.
+
+### Deprecations
+
+- `RedactionService.redactTarget`, `redactWithStats`, and `redactHeadersWithStats`; `ISpectLogData.header`; and the `static redact(...)` helpers on `ispectify_bloc` and `ispectify_riverpod` data classes are deprecated for removal in 8.0.0. See `docs/DEPRECATIONS.md`.
 
 - **Consistent diagnostics configuration:** Network settings and builders share one `NetworkInterceptorDefaults` contract, Dio and HTTP can reconfigure capture at runtime, and every integration can return to its logger-owned resource and redaction policy.
 - **Configurable budgets:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` cover formatter isolation, data sizes, traversal, UI, batching, and search, and persist through `ISpectSettingsState`. The Settings sheet offers one-tap Capture, Resource, and Processing profiles.

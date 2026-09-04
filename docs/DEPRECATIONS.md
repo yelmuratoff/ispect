@@ -19,6 +19,10 @@ the next major release so a patch or minor release cannot break consumers.
 | `kDefaultSensitiveKeys` | `defaultSensitiveKeys` | `8.0.0` | Backward-compatible constant alias. |
 | `redactedMask` | `defaultPlaceholder` | `8.0.0` | Redaction now uses one unified placeholder. |
 | `JsonValueNormalizer.normalize(stringifyUnknown:)` | `allowCustomSerialization` | `8.0.0` | Custom serialization must be an explicit opt-in; unknown values are never stringified. |
+| `RedactionService.redactTarget` | `RedactionService.redactUrl` on a configured service | `8.0.0` | The static helper built a throwaway service per call and had no consumer in the toolkit. |
+| `RedactionService.redactWithStats`, `RedactionService.redactHeadersWithStats` | `NetworkPayloadSanitizer.headersMapWithProvenance` / `bodyWithProvenance` | `8.0.0` | Redaction provenance is derived from the sanitizer pass that already runs. |
+| `ISpectLogData.header` | `HumanLogEntryFormatter` | `8.0.0` | The formatter is the single console line renderer; `header` lacked source, category, and correlation metadata. |
+| `static redact(...)` on `ispectify_bloc` and `ispectify_riverpod` data classes | `StateTracePreparer` | `8.0.0` | Observers prepare payloads through the shared preparer; the per-class helpers used weaker key-only masking. |
 
 ## Already removed
 
