@@ -353,8 +353,7 @@ class ISpectViewController implements Listenable {
     final previous = _cachedLevelStatsInput;
     if (cached != null &&
         identical(previous, logsData) &&
-        _cachedLevelStatsLength == logsData.length &&
-        _cachedLevelStatsGeneration == outputGeneration) {
+        _cachedLevelStatsLength == logsData.length) {
       return cached;
     }
 
@@ -363,7 +362,6 @@ class ISpectViewController implements Listenable {
     var start = 0;
     if (cached != null &&
         previous != null &&
-        _cachedLevelStatsGeneration == outputGeneration &&
         _isAppendOnlyExtension(previous, logsData)) {
       errors = cached.errors;
       warnings = cached.warnings;
@@ -383,7 +381,6 @@ class ISpectViewController implements Listenable {
     _cachedLevelStats = result;
     _cachedLevelStatsInput = logsData;
     _cachedLevelStatsLength = logsData.length;
-    _cachedLevelStatsGeneration = outputGeneration;
     return result;
   }
 
@@ -399,7 +396,6 @@ class ISpectViewController implements Listenable {
   ({int errors, int warnings})? _cachedLevelStats;
   List<ISpectLogData>? _cachedLevelStatsInput;
   int _cachedLevelStatsLength = -1;
-  int _cachedLevelStatsGeneration = -1;
 
   void handleLogTypeKeyFilterToggle(String key, {required bool isSelected}) =>
       _filterManager.handleLogTypeKeyFilterToggle(key, isSelected: isSelected);
