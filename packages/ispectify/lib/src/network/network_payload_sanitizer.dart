@@ -25,6 +25,25 @@ final class NetworkPayloadSanitizer {
     required bool enableRedaction,
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+  }) =>
+      headersMapWithProvenance(
+        headers,
+        enableRedaction: enableRedaction,
+        ignoredValues: ignoredValues,
+        ignoredKeys: ignoredKeys,
+      ).headers;
+
+  /// Like [headersMap], and also reports which header keys redaction changed.
+  ///
+  /// A key is reported when its value differs from the bounded input, or when
+  /// redaction introduced it. A failed redaction yields an empty map and no
+  /// reported keys.
+  ({Map<String, dynamic> headers, List<String> redactedKeys})
+      headersMapWithProvenance(
+    Map<dynamic, dynamic>? headers, {
+    required bool enableRedaction,
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
   }) {
     final redactionActive = enableRedaction && ISpectRedaction.enabled;
     final prepared = _boundedSnapshot(
@@ -37,7 +56,7 @@ final class NetworkPayloadSanitizer {
         ? Map<String, dynamic>.from(prepared)
         : <String, dynamic>{};
     final limited = _limitStringMap(typed, _resourceLimits.maxNetworkHeaders);
-    if (!redactionActive) return limited;
+    if (!redactionActive) return (headers: limited, redactedKeys: const []);
     try {
       final redacted = _redactor.redactHeaders(
         limited,
@@ -52,14 +71,21 @@ final class NetworkPayloadSanitizer {
         resourceLimits: _resourceLimits,
       );
       if (normalized is! Map<String, Object?>) {
-        return <String, dynamic>{};
+        return (headers: <String, dynamic>{}, redactedKeys: const []);
       }
-      return _limitStringMap(
+      final result = _limitStringMap(
         Map<String, dynamic>.from(normalized),
         _resourceLimits.maxNetworkHeaders,
       );
+      final redactedKeys = <String>[
+        for (final key in result.keys)
+          if (!limited.containsKey(key) ||
+              !jsonEquals(limited[key], result[key], _resourceLimits))
+            key,
+      ];
+      return (headers: result, redactedKeys: redactedKeys);
     } on Object {
-      return <String, dynamic>{};
+      return (headers: <String, dynamic>{}, redactedKeys: const []);
     }
   }
 
@@ -75,6 +101,25 @@ final class NetworkPayloadSanitizer {
   /// Redacts (if enabled) and returns the provided body, optionally applying
   /// a [normalizer] before redaction.
   Object? body(
+    Object? data, {
+    required bool enableRedaction,
+    Object? Function(Object? value)? normalizer,
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.strict,
+  }) =>
+      bodyWithProvenance(
+        data,
+        enableRedaction: enableRedaction,
+        normalizer: normalizer,
+        ignoredValues: ignoredValues,
+        ignoredKeys: ignoredKeys,
+        captureMode: captureMode,
+      ).body;
+
+  /// Like [body], and also reports whether redaction changed the bounded
+  /// input.
+  ({Object? body, bool redacted}) bodyWithProvenance(
     Object? data, {
     required bool enableRedaction,
     Object? Function(Object? value)? normalizer,
@@ -99,12 +144,56 @@ final class NetworkPayloadSanitizer {
             preserveTypes: redactionActive,
             resourceLimits: _resourceLimits,
           );
-    if (!redactionActive) return bounded;
-    return _redactBody(
+    if (!redactionActive) return (body: bounded, redacted: false);
+    final redacted = _redactBody(
       bounded,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
     );
+    return (
+      body: redacted,
+      redacted: !jsonEquals(bounded, redacted, _resourceLimits),
+    );
+  }
+
+  /// Structural equality over JSON-shaped values, bounded by
+  /// [DiagnosticResourceLimits.maxTraversalNodes].
+  static bool jsonEquals(
+    Object? left,
+    Object? right,
+    DiagnosticResourceLimits resourceLimits,
+  ) {
+    final pending = <(Object?, Object?)>[(left, right)];
+    var inspected = 0;
+    while (pending.isNotEmpty && inspected < resourceLimits.maxTraversalNodes) {
+      final (currentLeft, currentRight) = pending.removeLast();
+      inspected++;
+      if (identical(currentLeft, currentRight)) continue;
+      if (currentLeft == null ||
+          currentRight == null ||
+          currentLeft.runtimeType != currentRight.runtimeType) {
+        return false;
+      }
+      if (currentLeft is String || currentLeft is num || currentLeft is bool) {
+        if (currentLeft != currentRight) return false;
+      } else if (currentLeft is Map<String, Object?> &&
+          currentRight is Map<String, Object?>) {
+        if (currentLeft.length != currentRight.length) return false;
+        for (final entry in currentLeft.entries) {
+          if (!currentRight.containsKey(entry.key)) return false;
+          pending.add((entry.value, currentRight[entry.key]));
+        }
+      } else if (currentLeft is List<Object?> &&
+          currentRight is List<Object?>) {
+        if (currentLeft.length != currentRight.length) return false;
+        for (var index = 0; index < currentLeft.length; index++) {
+          pending.add((currentLeft[index], currentRight[index]));
+        }
+      } else {
+        return false;
+      }
+    }
+    return pending.isEmpty;
   }
 
   /// Ensures the value is represented as a string-keyed map. Non-map values are

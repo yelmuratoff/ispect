@@ -57,15 +57,10 @@ abstract final class NetworkMapRedactor {
     if (raw == null) return null;
     if (raw is! Map) return null;
 
-    final sanitizer = NetworkPayloadSanitizer(
+    final (headers: redacted, :redactedKeys) = NetworkPayloadSanitizer(
       redactor,
       resourceLimits: resourceLimits,
-    );
-    final prepared = sanitizer.headersMap(
-      raw,
-      enableRedaction: false,
-    );
-    final redacted = sanitizer.headersMap(
+    ).headersMapWithProvenance(
       raw,
       enableRedaction: true,
       ignoredValues: ignoredValues,
@@ -73,23 +68,8 @@ abstract final class NetworkMapRedactor {
     );
 
     map[key] = redacted;
-    if (ISpectRedaction.enabled) {
-      final changedKeys = redacted.keys.where(
-        (header) =>
-            !prepared.containsKey(header) ||
-            !_safeJsonEquals(
-              prepared[header],
-              redacted[header],
-              resourceLimits,
-            ),
-      );
-      if (changedKeys.isNotEmpty) {
-        _markRedaction(
-          map,
-          NetworkJsonKeys.redactedHeaderKeys,
-          changedKeys.toList(growable: false),
-        );
-      }
+    if (redactedKeys.isNotEmpty) {
+      _markRedaction(map, NetworkJsonKeys.redactedHeaderKeys, redactedKeys);
     }
     return redacted;
   }
@@ -107,23 +87,17 @@ abstract final class NetworkMapRedactor {
   }) {
     if (!map.containsKey(key)) return;
     final raw = map[key];
-    final sanitizer = NetworkPayloadSanitizer(
+    final (body: redacted, redacted: changed) = NetworkPayloadSanitizer(
       redactor,
       resourceLimits: resourceLimits,
-    );
-    final prepared = sanitizer.body(
-      raw,
-      enableRedaction: false,
-    );
-    final redacted = sanitizer.body(
+    ).bodyWithProvenance(
       raw,
       enableRedaction: true,
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
     );
     map[key] = redacted;
-    if (ISpectRedaction.enabled &&
-        !_safeJsonEquals(prepared, redacted, resourceLimits)) {
+    if (changed) {
       _markRedaction(map, NetworkJsonKeys.bodyRedacted, true);
     }
   }
@@ -192,7 +166,11 @@ abstract final class NetworkMapRedactor {
         : <String, dynamic>{};
     if (redactionActive &&
         key == NetworkJsonKeys.queryParameters &&
-        !_safeJsonEquals(prepared, map[key], resourceLimits)) {
+        !NetworkPayloadSanitizer.jsonEquals(
+          prepared,
+          map[key],
+          resourceLimits,
+        )) {
       _markRedaction(map, NetworkJsonKeys.queryRedacted, true);
     }
   }
@@ -217,44 +195,6 @@ abstract final class NetworkMapRedactor {
       provenance[key] = value;
     }
     map[NetworkJsonKeys.redactionProvenance] = provenance;
-  }
-
-  static bool _safeJsonEquals(
-    Object? left,
-    Object? right,
-    DiagnosticResourceLimits resourceLimits,
-  ) {
-    final pending = <(Object?, Object?)>[(left, right)];
-    var inspected = 0;
-    while (pending.isNotEmpty && inspected < resourceLimits.maxTraversalNodes) {
-      final (currentLeft, currentRight) = pending.removeLast();
-      inspected++;
-      if (identical(currentLeft, currentRight)) continue;
-      if (currentLeft == null ||
-          currentRight == null ||
-          currentLeft.runtimeType != currentRight.runtimeType) {
-        return false;
-      }
-      if (currentLeft is String || currentLeft is num || currentLeft is bool) {
-        if (currentLeft != currentRight) return false;
-      } else if (currentLeft is Map<String, Object?> &&
-          currentRight is Map<String, Object?>) {
-        if (currentLeft.length != currentRight.length) return false;
-        for (final entry in currentLeft.entries) {
-          if (!currentRight.containsKey(entry.key)) return false;
-          pending.add((entry.value, currentRight[entry.key]));
-        }
-      } else if (currentLeft is List<Object?> &&
-          currentRight is List<Object?>) {
-        if (currentLeft.length != currentRight.length) return false;
-        for (var index = 0; index < currentLeft.length; index++) {
-          pending.add((currentLeft[index], currentRight[index]));
-        }
-      } else {
-        return false;
-      }
-    }
-    return pending.isEmpty;
   }
 
   static Map<String, Object?> _extractPreservedValues(
