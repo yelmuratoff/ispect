@@ -12,6 +12,8 @@
 - **Custom redaction services:** Overrides of `RedactionService.redactForExport`, `redactEnvelopeForExport`, or `redactHeaders` must accept the optional `resourceLimits` parameter.
 - **Custom diagnostics settings:** Overrides of network, trace, BLoC, or Riverpod `copyWith`/`configure` methods must accept the new optional capture and inheritance parameters.
 - **Observer payloads:** Observers receive the redacted entry, with exception, error, and stack trace as scrubbed text. `ISpect.run`'s error callbacks still receive the originals for crash reporting.
+- **`WsDiagnosticsSink` implementers:** `onSent` and `onReceived` gained an optional `messageId` parameter; a class that implements the sink interface must declare it. Callers are unaffected.
+- **http error records:** Error responses store their payload under `error-data`, matching Dio; readers keyed on `response-data` for 4xx/5xx entries must check both keys.
 
 ### Behavioral Changes
 
