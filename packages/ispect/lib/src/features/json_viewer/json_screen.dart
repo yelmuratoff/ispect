@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/debug_report.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -16,6 +17,7 @@ import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
 import 'package:ispect/src/features/json_viewer/widgets/store_selector.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/search_bar.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
@@ -493,12 +495,10 @@ class _SearchNavigation extends StatelessWidget {
             onPressed: () {
               store.focusPreviousSearchResult(loop: true);
               unawaited(
-                scrollToSearchMatch(store).catchError((Object error) {
-                  assert(() {
-                    debugPrint('scrollToSearchMatch failed: $error');
-                    return true;
-                  }());
-                }),
+                scrollToSearchMatch(store).catchError(
+                  (Object error) =>
+                      debugReportFailure('scrollToSearchMatch failed', error),
+                ),
               );
             },
           ),
@@ -518,12 +518,10 @@ class _SearchNavigation extends StatelessWidget {
             onPressed: () {
               store.focusNextSearchResult(loop: true);
               unawaited(
-                scrollToSearchMatch(store).catchError((Object error) {
-                  assert(() {
-                    debugPrint('scrollToSearchMatch failed: $error');
-                    return true;
-                  }());
-                }),
+                scrollToSearchMatch(store).catchError(
+                  (Object error) =>
+                      debugReportFailure('scrollToSearchMatch failed', error),
+                ),
               );
             },
           ),
@@ -636,9 +634,7 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
                     vertical: 2,
                   ),
                   child: Text(
-                    d.inMilliseconds < 1000
-                        ? '${d.inMilliseconds}ms'
-                        : '${(d.inMilliseconds / 1000).toStringAsFixed(1)}s',
+                    formatTransactionDuration(d),
                     style: TextStyle(
                       color: context.appTheme.textColor.withValues(alpha: 0.5),
                       fontSize: 10,

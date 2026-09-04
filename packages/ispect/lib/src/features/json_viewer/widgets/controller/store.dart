@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
 
+import 'package:ispect/src/common/utils/debug_report.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/services/json_cache_service.dart';
@@ -154,10 +155,7 @@ class JsonExplorerStore extends ChangeNotifier {
           _isSearching = false;
           notifyListeners();
         }
-        assert(() {
-          debugPrint('JsonExplorerStore: search failed: $error');
-          return true;
-        }());
+        debugReportFailure('JsonExplorerStore: search failed', error);
       }),
     );
   }

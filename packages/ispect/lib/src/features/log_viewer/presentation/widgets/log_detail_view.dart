@@ -6,6 +6,7 @@ import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 
 /// Detail view widget for displaying selected log data.
 ///
@@ -429,9 +430,7 @@ class _DurationChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = duration.inMilliseconds < 1000
-        ? '${duration.inMilliseconds}ms'
-        : '${(duration.inMilliseconds / 1000).toStringAsFixed(1)}s';
+    final text = formatTransactionDuration(duration);
     return DecoratedBox(
       decoration: ISpectSquircle.decoration(
         color: context.appTheme.textColor.withValues(alpha: 0.08),

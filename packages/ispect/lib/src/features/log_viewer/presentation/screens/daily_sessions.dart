@@ -7,6 +7,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/debug_report.dart';
 import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
@@ -310,12 +311,9 @@ class _SessionListTileState extends State<_SessionListTile> {
     final path = await fileLogHistory?.getLogPathByDate(session);
     if (path != null && openFile != null) {
       unawaited(
-        openFile(path).catchError((Object error) {
-          assert(() {
-            debugPrint('Failed to open file: $error');
-            return true;
-          }());
-        }),
+        openFile(path).catchError(
+          (Object error) => debugReportFailure('Failed to open file', error),
+        ),
       );
     }
   }

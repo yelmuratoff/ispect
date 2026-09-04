@@ -6,6 +6,7 @@ import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/debug_report.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
@@ -212,12 +213,12 @@ class _ActionButtons extends StatelessWidget {
                           action = SnackBarAction(
                             label: capturedL10n.openPath,
                             onPressed: () {
-                              onOpenFile(path).catchError((Object error) {
-                                assert(() {
-                                  debugPrint('Failed to open file: $error');
-                                  return true;
-                                }());
-                              });
+                              onOpenFile(path).catchError(
+                                (Object error) => debugReportFailure(
+                                  'Failed to open file',
+                                  error,
+                                ),
+                              );
                             },
                           );
                         } else {

@@ -171,19 +171,21 @@ class _MainLogsViewState extends State<MainLogsView> {
     final isFiltered = filteredLogEntries.length != widget.logsData.length;
 
     final liveLogsLength = widget.logsData.length;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (matchesToCommit != null) {
-        widget.logsViewController.updateSearchMatches(matchesToCommit);
-      }
-      _controller.checkForNewLogs(
-        liveLogsLength,
-        isDesktop: isDesktop,
-        onMount: () {
-          if (mounted) _controller.scrollToNewest();
-        },
-      );
-    });
+    if (matchesToCommit != null || liveLogsLength != _controller.lastLogCount) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (matchesToCommit != null) {
+          widget.logsViewController.updateSearchMatches(matchesToCommit);
+        }
+        _controller.checkForNewLogs(
+          liveLogsLength,
+          isDesktop: isDesktop,
+          onMount: () {
+            if (mounted) _controller.scrollToNewest();
+          },
+        );
+      });
+    }
 
     // Sort column/direction as ints for the header
     final sortColumnIdx = widget.logsViewController.sortColumn.index;
