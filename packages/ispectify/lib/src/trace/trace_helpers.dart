@@ -1,6 +1,7 @@
 import 'package:ispectify/src/history/serialization.dart';
 import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/models/data.dart';
+import 'package:ispectify/src/utils/safe_object_description.dart';
 import 'package:ispectify/src/utils/string_extension.dart';
 
 /// Truncates [value] to [maxLen] characters if it is a [String].
@@ -57,9 +58,35 @@ void safeTrace(
   try {
     final data = builder();
     logger.logData(data, redact: redact);
-  } catch (_) {
-    try {
-      logger.warning('Trace builder failed safely.');
-    } catch (_) {}
+  } catch (error) {
+    _warnSafely(logger, 'Trace builder failed safely', error);
   }
+}
+
+/// Runs [action] and reports a thrown failure as a warning on [logger]
+/// instead of propagating it into the host application.
+///
+/// [what] names the diagnostic step in the warning. Only the runtime type of
+/// the failure is reported, so the warning never carries caller data.
+void guardDiagnostics(
+  ISpectLogger logger,
+  void Function() action, {
+  required String what,
+}) {
+  try {
+    action();
+  } catch (error) {
+    _warnSafely(logger, '$what failed safely', error);
+  }
+}
+
+void _warnSafely(ISpectLogger logger, String message, Object error) {
+  try {
+    final type = describeRuntimeType(
+      error,
+      captureMode: logger.options.captureMode,
+      fallback: 'unknown error',
+    );
+    logger.warning('$message: $type');
+  } catch (_) {}
 }

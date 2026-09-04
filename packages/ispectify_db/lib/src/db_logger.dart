@@ -55,6 +55,70 @@ extension ISpectLoggerDb on ISpectLogger {
     ISpectDbConfig config = const ISpectDbConfig(),
   }) {
     if (!hasActiveConsumers) return;
+    guardDiagnostics(
+      this,
+      () => _captureDb(
+        source: source,
+        operation: operation,
+        statement: statement,
+        args: args,
+        namedArgs: namedArgs,
+        table: table,
+        target: target,
+        key: key,
+        value: value,
+        error: error,
+        success: success,
+        affected: affected,
+        items: items,
+        sizeBytes: sizeBytes,
+        cacheHit: cacheHit,
+        duration: duration,
+        meta: meta,
+        projection: projection,
+        sample: sample,
+        redact: redact,
+        redactKeys: redactKeys,
+        maxValueLength: maxValueLength,
+        maxArgsLength: maxArgsLength,
+        maxStatementLength: maxStatementLength,
+        transactionId: transactionId,
+        errorStackTrace: errorStackTrace,
+        config: config,
+      ),
+      what: 'Database trace capture',
+    );
+  }
+
+  void _captureDb({
+    required String source,
+    required String operation,
+    required String? statement,
+    required List<Object?>? args,
+    required Map<String, Object?>? namedArgs,
+    required String? table,
+    required String? target,
+    required String? key,
+    required Object? value,
+    required Object? error,
+    required bool? success,
+    required int? affected,
+    required int? items,
+    required int? sizeBytes,
+    required bool? cacheHit,
+    required Duration? duration,
+    required Map<String, Object?>? meta,
+    required Object? projection,
+    required double? sample,
+    required bool? redact,
+    required List<String>? redactKeys,
+    required int? maxValueLength,
+    required int? maxArgsLength,
+    required int? maxStatementLength,
+    required String? transactionId,
+    required StackTrace? errorStackTrace,
+    required ISpectDbConfig config,
+  }) {
     final resolvedConfig = _resolveResourceConfig(config);
     if (!ISpectDbCore.shouldLog(sample, resolvedConfig)) return;
 
@@ -308,17 +372,17 @@ extension ISpectLoggerDb on ISpectLogger {
     required T Function() getResult,
   }) {
     if (!hasActiveConsumers) return;
-    final resolvedConfig = _resolveResourceConfig(config);
-    final success = err == null;
-    final items = _safeItemCount(
-      success,
-      itemsCountFromLength,
-      getResult,
-    );
-    if (!hasActiveConsumers) return;
-    final projected = _safeProject(success, projectResult, getResult);
-    if (!hasActiveConsumers) return;
-    try {
+    guardDiagnostics(this, what: 'Database trace capture', () {
+      final resolvedConfig = _resolveResourceConfig(config);
+      final success = err == null;
+      final items = _safeItemCount(
+        success,
+        itemsCountFromLength,
+        getResult,
+      );
+      if (!hasActiveConsumers) return;
+      final projected = _safeProject(success, projectResult, getResult);
+      if (!hasActiveConsumers) return;
       final resolvedTarget = target ??
           DbSqlDigest.tableOf(
             statement,
@@ -407,13 +471,7 @@ extension ISpectLoggerDb on ISpectLogger {
           success: success,
         ),
       );
-    } catch (_) {
-      assert(() {
-        // ignore: avoid_print
-        print('ISpectDbTrace: logging failed safely.');
-        return true;
-      }());
-    }
+    });
   }
 
   static String _buildDbConsoleMessage({

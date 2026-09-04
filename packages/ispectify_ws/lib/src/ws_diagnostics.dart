@@ -75,14 +75,43 @@ final class WsDiagnostics
 
   @override
   void onSent(Object data, {String? url, Map<String, Object?>? metrics}) =>
-      _emitFrame(data: data, isSend: true, rawUrl: url, metrics: metrics);
+      guardDiagnostics(
+        _logger,
+        () => _emitFrame(
+          data: data,
+          isSend: true,
+          rawUrl: url,
+          metrics: metrics,
+        ),
+        what: 'WebSocket send capture',
+      );
 
   @override
   void onReceived(Object data, {String? url, Map<String, Object?>? metrics}) =>
-      _emitFrame(data: data, isSend: false, rawUrl: url, metrics: metrics);
+      guardDiagnostics(
+        _logger,
+        () => _emitFrame(
+          data: data,
+          isSend: false,
+          rawUrl: url,
+          metrics: metrics,
+        ),
+        what: 'WebSocket receive capture',
+      );
 
   @override
-  void onStateChanged(WsConnectionState state, {String? url, Object? raw}) {
+  void onStateChanged(WsConnectionState state, {String? url, Object? raw}) =>
+      guardDiagnostics(
+        _logger,
+        () => _captureStateChange(state, url: url, raw: raw),
+        what: 'WebSocket state capture',
+      );
+
+  void _captureStateChange(
+    WsConnectionState state, {
+    required String? url,
+    required Object? raw,
+  }) {
     if (!_captureEnabled) return;
     if (!settings.logRequests && !settings.logResponses) return;
 
@@ -112,7 +141,18 @@ final class WsDiagnostics
   }
 
   @override
-  void onError(Object error, StackTrace stackTrace, {String? url}) {
+  void onError(Object error, StackTrace stackTrace, {String? url}) =>
+      guardDiagnostics(
+        _logger,
+        () => _captureError(error, stackTrace, url: url),
+        what: 'WebSocket error capture',
+      );
+
+  void _captureError(
+    Object error,
+    StackTrace stackTrace, {
+    required String? url,
+  }) {
     if (!_captureEnabled) return;
 
     final correlationId = _correlationId;

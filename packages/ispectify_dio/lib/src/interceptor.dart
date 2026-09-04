@@ -71,17 +71,20 @@ class ISpectDioInterceptor extends Interceptor
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) {
-    if (!_captureEnabled) {
-      super.onRequest(options, handler);
-      return;
-    }
+    guardDiagnostics(
+      _logger,
+      () => _captureRequest(options),
+      what: 'Dio request capture',
+    );
+    super.onRequest(options, handler);
+  }
+
+  void _captureRequest(RequestOptions options) {
+    if (!_captureEnabled) return;
 
     final logRequest =
         settings.logRequests && settings.shouldProcessRequest(options);
-    if (!_captureEnabled) {
-      super.onRequest(options, handler);
-      return;
-    }
+    if (!_captureEnabled) return;
 
     final requestId = generateTraceId();
     // RequestOptions copies carry extra, unlike Expando state.
@@ -89,20 +92,14 @@ class ISpectDioInterceptor extends Interceptor
     options.extra[NetworkJsonKeys.ispectRequestStartedAt] =
         DateTime.now().microsecondsSinceEpoch;
 
-    if (!logRequest || !_requestCaptureEnabled) {
-      super.onRequest(options, handler);
-      return;
-    }
+    if (!logRequest || !_requestCaptureEnabled) return;
 
     final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
     final operation = redactDiagnosticText(
       options.method,
       useRedaction: redactionActive,
     );
-    if (!_requestCaptureEnabled) {
-      super.onRequest(options, handler);
-      return;
-    }
+    if (!_requestCaptureEnabled) return;
 
     final requestData = DioRequestData(
       options,
@@ -112,10 +109,7 @@ class ISpectDioInterceptor extends Interceptor
     final url = uriSnapshot.isTrusted
         ? redactUrl(uriSnapshot.url, useRedaction: redactionActive)
         : uriSnapshot.url;
-    if (!_requestCaptureEnabled) {
-      super.onRequest(options, handler);
-      return;
-    }
+    if (!_requestCaptureEnabled) return;
 
     final requestDataJson = requestData.toJson(
       includeData: settings.printRequestData,
@@ -123,10 +117,7 @@ class ISpectDioInterceptor extends Interceptor
       redactionActive: redactionActive,
       captureMode: settings.captureMode,
     );
-    if (!_requestCaptureEnabled) {
-      super.onRequest(options, handler);
-      return;
-    }
+    if (!_requestCaptureEnabled) return;
     if (redactionActive) {
       DioRequestData.redact(
         requestDataJson,
@@ -135,10 +126,7 @@ class ISpectDioInterceptor extends Interceptor
       );
     }
 
-    if (!_requestCaptureEnabled) {
-      super.onRequest(options, handler);
-      return;
-    }
+    if (!_requestCaptureEnabled) return;
     _logger.httpRequest(
       source: 'dio',
       operation: operation,
@@ -154,8 +142,6 @@ class ISpectDioInterceptor extends Interceptor
         },
       },
     );
-
-    super.onRequest(options, handler);
   }
 
   @override
@@ -164,6 +150,14 @@ class ISpectDioInterceptor extends Interceptor
     ResponseInterceptorHandler handler,
   ) {
     super.onResponse(response, handler);
+    guardDiagnostics(
+      _logger,
+      () => _captureResponse(response),
+      what: 'Dio response capture',
+    );
+  }
+
+  void _captureResponse(Response<dynamic> response) {
     if (!_responseCaptureEnabled) return;
     if (!settings.shouldProcessResponse(response)) return;
     if (!_responseCaptureEnabled) return;
@@ -234,6 +228,14 @@ class ISpectDioInterceptor extends Interceptor
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     super.onError(err, handler);
+    guardDiagnostics(
+      _logger,
+      () => _captureError(err),
+      what: 'Dio error capture',
+    );
+  }
+
+  void _captureError(DioException err) {
     if (!_captureEnabled || !settings.shouldProcessError(err)) {
       return;
     }

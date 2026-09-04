@@ -92,34 +92,39 @@ class ISpectHttpInterceptor
   Future<BaseRequest> interceptRequest({
     required BaseRequest request,
   }) async {
-    if (!_captureEnabled) {
-      return request;
-    }
+    guardDiagnostics(
+      _logger,
+      () => _captureRequest(request),
+      what: 'http request capture',
+    );
+    return request;
+  }
+
+  void _captureRequest(BaseRequest request) {
+    if (!_captureEnabled) return;
 
     final logRequest =
         settings.logRequests && settings.shouldProcessRequest(request);
-    if (!_captureEnabled) {
-      return request;
-    }
+    if (!_captureEnabled) return;
 
     final requestId = generateTraceId();
     _requestIds[request] = requestId;
     _stopwatches[request] = Stopwatch()..start();
 
-    if (!logRequest || !_requestCaptureEnabled) return request;
+    if (!logRequest || !_requestCaptureEnabled) return;
 
     final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
     final operation = redactDiagnosticText(
       request.method,
       useRedaction: redactionActive,
     );
-    if (!_requestCaptureEnabled) return request;
+    if (!_requestCaptureEnabled) return;
 
     final (:url, path: _) = redactUrlAndPath(
       request.url,
       useRedaction: redactionActive,
     );
-    if (!_requestCaptureEnabled) return request;
+    if (!_requestCaptureEnabled) return;
 
     final requestDataJson = HttpRequestData(
       request,
@@ -130,7 +135,7 @@ class ISpectHttpInterceptor
       redactionActive: redactionActive,
       captureMode: settings.captureMode,
     );
-    if (!_requestCaptureEnabled) return request;
+    if (!_requestCaptureEnabled) return;
     if (redactionActive) {
       HttpRequestData.redact(
         requestDataJson,
@@ -139,7 +144,7 @@ class ISpectHttpInterceptor
       );
     }
 
-    if (!_requestCaptureEnabled) return request;
+    if (!_requestCaptureEnabled) return;
     _logger.httpRequest(
       source: 'http',
       operation: operation,
@@ -155,26 +160,34 @@ class ISpectHttpInterceptor
         },
       },
     );
-    return request;
   }
 
   @override
   Future<BaseResponse> interceptResponse({
     required BaseResponse response,
   }) async {
-    if (!_captureEnabled) return response;
+    guardDiagnostics(
+      _logger,
+      () => _captureResponse(response),
+      what: 'http response capture',
+    );
+    return response;
+  }
+
+  void _captureResponse(BaseResponse response) {
+    if (!_captureEnabled) return;
 
     final isErrorResponse =
         response.statusCode >= 400 && response.statusCode < 600;
 
     if (!isErrorResponse &&
         (!settings.logResponses || !settings.shouldProcessResponse(response))) {
-      return response;
+      return;
     }
     if (isErrorResponse && !settings.shouldProcessError(response)) {
-      return response;
+      return;
     }
-    if (!_captureResponseEnabled(isErrorResponse)) return response;
+    if (!_captureResponseEnabled(isErrorResponse)) return;
 
     final request = response.request;
     final requestId = request != null ? _requestIds[request] : null;
@@ -187,13 +200,13 @@ class ISpectHttpInterceptor
       method,
       useRedaction: redactionActive,
     );
-    if (!_captureResponseEnabled(isErrorResponse)) return response;
+    if (!_captureResponseEnabled(isErrorResponse)) return;
 
     final requestUrl = request?.url;
     final (:url, path: _) = requestUrl != null
         ? redactUrlAndPath(requestUrl, useRedaction: redactionActive)
         : (url: '', path: '');
-    if (!_captureResponseEnabled(isErrorResponse)) return response;
+    if (!_captureResponseEnabled(isErrorResponse)) return;
 
     final includeResponseData =
         isErrorResponse ? settings.printErrorData : settings.printResponseData;
@@ -222,7 +235,7 @@ class ISpectHttpInterceptor
       redactionActive: redactionActive,
       captureMode: settings.captureMode,
     );
-    if (!_captureResponseEnabled(isErrorResponse)) return response;
+    if (!_captureResponseEnabled(isErrorResponse)) return;
     if (redactionActive) {
       HttpResponseData.redact(
         responseDataJson,
@@ -231,14 +244,14 @@ class ISpectHttpInterceptor
       );
     }
 
-    if (!_captureResponseEnabled(isErrorResponse)) return response;
+    if (!_captureResponseEnabled(isErrorResponse)) return;
     final baseMeta = <String, Object?>{
       if (requestId != null) NetworkJsonKeys.requestId: requestId,
       NetworkJsonKeys.statusCode: response.statusCode,
       NetworkJsonKeys.responseData: responseDataJson,
     };
 
-    if (!_captureResponseEnabled(isErrorResponse)) return response;
+    if (!_captureResponseEnabled(isErrorResponse)) return;
     if (isErrorResponse) {
       _logger.httpError(
         source: 'http',
@@ -274,7 +287,5 @@ class ISpectHttpInterceptor
         },
       );
     }
-
-    return response;
   }
 }

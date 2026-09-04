@@ -7,6 +7,7 @@ import 'package:ispectify/src/logger/logger.dart';
 import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/log_level.dart';
 import 'package:ispectify/src/options.dart';
+import 'package:ispectify/src/utils/safe_object_description.dart';
 import 'package:ispectify/src/utils/string_extension.dart';
 
 /// Coordinates fan-out of accepted log entries to the stream, history, and
@@ -51,7 +52,13 @@ final class LogPipeline {
     if (!_options.enabled) return false;
     try {
       return _filter?.apply(data) ?? true;
-    } catch (_) {
+    } catch (error) {
+      final type = describeRuntimeType(
+        error,
+        captureMode: _options.captureMode,
+        fallback: 'unknown error',
+      );
+      log('[ISpect] Filter threw $type; entry dropped.');
       return false;
     }
   }

@@ -1367,8 +1367,15 @@ void main() {
     );
 
     expect(logger.history, hasLength(1));
-    expect(logger.history.single.message, 'Trace builder failed safely.');
+    expect(
+      logger.history.single.message,
+      'Trace builder failed safely: StateError',
+    );
     expect(logger.history.single.message, isNot(contains('trace_test.dart')));
+    expect(
+      logger.history.single.message,
+      isNot(contains('TRACE_BUILDER_SECRET')),
+    );
   });
 
   // ── Domain extensions ────────────────────────────────────────────

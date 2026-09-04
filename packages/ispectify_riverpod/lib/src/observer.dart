@@ -88,7 +88,10 @@ class ISpectRiverpodObserver extends ProviderObserver {
       return false;
     }
     for (final pattern in filters) {
-      final matches = providerName.contains(pattern);
+      var matches = false;
+      try {
+        matches = providerName.contains(pattern);
+      } catch (_) {}
       if (!_loggingEnabled) return true;
       if (matches) {
         return true;

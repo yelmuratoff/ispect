@@ -85,6 +85,7 @@ export 'src/trace/trace_category.dart';
 export 'src/trace/trace_category_ids.dart';
 export 'src/trace/trace_config.dart';
 export 'src/trace/trace_extension.dart';
+export 'src/trace/trace_helpers.dart' show guardDiagnostics;
 export 'src/trace/trace_keys.dart';
 export 'src/trace/trace_token.dart';
 export 'src/utils/common_utils.dart';
