@@ -310,8 +310,19 @@ final class DiagnosticResourceLimits {
         'max_console_stack_trace_frames': maxConsoleStackTraceFrames,
       };
 
+  static final Expando<bool> _validated = Expando<bool>('validated');
+
   /// Throws [ArgumentError] when a limit is unsafe or internally inconsistent.
+  ///
+  /// The result is memoized per instance, so repeated calls on a shared
+  /// preset cost one lookup.
   void validate() {
+    if (_validated[this] ?? false) return;
+    _runValidation();
+    _validated[this] = true;
+  }
+
+  void _runValidation() {
     _requireRange(
       maxCapturedValueBytes,
       'maxCapturedValueBytes',
