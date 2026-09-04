@@ -10,16 +10,21 @@ final class ObserverRegistry {
   final LinkedHashSet<ISpectObserver> _observers =
       LinkedHashSet<ISpectObserver>();
 
+  List<ISpectObserver> _snapshot = const <ISpectObserver>[];
+
   bool get hasObservers => _observers.isNotEmpty;
 
-  void clear() => _observers.clear();
+  void clear() {
+    _observers.clear();
+    _refreshSnapshot();
+  }
 
   void add(ISpectObserver observer) {
-    _observers.add(observer);
+    if (_observers.add(observer)) _refreshSnapshot();
   }
 
   void remove(ISpectObserver observer) {
-    _observers.remove(observer);
+    if (_observers.remove(observer)) _refreshSnapshot();
   }
 
   /// Replaces all observers with a single [observer]. If [observer] is null,
@@ -29,6 +34,11 @@ final class ObserverRegistry {
     if (observer != null) {
       _observers.add(observer);
     }
+    _refreshSnapshot();
+  }
+
+  void _refreshSnapshot() {
+    _snapshot = List<ISpectObserver>.unmodifiable(_observers);
   }
 
   /// Registers an observer and returns a disposer to remove it later.
@@ -44,7 +54,7 @@ final class ObserverRegistry {
     ISpectBaseLogger consoleLogger,
   ) {
     if (_observers.isEmpty) return;
-    for (final observer in List<ISpectObserver>.of(_observers)) {
+    for (final observer in _snapshot) {
       try {
         notify(observer);
       } catch (_) {
