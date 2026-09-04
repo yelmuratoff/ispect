@@ -1,13 +1,14 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
-import 'package:ispectify/src/redaction/key_canonicalizer.dart';
 import 'package:ispectify/src/redaction/map_key.dart';
 import 'package:ispectify/src/redaction/redaction_config.dart';
 import 'package:ispectify/src/redaction/redaction_request.dart';
 import 'package:ispectify/src/redaction/redaction_walker.dart';
+import 'package:ispectify/src/redaction/scrub/assignment_tokenizer.dart';
+import 'package:ispectify/src/redaction/scrub/export_string_scrubber.dart';
+import 'package:ispectify/src/redaction/scrub/url_redactor.dart';
 
 export 'package:ispectify/src/redaction/constants/key_defaults.dart';
 
@@ -102,8 +103,17 @@ class RedactionService {
   int _configurationRevision = 0;
   final bool _usesDefaultStrategy;
   final RedactionStrategy _strategy;
-  late final _ExportKeyPatterns? _exportKeyPatterns =
-      _exportPatternsFor(_config.sensitiveKeysLower);
+  late final ExportKeyPatterns? _exportKeyPatterns =
+      ExportStringScrubber.patternsFor(_config.sensitiveKeysLower);
+  late final UrlRedactor _urlRedactor = UrlRedactor(
+    placeholder: () => _config.placeholder,
+    exportKeyPatterns: () => _exportKeyPatterns,
+    keyMatcher: () => _configuredKeyMatcher(
+      ignoredValues: null,
+      ignoredKeys: null,
+    ),
+    redactValue: (value, keyName) => redact(value, keyName: keyName),
+  );
 
   /// Monotonically increases whenever an ignore-list mutation method is
   /// invoked, allowing cached redacted views to detect policy updates.
@@ -452,7 +462,7 @@ class RedactionService {
               prepared is num ||
               prepared is String &&
                   prepared.length < 32 &&
-                  !_requiresExportStringScrub(prepared))) {
+                  !ExportStringScrubber.requiresScrub(prepared))) {
         return prepared;
       }
       final structurallyRedacted = _redactNormalizedForExport(
@@ -527,7 +537,7 @@ class RedactionService {
 
   Object? _scrubExportValue(
     Object? value,
-    _ExportKeyPatterns? patterns, {
+    ExportKeyPatterns? patterns, {
     required Set<String>? ignoredValues,
     required Set<String>? ignoredKeys,
   }) {
@@ -538,13 +548,13 @@ class RedactionService {
     // list here would eagerly materialize the complete buffer first.
     if (value is TypedData || value is ByteBuffer) return value;
     if (value is String) {
-      if (!_requiresExportStringScrub(value)) return value;
+      if (!ExportStringScrubber.requiresScrub(value)) return value;
       final assignmentRedacted = _redactClassifiedAssignments(
         redactUrlsInText(value),
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
-      final queryRedacted = _maskQueryParameters(
+      final queryRedacted = AssignmentTokenizer.maskQueryParameters(
         assignmentRedacted,
         _configuredKeyMatcher(
           ignoredValues: ignoredValues,
@@ -552,7 +562,7 @@ class RedactionService {
         ),
         _config.placeholder,
       );
-      final redacted = _redactExportString(
+      final redacted = ExportStringScrubber.scrub(
         queryRedacted,
         patterns,
         mask: _config.placeholder,
@@ -593,7 +603,7 @@ class RedactionService {
       ignoredValues: ignoredValues,
       ignoredKeys: ignoredKeys,
     );
-    final queryRedacted = _maskQueryParameters(
+    final queryRedacted = AssignmentTokenizer.maskQueryParameters(
       assignmentRedacted,
       _configuredKeyMatcher(
         ignoredValues: ignoredValues,
@@ -601,7 +611,7 @@ class RedactionService {
       ),
       _config.placeholder,
     );
-    final redacted = _redactExportString(
+    final redacted = ExportStringScrubber.scrub(
       queryRedacted,
       patterns,
       mask: _config.placeholder,
@@ -614,7 +624,7 @@ class RedactionService {
     required Set<String>? ignoredValues,
     required Set<String>? ignoredKeys,
   }) =>
-      _maskSensitiveAssignments(
+      AssignmentTokenizer.maskSensitiveAssignments(
         value,
         _configuredKeyMatcher(
           ignoredValues: ignoredValues,
@@ -661,385 +671,6 @@ class RedactionService {
   bool _isIgnoredKeyName(String normalized, Set<String>? ignoredKeys) =>
       _config.ignoredKeyNamesLower.contains(normalized) ||
       (ignoredKeys?.any((key) => key.toLowerCase() == normalized) ?? false);
-
-  static String _maskSensitiveAssignments(
-    String value,
-    bool Function(String key) isSensitive,
-    String placeholder,
-  ) {
-    final output = StringBuffer();
-    var copiedThrough = 0;
-    var index = 0;
-    while (index < value.length) {
-      final assignment = _assignmentAt(value, index);
-      if (assignment == null) {
-        index++;
-        continue;
-      }
-
-      var valueStart = assignment.separator + 1;
-      while (valueStart < value.length &&
-          (assignment.quotedKey
-              ? _isJsonWhitespace(value.codeUnitAt(valueStart))
-              : _isInlineWhitespace(value.codeUnitAt(valueStart)))) {
-        valueStart++;
-      }
-      final key = assignment.key;
-      if (key != null && !isSensitive(key)) {
-        index = assignment.keyEnd;
-        continue;
-      }
-
-      final valueEnd = _assignmentValueEnd(
-        value,
-        valueStart,
-        quotedKey: assignment.quotedKey,
-      );
-      final replacement =
-          assignment.quotedKey ? jsonEncode(placeholder) : placeholder;
-      output
-        ..write(value.substring(copiedThrough, valueStart))
-        ..write(replacement);
-      copiedThrough = valueEnd;
-      index = valueEnd > valueStart ? valueEnd : valueStart + 1;
-    }
-    output.write(value.substring(copiedThrough));
-    return output.toString();
-  }
-
-  static ({
-    String? key,
-    int keyEnd,
-    int separator,
-    bool quotedKey,
-  })? _assignmentAt(String value, int start) {
-    final codeUnit = value.codeUnitAt(start);
-    if (!_isAssignmentBoundary(value, start)) return null;
-
-    if (codeUnit == _doubleQuoteCodeUnit || codeUnit == _singleQuoteCodeUnit) {
-      final keyEnd = _quotedAssignmentKeyEnd(value, start, codeUnit);
-      if (keyEnd == null) return null;
-      var separator = keyEnd;
-      while (separator < value.length &&
-          _isJsonWhitespace(value.codeUnitAt(separator))) {
-        separator++;
-      }
-      if (separator >= value.length ||
-          value.codeUnitAt(separator) != _colonCodeUnit) {
-        return null;
-      }
-
-      return (
-        key: _decodeQuotedAssignmentKey(value, start, keyEnd, codeUnit),
-        keyEnd: keyEnd,
-        separator: separator,
-        quotedKey: true,
-      );
-    }
-
-    if (!_isAssignmentKeyStart(codeUnit)) return null;
-    var keyEnd = start + 1;
-    while (keyEnd < value.length &&
-        _isAssignmentKeyCharacter(value.codeUnitAt(keyEnd))) {
-      keyEnd++;
-    }
-    var separator = keyEnd;
-    while (separator < value.length &&
-        _isInlineWhitespace(value.codeUnitAt(separator))) {
-      separator++;
-    }
-    if (separator >= value.length ||
-        (value.codeUnitAt(separator) != _equalsCodeUnit &&
-            value.codeUnitAt(separator) != _colonCodeUnit)) {
-      return null;
-    }
-    final encodedKey = value.substring(start, keyEnd);
-    return (
-      key: _decodeUrlKey(encodedKey),
-      keyEnd: keyEnd,
-      separator: separator,
-      quotedKey: false,
-    );
-  }
-
-  static bool _isAssignmentBoundary(String value, int start) {
-    if (start == 0) return true;
-    final previous = value.codeUnitAt(start - 1);
-    return _isJsonWhitespace(previous) ||
-        previous == _questionMarkCodeUnit ||
-        previous == _ampersandCodeUnit ||
-        previous == _commaCodeUnit ||
-        previous == _semicolonCodeUnit ||
-        previous == _openParenthesisCodeUnit ||
-        previous == _openBracketCodeUnit ||
-        previous == _openBraceCodeUnit;
-  }
-
-  static int? _quotedAssignmentKeyEnd(
-    String value,
-    int start,
-    int quote,
-  ) {
-    var escaped = false;
-    for (var index = start + 1; index < value.length; index++) {
-      final codeUnit = value.codeUnitAt(index);
-      if (escaped) {
-        escaped = false;
-        continue;
-      }
-      if (codeUnit == _backslashCodeUnit) {
-        escaped = true;
-        continue;
-      }
-      if (codeUnit == quote) return index + 1;
-      if (codeUnit == _lineFeedCodeUnit ||
-          codeUnit == _carriageReturnCodeUnit) {
-        return null;
-      }
-    }
-    return null;
-  }
-
-  static String? _decodeQuotedAssignmentKey(
-    String value,
-    int start,
-    int end,
-    int quote,
-  ) {
-    if (quote == _doubleQuoteCodeUnit) {
-      try {
-        final decoded = jsonDecode(value.substring(start, end));
-        return decoded is String ? decoded : null;
-      } on FormatException {
-        return null;
-      }
-    }
-
-    final output = StringBuffer();
-    for (var index = start + 1; index < end - 1; index++) {
-      final codeUnit = value.codeUnitAt(index);
-      if (codeUnit != _backslashCodeUnit) {
-        output.writeCharCode(codeUnit);
-        continue;
-      }
-      index++;
-      if (index >= end - 1) return null;
-      final escaped = value.codeUnitAt(index);
-      if (escaped == _lowercaseUCodeUnit && index + 4 < end - 1) {
-        final decoded = int.tryParse(
-          value.substring(index + 1, index + 5),
-          radix: 16,
-        );
-        if (decoded == null) return null;
-        output.writeCharCode(decoded);
-        index += 4;
-      } else {
-        output.writeCharCode(escaped);
-      }
-    }
-    return output.toString();
-  }
-
-  static int _assignmentValueEnd(
-    String value,
-    int start, {
-    required bool quotedKey,
-  }) {
-    if (start >= value.length) return start;
-    final openingQuote = value.codeUnitAt(start);
-    if (openingQuote == _openBraceCodeUnit ||
-        openingQuote == _openBracketCodeUnit) {
-      return _balancedJsonValueEnd(value, start);
-    }
-    if (openingQuote == _singleQuoteCodeUnit ||
-        openingQuote == _doubleQuoteCodeUnit) {
-      var escaped = false;
-      for (var index = start + 1; index < value.length; index++) {
-        final codeUnit = value.codeUnitAt(index);
-        if (escaped) {
-          escaped = false;
-          continue;
-        }
-        if (codeUnit == _backslashCodeUnit) {
-          escaped = true;
-          continue;
-        }
-        if (codeUnit == openingQuote) return index + 1;
-      }
-      return value.length;
-    }
-
-    if (quotedKey) {
-      for (var index = start; index < value.length; index++) {
-        final codeUnit = value.codeUnitAt(index);
-        if (codeUnit == _commaCodeUnit ||
-            codeUnit == _closeBraceCodeUnit ||
-            codeUnit == _closeBracketCodeUnit) {
-          return index;
-        }
-      }
-      return value.length;
-    }
-
-    for (var index = start; index < value.length; index++) {
-      final codeUnit = value.codeUnitAt(index);
-      if (_isHardAssignmentBoundary(codeUnit)) {
-        var next = index + 1;
-        while (next < value.length &&
-            _isInlineWhitespace(value.codeUnitAt(next))) {
-          next++;
-        }
-        if (_startsAssignmentAt(value, next)) return index;
-        continue;
-      }
-      if (!_isInlineWhitespace(codeUnit)) continue;
-
-      var next = index;
-      while (
-          next < value.length && _isInlineWhitespace(value.codeUnitAt(next))) {
-        next++;
-      }
-      if (_startsAssignmentAt(value, next)) return index;
-    }
-    return value.length;
-  }
-
-  static int _balancedJsonValueEnd(String value, int start) {
-    final expectedClosings = <int>[
-      if (value.codeUnitAt(start) == _openBraceCodeUnit)
-        _closeBraceCodeUnit
-      else
-        _closeBracketCodeUnit,
-    ];
-    int? stringQuote;
-    var escaped = false;
-    for (var index = start + 1; index < value.length; index++) {
-      final codeUnit = value.codeUnitAt(index);
-      if (stringQuote != null) {
-        if (escaped) {
-          escaped = false;
-        } else if (codeUnit == _backslashCodeUnit) {
-          escaped = true;
-        } else if (codeUnit == stringQuote) {
-          stringQuote = null;
-        }
-        continue;
-      }
-      if (codeUnit == _doubleQuoteCodeUnit ||
-          codeUnit == _singleQuoteCodeUnit) {
-        stringQuote = codeUnit;
-        continue;
-      }
-      if (codeUnit == _openBraceCodeUnit) {
-        expectedClosings.add(_closeBraceCodeUnit);
-        continue;
-      }
-      if (codeUnit == _openBracketCodeUnit) {
-        expectedClosings.add(_closeBracketCodeUnit);
-        continue;
-      }
-      if (codeUnit == _closeBraceCodeUnit ||
-          codeUnit == _closeBracketCodeUnit) {
-        if (codeUnit != expectedClosings.last) return value.length;
-        expectedClosings.removeLast();
-        if (expectedClosings.isEmpty) return index + 1;
-      }
-    }
-    return value.length;
-  }
-
-  static bool _startsAssignmentAt(String value, int start) =>
-      start < value.length && _assignmentAt(value, start) != null;
-
-  static String _maskQueryParameters(
-    String value,
-    bool Function(String key) isSensitive,
-    String placeholder,
-  ) =>
-      value.replaceAllMapped(_queryParameterPattern, (match) {
-        final separator = match.group(1)!;
-        final encodedKey = match.group(2)!;
-        final decodedKey = _decodeUrlKey(encodedKey);
-        if (decodedKey == null || isSensitive(decodedKey)) {
-          return '$separator$encodedKey=$placeholder';
-        }
-        return match.group(0)!;
-      });
-
-  static bool _isAssignmentKeyStart(int codeUnit) =>
-      (codeUnit >= _uppercaseACodeUnit && codeUnit <= _uppercaseZCodeUnit) ||
-      (codeUnit >= _lowercaseACodeUnit && codeUnit <= _lowercaseZCodeUnit) ||
-      (codeUnit >= _zeroCodeUnit && codeUnit <= _nineCodeUnit) ||
-      codeUnit == _underscoreCodeUnit ||
-      codeUnit == _percentCodeUnit;
-
-  static bool _isAssignmentKeyCharacter(int codeUnit) =>
-      _isAssignmentKeyStart(codeUnit) ||
-      (codeUnit >= _zeroCodeUnit && codeUnit <= _nineCodeUnit) ||
-      codeUnit == _underscoreCodeUnit ||
-      codeUnit == _dotCodeUnit ||
-      codeUnit == _hyphenCodeUnit ||
-      codeUnit == _percentCodeUnit ||
-      codeUnit == _openBracketCodeUnit ||
-      codeUnit == _closeBracketCodeUnit;
-
-  static bool _isInlineWhitespace(int codeUnit) =>
-      codeUnit == _spaceCodeUnit || codeUnit == _tabCodeUnit;
-
-  static bool _isJsonWhitespace(int codeUnit) =>
-      _isInlineWhitespace(codeUnit) ||
-      codeUnit == _lineFeedCodeUnit ||
-      codeUnit == _carriageReturnCodeUnit;
-
-  static bool _isHardAssignmentBoundary(int codeUnit) =>
-      codeUnit == _commaCodeUnit ||
-      codeUnit == _semicolonCodeUnit ||
-      codeUnit == _ampersandCodeUnit ||
-      codeUnit == _closeParenthesisCodeUnit ||
-      codeUnit == _closeBracketCodeUnit ||
-      codeUnit == _closeBraceCodeUnit ||
-      codeUnit == _carriageReturnCodeUnit ||
-      codeUnit == _lineFeedCodeUnit;
-
-  static final RegExp _queryParameterPattern = RegExp(
-    r'(^|[?&#])([^?&#=\s]+)=([^?&#\s]*)',
-    multiLine: true,
-  );
-
-  static const int _uppercaseACodeUnit = 65;
-  static const int _uppercaseZCodeUnit = 90;
-  static const int _lowercaseACodeUnit = 97;
-  static const int _lowercaseZCodeUnit = 122;
-  static const int _zeroCodeUnit = 48;
-  static const int _nineCodeUnit = 57;
-  static const int _tabCodeUnit = 9;
-  static const int _lineFeedCodeUnit = 10;
-  static const int _carriageReturnCodeUnit = 13;
-  static const int _spaceCodeUnit = 32;
-  static const int _exclamationCodeUnit = 33;
-  static const int _hashCodeUnit = 35;
-  static const int _doubleQuoteCodeUnit = 34;
-  static const int _percentCodeUnit = 37;
-  static const int _singleQuoteCodeUnit = 39;
-  static const int _openParenthesisCodeUnit = 40;
-  static const int _closeParenthesisCodeUnit = 41;
-  static const int _commaCodeUnit = 44;
-  static const int _hyphenCodeUnit = 45;
-  static const int _dotCodeUnit = 46;
-  static const int _slashCodeUnit = 47;
-  static const int _colonCodeUnit = 58;
-  static const int _semicolonCodeUnit = 59;
-  static const int _questionMarkCodeUnit = 63;
-  static const int _equalsCodeUnit = 61;
-  static const int _openBracketCodeUnit = 91;
-  static const int _closeBracketCodeUnit = 93;
-  static const int _underscoreCodeUnit = 95;
-  static const int _backslashCodeUnit = 92;
-  static const int _openBraceCodeUnit = 123;
-  static const int _closeBraceCodeUnit = 125;
-  static const int _ampersandCodeUnit = 38;
-  static const int _lowercaseUCodeUnit = 117;
-  static const int _tildeCodeUnit = 126;
 
   /// Like [redactHeaders], but also returns [RedactionStats] describing
   /// what was redacted and why.
@@ -1181,355 +812,7 @@ class RedactionService {
   /// query parameters rather than returning it verbatim.
   String redactUrl(String url) {
     if (!ISpectRedaction.enabled) return url;
-    return _redactUrl(
-      url,
-      remainingOperations: _maxNestedUrlOperations,
-      maxOutputLength: _redactedUrlOutputLimit(url.length),
-    );
-  }
-
-  String _redactUrl(
-    String url, {
-    required int remainingOperations,
-    required int maxOutputLength,
-  }) {
-    final uri = Uri.tryParse(url);
-    if (uri == null) {
-      // Malformed URL — Uri APIs are unavailable. Best-effort regex sanitize
-      // so credentials and sensitive query params don't survive verbatim.
-      final queryRedacted = _maskQueryParameters(
-        url,
-        _configuredKeyMatcher(ignoredValues: null, ignoredKeys: null),
-        _config.placeholder,
-      );
-      final redacted = _redactClassifiedAssignments(
-        _redactExportString(
-          queryRedacted,
-          _exportKeyPatterns,
-          mask: _config.placeholder,
-        ),
-        ignoredValues: null,
-        ignoredKeys: null,
-      );
-      return redacted.length <= maxOutputLength
-          ? redacted
-          : _config.placeholder;
-    }
-
-    final hasQuery = uri.hasQuery;
-    final hasUserInfo = uri.userInfo.isNotEmpty;
-    final redactedQuery = hasQuery
-        ? _redactQuery(
-            uri.query,
-            remainingOperations: remainingOperations,
-            maxOutputLength: maxOutputLength,
-          )
-        : null;
-    final queryChanged = redactedQuery != null && redactedQuery != uri.query;
-    final redactedFragment = uri.fragment.isNotEmpty
-        ? _redactFragment(
-            uri.fragment,
-            remainingOperations: remainingOperations,
-            maxOutputLength: maxOutputLength,
-          )
-        : null;
-    final fragmentChanged =
-        redactedFragment != null && redactedFragment != uri.fragment;
-    final redactedPath = uri.path.isEmpty ? null : _redactPathTokens(uri.path);
-    final pathChanged = redactedPath != null && redactedPath != uri.path;
-    if (!queryChanged && !hasUserInfo && !fragmentChanged && !pathChanged) {
-      return url;
-    }
-
-    final redacted = uri
-        .replace(
-          userInfo: hasUserInfo ? ph.userInfoRedactedPlaceholder : null,
-          path: pathChanged ? redactedPath : null,
-          query: queryChanged ? redactedQuery : null,
-          fragment: fragmentChanged ? redactedFragment : null,
-        )
-        .toString();
-    return redacted.length <= maxOutputLength ? redacted : _config.placeholder;
-  }
-
-  String _redactPathTokens(String path) => path
-      .replaceAllMapped(
-        _embeddedJwtPattern,
-        (m) => '${m[1]}${_config.placeholder}',
-      )
-      .replaceAllMapped(
-        _embeddedKnownTokenPattern,
-        (m) => '${m[1]}${_config.placeholder}',
-      );
-
-  String _redactQuery(
-    String query, {
-    required int remainingOperations,
-    required int maxOutputLength,
-  }) =>
-      _mapParameterSegments(query, (pair) {
-        final separator = pair.indexOf('=');
-        if (separator < 0) return pair;
-
-        final encodedKey = pair.substring(0, separator);
-        final encodedValue = pair.substring(separator + 1);
-        final decodedKey = _decodeUrlKey(encodedKey);
-        if (decodedKey == null) {
-          return '$encodedKey=${Uri.encodeQueryComponent(_config.placeholder)}';
-        }
-
-        final redacted = _redactUrlComponentValue(
-          encodedValue,
-          keyName: decodedKey,
-          remainingOperations: remainingOperations,
-          maxOutputLength: maxOutputLength,
-        );
-        if (redacted == encodedValue) return pair;
-        return '$encodedKey=${Uri.encodeQueryComponent(redacted)}';
-      });
-
-  /// Redacts sensitive values in a URL fragment that carries `key=value` pairs
-  /// (e.g. the OAuth implicit-grant `#access_token=…&id_token=…` redirect).
-  ///
-  /// Returns [fragment] unchanged when it is not a `key=value` list.
-  String _redactFragment(
-    String fragment, {
-    required int remainingOperations,
-    required int maxOutputLength,
-  }) {
-    final direct = _redactDecodedFragment(
-      fragment,
-      remainingOperations: remainingOperations,
-      maxOutputLength: maxOutputLength,
-    );
-    if (direct != fragment) return direct;
-
-    var decoded = fragment;
-    var operationsLeft = remainingOperations;
-    for (var depth = 0; depth < _maxNestedUrlDecodePasses; depth++) {
-      final candidate = _tryDecodeUrlComponent(decoded);
-      if (candidate == null) return _config.placeholder;
-      if (candidate == decoded) return fragment;
-      if (operationsLeft <= 0) return _config.placeholder;
-      operationsLeft--;
-      decoded = candidate;
-      final redacted = _redactDecodedFragment(
-        decoded,
-        remainingOperations: operationsLeft,
-        maxOutputLength: maxOutputLength,
-      );
-      if (redacted != decoded) return redacted;
-    }
-
-    final remaining = _tryDecodeUrlComponent(decoded);
-    if (remaining == null || remaining != decoded) {
-      return _config.placeholder;
-    }
-    return fragment;
-  }
-
-  String _redactDecodedFragment(
-    String fragment, {
-    required int remainingOperations,
-    required int maxOutputLength,
-  }) {
-    final queryIndex = fragment.indexOf('?');
-    if (queryIndex >= 0) {
-      final query = fragment.substring(queryIndex + 1);
-      final redactedQuery = _redactQuery(
-        query,
-        remainingOperations: remainingOperations,
-        maxOutputLength: maxOutputLength,
-      );
-      return '${fragment.substring(0, queryIndex + 1)}$redactedQuery';
-    }
-    if (!fragment.contains('=')) return fragment;
-    return _mapParameterSegments(fragment, (pair) {
-      final idx = pair.indexOf('=');
-      if (idx < 0) return pair;
-      final key = pair.substring(0, idx);
-      final value = pair.substring(idx + 1);
-      final decodedKey = _decodeUrlKey(key);
-      if (decodedKey == null) {
-        return '$key=${_config.placeholder}';
-      }
-      final redacted = _redactUrlComponentValue(
-        value,
-        keyName: decodedKey,
-        remainingOperations: remainingOperations,
-        maxOutputLength: maxOutputLength,
-      );
-      return '$key=$redacted';
-    });
-  }
-
-  String _redactUrlComponentValue(
-    String value, {
-    required String keyName,
-    required int remainingOperations,
-    required int maxOutputLength,
-  }) {
-    final redactedValue = redact(value, keyName: keyName);
-    final keyRedacted = switch (redactedValue) {
-      null => '',
-      final String text => text,
-      final bool primitive => primitive.toString(),
-      final num primitive when primitive is! double || primitive.isFinite =>
-        primitive.toString(),
-      _ => _config.placeholder,
-    };
-    if (LogExportOutput.utf8Length(
-          keyRedacted,
-          limit: maxOutputLength,
-        ) >
-        maxOutputLength) {
-      return _config.placeholder;
-    }
-    if (keyRedacted != value) return keyRedacted;
-
-    var decoded = value;
-    if (_malformedPercentEncodingPattern.hasMatch(decoded)) {
-      return _config.placeholder;
-    }
-    var operationsLeft = remainingOperations;
-    final initialUrlRedaction = _redactNestedUrlValue(
-      decoded,
-      remainingOperations: operationsLeft,
-      maxOutputLength: maxOutputLength,
-    );
-    if (initialUrlRedaction != null) return initialUrlRedaction;
-    final initialAssignmentRedaction = _redactNestedAssignments(decoded);
-    if (initialAssignmentRedaction != null) {
-      return initialAssignmentRedaction;
-    }
-    for (var depth = 0; depth < _maxNestedUrlDecodePasses; depth++) {
-      final candidate = _tryDecodeUrlComponent(decoded);
-      if (candidate == null) {
-        return decoded == value ? _config.placeholder : value;
-      }
-      if (candidate == decoded) return value;
-      if (operationsLeft <= 0) return _config.placeholder;
-      operationsLeft--;
-      decoded = candidate;
-      final nestedUrlRedaction = _redactNestedUrlValue(
-        decoded,
-        remainingOperations: operationsLeft,
-        maxOutputLength: maxOutputLength,
-      );
-      if (nestedUrlRedaction != null) return nestedUrlRedaction;
-      final assignmentRedaction = _redactNestedAssignments(decoded);
-      if (assignmentRedaction != null) return assignmentRedaction;
-    }
-
-    final remaining = _tryDecodeUrlComponent(decoded);
-    if (remaining == null || remaining != decoded) {
-      return _config.placeholder;
-    }
-    return value;
-  }
-
-  String? _redactNestedAssignments(String value) {
-    final redacted = _redactClassifiedAssignments(
-      value,
-      ignoredValues: null,
-      ignoredKeys: null,
-    );
-    return redacted == value ? null : redacted;
-  }
-
-  String? _redactNestedUrlValue(
-    String value, {
-    required int remainingOperations,
-    required int maxOutputLength,
-  }) {
-    final uri = Uri.tryParse(value);
-    final queryStart = value.indexOf('?');
-    final fragmentStart = value.indexOf('#');
-    final hasParameterShape =
-        (queryStart >= 0 && value.substring(queryStart + 1).contains('=')) ||
-            (fragmentStart >= 0 &&
-                value.substring(fragmentStart + 1).contains('='));
-    final isUrlShaped = _httpSchemePattern.hasMatch(value) ||
-        hasParameterShape ||
-        (uri != null &&
-            (uri.hasQuery ||
-                uri.userInfo.isNotEmpty ||
-                (uri.fragment.isNotEmpty && uri.fragment.contains('='))));
-    if (!isUrlShaped) return null;
-    if (_malformedPercentEncodingPattern.hasMatch(value)) {
-      return _config.placeholder;
-    }
-    if (remainingOperations <= 0) return _config.placeholder;
-
-    final redacted = _redactUrl(
-      value,
-      remainingOperations: remainingOperations - 1,
-      maxOutputLength: maxOutputLength,
-    );
-    return redacted == value ? null : redacted;
-  }
-
-  static const int _maxNestedUrlDecodePasses = 5;
-  static const int _maxNestedUrlOperations = 16;
-  static const int _maxUrlKeyDecodePasses = 5;
-  static const int _maxRedactedUrlExpansionFactor = 4;
-  static const int _redactedUrlExpansionSlack = 1024;
-
-  static int _redactedUrlOutputLimit(int inputLength) =>
-      inputLength * _maxRedactedUrlExpansionFactor + _redactedUrlExpansionSlack;
-
-  static final RegExp _httpSchemePattern = RegExp(
-    'https?://',
-    caseSensitive: false,
-  );
-
-  static final RegExp _malformedPercentEncodingPattern = RegExp(
-    '%(?![0-9A-Fa-f]{2})',
-  );
-
-  static String? _tryDecodeUrlComponent(String value) {
-    if (_malformedPercentEncodingPattern.hasMatch(value)) return null;
-    try {
-      return Uri.decodeQueryComponent(value);
-    } on Object {
-      return null;
-    }
-  }
-
-  static String? _decodeUrlKey(String value) {
-    var decoded = value;
-    for (var depth = 0; depth < _maxUrlKeyDecodePasses; depth++) {
-      final candidate = _tryDecodeUrlComponent(decoded);
-      if (candidate == null) return null;
-      if (candidate == decoded) return decoded;
-      decoded = candidate;
-    }
-
-    final remaining = _tryDecodeUrlComponent(decoded);
-    if (remaining == null || remaining != decoded) return null;
-    return decoded;
-  }
-
-  static String _mapParameterSegments(
-    String value,
-    String Function(String pair) transform,
-  ) {
-    final output = StringBuffer();
-    var segmentStart = 0;
-    for (var index = 0; index <= value.length; index++) {
-      final isEnd = index == value.length;
-      if (!isEnd) {
-        final codeUnit = value.codeUnitAt(index);
-        if (codeUnit != _ampersandCodeUnit && codeUnit != _semicolonCodeUnit) {
-          continue;
-        }
-      }
-
-      output.write(transform(value.substring(segmentStart, index)));
-      if (!isEnd) output.writeCharCode(value.codeUnitAt(index));
-      segmentStart = index + 1;
-    }
-    return output.toString();
+    return _urlRedactor.redactUrl(url);
   }
 
   /// Finds HTTP(S) URLs embedded in [text] and redacts their query parameters
@@ -1539,86 +822,8 @@ class RedactionService {
   /// sensitive query parameters or credentials.
   String redactUrlsInText(String text) {
     if (!ISpectRedaction.enabled) return text;
-    return text.replaceAllMapped(
-      urlPattern,
-      (match) {
-        final candidate = match.group(0)!;
-        final urlEnd = _embeddedUrlEnd(candidate);
-        return '${redactUrl(candidate.substring(0, urlEnd))}'
-            '${candidate.substring(urlEnd)}';
-      },
-    );
+    return _urlRedactor.redactUrlsInText(text);
   }
-
-  static int _embeddedUrlEnd(String candidate) {
-    var end = candidate.length;
-    while (end > 0) {
-      final trailing = candidate.codeUnitAt(end - 1);
-      if (trailing == _dotCodeUnit ||
-          trailing == _commaCodeUnit ||
-          trailing == _semicolonCodeUnit ||
-          trailing == _colonCodeUnit ||
-          trailing == _exclamationCodeUnit) {
-        end--;
-        continue;
-      }
-      if (trailing == _closeParenthesisCodeUnit &&
-          _hasUnbalancedTrailingDelimiter(
-            candidate,
-            end,
-            _openParenthesisCodeUnit,
-            _closeParenthesisCodeUnit,
-          )) {
-        end--;
-        continue;
-      }
-      if (trailing == _closeBracketCodeUnit &&
-          _hasUnbalancedTrailingDelimiter(
-            candidate,
-            end,
-            _openBracketCodeUnit,
-            _closeBracketCodeUnit,
-          )) {
-        end--;
-        continue;
-      }
-      if (trailing == _closeBraceCodeUnit &&
-          _hasUnbalancedTrailingDelimiter(
-            candidate,
-            end,
-            _openBraceCodeUnit,
-            _closeBraceCodeUnit,
-          )) {
-        end--;
-        continue;
-      }
-      break;
-    }
-    return end;
-  }
-
-  static bool _hasUnbalancedTrailingDelimiter(
-    String value,
-    int end,
-    int opening,
-    int closing,
-  ) {
-    var balance = 0;
-    for (var index = 0; index < end; index++) {
-      final codeUnit = value.codeUnitAt(index);
-      if (codeUnit == opening) {
-        balance++;
-      } else if (codeUnit == closing) {
-        balance--;
-      }
-    }
-    return balance < 0;
-  }
-
-  // Shared patterns
-
-  static final _urlCredentialPattern =
-      RegExp(r'((?::)?//)([^:/@\s]+)(?::([^/@\s]*))?@');
 
   // Target redaction (static — Layer 2, trace pipeline)
 
@@ -1646,355 +851,11 @@ class RedactionService {
   /// and error strings that may contain sensitive data.
   static String redactExportString(String value, Set<String>? redactKeys) {
     if (!ISpectRedaction.enabled) return value;
-    return _redactExportString(value, _exportPatternsFor(redactKeys));
-  }
-
-  static String _redactExportString(
-    String value,
-    _ExportKeyPatterns? patterns, {
-    String mask = ph.defaultPlaceholder,
-  }) {
-    final scrubbed = _redactUnquotedAbsolutePaths(
-      _redactQuotedAbsolutePaths(value, mask),
-      mask,
-    )
-        .replaceAllMapped(
-          _urlCredentialPattern,
-          (m) => '${m[1]}${ph.userInfoRedactedPlaceholder}@',
-        )
-        .replaceAllMapped(
-          _authorizationHeaderPattern,
-          (m) => '${m[1]}${m[2]}$mask',
-        )
-        .replaceAllMapped(
-          _embeddedJwtPattern,
-          (m) => '${m[1]}$mask',
-        )
-        .replaceAllMapped(
-          _embeddedKnownTokenPattern,
-          (m) => '${m[1]}$mask',
-        )
-        .replaceAllMapped(
-          _parameterAuthenticationPattern,
-          (m) => '${m[1]} $mask',
-        )
-        .replaceAllMapped(
-          _exportTokenPattern,
-          (m) => '${m[1]} $mask',
-        );
-
-    if (patterns == null) return scrubbed;
-
-    final assignmentRedacted = _maskSensitiveAssignments(
-      scrubbed,
-      patterns.matchesKey,
-      mask,
-    );
-    final queryRedacted = _maskQueryParameters(
-      assignmentRedacted,
-      patterns.matchesKey,
-      mask,
-    );
-    final redacted = queryRedacted
-        .replaceAllMapped(
-          patterns.jsonString,
-          (m) => '"${m[1]}": "$mask"',
-        )
-        .replaceAllMapped(
-          patterns.jsonScalar,
-          (m) => '"${m[1]}": "$mask"',
-        );
-
-    return _maskSensitiveAssignments(
-      redacted,
-      patterns.matchesKey,
-      mask,
+    return ExportStringScrubber.scrub(
+      value,
+      ExportStringScrubber.patternsFor(redactKeys),
     );
   }
-
-  static bool _requiresExportStringScrub(String value) {
-    var mayContainTokenMarker = false;
-    for (var index = 0; index < value.length; index++) {
-      final codeUnit = value.codeUnitAt(index);
-      if (codeUnit < _spaceCodeUnit || codeUnit > _tildeCodeUnit) return true;
-      switch (codeUnit) {
-        case _hashCodeUnit:
-        case _ampersandCodeUnit:
-        case _dotCodeUnit:
-        case _slashCodeUnit:
-        case _colonCodeUnit:
-        case _equalsCodeUnit:
-        case _questionMarkCodeUnit:
-        case _backslashCodeUnit:
-          return true;
-        case _spaceCodeUnit:
-        case _hyphenCodeUnit:
-        case _underscoreCodeUnit:
-          mayContainTokenMarker = true;
-      }
-    }
-    if (!mayContainTokenMarker) {
-      return _containsUnseparatedTokenMarker(value);
-    }
-    final lower = value.toLowerCase();
-    for (final marker in _exportTokenMarkers) {
-      if (lower.contains(marker)) return true;
-    }
-    return false;
-  }
-
-  static bool _containsUnseparatedTokenMarker(String value) {
-    for (var index = 0; index <= value.length - 4; index++) {
-      final first = value.codeUnitAt(index) | 0x20;
-      if (first != 0x61) continue;
-      final second = value.codeUnitAt(index + 1) | 0x20;
-      final third = value.codeUnitAt(index + 2) | 0x20;
-      final fourth = value.codeUnitAt(index + 3) | 0x20;
-      if ((second == 0x69 && third == 0x7a && fourth == 0x61) ||
-          (second == 0x6b && third == 0x69 && fourth == 0x61)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  static const _exportTokenMarkers = <String>[
-    'bearer ',
-    'basic ',
-    'token ',
-    'digest ',
-    'ntlm ',
-    'negotiate ',
-    'oauth ',
-    'hoba ',
-    'mutual ',
-    'scram-sha-',
-    'github_pat_',
-    'ghp_',
-    'gho_',
-    'ghu_',
-    'ghs_',
-    'ghr_',
-    'xoxb-',
-    'xoxa-',
-    'xoxp-',
-    'xoxr-',
-    'xoxs-',
-    'glpat-',
-    'sk-',
-    'gsk_',
-    'sk_live_',
-    'pk_live_',
-    'rk_live_',
-    'sk_test_',
-    'pk_test_',
-    'rk_test_',
-    'aiza',
-    'sbp_',
-    'npm_',
-    'pypi-',
-    'pat_',
-    'akia',
-  ];
-
-  static String _redactQuotedAbsolutePaths(String value, String mask) {
-    final output = StringBuffer();
-    var copiedThrough = 0;
-    var index = 0;
-    while (index < value.length) {
-      final quote = value.codeUnitAt(index);
-      if (quote != _singleQuoteCodeUnit && quote != _doubleQuoteCodeUnit) {
-        index++;
-        continue;
-      }
-
-      final contentStart = index + 1;
-      final replacement = _quotedPathReplacement(
-        value,
-        contentStart,
-        mask,
-      );
-      if (replacement == null) {
-        index++;
-        continue;
-      }
-
-      final contentEnd = _quotedPathEnd(value, contentStart, quote);
-      output
-        ..write(value.substring(copiedThrough, contentStart))
-        ..write(replacement);
-      copiedThrough = contentEnd;
-      index = contentEnd > contentStart ? contentEnd : contentStart;
-    }
-    output.write(value.substring(copiedThrough));
-    return output.toString();
-  }
-
-  static String? _quotedPathReplacement(
-    String value,
-    int start,
-    String mask,
-  ) {
-    if (_quotedFileUriStartPattern.matchAsPrefix(value, start) != null) {
-      return 'file://$mask';
-    }
-    if (_quotedPosixPathStartPattern.matchAsPrefix(value, start) != null ||
-        _quotedWindowsPathStartPattern.matchAsPrefix(value, start) != null ||
-        _quotedUncPathStartPattern.matchAsPrefix(value, start) != null) {
-      return mask;
-    }
-    return null;
-  }
-
-  static int _quotedPathEnd(String value, int start, int quote) {
-    var escaped = false;
-    for (var index = start; index < value.length; index++) {
-      final codeUnit = value.codeUnitAt(index);
-      if (codeUnit == _lineFeedCodeUnit ||
-          codeUnit == _carriageReturnCodeUnit) {
-        return index;
-      }
-      if (escaped) {
-        escaped = false;
-        continue;
-      }
-      if (codeUnit == _backslashCodeUnit) {
-        escaped = true;
-        continue;
-      }
-      if (codeUnit == quote) return index;
-    }
-    return value.length;
-  }
-
-  static String _redactUnquotedAbsolutePaths(String value, String mask) {
-    final output = StringBuffer();
-    var copiedThrough = 0;
-    for (final match in _unquotedAbsolutePathStartPattern.allMatches(value)) {
-      if (match.start < copiedThrough) continue;
-
-      final prefix = match.group(1)!;
-      final pathStart = match.start + prefix.length;
-      final pathEnd = _unquotedPathEnd(value, pathStart, match.end);
-      final pathPrefix = match.group(2)!;
-      final replacement =
-          pathPrefix.toLowerCase().startsWith('file:') ? 'file://$mask' : mask;
-      output
-        ..write(value.substring(copiedThrough, pathStart))
-        ..write(replacement);
-      copiedThrough = pathEnd;
-    }
-    if (copiedThrough == 0) return value;
-    output.write(value.substring(copiedThrough));
-    return output.toString();
-  }
-
-  static int _unquotedPathEnd(
-    String value,
-    int pathStart,
-    int scanStart,
-  ) {
-    for (var index = scanStart; index < value.length; index++) {
-      final codeUnit = value.codeUnitAt(index);
-      if (codeUnit == _lineFeedCodeUnit ||
-          codeUnit == _carriageReturnCodeUnit ||
-          codeUnit == _doubleQuoteCodeUnit ||
-          codeUnit == _singleQuoteCodeUnit ||
-          codeUnit == _closeParenthesisCodeUnit ||
-          codeUnit == _closeBracketCodeUnit ||
-          codeUnit == _closeBraceCodeUnit ||
-          codeUnit == _commaCodeUnit ||
-          codeUnit == _semicolonCodeUnit) {
-        return index;
-      }
-      if (!_isInlineWhitespace(codeUnit)) continue;
-
-      var next = index + 1;
-      while (
-          next < value.length && _isInlineWhitespace(value.codeUnitAt(next))) {
-        next++;
-      }
-      if (next >= value.length ||
-          _startsAssignmentAt(value, next) ||
-          _stackLocationSuffixPattern
-              .hasMatch(value.substring(pathStart, index))) {
-        return index;
-      }
-    }
-    return value.length;
-  }
-
-  static _ExportKeyPatterns? _exportPatternsFor(Set<String>? keys) {
-    if (keys == null || keys.isEmpty) return null;
-    if (identical(keys, defaultSensitiveKeys) ||
-        identical(keys, defaultSensitiveKeysLower)) {
-      return _defaultExportKeyPatterns;
-    }
-    return _ExportKeyPatterns(keys);
-  }
-
-  static final _ExportKeyPatterns _defaultExportKeyPatterns =
-      _ExportKeyPatterns(defaultSensitiveKeysLower);
-
-  static final _exportTokenPattern = RegExp(
-    r'\b(Bearer|Basic|Token|Digest|NTLM|Negotiate|OAuth|HOBA|Mutual|'
-    r'SCRAM-SHA-\d+)\s+[^\s,;]+',
-    caseSensitive: false,
-  );
-
-  static final _authorizationHeaderPattern = RegExp(
-    r'\b((?:Proxy-)?Authorization)(\s*[:=]\s*)[^\r\n]*',
-    caseSensitive: false,
-  );
-
-  static final _embeddedJwtPattern = RegExp(
-    '(^|[^A-Za-z0-9_-])'
-    r'[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'
-    r'(?=$|[^A-Za-z0-9_-])',
-  );
-
-  static final _embeddedKnownTokenPattern = RegExp(
-    '(^|[^A-Za-z0-9_-])'
-    '(?:(?:github_pat_|gh[pousr]_|xox[baprs]-|glpat-|sk-ant-|sk-|gsk_|'
-    '(?:sk|pk|rk)_(?:live|test)_|AIza|sbp_|npm_|pypi-|pat_)'
-    '[A-Za-z0-9._=-]{8,}|AKIA[A-Z0-9]{12,})',
-  );
-
-  static final _parameterAuthenticationPattern = RegExp(
-    r'''\b(Digest|OAuth)\s+(?:[A-Za-z][A-Za-z0-9_-]*\s*=\s*(?:"(?:\\.|[^"\\])*"|"(?:\\.|[^"\\\r\n])*(?=[\r\n]|$)|'(?:\\.|[^'\\])*'|'(?:\\.|[^'\\\r\n])*(?=[\r\n]|$)|[^"'\s,]+)(?:\s*,\s*)?)+''',
-    caseSensitive: false,
-  );
-
-  static final _quotedFileUriStartPattern = RegExp(
-    r'''file:(?://[^/\s]*)?/''',
-    caseSensitive: false,
-  );
-
-  static final _quotedPosixPathStartPattern = RegExp(
-    '/(?:Users|home|private|var|tmp|data|storage|sdcard|mnt|'
-    'opt|srv|etc|root|app|workspace)/',
-    caseSensitive: false,
-  );
-
-  static final _quotedWindowsPathStartPattern = RegExp(r'[A-Za-z]:[\\/]');
-
-  static final _quotedUncPathStartPattern = RegExp(
-    r'''\\\\[^\\/\s]+[\\/]''',
-  );
-
-  static final _unquotedAbsolutePathStartPattern = RegExp(
-    r'(^|[\s(=\[])('
-    r'''file:(?://[^/\s]*)?/|'''
-    '/(?:Users|home|private|var|tmp|data|storage|sdcard|mnt|'
-    'opt|srv|etc|root|app|workspace)/|'
-    r'''[A-Za-z]:[\\/]|'''
-    r'''\\\\[^\\/\s]+[\\/]'''
-    ')',
-    caseSensitive: false,
-    multiLine: true,
-  );
-
-  static final _stackLocationSuffixPattern = RegExp(r':\d+(?::\d+)?$');
 
   // Lightweight key-based redaction (static)
 
@@ -2057,47 +918,5 @@ class RedactionService {
           .toList();
     }
     return data;
-  }
-}
-
-final class _ExportKeyPatterns {
-  _ExportKeyPatterns(Set<String> keys)
-      : this._(
-          keys.map((key) => key.toLowerCase()).toSet(),
-          keys.map(canonicalizeKey).toSet(),
-          keys.map(RegExp.escape).join('|'),
-        );
-
-  _ExportKeyPatterns._(this.keysLower, this.canonicalKeysLower, String keys)
-      : jsonString = RegExp(
-          '"($keys)"\\s*:\\s*"(?:\\\\.|[^"\\\\])*"',
-          caseSensitive: false,
-        ),
-        jsonScalar = RegExp(
-          '"($keys)"\\s*:\\s*(-?\\d[\\d.eE+-]*|true|false|null)',
-          caseSensitive: false,
-        );
-
-  final Set<String> keysLower;
-  final Set<String> canonicalKeysLower;
-  final RegExp jsonString;
-  final RegExp jsonScalar;
-
-  bool matchesKey(String key) {
-    final lower = key.trim().toLowerCase();
-    if (keysLower.contains(lower)) return true;
-    final canonical = canonicalizeKey(key);
-    if (canonicalKeysLower.contains(canonical)) return true;
-    final tokens =
-        canonical.split('_').where((token) => token.isNotEmpty).toList();
-    for (var start = 0; start < tokens.length; start++) {
-      final candidate = StringBuffer();
-      for (var end = start; end < tokens.length; end++) {
-        if (candidate.isNotEmpty) candidate.write('_');
-        candidate.write(tokens[end]);
-        if (canonicalKeysLower.contains(candidate.toString())) return true;
-      }
-    }
-    return false;
   }
 }
