@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/history/file_log/bounded_log_buffer.dart';
 import 'package:ispectify/src/history/file_log/file_log_codec.dart';
+import 'package:ispectify/src/history/file_log/file_log_layout.dart';
 import 'package:ispectify/src/history/file_log/retention_planner.dart';
 import 'package:ispectify/src/models/log_id.dart';
 import 'package:ispectify/src/utils/bounded_json_decoder.dart';
@@ -104,14 +105,6 @@ final class RollingFileLogHistory implements FileLogHistory {
     }
   }
 
-  static final RegExp _segmentNamePattern = RegExp(r'^\d{6}\.jsonl$');
-  static final RegExp _archiveNamePattern = RegExp(r'^\d{6}\.jsonl\.gz$');
-  static final RegExp _temporaryArchiveNamePattern = RegExp(
-    r'^\d{6}\.jsonl\.gz(?:\.[0-9A-HJKMNP-TV-Z]{26})?\.tmp$',
-  );
-  static final RegExp _dateNamePattern = RegExp(r'^\d{4}-\d{2}-\d{2}$');
-  static final RegExp _legacyNamePattern =
-      RegExp(r'^logs_(\d{4}-\d{2}-\d{2})\.json$');
   static const int _ioChunkSize = 64 * 1024;
   static const int _groupOrWorldPermissionBits = 0x3f;
   static const int _groupOrWorldWriteBits = 0x12;
@@ -787,8 +780,8 @@ final class RollingFileLogHistory implements FileLogHistory {
       operation: 'getAvailableLogDates',
     );
     await for (final entity in root.list(followLinks: false)) {
-      final name = _basename(entity.path);
-      if (_dateNamePattern.hasMatch(name)) {
+      final name = FileLogLayout.basename(entity.path);
+      if (FileLogLayout.dateNamePattern.hasMatch(name)) {
         if (entity is! Directory) {
           throw const FileLogAccessException(
             operation: 'getAvailableLogDates',
@@ -807,7 +800,7 @@ final class RollingFileLogHistory implements FileLogHistory {
           final date = DateTime.tryParse(name);
           if (date != null) dates.add(date);
         }
-      } else if (_legacyNamePattern.hasMatch(name)) {
+      } else if (FileLogLayout.legacyNamePattern.hasMatch(name)) {
         if (entity is! File) {
           throw const FileLogAccessException(
             operation: 'getAvailableLogDates',
@@ -817,8 +810,7 @@ final class RollingFileLogHistory implements FileLogHistory {
           entity,
           operation: 'getAvailableLogDates',
         );
-        final match = _legacyNamePattern.firstMatch(name);
-        final date = DateTime.tryParse(match?.group(1) ?? '');
+        final date = FileLogLayout.legacyDate(name);
         if (date != null) dates.add(date);
       }
     }
@@ -960,7 +952,7 @@ final class RollingFileLogHistory implements FileLogHistory {
   Future<List<ISpectLogData>> _validateMissingSessionPath(String path) async {
     final hasTraversal =
         path.split(RegExp(r'[/\\]+')).any((segment) => segment == '..');
-    if (!hasTraversal && _isWithinRoot(path, sessionDirectory)) {
+    if (!hasTraversal && FileLogLayout.isWithinRoot(path, sessionDirectory)) {
       return const <ISpectLogData>[];
     }
     throw const FileLogAccessException(operation: 'getLogsBySession');
@@ -1041,7 +1033,12 @@ final class RollingFileLogHistory implements FileLogHistory {
       _canonicalProviderDirectory =
           await providerDirectory.resolveSymbolicLinks();
 
-      final directory = Directory(_join(providerDirectory.path, 'ispect_logs'));
+      final directory = Directory(
+        FileLogLayout.join(
+          providerDirectory.path,
+          FileLogLayout.sessionDirectoryName,
+        ),
+      );
       final initialType = await FileSystemEntity.type(
         directory.path,
         followLinks: false,
@@ -1065,9 +1062,12 @@ final class RollingFileLogHistory implements FileLogHistory {
       );
       _resolvedSessionDirectory = directory.path;
       _canonicalSessionDirectory = await directory.resolveSymbolicLinks();
-      _resolvedTodaySessionPath = _join(
-        _join(directory.path, _dateName(DateTime.now())),
-        '000000.jsonl',
+      _resolvedTodaySessionPath = FileLogLayout.join(
+        FileLogLayout.join(
+          directory.path,
+          FileLogLayout.dateName(DateTime.now()),
+        ),
+        FileLogLayout.segmentName(0),
       );
       await _validatedSessionDirectory(operation: 'initialize');
       await _applyRetention();
@@ -1096,13 +1096,16 @@ final class RollingFileLogHistory implements FileLogHistory {
     final segments = artifacts
         .where(
           (file) =>
-              _dateArtifactKind(_basename(file.path)) ==
-              _ManagedFileKind.segment,
+              FileLogLayout.dateArtifactKind(
+                FileLogLayout.basename(file.path),
+              ) ==
+              ManagedFileKind.segment,
         )
         .toList(growable: false);
     var highestIndex = -1;
     for (final artifact in artifacts) {
-      final index = int.parse(_basename(artifact.path).substring(0, 6));
+      final index =
+          FileLogLayout.segmentIndex(FileLogLayout.basename(artifact.path));
       if (index > highestIndex) highestIndex = index;
     }
     var active = segments.isEmpty
@@ -1124,7 +1127,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       directory: directory,
       operation: 'appendRecord',
       allowMissing: true,
-      allowedKinds: const {_ManagedFileKind.segment},
+      allowedKinds: const {ManagedFileKind.segment},
     );
     final acquired = await _acquireAppendHandle(
       active,
@@ -1141,20 +1144,21 @@ final class RollingFileLogHistory implements FileLogHistory {
     } finally {
       await acquired.handle.close();
     }
-    if (_dateName(date) == _dateName(DateTime.now())) {
+    if (FileLogLayout.dateName(date) ==
+        FileLogLayout.dateName(DateTime.now())) {
       _resolvedTodaySessionPath = active.path;
     }
   }
 
   File _nextSegment(Directory directory, int highestIndex) {
-    if (highestIndex >= 999999) {
+    if (highestIndex >= FileLogLayout.maxSegmentIndex) {
       throw const FileLogLimitException(operation: 'appendRecord');
     }
     final nextIndex = highestIndex + 1;
     return File(
-      _join(
+      FileLogLayout.join(
         directory.path,
-        '${nextIndex.toString().padLeft(6, '0')}.jsonl',
+        FileLogLayout.segmentName(nextIndex),
       ),
     );
   }
@@ -1164,7 +1168,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       file,
       operation: 'repairIncompleteTail',
       allowMissing: true,
-      allowedKinds: const {_ManagedFileKind.segment},
+      allowedKinds: const {ManagedFileKind.segment},
     );
     if (validated == null) return true;
     final acquired = await _acquireAppendHandle(
@@ -1190,7 +1194,7 @@ final class RollingFileLogHistory implements FileLogHistory {
             await _validatedHistoryFile(
               validated,
               operation: 'repairIncompleteTail',
-              allowedKinds: const {_ManagedFileKind.segment},
+              allowedKinds: const {ManagedFileKind.segment},
             );
             await handle.truncate(start + index + 1);
             await handle.flush();
@@ -1218,7 +1222,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       file,
       operation: operation,
       allowMissing: createIfMissing,
-      allowedKinds: const {_ManagedFileKind.segment},
+      allowedKinds: const {ManagedFileKind.segment},
     );
     if (validated == null) {
       try {
@@ -1232,7 +1236,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       validated = await _validatedHistoryFile(
         file,
         operation: operation,
-        allowedKinds: const {_ManagedFileKind.segment},
+        allowedKinds: const {ManagedFileKind.segment},
       );
     }
     final before = _FileIdentity.fromStat(await validated!.stat());
@@ -1243,7 +1247,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       final afterFile = await _validatedHistoryFile(
         validated,
         operation: operation,
-        allowedKinds: const {_ManagedFileKind.segment},
+        allowedKinds: const {ManagedFileKind.segment},
       );
       final after = _FileIdentity.fromStat(await afterFile!.stat());
       if (before != after || await handle.length() != after.size) {
@@ -1263,7 +1267,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     final validated = await _validatedHistoryFile(
       acquired.file,
       operation: operation,
-      allowedKinds: const {_ManagedFileKind.segment},
+      allowedKinds: const {ManagedFileKind.segment},
     );
     if (await validated!.length() != await acquired.handle.length()) {
       throw FileLogAccessException(operation: operation);
@@ -1283,14 +1287,14 @@ final class RollingFileLogHistory implements FileLogHistory {
       operation: operation,
     );
     await for (final entity in validatedDirectory!.list(followLinks: false)) {
-      final name = _basename(entity.path);
-      final kind = _dateArtifactKind(name);
+      final name = FileLogLayout.basename(entity.path);
+      final kind = FileLogLayout.dateArtifactKind(name);
       if (kind != null && ++managedArtifacts > _managedArtifactLimit) {
         throw FileLogLimitException(operation: operation);
       }
-      final included = kind == _ManagedFileKind.segment ||
-          includeArchives && kind == _ManagedFileKind.archive ||
-          includeTemporary && kind == _ManagedFileKind.temporary;
+      final included = kind == ManagedFileKind.segment ||
+          includeArchives && kind == ManagedFileKind.archive ||
+          includeTemporary && kind == ManagedFileKind.temporary;
       if (kind == null) continue;
       if (entity is! File) {
         throw FileLogAccessException(
@@ -1332,8 +1336,8 @@ final class RollingFileLogHistory implements FileLogHistory {
     final orderedFiles = files.toList(growable: false);
     fileLoop:
     for (final file in orderedFiles.reversed) {
-      final name = _basename(file.path);
-      if (_legacyNamePattern.hasMatch(name)) {
+      final name = FileLogLayout.basename(file.path);
+      if (FileLogLayout.legacyNamePattern.hasMatch(name)) {
         try {
           final legacyLength = await _managedFileLength(
             file,
@@ -1524,16 +1528,17 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   Future<List<int>> _readSegmentBytes(File file) async {
-    final kind = _dateArtifactKind(_basename(file.path));
-    if (kind == _ManagedFileKind.segment) {
+    final kind =
+        FileLogLayout.dateArtifactKind(FileLogLayout.basename(file.path));
+    if (kind == ManagedFileKind.segment) {
       return _readBoundedManagedFile(
         file,
         maxBytes: _options.maxFileSize,
         operation: 'readSegment',
-        allowedKinds: const {_ManagedFileKind.segment},
+        allowedKinds: const {ManagedFileKind.segment},
       );
     }
-    if (kind != _ManagedFileKind.archive) {
+    if (kind != ManagedFileKind.archive) {
       throw const FileLogAccessException(operation: 'readSegment');
     }
 
@@ -1542,7 +1547,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       file,
       maxBytes: compressedLimit,
       operation: 'readCompressedSegment',
-      allowedKinds: const {_ManagedFileKind.archive},
+      allowedKinds: const {ManagedFileKind.archive},
     );
     final builder = BytesBuilder(copy: false);
     try {
@@ -1563,7 +1568,7 @@ final class RollingFileLogHistory implements FileLogHistory {
         acquired.file,
         acquired.identity,
         operation: 'readCompressedSegment',
-        allowedKinds: const {_ManagedFileKind.archive},
+        allowedKinds: const {ManagedFileKind.archive},
       );
       return builder.takeBytes();
     } finally {
@@ -1652,9 +1657,6 @@ final class RollingFileLogHistory implements FileLogHistory {
     return count;
   }
 
-  bool _isWithinRoot(String path, String root) =>
-      path == root || path.startsWith('$root${Platform.pathSeparator}');
-
   Future<Directory> _validatedProviderDirectory({
     required String operation,
   }) async {
@@ -1687,7 +1689,11 @@ final class RollingFileLogHistory implements FileLogHistory {
     final canonicalPath = _canonicalSessionDirectory;
     if (path == null ||
         canonicalPath == null ||
-        path != _join(provider.path, 'ispect_logs')) {
+        path !=
+            FileLogLayout.join(
+              provider.path,
+              FileLogLayout.sessionDirectoryName,
+            )) {
       throw FileLogAccessException(operation: operation);
     }
     final type = await FileSystemEntity.type(path, followLinks: false);
@@ -1711,8 +1717,9 @@ final class RollingFileLogHistory implements FileLogHistory {
     bool allowMissing = false,
   }) async {
     final root = await _validatedSessionDirectory(operation: operation);
-    final name = _basename(path);
-    if (!_dateNamePattern.hasMatch(name) || path != _join(root.path, name)) {
+    final name = FileLogLayout.basename(path);
+    if (!FileLogLayout.dateNamePattern.hasMatch(name) ||
+        path != FileLogLayout.join(root.path, name)) {
       throw FileLogAccessException(operation: operation);
     }
 
@@ -1729,7 +1736,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     );
     final canonicalRoot = _canonicalSessionDirectory!;
     final canonicalPath = await directory.resolveSymbolicLinks();
-    if (canonicalPath != _join(canonicalRoot, name)) {
+    if (canonicalPath != FileLogLayout.join(canonicalRoot, name)) {
       throw FileLogAccessException(operation: operation);
     }
     return directory;
@@ -1794,9 +1801,9 @@ final class RollingFileLogHistory implements FileLogHistory {
     bool allowMissing = false,
   }) async {
     final root = await _validatedSessionDirectory(operation: operation);
-    final name = _basename(file.path);
-    if (!_legacyNamePattern.hasMatch(name) ||
-        file.path != _join(root.path, name)) {
+    final name = FileLogLayout.basename(file.path);
+    if (!FileLogLayout.legacyNamePattern.hasMatch(name) ||
+        file.path != FileLogLayout.join(root.path, name)) {
       throw FileLogAccessException(operation: operation);
     }
 
@@ -1809,7 +1816,8 @@ final class RollingFileLogHistory implements FileLogHistory {
       throw FileLogAccessException(operation: operation);
     }
     final canonicalPath = await file.resolveSymbolicLinks();
-    if (canonicalPath != _join(_canonicalSessionDirectory!, name)) {
+    if (canonicalPath !=
+        FileLogLayout.join(_canonicalSessionDirectory!, name)) {
       throw FileLogAccessException(operation: operation);
     }
     return file;
@@ -1819,18 +1827,18 @@ final class RollingFileLogHistory implements FileLogHistory {
     File file, {
     required Directory directory,
     required String operation,
-    required Set<_ManagedFileKind> allowedKinds,
+    required Set<ManagedFileKind> allowedKinds,
     bool allowMissing = false,
   }) async {
     final validatedDirectory = await _validatedDateDirectory(
       directory.path,
       operation: operation,
     );
-    final name = _basename(file.path);
-    final kind = _dateArtifactKind(name);
+    final name = FileLogLayout.basename(file.path);
+    final kind = FileLogLayout.dateArtifactKind(name);
     if (kind == null ||
         !allowedKinds.contains(kind) ||
-        file.path != _join(validatedDirectory!.path, name)) {
+        file.path != FileLogLayout.join(validatedDirectory!.path, name)) {
       throw FileLogAccessException(operation: operation);
     }
 
@@ -1842,9 +1850,12 @@ final class RollingFileLogHistory implements FileLogHistory {
     if (type != FileSystemEntityType.file) {
       throw FileLogAccessException(operation: operation);
     }
-    final canonicalDirectory =
-        _join(_canonicalSessionDirectory!, _basename(directory.path));
-    if (await file.resolveSymbolicLinks() != _join(canonicalDirectory, name)) {
+    final canonicalDirectory = FileLogLayout.join(
+      _canonicalSessionDirectory!,
+      FileLogLayout.basename(directory.path),
+    );
+    if (await file.resolveSymbolicLinks() !=
+        FileLogLayout.join(canonicalDirectory, name)) {
       throw FileLogAccessException(operation: operation);
     }
     return file;
@@ -1854,12 +1865,12 @@ final class RollingFileLogHistory implements FileLogHistory {
     File file, {
     required String operation,
     bool allowMissing = false,
-    Set<_ManagedFileKind>? allowedKinds,
+    Set<ManagedFileKind>? allowedKinds,
   }) {
-    final name = _basename(file.path);
-    if (_legacyNamePattern.hasMatch(name)) {
+    final name = FileLogLayout.basename(file.path);
+    if (FileLogLayout.legacyNamePattern.hasMatch(name)) {
       if (allowedKinds != null &&
-          !allowedKinds.contains(_ManagedFileKind.legacy)) {
+          !allowedKinds.contains(ManagedFileKind.legacy)) {
         throw FileLogAccessException(operation: operation);
       }
       return _validatedLegacyFile(
@@ -1869,7 +1880,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       );
     }
 
-    final kind = _dateArtifactKind(name);
+    final kind = FileLogLayout.dateArtifactKind(name);
     if (kind == null || allowedKinds != null && !allowedKinds.contains(kind)) {
       throw FileLogAccessException(operation: operation);
     }
@@ -1910,7 +1921,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     File file, {
     required int maxBytes,
     required String operation,
-    required Set<_ManagedFileKind> allowedKinds,
+    required Set<ManagedFileKind> allowedKinds,
   }) async {
     final acquired = await _acquireReadHandle(
       file,
@@ -1942,7 +1953,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     File file, {
     required int maxBytes,
     required String operation,
-    required Set<_ManagedFileKind> allowedKinds,
+    required Set<ManagedFileKind> allowedKinds,
   }) async {
     final validated = await _validatedHistoryFile(
       file,
@@ -2014,7 +2025,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       file,
       maxBytes: _options.maxTotalSize,
       operation: 'readLegacy',
-      allowedKinds: const {_ManagedFileKind.legacy},
+      allowedKinds: const {ManagedFileKind.legacy},
     );
     try {
       return utf8.decode(bytes);
@@ -2044,19 +2055,6 @@ final class RollingFileLogHistory implements FileLogHistory {
     await beforeDelete!.delete();
   }
 
-  _ManagedFileKind? _dateArtifactKind(String name) {
-    if (_segmentNamePattern.hasMatch(name)) {
-      return _ManagedFileKind.segment;
-    }
-    if (_archiveNamePattern.hasMatch(name)) {
-      return _ManagedFileKind.archive;
-    }
-    if (_temporaryArchiveNamePattern.hasMatch(name)) {
-      return _ManagedFileKind.temporary;
-    }
-    return null;
-  }
-
   Future<void> _applyRetention() async {
     while (true) {
       final artifacts = await _scanArtifacts();
@@ -2083,8 +2081,8 @@ final class RollingFileLogHistory implements FileLogHistory {
       operation: 'scanArtifacts',
     );
     await for (final entity in root.list(followLinks: false)) {
-      final name = _basename(entity.path);
-      if (_dateNamePattern.hasMatch(name)) {
+      final name = FileLogLayout.basename(entity.path);
+      if (FileLogLayout.dateNamePattern.hasMatch(name)) {
         if (++managedDates > _managedArtifactLimit) {
           throw const FileLogLimitException(operation: 'scanArtifacts');
         }
@@ -2099,7 +2097,9 @@ final class RollingFileLogHistory implements FileLogHistory {
         if (date == null) continue;
         final files = <File>[];
         await for (final child in directory!.list(followLinks: false)) {
-          final kind = _dateArtifactKind(_basename(child.path));
+          final kind = FileLogLayout.dateArtifactKind(
+            FileLogLayout.basename(child.path),
+          );
           if (kind == null) continue;
           if (++managedArtifacts > _managedArtifactLimit) {
             throw const FileLogLimitException(operation: 'scanArtifacts');
@@ -2116,17 +2116,20 @@ final class RollingFileLogHistory implements FileLogHistory {
           files.add(file!);
         }
         final liveSegments = files
-            .where((file) => _segmentNamePattern.hasMatch(_basename(file.path)))
+            .where(
+              (file) => FileLogLayout.segmentNamePattern
+                  .hasMatch(FileLogLayout.basename(file.path)),
+            )
             .toList()
           ..sort((left, right) => left.path.compareTo(right.path));
-        final activePath =
-            name == _dateName(DateTime.now()) && liveSegments.isNotEmpty
-                ? liveSegments.last.path
-                : null;
+        final activePath = name == FileLogLayout.dateName(DateTime.now()) &&
+                liveSegments.isNotEmpty
+            ? liveSegments.last.path
+            : null;
         for (final file in files) {
-          final fileName = _basename(file.path);
-          final isSegment = _segmentNamePattern.hasMatch(fileName);
-          final isArchive = _archiveNamePattern.hasMatch(fileName);
+          final fileName = FileLogLayout.basename(file.path);
+          final isSegment = FileLogLayout.segmentNamePattern.hasMatch(fileName);
+          final isArchive = FileLogLayout.archiveNamePattern.hasMatch(fileName);
           final isTemporary = fileName.endsWith('.tmp');
           if (!isSegment && !isArchive && !isTemporary) continue;
           artifacts.add(
@@ -2144,7 +2147,7 @@ final class RollingFileLogHistory implements FileLogHistory {
             ),
           );
         }
-      } else if (_legacyNamePattern.hasMatch(name)) {
+      } else if (FileLogLayout.legacyNamePattern.hasMatch(name)) {
         if (++managedArtifacts > _managedArtifactLimit) {
           throw const FileLogLimitException(operation: 'scanArtifacts');
         }
@@ -2155,8 +2158,7 @@ final class RollingFileLogHistory implements FileLogHistory {
           entity,
           operation: 'scanArtifacts',
         );
-        final legacyMatch = _legacyNamePattern.firstMatch(name);
-        final legacyDate = DateTime.tryParse(legacyMatch?.group(1) ?? '');
+        final legacyDate = FileLogLayout.legacyDate(name);
         if (legacyDate != null) {
           artifacts.add(
             FileLogArtifact(
@@ -2201,7 +2203,7 @@ final class RollingFileLogHistory implements FileLogHistory {
         target,
         operation: 'archive',
         allowMissing: true,
-        allowedKinds: const {_ManagedFileKind.archive},
+        allowedKinds: const {ManagedFileKind.archive},
       );
       if (existingTarget != null) {
         await _recoverCompletedArchive(source, existingTarget);
@@ -2211,7 +2213,7 @@ final class RollingFileLogHistory implements FileLogHistory {
         source,
         maxBytes: _options.maxFileSize,
         operation: 'archive',
-        allowedKinds: const {_ManagedFileKind.segment},
+        allowedKinds: const {ManagedFileKind.segment},
       );
       acquiredTemporary = await _createArchiveTemporary(target);
       temporary = acquiredTemporary.file;
@@ -2242,7 +2244,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       await _validatedHistoryFile(
         temporary,
         operation: 'archive',
-        allowedKinds: const {_ManagedFileKind.temporary},
+        allowedKinds: const {ManagedFileKind.temporary},
       );
       if (await temporary.length() != compressedBytes) {
         throw const FileLogAccessException(operation: 'archive');
@@ -2255,7 +2257,7 @@ final class RollingFileLogHistory implements FileLogHistory {
         acquiredSource.file,
         acquiredSource.identity,
         operation: 'archive',
-        allowedKinds: const {_ManagedFileKind.segment},
+        allowedKinds: const {ManagedFileKind.segment},
       );
       final targetType = await FileSystemEntity.type(
         target.path,
@@ -2269,7 +2271,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       await _validatedHistoryFile(
         target,
         operation: 'archive',
-        allowedKinds: const {_ManagedFileKind.archive},
+        allowedKinds: const {ManagedFileKind.archive},
       );
       await _deleteManagedFile(
         source,
@@ -2317,7 +2319,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       source,
       maxBytes: _options.maxFileSize,
       operation: 'archiveRecovery',
-      allowedKinds: const {_ManagedFileKind.segment},
+      allowedKinds: const {ManagedFileKind.segment},
     );
     final archiveBytes = await _readSegmentBytes(archive);
     if (sourceBytes.length != archiveBytes.length) {
@@ -2359,7 +2361,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       final validated = await _validatedHistoryFile(
         temporary,
         operation: 'archiveTemporary',
-        allowedKinds: const {_ManagedFileKind.temporary},
+        allowedKinds: const {ManagedFileKind.temporary},
       );
       final before = _FileIdentity.fromStat(await validated!.stat());
       if (before.size != 0) {
@@ -2371,7 +2373,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       final afterFile = await _validatedHistoryFile(
         validated,
         operation: 'archiveTemporary',
-        allowedKinds: const {_ManagedFileKind.temporary},
+        allowedKinds: const {ManagedFileKind.temporary},
       );
       final after = _FileIdentity.fromStat(await afterFile!.stat());
       if (before != after || await handle.length() != 0) {
@@ -2400,7 +2402,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     File file,
     _FileIdentity expected, {
     required String operation,
-    required Set<_ManagedFileKind> allowedKinds,
+    required Set<ManagedFileKind> allowedKinds,
   }) async {
     final validated = await _validatedHistoryFile(
       file,
@@ -2419,7 +2421,10 @@ final class RollingFileLogHistory implements FileLogHistory {
     );
     final directories = <Directory>[];
     await for (final entity in root.list(followLinks: false)) {
-      if (!_dateNamePattern.hasMatch(_basename(entity.path))) continue;
+      if (!FileLogLayout.dateNamePattern
+          .hasMatch(FileLogLayout.basename(entity.path))) {
+        continue;
+      }
       if (entity is! Directory) {
         throw const FileLogAccessException(
           operation: 'deleteEmptyDateDirectories',
@@ -2440,21 +2445,10 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   String _dateDirectoryPath(DateTime date) =>
-      _join(sessionDirectory, _dateName(date));
+      FileLogLayout.join(sessionDirectory, FileLogLayout.dateName(date));
 
   String _legacyFilePath(DateTime date) =>
-      _join(sessionDirectory, 'logs_${_dateName(date)}.json');
-
-  String _dateName(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
-      '${date.month.toString().padLeft(2, '0')}-'
-      '${date.day.toString().padLeft(2, '0')}';
-
-  String _join(String parent, String child) =>
-      parent.endsWith(Platform.pathSeparator)
-          ? '$parent$child'
-          : '$parent${Platform.pathSeparator}$child';
-
-  String _basename(String path) => path.split(Platform.pathSeparator).last;
+      FileLogLayout.join(sessionDirectory, FileLogLayout.legacyFileName(date));
 }
 
 final class _PendingLog {
@@ -2524,11 +2518,4 @@ final class _FileIdentity {
 
   @override
   int get hashCode => Object.hash(size, mode, changed, modified);
-}
-
-enum _ManagedFileKind {
-  segment,
-  archive,
-  temporary,
-  legacy,
 }
