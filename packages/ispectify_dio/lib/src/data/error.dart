@@ -43,19 +43,13 @@ class DioErrorData {
         redactionActive: redactionActive,
         captureMode: captureMode,
       ),
-      NetworkJsonKeys.request: requestData.toJson(
-        includeData: shouldIncludeRequestData,
-        includeHeaders: shouldIncludeRequestHeaders,
-        redactionActive: redactionActive,
-        captureMode: captureMode,
-      ),
     };
   }
 
   /// Applies in-place redaction to a map produced by [toJson].
   ///
-  /// Also redacts the embedded [NetworkJsonKeys.response] and
-  /// [NetworkJsonKeys.request] sub-maps.
+  /// Also redacts the embedded [NetworkJsonKeys.response] sub-map, which
+  /// carries the originating request.
   static void redact(
     Map<String, dynamic> map,
     RedactionService redactor, {
@@ -82,16 +76,6 @@ class DioErrorData {
         case final Map<String, dynamic> responseMap) {
       DioResponseData.redact(
         responseMap,
-        redactor,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-        resourceLimits: resourceLimits,
-      );
-    }
-    if (map[NetworkJsonKeys.request]
-        case final Map<String, dynamic> requestMap) {
-      DioRequestData.redact(
-        requestMap,
         redactor,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,

@@ -89,8 +89,8 @@ class ISpectDioInterceptor extends Interceptor
     final requestId = generateTraceId();
     // RequestOptions copies carry extra, unlike Expando state.
     options.extra[NetworkJsonKeys.ispectRequestId] = requestId;
-    options.extra[NetworkJsonKeys.ispectRequestStartedAt] =
-        DateTime.now().microsecondsSinceEpoch;
+    options.extra[NetworkJsonKeys.ispectRequestStartedAt] = Stopwatch()
+      ..start();
 
     if (!logRequest || !_requestCaptureEnabled) return;
 
@@ -340,10 +340,7 @@ class ISpectDioInterceptor extends Interceptor
   }
 
   Duration? _elapsedSince(RequestOptions options) {
-    final startedAt = options.extra[NetworkJsonKeys.ispectRequestStartedAt];
-    if (startedAt is! int) return null;
-    final elapsedUs = DateTime.now().microsecondsSinceEpoch - startedAt;
-    // Negative if the wall clock stepped back between start and completion.
-    return elapsedUs >= 0 ? Duration(microseconds: elapsedUs) : null;
+    final stopwatch = options.extra[NetworkJsonKeys.ispectRequestStartedAt];
+    return stopwatch is Stopwatch ? stopwatch.elapsed : null;
   }
 }

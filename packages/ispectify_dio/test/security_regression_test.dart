@@ -628,9 +628,10 @@ void main() {
       final response = errorData[NetworkJsonKeys.response] as Map;
       expect(response.containsKey(NetworkJsonKeys.data), isFalse);
       expect(response.containsKey(NetworkJsonKeys.headers), isFalse);
-      final request = errorData[NetworkJsonKeys.request] as Map;
+      final request = response[NetworkJsonKeys.request] as Map;
       expect(request.containsKey(NetworkJsonKeys.data), isFalse);
       expect(request.containsKey(NetworkJsonKeys.headers), isFalse);
+      expect(errorData.containsKey(NetworkJsonKeys.request), isFalse);
       expect(log.exception, isNull);
       expect(log.error, isNull);
     });
@@ -683,9 +684,7 @@ void main() {
       final responseRequest = response[NetworkJsonKeys.request] as Map;
       expect(responseRequest.containsKey(NetworkJsonKeys.data), isFalse);
       expect(responseRequest.containsKey(NetworkJsonKeys.headers), isFalse);
-      final request = errorData[NetworkJsonKeys.request] as Map;
-      expect(request.containsKey(NetworkJsonKeys.data), isFalse);
-      expect(request.containsKey(NetworkJsonKeys.headers), isFalse);
+      expect(errorData.containsKey(NetworkJsonKeys.request), isFalse);
     });
 
     test('redacts free-text Dio error metadata and normalizes objects',
