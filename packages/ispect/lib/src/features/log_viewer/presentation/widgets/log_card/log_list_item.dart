@@ -23,6 +23,8 @@ class LogListItem extends StatelessWidget {
     this.typeColumnWidth = 100,
     this.timeColumnWidth = 100,
     this.searchMatchState = SearchMatchState.none,
+    this.logBuilder,
+    this.timeTicker,
     super.key,
   });
 
@@ -42,9 +44,26 @@ class LogListItem extends StatelessWidget {
   final double timeColumnWidth;
   final SearchMatchState searchMatchState;
 
+  /// Custom row builder resolved once by the list instead of per row.
+  final ISpectLogDataBuilder? logBuilder;
+
+  /// Ticks while relative timestamps are shown so only rows re-render.
+  final Listenable? timeTicker;
+
   @override
   Widget build(BuildContext context) {
-    final logBuilder = ISpect.read(context).options.logBuilder;
+    final ticker = timeTicker;
+    if (useRelativeTime && ticker != null) {
+      return ListenableBuilder(
+        listenable: ticker,
+        builder: (context, _) => _buildRow(context),
+      );
+    }
+    return _buildRow(context);
+  }
+
+  Widget _buildRow(BuildContext context) {
+    final logBuilder = this.logBuilder;
     if (logBuilder != null) {
       return logBuilder(context, logData);
     }

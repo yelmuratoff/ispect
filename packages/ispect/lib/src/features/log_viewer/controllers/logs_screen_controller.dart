@@ -59,6 +59,7 @@ class LogsScreenController {
     hasNewLogs.dispose();
     _relativeTimeTimer?.cancel();
     _relativeTimeTimer = null;
+    relativeTimeTick.dispose();
   }
 
   // --- Scroll tracking ---
@@ -375,11 +376,15 @@ class LogsScreenController {
 
   // --- Relative time timer ---
 
+  /// Advances every five seconds while relative timestamps are shown, so
+  /// only the rows listening to it re-render instead of the whole screen.
+  final ValueNotifier<int> relativeTimeTick = ValueNotifier<int>(0);
+
   void _onControllerChanged() {
     if (logsViewController.useRelativeTime) {
       _relativeTimeTimer ??= Timer.periodic(
         const Duration(seconds: 5),
-        (_) => _onStateChanged(),
+        (_) => relativeTimeTick.value++,
       );
     } else {
       _relativeTimeTimer?.cancel();

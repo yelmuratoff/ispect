@@ -37,25 +37,45 @@ class NetworkPayloadPreview extends StatelessWidget {
   );
 }
 
-class _BodyPreview extends StatelessWidget {
+class _BodyPreview extends StatefulWidget {
   const _BodyPreview({
     required this.body,
     required this.color,
     required this.maxStringLength,
   });
 
-  static const _maxLines = 20;
-
   final Object? body;
   final Color color;
   final int maxStringLength;
 
   @override
+  State<_BodyPreview> createState() => _BodyPreviewState();
+}
+
+class _BodyPreviewState extends State<_BodyPreview> {
+  static const _maxLines = 20;
+
+  Object? _formattedSource;
+  int _formattedMaxStringLength = -1;
+  String _formattedBody = '';
+
+  String _formatBody() {
+    if (!identical(_formattedSource, widget.body) ||
+        _formattedMaxStringLength != widget.maxStringLength) {
+      _formattedSource = widget.body;
+      _formattedMaxStringLength = widget.maxStringLength;
+      _formattedBody = JsonTruncator.pretty(
+        widget.body,
+        maxStringLength: widget.maxStringLength,
+      );
+    }
+    return _formattedBody;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final formattedBody = JsonTruncator.pretty(
-      body,
-      maxStringLength: maxStringLength,
-    );
+    final color = widget.color;
+    final formattedBody = _formatBody();
     final bodyStyle = TextStyle(
       color: context.appTheme.textColor.withValues(alpha: 0.78),
       fontSize: 11,

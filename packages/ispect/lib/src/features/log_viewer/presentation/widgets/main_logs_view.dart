@@ -156,15 +156,12 @@ class _MainLogsViewState extends State<MainLogsView> {
         matches = _reversedMatchesCache;
       }
       matchesToCommit = matches;
-
-      _updateSearchTargetVisualIndexes(
-        sortedEntries,
-        groupedEntries: groupedEntries?.entries,
-        isReversed: isReversed,
-      );
-    } else {
-      _clearSearchTargetVisualIndexes();
     }
+    _updateVisualIndexes(
+      sortedEntries,
+      groupedEntries: groupedEntries?.entries,
+      isReversed: isReversed,
+    );
     final logTypeKeys = widget.logsViewController.getLogTypeKeys(
       widget.logsData,
     );
@@ -207,7 +204,7 @@ class _MainLogsViewState extends State<MainLogsView> {
                 focusNode: widget.searchFocusNode,
                 title: widget.appBarTitle,
                 titlesController: widget.titleFiltersController,
-                titles: logTypeKeys.all,
+                counts: logTypeKeys.counts,
                 uniqTitles: logTypeKeys.unique,
                 controller: widget.logsViewController,
                 onSettingsTap: widget.onSettingsTap,
@@ -391,10 +388,15 @@ class _MainLogsViewState extends State<MainLogsView> {
       useRelativeTime: widget.logsViewController.useRelativeTime,
       typeColumnWidth: _controller.typeColumnWidth,
       timeColumnWidth: _controller.timeColumnWidth,
+      logBuilder: options.logBuilder,
+      timeTicker: _controller.relativeTimeTick,
     );
   }
 
-  void _updateSearchTargetVisualIndexes(
+  int? _visualIndexForKey(Key key) =>
+      key is ValueKey<String> ? _idToVisualIndex[key.value] : null;
+
+  void _updateVisualIndexes(
     List<ISpectLogData> sortedEntries, {
     required List<Object>? groupedEntries,
     required bool isReversed,
@@ -448,12 +450,6 @@ class _MainLogsViewState extends State<MainLogsView> {
     _lastVisualIndexReversed = isReversed;
   }
 
-  void _clearSearchTargetVisualIndexes() {
-    _idToVisualIndex = const {};
-    _lastVisualIndexInput = null;
-    _lastVisualIndexGeneration = -1;
-  }
-
   Widget _buildFlatList(
     List<ISpectLogData> sortedEntries,
     bool isDesktop,
@@ -461,14 +457,7 @@ class _MainLogsViewState extends State<MainLogsView> {
   ) => SuperSliverList.builder(
     listController: _controller.listController,
     itemCount: sortedEntries.length,
-    findChildIndexCallback: (key) {
-      if (key is! ValueKey<String>) return null;
-      final id = key.value;
-      for (var i = 0; i < sortedEntries.length; i++) {
-        if (sortedEntries[i].id == id) return i;
-      }
-      return null;
-    },
+    findChildIndexCallback: _visualIndexForKey,
     itemBuilder: (context, index) {
       final logEntry = _controller.getEntryAtVisualIndex(sortedEntries, index);
       return _buildLogListItem(
@@ -490,6 +479,7 @@ class _MainLogsViewState extends State<MainLogsView> {
   ) => SuperSliverList.builder(
     listController: _controller.listController,
     itemCount: entries.length,
+    findChildIndexCallback: _visualIndexForKey,
     itemBuilder: (context, index) {
       final visualIndex = isReversed ? entries.length - 1 - index : index;
       final entry = entries[visualIndex];
@@ -505,7 +495,7 @@ class _MainLogsViewState extends State<MainLogsView> {
         index: index,
         isDesktop: isDesktop,
         options: options,
-        key: ObjectKey(logEntry),
+        key: ValueKey(logEntry.id),
       );
     },
   );
@@ -515,7 +505,8 @@ class _MainLogsViewState extends State<MainLogsView> {
     required bool isDesktop,
   }) {
     final responseOrError = entry.response ?? entry.error;
-    return NetworkTransactionCard(
+    final useRelativeTime = widget.logsViewController.useRelativeTime;
+    final card = NetworkTransactionCard(
       key: ValueKey(entry.requestId),
       transaction: entry,
       searchMatchState: widget.logsViewController.matchStateForTransaction(
@@ -524,7 +515,7 @@ class _MainLogsViewState extends State<MainLogsView> {
       typeColumnWidth: _controller.typeColumnWidth,
       timeColumnWidth: _controller.timeColumnWidth,
       compactUrl: widget.logsViewController.compactNetworkUrls,
-      useRelativeTime: widget.logsViewController.useRelativeTime,
+      useRelativeTime: useRelativeTime,
       onTap: isDesktop
           ? () => widget.logsViewController.selectLog(entry.request)
           : null,
@@ -547,6 +538,12 @@ class _MainLogsViewState extends State<MainLogsView> {
               correlationDuration: entry.duration,
               onShowRelated: widget.logsViewController.searchByCorrelationId,
             ).push(context),
+    );
+    if (!useRelativeTime) return card;
+    return ListenableBuilder(
+      key: ValueKey(entry.requestId),
+      listenable: _controller.relativeTimeTick,
+      builder: (context, _) => card,
     );
   }
 }
