@@ -132,6 +132,9 @@ final class HttpComposerController extends ChangeNotifier {
     notifyListeners();
   }
 
+  static bool _isHttpScheme(Uri uri) =>
+      uri.isScheme('http') || uri.isScheme('https');
+
   /// Assembles the current state into a [NetworkReplayRequest].
   ///
   /// Returns `null` and sets [validationError] when the URL is missing/invalid
@@ -145,7 +148,7 @@ final class HttpComposerController extends ChangeNotifier {
       return null;
     }
     final parsed = Uri.tryParse(trimmedUrl);
-    if (parsed == null || !parsed.hasScheme) {
+    if (parsed == null || !_isHttpScheme(parsed)) {
       _validationError = ComposerValidation.urlInvalid;
       return null;
     }

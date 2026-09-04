@@ -96,6 +96,19 @@ void main() {
       expect(controller.validationError, ComposerValidation.urlInvalid);
     });
 
+    for (final url in const [
+      'file:///etc/passwd',
+      'content://com.example/secrets',
+      'javascript:alert(1)',
+    ]) {
+      test('rejects the non-http url $url', () {
+        final controller = _controller()..setUrl(url);
+
+        expect(controller.buildReplayRequest(), isNull);
+        expect(controller.validationError, ComposerValidation.urlInvalid);
+      });
+    }
+
     test('reports invalid JSON instead of building a request', () {
       final controller = _controller()
         ..setUrl('https://api.test')
