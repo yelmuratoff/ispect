@@ -128,96 +128,22 @@ class ISpectRiverpodObserver extends ProviderObserver {
     } catch (_) {}
   }
 
-  RedactionService? get _redactor => settings.isRedactionActive
-      ? ISpectRedaction.resolveService(service: settings.redactor)
-      : null;
-  // Every caller-controlled trace field is prepared below. A second generic
-  // pass would replace the configured redactor and repeat boundary traversal.
+  StateTracePreparer get _preparer => StateTracePreparer(
+        redactor: settings.isRedactionActive
+            ? ISpectRedaction.resolveService(service: settings.redactor)
+            : null,
+        captureMode: settings.captureMode,
+        resourceLimits: _resourceLimits,
+      );
+
+  // Every caller-controlled trace field is prepared by _preparer. A second
+  // generic pass would replace the configured redactor and repeat boundary
+  // traversal.
   ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
         redact: false,
         attachStackOnError: true,
         resourceLimits: _resourceLimits,
       );
-
-  bool get _redactionActive => settings.isRedactionActive;
-
-  Object? _prepareTraceValue(Object? value) {
-    final redactor = _redactor;
-    final redactionActive = _redactionActive;
-    final prepared = LogExportOutput.boundJsonValue(
-      value,
-      maxBytes: _resourceLimits.maxStateTraceBytes,
-      resourceLimits: _resourceLimits,
-      preserveTypes: redactionActive,
-      replaceOversizedStrings: redactionActive,
-      allowCustomSerialization:
-          settings.captureMode == DiagnosticCaptureMode.balanced,
-      allowCustomStringification:
-          settings.captureMode == DiagnosticCaptureMode.balanced,
-    );
-    if (!redactionActive) return prepared;
-    try {
-      final redacted = redactor!.redactForExport(
-        LogExportOutput.replaceTruncatedPrefixes(
-          prepared,
-          resourceLimits: _resourceLimits,
-        ),
-        resourceLimits: _resourceLimits,
-      );
-      return LogExportOutput.boundJsonValue(
-        redacted,
-        maxBytes: _resourceLimits.maxStateTraceBytes,
-        resourceLimits: _resourceLimits,
-        replaceOversizedStrings: true,
-      );
-    } catch (_) {
-      return '[REDACTED]';
-    }
-  }
-
-  String _prepareTraceText(Object? value) {
-    final prepared = _prepareTraceValue(value);
-    return switch (prepared) {
-      final String value => value,
-      final num value => value.toString(),
-      final bool value => value.toString(),
-      _ => '[REDACTED]',
-    };
-  }
-
-  Object? _prepareTraceError(Object? error) {
-    if (error == null) return null;
-    return _prepareTraceText(error);
-  }
-
-  StackTrace? _prepareTraceStack(StackTrace? stackTrace) {
-    if (stackTrace == null) return null;
-    return StackTrace.fromString(_prepareTraceText(stackTrace));
-  }
-
-  Map<String, Object?> _prepareTraceMeta(Map<String, dynamic> data) {
-    final prepared = _prepareTraceValue(data);
-    if (prepared is Map) {
-      final result = <String, Object?>{};
-      for (final entry in prepared.entries) {
-        if (entry.key case final String key) {
-          result[key] = entry.value;
-        }
-      }
-      return result;
-    }
-    return <String, Object?>{};
-  }
-
-  String _traceTarget(
-    Map<String, Object?> meta,
-    String key,
-    String fallback,
-  ) {
-    final value = meta[key];
-    if (value is String) return value;
-    return _redactionActive ? '[REDACTED]' : _prepareTraceText(fallback);
-  }
 
   String _providerName(ProviderBase<Object?> provider) =>
       LogExportOutput.truncateUtf8(
@@ -260,8 +186,8 @@ class ISpectRiverpodObserver extends ProviderObserver {
       captureMode: settings.captureMode,
       resourceLimits: _resourceLimits,
     );
-    final meta = _prepareTraceMeta(data.toJson());
-    final target = _traceTarget(
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(
       meta,
       RiverpodJsonKeys.providerName,
       data.providerName,
@@ -271,7 +197,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
       target: target,
       meta: meta,
       config: _traceConfig,
-      consoleMessage: _prepareTraceText(
+      consoleMessage: _preparer.prepareText(
         settings.printValues
             ? '[riverpod] add → $target\n'
                 'Value: ${meta[RiverpodJsonKeys.value]}'
@@ -324,8 +250,8 @@ class ISpectRiverpodObserver extends ProviderObserver {
       captureMode: settings.captureMode,
       resourceLimits: _resourceLimits,
     );
-    final meta = _prepareTraceMeta(data.toJson());
-    final target = _traceTarget(
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(
       meta,
       RiverpodJsonKeys.providerName,
       data.providerName,
@@ -339,7 +265,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
       target: target,
       meta: meta,
       config: _traceConfig,
-      consoleMessage: _prepareTraceText(
+      consoleMessage: _preparer.prepareText(
         '[riverpod] update → $target\n'
         '$previousFormatted → $nextFormatted',
       ),
@@ -373,8 +299,8 @@ class ISpectRiverpodObserver extends ProviderObserver {
       captureMode: settings.captureMode,
       resourceLimits: _resourceLimits,
     );
-    final meta = _prepareTraceMeta(data.toJson());
-    final target = _traceTarget(
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(
       meta,
       RiverpodJsonKeys.providerName,
       data.providerName,
@@ -384,7 +310,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
       target: target,
       meta: meta,
       config: _traceConfig,
-      consoleMessage: _prepareTraceText(
+      consoleMessage: _preparer.prepareText(
         '[riverpod] dispose → $target',
       ),
     );
@@ -421,8 +347,8 @@ class ISpectRiverpodObserver extends ProviderObserver {
       captureMode: settings.captureMode,
       resourceLimits: _resourceLimits,
     );
-    final meta = _prepareTraceMeta(data.toJson());
-    final target = _traceTarget(
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(
       meta,
       RiverpodJsonKeys.providerName,
       data.providerName,
@@ -430,11 +356,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
     _logger.riverpodFail(
       source: _source,
       target: target,
-      error: _prepareTraceError(error)!,
-      errorStackTrace: _prepareTraceStack(stackTrace),
+      error: _preparer.prepareError(error)!,
+      errorStackTrace: _preparer.prepareStack(stackTrace),
       meta: meta,
       config: _traceConfig,
-      consoleMessage: _prepareTraceText(
+      consoleMessage: _preparer.prepareText(
         '[riverpod] fail → $target',
       ),
     );

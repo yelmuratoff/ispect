@@ -40,7 +40,7 @@ class RiverpodUpdateData {
         resourceLimits: resourceLimits,
       );
 
-  String _valueType(Object? value) => safeRiverpodValueTypeLabel(
+  String _valueType(Object? value) => safeValueTypeLabel(
         value,
         captureMode: captureMode,
         resourceLimits: resourceLimits,
@@ -48,7 +48,7 @@ class RiverpodUpdateData {
 
   /// Returns a raw, JSON-compatible map of the event.
   ///
-  /// No redaction is applied. Call [redact] on the result when redaction
+  /// No redaction is applied. Call `redact` on the result when redaction
   /// is required.
   Map<String, dynamic> toJson() => <String, dynamic>{
         RiverpodJsonKeys.providerName: providerName,
@@ -62,6 +62,10 @@ class RiverpodUpdateData {
       };
 
   /// Applies in-place redaction to a map produced by [toJson].
+  @Deprecated(
+    'Observers prepare payloads through StateTracePreparer. '
+    'Will be removed in 8.0.0.',
+  )
   static void redact(Map<String, dynamic> map, RedactionService redactor) {
     map.updateAll(
       (key, value) => redactor.redact(value, keyName: key),

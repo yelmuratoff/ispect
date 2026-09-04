@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_bloc/src/safe_type_label.dart';
 import 'package:meta/meta.dart';
 
 typedef ISpectBlocTransitionFilter = bool Function(
@@ -142,7 +141,7 @@ class ISpectBlocSettings {
     Map<String, dynamic>? data,
   ) {
     if (data == null) return null;
-    return _prepareAdditionalData(
+    return StateTracePreparer.prepareAdditionalData(
       data,
       enableRedaction: isRedactionActive,
       redactor: redactor,
@@ -156,7 +155,7 @@ class ISpectBlocSettings {
   /// Returns the full object when verbose, otherwise its type label.
   Object formatEvent(Object? event) => printEventFullData
       ? (event ?? 'null')
-      : safeBlocValueTypeLabel(
+      : safeValueTypeLabel(
           event,
           captureMode: captureMode,
           resourceLimits: resourceLimits ?? DiagnosticResourceLimits.balanced,
@@ -167,7 +166,7 @@ class ISpectBlocSettings {
   /// Returns the full object when verbose, otherwise its type label.
   Object formatState(Object? state) => printStateFullData
       ? (state ?? 'null')
-      : safeBlocValueTypeLabel(
+      : safeValueTypeLabel(
           state,
           captureMode: captureMode,
           resourceLimits: resourceLimits ?? DiagnosticResourceLimits.balanced,
@@ -220,50 +219,4 @@ class ISpectBlocSettings {
             ? null
             : resourceLimits ?? this.resourceLimits,
       );
-}
-
-Map<String, dynamic> _prepareAdditionalData(
-  Map<String, dynamic> data, {
-  required bool enableRedaction,
-  required RedactionService? redactor,
-  required DiagnosticCaptureMode captureMode,
-  required DiagnosticResourceLimits resourceLimits,
-}) {
-  final redactionActive = enableRedaction && ISpectRedaction.enabled;
-  try {
-    final prepared = LogExportOutput.boundJsonValue(
-      data,
-      preserveTypes: redactionActive,
-      replaceOversizedStrings: redactionActive,
-      allowCustomSerialization: captureMode == DiagnosticCaptureMode.balanced,
-      allowCustomStringification: captureMode == DiagnosticCaptureMode.balanced,
-      resourceLimits: resourceLimits,
-    );
-    final Object? output;
-    if (redactionActive) {
-      output = ISpectRedaction.resolveService(
-        service: redactor,
-      ).redactForExport(
-        LogExportOutput.replaceTruncatedPrefixes(
-          prepared,
-          resourceLimits: resourceLimits,
-        ),
-        resourceLimits: resourceLimits,
-      );
-    } else {
-      output = prepared;
-    }
-    final bounded = LogExportOutput.boundJsonValue(
-      output,
-      replaceOversizedStrings: redactionActive,
-      resourceLimits: resourceLimits,
-    );
-    if (bounded is Map) {
-      return <String, dynamic>{
-        for (final entry in bounded.entries)
-          if (entry.key case final String key) key: entry.value,
-      };
-    }
-  } catch (_) {}
-  return <String, dynamic>{};
 }

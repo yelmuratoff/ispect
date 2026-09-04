@@ -38,6 +38,10 @@ class RiverpodDisposeData {
       };
 
   /// Applies in-place redaction to a map produced by [toJson].
+  @Deprecated(
+    'Observers prepare payloads through StateTracePreparer. '
+    'Will be removed in 8.0.0.',
+  )
   static void redact(Map<String, dynamic> map, RedactionService redactor) {
     map.updateAll(
       (key, value) => redactor.redact(value, keyName: key),
