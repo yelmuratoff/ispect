@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 
 /// Rounded card surface that reflects a [SearchMatchState]: subtle highlight
@@ -12,7 +13,9 @@ class ISpectSearchHighlightSurface extends StatelessWidget {
   const ISpectSearchHighlightSurface({
     required this.searchMatchState,
     required this.child,
-    this.borderRadius = const BorderRadius.all(Radius.circular(16)),
+    this.borderRadius = const BorderRadius.all(
+      Radius.circular(ISpectConstants.largeBorderRadius),
+    ),
     this.clipContent = true,
     super.key,
   });

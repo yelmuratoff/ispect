@@ -52,13 +52,11 @@ class ISpectBorderedSurface extends StatelessWidget {
         (_isInteractive ? context.ispectCardColor : Colors.transparent);
     final resolvedBorder = borderColor ?? context.ispectSubtleBorderColor;
 
-    final radius = borderRadius;
-    final shape = ISpectSquircle.borderOf(radius);
+    final shape = ISpectSquircle.borderOf(borderRadius);
 
     final shell = DecoratedBox(
       decoration: ShapeDecoration(
-        shape: ContinuousRectangleBorder(
-          borderRadius: radius,
+        shape: shape.copyWith(
           side: BorderSide(color: resolvedBorder, width: borderWidth),
         ),
       ),

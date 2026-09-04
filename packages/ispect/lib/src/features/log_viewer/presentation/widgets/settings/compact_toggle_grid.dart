@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/toggle_spec.dart';
 
 class CompactToggleGrid extends StatelessWidget {
@@ -68,6 +69,9 @@ class CompactToggleRow extends StatelessWidget {
               : cardColor,
           borderColor: enabled ? primaryColor.withValues(alpha: 0.45) : null,
           borderWidth: enabled ? 1.2 : 1,
+          borderRadius: const BorderRadius.all(
+            Radius.circular(ISpectConstants.largeBorderRadius),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           child: Row(
             children: [

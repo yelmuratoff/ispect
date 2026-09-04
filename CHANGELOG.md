@@ -42,6 +42,8 @@
 - **WebSocket correlation:** `onSent` and `onReceived` accept a `messageId` to pair a frame with its reply.
 - **Larger diagnostic handoff:** Larger payload, record, and export budgets; exports report actual and truncated counts, and imports report skipped records.
 - **Clearer network cards:** Larger body previews with explicit truncation cues, and header names stay visible with redacted values behind a compact disclosure.
+- **Tighter log cards:** Mobile log and network cards use a smaller corner radius that matches the search field.
+- **Rounder tiles:** Bordered tiles in the context menu, Settings, and HTTP composer draw their outline with the same squircle corner as their fill, so the corners are no longer visibly sharper than the rest of the UI.
 - **Panel header:** The open panel shows the `pageTitle` with a close control, and every action tile shows a localized caption.
 
 ### Bug Fixes
