@@ -74,6 +74,66 @@ void main() {
     },
   );
 
+  testWidgets('Cmd/Ctrl+C masks credentials inside a free-form message', (
+    tester,
+  ) async {
+    String? clipboardText;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            clipboardText = (call.arguments as Map?)?['text'] as String?;
+          }
+          return null;
+        });
+
+    final viewController = ISpectViewController();
+    final scrollController = ScrollController();
+    final searchFocusNode = FocusNode();
+    final titleFiltersController = GroupButtonController();
+    final controller = LogsScreenController(
+      logsViewController: viewController,
+      logsScrollController: scrollController,
+      searchFocusNode: searchFocusNode,
+      titleFiltersController: titleFiltersController,
+      onStateChanged: () {},
+    );
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+      controller.dispose();
+      titleFiltersController.dispose();
+      searchFocusNode.dispose();
+      scrollController.dispose();
+      viewController.dispose();
+    });
+
+    const secret = 'KEYBOARD_COPY_BEARER_SECRET';
+    ISpectRedaction.enabled = false;
+    final log = ISpectLogData('Authorization: Bearer $secret');
+    ISpectRedaction.enabled = true;
+    viewController.activeData = log;
+
+    await tester.pumpWidget(appShell(const SizedBox.shrink()));
+    final context = tester.element(find.byType(SizedBox));
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    final result = controller.handleKeyEvent(
+      controller.keyboardFocusNode,
+      const KeyDownEvent(
+        physicalKey: PhysicalKeyboardKey.keyC,
+        logicalKey: LogicalKeyboardKey.keyC,
+        timeStamp: Duration.zero,
+      ),
+      [log],
+      context,
+    );
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pumpAndSettle();
+
+    expect(result, KeyEventResult.handled);
+    expect(clipboardText, isNotNull);
+    expect(clipboardText, isNot(contains(secret)));
+  });
+
   testWidgets('Cmd/Ctrl+C safely minimizes hostile values', (tester) async {
     String? clipboardText;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
