@@ -124,7 +124,8 @@ String _buildHeader(ISpectLogData data, ConsoleSettings settings) {
   final levelLabel = (explicitLevel ?? levelFromKey ?? 'log').toUpperCase();
   final paddedLevel = levelLabel.padRight(_levelColumnWidth);
 
-  final source = _readNonEmptyString(data, TraceKeys.source);
+  final fields = maskedDiagnosticFields(data, _headerFieldKeys);
+  final source = _readNonEmptyString(fields, TraceKeys.source);
   final sourceLabel = source != null ? ' [$source]' : '';
 
   final keyIsLevel = captured.key != null &&
@@ -136,7 +137,7 @@ String _buildHeader(ISpectLogData data, ConsoleSettings settings) {
       ? ISpectDateTimeFormatter(captured.time).iso8601Local
       : ISpectDateTimeFormatter(captured.time).defaultFormat;
 
-  final metadata = _buildMetadata(data, settings);
+  final metadata = _buildMetadata(fields, settings);
   final metadataSection = metadata.isEmpty ? '' : ' $metadata |';
 
   return '$paddedLevel$sourceLabel$categoryLabel | $timestamp |$metadataSection ';
@@ -156,20 +157,27 @@ String _buildBody(ISpectLogData data) {
   return headline.isEmpty ? networkBody : '$headline\n$networkBody';
 }
 
+const List<String> _headerFieldKeys = [
+  TraceKeys.source,
+  TraceKeys.transactionId,
+  TraceKeys.correlationId,
+  TraceKeys.durationMs,
+];
+
 String _buildMetadata(
-  ISpectLogData data,
+  Map<String, Object?> fields,
   ConsoleSettings settings,
 ) {
   final parts = <String>[];
-  final tid = _readNonEmptyString(data, TraceKeys.transactionId);
+  final tid = _readNonEmptyString(fields, TraceKeys.transactionId);
   if (tid != null) {
     parts.add('tid=${settings.truncateTraceIds ? _shortenTraceId(tid) : tid}');
   }
-  final cid = _readNonEmptyString(data, TraceKeys.correlationId);
+  final cid = _readNonEmptyString(fields, TraceKeys.correlationId);
   if (cid != null) {
     parts.add('cid=${settings.truncateTraceIds ? _shortenTraceId(cid) : cid}');
   }
-  final dur = _readInt(data, TraceKeys.durationMs);
+  final dur = _readInt(fields, TraceKeys.durationMs);
   if (dur != null) parts.add('dur=${dur}ms');
   return parts.join(' ');
 }
@@ -193,14 +201,14 @@ String _shortenTraceId(String id) {
   return id.substring(0, _shortIdLength);
 }
 
-String? _readNonEmptyString(ISpectLogData data, String key) {
-  final raw = maskedDiagnosticField(data, key);
+String? _readNonEmptyString(Map<String, Object?> fields, String key) {
+  final raw = fields[key];
   if (raw is! String || raw.isEmpty) return null;
   return raw;
 }
 
-int? _readInt(ISpectLogData data, String key) {
-  final raw = maskedDiagnosticField(data, key);
+int? _readInt(Map<String, Object?> fields, String key) {
+  final raw = fields[key];
   if (raw is int) return raw;
   if (raw is num) return raw.toInt();
   if (raw is String) return int.tryParse(raw);

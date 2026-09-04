@@ -96,8 +96,17 @@ base class ISpectLogData {
   final StackTrace? _stackTrace;
   final String? _stackTraceSnapshot;
   final DiagnosticMasker? _maskAdditionalData;
+  final _MaskedPayloadCache _masked = _MaskedPayloadCache();
 
-  late final Map<String, dynamic>? _maskedAdditionalData = _computeMasked();
+  Map<String, dynamic>? get _maskedAdditionalData {
+    final cache = _masked;
+    if (!cache.ready) {
+      cache
+        ..value = _computeMasked()
+        ..ready = true;
+    }
+    return cache.value;
+  }
 
   Map<String, dynamic>? _computeMasked() {
     final mask = _maskAdditionalData;
@@ -351,11 +360,45 @@ StackTrace capturedDiagnosticStackTrace(String text) =>
 Object? maskedDiagnosticField(ISpectLogData data, String key) {
   final captured = data._additionalData;
   if (captured == null) return null;
+  if (data._masked.ready) return data._masked.value?[key];
   final value = captured[key];
   if (value == null) return null;
   final mask = data._maskAdditionalData;
   if (mask == null) return value;
   return mask(<String, dynamic>{key: value}, data._resourceLimits)?[key];
+}
+
+/// Masks the captured values under [keys] in one pass without materializing
+/// the whole masked map.
+///
+/// Absent and `null` fields are omitted from the result.
+Map<String, Object?> maskedDiagnosticFields(
+  ISpectLogData data,
+  Iterable<String> keys,
+) {
+  final captured = data._additionalData;
+  if (captured == null) return const <String, Object?>{};
+  if (data._masked.ready) {
+    final full = data._masked.value;
+    if (full == null) return const <String, Object?>{};
+    return <String, Object?>{
+      for (final key in keys)
+        if (full[key] != null) key: full[key],
+    };
+  }
+  final subset = <String, dynamic>{
+    for (final key in keys)
+      if (captured[key] != null) key: captured[key],
+  };
+  if (subset.isEmpty) return const <String, Object?>{};
+  final mask = data._maskAdditionalData;
+  if (mask == null) return subset;
+  return mask(subset, data._resourceLimits) ?? const <String, Object?>{};
+}
+
+final class _MaskedPayloadCache {
+  Map<String, dynamic>? value;
+  bool ready = false;
 }
 
 String? _captureDiagnostic(
