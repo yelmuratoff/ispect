@@ -58,8 +58,6 @@ class _LogsScreenState extends State<LogsScreen> {
     _logsViewController =
         widget.controller ??
         ISpectViewController(
-          onShare: widget.options.onShare,
-          metadataProvider: widget.options.metadataProvider,
           initialSettings: widget.options.initialSettings,
           onSettingsChanged: _handleSettingsChanged,
         );
