@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'inspector_state.dart';
 import 'ispect_layout_enabled.dart';
@@ -178,6 +179,8 @@ class InspectorController {
   ui.Image? _image;
   ui.Image? get image => _image;
   Offset? _pointerHoverPosition;
+  Offset? _pendingHover;
+  bool _hoverHandledThisFrame = false;
   bool _isDisposed = false;
   int _stateMutationDepth = 0;
   bool _stateRefreshPending = false;

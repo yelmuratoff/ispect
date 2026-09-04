@@ -12,10 +12,17 @@ import 'package:flutter/widgets.dart';
 /// Returns `null` before the first frame or when no element owns [target] (a
 /// detached render object). The walk stops at the first match.
 Element? elementForRenderObject(RenderObject target) {
+  final cached = _ownerByRenderObject[target];
+  if (cached != null &&
+      cached.mounted &&
+      identical(cached.renderObject, target)) {
+    return cached;
+  }
+
   final root = WidgetsBinding.instance.rootElement;
   if (root == null) return null;
 
-  Element? owner;
+  RenderObjectElement? owner;
   void visit(Element element) {
     if (owner != null) return;
     if (element is RenderObjectElement && element.renderObject == target) {
@@ -26,5 +33,9 @@ Element? elementForRenderObject(RenderObject target) {
   }
 
   visit(root);
+  if (owner != null) _ownerByRenderObject[target] = owner!;
   return owner;
 }
+
+final Expando<RenderObjectElement> _ownerByRenderObject =
+    Expando<RenderObjectElement>('elementForRenderObject');

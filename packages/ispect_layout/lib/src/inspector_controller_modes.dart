@@ -105,6 +105,8 @@ extension InspectorControllerModes on InspectorController {
         break;
     }
 
+    _hoverHandledThisFrame = false;
+    _pendingHover = null;
     _batchStateUpdates(() {
       _cleanupMode(modeNotifier.value, mode, context);
       modeNotifier.value = mode;

@@ -66,8 +66,24 @@ extension InspectorControllerPointer on InspectorController {
     });
   }
 
+  /// Handles at most one hover sample per frame: the first sample in a frame
+  /// is processed immediately, later ones replace each other and the newest
+  /// is processed once the frame ends.
   void onPointerHoverDebounced(Offset pointerOffset, BuildContext context) {
     if (!isEnabled) return;
+    if (_hoverHandledThisFrame) {
+      _pendingHover = pointerOffset;
+      return;
+    }
+    _hoverHandledThisFrame = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _hoverHandledThisFrame = false;
+      final pending = _pendingHover;
+      _pendingHover = null;
+      if (pending != null && !_isDisposed && isEnabled) {
+        _batchStateUpdates(() => _onPointerHover(pending));
+      }
+    });
     _batchStateUpdates(() => _onPointerHover(pointerOffset));
   }
 
