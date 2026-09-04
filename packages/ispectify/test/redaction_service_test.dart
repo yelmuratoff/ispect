@@ -732,6 +732,32 @@ void main() {
         expect(result, isNot(contains('user:pass')));
       });
 
+      test('masks a provider token embedded in a path segment', () {
+        final service = RedactionService();
+        const token = 'ghp_abcdefghijklmnopqrstuvwxyz';
+        final result = service.redactUrl(
+          'https://api.example.com/invite/$token/accept',
+        );
+        expect(result, isNot(contains(token)));
+        expect(result, startsWith('https://api.example.com/invite/'));
+        expect(result, endsWith('/accept'));
+      });
+
+      test('masks a JWT embedded in a path segment', () {
+        final service = RedactionService();
+        const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.'
+            'SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJVadQssw5c';
+        final result = service.redactUrl('https://app.example.com/reset/$jwt');
+        expect(result, isNot(contains(jwt)));
+        expect(result, startsWith('https://app.example.com/reset/'));
+      });
+
+      test('keeps a REST path that resembles a filesystem path', () {
+        final service = RedactionService();
+        const url = 'https://api.example.com/home/users/42/var/settings';
+        expect(service.redactUrl(url), url);
+      });
+
       test('returns unparseable URL unchanged when nothing is sensitive', () {
         final service = RedactionService();
         const bad = ':::not-a-url';

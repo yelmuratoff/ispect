@@ -1239,17 +1239,32 @@ class RedactionService {
         : null;
     final fragmentChanged =
         redactedFragment != null && redactedFragment != uri.fragment;
-    if (!queryChanged && !hasUserInfo && !fragmentChanged) return url;
+    final redactedPath = uri.path.isEmpty ? null : _redactPathTokens(uri.path);
+    final pathChanged = redactedPath != null && redactedPath != uri.path;
+    if (!queryChanged && !hasUserInfo && !fragmentChanged && !pathChanged) {
+      return url;
+    }
 
     final redacted = uri
         .replace(
           userInfo: hasUserInfo ? ph.userInfoRedactedPlaceholder : null,
+          path: pathChanged ? redactedPath : null,
           query: queryChanged ? redactedQuery : null,
           fragment: fragmentChanged ? redactedFragment : null,
         )
         .toString();
     return redacted.length <= maxOutputLength ? redacted : _config.placeholder;
   }
+
+  String _redactPathTokens(String path) => path
+      .replaceAllMapped(
+        _embeddedJwtPattern,
+        (m) => '${m[1]}${_config.placeholder}',
+      )
+      .replaceAllMapped(
+        _embeddedKnownTokenPattern,
+        (m) => '${m[1]}${_config.placeholder}',
+      );
 
   String _redactQuery(
     String query, {
