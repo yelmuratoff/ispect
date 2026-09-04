@@ -538,6 +538,7 @@ class ISpectLogger {
     if (!_isActive || !_options.enabled) return;
     if (_isProcessing) return;
     if (!hasActiveConsumers) return;
+    if (_pipeline.vetoesKey(captureISpectLogWithoutPayload(data).key)) return;
 
     _isProcessing = true;
     try {

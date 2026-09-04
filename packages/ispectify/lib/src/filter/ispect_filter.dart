@@ -62,11 +62,15 @@ class ISpectFilter implements Filter<ISpectLogData> {
   late final bool _isEmpty =
       _types.isEmpty && _logTypeKeys.isEmpty && _searchFilter == null;
 
+  /// Whether an entry with [key] is rejected before any other criterion runs.
+  bool vetoesKey(String? key) =>
+      key != null && _excludedLogTypeKeys.contains(key);
+
   @override
   bool apply(ISpectLogData item) {
-    if (_excludedLogTypeKeys.isNotEmpty) {
-      final key = captureISpectLogWithoutPayload(item).key;
-      if (key != null && _excludedLogTypeKeys.contains(key)) return false;
+    if (_excludedLogTypeKeys.isNotEmpty &&
+        vetoesKey(captureISpectLogWithoutPayload(item).key)) {
+      return false;
     }
     if (_isEmpty) return true;
     for (final filter in filters) {

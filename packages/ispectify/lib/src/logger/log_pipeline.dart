@@ -48,6 +48,13 @@ final class LogPipeline {
     _filter = null;
   }
 
+  /// Whether the active filter rejects [key] outright, so the caller can skip
+  /// capture and redaction for an entry that would be dropped anyway.
+  bool vetoesKey(String? key) {
+    final filter = _filter;
+    return filter is ISpectFilter && filter.vetoesKey(key);
+  }
+
   bool shouldProcess(ISpectLogData data) {
     if (!_options.enabled) return false;
     try {
