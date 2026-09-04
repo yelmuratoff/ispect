@@ -20,7 +20,7 @@ class ISpectAppBar extends StatefulWidget {
     required this.title,
     required this.titlesController,
     required this.controller,
-    required this.titles,
+    required this.counts,
     required this.uniqTitles,
     required this.onToggleTitle,
     required this.focusNode,
@@ -39,7 +39,7 @@ class ISpectAppBar extends StatefulWidget {
   final GroupButtonController titlesController;
   final ISpectViewController controller;
 
-  final List<String?> titles;
+  final Map<String, int> counts;
   final List<String?> uniqTitles;
 
   final VoidCallback? onSettingsTap;
@@ -232,7 +232,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
       routeSettings: const RouteSettings(name: 'ISpect Filter Sheet'),
       builder: (context, scrollController) => ISpectFilterSheet(
         controller: widget.controller,
-        titles: widget.titles,
+        counts: widget.counts,
         uniqTitles: widget.uniqTitles,
         titlesController: widget.titlesController,
         onToggleTitle: widget.onToggleTitle,

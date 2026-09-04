@@ -39,7 +39,7 @@ void main() {
             title: title,
             titlesController: titlesController,
             controller: controller,
-            titles: const ['info', 'error'],
+            counts: const {'info': 1, 'error': 1},
             uniqTitles: const ['info', 'error'],
             onToggleTitle: (_, __) {},
             focusNode: focusNode,

@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/cache/filter_cache.dart';
 
-typedef LogTypeKeysResult = ({List<String> all, List<String> unique});
+typedef LogTypeKeysResult = ({Map<String, int> counts, List<String> unique});
 
 /// Handles all filtering-related state and operations.
 class FilterManager {
@@ -66,7 +66,7 @@ class FilterManager {
   String? _lastSearchMatchQuery;
   List<ISpectLogData>? _lastSearchMatchInput;
 
-  List<String>? _cachedAllKeys;
+  Map<String, int>? _cachedKeyCounts;
   List<String>? _cachedUniqueKeys;
   int _lastKeysGeneration = -1;
 
@@ -279,30 +279,28 @@ class FilterManager {
 
   LogTypeKeysResult getLogTypeKeys(List<ISpectLogData> logsData) {
     if (_lastKeysGeneration == _dataGeneration) {
-      final cachedAll = _cachedAllKeys;
+      final cachedCounts = _cachedKeyCounts;
       final cachedUnique = _cachedUniqueKeys;
-      if (cachedAll != null && cachedUnique != null) {
-        return (all: cachedAll, unique: cachedUnique);
+      if (cachedCounts != null && cachedUnique != null) {
+        return (counts: cachedCounts, unique: cachedUnique);
       }
     }
 
-    final allKeys = <String>[];
-    final uniqueKeysSet = <String>{};
-
+    final counts = <String, int>{};
     for (final data in logsData) {
       final key = captureISpectLogWithoutPayload(data).key;
       if (key == null || isExcluded(key)) continue;
-      allKeys.add(key);
-      uniqueKeysSet.add(key);
+      counts[key] = (counts[key] ?? 0) + 1;
     }
 
-    final uniqueKeys = uniqueKeysSet.toList(growable: false);
+    final uniqueKeys = counts.keys.toList(growable: false);
+    final frozenCounts = Map<String, int>.unmodifiable(counts);
 
-    _cachedAllKeys = allKeys;
+    _cachedKeyCounts = frozenCounts;
     _cachedUniqueKeys = uniqueKeys;
     _lastKeysGeneration = _dataGeneration;
 
-    return (all: allKeys, unique: uniqueKeys);
+    return (counts: frozenCounts, unique: uniqueKeys);
   }
 
   void dispose() {

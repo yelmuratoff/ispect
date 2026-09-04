@@ -13,7 +13,7 @@ import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controlle
 class ISpectFilterSheet extends StatelessWidget {
   const ISpectFilterSheet({
     required this.controller,
-    required this.titles,
+    required this.counts,
     required this.uniqTitles,
     required this.titlesController,
     required this.onToggleTitle,
@@ -23,7 +23,7 @@ class ISpectFilterSheet extends StatelessWidget {
   });
 
   final ISpectViewController controller;
-  final List<String?> titles;
+  final Map<String, int> counts;
   final List<String?> uniqTitles;
   final GroupButtonController titlesController;
   final Function(String title, bool selected) onToggleTitle;
@@ -62,7 +62,7 @@ class ISpectFilterSheet extends StatelessWidget {
               const Gap(4),
               ISpectSectionLabel(title: context.ispectL10n.logTypes),
               _LogTypeChipsWrap(
-                titles: titles,
+                counts: counts,
                 uniqTitles: uniqTitles,
                 titlesController: titlesController,
                 onToggle: onToggleTitle,
@@ -175,62 +175,55 @@ class _SearchModeSection extends StatelessWidget {
 
 class _LogTypeChipsWrap extends StatelessWidget {
   const _LogTypeChipsWrap({
-    required this.titles,
+    required this.counts,
     required this.uniqTitles,
     required this.titlesController,
     required this.onToggle,
     required this.theme,
   });
 
-  final List<String?> titles;
+  final Map<String, int> counts;
   final List<String?> uniqTitles;
   final GroupButtonController titlesController;
   final Function(String title, bool selected) onToggle;
   final ISpectTheme theme;
 
   @override
-  Widget build(BuildContext context) {
-    final countMap = <String?, int>{};
-    for (final t in titles) {
-      countMap[t] = (countMap[t] ?? 0) + 1;
-    }
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: List.generate(uniqTitles.length, (index) {
+        final title = uniqTitles[index];
+        final count = counts[title] ?? 0;
+        final isSelected = titlesController.selectedIndexes.contains(index);
+        final typeColor =
+            theme.getTypeColor(context, key: title) ?? Colors.grey;
+        final typeIcon = theme.getTypeIcon(context, key: title);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: List.generate(uniqTitles.length, (index) {
-          final title = uniqTitles[index];
-          final count = countMap[title] ?? 0;
-          final isSelected = titlesController.selectedIndexes.contains(index);
-          final typeColor =
-              theme.getTypeColor(context, key: title) ?? Colors.grey;
-          final typeIcon = theme.getTypeIcon(context, key: title);
-
-          return _LogTypeChip(
-            title: title ?? '',
-            count: count,
-            isSelected: isSelected,
-            typeColor: typeColor,
-            typeIcon: typeIcon,
-            onSelected: (selected) {
-              switch (selected) {
-                case true:
-                  titlesController.selectIndex(index);
-                case false:
-                  titlesController.unselectIndex(index);
-              }
-              onToggle(
-                title ?? '',
-                titlesController.selectedIndexes.contains(index),
-              );
-            },
-          );
-        }),
-      ),
-    );
-  }
+        return _LogTypeChip(
+          title: title ?? '',
+          count: count,
+          isSelected: isSelected,
+          typeColor: typeColor,
+          typeIcon: typeIcon,
+          onSelected: (selected) {
+            switch (selected) {
+              case true:
+                titlesController.selectIndex(index);
+              case false:
+                titlesController.unselectIndex(index);
+            }
+            onToggle(
+              title ?? '',
+              titlesController.selectedIndexes.contains(index),
+            );
+          },
+        );
+      }),
+    ),
+  );
 }
 
 class _LogTypeChip extends StatelessWidget {

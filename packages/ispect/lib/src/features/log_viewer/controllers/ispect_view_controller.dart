@@ -349,15 +349,28 @@ class ISpectViewController implements Listenable {
 
   /// Returns counts of `error`/`critical` and `warning` entries in [logsData].
   ({int errors, int warnings}) getLevelStats(List<ISpectLogData> logsData) {
-    if (_cachedLevelStats != null &&
-        identical(_cachedLevelStatsInput, logsData) &&
-        _cachedLevelStatsLength == logsData.length) {
-      return _cachedLevelStats!;
+    final cached = _cachedLevelStats;
+    final previous = _cachedLevelStatsInput;
+    if (cached != null &&
+        identical(previous, logsData) &&
+        _cachedLevelStatsLength == logsData.length &&
+        _cachedLevelStatsGeneration == outputGeneration) {
+      return cached;
     }
+
     var errors = 0;
     var warnings = 0;
-    for (final log in logsData) {
-      final captured = captureISpectLogWithoutPayload(log);
+    var start = 0;
+    if (cached != null &&
+        previous != null &&
+        _cachedLevelStatsGeneration == outputGeneration &&
+        _isAppendOnlyExtension(previous, logsData)) {
+      errors = cached.errors;
+      warnings = cached.warnings;
+      start = previous.length;
+    }
+    for (var index = start; index < logsData.length; index++) {
+      final captured = captureISpectLogWithoutPayload(logsData[index]);
       if (_filterManager.isExcluded(captured.key)) continue;
       final level = captured.logLevel;
       if (level == LogLevel.error || level == LogLevel.critical) {
@@ -370,12 +383,23 @@ class ISpectViewController implements Listenable {
     _cachedLevelStats = result;
     _cachedLevelStatsInput = logsData;
     _cachedLevelStatsLength = logsData.length;
+    _cachedLevelStatsGeneration = outputGeneration;
     return result;
+  }
+
+  static bool _isAppendOnlyExtension(
+    List<ISpectLogData> previous,
+    List<ISpectLogData> current,
+  ) {
+    if (previous.isEmpty || current.length < previous.length) return false;
+    return identical(previous.first, current.first) &&
+        identical(previous.last, current[previous.length - 1]);
   }
 
   ({int errors, int warnings})? _cachedLevelStats;
   List<ISpectLogData>? _cachedLevelStatsInput;
   int _cachedLevelStatsLength = -1;
+  int _cachedLevelStatsGeneration = -1;
 
   void handleLogTypeKeyFilterToggle(String key, {required bool isSelected}) =>
       _filterManager.handleLogTypeKeyFilterToggle(key, isSelected: isSelected);
