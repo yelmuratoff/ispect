@@ -294,8 +294,10 @@ void main() {
             ),
           );
 
-          final responseData =
-              _meta(logger.history.single)[NetworkJsonKeys.responseData] as Map;
+          final payloadKey = statusCode >= 400
+              ? NetworkJsonKeys.errorData
+              : NetworkJsonKeys.responseData;
+          final responseData = _meta(logger.history.single)[payloadKey] as Map;
           expect(
             responseData.containsKey(NetworkJsonKeys.multipartRequest),
             isFalse,
@@ -487,7 +489,7 @@ void main() {
       );
 
       final responseData =
-          _meta(logger.history.single)[NetworkJsonKeys.responseData] as Map;
+          _meta(logger.history.single)[NetworkJsonKeys.errorData] as Map;
       expect(responseData.containsKey(NetworkJsonKeys.body), isFalse);
       expect(responseData.containsKey(NetworkJsonKeys.headers), isFalse);
       expect(responseData.containsKey(NetworkJsonKeys.statusMessage), isFalse);

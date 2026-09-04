@@ -123,6 +123,7 @@ abstract final class NetworkJsonKeys {
   // WebSocket
 
   static const String metrics = 'metrics';
+  static const String raw = 'raw';
 
   // Internal
 

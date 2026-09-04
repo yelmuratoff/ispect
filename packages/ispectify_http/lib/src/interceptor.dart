@@ -113,7 +113,7 @@ class ISpectHttpInterceptor
 
     if (!logRequest || !_requestCaptureEnabled) return;
 
-    final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
+    final redactionActive = settings.isRedactionActive;
     final operation = redactDiagnosticText(
       request.method,
       useRedaction: redactionActive,
@@ -194,7 +194,7 @@ class ISpectHttpInterceptor
     final sw = request != null ? _stopwatches[request] : null;
     sw?.stop();
 
-    final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
+    final redactionActive = settings.isRedactionActive;
     final method = request?.method ?? 'UNKNOWN';
     final operation = redactDiagnosticText(
       method,
@@ -248,7 +248,10 @@ class ISpectHttpInterceptor
     final baseMeta = <String, Object?>{
       if (requestId != null) NetworkJsonKeys.requestId: requestId,
       NetworkJsonKeys.statusCode: response.statusCode,
-      NetworkJsonKeys.responseData: responseDataJson,
+      if (isErrorResponse)
+        NetworkJsonKeys.errorData: responseDataJson
+      else
+        NetworkJsonKeys.responseData: responseDataJson,
     };
 
     if (!_captureResponseEnabled(isErrorResponse)) return;

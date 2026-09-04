@@ -13,10 +13,25 @@ enum WsConnectionState { connecting, open, closing, closed, reconnecting }
 /// clients that cannot report them omit the arguments.
 abstract interface class WsDiagnosticsSink {
   /// Records an outbound frame. [url] and [metrics] are optional context.
-  void onSent(Object data, {String? url, Map<String, Object?>? metrics});
+  ///
+  /// [messageId] correlates this frame with its reply instead of the whole
+  /// connection session, for clients that carry request identifiers.
+  void onSent(
+    Object data, {
+    String? url,
+    Map<String, Object?>? metrics,
+    String? messageId,
+  });
 
   /// Records an inbound frame. [url] and [metrics] are optional context.
-  void onReceived(Object data, {String? url, Map<String, Object?>? metrics});
+  ///
+  /// [messageId] correlates this frame with the request it answers.
+  void onReceived(
+    Object data, {
+    String? url,
+    Map<String, Object?>? metrics,
+    String? messageId,
+  });
 
   /// Records a connection-state transition. [raw] is the client's own state
   /// object, retained as a stringified hint when present.

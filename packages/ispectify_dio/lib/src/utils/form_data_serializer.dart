@@ -22,12 +22,13 @@ final class DioFormDataSerializer {
           NetworkJsonKeys.data: entry.value,
         },
       ),
-      maxBytes: resourceLimits.maxNetworkBodyBytes ~/ 2,
+      maxBytes: MultipartCapture.sectionBudget(resourceLimits),
       resourceLimits: resourceLimits,
       replaceOversizedStrings: redactionActive,
     );
-    final rawFiles = LogExportOutput.boundJsonValue(
-      formData.files.map(
+    return MultipartCapture.envelope(
+      fields: _collectFields(rawFields),
+      files: formData.files.map(
         (file) => <String, Object?>{
           NetworkJsonKeys.fieldName: file.key,
           NetworkJsonKeys.filename: file.value.filename,
@@ -36,41 +37,9 @@ final class DioFormDataSerializer {
           NetworkJsonKeys.headers: file.value.headers,
         },
       ),
-      maxBytes: resourceLimits.maxNetworkBodyBytes ~/ 2,
+      redactionActive: redactionActive,
       resourceLimits: resourceLimits,
-      replaceOversizedStrings: redactionActive,
     );
-    final fields = _collectFields(rawFields);
-    final files = <Map<String, Object?>>[];
-    if (rawFiles is List<Object?>) {
-      for (final item in rawFiles) {
-        if (item is Map<String, Object?>) {
-          files.add(item);
-        } else {
-          files.add(
-            <String, Object?>{
-              JsonValueNormalizer.traversalMarkerKey: item,
-            },
-          );
-          break;
-        }
-      }
-    }
-    final bounded = LogExportOutput.boundJsonValue(
-      <String, Object?>{
-        NetworkJsonKeys.fields: fields,
-        NetworkJsonKeys.files: files,
-      },
-      maxBytes: resourceLimits.maxNetworkBodyBytes,
-      resourceLimits: resourceLimits,
-      replaceOversizedStrings: redactionActive,
-    );
-    return bounded is Map<String, Object?>
-        ? Map<String, dynamic>.from(bounded)
-        : <String, dynamic>{
-            NetworkJsonKeys.fields: <String, Object?>{},
-            NetworkJsonKeys.files: <Object?>[],
-          };
   }
 
   static Map<String, dynamic> _collectFields(Object? rawFields) {

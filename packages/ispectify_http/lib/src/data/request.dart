@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
 
@@ -95,59 +92,15 @@ class HttpRequestData {
     required bool redactionActive,
   }) {
     try {
-      final bytes = request.bodyBytes;
-      if (bytes.isEmpty) return '';
-      final maxBodyBytes = resourceLimits.maxNetworkBodyBytes;
-      final oversized = bytes.lengthInBytes > maxBodyBytes;
-      if (oversized && redactionActive) {
-        return LogExportOutput.truncatedMarker;
-      }
-
-      final markerBytes = LogExportOutput.utf8Length(
-        LogExportOutput.truncatedMarker,
-      );
-      final prefixBytes = oversized
-          ? (maxBodyBytes - markerBytes).clamp(0, bytes.lengthInBytes)
-          : bytes.lengthInBytes;
-      final decoded = _decodePrefix(
-        bytes,
+      return BoundedByteBody.decode(
+        request.bodyBytes,
         request.encoding,
-        prefixBytes,
-        recoverTruncatedCodePoint: oversized,
-      );
-      final withMarker =
-          oversized ? '$decoded${LogExportOutput.truncatedMarker}' : decoded;
-      final bounded = LogExportOutput.boundJsonValue(
-        withMarker,
-        maxBytes: maxBodyBytes,
         resourceLimits: resourceLimits,
-        replaceOversizedStrings: redactionActive,
+        redactionActive: redactionActive,
       );
-      return bounded is String ? bounded : JsonValueNormalizer.unprintableValue;
     } on Object {
       return LogExportOutput.truncatedMarker;
     }
-  }
-
-  static String _decodePrefix(
-    Uint8List bytes,
-    Encoding encoding,
-    int end, {
-    required bool recoverTruncatedCodePoint,
-  }) {
-    Object? lastError;
-    final attempts = recoverTruncatedCodePoint ? 4 : 1;
-    for (var removed = 0; removed < attempts && end - removed >= 0; removed++) {
-      try {
-        return encoding.decode(
-          Uint8List.sublistView(bytes, 0, end - removed),
-        );
-      } on FormatException catch (error) {
-        lastError = error;
-      }
-    }
-    if (lastError case final FormatException error) throw error;
-    throw const FormatException('Unable to decode request body');
   }
 
   static void redact(

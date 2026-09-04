@@ -288,9 +288,15 @@ final class HttpComposerController extends ChangeNotifier {
     if (meta is! Map) return null;
     final requestData = meta[NetworkJsonKeys.requestData];
     if (requestData is Map) return Map<String, dynamic>.from(requestData);
-    final responseData = meta[NetworkJsonKeys.responseData];
-    if (responseData is Map) {
-      final nested = responseData[NetworkJsonKeys.request];
+    for (final key in const [
+      NetworkJsonKeys.responseData,
+      NetworkJsonKeys.errorData,
+    ]) {
+      final payload = meta[key];
+      if (payload is! Map) continue;
+      final nested =
+          payload[NetworkJsonKeys.request] ??
+          (payload[NetworkJsonKeys.response] as Map?)?[NetworkJsonKeys.request];
       if (nested is Map) return Map<String, dynamic>.from(nested);
     }
     return null;

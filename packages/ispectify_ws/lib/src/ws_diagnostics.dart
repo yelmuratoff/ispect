@@ -74,7 +74,12 @@ final class WsDiagnostics
   }
 
   @override
-  void onSent(Object data, {String? url, Map<String, Object?>? metrics}) =>
+  void onSent(
+    Object data, {
+    String? url,
+    Map<String, Object?>? metrics,
+    String? messageId,
+  }) =>
       guardDiagnostics(
         _logger,
         () => _emitFrame(
@@ -82,12 +87,18 @@ final class WsDiagnostics
           isSend: true,
           rawUrl: url,
           metrics: metrics,
+          messageId: messageId,
         ),
         what: 'WebSocket send capture',
       );
 
   @override
-  void onReceived(Object data, {String? url, Map<String, Object?>? metrics}) =>
+  void onReceived(
+    Object data, {
+    String? url,
+    Map<String, Object?>? metrics,
+    String? messageId,
+  }) =>
       guardDiagnostics(
         _logger,
         () => _emitFrame(
@@ -95,6 +106,7 @@ final class WsDiagnostics
           isSend: false,
           rawUrl: url,
           metrics: metrics,
+          messageId: messageId,
         ),
         what: 'WebSocket receive capture',
       );
@@ -116,7 +128,7 @@ final class WsDiagnostics
     if (!settings.logRequests && !settings.logResponses) return;
 
     final correlationId = _correlationId;
-    final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
+    final redactionActive = settings.isRedactionActive;
     final safeSource = redactDiagnosticText(
       source,
       useRedaction: redactionActive,
@@ -134,8 +146,8 @@ final class WsDiagnostics
       config: _traceConfig,
       consoleMessage: '→ state:${state.name} $normalizedUrl',
       meta: {
-        'url': normalizedUrl,
-        if (safeRaw != null) 'raw': safeRaw,
+        NetworkJsonKeys.url: normalizedUrl,
+        if (safeRaw != null) NetworkJsonKeys.raw: safeRaw,
       },
     );
   }
@@ -156,7 +168,7 @@ final class WsDiagnostics
     if (!_captureEnabled) return;
 
     final correlationId = _correlationId;
-    final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
+    final redactionActive = settings.isRedactionActive;
     final safeSource = redactDiagnosticText(
       source,
       useRedaction: redactionActive,
@@ -201,7 +213,7 @@ final class WsDiagnostics
       errorStackTrace: safeStackTrace,
       correlationId: correlationId,
       config: _traceConfig,
-      meta: {'url': normalizedUrl, 'path': path},
+      meta: {NetworkJsonKeys.url: normalizedUrl, NetworkJsonKeys.path: path},
     );
   }
 
@@ -210,13 +222,14 @@ final class WsDiagnostics
     required bool isSend,
     required String? rawUrl,
     required Map<String, Object?>? metrics,
+    required String? messageId,
   }) {
     if (!_captureEnabled) return;
     if (isSend && !settings.logRequests) return;
     if (!isSend && !settings.logResponses) return;
 
-    final correlationId = _correlationId;
-    final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
+    final correlationId = messageId ?? _correlationId;
+    final redactionActive = settings.isRedactionActive;
     final safeSource = redactDiagnosticText(
       source,
       useRedaction: redactionActive,
@@ -249,10 +262,10 @@ final class WsDiagnostics
       final metricsMap = _processMetrics(metrics, redactionActive);
 
       final traceMeta = <String, Object?>{
-        if (includeData) 'data': safeData,
-        if (metricsMap != null) 'metrics': metricsMap,
-        'url': url,
-        'path': path,
+        if (includeData) NetworkJsonKeys.data: safeData,
+        if (metricsMap != null) NetworkJsonKeys.metrics: metricsMap,
+        NetworkJsonKeys.url: url,
+        NetworkJsonKeys.path: path,
         NetworkLogRenderer.renderHintsKey: {
           NetworkLogRenderer.hintPrintBody: includeData,
         },
@@ -280,7 +293,7 @@ final class WsDiagnostics
         error: settings.printErrorMessage ? _frameCaptureFailure : null,
         correlationId: correlationId,
         config: _traceConfig,
-        meta: {'url': url, 'path': path},
+        meta: {NetworkJsonKeys.url: url, NetworkJsonKeys.path: path},
       );
     }
   }

@@ -103,9 +103,18 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
   }
 
   bool get printSentData => printRequestData;
+
+  /// Accepted for interface compatibility; WebSocket frames carry no headers,
+  /// so it has no effect.
   bool get printSentHeaders => printRequestHeaders;
   bool get printReceivedData => printResponseData;
+
+  /// Accepted for interface compatibility; WebSocket frames carry no headers,
+  /// so it has no effect.
   bool get printReceivedHeaders => printResponseHeaders;
+
+  /// Accepted for interface compatibility; WebSocket frames carry no status
+  /// message, so it has no effect.
   bool get printReceivedMessage => printResponseMessage;
   AnsiPen? get sentPen => requestPen;
   AnsiPen? get receivedPen => responsePen;

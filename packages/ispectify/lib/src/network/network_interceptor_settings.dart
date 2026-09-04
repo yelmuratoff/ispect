@@ -83,6 +83,10 @@ abstract class BaseNetworkInterceptorSettings
   /// Enable sensitive data redaction when `true` (default: `true`).
   final bool enableRedaction;
 
+  /// Whether this adapter masks values: its own [enableRedaction] flag
+  /// combined with the process-wide [ISpectRedaction.enabled] switch.
+  bool get isRedactionActive => enableRedaction && ISpectRedaction.enabled;
+
   /// Controls whether application-defined payload formatters may run.
   final DiagnosticCaptureMode captureMode;
 

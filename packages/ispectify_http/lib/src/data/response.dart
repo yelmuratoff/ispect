@@ -28,9 +28,6 @@ class HttpResponseData {
   /// [response.bodyBytes].
   final Object? _preDecodedBody;
 
-  Object? get preDecodedBody =>
-      identical(_preDecodedBody, _bodyNotPrepared) ? null : _preDecodedBody;
-
   Map<String, dynamic> toJson({
     bool includeData = true,
     bool includeHeaders = true,
@@ -211,31 +208,11 @@ class HttpResponseData {
     required DiagnosticResourceLimits resourceLimits,
   }) {
     if (bytes.isEmpty) return null;
-    final maxBodyBytes = resourceLimits.maxNetworkBodyBytes;
-    final oversized = bytes.lengthInBytes > maxBodyBytes;
-    if (oversized && redactionActive) {
-      return LogExportOutput.truncatedMarker;
-    }
-
-    final markerBytes = LogExportOutput.utf8Length(
-      LogExportOutput.truncatedMarker,
-    );
-    final prefixBytes = oversized
-        ? (maxBodyBytes - markerBytes).clamp(0, bytes.lengthInBytes)
-        : bytes.lengthInBytes;
-    final decoded = _decodePrefix(
+    final bounded = BoundedByteBody.decode(
       bytes,
       _encodingFor(headers),
-      prefixBytes,
-      recoverTruncatedCodePoint: oversized,
-    );
-    final withMarker =
-        oversized ? '$decoded${LogExportOutput.truncatedMarker}' : decoded;
-    final bounded = LogExportOutput.boundJsonValue(
-      withMarker,
-      maxBytes: maxBodyBytes,
       resourceLimits: resourceLimits,
-      replaceOversizedStrings: redactionActive,
+      redactionActive: redactionActive,
     );
     return NetworkPayloadSanitizer.decodeJsonGracefully(
       bounded,
@@ -256,27 +233,6 @@ class HttpResponseData {
       return utf8;
     }
     return latin1;
-  }
-
-  static String _decodePrefix(
-    Uint8List bytes,
-    Encoding encoding,
-    int end, {
-    required bool recoverTruncatedCodePoint,
-  }) {
-    Object? lastError;
-    final attempts = recoverTruncatedCodePoint ? 4 : 1;
-    for (var removed = 0; removed < attempts && end - removed >= 0; removed++) {
-      try {
-        return encoding.decode(
-          Uint8List.sublistView(bytes, 0, end - removed),
-        );
-      } on FormatException catch (error) {
-        lastError = error;
-      }
-    }
-    if (lastError case final FormatException error) throw error;
-    throw const FormatException('Unable to decode response body');
   }
 }
 

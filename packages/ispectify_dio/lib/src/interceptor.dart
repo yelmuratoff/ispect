@@ -94,7 +94,7 @@ class ISpectDioInterceptor extends Interceptor
 
     if (!logRequest || !_requestCaptureEnabled) return;
 
-    final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
+    final redactionActive = settings.isRedactionActive;
     final operation = redactDiagnosticText(
       options.method,
       useRedaction: redactionActive,
@@ -166,7 +166,7 @@ class ISpectDioInterceptor extends Interceptor
     final requestId = _requestIdOf(requestOptions);
     final duration = _elapsedSince(requestOptions);
 
-    final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
+    final redactionActive = settings.isRedactionActive;
     final operation = redactDiagnosticText(
       requestOptions.method,
       useRedaction: redactionActive,
@@ -245,7 +245,7 @@ class ISpectDioInterceptor extends Interceptor
     final requestId = _requestIdOf(requestOptions);
     final duration = _elapsedSince(requestOptions);
 
-    final redactionActive = settings.enableRedaction && ISpectRedaction.enabled;
+    final redactionActive = settings.isRedactionActive;
     final operation = redactDiagnosticText(
       requestOptions.method,
       useRedaction: redactionActive,
