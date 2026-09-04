@@ -28,7 +28,10 @@ class DefaultISpectLoggerHistory implements ILogHistory {
     List<ISpectLogData>? history,
   }) {
     if (kISpectEnabled && history != null) {
-      _history.addAll(history);
+      final maxItems = settings.maxHistoryItems;
+      if (maxItems <= 0) return;
+      final overflow = history.length - maxItems;
+      _history.addAll(overflow > 0 ? history.skip(overflow) : history);
     }
   }
 
