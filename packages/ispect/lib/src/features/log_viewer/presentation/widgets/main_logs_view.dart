@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/services/network_transaction_service.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
 import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/logs_view_pipeline.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/desktop_status_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/empty_logs_widget.dart';
@@ -50,16 +50,7 @@ class MainLogsView extends StatefulWidget {
 
 class _MainLogsViewState extends State<MainLogsView> {
   late final LogsScreenController _controller;
-  final _transactionService = NetworkTransactionService();
-
-  Map<String, int> _idToVisualIndex = const {};
-  List<ISpectLogData>? _lastVisualIndexInput;
-  int _lastVisualIndexGeneration = -1;
-  bool _lastVisualIndexGrouped = false;
-  bool _lastVisualIndexReversed = false;
-
-  List<ISpectLogData>? _lastRawMatches;
-  List<ISpectLogData> _reversedMatchesCache = const [];
+  late final LogsViewPipeline _pipeline;
 
   void _focusSearchField() {
     if (!mounted) return;
@@ -79,6 +70,7 @@ class _MainLogsViewState extends State<MainLogsView> {
         if (mounted) setState(() {});
       },
     );
+    _pipeline = LogsViewPipeline(screen: _controller);
     HardwareKeyboard.instance.addHandler(_globalKeyHandler);
   }
 
@@ -102,7 +94,7 @@ class _MainLogsViewState extends State<MainLogsView> {
     final focusedId = widget.logsViewController.focusedMatchId;
     if (focusedId == null) return;
 
-    final visualIndex = _idToVisualIndex[focusedId];
+    final visualIndex = _pipeline.visualIndexOf(focusedId);
     if (visualIndex == null) return;
 
     try {
@@ -120,65 +112,20 @@ class _MainLogsViewState extends State<MainLogsView> {
 
   @override
   Widget build(BuildContext context) {
-    final isHighlightMode =
-        widget.logsViewController.searchMode == SearchMode.highlight;
-
-    final filteredLogEntries = isHighlightMode
-        ? widget.logsViewController.applyFiltersWithoutSearch(widget.logsData)
-        : widget.logsViewController.applyCurrentFilters(widget.logsData);
-
-    final levelStats = widget.logsViewController.getLevelStats(widget.logsData);
-
-    final sortedEntries = _controller.applySortingIfNeeded(filteredLogEntries);
-
-    final isReversed =
-        widget.logsViewController.sortColumn == LogSortColumn.time &&
-        widget.logsViewController.isLogOrderReversed;
-
-    final shouldGroupLogs =
-        widget.logsViewController.groupHttpLogs &&
-        widget.logsViewController.filter.logTypeKeys.isEmpty;
-    final groupedEntries = shouldGroupLogs
-        ? _transactionService.getGroupedEntries(
-            sortedEntries,
-            widget.logsViewController.outputGeneration,
-          )
-        : null;
-
-    List<ISpectLogData>? matchesToCommit;
-    if (isHighlightMode) {
-      var matches = widget.logsViewController.findSearchMatches(sortedEntries);
-      if (isReversed && matches.isNotEmpty) {
-        if (!identical(matches, _lastRawMatches)) {
-          _reversedMatchesCache = matches.reversed.toList();
-          _lastRawMatches = matches;
-        }
-        matches = _reversedMatchesCache;
-      }
-      matchesToCommit = matches;
-    }
-    _updateVisualIndexes(
-      sortedEntries,
-      groupedEntries: groupedEntries?.entries,
-      isReversed: isReversed,
-    );
-    final logTypeKeys = widget.logsViewController.getLogTypeKeys(
-      widget.logsData,
-    );
+    final state = _pipeline.compute(widget.logsData);
 
     final options = ISpect.read(context).options;
     final isDesktop = context.screenSize.isDesktop;
-    final isFiltered = filteredLogEntries.length != widget.logsData.length;
-
-    final liveLogsLength = widget.logsData.length;
-    if (matchesToCommit != null || liveLogsLength != _controller.lastLogCount) {
+    final matchesToCommit = state.searchMatches;
+    if (matchesToCommit != null ||
+        state.totalCount != _controller.lastLogCount) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         if (matchesToCommit != null) {
           widget.logsViewController.updateSearchMatches(matchesToCommit);
         }
         _controller.checkForNewLogs(
-          liveLogsLength,
+          state.totalCount,
           isDesktop: isDesktop,
           onMount: () {
             if (mounted) _controller.scrollToNewest();
@@ -206,8 +153,8 @@ class _MainLogsViewState extends State<MainLogsView> {
                 focusNode: widget.searchFocusNode,
                 title: widget.appBarTitle,
                 titlesController: widget.titleFiltersController,
-                counts: logTypeKeys.counts,
-                uniqTitles: logTypeKeys.unique,
+                counts: state.logTypeKeys.counts,
+                uniqTitles: state.logTypeKeys.unique,
                 controller: widget.logsViewController,
                 onSettingsTap: widget.onSettingsTap,
                 onToggleTitle: (key, selected) => widget.logsViewController
@@ -215,14 +162,14 @@ class _MainLogsViewState extends State<MainLogsView> {
                 backgroundColor: widget.iSpectTheme.theme.background?.resolve(
                   context,
                 ),
-                filteredCount: isHighlightMode
+                filteredCount: state.isHighlightMode
                     ? widget.logsViewController.searchMatchCount
-                    : filteredLogEntries.length,
-                totalCount: isHighlightMode
-                    ? filteredLogEntries.length
-                    : widget.logsData.length,
-                errorCount: levelStats.errors,
-                warningCount: levelStats.warnings,
+                    : state.filtered.length,
+                totalCount: state.isHighlightMode
+                    ? state.filtered.length
+                    : state.totalCount,
+                errorCount: state.levelStats.errors,
+                warningCount: state.levelStats.warnings,
                 onScrollToFocusedMatch: _scrollToFocusedMatch,
               ),
               if (isDesktop)
@@ -256,17 +203,12 @@ class _MainLogsViewState extends State<MainLogsView> {
                   ),
                 ),
               if (!isDesktop) const SliverGap(4),
-              if (sortedEntries.isEmpty)
+              if (state.sorted.isEmpty)
                 const SliverToBoxAdapter(child: EmptyLogsWidget()),
-              if (groupedEntries != null)
-                _buildGroupedList(
-                  groupedEntries.entries,
-                  isReversed,
-                  isDesktop,
-                  options,
-                )
+              if (state.grouped case final grouped?)
+                _buildGroupedList(grouped, state.isReversed, isDesktop, options)
               else
-                _buildFlatList(sortedEntries, isDesktop, options),
+                _buildFlatList(state.sorted, isDesktop, options),
               // Extra space for status bar on desktop
               SliverGap(isDesktop ? 36 : 8),
             ],
@@ -312,9 +254,9 @@ class _MainLogsViewState extends State<MainLogsView> {
             right: 0,
             bottom: 0,
             child: DesktopStatusBar(
-              filteredCount: filteredLogEntries.length,
-              totalCount: widget.logsData.length,
-              isFiltered: isFiltered,
+              filteredCount: state.filtered.length,
+              totalCount: state.totalCount,
+              isFiltered: state.isFiltered,
               selectedLog: widget.logsViewController.activeData,
               isLiveTailActive: _controller.isLiveTailActive,
               isLiveTailPaused: _controller.isLiveTailPaused,
@@ -396,61 +338,7 @@ class _MainLogsViewState extends State<MainLogsView> {
   }
 
   int? _visualIndexForKey(Key key) =>
-      key is ValueKey<String> ? _idToVisualIndex[key.value] : null;
-
-  void _updateVisualIndexes(
-    List<ISpectLogData> sortedEntries, {
-    required List<Object>? groupedEntries,
-    required bool isReversed,
-  }) {
-    final generation = widget.logsViewController.outputGeneration;
-    final isGrouped = groupedEntries != null;
-    if (identical(sortedEntries, _lastVisualIndexInput) &&
-        generation == _lastVisualIndexGeneration &&
-        isGrouped == _lastVisualIndexGrouped &&
-        isReversed == _lastVisualIndexReversed) {
-      return;
-    }
-
-    final visualIndexes = <String, int>{};
-    if (groupedEntries case final entries?) {
-      for (var visualIndex = 0; visualIndex < entries.length; visualIndex++) {
-        final dataIndex = isReversed
-            ? entries.length - 1 - visualIndex
-            : visualIndex;
-        final entry = entries[dataIndex];
-        if (entry is ISpectLogData) {
-          visualIndexes[entry.id] = visualIndex;
-        } else if (entry is NetworkTransaction) {
-          visualIndexes[entry.request.id] = visualIndex;
-          if (entry.response case final response?) {
-            visualIndexes[response.id] = visualIndex;
-          }
-          if (entry.error case final error?) {
-            visualIndexes[error.id] = visualIndex;
-          }
-        }
-      }
-    } else {
-      for (
-        var visualIndex = 0;
-        visualIndex < sortedEntries.length;
-        visualIndex++
-      ) {
-        final entry = _controller.getEntryAtVisualIndex(
-          sortedEntries,
-          visualIndex,
-        );
-        visualIndexes[entry.id] = visualIndex;
-      }
-    }
-
-    _idToVisualIndex = visualIndexes;
-    _lastVisualIndexInput = sortedEntries;
-    _lastVisualIndexGeneration = generation;
-    _lastVisualIndexGrouped = isGrouped;
-    _lastVisualIndexReversed = isReversed;
-  }
+      key is ValueKey<String> ? _pipeline.visualIndexOf(key.value) : null;
 
   Widget _buildFlatList(
     List<ISpectLogData> sortedEntries,
