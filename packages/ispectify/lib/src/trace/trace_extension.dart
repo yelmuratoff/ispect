@@ -140,23 +140,49 @@ extension ISpectTrace on ISpectLogger {
               resourceLimits,
             );
 
-        final safeCategoryId = prepareText(category.id);
-        final safeSource = prepareText(source);
-        final safeOperation = prepareText(operation);
-        final safeTarget = target == null ? null : prepareText(target);
-        final safeKey = key == null ? null : prepareText(key);
-        final safeLogKey = prepareText(resolvedLogKey);
+        final scalars = _prepareTracePayload(
+          <String?>[
+            category.id,
+            source,
+            operation,
+            target,
+            key,
+            resolvedLogKey,
+          ],
+          redactor,
+          captureMode,
+          resourceLimits,
+        );
+        String? safeScalar(int index) {
+          if (scalars is! List || index >= scalars.length) {
+            return defaultPlaceholder;
+          }
+          final value = scalars[index];
+          return value == null
+              ? null
+              : _tracePayloadText(value, resourceLimits);
+        }
 
-        final rawMessage = consoleMessage ??
-            buildTraceMessage(
-              operation: safeOperation,
-              source: safeSource,
-              target: safeTarget,
-              key: safeKey,
-              duration: duration,
-              success: !isError,
-            );
-        final message = prepareText(rawMessage);
+        final safeCategoryId = safeScalar(0) ?? defaultPlaceholder;
+        final safeSource = safeScalar(1) ?? defaultPlaceholder;
+        final safeOperation = safeScalar(2) ?? defaultPlaceholder;
+        final safeTarget = target == null ? null : safeScalar(3);
+        final safeKey = key == null ? null : safeScalar(4);
+        final safeLogKey = safeScalar(5) ?? defaultPlaceholder;
+
+        final message = consoleMessage != null
+            ? prepareText(consoleMessage)
+            : LogExportOutput.truncateUtf8(
+                buildTraceMessage(
+                  operation: safeOperation,
+                  source: safeSource,
+                  target: safeTarget,
+                  key: safeKey,
+                  duration: duration,
+                  success: !isError,
+                ),
+                maxBytes: resourceLimits.maxCapturedValueBytes,
+              );
 
         final safeMetaValue = _prepareTracePayload(
           meta,
