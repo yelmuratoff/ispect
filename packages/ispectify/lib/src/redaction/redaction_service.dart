@@ -4,22 +4,12 @@ import 'dart:typed_data';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
 import 'package:ispectify/src/redaction/key_canonicalizer.dart';
+import 'package:ispectify/src/redaction/map_key.dart';
 import 'package:ispectify/src/redaction/redaction_config.dart';
 import 'package:ispectify/src/redaction/redaction_request.dart';
 import 'package:ispectify/src/redaction/redaction_walker.dart';
 
 export 'package:ispectify/src/redaction/constants/key_defaults.dart';
-
-const String _unprintableMapKey = '<unprintable-key>';
-
-({String value, bool isSafe}) _safeMapKey(Object? key) => switch (key) {
-      String() => (value: key, isSafe: true),
-      null => (value: 'null', isSafe: true),
-      bool() => (value: key ? 'true' : 'false', isSafe: true),
-      num() => (value: key.toString(), isSafe: true),
-      Enum() => (value: key.name, isSafe: true),
-      _ => (value: _unprintableMapKey, isSafe: false),
-    };
 
 /// A configurable service that redacts sensitive values in headers and payloads.
 ///
@@ -1053,6 +1043,10 @@ class RedactionService {
 
   /// Like [redactHeaders], but also returns [RedactionStats] describing
   /// what was redacted and why.
+  @Deprecated(
+    'Redaction provenance is reported by NetworkPayloadSanitizer. '
+    'Will be removed in 8.0.0.',
+  )
   HeaderRedactionResult redactHeadersWithStats(
     Map<String, Object?> headers, {
     Set<String>? ignoredValues,
@@ -1080,6 +1074,10 @@ class RedactionService {
 
   /// Like [redact], but also returns [RedactionStats] describing
   /// what was redacted and why.
+  @Deprecated(
+    'Redaction provenance is reported by NetworkPayloadSanitizer. '
+    'Will be removed in 8.0.0.',
+  )
   RedactionResult redactWithStats(
     Object? data, {
     String? keyName,
@@ -1625,8 +1623,11 @@ class RedactionService {
   // Target redaction (static — Layer 2, trace pipeline)
 
   /// Redacts URL credentials and query params with sensitive keys in a target
-  /// string. Used by the `trace()` pipeline for auto-redaction of the target
-  /// field.
+  /// string.
+  @Deprecated(
+    'Unused by the toolkit; call redactUrl on a configured service instead. '
+    'Will be removed in 8.0.0.',
+  )
   static String redactTarget(String target, Set<String> redactKeys) {
     if (!ISpectRedaction.enabled) return target;
     return RedactionService(sensitiveKeys: redactKeys).redactUrl(target);
@@ -2034,7 +2035,7 @@ class RedactionService {
     if (data is Map) {
       final out = <String, Object?>{};
       data.forEach((k, v) {
-        final normalizedKey = _safeMapKey(k);
+        final normalizedKey = safeMapKey(k);
         final hit = normalizedKey.isSafe &&
             lowerKeys.contains(normalizedKey.value.toLowerCase());
         out[normalizedKey.value] = !normalizedKey.isSafe || hit

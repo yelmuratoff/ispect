@@ -175,6 +175,10 @@ base class ISpectLogData {
   ///   when the level was implicitly derived from the key).
   /// - No trailing newline: the message follows inline so each log entry
   ///   occupies a single line (multi-line payloads keep their own newlines).
+  @Deprecated(
+    'Console lines are rendered by HumanLogEntryFormatter, which also carries '
+    'source, category, and correlation metadata. Will be removed in 8.0.0.',
+  )
   String get header {
     final explicitLevel = _logLevel?.name;
     final levelFromKey = _levelFromKey(_key);
@@ -186,7 +190,7 @@ base class ISpectLogData {
     return '$paddedLevel$keyLabel | $_formattedTime | ';
   }
 
-  /// Width of the level column in [header] output.
+  /// Width of the level column in the header output.
   ///
   /// Chosen as `7` to fit `WARNING`/`VERBOSE` exactly and leave `INFO`/`DEBUG`/
   /// `ERROR` with consistent right-padding, trading a one-character overflow

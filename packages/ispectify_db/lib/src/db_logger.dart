@@ -486,10 +486,10 @@ extension ISpectLoggerDb on ISpectLogger {
       DbMessageFormatter.build(
         operation: operation,
         table: table,
-        statement: _metaString(meta, 'statement'),
+        statement: _metaString(meta, DbLogKeys.statement),
         key: key,
-        items: _metaInt(meta, 'items'),
-        affected: _metaInt(meta, 'affected'),
+        items: _metaInt(meta, DbLogKeys.items),
+        affected: _metaInt(meta, DbLogKeys.affected),
         sizeBytes: sizeBytes,
         cacheHit: cacheHit,
         success: success ? null : false,
@@ -505,7 +505,7 @@ extension ISpectLoggerDb on ISpectLogger {
   static int? _metaInt(Map<String, Object?>? meta, String key) {
     final direct = meta?[key];
     if (direct is int) return direct;
-    final projected = meta?['value'];
+    final projected = meta?[DbLogKeys.value];
     if (projected is Map) {
       final nested = projected[key];
       if (nested is int) return nested;
@@ -743,29 +743,29 @@ extension ISpectLoggerDb on ISpectLogger {
               );
 
     final dbMeta = ISpectDbCore.clean(<String, Object?>{
-      'statementDigest': digest,
-      'statement': shouldRedact ? normalizedStmt : truncatedStmt,
+      DbLogKeys.statementDigest: digest,
+      DbLogKeys.statement: shouldRedact ? normalizedStmt : truncatedStmt,
       if (input.table != null)
-        'table': _boundDbText(
+        DbLogKeys.table: _boundDbText(
           input.table!,
           shouldRedact: shouldRedact,
           resourceLimits: resourceLimits,
         ),
       if (input.key != null)
-        'key': _boundDbText(
+        DbLogKeys.key: _boundDbText(
           _safeDbKey(input.key, shouldRedact)!,
           shouldRedact: shouldRedact,
           resourceLimits: resourceLimits,
         ),
-      'args': processedArgs,
-      'namedArgs': processedNamedArgs,
-      if (input.affected != null) 'affected': input.affected,
-      if (input.items != null) 'items': input.items,
-      if (input.sizeBytes != null) 'sizeBytes': input.sizeBytes,
-      if (input.cacheHit != null) 'cacheHit': input.cacheHit,
-      if (truncatedValue != null) 'value': truncatedValue,
-      if (processedMeta != null) 'userMeta': processedMeta,
-      if (errorText != null) 'dbError': errorText,
+      DbLogKeys.args: processedArgs,
+      DbLogKeys.namedArgs: processedNamedArgs,
+      if (input.affected != null) DbLogKeys.affected: input.affected,
+      if (input.items != null) DbLogKeys.items: input.items,
+      if (input.sizeBytes != null) DbLogKeys.sizeBytes: input.sizeBytes,
+      if (input.cacheHit != null) DbLogKeys.cacheHit: input.cacheHit,
+      if (truncatedValue != null) DbLogKeys.value: truncatedValue,
+      if (processedMeta != null) DbLogKeys.userMeta: processedMeta,
+      if (errorText != null) DbLogKeys.dbError: errorText,
     });
     final boundedMeta = LogExportOutput.boundJsonValue(
       dbMeta,

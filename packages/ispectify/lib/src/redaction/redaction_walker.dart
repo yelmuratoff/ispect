@@ -4,21 +4,11 @@ import 'dart:typed_data';
 import 'package:ispectify/src/redaction/constants/detection_patterns.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
 import 'package:ispectify/src/redaction/key_canonicalizer.dart';
+import 'package:ispectify/src/redaction/map_key.dart';
 import 'package:ispectify/src/redaction/redaction_config.dart';
 import 'package:ispectify/src/redaction/redaction_request.dart';
 import 'package:ispectify/src/redaction/redaction_stats.dart';
 import 'package:ispectify/src/redaction/strategies/redaction_strategy.dart';
-
-const String _unprintableMapKey = '<unprintable-key>';
-
-({String value, bool isSafe}) _safeMapKey(Object? key) => switch (key) {
-      String() => (value: key, isSafe: true),
-      null => (value: 'null', isSafe: true),
-      bool() => (value: key ? 'true' : 'false', isSafe: true),
-      num() => (value: key.toString(), isSafe: true),
-      Enum() => (value: key.name, isSafe: true),
-      _ => (value: _unprintableMapKey, isSafe: false),
-    };
 
 /// Recursive tree-walker that delegates leaf redaction to [RedactionStrategy]
 /// and handles structural traversal (Maps, Lists) with depth limiting.
@@ -148,7 +138,7 @@ final class RedactionWalker {
   Map<String, Object?> _redactMap(Map<Object?, Object?> input, int depth) {
     final result = <String, Object?>{};
     input.forEach((key, value) {
-      final normalizedKey = _safeMapKey(key);
+      final normalizedKey = safeMapKey(key);
       result[normalizedKey.value] = normalizedKey.isSafe
           ? _redactNode(
               value,

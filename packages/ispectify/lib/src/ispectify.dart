@@ -6,7 +6,7 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_pipeline.dart';
 import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/log_factory.dart';
-import 'package:ispectify/src/observer/observer_manager.dart';
+import 'package:ispectify/src/observer/observer_registry.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart'
     as placeholders;
 import 'package:ispectify/src/redaction/egress_provenance.dart';
@@ -84,7 +84,6 @@ class ISpectLogger {
       history: _history,
       filter: _filter,
     );
-    _observerManager = ObserverManager(() => _logger);
     _replaceObserver(observer);
   }
 
@@ -126,11 +125,11 @@ class ISpectLogger {
   ISpectFilter? _filter;
   late LogPipeline _pipeline;
 
-  late final ObserverManager _observerManager;
+  final ObserverRegistry _observers = ObserverRegistry();
 
   void _replaceObserver(ISpectObserver? observer) {
     if (_isDisposed || !_compileGateEnabled) return;
-    _observerManager.replace(observer);
+    _observers.replace(observer);
   }
 
   late ILogHistory _history;
@@ -146,33 +145,33 @@ class ISpectLogger {
   /// to prevent recursion (see [stream] for the same guard on listeners).
   void addObserver(ISpectObserver observer) {
     if (!_isActive || !_compileGateEnabled) return;
-    _observerManager.add(observer);
+    _observers.add(observer);
   }
 
   /// Registers an observer and returns a disposer to remove it later — useful
   /// for scoped subscriptions (e.g. widget lifecycle).
   ISpectObserverDisposer observe(ISpectObserver observer) {
     if (!_isActive || !_compileGateEnabled) return () {};
-    return _observerManager.observe(observer);
+    return _observers.observe(observer);
   }
 
   void removeObserver(ISpectObserver observer) {
     if (!_isActive || !_compileGateEnabled) return;
-    _observerManager.remove(observer);
+    _observers.remove(observer);
   }
 
   void clearObservers() {
     if (!_isActive || !_compileGateEnabled) return;
-    _observerManager.clear();
+    _observers.clear();
   }
 
-  bool get hasObservers => _compileGateEnabled && _observerManager.hasObservers;
+  bool get hasObservers => _compileGateEnabled && _observers.hasObservers;
 
   /// Wraps each observer call in a try-catch so a single failing observer
   /// cannot break notification for the rest.
   void _notifyObservers(void Function(ISpectObserver) notify) {
     if (!_isActive || !_compileGateEnabled) return;
-    _observerManager.notify(notify);
+    _observers.notify(notify, _logger);
   }
 
   /// Replaces only the provided components; others retain their current values.
@@ -737,7 +736,7 @@ class ISpectLogger {
   }
 
   Future<void> _disposeResources() async {
-    _observerManager.clear();
+    _observers.clear();
     (Object, StackTrace)? firstFailure;
     try {
       if (_history case final FileLogHistory fileHistory) {

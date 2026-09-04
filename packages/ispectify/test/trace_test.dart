@@ -1,4 +1,4 @@
-// ignore_for_file: cascade_invocations, avoid_redundant_argument_values, prefer_const_declarations, prefer_int_literals
+// ignore_for_file: cascade_invocations, avoid_redundant_argument_values, prefer_const_declarations, prefer_int_literals, deprecated_member_use_from_same_package
 
 import 'dart:async';
 import 'dart:collection';

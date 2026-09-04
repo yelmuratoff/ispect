@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
@@ -430,7 +431,6 @@ void main() {
     });
 
     test('deprecated kDefaultSensitiveKeys alias still works', () {
-      // ignore: deprecated_member_use_from_same_package
       expect(kDefaultSensitiveKeys, equals(defaultSensitiveKeys));
     });
 
