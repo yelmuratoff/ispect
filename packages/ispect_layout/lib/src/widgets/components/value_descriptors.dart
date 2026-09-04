@@ -400,25 +400,36 @@ bool _assertReleaseSafeContracts() {
   final blur = ImageFilter.blur(sigmaX: 1, sigmaY: 2);
   final dynBlur = blur as dynamic;
   assert(
-    dynBlur.sigmaX == 1.0 && dynBlur.sigmaY == 2.0,
+    _holds(() => dynBlur.sigmaX == 1.0 && dynBlur.sigmaY == 2.0),
     'ImageFilter.blur sigmaX/sigmaY renamed in Flutter; '
     'update the blur branch of describeImageFilter',
   );
   final dilate = ImageFilter.dilate(radiusX: 3, radiusY: 4);
   final dynDilate = dilate as dynamic;
   assert(
-    dynDilate.radiusX == 3.0 && dynDilate.radiusY == 4.0,
+    _holds(() => dynDilate.radiusX == 3.0 && dynDilate.radiusY == 4.0),
     'ImageFilter.dilate/erode radiusX/radiusY renamed in Flutter; '
     'update the dilate/erode branches of describeImageFilter',
   );
   final compose = ImageFilter.compose(outer: blur, inner: dilate);
   final dynCompose = compose as dynamic;
   assert(
-    dynCompose.innerFilter is ImageFilter &&
-        dynCompose.outerFilter is ImageFilter,
+    _holds(
+      () =>
+          dynCompose.innerFilter is ImageFilter &&
+          dynCompose.outerFilter is ImageFilter,
+    ),
     'ImageFilter.compose innerFilter/outerFilter renamed in Flutter; '
     'update the compose branch of describeImageFilter',
   );
 
   return true;
+}
+
+bool _holds(bool Function() contract) {
+  try {
+    return contract();
+  } on Object {
+    return false;
+  }
 }
