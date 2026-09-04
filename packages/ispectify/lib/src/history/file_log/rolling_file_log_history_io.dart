@@ -3,12 +3,12 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/history/file_log/bounded_log_buffer.dart';
 import 'package:ispectify/src/history/file_log/file_log_codec.dart';
 import 'package:ispectify/src/history/file_log/file_log_layout.dart';
+import 'package:ispectify/src/history/file_log/managed_log_store.dart';
 import 'package:ispectify/src/history/file_log/retention_planner.dart';
 import 'package:ispectify/src/models/log_id.dart';
 import 'package:ispectify/src/utils/bounded_json_decoder.dart';
@@ -77,7 +77,13 @@ final class RollingFileLogHistory implements FileLogHistory {
     required int? archiveCompressedByteLimit,
     required bool providerDirectoryRequiresOwnerOnlyProtection,
     required _FileLogDiagnosticSink? diagnosticSink,
-  })  : _directoryProvider = directoryProvider,
+  })  : _store = ManagedLogStore(
+          directoryProvider: directoryProvider,
+          options: options,
+          providerDirectoryRequiresOwnerOnlyProtection:
+              providerDirectoryRequiresOwnerOnlyProtection,
+          ioHook: ioHook,
+        ),
         _options = options,
         _enabled = enabled,
         _loggerOptions = loggerOptions,
@@ -89,10 +95,7 @@ final class RollingFileLogHistory implements FileLogHistory {
         _redactorOverride = redactor,
         _sessionId = LogId.generate(),
         _timerFactory = timerFactory ?? Timer.new,
-        _ioHook = ioHook,
         _archiveCompressedByteLimit = archiveCompressedByteLimit,
-        _providerDirectoryRequiresOwnerOnlyProtection =
-            providerDirectoryRequiresOwnerOnlyProtection,
         _diagnosticSink = diagnosticSink ?? _developerDiagnosticSink,
         _autoSaveInterval = options.autoSaveInterval,
         _autoSaveEnabled = options.enableAutoSave {
@@ -105,15 +108,11 @@ final class RollingFileLogHistory implements FileLogHistory {
     }
   }
 
-  static const int _ioChunkSize = 64 * 1024;
-  static const int _groupOrWorldPermissionBits = 0x3f;
-  static const int _groupOrWorldWriteBits = 0x12;
-
   // iOS relies on its mandatory sandbox even when Library/Caches is 0755.
   static bool get _defaultProviderDirectoryRequiresOwnerOnlyProtection =>
       !Platform.isIOS;
 
-  final FileLogDirectoryProvider _directoryProvider;
+  final ManagedLogStore _store;
   final FileLogHistoryOptions _options;
   final bool _enabled;
   final ISpectLoggerOptions _loggerOptions;
@@ -122,9 +121,7 @@ final class RollingFileLogHistory implements FileLogHistory {
   final RedactionService? _redactorOverride;
   final String _sessionId;
   final Timer Function(Duration, void Function()) _timerFactory;
-  final FutureOr<void> Function(File file, String operation)? _ioHook;
   final int? _archiveCompressedByteLimit;
-  final bool _providerDirectoryRequiresOwnerOnlyProtection;
   final _FileLogDiagnosticSink _diagnosticSink;
   final LinkedHashMap<String, _PendingLog> _pending =
       LinkedHashMap<String, _PendingLog>();
@@ -149,23 +146,8 @@ final class RollingFileLogHistory implements FileLogHistory {
           ? _options.maxTotalSize
           : _loggerOptions.resourceLimits.maxImportBytes;
 
-  int get _managedArtifactLimit {
-    // Every artifact created by this implementation contains at least one
-    // bounded JSONL record. The small floor also leaves room for crash
-    // temporaries without coupling durable storage to the in-memory history
-    // setting.
-    const conservativeMinimumArtifactBytes = 64;
-    return _options.maxTotalSize ~/ conservativeMinimumArtifactBytes +
-        _options.maxSessionDays * 2 +
-        2;
-  }
-
   Future<void>? _initialization;
   Future<void> _operationChain = Future<void>.value();
-  String? _resolvedProviderDirectory;
-  String? _canonicalProviderDirectory;
-  String? _resolvedSessionDirectory;
-  String? _canonicalSessionDirectory;
   String? _resolvedTodaySessionPath;
   Timer? _autoSaveTimer;
   Duration _autoSaveInterval;
@@ -175,9 +157,7 @@ final class RollingFileLogHistory implements FileLogHistory {
   List<ISpectLogData> get history => _buffer.history;
 
   @override
-  String get sessionDirectory =>
-      _resolvedSessionDirectory ??
-      (throw StateError('File log history is not initialized'));
+  String get sessionDirectory => _store.sessionDirectory;
 
   @override
   String get todaySessionPath =>
@@ -458,7 +438,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       if (error is FileLogHistoryException) rethrow;
       throw FileLogStorageException(
         operation: 'saveToDailyFile',
-        path: _resolvedSessionDirectory,
+        path: _store.resolvedSessionDirectory,
         cause: error,
         stackTrace: stackTrace,
       );
@@ -732,39 +712,39 @@ final class RollingFileLogHistory implements FileLogHistory {
   Future<void> clearDateStorage(DateTime date) async {
     if (!_enabled) return;
     await _ensureInitialized();
-    final directory = await _validatedDateDirectory(
-      _dateDirectoryPath(date),
+    final directory = await _store.validatedDateDirectory(
+      _store.dateDirectoryPath(date),
       operation: 'clearDateStorage',
       allowMissing: true,
     );
     final artifacts = directory == null
         ? const <File>[]
-        : await _segmentFiles(
+        : await _store.segmentFiles(
             directory,
             includeArchives: true,
             includeTemporary: true,
             operation: 'clearDateStorage',
           );
-    final legacy = await _validatedLegacyFile(
-      File(_legacyFilePath(date)),
+    final legacy = await _store.validatedLegacyFile(
+      File(_store.legacyFilePath(date)),
       operation: 'clearDateStorage',
       allowMissing: true,
     );
 
     for (final artifact in artifacts) {
-      await _deleteManagedFile(
+      await _store.deleteManagedFile(
         artifact,
         operation: 'clearDateStorage',
       );
     }
     if (legacy != null) {
-      await _deleteManagedFile(
+      await _store.deleteManagedFile(
         legacy,
         operation: 'clearDateStorage',
       );
     }
     if (directory != null) {
-      await _deleteDateDirectoryIfEmpty(
+      await _store.deleteDateDirectoryIfEmpty(
         directory,
         operation: 'clearDateStorage',
       );
@@ -776,7 +756,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     if (!_enabled) return const [];
     await _ensureInitialized();
     final dates = <DateTime>[];
-    final root = await _validatedSessionDirectory(
+    final root = await _store.validatedSessionDirectory(
       operation: 'getAvailableLogDates',
     );
     await for (final entity in root.list(followLinks: false)) {
@@ -787,11 +767,11 @@ final class RollingFileLogHistory implements FileLogHistory {
             operation: 'getAvailableLogDates',
           );
         }
-        final directory = await _validatedDateDirectory(
+        final directory = await _store.validatedDateDirectory(
           entity.path,
           operation: 'getAvailableLogDates',
         );
-        final artifacts = await _segmentFiles(
+        final artifacts = await _store.segmentFiles(
           directory!,
           includeArchives: true,
           operation: 'getAvailableLogDates',
@@ -806,7 +786,7 @@ final class RollingFileLogHistory implements FileLogHistory {
             operation: 'getAvailableLogDates',
           );
         }
-        await _validatedLegacyFile(
+        await _store.validatedLegacyFile(
           entity,
           operation: 'getAvailableLogDates',
         );
@@ -823,31 +803,31 @@ final class RollingFileLogHistory implements FileLogHistory {
     if (!_enabled) return 0;
     await _ensureInitialized();
     var total = 0;
-    final directory = await _validatedDateDirectory(
-      _dateDirectoryPath(date),
+    final directory = await _store.validatedDateDirectory(
+      _store.dateDirectoryPath(date),
       operation: 'getDateFileSize',
       allowMissing: true,
     );
     if (directory != null) {
-      final artifacts = await _segmentFiles(
+      final artifacts = await _store.segmentFiles(
         directory,
         includeArchives: true,
         operation: 'getDateFileSize',
       );
       for (final artifact in artifacts) {
-        total += await _managedFileLength(
+        total += await _store.managedFileLength(
           artifact,
           operation: 'getDateFileSize',
         );
       }
     }
-    final legacy = await _validatedLegacyFile(
-      File(_legacyFilePath(date)),
+    final legacy = await _store.validatedLegacyFile(
+      File(_store.legacyFilePath(date)),
       operation: 'getDateFileSize',
       allowMissing: true,
     );
     if (legacy != null) {
-      total += await _managedFileLength(
+      total += await _store.managedFileLength(
         legacy,
         operation: 'getDateFileSize',
       );
@@ -864,22 +844,22 @@ final class RollingFileLogHistory implements FileLogHistory {
     if (!_enabled) return const [];
     await _ensureInitialized();
     final files = <File>[];
-    final directory = await _validatedDateDirectory(
-      _dateDirectoryPath(date),
+    final directory = await _store.validatedDateDirectory(
+      _store.dateDirectoryPath(date),
       operation: 'getLogsByDate',
       allowMissing: true,
     );
     if (directory != null) {
       files.addAll(
-        await _segmentFiles(
+        await _store.segmentFiles(
           directory,
           includeArchives: true,
           operation: 'getLogsByDate',
         ),
       );
     }
-    final legacy = await _validatedLegacyFile(
-      File(_legacyFilePath(date)),
+    final legacy = await _store.validatedLegacyFile(
+      File(_store.legacyFilePath(date)),
       operation: 'getLogsByDate',
       allowMissing: true,
     );
@@ -891,13 +871,13 @@ final class RollingFileLogHistory implements FileLogHistory {
   Future<String> getLogPathByDate(DateTime date) async {
     if (!_enabled) return '';
     await _ensureInitialized();
-    final directory = await _validatedDateDirectory(
-      _dateDirectoryPath(date),
+    final directory = await _store.validatedDateDirectory(
+      _store.dateDirectoryPath(date),
       operation: 'getLogPathByDate',
       allowMissing: true,
     );
     if (directory != null &&
-        (await _segmentFiles(
+        (await _store.segmentFiles(
           directory,
           includeArchives: true,
           operation: 'getLogPathByDate',
@@ -905,8 +885,8 @@ final class RollingFileLogHistory implements FileLogHistory {
             .isNotEmpty) {
       return directory.path;
     }
-    final legacy = await _validatedLegacyFile(
-      File(_legacyFilePath(date)),
+    final legacy = await _store.validatedLegacyFile(
+      File(_store.legacyFilePath(date)),
       operation: 'getLogPathByDate',
       allowMissing: true,
     );
@@ -934,7 +914,7 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   Future<List<ISpectLogData>> _readValidatedDirectory(String path) async {
-    final directory = await _validatedDateDirectory(
+    final directory = await _store.validatedDateDirectory(
       path,
       operation: 'getLogsBySession',
     );
@@ -942,7 +922,7 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   Future<List<ISpectLogData>> _readValidatedFile(String path) async {
-    final file = await _validatedHistoryFile(
+    final file = await _store.validatedHistoryFile(
       File(path),
       operation: 'getLogsBySession',
     );
@@ -1014,63 +994,14 @@ final class RollingFileLogHistory implements FileLogHistory {
 
   Future<void> _initializeDirectory() async {
     try {
-      final providerPath = await _directoryProvider();
-      if (await FileSystemEntity.type(
-            providerPath,
-            followLinks: false,
-          ) !=
-          FileSystemEntityType.directory) {
-        throw const FileLogAccessException(operation: 'initialize');
-      }
-      final providerDirectory = Directory(providerPath);
-      await _validatePrivateDirectoryPermissions(
-        providerDirectory,
-        operation: 'initialize',
-        requireOwnerOnlyProtection:
-            _providerDirectoryRequiresOwnerOnlyProtection,
-      );
-      _resolvedProviderDirectory = providerDirectory.path;
-      _canonicalProviderDirectory =
-          await providerDirectory.resolveSymbolicLinks();
-
-      final directory = Directory(
-        FileLogLayout.join(
-          providerDirectory.path,
-          FileLogLayout.sessionDirectoryName,
-        ),
-      );
-      final initialType = await FileSystemEntity.type(
-        directory.path,
-        followLinks: false,
-      );
-      if (initialType == FileSystemEntityType.link) {
-        throw const FileLogAccessException(operation: 'initialize');
-      }
-      if (initialType == FileSystemEntityType.notFound) {
-        await directory.create();
-      }
-      if (await FileSystemEntity.type(
-            directory.path,
-            followLinks: false,
-          ) !=
-          FileSystemEntityType.directory) {
-        throw const FileLogAccessException(operation: 'initialize');
-      }
-      await _validatePrivateDirectoryPermissions(
-        directory,
-        operation: 'initialize',
-      );
-      _resolvedSessionDirectory = directory.path;
-      _canonicalSessionDirectory = await directory.resolveSymbolicLinks();
+      await _store.initialize();
       _resolvedTodaySessionPath = FileLogLayout.join(
         FileLogLayout.join(
-          directory.path,
+          _store.sessionDirectory,
           FileLogLayout.dateName(DateTime.now()),
         ),
         FileLogLayout.segmentName(0),
       );
-      await _validatedSessionDirectory(operation: 'initialize');
-      await _applyRetention();
     } on FileLogHistoryException {
       rethrow;
     } catch (error, stackTrace) {
@@ -1083,11 +1014,11 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   Future<void> _appendRecord(DateTime date, List<int> bytes) async {
-    final directory = await _ensureDateDirectory(
+    final directory = await _store.ensureDateDirectory(
       date,
       operation: 'appendRecord',
     );
-    final artifacts = await _segmentFiles(
+    final artifacts = await _store.segmentFiles(
       directory,
       includeArchives: true,
       includeTemporary: true,
@@ -1109,10 +1040,10 @@ final class RollingFileLogHistory implements FileLogHistory {
       if (index > highestIndex) highestIndex = index;
     }
     var active = segments.isEmpty
-        ? _nextSegment(directory, highestIndex)
+        ? _store.nextSegment(directory, highestIndex)
         : segments.last;
     final tailIsAppendable = await _repairIncompleteTail(active);
-    final currentLength = await _managedFileLength(
+    final currentLength = await _store.managedFileLength(
       active,
       operation: 'appendRecord',
       allowMissing: true,
@@ -1120,16 +1051,16 @@ final class RollingFileLogHistory implements FileLogHistory {
     if (!tailIsAppendable ||
         currentLength > 0 &&
             currentLength + bytes.length > _options.maxFileSize) {
-      active = _nextSegment(directory, highestIndex);
+      active = _store.nextSegment(directory, highestIndex);
     }
-    await _validatedDateArtifact(
+    await _store.validatedDateArtifact(
       active,
       directory: directory,
       operation: 'appendRecord',
       allowMissing: true,
       allowedKinds: const {ManagedFileKind.segment},
     );
-    final acquired = await _acquireAppendHandle(
+    final acquired = await _store.acquireAppendHandle(
       active,
       operation: 'appendRecord',
       createIfMissing: true,
@@ -1137,7 +1068,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     try {
       await acquired.handle.writeFrom(bytes);
       await acquired.handle.flush();
-      await _validateWritablePath(
+      await _store.validateWritablePath(
         acquired,
         operation: 'appendRecord',
       );
@@ -1150,28 +1081,15 @@ final class RollingFileLogHistory implements FileLogHistory {
     }
   }
 
-  File _nextSegment(Directory directory, int highestIndex) {
-    if (highestIndex >= FileLogLayout.maxSegmentIndex) {
-      throw const FileLogLimitException(operation: 'appendRecord');
-    }
-    final nextIndex = highestIndex + 1;
-    return File(
-      FileLogLayout.join(
-        directory.path,
-        FileLogLayout.segmentName(nextIndex),
-      ),
-    );
-  }
-
   Future<bool> _repairIncompleteTail(File file) async {
-    final validated = await _validatedHistoryFile(
+    final validated = await _store.validatedHistoryFile(
       file,
       operation: 'repairIncompleteTail',
       allowMissing: true,
       allowedKinds: const {ManagedFileKind.segment},
     );
     if (validated == null) return true;
-    final acquired = await _acquireAppendHandle(
+    final acquired = await _store.acquireAppendHandle(
       validated,
       operation: 'repairIncompleteTail',
       createIfMissing: false,
@@ -1191,14 +1109,14 @@ final class RollingFileLogHistory implements FileLogHistory {
         final chunk = await handle.read(cursor - start);
         for (var index = chunk.length - 1; index >= 0; index--) {
           if (chunk[index] == 0x0A) {
-            await _validatedHistoryFile(
+            await _store.validatedHistoryFile(
               validated,
               operation: 'repairIncompleteTail',
               allowedKinds: const {ManagedFileKind.segment},
             );
             await handle.truncate(start + index + 1);
             await handle.flush();
-            await _validateWritablePath(
+            await _store.validateWritablePath(
               acquired,
               operation: 'repairIncompleteTail',
             );
@@ -1213,115 +1131,15 @@ final class RollingFileLogHistory implements FileLogHistory {
     }
   }
 
-  Future<_AcquiredWritableFile> _acquireAppendHandle(
-    File file, {
-    required String operation,
-    required bool createIfMissing,
-  }) async {
-    var validated = await _validatedHistoryFile(
-      file,
-      operation: operation,
-      allowMissing: createIfMissing,
-      allowedKinds: const {ManagedFileKind.segment},
-    );
-    if (validated == null) {
-      try {
-        await file.create(exclusive: true);
-      } on FileSystemException catch (_, stackTrace) {
-        throw FileLogAccessException(
-          operation: operation,
-          stackTrace: stackTrace,
-        );
-      }
-      validated = await _validatedHistoryFile(
-        file,
-        operation: operation,
-        allowedKinds: const {ManagedFileKind.segment},
-      );
-    }
-    final before = _FileIdentity.fromStat(await validated!.stat());
-    final hook = _ioHook;
-    if (hook != null) await hook(validated, operation);
-    final handle = await validated.open(mode: FileMode.append);
-    try {
-      final afterFile = await _validatedHistoryFile(
-        validated,
-        operation: operation,
-        allowedKinds: const {ManagedFileKind.segment},
-      );
-      final after = _FileIdentity.fromStat(await afterFile!.stat());
-      if (before != after || await handle.length() != after.size) {
-        throw FileLogAccessException(operation: operation);
-      }
-      return _AcquiredWritableFile(file: validated, handle: handle);
-    } catch (_) {
-      await handle.close();
-      rethrow;
-    }
-  }
-
-  Future<void> _validateWritablePath(
-    _AcquiredWritableFile acquired, {
-    required String operation,
-  }) async {
-    final validated = await _validatedHistoryFile(
-      acquired.file,
-      operation: operation,
-      allowedKinds: const {ManagedFileKind.segment},
-    );
-    if (await validated!.length() != await acquired.handle.length()) {
-      throw FileLogAccessException(operation: operation);
-    }
-  }
-
-  Future<List<File>> _segmentFiles(
-    Directory directory, {
-    bool includeArchives = false,
-    bool includeTemporary = false,
-    String operation = 'scanSegments',
-  }) async {
-    final files = <File>[];
-    var managedArtifacts = 0;
-    final validatedDirectory = await _validatedDateDirectory(
-      directory.path,
-      operation: operation,
-    );
-    await for (final entity in validatedDirectory!.list(followLinks: false)) {
-      final name = FileLogLayout.basename(entity.path);
-      final kind = FileLogLayout.dateArtifactKind(name);
-      if (kind != null && ++managedArtifacts > _managedArtifactLimit) {
-        throw FileLogLimitException(operation: operation);
-      }
-      final included = kind == ManagedFileKind.segment ||
-          includeArchives && kind == ManagedFileKind.archive ||
-          includeTemporary && kind == ManagedFileKind.temporary;
-      if (kind == null) continue;
-      if (entity is! File) {
-        throw FileLogAccessException(
-          operation: operation,
-        );
-      }
-      final file = await _validatedDateArtifact(
-        entity,
-        directory: validatedDirectory,
-        operation: operation,
-        allowedKinds: {kind},
-      );
-      if (included) files.add(file!);
-    }
-    files.sort((left, right) => left.path.compareTo(right.path));
-    return files;
-  }
-
   Future<List<ISpectLogData>> _readDirectory(Directory directory) async {
-    final validated = await _validatedDateDirectory(
+    final validated = await _store.validatedDateDirectory(
       directory.path,
       operation: 'readDirectory',
       allowMissing: true,
     );
     if (validated == null) return const [];
     return _readFiles(
-      await _segmentFiles(
+      await _store.segmentFiles(
         validated,
         includeArchives: true,
         operation: 'readDirectory',
@@ -1339,7 +1157,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       final name = FileLogLayout.basename(file.path);
       if (FileLogLayout.legacyNamePattern.hasMatch(name)) {
         try {
-          final legacyLength = await _managedFileLength(
+          final legacyLength = await _store.managedFileLength(
             file,
             operation: 'readLegacy',
           );
@@ -1353,7 +1171,7 @@ final class RollingFileLogHistory implements FileLogHistory {
             break;
           }
           decodedBytes += legacyLength;
-          final input = await _readLegacyText(file);
+          final input = await _store.readLegacyText(file);
           final legacyLogs = _codec.decodeLegacyArray(
             input,
             maxCharacters: _importCharacterLimit,
@@ -1400,7 +1218,7 @@ final class RollingFileLogHistory implements FileLogHistory {
 
       List<int> bytes;
       try {
-        bytes = await _readSegmentBytes(file);
+        bytes = await _store.readArtifactBytes(file);
       } on FileLogLimitException catch (error) {
         _reportError(error);
         continue;
@@ -1527,78 +1345,22 @@ final class RollingFileLogHistory implements FileLogHistory {
         : _loggerOptions.resourceLimits.maxImportNodes;
   }
 
-  Future<List<int>> _readSegmentBytes(File file) async {
-    final kind =
-        FileLogLayout.dateArtifactKind(FileLogLayout.basename(file.path));
-    if (kind == ManagedFileKind.segment) {
-      return _readBoundedManagedFile(
-        file,
-        maxBytes: _options.maxFileSize,
-        operation: 'readSegment',
-        allowedKinds: const {ManagedFileKind.segment},
-      );
-    }
-    if (kind != ManagedFileKind.archive) {
-      throw const FileLogAccessException(operation: 'readSegment');
-    }
-
-    final compressedLimit = _gzipEncodedUpperBound(_options.maxFileSize);
-    final acquired = await _acquireReadHandle(
-      file,
-      maxBytes: compressedLimit,
-      operation: 'readCompressedSegment',
-      allowedKinds: const {ManagedFileKind.archive},
-    );
-    final builder = BytesBuilder(copy: false);
-    try {
-      final compressed = _boundedChunks(
-        _readHandleChunks(acquired.handle),
-        maxBytes: compressedLimit,
-        operation: 'readCompressedSegment',
-        path: file.path,
-      );
-      final decompressed = _boundedChunks(
-        compressed.transform(gzip.decoder),
-        maxBytes: _options.maxFileSize,
-        operation: 'decompressSegment',
-        path: file.path,
-      );
-      await decompressed.forEach(builder.add);
-      await _validateFileIdentity(
-        acquired.file,
-        acquired.identity,
-        operation: 'readCompressedSegment',
-        allowedKinds: const {ManagedFileKind.archive},
-      );
-      return builder.takeBytes();
-    } finally {
-      await acquired.handle.close();
-    }
-  }
-
-  int _gzipEncodedUpperBound(int sourceBytes) =>
-      sourceBytes +
-      (sourceBytes >> 12) +
-      (sourceBytes >> 14) +
-      (sourceBytes >> 25) +
-      64;
-
   Future<int> _countDateEntries(DateTime date) async {
     var count = 0;
     var decodedBytes = 0;
-    final directory = await _validatedDateDirectory(
-      _dateDirectoryPath(date),
+    final directory = await _store.validatedDateDirectory(
+      _store.dateDirectoryPath(date),
       operation: 'countDateEntries',
       allowMissing: true,
     );
     if (directory != null) {
-      final files = await _segmentFiles(
+      final files = await _store.segmentFiles(
         directory,
         includeArchives: true,
         operation: 'countDateEntries',
       );
       for (final file in files) {
-        final bytes = await _readSegmentBytes(file);
+        final bytes = await _store.readArtifactBytes(file);
         decodedBytes += bytes.length;
         if (decodedBytes > _options.maxTotalSize) {
           throw FileLogLimitException(
@@ -1628,13 +1390,13 @@ final class RollingFileLogHistory implements FileLogHistory {
         }
       }
     }
-    final legacy = await _validatedLegacyFile(
-      File(_legacyFilePath(date)),
+    final legacy = await _store.validatedLegacyFile(
+      File(_store.legacyFilePath(date)),
       operation: 'countDateEntries',
       allowMissing: true,
     );
     if (legacy != null) {
-      final legacyLength = await _managedFileLength(
+      final legacyLength = await _store.managedFileLength(
         legacy,
         operation: 'countDateEntries',
       );
@@ -1643,7 +1405,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       }
       count += _codec
           .decodeLegacyArray(
-            await _readLegacyText(legacy),
+            await _store.readLegacyText(legacy),
             maxCharacters: _options.maxTotalSize,
             maxEncodedBytes: _options.maxTotalSize,
             maxNodes: _publicReadNodeLimit,
@@ -1655,404 +1417,6 @@ final class RollingFileLogHistory implements FileLogHistory {
       }
     }
     return count;
-  }
-
-  Future<Directory> _validatedProviderDirectory({
-    required String operation,
-  }) async {
-    final path = _resolvedProviderDirectory;
-    final canonicalPath = _canonicalProviderDirectory;
-    if (path == null || canonicalPath == null) {
-      throw FileLogAccessException(operation: operation);
-    }
-    if (await FileSystemEntity.type(path, followLinks: false) !=
-        FileSystemEntityType.directory) {
-      throw FileLogAccessException(operation: operation);
-    }
-    final directory = Directory(path);
-    await _validatePrivateDirectoryPermissions(
-      directory,
-      operation: operation,
-      requireOwnerOnlyProtection: _providerDirectoryRequiresOwnerOnlyProtection,
-    );
-    if (await directory.resolveSymbolicLinks() != canonicalPath) {
-      throw FileLogAccessException(operation: operation);
-    }
-    return directory;
-  }
-
-  Future<Directory> _validatedSessionDirectory({
-    required String operation,
-  }) async {
-    final provider = await _validatedProviderDirectory(operation: operation);
-    final path = _resolvedSessionDirectory;
-    final canonicalPath = _canonicalSessionDirectory;
-    if (path == null ||
-        canonicalPath == null ||
-        path !=
-            FileLogLayout.join(
-              provider.path,
-              FileLogLayout.sessionDirectoryName,
-            )) {
-      throw FileLogAccessException(operation: operation);
-    }
-    final type = await FileSystemEntity.type(path, followLinks: false);
-    if (type != FileSystemEntityType.directory) {
-      throw FileLogAccessException(operation: operation);
-    }
-    final directory = Directory(path);
-    await _validatePrivateDirectoryPermissions(
-      directory,
-      operation: operation,
-    );
-    if (await directory.resolveSymbolicLinks() != canonicalPath) {
-      throw FileLogAccessException(operation: operation);
-    }
-    return directory;
-  }
-
-  Future<Directory?> _validatedDateDirectory(
-    String path, {
-    required String operation,
-    bool allowMissing = false,
-  }) async {
-    final root = await _validatedSessionDirectory(operation: operation);
-    final name = FileLogLayout.basename(path);
-    if (!FileLogLayout.dateNamePattern.hasMatch(name) ||
-        path != FileLogLayout.join(root.path, name)) {
-      throw FileLogAccessException(operation: operation);
-    }
-
-    final type = await FileSystemEntity.type(path, followLinks: false);
-    if (type == FileSystemEntityType.notFound && allowMissing) return null;
-    if (type != FileSystemEntityType.directory) {
-      throw FileLogAccessException(operation: operation);
-    }
-
-    final directory = Directory(path);
-    await _validatePrivateDirectoryPermissions(
-      directory,
-      operation: operation,
-    );
-    final canonicalRoot = _canonicalSessionDirectory!;
-    final canonicalPath = await directory.resolveSymbolicLinks();
-    if (canonicalPath != FileLogLayout.join(canonicalRoot, name)) {
-      throw FileLogAccessException(operation: operation);
-    }
-    return directory;
-  }
-
-  Future<void> _validatePrivateDirectoryPermissions(
-    Directory directory, {
-    required String operation,
-    bool requireOwnerOnlyProtection = false,
-  }) async {
-    if (Platform.isWindows) return;
-    final stat = await directory.stat();
-    if (stat.type != FileSystemEntityType.directory ||
-        stat.mode & _groupOrWorldWriteBits != 0) {
-      throw FileLogAccessException(operation: operation);
-    }
-    if (!requireOwnerOnlyProtection ||
-        stat.mode & _groupOrWorldPermissionBits == 0) {
-      return;
-    }
-    if (!await _hasOwnerOnlyAncestor(directory)) {
-      throw FileLogAccessException(operation: operation);
-    }
-  }
-
-  Future<bool> _hasOwnerOnlyAncestor(Directory directory) async {
-    var current = Directory(await directory.resolveSymbolicLinks()).parent;
-    while (true) {
-      final stat = await current.stat();
-      if (stat.type != FileSystemEntityType.directory) return false;
-      if (stat.mode & _groupOrWorldPermissionBits == 0) return true;
-
-      final parent = current.parent;
-      if (parent.path == current.path) return false;
-      current = parent;
-    }
-  }
-
-  Future<Directory> _ensureDateDirectory(
-    DateTime date, {
-    required String operation,
-  }) async {
-    final path = _dateDirectoryPath(date);
-    var directory = await _validatedDateDirectory(
-      path,
-      operation: operation,
-      allowMissing: true,
-    );
-    if (directory != null) return directory;
-
-    await Directory(path).create();
-    directory = await _validatedDateDirectory(
-      path,
-      operation: operation,
-    );
-    return directory!;
-  }
-
-  Future<File?> _validatedLegacyFile(
-    File file, {
-    required String operation,
-    bool allowMissing = false,
-  }) async {
-    final root = await _validatedSessionDirectory(operation: operation);
-    final name = FileLogLayout.basename(file.path);
-    if (!FileLogLayout.legacyNamePattern.hasMatch(name) ||
-        file.path != FileLogLayout.join(root.path, name)) {
-      throw FileLogAccessException(operation: operation);
-    }
-
-    final type = await FileSystemEntity.type(
-      file.path,
-      followLinks: false,
-    );
-    if (type == FileSystemEntityType.notFound && allowMissing) return null;
-    if (type != FileSystemEntityType.file) {
-      throw FileLogAccessException(operation: operation);
-    }
-    final canonicalPath = await file.resolveSymbolicLinks();
-    if (canonicalPath !=
-        FileLogLayout.join(_canonicalSessionDirectory!, name)) {
-      throw FileLogAccessException(operation: operation);
-    }
-    return file;
-  }
-
-  Future<File?> _validatedDateArtifact(
-    File file, {
-    required Directory directory,
-    required String operation,
-    required Set<ManagedFileKind> allowedKinds,
-    bool allowMissing = false,
-  }) async {
-    final validatedDirectory = await _validatedDateDirectory(
-      directory.path,
-      operation: operation,
-    );
-    final name = FileLogLayout.basename(file.path);
-    final kind = FileLogLayout.dateArtifactKind(name);
-    if (kind == null ||
-        !allowedKinds.contains(kind) ||
-        file.path != FileLogLayout.join(validatedDirectory!.path, name)) {
-      throw FileLogAccessException(operation: operation);
-    }
-
-    final type = await FileSystemEntity.type(
-      file.path,
-      followLinks: false,
-    );
-    if (type == FileSystemEntityType.notFound && allowMissing) return null;
-    if (type != FileSystemEntityType.file) {
-      throw FileLogAccessException(operation: operation);
-    }
-    final canonicalDirectory = FileLogLayout.join(
-      _canonicalSessionDirectory!,
-      FileLogLayout.basename(directory.path),
-    );
-    if (await file.resolveSymbolicLinks() !=
-        FileLogLayout.join(canonicalDirectory, name)) {
-      throw FileLogAccessException(operation: operation);
-    }
-    return file;
-  }
-
-  Future<File?> _validatedHistoryFile(
-    File file, {
-    required String operation,
-    bool allowMissing = false,
-    Set<ManagedFileKind>? allowedKinds,
-  }) {
-    final name = FileLogLayout.basename(file.path);
-    if (FileLogLayout.legacyNamePattern.hasMatch(name)) {
-      if (allowedKinds != null &&
-          !allowedKinds.contains(ManagedFileKind.legacy)) {
-        throw FileLogAccessException(operation: operation);
-      }
-      return _validatedLegacyFile(
-        file,
-        operation: operation,
-        allowMissing: allowMissing,
-      );
-    }
-
-    final kind = FileLogLayout.dateArtifactKind(name);
-    if (kind == null || allowedKinds != null && !allowedKinds.contains(kind)) {
-      throw FileLogAccessException(operation: operation);
-    }
-    return _validatedDateArtifact(
-      file,
-      directory: file.parent,
-      operation: operation,
-      allowedKinds: {kind},
-      allowMissing: allowMissing,
-    );
-  }
-
-  Future<int> _managedFileLength(
-    File file, {
-    required String operation,
-    bool allowMissing = false,
-  }) async {
-    final validated = await _validatedHistoryFile(
-      file,
-      operation: operation,
-      allowMissing: allowMissing,
-    );
-    return validated == null ? 0 : validated.length();
-  }
-
-  Future<void> _deleteManagedFile(
-    File file, {
-    required String operation,
-  }) async {
-    final validated = await _validatedHistoryFile(
-      file,
-      operation: operation,
-    );
-    await validated!.delete();
-  }
-
-  Future<List<int>> _readBoundedManagedFile(
-    File file, {
-    required int maxBytes,
-    required String operation,
-    required Set<ManagedFileKind> allowedKinds,
-  }) async {
-    final acquired = await _acquireReadHandle(
-      file,
-      maxBytes: maxBytes,
-      operation: operation,
-      allowedKinds: allowedKinds,
-    );
-    final builder = BytesBuilder(copy: false);
-    try {
-      await _boundedChunks(
-        _readHandleChunks(acquired.handle),
-        maxBytes: maxBytes,
-        operation: operation,
-        path: file.path,
-      ).forEach(builder.add);
-      await _validateFileIdentity(
-        acquired.file,
-        acquired.identity,
-        operation: operation,
-        allowedKinds: allowedKinds,
-      );
-      return builder.takeBytes();
-    } finally {
-      await acquired.handle.close();
-    }
-  }
-
-  Future<_AcquiredReadFile> _acquireReadHandle(
-    File file, {
-    required int maxBytes,
-    required String operation,
-    required Set<ManagedFileKind> allowedKinds,
-  }) async {
-    final validated = await _validatedHistoryFile(
-      file,
-      operation: operation,
-      allowedKinds: allowedKinds,
-    );
-    final before = _FileIdentity.fromStat(await validated!.stat());
-    if (before.size > maxBytes) {
-      throw FileLogLimitException(operation: operation, path: file.path);
-    }
-    final hook = _ioHook;
-    if (hook != null) await hook(validated, operation);
-
-    final handle = await validated.open();
-    try {
-      final afterFile = await _validatedHistoryFile(
-        validated,
-        operation: operation,
-        allowedKinds: allowedKinds,
-      );
-      final after = _FileIdentity.fromStat(await afterFile!.stat());
-      final openedLength = await handle.length();
-      if (before != after || openedLength != after.size) {
-        throw FileLogAccessException(operation: operation);
-      }
-      if (openedLength > maxBytes) {
-        throw FileLogLimitException(operation: operation, path: file.path);
-      }
-      return _AcquiredReadFile(
-        file: validated,
-        handle: handle,
-        identity: after,
-      );
-    } catch (_) {
-      await handle.close();
-      rethrow;
-    }
-  }
-
-  Stream<List<int>> _readHandleChunks(RandomAccessFile handle) async* {
-    while (true) {
-      final chunk = await handle.read(_ioChunkSize);
-      if (chunk.isEmpty) return;
-      yield chunk;
-    }
-  }
-
-  Stream<List<int>> _boundedChunks(
-    Stream<List<int>> chunks, {
-    required int maxBytes,
-    required String operation,
-    required String path,
-  }) async* {
-    var total = 0;
-    await for (final chunk in chunks) {
-      total += chunk.length;
-      if (total > maxBytes) {
-        throw FileLogLimitException(
-          operation: operation,
-          path: path,
-        );
-      }
-      yield chunk;
-    }
-  }
-
-  Future<String> _readLegacyText(File file) async {
-    final bytes = await _readBoundedManagedFile(
-      file,
-      maxBytes: _options.maxTotalSize,
-      operation: 'readLegacy',
-      allowedKinds: const {ManagedFileKind.legacy},
-    );
-    try {
-      return utf8.decode(bytes);
-    } on FormatException catch (_, stackTrace) {
-      throw FileLogFormatException(
-        operation: 'decodeLegacyUtf8',
-        path: file.path,
-        cause: const FormatException('Invalid file-log UTF-8'),
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  Future<void> _deleteDateDirectoryIfEmpty(
-    Directory directory, {
-    required String operation,
-  }) async {
-    final validated = await _validatedDateDirectory(
-      directory.path,
-      operation: operation,
-    );
-    if (!await validated!.list(followLinks: false).isEmpty) return;
-    final beforeDelete = await _validatedDateDirectory(
-      directory.path,
-      operation: operation,
-    );
-    await beforeDelete!.delete();
   }
 
   Future<void> _applyRetention() async {
@@ -2077,19 +1441,19 @@ final class RollingFileLogHistory implements FileLogHistory {
     final artifacts = <FileLogArtifact>[];
     var managedArtifacts = 0;
     var managedDates = 0;
-    final root = await _validatedSessionDirectory(
+    final root = await _store.validatedSessionDirectory(
       operation: 'scanArtifacts',
     );
     await for (final entity in root.list(followLinks: false)) {
       final name = FileLogLayout.basename(entity.path);
       if (FileLogLayout.dateNamePattern.hasMatch(name)) {
-        if (++managedDates > _managedArtifactLimit) {
+        if (++managedDates > _store.managedArtifactLimit) {
           throw const FileLogLimitException(operation: 'scanArtifacts');
         }
         if (entity is! Directory) {
           throw const FileLogAccessException(operation: 'scanArtifacts');
         }
-        final directory = await _validatedDateDirectory(
+        final directory = await _store.validatedDateDirectory(
           entity.path,
           operation: 'scanArtifacts',
         );
@@ -2101,13 +1465,13 @@ final class RollingFileLogHistory implements FileLogHistory {
             FileLogLayout.basename(child.path),
           );
           if (kind == null) continue;
-          if (++managedArtifacts > _managedArtifactLimit) {
+          if (++managedArtifacts > _store.managedArtifactLimit) {
             throw const FileLogLimitException(operation: 'scanArtifacts');
           }
           if (child is! File) {
             throw const FileLogAccessException(operation: 'scanArtifacts');
           }
-          final file = await _validatedDateArtifact(
+          final file = await _store.validatedDateArtifact(
             child,
             directory: directory,
             operation: 'scanArtifacts',
@@ -2136,7 +1500,7 @@ final class RollingFileLogHistory implements FileLogHistory {
             FileLogArtifact(
               path: file.path,
               date: date,
-              size: await _managedFileLength(
+              size: await _store.managedFileLength(
                 file,
                 operation: 'scanArtifacts',
               ),
@@ -2148,13 +1512,13 @@ final class RollingFileLogHistory implements FileLogHistory {
           );
         }
       } else if (FileLogLayout.legacyNamePattern.hasMatch(name)) {
-        if (++managedArtifacts > _managedArtifactLimit) {
+        if (++managedArtifacts > _store.managedArtifactLimit) {
           throw const FileLogLimitException(operation: 'scanArtifacts');
         }
         if (entity is! File) {
           throw const FileLogAccessException(operation: 'scanArtifacts');
         }
-        final legacy = await _validatedLegacyFile(
+        final legacy = await _store.validatedLegacyFile(
           entity,
           operation: 'scanArtifacts',
         );
@@ -2164,7 +1528,7 @@ final class RollingFileLogHistory implements FileLogHistory {
             FileLogArtifact(
               path: legacy!.path,
               date: legacyDate,
-              size: await _managedFileLength(
+              size: await _store.managedFileLength(
                 legacy,
                 operation: 'scanArtifacts',
               ),
@@ -2183,7 +1547,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       followLinks: false,
     );
     if (type == FileSystemEntityType.notFound) return;
-    await _deleteManagedFile(
+    await _store.deleteManagedFile(
       File(artifact.path),
       operation: 'deleteArtifact',
     );
@@ -2193,13 +1557,13 @@ final class RollingFileLogHistory implements FileLogHistory {
     final source = File(artifact.path);
     final target = File('${source.path}.gz');
     File? temporary;
-    _AcquiredReadFile? acquiredSource;
-    _AcquiredWritableFile? acquiredTemporary;
+    AcquiredReadFile? acquiredSource;
+    AcquiredWritableFile? acquiredTemporary;
     var sourceClosed = false;
     var temporaryClosed = false;
     var renamed = false;
     try {
-      final existingTarget = await _validatedHistoryFile(
+      final existingTarget = await _store.validatedHistoryFile(
         target,
         operation: 'archive',
         allowMissing: true,
@@ -2209,19 +1573,19 @@ final class RollingFileLogHistory implements FileLogHistory {
         await _recoverCompletedArchive(source, existingTarget);
         return;
       }
-      acquiredSource = await _acquireReadHandle(
+      acquiredSource = await _store.acquireReadHandle(
         source,
         maxBytes: _options.maxFileSize,
         operation: 'archive',
         allowedKinds: const {ManagedFileKind.segment},
       );
-      acquiredTemporary = await _createArchiveTemporary(target);
+      acquiredTemporary = await _store.createArchiveTemporary(target);
       temporary = acquiredTemporary.file;
       final compressedLimit = _archiveCompressedByteLimit ??
-          _gzipEncodedUpperBound(_options.maxFileSize);
+          ManagedLogStore.gzipEncodedUpperBound(_options.maxFileSize);
       var compressedBytes = 0;
-      final sourceChunks = _boundedChunks(
-        _readHandleChunks(acquiredSource.handle),
+      final sourceChunks = _store.boundedChunks(
+        _store.readHandleChunks(acquiredSource.handle),
         maxBytes: _options.maxFileSize,
         operation: 'archiveSource',
         path: source.path,
@@ -2241,7 +1605,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       if (temporaryLength != compressedBytes) {
         throw const FileLogAccessException(operation: 'archive');
       }
-      await _validatedHistoryFile(
+      await _store.validatedHistoryFile(
         temporary,
         operation: 'archive',
         allowedKinds: const {ManagedFileKind.temporary},
@@ -2253,7 +1617,7 @@ final class RollingFileLogHistory implements FileLogHistory {
       temporaryClosed = true;
       await acquiredSource.handle.close();
       sourceClosed = true;
-      await _validateFileIdentity(
+      await _store.validateFileIdentity(
         acquiredSource.file,
         acquiredSource.identity,
         operation: 'archive',
@@ -2268,12 +1632,12 @@ final class RollingFileLogHistory implements FileLogHistory {
       }
       await temporary.rename(target.path);
       renamed = true;
-      await _validatedHistoryFile(
+      await _store.validatedHistoryFile(
         target,
         operation: 'archive',
         allowedKinds: const {ManagedFileKind.archive},
       );
-      await _deleteManagedFile(
+      await _store.deleteManagedFile(
         source,
         operation: 'archive',
       );
@@ -2300,7 +1664,7 @@ final class RollingFileLogHistory implements FileLogHistory {
                 followLinks: false,
               ) ==
               FileSystemEntityType.file) {
-        await _deleteManagedFile(temporary, operation: 'archiveCleanup');
+        await _store.deleteManagedFile(temporary, operation: 'archiveCleanup');
       } else if (!renamed &&
           temporary != null &&
           await FileSystemEntity.type(
@@ -2315,13 +1679,13 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   Future<void> _recoverCompletedArchive(File source, File archive) async {
-    final sourceBytes = await _readBoundedManagedFile(
+    final sourceBytes = await _store.readBoundedManagedFile(
       source,
       maxBytes: _options.maxFileSize,
       operation: 'archiveRecovery',
       allowedKinds: const {ManagedFileKind.segment},
     );
-    final archiveBytes = await _readSegmentBytes(archive);
+    final archiveBytes = await _store.readArtifactBytes(archive);
     if (sourceBytes.length != archiveBytes.length) {
       throw const FileLogAccessException(operation: 'archiveRecovery');
     }
@@ -2330,93 +1694,11 @@ final class RollingFileLogHistory implements FileLogHistory {
         throw const FileLogAccessException(operation: 'archiveRecovery');
       }
     }
-    await _deleteManagedFile(source, operation: 'archiveRecovery');
-  }
-
-  Future<_AcquiredWritableFile> _createArchiveTemporary(File target) async {
-    File? temporary;
-    for (var attempt = 0; attempt < 8; attempt++) {
-      final candidate = File('${target.path}.${LogId.generate()}.tmp');
-      try {
-        await candidate.create(exclusive: true);
-        temporary = candidate;
-        break;
-      } on FileSystemException {
-        if (await FileSystemEntity.type(
-              candidate.path,
-              followLinks: false,
-            ) !=
-            FileSystemEntityType.notFound) {
-          continue;
-        }
-        rethrow;
-      }
-    }
-    if (temporary == null) {
-      throw const FileLogAccessException(operation: 'archiveTemporary');
-    }
-
-    RandomAccessFile? handle;
-    try {
-      final validated = await _validatedHistoryFile(
-        temporary,
-        operation: 'archiveTemporary',
-        allowedKinds: const {ManagedFileKind.temporary},
-      );
-      final before = _FileIdentity.fromStat(await validated!.stat());
-      if (before.size != 0) {
-        throw const FileLogAccessException(operation: 'archiveTemporary');
-      }
-      final hook = _ioHook;
-      if (hook != null) await hook(validated, 'archiveTemporary');
-      handle = await validated.open(mode: FileMode.writeOnlyAppend);
-      final afterFile = await _validatedHistoryFile(
-        validated,
-        operation: 'archiveTemporary',
-        allowedKinds: const {ManagedFileKind.temporary},
-      );
-      final after = _FileIdentity.fromStat(await afterFile!.stat());
-      if (before != after || await handle.length() != 0) {
-        throw const FileLogAccessException(operation: 'archiveTemporary');
-      }
-      return _AcquiredWritableFile(file: validated, handle: handle);
-    } catch (_) {
-      if (handle != null) await handle.close();
-      final temporaryType = await FileSystemEntity.type(
-        temporary.path,
-        followLinks: false,
-      );
-      if (temporaryType == FileSystemEntityType.file) {
-        await _deleteManagedFile(
-          temporary,
-          operation: 'archiveTemporaryCleanup',
-        );
-      } else if (temporaryType == FileSystemEntityType.link) {
-        await Link(temporary.path).delete();
-      }
-      rethrow;
-    }
-  }
-
-  Future<void> _validateFileIdentity(
-    File file,
-    _FileIdentity expected, {
-    required String operation,
-    required Set<ManagedFileKind> allowedKinds,
-  }) async {
-    final validated = await _validatedHistoryFile(
-      file,
-      operation: operation,
-      allowedKinds: allowedKinds,
-    );
-    final current = _FileIdentity.fromStat(await validated!.stat());
-    if (current != expected) {
-      throw FileLogAccessException(operation: operation);
-    }
+    await _store.deleteManagedFile(source, operation: 'archiveRecovery');
   }
 
   Future<void> _deleteEmptyDateDirectories() async {
-    final root = await _validatedSessionDirectory(
+    final root = await _store.validatedSessionDirectory(
       operation: 'deleteEmptyDateDirectories',
     );
     final directories = <Directory>[];
@@ -2430,25 +1712,19 @@ final class RollingFileLogHistory implements FileLogHistory {
           operation: 'deleteEmptyDateDirectories',
         );
       }
-      final directory = await _validatedDateDirectory(
+      final directory = await _store.validatedDateDirectory(
         entity.path,
         operation: 'deleteEmptyDateDirectories',
       );
       directories.add(directory!);
     }
     for (final directory in directories) {
-      await _deleteDateDirectoryIfEmpty(
+      await _store.deleteDateDirectoryIfEmpty(
         directory,
         operation: 'deleteEmptyDateDirectories',
       );
     }
   }
-
-  String _dateDirectoryPath(DateTime date) =>
-      FileLogLayout.join(sessionDirectory, FileLogLayout.dateName(date));
-
-  String _legacyFilePath(DateTime date) =>
-      FileLogLayout.join(sessionDirectory, FileLogLayout.legacyFileName(date));
 }
 
 final class _PendingLog {
@@ -2463,59 +1739,4 @@ final class _PendingLog {
   final DateTime time;
   final ISpectLogData log;
   final String sessionId;
-}
-
-final class _AcquiredReadFile {
-  const _AcquiredReadFile({
-    required this.file,
-    required this.handle,
-    required this.identity,
-  });
-
-  final File file;
-  final RandomAccessFile handle;
-  final _FileIdentity identity;
-}
-
-final class _AcquiredWritableFile {
-  const _AcquiredWritableFile({
-    required this.file,
-    required this.handle,
-  });
-
-  final File file;
-  final RandomAccessFile handle;
-}
-
-@immutable
-final class _FileIdentity {
-  const _FileIdentity({
-    required this.size,
-    required this.mode,
-    required this.changed,
-    required this.modified,
-  });
-
-  factory _FileIdentity.fromStat(FileStat stat) => _FileIdentity(
-        size: stat.size,
-        mode: stat.mode,
-        changed: stat.changed,
-        modified: stat.modified,
-      );
-
-  final int size;
-  final int mode;
-  final DateTime changed;
-  final DateTime modified;
-
-  @override
-  bool operator ==(Object other) =>
-      other is _FileIdentity &&
-      other.size == size &&
-      other.mode == mode &&
-      other.changed == changed &&
-      other.modified == modified;
-
-  @override
-  int get hashCode => Object.hash(size, mode, changed, modified);
 }
