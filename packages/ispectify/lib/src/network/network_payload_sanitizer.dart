@@ -291,7 +291,14 @@ final class NetworkPayloadSanitizer {
 
     try {
       if (value is String && BoundedJsonDecoder.looksLikeJson(value)) {
-        final decoded = BoundedJsonDecoder.decode(value);
+        final decoded = BoundedJsonDecoder.decode(
+          value,
+          maxCharacters: _resourceLimits.maxCapturedValueBytes,
+          maxEncodedBytes: _resourceLimits.maxCapturedValueBytes,
+          maxDepth: _resourceLimits.maxTraversalDepth,
+          maxNodes: _resourceLimits.maxTraversalNodes,
+          maxCollectionItems: _resourceLimits.maxCollectionItems,
+        );
         if (decoded is Map || decoded is List) {
           final redacted = _redactor.redactForExport(
             decoded,

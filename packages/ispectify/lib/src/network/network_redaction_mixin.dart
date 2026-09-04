@@ -41,10 +41,28 @@ mixin NetworkRedactionMixin {
   /// Implementing classes must override this to return their redactor instance.
   RedactionService get redactor;
 
-  NetworkPayloadSanitizer get _payload => NetworkPayloadSanitizer(
-        redactor,
-        resourceLimits: resourceLimits,
-      );
+  _PayloadSanitizerCache? _payloadCache;
+
+  NetworkPayloadSanitizer get _payload {
+    final activeRedactor = redactor;
+    final activeLimits = resourceLimits;
+    final cached = _payloadCache;
+    if (cached != null &&
+        identical(cached.redactor, activeRedactor) &&
+        identical(cached.limits, activeLimits)) {
+      return cached.sanitizer;
+    }
+    final sanitizer = NetworkPayloadSanitizer(
+      activeRedactor,
+      resourceLimits: activeLimits,
+    );
+    _payloadCache = _PayloadSanitizerCache(
+      redactor: activeRedactor,
+      limits: activeLimits,
+      sanitizer: sanitizer,
+    );
+    return sanitizer;
+  }
 
   /// Redacts query parameter values and userInfo credentials in a URL.
   ///
@@ -178,4 +196,16 @@ mixin NetworkRedactionMixin {
       ),
     );
   }
+}
+
+final class _PayloadSanitizerCache {
+  const _PayloadSanitizerCache({
+    required this.redactor,
+    required this.limits,
+    required this.sanitizer,
+  });
+
+  final RedactionService redactor;
+  final DiagnosticResourceLimits limits;
+  final NetworkPayloadSanitizer sanitizer;
 }

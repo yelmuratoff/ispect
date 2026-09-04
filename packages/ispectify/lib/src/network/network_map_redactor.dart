@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:ispectify/src/history/serialization.dart';
 import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
+import 'package:ispectify/src/network/http_methods.dart';
 import 'package:ispectify/src/network/network_json_keys.dart';
 import 'package:ispectify/src/network/network_payload_sanitizer.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart';
@@ -303,6 +304,10 @@ abstract final class NetworkMapRedactor {
     Set<String>? ignoredKeys,
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
+    if (map[NetworkJsonKeys.method] case final String method
+        when HttpMethods.isStandard(method)) {
+      return;
+    }
     redactFreeText(
       map,
       redactor,
