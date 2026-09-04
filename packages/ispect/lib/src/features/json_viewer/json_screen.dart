@@ -27,6 +27,7 @@ class JsonScreen extends StatefulWidget {
   factory JsonScreen({
     required Map<String, dynamic> data,
     Map<String, dynamic>? truncatedData,
+    Map<String, dynamic> Function()? truncatedDataBuilder,
     VoidCallback? onClose,
     Map<String, dynamic>? correlatedLogData,
     String? correlatedLogLabel,
@@ -70,6 +71,9 @@ class JsonScreen extends StatefulWidget {
     return JsonScreen._(
       dataSnapshot: dataSnapshot,
       truncatedDataSnapshot: truncatedDataSnapshot,
+      truncatedSnapshotBuilder: truncatedDataBuilder == null
+          ? null
+          : () => snapshot(truncatedDataBuilder()),
       onClose: onClose,
       correlatedLogDataSnapshot: correlatedLogDataSnapshot,
       correlatedLogLabel: correlatedLogLabel,
@@ -82,6 +86,7 @@ class JsonScreen extends StatefulWidget {
   const JsonScreen._({
     required JsonInputSnapshot dataSnapshot,
     required JsonInputSnapshot? truncatedDataSnapshot,
+    required JsonInputSnapshot Function()? truncatedSnapshotBuilder,
     required JsonInputSnapshot? correlatedLogDataSnapshot,
     required this.onClose,
     required this.correlatedLogLabel,
@@ -90,10 +95,12 @@ class JsonScreen extends StatefulWidget {
     super.key,
   }) : _dataSnapshot = dataSnapshot,
        _truncatedDataSnapshot = truncatedDataSnapshot,
+       _truncatedSnapshotBuilder = truncatedSnapshotBuilder,
        _correlatedLogDataSnapshot = correlatedLogDataSnapshot;
 
   final JsonInputSnapshot _dataSnapshot;
   final JsonInputSnapshot? _truncatedDataSnapshot;
+  final JsonInputSnapshot Function()? _truncatedSnapshotBuilder;
   final JsonInputSnapshot? _correlatedLogDataSnapshot;
   final DiagnosticProcessingPolicy processingPolicy;
 
@@ -101,9 +108,14 @@ class JsonScreen extends StatefulWidget {
   Map<String, dynamic> get data => _mapFromSnapshot(_dataSnapshot);
 
   /// Bounded snapshot used by sharing when provided.
-  Map<String, dynamic>? get truncatedData => _truncatedDataSnapshot == null
-      ? null
-      : _mapFromSnapshot(_truncatedDataSnapshot);
+  ///
+  /// A builder-backed snapshot is produced on demand, so a viewer that is
+  /// never shared never pays for the truncated export.
+  Map<String, dynamic>? get truncatedData {
+    final snapshot =
+        _truncatedDataSnapshot ?? _truncatedSnapshotBuilder?.call();
+    return snapshot == null ? null : _mapFromSnapshot(snapshot);
+  }
 
   final VoidCallback? onClose;
 

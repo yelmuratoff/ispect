@@ -117,11 +117,10 @@ class _LogDetailViewState extends State<LogDetailView> {
       transactionId is String ? transactionId : null,
     );
     _isViewingRequest = activeData.key == ISpectLogType.httpRequest.key;
-    final json = _viewerSnapshot();
     _jsonScreen = JsonScreen(
       key: UniqueKey(),
-      data: json,
-      truncatedData: _viewerSnapshot(truncated: true),
+      data: _viewerSnapshot(),
+      truncatedDataBuilder: () => _viewerSnapshot(truncated: true),
       onClose: _handleClose,
     );
   }
