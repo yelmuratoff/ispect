@@ -49,6 +49,21 @@ void main() {
       expect(warnings().join(), isNot(contains('FILTER_SECRET')));
     });
 
+    test('a message id correlates a frame instead of the session', () {
+      final plain = WsDiagnostics(logger: logger)
+        ..onSent({'k': 'v'})
+        ..onSent({'k': 'v'}, messageId: 'rpc-42')
+        ..onReceived({'k': 'v'}, messageId: 'rpc-42');
+      addTearDown(plain.newConnection);
+
+      final ids = logger.history
+          .map((log) => log.additionalData?[TraceKeys.correlationId])
+          .toList();
+      expect(ids[1], 'rpc-42');
+      expect(ids[2], 'rpc-42');
+      expect(ids[0], isNot('rpc-42'));
+    });
+
     test('a throwing error filter returns normally', () {
       expect(
         () => diagnostics.onError(StateError('socket'), StackTrace.current),
