@@ -88,7 +88,7 @@ class DioRequestData {
       NetworkJsonKeys.persistentConnection: requestOptions.persistentConnection,
       NetworkJsonKeys.preserveHeaderCase: requestOptions.preserveHeaderCase,
       NetworkJsonKeys.listFormat: requestOptions.listFormat,
-      NetworkJsonKeys.cancelToken: requestOptions.cancelToken,
+      NetworkJsonKeys.cancelToken: requestOptions.cancelToken != null,
 
       // --- Meta ---
       NetworkJsonKeys.extra: normalizedExtra,
