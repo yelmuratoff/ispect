@@ -212,6 +212,54 @@ final class FileLogCodec {
     return logs;
   }
 
+  /// Re-encodes [data] under [sessionId] and decodes it again, so an
+  /// imported or legacy record carries exactly what a fresh write would
+  /// have stored: redacted, bounded to [maxBytes], and tagged with the
+  /// trusted session.
+  ISpectLogData roundTrip(
+    ISpectLogData data, {
+    required String sessionId,
+    required int maxBytes,
+  }) {
+    final encoded = encode(data, sessionId: sessionId, maxBytes: maxBytes);
+    return decodeLine(
+      utf8.decode(encoded.bytes),
+      maxCharacters: maxBytes,
+      maxEncodedBytes: maxBytes,
+      maxDepth: _resourceLimits.maxTraversalDepth,
+      maxNodes: _resourceLimits.maxImportNodes,
+      maxCollectionItems: _resourceLimits.maxCollectionItems,
+    );
+  }
+
+  /// Drops a session id supplied by the record itself; only the history
+  /// assigns sessions.
+  static ISpectLogData withoutSessionId(ISpectLogData data) {
+    final captured = captureISpectLogDataForEgress(data);
+    final additionalData = captured.additionalData;
+    if (additionalData == null ||
+        !additionalData.containsKey(TraceKeys.sessionId)) {
+      return data;
+    }
+    return ISpectLogData(
+      captured.message,
+      id: captured.id,
+      time: captured.time,
+      key: captured.key,
+      logLevel: captured.logLevel,
+      pen: captured.pen,
+      exception: captured.exception,
+      error: captured.error,
+      stackTrace: captured.stackTrace,
+      captureMode: captured.captureMode,
+      resourceLimits: captured.resourceLimits,
+      additionalData: <String, dynamic>{
+        for (final entry in additionalData.entries)
+          if (entry.key != TraceKeys.sessionId) entry.key: entry.value,
+      },
+    );
+  }
+
   Object? _decodeJson(
     String input, {
     required String operation,
