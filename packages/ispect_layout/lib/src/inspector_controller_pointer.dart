@@ -89,6 +89,7 @@ extension InspectorControllerPointer on InspectorController {
 
   void onPointerExit(Offset pointerOffset) {
     if (!isEnabled) return;
+    _pendingHover = null;
     hoveredRenderBoxNotifier.value = null;
   }
 

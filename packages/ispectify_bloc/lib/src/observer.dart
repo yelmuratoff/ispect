@@ -162,13 +162,26 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (_) {}
   }
 
-  StateTracePreparer get _preparer => StateTracePreparer(
-        redactor: settings.isRedactionActive
-            ? ISpectRedaction.resolveService(service: settings.redactor)
-            : null,
-        captureMode: settings.captureMode,
-        resourceLimits: _resourceLimits,
-      );
+  StateTracePreparer? _preparerCache;
+
+  StateTracePreparer get _preparer {
+    final redactor = settings.isRedactionActive
+        ? ISpectRedaction.resolveService(service: settings.redactor)
+        : null;
+    final limits = _resourceLimits;
+    final cached = _preparerCache;
+    if (cached != null &&
+        identical(cached.redactor, redactor) &&
+        identical(cached.resourceLimits, limits) &&
+        cached.captureMode == settings.captureMode) {
+      return cached;
+    }
+    return _preparerCache = StateTracePreparer(
+      redactor: redactor,
+      captureMode: settings.captureMode,
+      resourceLimits: limits,
+    );
+  }
 
   // Every caller-controlled trace field is prepared by _preparer. A second
   // generic pass would replace the configured redactor and repeat boundary

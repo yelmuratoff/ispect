@@ -65,5 +65,13 @@ void main() {
       controller.hoveredRenderBoxNotifier.value?.targetRenderBox,
       same(rightBox),
     );
+
+    controller
+      ..onPointerHoverDebounced(left, context)
+      ..onPointerHoverDebounced(right, context)
+      ..onPointerExit(right);
+    await tester.pump();
+
+    expect(controller.hoveredRenderBoxNotifier.value, isNull);
   });
 }

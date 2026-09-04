@@ -13,7 +13,7 @@
 - **Custom diagnostics settings:** Overrides of network, trace, BLoC, or Riverpod `copyWith`/`configure` methods must accept the new optional capture and inheritance parameters.
 - **Observer payloads:** Observers receive the redacted entry, with exception, error, and stack trace as scrubbed text. `ISpect.run`'s error callbacks still receive the originals for crash reporting.
 - **`WsDiagnosticsSink` implementers:** `onSent` and `onReceived` gained an optional `messageId` parameter; a class that implements the sink interface must declare it. Callers are unaffected.
-- **http error records:** Error responses store their payload under `error-data`, matching Dio; readers keyed on `response-data` for 4xx/5xx entries must check both keys.
+- **Adapter error records:** http error responses store their payload under `error-data`, matching Dio, and the Dio error record no longer duplicates the request blob at top level; read it from `response.request`. Readers keyed on `response-data` for 4xx/5xx entries must check both keys.
 
 ### Behavioral Changes
 
@@ -44,7 +44,6 @@
 - **Diagnostics never break the host:** Dio, http, WebSocket, and database capture run inside `guardDiagnostics`; a throwing filter or an internal failure becomes a warning that names the error type.
 - **History bounds on reconfigure:** Lowering `maxHistoryItems` at runtime trims the retained entries.
 - **Faster hot paths:** Excluded log keys skip capture and redaction entirely; trace scalars, console headers, and network provenance each take one redaction pass; the layout inspector caches element lookups and coalesces hover samples per frame; the log list keys rows by id, re-renders only rows on relative-time ticks, and memoizes body previews.
-- **Adapter record shapes:** http error responses store their payload under `error-data` like Dio, and the Dio error record no longer duplicates the request blob at top level; read it from `response.request`.
 - **WebSocket correlation:** `onSent` and `onReceived` accept a `messageId` to pair a frame with its reply instead of the whole session.
 - **Shared adapter primitives:** `StateTracePreparer`, `BoundedByteBody`, `MultipartCapture`, `safeValueTypeLabel`, and `BaseNetworkInterceptorSettings.isRedactionActive` replace per-package copies.
 
