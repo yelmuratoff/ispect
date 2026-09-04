@@ -76,8 +76,9 @@ class ISpectRiverpodObserver extends ProviderObserver {
       settings.resourceLimits ?? _logger.options.resourceLimits;
 
   bool _isFiltered(ProviderBase<Object?> provider) {
-    final providerName = _providerName(provider);
-    final predicateMatch = filterPredicate?.call(providerName) ?? false;
+    String? resolvedName;
+    String providerName() => resolvedName ??= _providerName(provider);
+    final predicateMatch = filterPredicate?.call(providerName()) ?? false;
     if (!_loggingEnabled) {
       return true;
     }
@@ -90,7 +91,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
     for (final pattern in filters) {
       var matches = false;
       try {
-        matches = providerName.contains(pattern);
+        matches = providerName().contains(pattern);
       } catch (_) {}
       if (!_loggingEnabled) return true;
       if (matches) {
