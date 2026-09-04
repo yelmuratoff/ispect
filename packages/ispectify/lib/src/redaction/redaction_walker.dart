@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:ispectify/src/redaction/constants/detection_patterns.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
+import 'package:ispectify/src/redaction/key_canonicalizer.dart';
 import 'package:ispectify/src/redaction/redaction_config.dart';
 import 'package:ispectify/src/redaction/redaction_request.dart';
 import 'package:ispectify/src/redaction/redaction_stats.dart';
@@ -39,6 +40,9 @@ final class RedactionWalker {
   final RedactionStats stats;
 
   RedactionContext? _cachedContext;
+
+  /// Key classification and masking helpers bound to this walker's config.
+  RedactionContext get context => _cachedContext ??= _createContext();
 
   Map<String, Object?> redactHeaders(Map<String, Object?> headers) {
     final out = <String, Object?>{};
@@ -219,31 +223,12 @@ final class RedactionWalker {
 
   static bool _hasTerminalKey(String? keyName, Set<String> candidates) {
     if (keyName == null) return false;
-    final canonical = keyName
-        .trim()
-        .replaceAllMapped(
-          _acronymBoundary,
-          (match) => '${match[1]}_${match[2]}',
-        )
-        .replaceAllMapped(
-          _camelBoundary,
-          (match) => '${match[1]}_${match[2]}',
-        )
-        .replaceAllMapped(
-          _bracketBoundary,
-          (match) => match[1]!.isEmpty ? '' : '_${match[1]}',
-        )
-        .replaceAll(RegExp(r'[.\-]'), '_')
-        .toLowerCase();
+    final canonical = canonicalizeKey(keyName);
     return candidates.any(
       (candidate) =>
           canonical == candidate || canonical.endsWith('_$candidate'),
     );
   }
-
-  static final RegExp _camelBoundary = RegExp('([a-z0-9])([A-Z])');
-  static final RegExp _acronymBoundary = RegExp('([A-Z]+)([A-Z][a-z])');
-  static final RegExp _bracketBoundary = RegExp(r'\[([^\[\]]*)\]');
 
   /// Masks a string keeping [visibleEdgeLength] characters on each side.
   ///

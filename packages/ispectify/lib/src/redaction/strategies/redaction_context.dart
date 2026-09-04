@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:ispectify/src/redaction/key_canonicalizer.dart';
+
 /// Provides redaction helpers and configuration to strategies at call-time.
 ///
 /// Acts as a mediator between the tree-walking engine and pluggable strategies,
@@ -95,7 +97,7 @@ final class RedactionContext {
       return (fullyMasked: fullyMasked, sensitive: sensitive);
     }
 
-    final canonical = needsCanonicalization ? _canonicalizeKey(trimmed) : lower;
+    final canonical = needsCanonicalization ? canonicalizeKey(trimmed) : lower;
     if (_describesSecretMetadata(canonical) ||
         _describesSecretMetadata(lower)) {
       return _noMatch;
@@ -198,18 +200,4 @@ final class RedactionContext {
   }
 
   /// Normalizes camelCase / PascalCase and dotted/bracketed boundaries to `_`.
-  static String _canonicalizeKey(String key) => key
-      .replaceAllMapped(_acronymBoundary, (m) => '${m[1]}_${m[2]}')
-      .replaceAllMapped(_camelBoundary, (m) => '${m[1]}_${m[2]}')
-      .replaceAllMapped(
-        _bracketBoundary,
-        (m) => m[1]!.isEmpty ? '' : '_${m[1]}',
-      )
-      .replaceAll('.', '_')
-      .replaceAll('-', '_')
-      .toLowerCase();
-
-  static final RegExp _camelBoundary = RegExp('([a-z0-9])([A-Z])');
-  static final RegExp _acronymBoundary = RegExp('([A-Z]+)([A-Z][a-z])');
-  static final RegExp _bracketBoundary = RegExp(r'\[([^\[\]]*)\]');
 }

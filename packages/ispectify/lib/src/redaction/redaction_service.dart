@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
+import 'package:ispectify/src/redaction/key_canonicalizer.dart';
 import 'package:ispectify/src/redaction/redaction_config.dart';
 import 'package:ispectify/src/redaction/redaction_request.dart';
 import 'package:ispectify/src/redaction/redaction_walker.dart';
@@ -555,8 +556,7 @@ class RedactionService {
       );
       final queryRedacted = _maskQueryParameters(
         assignmentRedacted,
-        (key) => _isConfiguredSensitiveKey(
-          key,
+        _configuredKeyMatcher(
           ignoredValues: ignoredValues,
           ignoredKeys: ignoredKeys,
         ),
@@ -605,8 +605,7 @@ class RedactionService {
     );
     final queryRedacted = _maskQueryParameters(
       assignmentRedacted,
-      (key) => _isConfiguredSensitiveKey(
-        key,
+      _configuredKeyMatcher(
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       ),
@@ -627,33 +626,36 @@ class RedactionService {
   }) =>
       _maskSensitiveAssignments(
         value,
-        (key) => _isConfiguredSensitiveKey(
-          key,
+        _configuredKeyMatcher(
           ignoredValues: ignoredValues,
           ignoredKeys: ignoredKeys,
         ),
         _config.placeholder,
       );
 
-  bool _isConfiguredSensitiveKey(
-    String key, {
+  bool Function(String key) _configuredKeyMatcher({
     required Set<String>? ignoredValues,
     required Set<String>? ignoredKeys,
   }) {
+    if (!ISpectRedaction.enabled) return (_) => false;
+    final context = _createWalker(
+      RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
+    ).context;
+    return (key) => _isConfiguredSensitiveKey(
+          key,
+          context: context,
+          ignoredKeys: ignoredKeys,
+        );
+  }
+
+  bool _isConfiguredSensitiveKey(
+    String key, {
+    required RedactionContext context,
+    required Set<String>? ignoredKeys,
+  }) {
     try {
-      const probe = 8675309;
-      final keyless = redact(
-        probe,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-      final keyed = redact(
-        probe,
-        keyName: key,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-      if (keyed != keyless) return true;
+      final classification = context.classifyKey(key);
+      if (classification.fullyMasked || classification.sensitive) return true;
       final normalized = key.trim().toLowerCase();
       if (!_assignmentCredentialKeys.contains(normalized)) return false;
       return !_isIgnoredKeyName(normalized, ignoredKeys);
@@ -1199,11 +1201,7 @@ class RedactionService {
       // so credentials and sensitive query params don't survive verbatim.
       final queryRedacted = _maskQueryParameters(
         url,
-        (key) => _isConfiguredSensitiveKey(
-          key,
-          ignoredValues: null,
-          ignoredKeys: null,
-        ),
+        _configuredKeyMatcher(ignoredValues: null, ignoredKeys: null),
         _config.placeholder,
       );
       final redacted = _redactClassifiedAssignments(
@@ -2065,7 +2063,7 @@ final class _ExportKeyPatterns {
   _ExportKeyPatterns(Set<String> keys)
       : this._(
           keys.map((key) => key.toLowerCase()).toSet(),
-          keys.map(_canonicalizeKey).toSet(),
+          keys.map(canonicalizeKey).toSet(),
           keys.map(RegExp.escape).join('|'),
         );
 
@@ -2087,7 +2085,7 @@ final class _ExportKeyPatterns {
   bool matchesKey(String key) {
     final lower = key.trim().toLowerCase();
     if (keysLower.contains(lower)) return true;
-    final canonical = _canonicalizeKey(key);
+    final canonical = canonicalizeKey(key);
     if (canonicalKeysLower.contains(canonical)) return true;
     final tokens =
         canonical.split('_').where((token) => token.isNotEmpty).toList();
@@ -2101,18 +2099,4 @@ final class _ExportKeyPatterns {
     }
     return false;
   }
-
-  static String _canonicalizeKey(String key) => key
-      .replaceAllMapped(_acronymBoundary, (m) => '${m[1]}_${m[2]}')
-      .replaceAllMapped(_camelBoundary, (m) => '${m[1]}_${m[2]}')
-      .replaceAllMapped(
-        _bracketBoundary,
-        (m) => m[1]!.isEmpty ? '' : '_${m[1]}',
-      )
-      .replaceAll(RegExp(r'[.\-]'), '_')
-      .toLowerCase();
-
-  static final RegExp _camelBoundary = RegExp('([a-z0-9])([A-Z])');
-  static final RegExp _acronymBoundary = RegExp('([A-Z]+)([A-Z][a-z])');
-  static final RegExp _bracketBoundary = RegExp(r'\[([^\[\]]*)\]');
 }
