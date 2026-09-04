@@ -45,6 +45,7 @@
 - **Tighter log cards:** Mobile log and network cards use a smaller corner radius that matches the search field.
 - **Rounder tiles:** Bordered tiles in the context menu, Settings, and HTTP composer draw their outline with the same squircle corner as their fill, so the corners are no longer visibly sharper than the rest of the UI.
 - **Panel header:** The open panel shows the `pageTitle` with a close control, and every action tile shows a localized caption.
+- **Filter sheet height:** On phones the filter sheet opens as tall as its content, so every log type is visible without dragging; past 85% of the screen it scrolls instead.
 
 ### Bug Fixes
 

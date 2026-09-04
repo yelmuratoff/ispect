@@ -22,8 +22,10 @@ Widget _ispectThemedModal(
 
 /// Shows a responsive sheet: bottom sheet on phone, dialog on larger screens.
 ///
-/// By default the sheet sizes itself to fit its content. Set [fitContent] to
-/// `false` to use a draggable sheet with explicit size fractions instead.
+/// By default the sheet sizes itself to fit its content, growing no taller
+/// than [maxHeightFraction] of the screen before its content scrolls. Set
+/// [fitContent] to `false` to use a draggable sheet with explicit size
+/// fractions instead.
 Future<T?> showISpectSheet<T>(
   BuildContext context, {
   required Widget Function(
@@ -32,6 +34,7 @@ Future<T?> showISpectSheet<T>(
   )
   builder,
   bool fitContent = true,
+  double maxHeightFraction = 0.85,
   double initialChildSize = 0.4,
   double minChildSize = 0.2,
   double maxChildSize = 0.5,
@@ -58,6 +61,9 @@ Future<T?> showISpectSheet<T>(
       return showModalBottomSheet<T>(
         context: context,
         isScrollControlled: true,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * maxHeightFraction,
+        ),
         backgroundColor: bgColor,
         shape: sheetShape,
         routeSettings: routeSettings,
