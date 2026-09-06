@@ -121,7 +121,7 @@ List<CompareDistance> computeCompareDistances(
   }
 
   if (!hasHGap && !hasVGap) {
-    // Overlap — show LTRB alignment differences.
+    // Overlap - show LTRB alignment differences.
     final midY =
         (math.max(from.top, to.top) + math.min(from.bottom, to.bottom)) / 2;
     final midX =

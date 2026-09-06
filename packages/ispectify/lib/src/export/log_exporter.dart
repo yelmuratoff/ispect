@@ -162,7 +162,7 @@ abstract final class LogExporter {
 
   /// Export as CSV with formula injection protection.
   ///
-  /// Overview format only — exception, error, stackTrace and nested meta
+  /// Overview format only - exception, error, stackTrace and nested meta
   /// are not included (too long for tabular format). Use JSON Lines or
   /// Text for full details.
   static String toCsv(

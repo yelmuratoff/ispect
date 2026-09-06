@@ -97,7 +97,7 @@ class InspectorState extends State<Inspector> {
   late InspectorController _controller;
   InspectorController get controller => _controller;
 
-  // Picker disc canvas size — image-only area; the visible disc is +40 px
+  // Picker disc canvas size - image-only area; the visible disc is +40 px
   // wider on each axis because the rings are painted outside the canvas.
   // Tuned so the total visible disc lands roughly where the previous
   // in-canvas-rings version was (overlay ~128–246).
@@ -232,7 +232,7 @@ class InspectorState extends State<Inspector> {
                   onPointerUp: (e) => _controller.onTap(e.position, context),
                   onPointerMove: (e) {
                     // On touch release the engine injects a synthesized move to
-                    // the shifted up position before the up event — ignore it
+                    // the shifted up position before the up event - ignore it
                     // so the loupe holds steady and samples the real pixel.
                     if (e.synthesized) return;
                     _controller.onPointerMove(e.position, context);
@@ -308,7 +308,7 @@ class InspectorState extends State<Inspector> {
 
             // Pick the side of the disc where the HUD chip fully fits in
             // the on-screen bounds (minus the bottom action-bar / safe area).
-            // Priority: above (default) → right → left → below — "below" is
+            // Priority: above (default) → right → left → below - "below" is
             // last because the user's finger lives there.
             final placement = _resolveHudPlacement(
               pickerLeft: pickerLeft,
@@ -461,7 +461,7 @@ class InspectorState extends State<Inspector> {
             },
           ),
         },
-        // Not autofocus — the inspector should never steal focus from
+        // Not autofocus - the inspector should never steal focus from
         // TextFields or other interactive descendants. Shortcuts still fire
         // as long as the focus tree includes this node, which it always does
         // (the Focus sits above the whole app tree).
@@ -491,7 +491,7 @@ class InspectorState extends State<Inspector> {
 
   /// Picks the first placement (in priority order) where the HUD chip's full
   /// bounding box is on-screen. Falls back to [HudPlacement.above] if no
-  /// side fits — the chip will clip, but at least one fixed side is chosen
+  /// side fits - the chip will clip, but at least one fixed side is chosen
   /// (rather than disappearing) so the user can still nudge the picker.
   HudPlacement _resolveHudPlacement({
     required double pickerLeft,

@@ -19,7 +19,7 @@ import 'package:ispectify/src/trace/trace_stream_transformer.dart';
 import 'package:ispectify/src/trace/trace_token.dart';
 import 'package:ispectify/src/utils/common_utils.dart';
 
-/// File-private zone key — prevents external code from reading/spoofing txnId.
+/// File-private zone key - prevents external code from reading/spoofing txnId.
 final _txnZoneKey = Object();
 
 extension ISpectTrace on ISpectLogger {
@@ -338,7 +338,7 @@ extension ISpectTrace on ISpectLogger {
     }
   }
 
-  /// A projection callback (`projectResult`/`projectEvent`) threw — the traced
+  /// A projection callback (`projectResult`/`projectEvent`) threw - the traced
   /// operation itself succeeded, so this is reported as a warning (not routed
   /// through the error handler) and never swallowed silently.
   void _logProjectionFailure(String wrapper) {
@@ -427,7 +427,7 @@ extension ISpectTrace on ISpectLogger {
 
   // ── Manual span (request → response) ────────────────────────────────
 
-  /// Returns `null` if logger is disabled — caller must check.
+  /// Returns `null` if logger is disabled - caller must check.
   ISpectTraceToken? traceStart({
     required ISpectTraceCategory category,
     required String source,
@@ -476,7 +476,7 @@ extension ISpectTrace on ISpectLogger {
     );
   }
 
-  /// Ends a manual span. [token] is nullable — if [traceStart] returned null
+  /// Ends a manual span. [token] is nullable - if [traceStart] returned null
   /// (logger disabled), this is a no-op.
   void traceEnd(
     ISpectTraceToken? token, {

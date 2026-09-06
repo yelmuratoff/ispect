@@ -4,11 +4,11 @@
 /// These five flags control the runtime error-handling pipeline set up by
 /// [`ISpect.run`]; they do not control logger configuration.
 ///
-/// * `isFlutterPresentHandlingEnabled` — Whether Flutter present errors are handled.
-/// * `isPlatformDispatcherHandlingEnabled` — Whether PlatformDispatcher errors are handled.
-/// * `isFlutterErrorHandlingEnabled` — Whether Flutter framework errors are handled.
-/// * `isUncaughtErrorsHandlingEnabled` — Whether uncaught Dart errors are handled.
-/// * `isBlocHandlingEnabled` — Whether BLoC library events are logged.
+/// * `isFlutterPresentHandlingEnabled` - Whether Flutter present errors are handled.
+/// * `isPlatformDispatcherHandlingEnabled` - Whether PlatformDispatcher errors are handled.
+/// * `isFlutterErrorHandlingEnabled` - Whether Flutter framework errors are handled.
+/// * `isUncaughtErrorsHandlingEnabled` - Whether uncaught Dart errors are handled.
+/// * `isBlocHandlingEnabled` - Whether BLoC library events are logged.
 ///
 /// All handlers are enabled by default.
 final class ISpectErrorHandlerOptions {

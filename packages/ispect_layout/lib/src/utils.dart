@@ -53,8 +53,8 @@ class InspectorUtils {
     return List<RenderBox>.unmodifiable(filtered);
   }
 
-  /// True when [box] is attached, sized, and its local bounds — after
-  /// inverse-mapping [globalPosition] through every ancestor transform —
+  /// True when [box] is attached, sized, and its local bounds - after
+  /// inverse-mapping [globalPosition] through every ancestor transform -
   /// contain that pointer. Conservatively false for non-invertible
   /// transforms (which would yield NaN/Infinity locals).
   static bool _boundsContain(RenderBox box, Offset globalPosition) {

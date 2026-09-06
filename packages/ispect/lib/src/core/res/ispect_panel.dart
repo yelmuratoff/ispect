@@ -42,7 +42,7 @@ final class ISpectPanelData {
 ///
 /// Return a `DraggableActionPanel`, a bare `DraggablePanel` with your own
 /// `collapsedBuilder`/`expandedBuilder`, or any widget that wraps
-/// [ISpectPanelData.child] — every `draggable_panel` parameter (builders,
+/// [ISpectPanelData.child] - every `draggable_panel` parameter (builders,
 /// motion, behavior flags, placement, sizing), including ones added in future
 /// `draggable_panel` releases, is available here without ISpect having to
 /// forward each one.

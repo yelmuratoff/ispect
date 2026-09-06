@@ -11,7 +11,7 @@
 ///
 /// The first body line carries only short flags (`FAILED`, optional
 /// `${ms}ms`, optional `(key)`). When nothing applies, the
-/// `→ operation target` line becomes the first body line — no leading
+/// `→ operation target` line becomes the first body line - no leading
 /// blank line is emitted, which keeps UI renderers and JSON inspectors
 /// from showing an empty paragraph. Without a `target`, the body falls
 /// back to a compact single-line form (`operation (key)`).

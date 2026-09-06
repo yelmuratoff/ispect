@@ -10,10 +10,10 @@ import 'package:ispectify/ispectify.dart';
 /// fluent chaining.
 ///
 /// Type parameters:
-/// - [B] — the concrete builder type (self-referential for fluent chaining)
-/// - [TReq] — the type passed to the request filter function
-/// - [TRes] — the type passed to the response filter function
-/// - [TErr] — the type passed to the error filter function
+/// - [B] - the concrete builder type (self-referential for fluent chaining)
+/// - [TReq] - the type passed to the request filter function
+/// - [TRes] - the type passed to the response filter function
+/// - [TErr] - the type passed to the error filter function
 ///
 /// Subclasses must:
 /// 1. Extend `BaseNetworkInterceptorSettingsBuilder<ConcreteBuilder, ...>`
@@ -316,7 +316,7 @@ abstract class BaseNetworkInterceptorSettingsBuilder<
     return _self;
   }
 
-  // Filters (legacy — prefer filter chains)
+  // Filters (legacy - prefer filter chains)
 
   /// Sets a custom request filter callback.
   @Deprecated('Use withRequestChain instead. Will be removed in 8.0.0.')

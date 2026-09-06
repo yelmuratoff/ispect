@@ -33,7 +33,7 @@ class BlocErrorData {
 
   /// Returns a raw, JSON-compatible map of the error event.
   ///
-  /// The raw [error] / [stackTrace] are intentionally omitted — they travel on
+  /// The raw [error] / [stackTrace] are intentionally omitted - they travel on
   /// the trace entry itself, not in `meta`.
   Map<String, dynamic> toJson() => <String, dynamic>{
         BlocJsonKeys.blocType: blocType,

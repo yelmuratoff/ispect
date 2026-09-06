@@ -46,7 +46,7 @@ final class UrlRedactor {
   }) {
     final uri = Uri.tryParse(url);
     if (uri == null) {
-      // Malformed URL — Uri APIs are unavailable. Best-effort regex sanitize
+      // Malformed URL - Uri APIs are unavailable. Best-effort regex sanitize
       // so credentials and sensitive query params don't survive verbatim.
       final queryRedacted = AssignmentTokenizer.maskQueryParameters(
         url,

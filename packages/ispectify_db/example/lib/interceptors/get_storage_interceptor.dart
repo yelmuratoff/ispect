@@ -1,6 +1,6 @@
 /// Ready-to-copy interceptor for **get_storage**.
 ///
-/// Implements the full [GetStorage] interface — drop-in replacement.
+/// Implements the full [GetStorage] interface - drop-in replacement.
 ///
 /// ## Setup
 /// ```dart
@@ -37,10 +37,10 @@ final class ISpectGetStorage implements GetStorage {
     String source = defaultSource,
     String? containerName,
     this.config = const ISpectDbConfig(),
-  })  : _box = delegate,
-        _logger = logger,
-        _source = source,
-        _containerName = containerName;
+  }) : _box = delegate,
+       _logger = logger,
+       _source = source,
+       _containerName = containerName;
 
   final GetStorage _box;
   final ISpectLogger _logger;
@@ -111,13 +111,13 @@ final class ISpectGetStorage implements GetStorage {
 
   @override
   Future<void> write(String key, dynamic value) => _logger.dbTrace(
-        source: _source,
-        operation: 'write',
-        table: _containerName,
-        key: key,
-        run: () => _box.write(key, value),
-        config: config,
-      );
+    source: _source,
+    operation: 'write',
+    table: _containerName,
+    key: key,
+    run: () => _box.write(key, value),
+    config: config,
+  );
 
   @override
   void writeInMemory(String key, dynamic value) {
@@ -135,35 +135,35 @@ final class ISpectGetStorage implements GetStorage {
 
   @override
   Future<void> writeIfNull(String key, dynamic value) => _logger.dbTrace(
-        source: _source,
-        operation: 'write',
-        table: _containerName,
-        key: key,
-        meta: {'ifNull': true},
-        run: () => _box.writeIfNull(key, value),
-        config: config,
-      );
+    source: _source,
+    operation: 'write',
+    table: _containerName,
+    key: key,
+    meta: {'ifNull': true},
+    run: () => _box.writeIfNull(key, value),
+    config: config,
+  );
 
   // --- Deletes (async) ------------------------------------------------------
 
   @override
   Future<void> remove(String key) => _logger.dbTrace(
-        source: _source,
-        operation: 'delete',
-        table: _containerName,
-        key: key,
-        run: () => _box.remove(key),
-        config: config,
-      );
+    source: _source,
+    operation: 'delete',
+    table: _containerName,
+    key: key,
+    run: () => _box.remove(key),
+    config: config,
+  );
 
   @override
   Future<void> erase() => _logger.dbTrace(
-        source: _source,
-        operation: 'clear',
-        table: _containerName,
-        run: _box.erase,
-        config: config,
-      );
+    source: _source,
+    operation: 'clear',
+    table: _containerName,
+    run: _box.erase,
+    config: config,
+  );
 
   // --- Persistence (passthrough) --------------------------------------------
 

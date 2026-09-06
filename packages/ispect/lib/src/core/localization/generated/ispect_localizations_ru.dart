@@ -951,7 +951,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get tips => 'Подсказки';
 
   @override
-  String get tipSearchLogs => 'Поиск по тексту — ищет также в JSON теле лога';
+  String get tipSearchLogs => 'Поиск по тексту - ищет также в JSON теле лога';
 
   @override
   String get tipLongPress =>
@@ -969,11 +969,11 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'Открой Поток навигации в настройках — увидишь историю маршрутов';
+      'Открой Поток навигации в настройках - увидишь историю маршрутов';
 
   @override
   String get tipShareSession =>
-      'Поделись файлом логов для багрепортов — данные маскируются автоматически';
+      'Поделись файлом логов для багрепортов - данные маскируются автоматически';
 
   @override
   String get tipReverseLogs =>

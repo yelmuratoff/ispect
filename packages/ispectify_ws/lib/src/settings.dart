@@ -127,7 +127,7 @@ class ISpectWSInterceptorSettings extends BaseNetworkInterceptorSettings {
   /// WS-specific names take precedence when both are provided.
   ///
   /// `printErrorHeaders` is accepted for interface compatibility but has no
-  /// effect — WebSocket logging never prints error headers.
+  /// effect - WebSocket logging never prints error headers.
   @override
   ISpectWSInterceptorSettings copyWith({
     bool? enabled,

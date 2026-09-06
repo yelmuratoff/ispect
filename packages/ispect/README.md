@@ -1,5 +1,5 @@
 <!--
-  GENERATED FILE — do not edit by hand.
+  GENERATED FILE - do not edit by hand.
   Source:     docs/readme/ispect.md
   Regenerate: dart run tool/bin/ispect_tool.dart readme
 -->
@@ -191,7 +191,7 @@ cd packages/ispectify_riverpod/example && dart run -DISPECT_ENABLED=true main.da
 
 <div align="center">
   <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/http_composer.png?raw=true" width="240" alt="HTTP composer" />
-  <p><em>HTTP composer — replay a captured request or build one from scratch, then send it through your registered client.</em></p>
+  <p><em>HTTP composer - replay a captured request or build one from scratch, then send it through your registered client.</em></p>
 </div>
 
 <table>
@@ -368,7 +368,7 @@ ISpect.run(() => runApp(const App()), logger: logger);
 
 `RollingFileLogHistory` writes redacted JSON Lines to the application cache, rotates segments by their actual UTF-8 size, and bounds both retained days and total disk usage. Existing 4.x `logs_YYYY-MM-DD.json` files remain readable. `ISpectFlutter.init(fileHistory: ...)` falls back to normal in-memory history on web, and creates no directory, timer, or file when `ISPECT_ENABLED` is omitted.
 
-Passing `fileHistory:` above is all it takes: the log viewer then automatically surfaces a **Daily Sessions** browser — reachable from the settings sheet or by tapping the app-bar title — where each retained day reopens in the same viewer for browsing and search. The browser appears whenever `ISpect.logger.fileLogHistory` is set; nothing else needs wiring. Optionally set `onOpenFile`/`onShare` on the builder's `ISpectOptions` to add open-in-file-manager and share buttons for those sessions.
+Passing `fileHistory:` above is all it takes: the log viewer then automatically surfaces a **Daily Sessions** browser - reachable from the settings sheet or by tapping the app-bar title - where each retained day reopens in the same viewer for browsing and search. The browser appears whenever `ISpect.logger.fileLogHistory` is set; nothing else needs wiring. Optionally set `onOpenFile`/`onShare` on the builder's `ISpectOptions` to add open-in-file-manager and share buttons for those sessions.
 
 Persistence activates only on non-web builds run with `--dart-define=ISPECT_ENABLED=true` (see [Production safety](#production-safety)); otherwise the file history stays inert.
 
@@ -409,7 +409,7 @@ What you can verify from the repository today:
 
 Linked policies:
 
-- [AI integration prompt](https://github.com/yelmuratoff/ispect/blob/main/docs/prompt.md) — paste into any AI assistant to add ISpect for you
+- [AI integration prompt](https://github.com/yelmuratoff/ispect/blob/main/docs/prompt.md) - paste into any AI assistant to add ISpect for you
 - [Security and data handling](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md)
 - [Compatibility policy](https://github.com/yelmuratoff/ispect/blob/main/docs/COMPATIBILITY.md)
 - [Deprecations and migration notes](https://github.com/yelmuratoff/ispect/blob/main/docs/DEPRECATIONS.md)

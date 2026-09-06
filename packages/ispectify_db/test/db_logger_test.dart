@@ -1915,7 +1915,7 @@ dollar-secret$audit$''',
       expect(str, contains('elapsed:'));
     });
 
-    test('stopTiming is idempotent — elapsed stays stable', () async {
+    test('stopTiming is idempotent - elapsed stays stable', () async {
       final token = logger.dbStart(source: 'db', operation: 'read');
       await Future<void>.delayed(const Duration(milliseconds: 5));
       token.stopTiming();

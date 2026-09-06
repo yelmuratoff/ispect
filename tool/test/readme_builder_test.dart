@@ -235,7 +235,7 @@ after
       );
 
       expect(exitCode, 1);
-      expect(out.toString(), contains('— missing'));
+      expect(out.toString(), contains('- missing'));
     });
 
     test('a drifting first content line is caught despite the banner strip',
@@ -433,7 +433,7 @@ body that must not be lost
   group('banner stripping', () {
     test('drops the banner and the blank line after it', () {
       const contents = '<!--\n'
-          '  GENERATED FILE — do not edit by hand.\n'
+          '  GENERATED FILE - do not edit by hand.\n'
           '  Source:     docs/readme/root.md\n'
           '  Regenerate: ./bash/build_readme.sh\n'
           '-->\n'

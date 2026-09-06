@@ -928,7 +928,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get tips => '팁';
 
   @override
-  String get tipSearchLogs => '텍스트로 로그 검색 — 전체 JSON 본문도 검색합니다';
+  String get tipSearchLogs => '텍스트로 로그 검색 - 전체 JSON 본문도 검색합니다';
 
   @override
   String get tipLongPress => '로그 카드를 길게 눌러 빠른 작업 실행';
@@ -946,7 +946,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get tipNavigationFlow => '설정에서 내비게이션 흐름을 열어 경로 기록을 시각적으로 확인';
 
   @override
-  String get tipShareSession => '버그 리포트용으로 로그 파일을 공유 — 데이터는 자동으로 가려집니다';
+  String get tipShareSession => '버그 리포트용으로 로그 파일을 공유 - 데이터는 자동으로 가려집니다';
 
   @override
   String get tipReverseLogs => '앱 바의 화살표를 눌러 로그 순서를 뒤집기';

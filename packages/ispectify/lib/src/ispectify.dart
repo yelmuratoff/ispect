@@ -148,7 +148,7 @@ class ISpectLogger {
     _observers.add(observer);
   }
 
-  /// Registers an observer and returns a disposer to remove it later — useful
+  /// Registers an observer and returns a disposer to remove it later - useful
   /// for scoped subscriptions (e.g. widget lifecycle).
   ISpectObserverDisposer observe(ISpectObserver observer) {
     if (!_isActive || !_compileGateEnabled) return () {};

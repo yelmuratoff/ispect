@@ -517,7 +517,7 @@ enum _Step {
 }
 
 /// Runs the real steps up to [failing], then reports [exitCode] instead of
-/// running it — the Dart stand-in for the bash fixture's sabotaged helper.
+/// running it - the Dart stand-in for the bash fixture's sabotaged helper.
 final class _FailingSteps implements ReleaseSteps {
   _FailingSteps(
     this._delegate, {

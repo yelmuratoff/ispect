@@ -148,13 +148,13 @@ class JsonExplorerTheme {
   static JsonExplorerTheme defaultThemeByContext(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Secondary matches: warm amber bg, dark text — visible on both themes
+    // Secondary matches: warm amber bg, dark text - visible on both themes
     final highlightBg = isDark
         ? const Color.fromARGB(200, 255, 193, 7)
         : const Color.fromARGB(228, 255, 235, 59);
     const highlightFg = Colors.black87;
 
-    // Focused match: more saturated, bolder — stands out from secondary
+    // Focused match: more saturated, bolder - stands out from secondary
     final focusedBg = isDark
         ? const Color.fromARGB(240, 255, 160, 0)
         : Colors.yellow;

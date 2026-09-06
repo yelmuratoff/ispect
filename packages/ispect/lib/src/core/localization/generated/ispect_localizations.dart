@@ -1850,7 +1850,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @tipSearchLogs.
   ///
   /// In en, this message translates to:
-  /// **'Search logs by text — searches full JSON body too'**
+  /// **'Search logs by text - searches full JSON body too'**
   String get tipSearchLogs;
 
   /// No description provided for @tipLongPress.
@@ -1886,7 +1886,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @tipShareSession.
   ///
   /// In en, this message translates to:
-  /// **'Share the log file for bug reports — payloads are auto-redacted'**
+  /// **'Share the log file for bug reports - payloads are auto-redacted'**
   String get tipShareSession;
 
   /// No description provided for @tipReverseLogs.

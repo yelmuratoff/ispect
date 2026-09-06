@@ -173,7 +173,7 @@ class DesktopStatusBar extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Keyboard hints — hidden when there's not enough space
+                // Keyboard hints - hidden when there's not enough space
                 if (showAnyHints) ...[
                   const Gap(10),
                   _KeyHint(

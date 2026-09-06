@@ -66,7 +66,7 @@ final class RedactionWalker {
     // Delegate leaf redaction to pluggable strategies. A strategy that throws
     // propagates by design: boundary callers (NetworkRedactionMixin.safeRedact
     // / processMapData) catch it, log a warning, and fail closed to a
-    // placeholder — so failures stay loud rather than being silently swallowed.
+    // placeholder - so failures stay loud rather than being silently swallowed.
     final strategyResult = strategy.tryRedact(
       node,
       keyName: keyName,
@@ -82,7 +82,7 @@ final class RedactionWalker {
     // materialize the entire buffer before an outbound byte budget can apply.
     if (binaryBytes != null) return node;
 
-    // Structural traversal — strategies had no opinion, recurse into
+    // Structural traversal - strategies had no opinion, recurse into
     // containers or pass through leaf values unchanged.
     if (node is Map) return _redactMap(node, depth);
     if (node is List) return _redactList(node, keyName, depth);

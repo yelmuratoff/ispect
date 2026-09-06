@@ -14,7 +14,7 @@ enum ExportState { idle, exporting, done, error }
 /// ViewModel for the unified export sheet.
 ///
 /// Holds selected format, redaction preference, and async operation state.
-/// All export logic lives here — the UI is purely declarative.
+/// All export logic lives here - the UI is purely declarative.
 class ExportController extends ChangeNotifier {
   ExportController({
     required this.availableFormats,

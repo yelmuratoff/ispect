@@ -9,9 +9,9 @@ import 'dart:math';
 /// Sorting two ULIDs as strings preserves chronological order down to the
 /// millisecond, which matches how log history is browsed. The randomness tail
 /// keeps ids globally unique across processes, isolates, sessions, and reloaded
-/// log files — `(sessionId, sequence)` is no longer needed for disambiguation.
+/// log files - `(sessionId, sequence)` is no longer needed for disambiguation.
 abstract final class LogId {
-  /// Crockford's base32 alphabet — excludes I, L, O, U to reduce ambiguity.
+  /// Crockford's base32 alphabet - excludes I, L, O, U to reduce ambiguity.
   static const _alphabet = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 
   /// Cryptographically secure RNG so ids stay unique across forked processes

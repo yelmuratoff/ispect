@@ -28,7 +28,7 @@ import 'package:ispectify_db/ispectify_db.dart';
 /// This class implements [FlutterSecureStorage], allowing it to be used
 /// as a drop-in replacement anywhere `FlutterSecureStorage` is expected.
 ///
-/// Redaction is **forced on** by default — values in secure storage
+/// Redaction is **forced on** by default - values in secure storage
 /// should never appear in logs. Override with `forceRedact: false`
 /// if you explicitly need to see values during development.
 final class ISpectSecureStorage implements FlutterSecureStorage {
@@ -38,9 +38,9 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
     String source = defaultSource,
     this.forceRedact = true,
     this.config = const ISpectDbConfig(),
-  })  : _storage = delegate,
-        _logger = logger,
-        _source = source;
+  }) : _storage = delegate,
+       _logger = logger,
+       _source = source;
 
   final FlutterSecureStorage _storage;
   final ISpectLogger _logger;
@@ -80,11 +80,11 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
 
   @override
   Future<bool?> isCupertinoProtectedDataAvailable() => _logger.dbTrace(
-        source: _source,
-        operation: 'isCupertinoProtectedDataAvailable',
-        run: _storage.isCupertinoProtectedDataAvailable,
-        config: config,
-      );
+    source: _source,
+    operation: 'isCupertinoProtectedDataAvailable',
+    run: _storage.isCupertinoProtectedDataAvailable,
+    config: config,
+  );
 
   @override
   Stream<bool>? get onCupertinoProtectedDataAvailabilityChanged =>
@@ -148,24 +148,23 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
     WebOptions? webOptions,
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
-  }) =>
-      _logger.dbTrace(
-        source: _source,
-        operation: 'read',
-        key: key,
-        redact: forceRedact,
-        run: () => _storage.read(
-          key: key,
-          iOptions: iOptions,
-          aOptions: aOptions,
-          lOptions: lOptions,
-          webOptions: webOptions,
-          mOptions: mOptions,
-          wOptions: wOptions,
-        ),
-        projectResult: (val) => val != null ? '***' : null,
-        config: config,
-      );
+  }) => _logger.dbTrace(
+    source: _source,
+    operation: 'read',
+    key: key,
+    redact: forceRedact,
+    run: () => _storage.read(
+      key: key,
+      iOptions: iOptions,
+      aOptions: aOptions,
+      lOptions: lOptions,
+      webOptions: webOptions,
+      mOptions: mOptions,
+      wOptions: wOptions,
+    ),
+    projectResult: (val) => val != null ? '***' : null,
+    config: config,
+  );
 
   @override
   Future<void> write({
@@ -177,24 +176,23 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
     WebOptions? webOptions,
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
-  }) =>
-      _logger.dbTrace(
-        source: _source,
-        operation: 'write',
-        key: key,
-        redact: forceRedact,
-        run: () => _storage.write(
-          key: key,
-          value: value,
-          iOptions: iOptions,
-          aOptions: aOptions,
-          lOptions: lOptions,
-          webOptions: webOptions,
-          mOptions: mOptions,
-          wOptions: wOptions,
-        ),
-        config: config,
-      );
+  }) => _logger.dbTrace(
+    source: _source,
+    operation: 'write',
+    key: key,
+    redact: forceRedact,
+    run: () => _storage.write(
+      key: key,
+      value: value,
+      iOptions: iOptions,
+      aOptions: aOptions,
+      lOptions: lOptions,
+      webOptions: webOptions,
+      mOptions: mOptions,
+      wOptions: wOptions,
+    ),
+    config: config,
+  );
 
   @override
   Future<void> delete({
@@ -205,22 +203,21 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
     WebOptions? webOptions,
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
-  }) =>
-      _logger.dbTrace(
-        source: _source,
-        operation: 'delete',
-        key: key,
-        run: () => _storage.delete(
-          key: key,
-          iOptions: iOptions,
-          aOptions: aOptions,
-          lOptions: lOptions,
-          webOptions: webOptions,
-          mOptions: mOptions,
-          wOptions: wOptions,
-        ),
-        config: config,
-      );
+  }) => _logger.dbTrace(
+    source: _source,
+    operation: 'delete',
+    key: key,
+    run: () => _storage.delete(
+      key: key,
+      iOptions: iOptions,
+      aOptions: aOptions,
+      lOptions: lOptions,
+      webOptions: webOptions,
+      mOptions: mOptions,
+      wOptions: wOptions,
+    ),
+    config: config,
+  );
 
   @override
   Future<void> deleteAll({
@@ -230,20 +227,19 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
     WebOptions? webOptions,
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
-  }) =>
-      _logger.dbTrace(
-        source: _source,
-        operation: 'clear',
-        run: () => _storage.deleteAll(
-          iOptions: iOptions,
-          aOptions: aOptions,
-          lOptions: lOptions,
-          webOptions: webOptions,
-          mOptions: mOptions,
-          wOptions: wOptions,
-        ),
-        config: config,
-      );
+  }) => _logger.dbTrace(
+    source: _source,
+    operation: 'clear',
+    run: () => _storage.deleteAll(
+      iOptions: iOptions,
+      aOptions: aOptions,
+      lOptions: lOptions,
+      webOptions: webOptions,
+      mOptions: mOptions,
+      wOptions: wOptions,
+    ),
+    config: config,
+  );
 
   @override
   Future<Map<String, String>> readAll({
@@ -253,22 +249,21 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
     WebOptions? webOptions,
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
-  }) =>
-      _logger.dbTrace(
-        source: _source,
-        operation: 'list',
-        redact: forceRedact,
-        run: () => _storage.readAll(
-          iOptions: iOptions,
-          aOptions: aOptions,
-          lOptions: lOptions,
-          webOptions: webOptions,
-          mOptions: mOptions,
-          wOptions: wOptions,
-        ),
-        projectResult: (entries) => {'keys': entries.length},
-        config: config,
-      );
+  }) => _logger.dbTrace(
+    source: _source,
+    operation: 'list',
+    redact: forceRedact,
+    run: () => _storage.readAll(
+      iOptions: iOptions,
+      aOptions: aOptions,
+      lOptions: lOptions,
+      webOptions: webOptions,
+      mOptions: mOptions,
+      wOptions: wOptions,
+    ),
+    projectResult: (entries) => {'keys': entries.length},
+    config: config,
+  );
 
   @override
   Future<bool> containsKey({
@@ -279,21 +274,20 @@ final class ISpectSecureStorage implements FlutterSecureStorage {
     WebOptions? webOptions,
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
-  }) =>
-      _logger.dbTrace(
-        source: _source,
-        operation: 'lookup',
-        key: key,
-        run: () => _storage.containsKey(
-          key: key,
-          iOptions: iOptions,
-          aOptions: aOptions,
-          lOptions: lOptions,
-          webOptions: webOptions,
-          mOptions: mOptions,
-          wOptions: wOptions,
-        ),
-        projectResult: (exists) => {'exists': exists},
-        config: config,
-      );
+  }) => _logger.dbTrace(
+    source: _source,
+    operation: 'lookup',
+    key: key,
+    run: () => _storage.containsKey(
+      key: key,
+      iOptions: iOptions,
+      aOptions: aOptions,
+      lOptions: lOptions,
+      webOptions: webOptions,
+      mOptions: mOptions,
+      wOptions: wOptions,
+    ),
+    projectResult: (exists) => {'exists': exists},
+    config: config,
+  );
 }

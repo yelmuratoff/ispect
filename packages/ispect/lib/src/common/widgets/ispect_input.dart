@@ -73,7 +73,7 @@ InputDecoration ispectInputDecoration(
 
 /// Pre-styled [TextField] wrapper matching [ispectInputDecoration]. Use it
 /// for plain numeric/text inputs inside dialogs and bottom sheets. For the
-/// log-list search bar use `ISpectSearchField` instead — it uses Material 3
+/// log-list search bar use `ISpectSearchField` instead - it uses Material 3
 /// [SearchBar] under the hood.
 class ISpectTextField extends StatelessWidget {
   const ISpectTextField({

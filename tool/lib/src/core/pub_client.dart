@@ -228,7 +228,7 @@ final class BlockedByPeak extends PublishGate {
   bool get allowed => false;
 }
 
-/// The lowest version the gate would let through, given [peaks] — the highest
+/// The lowest version the gate would let through, given [peaks] - the highest
 /// version each package already serves on the line being released.
 ///
 /// The monorepo publishes every package from one `version.config`, so the

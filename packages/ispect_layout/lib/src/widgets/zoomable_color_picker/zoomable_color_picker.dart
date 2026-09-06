@@ -72,10 +72,10 @@ enum HudPlacement { above, right, below, left }
 /// Combined overlay for the zoomable colour picker.
 ///
 /// Composition (top-down rebuild scope):
-/// - [_PickerCanvas] — owns the ZoomPainter (repaints on offset/scale/image).
-/// - [_PickerCrosshair] — 1-px crosshair indicating the sampled pixel.
-/// - [_PickerRingPainter] — three concentric rings + drop shadow in one paint.
-/// - [_PickerHud] — hex + WCAG contrast chip.
+/// - [_PickerCanvas] - owns the ZoomPainter (repaints on offset/scale/image).
+/// - [_PickerCrosshair] - 1-px crosshair indicating the sampled pixel.
+/// - [_PickerRingPainter] - three concentric rings + drop shadow in one paint.
+/// - [_PickerHud] - hex + WCAG contrast chip.
 class ZoomableColorPickerOverlay extends StatelessWidget {
   const ZoomableColorPickerOverlay({
     super.key,
@@ -153,7 +153,7 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
             ),
             // HUD: by default anchored ABOVE the disc (cursor lives below
             // the picker, putting the chip below would sit under the finger).
-            // The caller picks a different side when there's no room — e.g.
+            // The caller picks a different side when there's no room - e.g.
             // when the picker hugs the top of the screen.
             _hudPositioned(
               child: _PickerHud(color: color, surface: colorScheme.surface),
@@ -231,7 +231,7 @@ class _PickerCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     // Rings are painted OUTSIDE the canvas (the Stack above uses Clip.none),
     // so the zoomed image fills the full overlaySize and the disc visually
-    // grows beyond its layout box — matching the legacy strokeAlignOutside
+    // grows beyond its layout box - matching the legacy strokeAlignOutside
     // look where the inner picture was never cropped by the frame.
     return CustomPaint(
       painter: _PickerRingPainter(
@@ -244,7 +244,7 @@ class _PickerCircle extends StatelessWidget {
   }
 }
 
-/// Paints — in one go — the drop shadow and three concentric rings that
+/// Paints - in one go - the drop shadow and three concentric rings that
 /// frame the zoomed image. Replaces three nested DecoratedBox + a clipped
 /// BoxShadow that wasn't rendering correctly with `strokeAlignOutside`.
 class _PickerRingPainter extends CustomPainter {
@@ -289,7 +289,7 @@ class _PickerRingPainter extends CustomPainter {
       ),
     ];
 
-    // Drop shadow under the whole disc — drawn first so it sits behind
+    // Drop shadow under the whole disc - drawn first so it sits behind
     // the rings. Anchored at the outermost ring rim so the soft halo wraps
     // the visible disc, not the inner image edge.
     final discOuterRadius = canvasRadius + innerW + colorW + outerW;
@@ -387,7 +387,7 @@ class _PickerCrosshair extends StatelessWidget {
 
 /// Two-pass crosshair: a thicker semi-transparent dark outline and a thinner
 /// solid white inner line for readable contrast on any background. A thin
-/// 1-px white border (no fill, no shadow) marks the centre pixel — strictly
+/// 1-px white border (no fill, no shadow) marks the centre pixel - strictly
 /// a hairline, not a chip.
 class _CrosshairPainter extends CustomPainter {
   _CrosshairPainter({
@@ -432,7 +432,7 @@ class _CrosshairPainter extends CustomPainter {
     drawArms(_innerPaint);
 
     // Pixel marker: a single 1-px hairline outline, no fill, no inner pass.
-    // The interior shows the zoomed pixel through — that's what tells the
+    // The interior shows the zoomed pixel through - that's what tells the
     // user which pixel they're sampling. Dark stroke so it stays a visible
     // outline (not a "container") even when the underlying pixel is white.
     final boxRect = RRect.fromRectAndRadius(
@@ -455,7 +455,7 @@ class _CrosshairPainter extends CustomPainter {
 }
 
 /// HUD shown below the picker circle. Single fixed-height chip with the
-/// hex value and a WCAG contrast hint — never reflows during pixel hunting.
+/// hex value and a WCAG contrast hint - never reflows during pixel hunting.
 ///
 /// ColorScheme token matches are intentionally not shown here: they fire too
 /// rarely (anti-aliased pixels almost never equal a pure token), and when

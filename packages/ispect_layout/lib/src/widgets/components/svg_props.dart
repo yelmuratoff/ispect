@@ -6,8 +6,8 @@ import 'package:ispect_layout/src/widgets/components/value_descriptors.dart';
 
 // flutter_svg paints through private render objects (`vector_graphics`), so
 // there is no public render type to match on. Instead the `SvgPicture` *widget*
-// is recovered from the live element tree — identified only by its runtime type
-// name — and its public fields are read by duck typing. Every read is guarded:
+// is recovered from the live element tree - identified only by its runtime type
+// name - and its public fields are read by duck typing. Every read is guarded:
 // an unknown shape degrades to an empty section rather than throwing, keeping
 // the inspector resilient across flutter_svg versions and free of a dependency
 // on the package.
@@ -47,7 +47,7 @@ Widget? resolveSvgPicture(RenderBox target) {
 }
 
 /// Reads a duck-typed field, returning `null` on a type mismatch, a missing
-/// member, or a null value — so an unexpected flutter_svg shape is skipped
+/// member, or a null value - so an unexpected flutter_svg shape is skipped
 /// rather than surfaced or thrown.
 T? _svgField<T>(T Function() read) {
   try {
@@ -59,7 +59,7 @@ T? _svgField<T>(T Function() read) {
 
 /// Best-effort description of an `SvgPicture.bytesLoader` source: asset name,
 /// URL, or file path. Inline string/byte loaders intentionally show only their
-/// type name — never the raw payload.
+/// type name - never the raw payload.
 String? _svgSourceLabel(Object loader) {
   final dyn = loader as dynamic;
   final assetName = _svgField<String>(() => dyn.assetName as String);

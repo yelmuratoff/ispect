@@ -129,7 +129,7 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
               button: true,
               expanded: _expanded,
               label:
-                  '${tx.method ?? "HTTP"} $displayUrl — ${tx.statusCode ?? "pending"}',
+                  '${tx.method ?? "HTTP"} $displayUrl - ${tx.statusCode ?? "pending"}',
               onTap: toggleExpanded,
               child: Material(
                 type: MaterialType.transparency,
@@ -186,7 +186,7 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
   }
 }
 
-/// Collapsed header for mobile — badges + chevron only, no action buttons.
+/// Collapsed header for mobile - badges + chevron only, no action buttons.
 class _MobileHeader extends StatelessWidget {
   const _MobileHeader({
     required this.tx,

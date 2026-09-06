@@ -108,7 +108,7 @@ class ISpectScopeModel extends ChangeNotifier {
   ///
   /// Acts as the single source of truth for feature-toggle visibility
   /// (log page, performance, inspector, color picker) so the inspector
-  /// panel re-renders the moment the Settings sheet flips a toggle —
+  /// panel re-renders the moment the Settings sheet flips a toggle -
   /// without waiting for a logs-screen rebuild.
   ISpectSettingsState get settings => _settings;
   set settings(ISpectSettingsState value) =>

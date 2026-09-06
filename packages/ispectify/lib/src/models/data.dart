@@ -75,7 +75,7 @@ base class ISpectLogData {
           resourceLimits,
         );
 
-  /// ULID-style identifier — globally unique across processes, isolates, and
+  /// ULID-style identifier - globally unique across processes, isolates, and
   /// reloaded log files. Lexicographically sortable by creation time.
   ///
   /// Pass an explicit [id] when reconstructing entries from persisted JSON to
@@ -159,7 +159,7 @@ base class ISpectLogData {
   ///
   /// Retained for backward compatibility. Prefer
   /// `HumanLogEntryFormatter` / `JsonLogEntryFormatter` via
-  /// `ConsoleSettings.format` — they see the full entry context
+  /// `ConsoleSettings.format` - they see the full entry context
   /// (source, correlation IDs, duration) and know about
   /// [ConsoleSettings.fullTimestamp].
   ///
@@ -168,7 +168,7 @@ base class ISpectLogData {
   /// - `LEVEL` is the canonical severity label (`INFO`, `ERROR`, …) so the
   ///   output is grep-friendly and aligned with industry log conventions.
   ///   Right-padded to [_levelColumnWidth] so levels align in a visual column;
-  ///   `CRITICAL` overflows by one character — acceptable since critical logs
+  ///   `CRITICAL` overflows by one character - acceptable since critical logs
   ///   are rare and should stand out anyway.
   /// - `[key]` is the log category/type (e.g. `route`, `httpResponse`) and is
   ///   omitted when it is redundant with the level (either equal to it, or

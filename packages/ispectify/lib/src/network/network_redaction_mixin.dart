@@ -22,7 +22,7 @@ mixin NetworkRedactionMixin {
   /// with the selected adapter policy before this config crosses the boundary.
   static const noRedactConfig = ISpectTraceConfig(redact: false);
 
-  /// The logger instance — needed for error reporting in [safeRedact].
+  /// The logger instance - needed for error reporting in [safeRedact].
   ISpectLogger get logger;
 
   /// Whether redaction is enabled for this interceptor.
@@ -176,7 +176,7 @@ mixin NetworkRedactionMixin {
 
       // Redaction collapsed the whole map to a scalar placeholder (a
       // fail-closed strategy throw or a depth limit). Never fall back to the
-      // raw input — wrap the placeholder instead.
+      // raw input - wrap the placeholder instead.
       if (useRedaction && redacted == ph.redactionFailedPlaceholder) {
         _logRedactionFailure();
       }

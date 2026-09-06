@@ -16,7 +16,7 @@ extension ISpectLoggerPerformance on ISpectLogger {
   /// success and warning log paths. Passing one from the overlay's own
   /// `addTimingsCallback` is **misleading**: by the time the engine fires
   /// timings, the offending frame is done and the current stack points at
-  /// engine dispatch code — not the cause. Capture it only when the caller
+  /// engine dispatch code - not the cause. Capture it only when the caller
   /// is the suspected hot spot itself.
   void performanceJank({
     required String source,

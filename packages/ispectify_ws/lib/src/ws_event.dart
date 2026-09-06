@@ -2,14 +2,14 @@
 ///
 /// Clients report whichever states they can observe; states a client cannot
 /// distinguish are simply never emitted. [reconnecting] exists for clients
-/// (e.g. `ws`) that surface automatic reconnection — most clients never use it.
+/// (e.g. `ws`) that surface automatic reconnection - most clients never use it.
 enum WsConnectionState { connecting, open, closing, closed, reconnecting }
 
 /// Provider-agnostic sink for WebSocket diagnostics.
 ///
 /// Any WebSocket client binds to ISpect by pushing events through this
 /// contract; the orchestration ([WsDiagnostics]) owns redaction, filtering,
-/// correlation, and emission. Metrics and connection state are optional —
+/// correlation, and emission. Metrics and connection state are optional -
 /// clients that cannot report them omit the arguments.
 abstract interface class WsDiagnosticsSink {
   /// Records an outbound frame. [url] and [metrics] are optional context.

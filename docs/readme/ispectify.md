@@ -184,7 +184,7 @@ balanced mode persists the already-bounded diagnostic text snapshot.
 
 ## Console output
 
-Console entries use a compact, single-line format by default. Switch to a boxed format — each entry framed for visual separation in a busy console — by setting `ConsoleSettings.formatter`:
+Console entries use a compact, single-line format by default. Switch to a boxed format - each entry framed for visual separation in a busy console - by setting `ConsoleSettings.formatter`:
 
 ```dart
 final logger = ISpectLogger(
@@ -202,7 +202,7 @@ final logger = ISpectLogger(
 
 The boxed formatter renders the same fields as the default (so redaction and network bodies carry over), and the border glyph and width follow `ConsoleSettings.lineSymbol` / `maxLineWidth`. Implement `ILogEntryFormatter` for a fully custom layout; the default is the compact `HumanLogEntryFormatter`.
 
-By default, entries are written with `print` (browser console on web). To route them through `dart:developer` instead — so they appear in the DevTools logging view with structured metadata — pass the `developerLogOutput` sink:
+By default, entries are written with `print` (browser console on web). To route them through `dart:developer` instead - so they appear in the DevTools logging view with structured metadata - pass the `developerLogOutput` sink:
 
 ```dart
 final logger = ISpectLogger(

@@ -63,7 +63,7 @@ application-defined formatters must never run.
 // Logs disabled entirely.
 ISpectBlocObserver(settings: ISpectBlocSettings.silent);
 
-// Skip per-change / per-completion noise — keeps creations, transitions, errors.
+// Skip per-change / per-completion noise - keeps creations, transitions, errors.
 ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
 
 ISpectBlocObserver(settings: ISpectBlocSettings.compact);

@@ -11,7 +11,7 @@ import 'package:ispectify/src/network/network_interceptor_settings.dart';
 mixin NetworkConfigurationMixin {
   /// The current settings exposed for runtime reconfiguration.
   ///
-  /// Returns `null` by default — override in interceptors that support
+  /// Returns `null` by default - override in interceptors that support
   /// [configure] (e.g. Dio, HTTP). WS and other read-only interceptors
   /// do not need to override this.
   BaseNetworkInterceptorSettings? get configurableSettings => null;

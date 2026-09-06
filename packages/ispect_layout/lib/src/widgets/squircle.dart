@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 ///
 /// Mirrors ISpect's design language but is kept local because `ispect_layout`
 /// is a standalone package and must not depend on `ispect`. The shape is
-/// Flutter's [RoundedSuperellipseBorder] — the iOS squircle the framework
-/// gained in 3.32 — which scales its radii down to the box it lands on, so one
+/// Flutter's [RoundedSuperellipseBorder] - the iOS squircle the framework
+/// gained in 3.32 - which scales its radii down to the box it lands on, so one
 /// [radius] is safe on a wide toolbar and on a narrow chip alike.
 ///
 /// [radius] is the corner radius itself, as it is for a circular corner.

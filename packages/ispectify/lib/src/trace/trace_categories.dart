@@ -4,7 +4,7 @@ import 'package:ispectify/src/trace/trace_category_ids.dart';
 
 /// Predefined trace categories for built-in domains.
 ///
-/// NB: `final` not `const` — in Dart, `.key` property access on an enum value
+/// NB: `final` not `const` - in Dart, `.key` property access on an enum value
 /// is NOT a compile-time constant expression. `final` top-level variables are
 /// lazily initialized on first access (guaranteed single init).
 
@@ -79,7 +79,7 @@ final pushCategory = ISpectTraceCategory(
 );
 
 /// NB: analytics uses one key for success and error.
-/// Intentional — analytics events rarely have distinct error types.
+/// Intentional - analytics events rarely have distinct error types.
 final analyticsCategory = ISpectTraceCategory(
   id: TraceCategoryIds.analytics,
   successKey: ISpectLogType.analytics.key,
@@ -92,7 +92,7 @@ final paymentCategory = ISpectTraceCategory(
   errorKey: ISpectLogType.paymentError.key,
 );
 
-/// NB: navigation — route push and pop are linked via correlationId.
+/// NB: navigation - route push and pop are linked via correlationId.
 final navigationCategory = ISpectTraceCategory(
   id: TraceCategoryIds.navigation,
   successKey: ISpectLogType.route.key,

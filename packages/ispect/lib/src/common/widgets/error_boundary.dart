@@ -58,7 +58,7 @@ class _SafePluginScreenState extends State<SafePluginScreen> {
         stackTrace,
         resourceLimits: resourceLimits,
       );
-      // Schedule state update — we are inside build().
+      // Schedule state update - we are inside build().
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
@@ -89,7 +89,7 @@ class _SafePluginScreenState extends State<SafePluginScreen> {
 
 /// Minimal fallback widget shown when a plugin screen fails to render.
 ///
-/// Uses only basic Material widgets and [Theme.of] colors — never depends
+/// Uses only basic Material widgets and [Theme.of] colors - never depends
 /// on [ISpectTheme] to avoid recursive failures if ISpect itself is broken.
 class _ISpectErrorFallback extends StatelessWidget {
   const _ISpectErrorFallback({

@@ -477,7 +477,7 @@ void main() {
       test('redacts keys with surrounding whitespace', () {
         final service = RedactionService();
         // A plain value with no token/scheme/base64 shape, so only a key match
-        // (after trimming) can redact it — isolates the whitespace handling.
+        // (after trimming) can redact it - isolates the whitespace handling.
         final map = service.redact({
           'password ': 'plainvalue123',
         })! as Map<String, Object?>;

@@ -6,7 +6,7 @@ import 'package:ispectify/src/trace/trace_extension.dart';
 
 /// Trace helpers for Riverpod provider lifecycle events.
 ///
-/// These are typically emitted by the `ispectify_riverpod` observer — call
+/// These are typically emitted by the `ispectify_riverpod` observer - call
 /// them directly only when instrumenting a custom `ProviderObserver`.
 extension ISpectLoggerRiverpod on ISpectLogger {
   /// Logs `didAddProvider` under [stateCategory] with the `riverpod-add` key.

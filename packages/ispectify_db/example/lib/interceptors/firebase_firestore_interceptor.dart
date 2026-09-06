@@ -1,7 +1,7 @@
 /// Ready-to-copy interceptor for **cloud_firestore** (Firebase Firestore).
 ///
 /// Implements the full [CollectionReference] and [DocumentReference]
-/// interfaces — drop-in replacements.
+/// interfaces - drop-in replacements.
 ///
 /// ## Setup
 /// ```dart
@@ -30,7 +30,7 @@ import 'package:ispectify_db/ispectify_db.dart';
 ///
 /// Implements [CollectionReference], allowing it to be used as a drop-in
 /// replacement. Query-building methods ([where], [orderBy], …) delegate
-/// directly — only terminal operations ([get], [add]) are traced.
+/// directly - only terminal operations ([get], [add]) are traced.
 ///
 /// [doc] returns a traced [ISpectFirestoreDocument].
 final class ISpectFirestoreCollection<T extends Object?>
@@ -40,9 +40,9 @@ final class ISpectFirestoreCollection<T extends Object?>
     required ISpectLogger logger,
     String source = defaultSource,
     this.config = const ISpectDbConfig(),
-  })  : _collection = delegate,
-        _logger = logger,
-        _source = source;
+  }) : _collection = delegate,
+       _logger = logger,
+       _source = source;
 
   final CollectionReference<T> _collection;
   final ISpectLogger _logger;
@@ -68,48 +68,47 @@ final class ISpectFirestoreCollection<T extends Object?>
 
   @override
   ISpectFirestoreDocument<T> doc([String? path]) => ISpectFirestoreDocument(
-        delegate: _collection.doc(path),
-        logger: _logger,
-        source: _source,
-        config: config,
-      );
+    delegate: _collection.doc(path),
+    logger: _logger,
+    source: _source,
+    config: config,
+  );
 
   @override
   Future<DocumentReference<T>> add(T data) => _logger.dbTrace(
-        source: _source,
-        operation: 'add',
-        table: _collection.path,
-        run: () => _collection.add(data),
-        projectResult: (ref) => {'docId': ref.id},
-        config: config,
-      );
+    source: _source,
+    operation: 'add',
+    table: _collection.path,
+    run: () => _collection.add(data),
+    projectResult: (ref) => {'docId': ref.id},
+    config: config,
+  );
 
   @override
   CollectionReference<R> withConverter<R extends Object?>({
     required FromFirestore<R> fromFirestore,
     required ToFirestore<R> toFirestore,
-  }) =>
-      ISpectFirestoreCollection(
-        delegate: _collection.withConverter(
-          fromFirestore: fromFirestore,
-          toFirestore: toFirestore,
-        ),
-        logger: _logger,
-        source: _source,
-        config: config,
-      );
+  }) => ISpectFirestoreCollection(
+    delegate: _collection.withConverter(
+      fromFirestore: fromFirestore,
+      toFirestore: toFirestore,
+    ),
+    logger: _logger,
+    source: _source,
+    config: config,
+  );
 
   // --- Traced Query terminal operations ------------------------------------
 
   @override
   Future<QuerySnapshot<T>> get([GetOptions? options]) => _logger.dbTrace(
-        source: _source,
-        operation: 'query',
-        table: _collection.path,
-        run: () => _collection.get(options),
-        projectResult: (snap) => {'docs': snap.size},
-        config: config,
-      );
+    source: _source,
+    operation: 'query',
+    table: _collection.path,
+    run: () => _collection.get(options),
+    projectResult: (snap) => {'docs': snap.size},
+    config: config,
+  );
 
   // --- Passthrough Query builders ------------------------------------------
 
@@ -123,11 +122,10 @@ final class ISpectFirestoreCollection<T extends Object?>
   Stream<QuerySnapshot<T>> snapshots({
     bool includeMetadataChanges = false,
     ListenSource source = ListenSource.defaultSource,
-  }) =>
-      _collection.snapshots(
-        includeMetadataChanges: includeMetadataChanges,
-        source: source,
-      );
+  }) => _collection.snapshots(
+    includeMetadataChanges: includeMetadataChanges,
+    source: source,
+  );
 
   @override
   Query<T> where(
@@ -143,21 +141,20 @@ final class ISpectFirestoreCollection<T extends Object?>
     Iterable<Object?>? whereIn,
     Iterable<Object?>? whereNotIn,
     bool? isNull,
-  }) =>
-      _collection.where(
-        field,
-        isEqualTo: isEqualTo,
-        isNotEqualTo: isNotEqualTo,
-        isLessThan: isLessThan,
-        isLessThanOrEqualTo: isLessThanOrEqualTo,
-        isGreaterThan: isGreaterThan,
-        isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
-        arrayContains: arrayContains,
-        arrayContainsAny: arrayContainsAny,
-        whereIn: whereIn,
-        whereNotIn: whereNotIn,
-        isNull: isNull,
-      );
+  }) => _collection.where(
+    field,
+    isEqualTo: isEqualTo,
+    isNotEqualTo: isNotEqualTo,
+    isLessThan: isLessThan,
+    isLessThanOrEqualTo: isLessThanOrEqualTo,
+    isGreaterThan: isGreaterThan,
+    isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
+    arrayContains: arrayContains,
+    arrayContainsAny: arrayContainsAny,
+    whereIn: whereIn,
+    whereNotIn: whereNotIn,
+    isNull: isNull,
+  );
 
   @override
   Query<T> orderBy(Object field, {bool descending = false}) =>
@@ -233,39 +230,38 @@ final class ISpectFirestoreCollection<T extends Object?>
     AggregateField? aggregateField28,
     AggregateField? aggregateField29,
     AggregateField? aggregateField30,
-  ]) =>
-      _collection.aggregate(
-        aggregateField1,
-        aggregateField2,
-        aggregateField3,
-        aggregateField4,
-        aggregateField5,
-        aggregateField6,
-        aggregateField7,
-        aggregateField8,
-        aggregateField9,
-        aggregateField10,
-        aggregateField11,
-        aggregateField12,
-        aggregateField13,
-        aggregateField14,
-        aggregateField15,
-        aggregateField16,
-        aggregateField17,
-        aggregateField18,
-        aggregateField19,
-        aggregateField20,
-        aggregateField21,
-        aggregateField22,
-        aggregateField23,
-        aggregateField24,
-        aggregateField25,
-        aggregateField26,
-        aggregateField27,
-        aggregateField28,
-        aggregateField29,
-        aggregateField30,
-      );
+  ]) => _collection.aggregate(
+    aggregateField1,
+    aggregateField2,
+    aggregateField3,
+    aggregateField4,
+    aggregateField5,
+    aggregateField6,
+    aggregateField7,
+    aggregateField8,
+    aggregateField9,
+    aggregateField10,
+    aggregateField11,
+    aggregateField12,
+    aggregateField13,
+    aggregateField14,
+    aggregateField15,
+    aggregateField16,
+    aggregateField17,
+    aggregateField18,
+    aggregateField19,
+    aggregateField20,
+    aggregateField21,
+    aggregateField22,
+    aggregateField23,
+    aggregateField24,
+    aggregateField25,
+    aggregateField26,
+    aggregateField27,
+    aggregateField28,
+    aggregateField29,
+    aggregateField30,
+  );
 }
 
 /// Wraps a Firestore [DocumentReference] with `ispectify_db` logging.
@@ -280,9 +276,9 @@ final class ISpectFirestoreDocument<T extends Object?>
     required ISpectLogger logger,
     String source = defaultSource,
     this.config = const ISpectDbConfig(),
-  })  : _doc = delegate,
-        _logger = logger,
-        _source = source;
+  }) : _doc = delegate,
+       _logger = logger,
+       _source = source;
 
   final DocumentReference<T> _doc;
   final ISpectLogger _logger;
@@ -299,45 +295,45 @@ final class ISpectFirestoreDocument<T extends Object?>
 
   @override
   Future<DocumentSnapshot<T>> get([GetOptions? options]) => _logger.dbTrace(
-        source: _source,
-        operation: 'get',
-        table: _doc.path,
-        key: _doc.id,
-        run: () => _doc.get(options),
-        projectResult: (snap) => {'exists': snap.exists},
-        config: config,
-      );
+    source: _source,
+    operation: 'get',
+    table: _doc.path,
+    key: _doc.id,
+    run: () => _doc.get(options),
+    projectResult: (snap) => {'exists': snap.exists},
+    config: config,
+  );
 
   @override
   Future<void> set(T data, [SetOptions? options]) => _logger.dbTrace(
-        source: _source,
-        operation: 'set',
-        table: _doc.path,
-        key: _doc.id,
-        meta: (options?.merge ?? false) ? {'merge': true} : null,
-        run: () => _doc.set(data, options),
-        config: config,
-      );
+    source: _source,
+    operation: 'set',
+    table: _doc.path,
+    key: _doc.id,
+    meta: (options?.merge ?? false) ? {'merge': true} : null,
+    run: () => _doc.set(data, options),
+    config: config,
+  );
 
   @override
   Future<void> update(Map<Object, Object?> data) => _logger.dbTrace(
-        source: _source,
-        operation: 'update',
-        table: _doc.path,
-        key: _doc.id,
-        run: () => _doc.update(data),
-        config: config,
-      );
+    source: _source,
+    operation: 'update',
+    table: _doc.path,
+    key: _doc.id,
+    run: () => _doc.update(data),
+    config: config,
+  );
 
   @override
   Future<void> delete() => _logger.dbTrace(
-        source: _source,
-        operation: 'delete',
-        table: _doc.path,
-        key: _doc.id,
-        run: _doc.delete,
-        config: config,
-      );
+    source: _source,
+    operation: 'delete',
+    table: _doc.path,
+    key: _doc.id,
+    run: _doc.delete,
+    config: config,
+  );
 
   // --- Passthrough ---------------------------------------------------------
 
@@ -349,11 +345,11 @@ final class ISpectFirestoreDocument<T extends Object?>
 
   @override
   CollectionReference<T> get parent => ISpectFirestoreCollection(
-        delegate: _doc.parent,
-        logger: _logger,
-        source: _source,
-        config: config,
-      );
+    delegate: _doc.parent,
+    logger: _logger,
+    source: _source,
+    config: config,
+  );
 
   @override
   String get path => _doc.path;
@@ -371,24 +367,22 @@ final class ISpectFirestoreDocument<T extends Object?>
   Stream<DocumentSnapshot<T>> snapshots({
     bool includeMetadataChanges = false,
     ListenSource source = ListenSource.defaultSource,
-  }) =>
-      _doc.snapshots(
-        includeMetadataChanges: includeMetadataChanges,
-        source: source,
-      );
+  }) => _doc.snapshots(
+    includeMetadataChanges: includeMetadataChanges,
+    source: source,
+  );
 
   @override
   DocumentReference<R> withConverter<R>({
     required FromFirestore<R> fromFirestore,
     required ToFirestore<R> toFirestore,
-  }) =>
-      ISpectFirestoreDocument(
-        delegate: _doc.withConverter(
-          fromFirestore: fromFirestore,
-          toFirestore: toFirestore,
-        ),
-        logger: _logger,
-        source: _source,
-        config: config,
-      );
+  }) => ISpectFirestoreDocument(
+    delegate: _doc.withConverter(
+      fromFirestore: fromFirestore,
+      toFirestore: toFirestore,
+    ),
+    logger: _logger,
+    source: _source,
+    config: config,
+  );
 }

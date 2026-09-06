@@ -36,7 +36,7 @@ class TransactionDetails extends StatelessWidget {
         (requestPayload?.hasPreview ?? false) ||
         (requestSummary.isNotEmpty && (showResponse || showError));
 
-    // The request row only joins a response/error row — alone it just repeats
+    // The request row only joins a response/error row - alone it just repeats
     // the request content type, so a plain successful call shows no panel.
     final sections = <Widget>[
       if (showResponse)

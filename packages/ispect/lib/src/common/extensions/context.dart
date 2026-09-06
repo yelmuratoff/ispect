@@ -11,7 +11,7 @@ extension ISpectContextExtension on BuildContext {
 
   bool get isDarkMode => appTheme.brightness == Brightness.dark;
 
-  /// ISpect's own effective brightness — dark by default, independent of the
+  /// ISpect's own effective brightness - dark by default, independent of the
   /// host app. Falls back to the host brightness when no scope is present, when
   /// [ISpectTheme.useHostColors] is set, or for [ISpectThemeMode.system].
   bool get ispectIsDark {
@@ -72,7 +72,7 @@ extension ISpectColorTokens on BuildContext {
       ispectTheme.background?.resolve(this) ??
       appTheme.colorScheme.surfaceContainerLowest;
 
-  /// Nullable variant of [ispectBackgroundColor] — returns the
+  /// Nullable variant of [ispectBackgroundColor] - returns the
   /// user-configured ISpect background or `null` when nothing is set.
   ///
   /// Use this for `Scaffold.backgroundColor` and screen-level surfaces where

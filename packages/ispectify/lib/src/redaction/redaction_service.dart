@@ -728,7 +728,7 @@ class RedactionService {
   RedactionWalker _createWalker(RedactionRequest request) =>
       RedactionWalker(_config, request, _strategy);
 
-  // Mutation API — ignored values
+  // Mutation API - ignored values
 
   /// Add a string value to the ignore list (exact match).
   void ignoreValue(String value) {
@@ -760,7 +760,7 @@ class RedactionService {
     _updateConfig(_config.copyWithIgnoredValues({}));
   }
 
-  // Mutation API — ignored keys
+  // Mutation API - ignored keys
 
   /// Add a key name to the ignore list (case-insensitive).
   void ignoreKey(String keyName) {
@@ -825,7 +825,7 @@ class RedactionService {
     return _urlRedactor.redactUrlsInText(text);
   }
 
-  // Target redaction (static — Layer 2, trace pipeline)
+  // Target redaction (static - Layer 2, trace pipeline)
 
   /// Redacts URL credentials and query params with sensitive keys in a target
   /// string.
@@ -838,7 +838,7 @@ class RedactionService {
     return RedactionService(sensitiveKeys: redactKeys).redactUrl(target);
   }
 
-  // Export string redaction (static — Layer 3, export)
+  // Export string redaction (static - Layer 3, export)
 
   /// Regex-based redaction for export strings. Covers URL credentials,
   /// authentication schemes, sensitive assignments, query params, and JSON.
@@ -862,7 +862,7 @@ class RedactionService {
   /// Recursively redacts map values whose keys match any of the provided [keys]
   /// (case-insensitive).
   ///
-  /// Unlike [redact], this method performs **only** exact key-name matching —
+  /// Unlike [redact], this method performs **only** exact key-name matching -
   /// no pattern-based content detection, no strategies. It is intended for
   /// call sites that need simple, per-call key lists (e.g. database logging).
   ///

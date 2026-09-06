@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+
 import 'inspector_state.dart';
 import 'ispect_layout_enabled.dart';
 import 'pixel_capture.dart';
@@ -17,10 +18,10 @@ import 'widgets/inspector/box_info.dart';
 
 export 'inspector_state.dart';
 
-part 'inspector_controller_modes.dart';
-part 'inspector_controller_shortcuts.dart';
-part 'inspector_controller_pointer.dart';
 part 'inspector_controller_capture.dart';
+part 'inspector_controller_modes.dart';
+part 'inspector_controller_pointer.dart';
+part 'inspector_controller_shortcuts.dart';
 
 class InspectorController {
   InspectorController({
@@ -48,7 +49,7 @@ class InspectorController {
            ),
        assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0') {
     // Keep the sealed `stateNotifier` in sync with the legacy granular
-    // notifiers. Legacy notifiers remain the mutation surface — internal
+    // notifiers. Legacy notifiers remain the mutation surface - internal
     // logic writes to them, and we recompute the union state here.
     for (final l in _allStateInputs) {
       l.addListener(_recomputeStateNotifier);
@@ -70,7 +71,7 @@ class InspectorController {
 
   static const int maxAllowedRenderTreeClipboardCharacters = 4 * 1024 * 1024;
 
-  /// Deprecated. Use [widgetInspectorShortcutActivators] — it supports
+  /// Deprecated. Use [widgetInspectorShortcutActivators] - it supports
   /// multi-key chords and the full [ShortcutActivator] API. Will be removed
   /// in 8.0.0.
   @Deprecated(

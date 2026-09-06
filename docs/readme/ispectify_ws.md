@@ -1,6 +1,6 @@
 <!-- partial:header -->
 
-`ispectify_ws` is the provider-agnostic WebSocket diagnostics layer for the [ISpect toolkit](#the-ispect-toolkit). It captures sent and received frames, connection-state transitions, and errors — for **any** WebSocket client — and redacts sensitive data before logging. The published package depends only on `ispectify`; you keep your own WebSocket client dependency.
+`ispectify_ws` is the provider-agnostic WebSocket diagnostics layer for the [ISpect toolkit](#the-ispect-toolkit). It captures sent and received frames, connection-state transitions, and errors - for **any** WebSocket client - and redacts sensitive data before logging. The published package depends only on `ispectify`; you keep your own WebSocket client dependency.
 
 - Frame-level capture for sent and received messages (`ws-sent` / `ws-received`).
 - Connection lifecycle logging via `ws-state` (connecting / open / closing / closed / reconnecting).
@@ -19,7 +19,7 @@ dependencies:
 
 ## Quick start
 
-Bind any client to the `WsDiagnosticsSink` port. Metrics and state are optional — push whatever your client can report:
+Bind any client to the `WsDiagnosticsSink` port. Metrics and state are optional - push whatever your client can report:
 
 ```dart
 import 'package:ispect/ispect.dart';
@@ -41,7 +41,7 @@ channel.stream.listen(
 
 ## Ready-to-copy adapters
 
-The package example ships thin adapters that wire a concrete client to `WsDiagnostics` — copy the one you need into your app (and add that client to your own `pubspec.yaml`):
+The package example ships thin adapters that wire a concrete client to `WsDiagnostics` - copy the one you need into your app (and add that client to your own `pubspec.yaml`):
 
 | Client                                                              | Adapter                                                        |
 | ------------------------------------------------------------------- | -------------------------------------------------------------- |
@@ -49,7 +49,7 @@ The package example ships thin adapters that wire a concrete client to `WsDiagno
 | [`web_socket_channel`](https://pub.dev/packages/web_socket_channel) | `example/lib/interceptors/web_socket_channel_interceptor.dart` |
 | [`socket_io_client`](https://pub.dev/packages/socket_io_client)     | `example/lib/interceptors/socket_io_interceptor.dart`          |
 
-> Migrating from 5.x? `ISpectWSInterceptor` moved out of the published package into `example/lib/interceptors/ws_interceptor.dart`. Copy it in and add `ws` to your app — `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged. See `docs/DEPRECATIONS.md`.
+> Migrating from 5.x? `ISpectWSInterceptor` moved out of the published package into `example/lib/interceptors/ws_interceptor.dart`. Copy it in and add `ws` to your app - `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged. See `docs/DEPRECATIONS.md`.
 
 ## Settings
 

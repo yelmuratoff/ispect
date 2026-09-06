@@ -1283,7 +1283,7 @@ class _FieldsTab extends StatelessWidget {
                 TextSpan(
                   text:
                       ' and span style extraction across multiple styled '
-                      'segments — this should be long enough to trigger the '
+                      'segments - this should be long enough to trigger the '
                       'ellipsis on the preview line of the info panel.',
                 ),
               ],
@@ -1364,7 +1364,7 @@ class _PushedTransparentPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               const Text(
-                'Tap the dark barrier — the inspector must show nothing\n'
+                'Tap the dark barrier - the inspector must show nothing\n'
                 '(or only the barrier), never widgets from the page below.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12),
@@ -1402,7 +1402,7 @@ class _ImagesTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 24,
         children: [
-          const Text('RenderImage — network source'),
+          const Text('RenderImage - network source'),
           Image.network(
             'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
             width: 300,

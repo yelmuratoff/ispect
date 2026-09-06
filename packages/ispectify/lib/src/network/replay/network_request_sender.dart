@@ -7,7 +7,7 @@ import 'package:ispectify/src/network/replay/network_replay_result.dart';
 /// `HttpClientRequestSender` in `ispectify_http`) and registered by the host
 /// app so the composer reuses the client's base URL, auth interceptors, and
 /// retries instead of reconstructing them. Because the request travels through
-/// the instrumented client, it is also logged by the existing interceptor — no
+/// the instrumented client, it is also logged by the existing interceptor - no
 /// parallel, unredacted log is produced.
 abstract interface class NetworkRequestSender {
   /// Stable identifier for the underlying transport (e.g. `dio`, `http`).

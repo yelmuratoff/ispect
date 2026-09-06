@@ -25,11 +25,9 @@ final class _StandaloneUser extends QueryExecutorUser {
 
 Future<void> driftExample() async {
   final logger = ISpectLogger();
-  const dbConfig = ISpectDbConfig(
-    slowThreshold: Duration(milliseconds: 100),
-  );
+  const dbConfig = ISpectDbConfig(slowThreshold: Duration(milliseconds: 100));
 
-  // Plug the interceptor into any drift executor — one line.
+  // Plug the interceptor into any drift executor - one line.
   final executor = NativeDatabase.memory(
     setup: (db) {
       db.execute('''
@@ -49,39 +47,27 @@ Future<void> driftExample() async {
   await executor.ensureOpen(_StandaloneUser());
 
   // Insert
-  final id1 = await executor.runInsert(
-    'INSERT INTO todos (title) VALUES (?)',
-    ['Buy groceries'],
-  );
+  final id1 = await executor.runInsert('INSERT INTO todos (title) VALUES (?)', [
+    'Buy groceries',
+  ]);
 
-  await executor.runInsert(
-    'INSERT INTO todos (title) VALUES (?)',
-    ['Write tests'],
-  );
+  await executor.runInsert('INSERT INTO todos (title) VALUES (?)', [
+    'Write tests',
+  ]);
 
   // Insert into second table
-  await executor.runInsert(
-    'INSERT INTO categories (name) VALUES (?)',
-    ['Work'],
-  );
+  await executor.runInsert('INSERT INTO categories (name) VALUES (?)', [
+    'Work',
+  ]);
 
   // Select
-  await executor.runSelect(
-    'SELECT * FROM todos WHERE done = ?',
-    [0],
-  );
+  await executor.runSelect('SELECT * FROM todos WHERE done = ?', [0]);
 
   // Update
-  await executor.runUpdate(
-    'UPDATE todos SET done = 1 WHERE id = ?',
-    [id1],
-  );
+  await executor.runUpdate('UPDATE todos SET done = 1 WHERE id = ?', [id1]);
 
   // Delete
-  await executor.runDelete(
-    'DELETE FROM todos WHERE done = 1',
-    [],
-  );
+  await executor.runDelete('DELETE FROM todos WHERE done = 1', []);
 
   // Batch
   await executor.runBatched(

@@ -936,7 +936,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get tipSearchLogs =>
-      'البحث في السجلات بالنص — يبحث أيضاً في محتوى JSON الكامل';
+      'البحث في السجلات بالنص - يبحث أيضاً في محتوى JSON الكامل';
 
   @override
   String get tipLongPress => 'اضغط مطولاً على بطاقة السجل للإجراءات السريعة';
@@ -956,7 +956,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get tipShareSession =>
-      'شارك ملف السجلات لتقارير الأخطاء — يتم إخفاء البيانات تلقائيًا';
+      'شارك ملف السجلات لتقارير الأخطاء - يتم إخفاء البيانات تلقائيًا';
 
   @override
   String get tipReverseLogs => 'اضغط على الأسهم في الشريط لعكس ترتيب السجلات';

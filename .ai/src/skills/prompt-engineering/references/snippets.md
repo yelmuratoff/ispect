@@ -1,6 +1,6 @@
 # Prompt Snippets
 
-Battle-tested fragments — copy verbatim into a system prompt and adapt. Each snippet has a one-line use case and a short note on when it backfires.
+Battle-tested fragments - copy verbatim into a system prompt and adapt. Each snippet has a one-line use case and a short note on when it backfires.
 
 ## Scope discipline / anti-overengineering
 
@@ -21,7 +21,7 @@ When the model invents APIs, file paths, or fields it hasn't read.
 
 ```text
 <investigate_before_answering>
-Never speculate about code you have not opened. If the user references a specific file, you MUST read the file before answering. Make sure to investigate and read relevant files BEFORE answering questions about the codebase. Never make any claims about code before investigating unless you are certain of the correct answer — give grounded and hallucination-free answers.
+Never speculate about code you have not opened. If the user references a specific file, you MUST read the file before answering. Make sure to investigate and read relevant files BEFORE answering questions about the codebase. Never make any claims about code before investigating unless you are certain of the correct answer - give grounded and hallucination-free answers.
 </investigate_before_answering>
 ```
 
@@ -57,7 +57,7 @@ If you intend to call multiple tools and there are no dependencies between the t
 
 ## Trim parallelism
 
-Inverse — when parallel calls cause flaky tests, race conditions, or rate-limit failures.
+Inverse - when parallel calls cause flaky tests, race conditions, or rate-limit failures.
 
 ```text
 Execute operations sequentially with brief pauses between each step to ensure stability.
@@ -70,7 +70,7 @@ When the model spends too long exploring before acting on simple tasks.
 ```text
 When you're deciding how to approach a problem, choose an approach and commit to it. Avoid revisiting decisions unless you encounter new information that directly contradicts your reasoning. If you're weighing two approaches, pick one and see it through. You can always course-correct later if the chosen approach fails.
 
-Extended thinking adds latency and should only be used when it will meaningfully improve answer quality — typically for problems that require multi-step reasoning. When in doubt, respond directly.
+Extended thinking adds latency and should only be used when it will meaningfully improve answer quality - typically for problems that require multi-step reasoning. When in doubt, respond directly.
 ```
 
 ## Encourage thinking at low effort
@@ -83,13 +83,13 @@ This task involves multi-step reasoning. Think carefully through the problem bef
 
 ## Code-review coverage (don't pre-filter)
 
-When a review harness reports "no issues" but bugs exist — model is silently filtering.
+When a review harness reports "no issues" but bugs exist - model is silently filtering.
 
 ```text
-Report every issue you find, including ones you are uncertain about or consider low-severity. Do not filter for importance or confidence at this stage — a separate verification step will do that. Your goal here is coverage: it is better to surface a finding that later gets filtered out than to silently drop a real bug. For each finding, include your confidence level and an estimated severity so a downstream filter can rank them.
+Report every issue you find, including ones you are uncertain about or consider low-severity. Do not filter for importance or confidence at this stage - a separate verification step will do that. Your goal here is coverage: it is better to surface a finding that later gets filtered out than to silently drop a real bug. For each finding, include your confidence level and an estimated severity so a downstream filter can rank them.
 ```
 
-## Frontend aesthetics — avoid AI slop
+## Frontend aesthetics - avoid AI slop
 
 When generated UIs collapse to Inter / Roboto / purple-on-white / cookie-cutter layouts.
 
@@ -99,15 +99,15 @@ NEVER use generic AI-generated aesthetics like overused font families (Inter, Ro
 </frontend_aesthetics>
 ```
 
-## Frontend variety — propose options before building
+## Frontend variety - propose options before building
 
 When you want different visual directions across runs (replaces `temperature` for variety on Opus 4.7, which has a persistent default cream/serif house style).
 
 ```text
-Before building, propose 4 distinct visual directions tailored to this brief (each as: bg hex / accent hex / typeface — one-line rationale). Ask the user to pick one, then implement only that direction.
+Before building, propose 4 distinct visual directions tailored to this brief (each as: bg hex / accent hex / typeface - one-line rationale). Ask the user to pick one, then implement only that direction.
 ```
 
-Pair with `<frontend_aesthetics>` when the brief is editorial/portfolio. Skip both for fintech/healthcare/dashboard briefs and specify a concrete palette instead — generic instructions like "make it clean and minimal" tend to shift the model to a different fixed palette, not produce variety.
+Pair with `<frontend_aesthetics>` when the brief is editorial/portfolio. Skip both for fintech/healthcare/dashboard briefs and specify a concrete palette instead - generic instructions like "make it clean and minimal" tend to shift the model to a different fixed palette, not produce variety.
 
 ## Subagent control
 
@@ -119,7 +119,7 @@ Use subagents when tasks can run in parallel, require isolated context, or invol
 Do not spawn a subagent for work you can complete directly in a single response (e.g. refactoring a function you can already see). Spawn multiple subagents in the same turn when fanning out across items or reading many files.
 ```
 
-Inverse — when you *want* more subagent fan-out on 4.7 (which spawns fewer than 4.6 by default): explicitly instruct it to delegate, raise `effort` to `xhigh`, or list the patterns where delegation is desirable.
+Inverse - when you _want_ more subagent fan-out on 4.7 (which spawns fewer than 4.6 by default): explicitly instruct it to delegate, raise `effort` to `xhigh`, or list the patterns where delegation is desirable.
 
 ## Persistence across context windows
 
@@ -131,17 +131,17 @@ Your context window will be automatically compacted as it approaches its limit, 
 
 ## State tracking for long tasks
 
-For multi-session agentic work — encourages planning, test-tracking, incremental progress.
+For multi-session agentic work - encourages planning, test-tracking, incremental progress.
 
 ```text
-This is a very long task, so it may be beneficial to plan out your work clearly. It's encouraged to spend your entire output context working on the task — just make sure you don't run out of context with significant uncommitted work. Continue working systematically until you have completed this task.
+This is a very long task, so it may be beneficial to plan out your work clearly. It's encouraged to spend your entire output context working on the task - just make sure you don't run out of context with significant uncommitted work. Continue working systematically until you have completed this task.
 
 Track tests in a structured file (e.g. tests.json) with status per test. Keep freeform progress notes in progress.txt. Use git for checkpointing. It is unacceptable to remove or edit tests because this could lead to missing or buggy functionality.
 ```
 
 ## Multi-context-window workflow
 
-For tasks that span more than one context window — use `init.sh`, structured state files, and let Claude rediscover state from the filesystem instead of relying on compaction.
+For tasks that span more than one context window - use `init.sh`, structured state files, and let Claude rediscover state from the filesystem instead of relying on compaction.
 
 ```text
 This task may span multiple context windows. Use a structured workflow:
@@ -149,7 +149,7 @@ This task may span multiple context windows. Use a structured workflow:
 1. Set up first. Create `init.sh` to start servers, run tests, and run linters in one command. Write the test list to `tests.json` with status per test. Keep freeform notes in `progress.txt`.
 2. Commit incrementally. Use git for checkpointing. Each context window should end with a clean working tree or a clearly labeled WIP commit.
 3. On a fresh context window: call `pwd`, then read `progress.txt`, `tests.json`, and the recent git log. Run `init.sh` and a fundamental integration test before implementing new features.
-4. Treat tests as load-bearing. Removing or weakening a test to make it pass is unacceptable — it can hide missing or buggy functionality.
+4. Treat tests as load-bearing. Removing or weakening a test to make it pass is unacceptable - it can hide missing or buggy functionality.
 ```
 
 Pair with `persistence_across_context_windows` when the agent harness compacts context, and with `reflect_after_tool_use` for the planning loop.
@@ -191,7 +191,7 @@ Provide concise, focused responses. Skip non-essential context, and keep example
 
 When the model fragments narrative into bullet lists.
 
-````text
+```text
 <avoid_excessive_markdown_and_bullet_points>
 When writing reports, documents, technical explanations, analyses, or any long-form content, write in clear, flowing prose using complete paragraphs and sentences. Use standard paragraph breaks for organization and reserve markdown primarily for `inline code`, code blocks, and simple headings. Avoid using **bold** and *italics*.
 
@@ -199,7 +199,7 @@ DO NOT use ordered or unordered lists unless: a) you're presenting truly discret
 
 Instead of listing items with bullets, incorporate them naturally into sentences. Your goal is readable, flowing text that guides the reader naturally through ideas rather than fragmenting information into isolated points.
 </avoid_excessive_markdown_and_bullet_points>
-````
+```
 
 ## Reflect-after-tool-use (planning loop)
 
@@ -219,7 +219,7 @@ Before you finish, verify your answer against the original requirements. List ea
 
 ## Long-document grounding
 
-For tasks over 20k+ tokens of documents — quote-first improves accuracy a lot.
+For tasks over 20k+ tokens of documents - quote-first improves accuracy a lot.
 
 ```text
 Find quotes from the documents that are relevant to the question. Place these in <quotes> tags. Then, based on these quotes, answer the question. Place your answer in <answer> tags.
@@ -235,7 +235,7 @@ If you create any temporary new files, scripts, or helper files for iteration, c
 
 ## Gotchas when using snippets
 
-- Don't stack contradictory snippets — `default-to-action` and `do-not-act-before-instructions` cancel each other.
-- On Claude Opus 4.6+ (including 4.7), soften `MUST` / `NEVER` / `CRITICAL` to `should` / `do not` — these models over-comply with aggressive language. 4.7 in particular interprets instructions literally, so explicit scope ("apply to every section, not just the first") often matters more than emphasis.
-- Drop the `<frontend_aesthetics>` block on dashboard / fintech / enterprise briefs — it pushes toward editorial aesthetics and reads wrong there.
-- The verbosity-reducer fights against `state-tracking` and `persistence` snippets — pick one direction, not both.
+- Don't stack contradictory snippets - `default-to-action` and `do-not-act-before-instructions` cancel each other.
+- On Claude Opus 4.6+ (including 4.7), soften `MUST` / `NEVER` / `CRITICAL` to `should` / `do not` - these models over-comply with aggressive language. 4.7 in particular interprets instructions literally, so explicit scope ("apply to every section, not just the first") often matters more than emphasis.
+- Drop the `<frontend_aesthetics>` block on dashboard / fintech / enterprise briefs - it pushes toward editorial aesthetics and reads wrong there.
+- The verbosity-reducer fights against `state-tracking` and `persistence` snippets - pick one direction, not both.

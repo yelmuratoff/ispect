@@ -17,11 +17,11 @@ Most pure-Dart coverage is now automated: `ispectify`, `ispectify_db`, Dio, and
 http run with fixed inputs and AOT compilation. The remaining measurements
 need Flutter `3.32.6` and a recorded Android device.
 
-- **Disabled-build footprint** — APK `--analyze-size` runs are automated. Still record cold start with `flutter run --profile --trace-startup` (`timeToFirstFrameMicros`) for each variant.
-- **Per-log, redaction, export, DB, and adapter cost** — automated AOT cases cover metadata/payload logs, disabled/bounded history, 1/10/100 KB redaction, JSON Lines export, in-memory DB tracing, and Dio/http metadata/body capture.
-- **High-volume / FPS** — the profile-only `integration_test` seeds 2,000 events through the real logger/history/viewer pipeline and uses separate `binding.watchPerformance` windows for filters off/on. Run it on the recorded device to publish build/raster percentiles, frame-budget misses, GC, and raster-cache metrics.
+- **Disabled-build footprint** - APK `--analyze-size` runs are automated. Still record cold start with `flutter run --profile --trace-startup` (`timeToFirstFrameMicros`) for each variant.
+- **Per-log, redaction, export, DB, and adapter cost** - automated AOT cases cover metadata/payload logs, disabled/bounded history, 1/10/100 KB redaction, JSON Lines export, in-memory DB tracing, and Dio/http metadata/body capture.
+- **High-volume / FPS** - the profile-only `integration_test` seeds 2,000 events through the real logger/history/viewer pipeline and uses separate `binding.watchPerformance` windows for filters off/on. Run it on the recorded device to publish build/raster percentiles, frame-budget misses, GC, and raster-cache metrics.
 
-Record the hardware next to every number, warm up before measuring, and run comparable passes on the same machine — otherwise the results are not reproducible.
+Record the hardware next to every number, warm up before measuring, and run comparable passes on the same machine - otherwise the results are not reproducible.
 
 ## Developer experience: onboarding and examples
 
@@ -35,7 +35,7 @@ The toolkit is broad, and the current entry points assume the reader already kno
 
 ### Examples split by category
 
-Coverage varies by package: `ispectify_db` and `ispectify_ws` organize runnable variants under an `example/lib/examples/` subfolder, while `ispectify_dio`, `ispectify_http`, `ispectify_bloc`, and `ispectify_riverpod` ship a single `main.dart`. The `ispect` showcase app already depends on every integration (its `complex_example.dart` demos Dio/HTTP/WS/DB plus Riverpod/BLoC observers in one file), so the split needs no new dependencies — it splits that combined tour into focused, category-first entry points:
+Coverage varies by package: `ispectify_db` and `ispectify_ws` organize runnable variants under an `example/lib/examples/` subfolder, while `ispectify_dio`, `ispectify_http`, `ispectify_bloc`, and `ispectify_riverpod` ship a single `main.dart`. The `ispect` showcase app already depends on every integration (its `complex_example.dart` demos Dio/HTTP/WS/DB plus Riverpod/BLoC observers in one file), so the split needs no new dependencies - it splits that combined tour into focused, category-first entry points:
 
 ```
 packages/ispect/example/lib/

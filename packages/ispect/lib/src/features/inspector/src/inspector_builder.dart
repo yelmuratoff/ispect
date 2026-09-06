@@ -24,7 +24,7 @@ import 'package:ispect_layout/ispect_layout.dart' as pkg_inspector;
 ///
 /// ## Safe Usage
 ///
-/// Prefer the [ISpectBuilder.wrap] factory — it short-circuits before
+/// Prefer the [ISpectBuilder.wrap] factory - it short-circuits before
 /// constructing the widget when `kISpectEnabled` is `false`, which lets the
 /// Dart compiler tree-shake the ISpect widget tree out of release builds.
 /// The public constructor is kept for backwards compatibility but defers

@@ -62,7 +62,7 @@ String formatBytes(int bytes) {
 /// Generates a 16-character hex trace ID from the current timestamp
 /// and a random component.
 ///
-/// Not cryptographically secure — suitable for log correlation only.
+/// Not cryptographically secure - suitable for log correlation only.
 String generateTraceId() {
   const timestampMask = 0xffffffff;
   const randomBound = 0x7fffffff;

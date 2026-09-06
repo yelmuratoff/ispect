@@ -1,6 +1,6 @@
 // Pins down `ISpectNavigatorObserver.shouldLog`: the destination route's kind
 // alone decides logging. The regression case is a page pushed from under a
-// modal (e.g. a profile opened from a bottom sheet) — it must stay a page
+// modal (e.g. a profile opened from a bottom sheet) - it must stay a page
 // transition governed by `isLogPages`, not get dropped as "modal".
 
 import 'package:flutter/material.dart';

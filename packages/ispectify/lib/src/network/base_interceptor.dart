@@ -18,7 +18,7 @@ export 'network_redaction_mixin.dart';
 ///          NetworkConfigurationMixin, BaseNetworkInterceptor { ... }
 /// ```
 ///
-/// New interceptors can mix in only the sub-mixins they need — e.g. WebSocket
+/// New interceptors can mix in only the sub-mixins they need - e.g. WebSocket
 /// can omit [NetworkConfigurationMixin].
 mixin BaseNetworkInterceptor
     on NetworkLoggerMixin, NetworkRedactionMixin, NetworkConfigurationMixin {

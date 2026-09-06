@@ -16,7 +16,7 @@ import 'package:meta/meta.dart';
 /// everywhere at once, overriding per-integration `enableRedaction` flags.
 ///
 /// Defaults to `true`. Because captured diagnostics can contain sensitive data,
-/// disabling redaction is a deliberate opt-out — leave it on unless a build
+/// disabling redaction is a deliberate opt-out - leave it on unless a build
 /// genuinely needs raw payloads.
 ///
 /// ```dart

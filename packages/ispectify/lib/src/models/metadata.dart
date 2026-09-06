@@ -3,7 +3,7 @@ import 'package:meta/meta.dart';
 
 /// Environment/runtime metadata attached to exported log files.
 ///
-/// ISpect never collects these values itself — doing so would require
+/// ISpect never collects these values itself - doing so would require
 /// platform plugins (`package_info_plus`, `device_info_plus`) and break web
 /// builds. Instead the host app supplies them, since it already owns those
 /// sources (or build-time `--dart-define` constants). All fields are optional;

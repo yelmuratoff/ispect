@@ -1,6 +1,6 @@
 /// Ready-to-copy interceptor for **hive_ce** (Hive Community Edition) (typed boxes).
 ///
-/// Implements the full [Box] interface — drop-in replacement.
+/// Implements the full [Box] interface - drop-in replacement.
 ///
 /// ## Setup
 /// ```dart
@@ -27,9 +27,9 @@ final class ISpectHiveBox<E> implements Box<E> {
     required ISpectLogger logger,
     String source = defaultSource,
     this.config = const ISpectDbConfig(),
-  })  : _box = delegate,
-        _logger = logger,
-        _source = source;
+  }) : _box = delegate,
+       _logger = logger,
+       _source = source;
 
   final Box<E> _box;
   final ISpectLogger _logger;
@@ -93,91 +93,91 @@ final class ISpectHiveBox<E> implements Box<E> {
 
   @override
   Future<void> put(Object? key, E value) => _logger.dbTrace(
-        source: _source,
-        operation: 'write',
-        key: key.toString(),
-        meta: {'box': _box.name},
-        run: () => _box.put(key, value),
-        config: config,
-      );
+    source: _source,
+    operation: 'write',
+    key: key.toString(),
+    meta: {'box': _box.name},
+    run: () => _box.put(key, value),
+    config: config,
+  );
 
   @override
   Future<void> putAt(int index, E value) => _logger.dbTrace(
-        source: _source,
-        operation: 'write',
-        key: 'index:$index',
-        meta: {'box': _box.name},
-        run: () => _box.putAt(index, value),
-        config: config,
-      );
+    source: _source,
+    operation: 'write',
+    key: 'index:$index',
+    meta: {'box': _box.name},
+    run: () => _box.putAt(index, value),
+    config: config,
+  );
 
   @override
   Future<void> putAll(Map<Object?, E> entries) => _logger.dbTrace(
-        source: _source,
-        operation: 'write',
-        meta: {'box': _box.name, 'entries': entries.length},
-        run: () => _box.putAll(entries),
-        config: config,
-      );
+    source: _source,
+    operation: 'write',
+    meta: {'box': _box.name, 'entries': entries.length},
+    run: () => _box.putAll(entries),
+    config: config,
+  );
 
   @override
   Future<int> add(E value) => _logger.dbTrace(
-        source: _source,
-        operation: 'insert',
-        meta: {'box': _box.name},
-        run: () => _box.add(value),
-        projectResult: (key) => {'autoKey': key},
-        config: config,
-      );
+    source: _source,
+    operation: 'insert',
+    meta: {'box': _box.name},
+    run: () => _box.add(value),
+    projectResult: (key) => {'autoKey': key},
+    config: config,
+  );
 
   @override
   Future<Iterable<int>> addAll(Iterable<E> values) => _logger.dbTrace(
-        source: _source,
-        operation: 'insert',
-        meta: {'box': _box.name, 'count': values.length},
-        run: () => _box.addAll(values),
-        projectResult: (keys) => {'inserted': keys.length},
-        config: config,
-      );
+    source: _source,
+    operation: 'insert',
+    meta: {'box': _box.name, 'count': values.length},
+    run: () => _box.addAll(values),
+    projectResult: (keys) => {'inserted': keys.length},
+    config: config,
+  );
 
   @override
   Future<void> delete(Object? key) => _logger.dbTrace(
-        source: _source,
-        operation: 'delete',
-        key: key.toString(),
-        meta: {'box': _box.name},
-        run: () => _box.delete(key),
-        config: config,
-      );
+    source: _source,
+    operation: 'delete',
+    key: key.toString(),
+    meta: {'box': _box.name},
+    run: () => _box.delete(key),
+    config: config,
+  );
 
   @override
   Future<void> deleteAt(int index) => _logger.dbTrace(
-        source: _source,
-        operation: 'delete',
-        key: 'index:$index',
-        meta: {'box': _box.name},
-        run: () => _box.deleteAt(index),
-        config: config,
-      );
+    source: _source,
+    operation: 'delete',
+    key: 'index:$index',
+    meta: {'box': _box.name},
+    run: () => _box.deleteAt(index),
+    config: config,
+  );
 
   @override
   Future<void> deleteAll(Iterable<Object?> keys) => _logger.dbTrace(
-        source: _source,
-        operation: 'delete',
-        meta: {'box': _box.name, 'keys': keys.length},
-        run: () => _box.deleteAll(keys),
-        config: config,
-      );
+    source: _source,
+    operation: 'delete',
+    meta: {'box': _box.name, 'keys': keys.length},
+    run: () => _box.deleteAll(keys),
+    config: config,
+  );
 
   @override
   Future<int> clear() => _logger.dbTrace(
-        source: _source,
-        operation: 'clear',
-        meta: {'box': _box.name},
-        run: _box.clear,
-        projectResult: (count) => {'cleared': count},
-        config: config,
-      );
+    source: _source,
+    operation: 'clear',
+    meta: {'box': _box.name},
+    run: _box.clear,
+    projectResult: (count) => {'cleared': count},
+    config: config,
+  );
 
   // --- Passthrough reads --------------------------------------------------
 

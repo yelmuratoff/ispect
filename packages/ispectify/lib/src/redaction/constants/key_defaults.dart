@@ -1,5 +1,5 @@
 /// The canonical set of sensitive key names used for redaction across all
-/// ispect packages. This is the **single source of truth** — other packages
+/// ispect packages. This is the **single source of truth** - other packages
 /// (e.g. `ispectify_db`) reference this constant instead of maintaining
 /// their own lists.
 const Set<String> defaultSensitiveKeys = <String>{
@@ -253,7 +253,7 @@ const Set<String> kDefaultSensitiveKeys = defaultSensitiveKeys;
 
 /// Regex patterns that match sensitive key name fragments.
 ///
-/// Used alongside [defaultSensitiveKeys] for fuzzy matching — the Set provides
+/// Used alongside [defaultSensitiveKeys] for fuzzy matching - the Set provides
 /// O(1) exact matches while these patterns catch variations like
 /// `user_token_v2` or `auth-token-key`.
 final List<RegExp> defaultSensitiveKeyPatterns = <RegExp>[
@@ -314,7 +314,7 @@ final List<RegExp> defaultSensitiveKeyPatterns = <RegExp>[
 ///
 /// Covers credentials, financial account numbers, security codes, government
 /// identifiers, personal names, demographics, birth and postal details, and
-/// tax identifiers — values where even the first/last characters leak
+/// tax identifiers - values where even the first/last characters leak
 /// meaningful information. `authorization`/`cookie` are intentionally absent:
 /// their structure-aware masking preserves the (non-sensitive) auth scheme and
 /// cookie names while masking the secret. Context-dependent contact fields

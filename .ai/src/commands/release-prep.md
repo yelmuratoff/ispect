@@ -17,7 +17,7 @@ be called.
    - Re-sync after editing changelog/docs: `dart run tool/bin/ispect_tool.dart release-prep --skip-bump`
    - Dev prerelease carry-forward: `dart run tool/bin/ispect_tool.dart release-prep --carry-changelog`
 4. Validate everything at once: `dart run tool/bin/ispect_tool.dart check`.
-5. Before publishing, run `dart run tool/bin/ispect_tool.dart check-published` — it refuses a version the resolver would not rank above what pub.dev already serves. Treat a block as a wrong version, never as a reason to pass `--skip-pub-version-check`.
+5. Before publishing, run `dart run tool/bin/ispect_tool.dart check-published` - it refuses a version the resolver would not rank above what pub.dev already serves. Treat a block as a wrong version, never as a reason to pass `--skip-pub-version-check`.
 6. For publish validation only, run `dart run tool/bin/ispect_tool.dart publish --dry-run`.
 
 Do not run `dart run tool/bin/ispect_tool.dart publish --auto` unless the user explicitly asks to publish.

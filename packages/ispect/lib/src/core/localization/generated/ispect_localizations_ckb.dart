@@ -947,7 +947,7 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
 
   @override
   String get tipSearchLogs =>
-      'گەڕان لە تۆمارەکان بە دەق — لە ناوەڕۆکی تەواوی JSON ـیش دەگەڕێت';
+      'گەڕان لە تۆمارەکان بە دەق - لە ناوەڕۆکی تەواوی JSON ـیش دەگەڕێت';
 
   @override
   String get tipLongPress =>
@@ -970,7 +970,7 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
 
   @override
   String get tipShareSession =>
-      'فایلی تۆمار هاوبەش بکە بۆ ڕاپۆرتی هەڵە — داتا بە شێوەی خۆکار دەشاردرێتەوە';
+      'فایلی تۆمار هاوبەش بکە بۆ ڕاپۆرتی هەڵە - داتا بە شێوەی خۆکار دەشاردرێتەوە';
 
   @override
   String get tipReverseLogs =>

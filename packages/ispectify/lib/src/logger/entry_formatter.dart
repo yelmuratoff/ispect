@@ -9,7 +9,7 @@ import 'package:ispectify/src/utils/datetime_formatter.dart';
 ///
 /// Unlike `ILoggerFormatter` (which only decorates a pre-built string with
 /// color/indent), implementations own the end-to-end shape of an output line
-/// — level, source, category, timestamp, correlation metadata, and message.
+/// - level, source, category, timestamp, correlation metadata, and message.
 ///
 /// Select the active implementation via [ConsoleSettings.formatter].
 abstract interface class ILogEntryFormatter {
@@ -17,7 +17,7 @@ abstract interface class ILogEntryFormatter {
 }
 
 /// Width of the level column. Fits `WARNING`/`VERBOSE` exactly; `CRITICAL`
-/// overflows by one character — acceptable since critical logs are rare and
+/// overflows by one character - acceptable since critical logs are rare and
 /// should stand out anyway.
 const int _levelColumnWidth = 7;
 
@@ -79,7 +79,7 @@ base class HumanLogEntryFormatter implements ILogEntryFormatter {
 /// network-body rendering carry over unchanged); only the layout differs.
 /// The border width comes from [ConsoleSettings.maxLineWidth]; the glyph comes
 /// from [ConsoleSettings.lineSymbol], which must be a single character so the
-/// border stays one column wide — any other value falls back to `─`. Color is
+/// border stays one column wide - any other value falls back to `─`. Color is
 /// applied per line downstream by the active `ILoggerFormatter`, so the whole
 /// box takes the entry's pen.
 ///
@@ -183,7 +183,7 @@ String _buildMetadata(
 }
 
 /// Auto-generated trace IDs are 16-character hex (see `generateTraceId`).
-/// Showing all 16 in the console is noise — the prefix is enough for visual
+/// Showing all 16 in the console is noise - the prefix is enough for visual
 /// correlation, and the full value remains in `additionalData` for filtering
 /// in the UI. Custom user-supplied IDs (e.g. `msg-1`, `txn-orders-2`) are
 /// left untouched so they stay readable.

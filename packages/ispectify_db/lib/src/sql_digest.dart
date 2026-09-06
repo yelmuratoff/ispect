@@ -66,7 +66,7 @@ final class DbSqlDigest {
   /// a plain identifier is masked like any other literal.
   ///
   /// Bare-word operands survive normalization, so callers must pass the result
-  /// through `RedactionService` before it leaves the process — that pass is
+  /// through `RedactionService` before it leaves the process - that pass is
   /// what masks an unquoted credential such as SQLCipher's `PRAGMA key = x`.
   ///
   /// Returns `null` when [statement] is `null`, empty, normalizes to nothing,

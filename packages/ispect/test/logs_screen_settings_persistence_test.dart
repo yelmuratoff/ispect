@@ -1,6 +1,6 @@
 // Composition test for the settings sheet reached the way the app reaches it:
 // LogsScreen bootstraps its controller from the live scope, and the sheet is
-// handed `ISpectOptions.initialSettings` — the startup seed that must never
+// handed `ISpectOptions.initialSettings` - the startup seed that must never
 // be replayed over the user's live choices.
 
 import 'package:flutter/material.dart';

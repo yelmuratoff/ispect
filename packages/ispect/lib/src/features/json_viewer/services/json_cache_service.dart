@@ -19,7 +19,7 @@ class LRUCache<K, V> implements CacheService<K, V> {
   V? get(K key) {
     if (!_cache.containsKey(key)) return null;
     // containsKey check above guarantees the entry exists.
-    // `as V` is correct for generic V — works whether V is nullable or not.
+    // `as V` is correct for generic V - works whether V is nullable or not.
     final value = _cache.remove(key) as V;
     _cache[key] = value;
     return value;

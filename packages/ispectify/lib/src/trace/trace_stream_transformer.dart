@@ -3,9 +3,9 @@ import 'dart:async';
 /// A [StreamTransformer] that hooks into stream lifecycle events for tracing.
 ///
 /// **Lifecycle guarantees:**
-/// - [onCancel] is called exactly once — either on subscription cancel or stream done
-/// - All trace callbacks are wrapped in try/catch — exceptions never break the data stream
-/// - [StreamController] is closed on done or cancel — no leaks
+/// - [onCancel] is called exactly once - either on subscription cancel or stream done
+/// - All trace callbacks are wrapped in try/catch - exceptions never break the data stream
+/// - [StreamController] is closed on done or cancel - no leaks
 final class TraceStreamTransformer<T> extends StreamTransformerBase<T, T> {
   TraceStreamTransformer({
     required this.onListen,

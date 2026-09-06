@@ -1,5 +1,5 @@
 <!--
-  GENERATED FILE — do not edit by hand.
+  GENERATED FILE - do not edit by hand.
   Source:     docs/readme/ispectify_bloc.md
   Regenerate: dart run tool/bin/ispect_tool.dart readme
 -->
@@ -110,7 +110,7 @@ application-defined formatters must never run.
 // Logs disabled entirely.
 ISpectBlocObserver(settings: ISpectBlocSettings.silent);
 
-// Skip per-change / per-completion noise — keeps creations, transitions, errors.
+// Skip per-change / per-completion noise - keeps creations, transitions, errors.
 ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
 
 ISpectBlocObserver(settings: ISpectBlocSettings.compact);

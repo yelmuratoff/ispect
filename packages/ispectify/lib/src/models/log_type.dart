@@ -4,7 +4,7 @@ import 'package:ispectify/src/models/log_level.dart';
 import 'package:ispectify/src/trace/trace_category_ids.dart';
 import 'package:meta/meta.dart';
 
-/// Describes a log type — built-in or user-defined.
+/// Describes a log type - built-in or user-defined.
 ///
 /// Built-in types are exposed as `static const` fields (e.g.
 /// [ISpectLogType.httpRequest]). Custom types are created the same way:

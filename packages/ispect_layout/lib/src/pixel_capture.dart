@@ -7,7 +7,7 @@ import 'package:flutter/rendering.dart';
 /// Utilities for turning a [RenderRepaintBoundary] into a rasterised [ui.Image]
 /// and translating global pointer coordinates into the image's pixel space.
 ///
-/// Stateless and stateless-by-design — the owning controller keeps hold of
+/// Stateless and stateless-by-design - the owning controller keeps hold of
 /// the captured image, epoch, and any `ValueNotifier` surface. Keeping this
 /// a bag of pure functions makes each step trivially unit-testable.
 class PixelCapture {

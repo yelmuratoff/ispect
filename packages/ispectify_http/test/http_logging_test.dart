@@ -259,7 +259,7 @@ void main() {
       final mp = json['multipart-request'] as Map<String, dynamic>;
       final fields = mp['fields'] as Map<String, dynamic>;
 
-      // 'username' is now in defaultSensitiveKeys — it gets redacted
+      // 'username' is now in defaultSensitiveKeys - it gets redacted
       expect(fields['username'], isNot(equals('john_doe')));
       expect(fields['password'], isNot(equals('secret123')));
       expect(fields['token'], isNot(equals('sensitive-token')));

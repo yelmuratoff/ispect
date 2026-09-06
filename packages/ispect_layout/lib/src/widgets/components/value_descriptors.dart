@@ -23,7 +23,7 @@ String formatRadius(Radius r, {int decimalPlaces = 1}) => r.x == r.y
 
 /// Formats a [BorderRadiusGeometry], collapsing uniform values and showing
 /// elliptical `(x×y)` radii only when x != y. Returns `null` when the radius
-/// is zero — callers should skip the chip.
+/// is zero - callers should skip the chip.
 ({String label, String value})? formatBorderRadius(
   BorderRadiusGeometry geometry, {
   int decimalPlaces = 1,
@@ -64,7 +64,7 @@ BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
 // narrowly scoped fallbacks when Flutter exposes no structured public API.
 //
 // Anything depending on Flutter internals is validated once in debug via
-// [_assertReleaseSafeContracts] — Flutter renames or shape changes fire an
+// [_assertReleaseSafeContracts] - Flutter renames or shape changes fire an
 // assert at first use naming the broken function.
 
 /// Default `Object.toString()` output starts with this prefix (Dart spec);
@@ -307,7 +307,7 @@ String previewText(InlineSpan span) {
       : '${raw.substring(0, _kPreviewDisplayCap)}…';
 }
 
-/// A paragraph that paints icon glyphs — Private-Use-Area code points
+/// A paragraph that paints icon glyphs - Private-Use-Area code points
 /// rendered with an icon font (`MaterialIcons`, `CupertinoIcons`, custom
 /// packs). Recognised so the inspector can show the actual glyph instead
 /// of tofu under the default text preview.
@@ -339,7 +339,7 @@ bool _isIconFontFamily(String? family) {
 }
 
 /// Returns an [IconGlyphPreview] when [span] is composed entirely of icon
-/// glyphs, otherwise `null`. Recognition is intentionally conservative —
+/// glyphs, otherwise `null`. Recognition is intentionally conservative -
 /// a single non-icon character or non-icon font family anywhere in the
 /// tree disqualifies the span, so plain text never gets misread as an
 /// icon.

@@ -2,7 +2,7 @@
 //
 // `LogsScreen` reads `ISpect.logger` (a flag-gated global), which cannot be
 // injected without the `ISPECT_ENABLED` compile flag. So this test targets
-// `ISpectLogsBuilder` — the same widget `LogsScreen` uses internally to
+// `ISpectLogsBuilder` - the same widget `LogsScreen` uses internally to
 // render log records. A network-style log emitted through the real
 // `ISpectLogger` trace API must trigger a rebuild that renders the log
 // entry in the widget tree.

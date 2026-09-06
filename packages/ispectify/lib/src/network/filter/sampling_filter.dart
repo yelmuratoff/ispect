@@ -2,7 +2,7 @@ import 'package:ispectify/src/network/filter/network_filter.dart';
 
 /// Logs only every [sampleRate]-th event (1-based counting).
 ///
-/// This is the only intentionally stateful built-in filter — it maintains
+/// This is the only intentionally stateful built-in filter - it maintains
 /// an internal counter. All other filters are stateless.
 class SamplingFilter<T> extends NetworkFilter<T> {
   SamplingFilter({required this.sampleRate}) : assert(sampleRate > 0);

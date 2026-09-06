@@ -155,7 +155,7 @@ extension ISpectLogDataX on ISpectLogData {
 
   // ── Payment convenience ────────────────────────────────────────────
 
-  /// NB: `num` check — JSON may return int (100) instead of double (100.0).
+  /// NB: `num` check - JSON may return int (100) instead of double (100.0).
   double? get paymentAmount {
     final v = traceMeta?['amount'];
     return v is num ? v.toDouble() : null;

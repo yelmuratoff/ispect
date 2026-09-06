@@ -13,7 +13,7 @@ import 'package:ispectify_ws/src/ws_event.dart';
 /// `ws`-specific reads of the old interceptor (`metrics.lastUrl`,
 /// `metrics.toJson()`) become the optional [url] and [metrics] arguments.
 ///
-/// Depends only on `ispectify` — no WebSocket package is required.
+/// Depends only on `ispectify` - no WebSocket package is required.
 final class WsDiagnostics
     with NetworkLoggerMixin, NetworkRedactionMixin
     implements WsDiagnosticsSink {

@@ -40,7 +40,7 @@ dart run tool/bin/ispect_tool.dart release-prep --skip-bump --recover-changelog
 
 ## Prerelease numbering
 
-Write the counter as its own dot-separated identifier — `7.1.0-dev.1`,
+Write the counter as its own dot-separated identifier - `7.1.0-dev.1`,
 `7.1.0-dev.2`, … `7.1.0-dev.10`. Glued to its label, the counter is compared as
 text, so `7.1.0-dev10` resolves below `7.1.0-dev8` and consumers keep getting
 the older code with no error anywhere. The scripts reject any version Pub does

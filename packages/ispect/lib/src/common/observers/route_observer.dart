@@ -357,7 +357,7 @@ class ISpectNavigatorObserver extends NavigatorObserver {
   /// [PageRoute] is itself a [ModalRoute], so the page case is matched first.
   /// Classifying by destination keeps a page pushed from under a modal (for
   /// example a profile opened from a bottom sheet) a page transition governed
-  /// by [isLogPages], instead of being dropped as "modal" — while a dialog or
+  /// by [isLogPages], instead of being dropped as "modal" - while a dialog or
   /// sheet opened over a page stays governed by [isLogModals].
   ///
   /// Internal ISpect inspector routes are excluded unless [isLogInternalRoutes].

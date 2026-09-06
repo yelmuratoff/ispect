@@ -1,5 +1,5 @@
 <!--
-  GENERATED FILE — do not edit by hand.
+  GENERATED FILE - do not edit by hand.
   Source:     docs/readme/ispect_layout.md
   Regenerate: dart run tool/bin/ispect_tool.dart readme
 -->

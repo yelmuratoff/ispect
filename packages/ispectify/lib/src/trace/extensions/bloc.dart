@@ -6,7 +6,7 @@ import 'package:ispectify/src/trace/trace_extension.dart';
 
 /// Trace helpers for BLoC / Cubit lifecycle events.
 ///
-/// These are typically emitted by the `ispectify_bloc` observer — call them
+/// These are typically emitted by the `ispectify_bloc` observer - call them
 /// directly only when instrumenting a custom `BlocObserver`.
 extension ISpectLoggerBloc on ISpectLogger {
   /// Logs `onEvent` under [stateCategory] with the `bloc-event` key.

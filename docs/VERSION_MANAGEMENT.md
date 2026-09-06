@@ -44,7 +44,7 @@ the version.
 Separate the counter from its label with a dot: `7.1.0-dev.1`, `7.1.0-dev.2`,
 … `7.1.0-dev.10`. Semantic Versioning compares a dot-separated numeric
 identifier as a number but an identifier containing letters as text, so the
-glued form `7.1.0-dev10` resolves *below* `7.1.0-dev8`: Pub keeps handing
+glued form `7.1.0-dev10` resolves _below_ `7.1.0-dev8`: Pub keeps handing
 consumers the older code while the newer release sits on pub.dev unreachable,
 and nothing reports an error.
 
@@ -56,7 +56,7 @@ releases on other lines are ignored, so backporting `6.1.8` after `7.0.0`
 shipped still passes.
 
 A series already published in the glued form cannot be repaired by renumbering
-it — the whole dot-form family sorts below every glued version. Leave the label
+it - the whole dot-form family sorts below every glued version. Leave the label
 (`7.1.0-rc.1`) or the prerelease (`7.1.0`) instead. `7.0.0-dev8` through
 `7.0.0-dev11` shipped this way, and Pub ranks `7.0.0-dev9` highest of them.
 

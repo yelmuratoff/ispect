@@ -40,7 +40,7 @@ class LogTypeFilterSection extends StatelessWidget {
     final theme = context.ispectTheme;
     final builtInDescriptions = ISpectConstants.defaultLogDescriptions(context);
 
-    // Merge custom types from theme — convert ISpectLogType → LogDescription
+    // Merge custom types from theme - convert ISpectLogType → LogDescription
     final customDescriptions = theme.customLogTypes.map(
       (t) => LogDescription(key: t.key, title: t.title),
     );

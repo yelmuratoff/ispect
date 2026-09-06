@@ -3,7 +3,7 @@ import 'package:ispectify_db/src/constants.dart';
 
 /// Builds human-readable log messages for database operations.
 ///
-/// `source` is omitted from the body by default — the entry formatter renders
+/// `source` is omitted from the body by default - the entry formatter renders
 /// it in the log header (`[source]`), so duplicating it here just adds noise.
 /// Pass [printSourceInBody] = `true` to re-introduce the prefix when the
 /// message is read out of context (e.g. exported logs).

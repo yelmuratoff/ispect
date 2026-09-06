@@ -5,11 +5,11 @@ import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 ///
 /// Every card, badge, button, sheet, and panel face goes through here, so the
 /// corner is defined once. The shape is Flutter's [RoundedSuperellipseBorder]
-/// — the iOS squircle the framework gained in 3.32 — which scales its radii
+/// - the iOS squircle the framework gained in 3.32 - which scales its radii
 /// down to the box it lands on, so one logical radius is safe on a 400-pixel
 /// sheet and on a 35-pixel tab alike.
 ///
-/// [radius] is the corner radius itself, as it is for a circular corner — the
+/// [radius] is the corner radius itself, as it is for a circular corner - the
 /// superellipse does not fall short the way a [ContinuousRectangleBorder] does,
 /// so nothing is scaled on the way in.
 abstract final class ISpectSquircle {
@@ -109,7 +109,7 @@ final class _InsetShapeBorder extends ShapeBorder {
 }
 
 /// [InputBorder] that paints squircle corners by delegating to a
-/// [RoundedSuperellipseBorder]. The floating-label gap is ignored — ISpect
+/// [RoundedSuperellipseBorder]. The floating-label gap is ignored - ISpect
 /// inputs use hint text, not floating labels.
 class ISpectSquircleInputBorder extends InputBorder {
   const ISpectSquircleInputBorder({

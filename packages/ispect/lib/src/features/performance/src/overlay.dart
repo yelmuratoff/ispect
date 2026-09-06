@@ -50,13 +50,13 @@ const double _kFpsWarningRatio = 0.80;
 /// the reference point reflects "normal" steady-state usage, not boot.
 const Duration _kMemoryBaselineSettleWindow = Duration(seconds: 5);
 
-/// EWMA smoothing factor for the displayed RSS value — α≈0.3 gives roughly
+/// EWMA smoothing factor for the displayed RSS value - α≈0.3 gives roughly
 /// a 3-sample effective window, enough to swallow GC/allocator jiggle
 /// without lagging real growth by more than ~3 seconds.
 const double _kMemoryEwmaAlpha = 0.3;
 
 /// The default overlay is not color-blind safe. Opt in by passing each
-/// `colorBlind*` value into the matching overlay parameter — including
+/// `colorBlind*` value into the matching overlay parameter - including
 /// [colorBlindOverTarget], which the default `overTargetColor` does not pick
 /// up automatically.
 abstract final class ISpectPerformanceOverlayPalettes {
@@ -72,7 +72,7 @@ abstract final class ISpectPerformanceOverlayPalettes {
   static const colorBlindOverTarget = Color(0xFFD55E00);
 }
 
-/// Cross-platform performance overlay built on [FrameTiming] — works on web
+/// Cross-platform performance overlay built on [FrameTiming] - works on web
 /// and desktop where Flutter's native [PerformanceOverlay] does not.
 ///
 /// UI build and raster are each checked against the full frame target (not
@@ -80,7 +80,7 @@ abstract final class ISpectPerformanceOverlayPalettes {
 /// split in the Flutter docs is about input-to-display latency, not jank.
 ///
 /// As with Flutter's native overlay, the readings are only meaningful in
-/// profile mode — debug-mode asserts and JIT inflate frame work, so numbers
+/// profile mode - debug-mode asserts and JIT inflate frame work, so numbers
 /// there exist to spot trends, not to evaluate release-build performance.
 class ISpectPerformanceOverlay extends StatefulWidget {
   const ISpectPerformanceOverlay({
@@ -142,7 +142,7 @@ class ISpectPerformanceOverlay extends StatefulWidget {
   /// Total frame budget; applied identically to UI, raster, and total. When
   /// `null`, derived from the active display's refresh rate. All three
   /// metrics share the same target because UI and raster pipeline across
-  /// frames — both threads independently get the full per-frame budget.
+  /// frames - both threads independently get the full per-frame budget.
   final Duration? targetFrameTime;
 
   /// Bars beyond this are visually capped and marked with a notch.
@@ -176,7 +176,7 @@ class ISpectPerformanceOverlay extends StatefulWidget {
   /// frame is dropped to filter warm-up noise (JIT compile, asset decode,
   /// shader cache miss), so this callback will not see it either.
   ///
-  /// Invoked synchronously from `SchedulerBinding.addTimingsCallback` — keep
+  /// Invoked synchronously from `SchedulerBinding.addTimingsCallback` - keep
   /// the body in microseconds or defer work to a post-frame callback /
   /// isolate. Exceptions are caught and routed through [ISpect.logger] so
   /// they do not poison the engine's timings dispatch.
@@ -208,7 +208,7 @@ class ISpectPerformanceOverlay extends StatefulWidget {
   final double memoryWarnRatio;
 
   /// RSS above `memoryDangerRatio × baseline` is rendered in
-  /// [overTargetColor]. Defaults to `2.0` — RSS doubling since the baseline
+  /// [overTargetColor]. Defaults to `2.0` - RSS doubling since the baseline
   /// usually signals a leak or unbounded cache.
   final double memoryDangerRatio;
 
@@ -216,7 +216,7 @@ class ISpectPerformanceOverlay extends StatefulWidget {
   final bool showAllTimeStats;
 
   /// Fires after [jankBurstWindow] consecutive over-target frames, throttled
-  /// by [jankBurstCooldown]. Runs on the engine's timings dispatch — keep
+  /// by [jankBurstCooldown]. Runs on the engine's timings dispatch - keep
   /// the body fast.
   final void Function(double currentFps)? onJankBurst;
 
@@ -571,7 +571,7 @@ class _OverlayBodyState extends State<_OverlayBody> {
     if (widget.showMemory) _pollMemoryIfDue();
 
     // Painter reads these inside the same frame this callback runs in,
-    // before the next engine dispatch can mutate them — defensive copies
+    // before the next engine dispatch can mutate them - defensive copies
     // would just churn the GC.
     _snapshot.value = _OverlaySnapshot(
       uiUs: _uiUs,
@@ -603,7 +603,7 @@ class _OverlayBodyState extends State<_OverlayBody> {
     _currentRssBytes = rss;
     // Smooth the *displayed* value with an EWMA so GC/allocator jiggle does
     // not flicker the colour tier. Peak and baseline observe this smoothed
-    // signal too — a brief allocation spike that GC immediately collects
+    // signal too - a brief allocation spike that GC immediately collects
     // should not pin peak.
     final previousSmoothed = _smoothedRssBytes;
     _smoothedRssBytes = previousSmoothed == null
@@ -685,7 +685,7 @@ class _OverlayBodyState extends State<_OverlayBody> {
         .round();
     final cooldownMs = widget.jankLogCooldown.inMilliseconds;
     for (final t in samples) {
-      // Use the heaviest thread's work — `totalSpan` includes scheduling
+      // Use the heaviest thread's work - `totalSpan` includes scheduling
       // wait time, which inflates in debug mode and idle UIs to false jank.
       final buildUs = t.buildDuration.inMicroseconds;
       final rasterUs = t.rasterDuration.inMicroseconds;
@@ -702,7 +702,7 @@ class _OverlayBodyState extends State<_OverlayBody> {
         ..reset()
         ..start();
       // No `stackTrace`: by the time `addTimingsCallback` fires the offending
-      // frame is done — the current stack is engine code, not the cause.
+      // frame is done - the current stack is engine code, not the cause.
       ISpect.logger.performanceJank(
         source: 'overlay',
         buildDuration: t.buildDuration,
@@ -800,7 +800,7 @@ class _OverlayBodyState extends State<_OverlayBody> {
 }
 
 /// One painter for the whole overlay so per-frame updates repaint a single
-/// render object instead of rebuilding a widget subtree — the listenable
+/// render object instead of rebuilding a widget subtree - the listenable
 /// passed to `super(repaint: ...)` drives invalidation directly from sample
 /// updates.
 class _ChartPainter extends CustomPainter {
@@ -857,7 +857,7 @@ class _ChartPainter extends CustomPainter {
     ..color = backgroundColor.withValues(alpha: 0.7)
     ..style = PaintingStyle.fill;
 
-  // Pre-allocated triangle buffers — one bar contributes 6 vertices
+  // Pre-allocated triangle buffers - one bar contributes 6 vertices
   // (12 floats), a capped notch adds 3 vertices. Reused across paints so
   // the per-frame draw call never grows a List<double> or copies into a
   // fresh Float32List.

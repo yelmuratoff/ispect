@@ -19,15 +19,15 @@ is not.
 
 **Baseline (this machine, macOS arm64, Dart 3.12.2, AOT, `maxHistoryItems: 1000`):**
 
-| case | 6.1.7 | 7.0.0-dev5 |
-| --- | --- | --- |
-| `logger.metadata-only` | 2.17 µs | 4.14 µs |
-| `logger.with-payload` (1 KB) | 2.41 µs | 129.3 µs |
-| `logger.with-payload` (redaction off) | — | 48.9 µs |
-| `redaction.1kb` (structural) | 449 µs | 37.9 µs |
-| `redaction.export.1kb` | — | 84.7 µs |
-| `export.json-lines.1000` | 46.2 ms | 154.9 ms |
-| `export.json-lines.1000` (redaction off) | — | 7.1 ms |
+| case                                     | 6.1.7   | 7.0.0-dev5 |
+| ---------------------------------------- | ------- | ---------- |
+| `logger.metadata-only`                   | 2.17 µs | 4.14 µs    |
+| `logger.with-payload` (1 KB)             | 2.41 µs | 129.3 µs   |
+| `logger.with-payload` (redaction off)    | -       | 48.9 µs    |
+| `redaction.1kb` (structural)             | 449 µs  | 37.9 µs    |
+| `redaction.export.1kb`                   | -       | 84.7 µs    |
+| `export.json-lines.1000`                 | 46.2 ms | 154.9 ms   |
+| `export.json-lines.1000` (redaction off) | -       | 7.1 ms     |
 
 Reproduce with `./bash/run_benchmarks.sh`. Numbers are indicative of ratios on
 one machine, not an absolute budget.
@@ -64,7 +64,7 @@ Decided against changing in this work, with reasons:
 
 ## Steps
 
-### Phase 0 — Make the cost separable — done
+### Phase 0 - Make the cost separable - done
 
 - [x] Added `logger.metadata-only.console`, `logger.with-payload.console`,
       `capture.with-payload`, and `export.history.json-lines.100`. The last one
@@ -74,21 +74,21 @@ Decided against changing in this work, with reasons:
 
 Attribution of the 127.5 µs `logger.with-payload` case:
 
-| component | µs | share |
-| --- | --- | --- |
-| `redactForExport` over the payload | 84.7 | 66% |
-| entry capture | 16.4 | 13% |
-| second capture during the egress rebuild | ~16 | 13% |
-| console rendering | 6.1 | 5% |
-| filter, dispatch, history, text fields | ~10 | 8% |
+| component                                | µs   | share |
+| ---------------------------------------- | ---- | ----- |
+| `redactForExport` over the payload       | 84.7 | 66%   |
+| entry capture                            | 16.4 | 13%   |
+| second capture during the egress rebuild | ~16  | 13%   |
+| console rendering                        | 6.1  | 5%    |
+| filter, dispatch, history, text fields   | ~10  | 8%    |
 
 Two findings changed the plan. Console rendering is nearly free, so the
 "console forces eager masking" argument for keeping export-grade work at emit
-carries far less weight than assumed. And capture runs twice per entry — the
-egress rebuild re-bounds data that was just bounded — which was not in the
+carries far less weight than assumed. And capture runs twice per entry - the
+egress rebuild re-bounds data that was just bounded - which was not in the
 original plan at all.
 
-### Phase 1 — One envelope pass per entry — folded into Phase 3
+### Phase 1 - One envelope pass per entry - folded into Phase 3
 
 The measurement retired this step as written. The five text-field redaction
 calls hit `_redactForExport`'s short-string fast path, so merging them saves
@@ -98,7 +98,7 @@ security boundary or a provenance-typed bounded value. A trust flag that
 silently disables bounding when misused is not an acceptable trade for 13%, so
 this work moves into Phase 3, where the provenance question is already open.
 
-### Phase 1 — One envelope pass per entry
+### Phase 1 - One envelope pass per entry
 
 `_processLog` builds the egress entry field by field: `additionalData`,
 `message`, `exceptionText`, `errorText`, `stackTraceText`, and `key` each go
@@ -111,9 +111,9 @@ running its own normalize/scrub/bound cycle.
       `export_security_test.dart` expectations must pass unchanged.
 
 Gate: no test edits allowed in this step. Any expectation that needs changing
-means the redaction output changed — stop and reassess.
+means the redaction output changed - stop and reassess.
 
-### Phase 2 — Do not redact twice — done
+### Phase 2 - Do not redact twice - done
 
 - [x] Provenance lives in an `Expando` in
       `lib/src/redaction/egress_provenance.dart`, matching the existing idiom in
@@ -131,11 +131,11 @@ means the redaction output changed — stop and reassess.
 Result, measured A/B on one binary pair with the reuse branch compiled out
 versus in:
 
-| case | before | after | |
-| --- | --- | --- | --- |
-| `export.history.json-lines.100` | 25.5 ms | 3.2 ms | 7.9× |
-| `logger.with-payload` | 128.6 µs | 129.8 µs | unchanged |
-| `export.json-lines.100` (no provenance) | 15.4 ms | 15.4 ms | unchanged |
+| case                                    | before   | after    |           |
+| --------------------------------------- | -------- | -------- | --------- |
+| `export.history.json-lines.100`         | 25.5 ms  | 3.2 ms   | 7.9×      |
+| `logger.with-payload`                   | 128.6 µs | 129.8 µs | unchanged |
+| `export.json-lines.100` (no provenance) | 15.4 ms  | 15.4 ms  | unchanged |
 
 The emit path is untouched and the directly-constructed export path correctly
 still runs the full pass. Remaining cases sit within run-to-run noise.
@@ -144,14 +144,15 @@ Only JSON Lines reuses the mark, and it should stay that way. JSON Lines is
 what `ISpectViewController.copyLogEntryText` and `copyAllLogsToClipboard` run
 synchronously on the main isolate, so this is the export that janks the UI.
 Text, Markdown, and CSV go through `compute(...)` in `share_all_logs_sheet.dart`
-— off the UI thread, and an `Expando` mark cannot cross an isolate boundary, so
-the reuse branch could never fire there. Extending it would be dead code.
+
+- off the UI thread, and an `Expando` mark cannot cross an isolate boundary, so
+  the reuse branch could never fire there. Extending it would be dead code.
 
 Verification note: the reuse branch was temporarily made to throw, which
-confirmed the two reuse tests fail and the four mismatch tests still pass — the
+confirmed the two reuse tests fail and the four mismatch tests still pass - the
 tests discriminate between the paths rather than passing through the old one.
 
-### Phase 3 — Split bounding from masking
+### Phase 3 - Split bounding from masking
 
 Superseded by `docs/specs/2026-08-03-split-bound-and-mask-design.md`, which
 reframes this as a single-responsibility fix rather than a relocation of
@@ -168,8 +169,8 @@ scrub exists to catch secrets embedded in prose (`"Auth failed: Bearer eyJ…"`)
 
 Hypothesis: the structural pass is what severs the caller's object graph and
 bounds memory, and it must stay eager. The free-text scrub only matters where
-free text is produced — console rendering, export, clipboard, cURL, and observer
-delivery — and could move there.
+free text is produced - console rendering, export, clipboard, cURL, and observer
+delivery - and could move there.
 
 - [ ] Enumerate every boundary that turns an entry into text or hands it to
       third-party code. If even one cannot be proven covered, drop this phase.
@@ -182,14 +183,14 @@ delivery — and could move there.
 Gate: ratification before code. Then the full security suite plus a new test
 per enumerated boundary.
 
-### Phase 4 — Observer fidelity for crash reporters
+### Phase 4 - Observer fidelity for crash reporters
 
 Observers currently receive a synthetic error object and a stringified stack
 (`StackTrace.empty` on the error). That is correct for redaction and wrong for
 anyone forwarding to Crashlytics or Sentry.
 
 - [ ] Do not weaken observer redaction. Instead document `ISpect.run`'s error
-      callbacks as the supported crash-forwarding path — they still receive the
+      callbacks as the supported crash-forwarding path - they still receive the
       original error and stack.
 - [ ] Add the migration note to `docs/DEPRECATIONS.md` and the 7.0.0 breaking
       changes (done in CHANGELOG; mirror it in the docs).
@@ -198,22 +199,22 @@ anyone forwarding to Crashlytics or Sentry.
 
 Gate: docs check; no behavioral change unless the seam is separately ratified.
 
-### Phase 5 — Publish honest numbers — done
+### Phase 5 - Publish honest numbers - done
 
 - [x] `docs/PERFORMANCE.md` now states what capture-time redaction costs, that
       roughly two thirds of the payload case is redaction of the payload
-      itself, and that `strict` capture does not reduce it — only capturing
+      itself, and that `strict` capture does not reduce it - only capturing
       less does.
 - [x] Named the concrete levers with their real API shapes: `metadataOnly()`
-      lives on the settings *builders*, not the settings classes, and the
+      lives on the settings _builders_, not the settings classes, and the
       database package has no such preset.
 
-### Phase 3 — remaining scope
+### Phase 3 - remaining scope
 
 Phase 3 is now the only open perf work, and it carries the whole remaining gap:
 about two thirds of the payload-logging cost. It stays unratified because it is
 the one step that changes what history holds. Note when reopening it that the
-comparison is against 7.0.0's eager masking, not against 6.1.7 — 6.1.7 retained
+comparison is against 7.0.0's eager masking, not against 6.1.7 - 6.1.7 retained
 raw caller references, so lazy masking over a bounded snapshot would still be
 an improvement on that older baseline.
 

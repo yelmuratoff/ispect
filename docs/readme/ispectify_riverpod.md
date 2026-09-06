@@ -65,7 +65,7 @@ application-defined formatters must never run.
 // Logs disabled entirely.
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.silent);
 
-// Lifecycle creation, disposal, and failures — updates are muted.
+// Lifecycle creation, disposal, and failures - updates are muted.
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.minimal);
 
 // Reduces values to coarse structural labels. Use when provider state may

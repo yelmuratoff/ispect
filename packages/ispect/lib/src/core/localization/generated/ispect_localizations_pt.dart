@@ -959,7 +959,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
 
   @override
   String get tipSearchLogs =>
-      'Pesquisar logs por texto — pesquisa também no JSON completo';
+      'Pesquisar logs por texto - pesquisa também no JSON completo';
 
   @override
   String get tipLongPress =>
@@ -983,7 +983,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
 
   @override
   String get tipShareSession =>
-      'Compartilhe o arquivo de logs para relatórios de bug — os dados são mascarados automaticamente';
+      'Compartilhe o arquivo de logs para relatórios de bug - os dados são mascarados automaticamente';
 
   @override
   String get tipReverseLogs =>

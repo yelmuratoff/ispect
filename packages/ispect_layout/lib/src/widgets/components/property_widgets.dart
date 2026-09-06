@@ -92,9 +92,9 @@ class EllipsizedText extends StatelessWidget {
 /// Single labelled info chip: leading icon, value, subtitle.
 ///
 /// [expandChild] controls sizing:
-/// - `false` (default) — chip shrink-wraps to its content and lives inside a
+/// - `false` (default) - chip shrink-wraps to its content and lives inside a
 ///   [PropSection] (a [Wrap] of chips capped at 260 px each).
-/// - `true` — chip takes the full available width, used for wide preview rows
+/// - `true` - chip takes the full available width, used for wide preview rows
 ///   like paragraph text previews.
 class PropChip extends StatelessWidget {
   const PropChip({

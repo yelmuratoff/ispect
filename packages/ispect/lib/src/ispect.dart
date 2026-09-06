@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
@@ -29,13 +30,13 @@ final class ISpect {
   ///
   /// Lazily creates a default [ISpectLogger] on first access so call-sites
   /// built before [run]/[initialize] (early DI wiring, hot-restart, tests)
-  /// don't crash. The returned instance is fully functional but unconfigured —
+  /// don't crash. The returned instance is fully functional but unconfigured -
   /// it has no access to the options or error handler that [run] would set
   /// up. UI integration (panel, observers) requires [run]/[initialize] to be
   /// called explicitly; the lazy fallback only keeps logging usable.
   ///
   /// When `kISpectEnabled` is `false` (default in release builds), the lazy
-  /// instance is created disabled — it retains no history and emits no console
+  /// instance is created disabled - it retains no history and emits no console
   /// output, so logging through it is a no-op. This keeps diagnostics from
   /// accumulating in memory in production builds where ISpect is gated off.
   static ISpectLogger get logger {
@@ -244,7 +245,7 @@ final class ISpect {
   /// `ISpectScopeController.of(context)`, which is deprecated.
   ///
   /// Throws an [ISpectScopeNotFoundError] if no `ISpectScopeController` is an
-  /// ancestor — ensure `ISpectBuilder` wraps the widget that uses this context.
+  /// ancestor - ensure `ISpectBuilder` wraps the widget that uses this context.
   static ISpectScopeModel read(BuildContext context) {
     final inherited = context
         .dependOnInheritedWidgetOfExactType<ISpectScopeController>();
@@ -374,7 +375,7 @@ final class ISpect {
 
     // Run init/app/post-init inside the guarded zone so that binding setup
     // (e.g. `WidgetsFlutterBinding.ensureInitialized()`) and `runApp` share the
-    // same zone — mixing zones triggers Flutter's "Zone mismatch" warning and
+    // same zone - mixing zones triggers Flutter's "Zone mismatch" warning and
     // can drop errors from the handlers installed above.
     void bootstrap() {
       onInit?.call();

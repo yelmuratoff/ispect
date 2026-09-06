@@ -202,7 +202,7 @@ final class ReadmeBuilder {
 
     final rendered = StringBuffer()
       ..writeln('<!--')
-      ..writeln('  GENERATED FILE — do not edit by hand.')
+      ..writeln('  GENERATED FILE - do not edit by hand.')
       ..writeln('  Source:     $_sourceDirName/${target.sourceName}.md')
       ..writeln('  Regenerate: dart run tool/bin/ispect_tool.dart readme')
       ..writeln('-->')
@@ -245,7 +245,7 @@ final class ReadmeBuilder {
           '${_yellow}Checking generated READMEs against sources…$_reset',
         );
       case ReadmeMode.dryRun:
-        out.writeln('${_yellow}Dry run — no files will be written.$_reset');
+        out.writeln('${_yellow}Dry run - no files will be written.$_reset');
       case ReadmeMode.build:
         out.writeln('${_yellow}Building READMEs (version $version)…$_reset');
     }
@@ -265,7 +265,7 @@ final class ReadmeBuilder {
         case ReadmeMode.check:
           final existing = File(absolute);
           if (!existing.existsSync()) {
-            out.writeln('$_red✗$_reset ${target.label} — missing '
+            out.writeln('$_red✗$_reset ${target.label} - missing '
                 '(expected generated README at $absolute)');
             drifted.add(target.label);
             continue;
@@ -276,7 +276,7 @@ final class ReadmeBuilder {
             out.writeln('$_green✓$_reset ${target.label}');
             continue;
           }
-          out.writeln('$_red✗$_reset ${target.label} — drift detected');
+          out.writeln('$_red✗$_reset ${target.label} - drift detected');
           _writeDiff(expected: expected, actual: actual);
           drifted.add(target.label);
         case ReadmeMode.dryRun:

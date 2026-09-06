@@ -120,13 +120,13 @@ Optional hardening for shared internal builds:
   reads it under a guard so an entry can name what it describes.
 - Project database traces to counts, IDs, timings, and status fields instead of full rows.
 - Bind database values instead of interpolating them. A trace records the
-  normalized statement — comments, string literals, and digit runs replaced by
-  `?` — and then passes it through `RedactionService`, which masks
+  normalized statement - comments, string literals, and digit runs replaced by
+  `?` - and then passes it through `RedactionService`, which masks
   secret-keyed operands such as SQLCipher's `PRAGMA key`. An oversized
   statement falls back to an opaque digest. Identifiers quoted with `"` or
   `` ` `` are kept so the statement still names its tables and columns; a
-  quoted span that does not read as a plain identifier — one carrying a space,
-  a separator, an escape, or more than 64 characters — is masked like any
+  quoted span that does not read as a plain identifier - one carrying a space,
+  a separator, an escape, or more than 64 characters - is masked like any
   other literal, which is what covers a value smuggled in through SQLite's
   double-quoted-string fallback.
 - Do not pipe raw user input through `logger.info(...)`.

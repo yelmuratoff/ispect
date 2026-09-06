@@ -154,7 +154,7 @@ extension InspectorControllerModes on InspectorController {
         }
         break;
       case InspectorMode.colorPicker:
-        // Snackbar surfaces only via confirmCurrentSelection — closing the
+        // Snackbar surfaces only via confirmCurrentSelection - closing the
         // mode through cancel / panel toggle should not commit anything.
         _cleanupImage();
         selectedColorOffsetNotifier.value = null;

@@ -153,7 +153,7 @@ final class ISpectOptions {
   /// ISpect still assembles the actions (built-in tools + [panelItems] +
   /// plugins), [panelButtons], the controller, and the default themes, and
   /// hands them to the builder via [ISpectPanelData]. Return any panel you
-  /// like — every `draggable_panel` parameter (builders, motion, behavior
+  /// like - every `draggable_panel` parameter (builders, motion, behavior
   /// flags, placement, sizing) is available here, including ones added in
   /// future `draggable_panel` releases, without ISpect forwarding each one.
   ///
@@ -253,7 +253,7 @@ final class ISpectOptions {
   /// the header of exported/shared log files.
   ///
   /// When omitted, exports carry no environment metadata. ISpect never
-  /// collects these values itself — the host app provides them, keeping
+  /// collects these values itself - the host app provides them, keeping
   /// `package_info_plus`/`device_info_plus` out of ISpect's dependencies.
   final ISpectMetadataProvider? metadataProvider;
 

@@ -8,7 +8,7 @@ import 'package:ispect_layout/src/widgets/components/information_box_widget.dart
 ///
 /// Renders [image] centred at [imageOffset], scaled by `zoomScale / pixelRatio`.
 /// Uses [FilterQuality.none] (nearest-neighbour) so individual source pixels
-/// stay crisp at high zoom — essential for color picking accuracy.
+/// stay crisp at high zoom - essential for color picking accuracy.
 ///
 /// When [showPixelGrid] is enabled and the on-screen size of one source pixel
 /// exceeds [pixelGridThreshold] logical px, a 1-logical-px hairline grid is
@@ -49,7 +49,7 @@ class ZoomPainter extends CustomPainter {
       canvas.drawRect(Offset.zero & size, _backgroundPaint);
     }
 
-    // Centre on the actual canvas, not the requested overlaySize — the image
+    // Centre on the actual canvas, not the requested overlaySize - the image
     // area can be smaller than overlaySize when the parent reserves padding
     // for ring decorations (e.g. ZoomableColorPickerOverlay).
     final halfWidth = size.width / 2.0;

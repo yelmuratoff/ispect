@@ -43,7 +43,7 @@ final class ISpectLocalizations {
   /// `localizationsDelegates` list.
   @Deprecated(
     "Use ISpectLocalizations.delegate(). Owning the host app's "
-    "Material/Cupertino/Widgets globals is the host's responsibility — the "
+    "Material/Cupertino/Widgets globals is the host's responsibility - the "
     'helper should not mutate the localization stack, especially in release '
     'builds. Add the three Global*Localizations.delegate entries to your own '
     'localizationsDelegates list and spread ...ISpectLocalizations.delegate() '

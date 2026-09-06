@@ -25,7 +25,7 @@ int missedVsyncs(int totalSpanUs, int targetUs) {
   return (totalSpanUs - 1) ~/ targetUs;
 }
 
-/// One 60Hz vsync — floor of human perception for display stutter (Apple
+/// One 60Hz vsync - floor of human perception for display stutter (Apple
 /// MetricKit hitch threshold).
 const int _kPerceptibleStutterUs = 16667;
 

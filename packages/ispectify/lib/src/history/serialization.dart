@@ -540,7 +540,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
   ///
   /// Omits `null` values for a cleaner output. Recursively strips private
   /// presentation hints (keys starting with `_`, by convention) such as the
-  /// network renderer's `_render-hints` — these are an internal contract
+  /// network renderer's `_render-hints` - these are an internal contract
   /// between log producers and the console renderer and have no place in
   /// exported, shared, or persisted output.
   ///
@@ -691,7 +691,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
     );
   }
 
-  /// Plain text — for sharing, copying, human reading.
+  /// Plain text - for sharing, copying, human reading.
   ///
   /// Redaction is enabled by default. Pass [enableRedaction] as `false` only
   /// for a deliberate local-debugging export. A null or empty [redactKeys]
@@ -754,7 +754,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
         ),
       );
       for (final entry in sanitized.entries) {
-        // Skip TraceKeys.error — raw error string may contain PII.
+        // Skip TraceKeys.error - raw error string may contain PII.
         // Error info printed below in dedicated section with Layer 3 redaction.
         if (entry.key == TraceKeys.error) continue;
 
@@ -811,7 +811,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
     return _boundOutput(buffer.toString(), outputBudget);
   }
 
-  /// Markdown — for issue trackers, documentation.
+  /// Markdown - for issue trackers, documentation.
   ///
   /// Redaction is enabled by default. Pass [enableRedaction] as `false` only
   /// for a deliberate local-debugging export. A null or empty [redactKeys]
@@ -871,7 +871,7 @@ extension ISpectLogDataSerialization on ISpectLogData {
     final buffer = StringBuffer()
       ..writeln(
         '### ${_logLevelIndicator(captured.logLevel)} '
-        '`${_markdownText(safeKey)}` — ${_markdownText(safeMessage)}',
+        '`${_markdownText(safeKey)}` - ${_markdownText(safeMessage)}',
       )
       ..writeln()
       ..writeln('| Field | Value |')
@@ -1185,7 +1185,7 @@ final RegExp _binaryPlaceholderTextPattern = RegExp(r'^\[binary \d+ bytes\]$');
 
 /// Recursively drops `_`-prefixed keys from [data] and any nested maps.
 /// Keeps internal presentation hints (e.g. the network renderer's
-/// `_render-hints`) out of exported JSON / text / markdown — those keys are
+/// `_render-hints`) out of exported JSON / text / markdown - those keys are
 /// a private contract between log producers and the console renderer.
 Map<String, dynamic> _stripPrivateKeys(
   Map<String, dynamic> data, {

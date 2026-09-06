@@ -928,7 +928,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get tips => 'ヒント';
 
   @override
-  String get tipSearchLogs => 'テキストでログを検索 — JSON本文全体も検索します';
+  String get tipSearchLogs => 'テキストでログを検索 - JSON本文全体も検索します';
 
   @override
   String get tipLongPress => 'ログカードを長押しでクイックアクション';
@@ -946,7 +946,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get tipNavigationFlow => '設定からナビゲーションフローを開いてルート履歴を可視化';
 
   @override
-  String get tipShareSession => 'バグ報告用にログファイルを共有 — データは自動的にマスクされます';
+  String get tipShareSession => 'バグ報告用にログファイルを共有 - データは自動的にマスクされます';
 
   @override
   String get tipReverseLogs => 'アプリバーの矢印をタップしてログの順序を反転';

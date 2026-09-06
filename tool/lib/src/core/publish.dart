@@ -68,7 +68,7 @@ final class CommandResult {
 ///
 /// A publish run shells out to `git`, `dart format`, `dart pub get`, and
 /// `dart pub publish`. The last of those is irreversible, so every caller that
-/// must not reach pub.dev — every test above all — substitutes its own runner
+/// must not reach pub.dev - every test above all - substitutes its own runner
 /// here rather than relying on a flag to hold the real one back.
 abstract interface class ProcessRunner {
   /// Runs [executable] with [arguments] and waits for it to exit.

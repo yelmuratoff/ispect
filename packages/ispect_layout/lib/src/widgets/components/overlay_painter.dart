@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../inspector/box_info.dart';
 
-/// Visual role of an overlaid box — drives border/fill/corner styling.
+/// Visual role of an overlaid box - drives border/fill/corner styling.
 enum OverlayRole { selected, hovered, compared }
 
 class OverlayPainter extends CustomPainter {
@@ -51,7 +51,7 @@ class OverlayPainter extends CustomPainter {
   }
 
   // If any side exceeds this, the "container" is a flex parent, not a padding
-  // wrapper — skip all highlights to avoid a lopsided wash on the screen.
+  // wrapper - skip all highlights to avoid a lopsided wash on the screen.
   static const double _paddingHighlightThresholdPx = 96.0;
 
   void _paintPaddingHighlights(Canvas canvas) {

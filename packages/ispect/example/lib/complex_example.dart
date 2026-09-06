@@ -100,13 +100,13 @@ const _localeOptions = <_LocaleOption>[
 ];
 
 // ---------------------------------------------------------------------------
-// Riverpod providers (real, no codegen) — wired through ISpectRiverpodObserver
+// Riverpod providers (real, no codegen) - wired through ISpectRiverpodObserver
 // ---------------------------------------------------------------------------
 
-/// Simple counter — exercises didAddProvider + didUpdateProvider + didDispose.
+/// Simple counter - exercises didAddProvider + didUpdateProvider + didDispose.
 final _counterProvider = StateProvider<int>((ref) => 0, name: 'counter');
 
-/// Throws on init — exercises providerDidFail (and didAddProvider with
+/// Throws on init - exercises providerDidFail (and didAddProvider with
 /// `value: null`, per Riverpod's contract).
 final _failingProvider = Provider<int>(
   (ref) => throw StateError('demo: provider init failed'),
@@ -120,7 +120,7 @@ final _userNameProvider = Provider.family<String, int>(
   name: 'user-name',
 );
 
-/// Async provider whose future throws — exercises providerDidFail after the
+/// Async provider whose future throws - exercises providerDidFail after the
 /// initial didAddProvider with `AsyncValue.loading`.
 final _flakyFutureProvider = FutureProvider<String>(
   (ref) async {
@@ -131,7 +131,7 @@ final _flakyFutureProvider = FutureProvider<String>(
 );
 
 // ---------------------------------------------------------------------------
-// BLoC (real, no codegen) — wired through ISpectBlocObserver
+// BLoC (real, no codegen) - wired through ISpectBlocObserver
 // ---------------------------------------------------------------------------
 
 sealed class CounterEvent {
@@ -150,7 +150,7 @@ final class CounterReset extends CounterEvent {
   const CounterReset();
 }
 
-/// Reports a recoverable error via `addError` — exercises onError (bloc-error)
+/// Reports a recoverable error via `addError` - exercises onError (bloc-error)
 /// without crashing the bloc, so the demo stays interactive.
 final class CounterFailed extends CounterEvent {
   const CounterFailed();
@@ -483,7 +483,7 @@ class _HomePageState extends State<_HomePage> {
           _ScenarioCard(
             icon: Icons.speed,
             title: 'Performance Jank',
-            subtitle: 'Block UI thread ~250 ms — overlay spikes, '
+            subtitle: 'Block UI thread ~250 ms - overlay spikes, '
                 'performance-jank log entry appears in viewer',
             trailing: const Icon(Icons.chevron_right),
             onTap: _triggerSevereJank,
@@ -1226,7 +1226,7 @@ class _HomePageState extends State<_HomePage> {
 
   void _triggerSevereJank() {
     // Run heavy work after the current frame so the tap response paints
-    // before the freeze — otherwise the snackbar would also be stuck.
+    // before the freeze - otherwise the snackbar would also be stuck.
     SchedulerBinding.instance.addPostFrameCallback((_) {
       final sw = Stopwatch()..start();
       var acc = 0.0;
@@ -1240,7 +1240,7 @@ class _HomePageState extends State<_HomePage> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Blocking UI thread ~250 ms — watch the overlay'),
+        content: Text('Blocking UI thread ~250 ms - watch the overlay'),
         duration: Duration(seconds: 2),
       ),
     );
@@ -1543,7 +1543,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Riverpod scenarios — real providers wired through ISpectRiverpodObserver
+// Riverpod scenarios - real providers wired through ISpectRiverpodObserver
 // ---------------------------------------------------------------------------
 
 class _RiverpodScenarios extends ConsumerStatefulWidget {
@@ -1617,7 +1617,7 @@ class _RiverpodScenariosState extends ConsumerState<_RiverpodScenarios> {
                     try {
                       ref.read(_failingProvider);
                     } on StateError catch (_) {
-                      // Swallow — `providerDidFail` already routed it to ISpect.
+                      // Swallow - `providerDidFail` already routed it to ISpect.
                     }
                   },
                 ),
@@ -1631,7 +1631,7 @@ class _RiverpodScenariosState extends ConsumerState<_RiverpodScenarios> {
 }
 
 // ---------------------------------------------------------------------------
-// BLoC scenarios — real CounterBloc wired through ISpectBlocObserver
+// BLoC scenarios - real CounterBloc wired through ISpectBlocObserver
 // ---------------------------------------------------------------------------
 
 class _BlocScenarios extends StatefulWidget {

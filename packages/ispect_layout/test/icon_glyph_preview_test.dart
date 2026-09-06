@@ -36,7 +36,7 @@ void main() {
     });
 
     test('returns null when font family is not an icon font', () {
-      // A character in PUA range, but rendered with a normal font — almost
+      // A character in PUA range, but rendered with a normal font - almost
       // certainly not an icon, do not surface as one.
       const span = TextSpan(
         text: '',

@@ -365,7 +365,7 @@ class ISpectTheme {
   /// Returns a list of human-readable warning messages for any missing entries.
   /// Returns an empty list when everything is in order.
   ///
-  /// Intended for debug-mode use — call during initialisation to catch
+  /// Intended for debug-mode use - call during initialisation to catch
   /// misconfigured custom log types early:
   /// ```dart
   /// assert(() {
@@ -379,13 +379,13 @@ class ISpectTheme {
       if (!logColors.containsKey(type.key)) {
         warnings.add(
           'ISpectTheme: custom log type "${type.key}" has no entry in '
-          'logColors — it will render with Colors.grey.',
+          'logColors - it will render with Colors.grey.',
         );
       }
       if (!logIcons.containsKey(type.key)) {
         warnings.add(
           'ISpectTheme: custom log type "${type.key}" has no entry in '
-          'logIcons — it will render with Icons.bug_report_outlined.',
+          'logIcons - it will render with Icons.bug_report_outlined.',
         );
       }
     }

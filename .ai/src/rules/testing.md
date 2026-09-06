@@ -4,7 +4,7 @@
 
 - Run tests from the affected package directory; this repo does not use a root test runner.
 - Use `flutter test --dart-define=ISPECT_ENABLED=true --coverage` for every package, including the pure Dart ones (`ispectify`, `ispectify_db`). The compile gate is required: without the define the suites fail to reach their assertions.
-- Run `dart test --run-skipped test/production_safety_test.dart` without the define where that file exists — it asserts the disabled-build behavior.
+- Run `dart test --run-skipped test/production_safety_test.dart` without the define where that file exists - it asserts the disabled-build behavior.
 - In `ispectify_db`, add `--no-pub`: the implicit resolution pulls in the example, whose `realm` dependency conflicts with `flutter_test`. Pair it with `dart pub get --no-example` first.
 - Pair tests with `dart analyze --fatal-infos` or `flutter analyze --fatal-infos` for the same package.
 

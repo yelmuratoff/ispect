@@ -61,12 +61,12 @@ void main() {
     });
 
     testWidgets('does not show without a selected widget', (tester) async {
-      // Given — inspector on but no widget tapped
+      // Given - inspector on but no widget tapped
       await tester.pumpWidget(_buildBody());
       await tester.tap(find.byIcon(Icons.format_shapes));
       await tester.pump();
 
-      // Then — info panel not visible, no Compare button
+      // Then - info panel not visible, no Compare button
       expect(find.byIcon(Icons.compare), findsNothing);
     });
 
@@ -120,7 +120,7 @@ void main() {
       await tester.tapAt(_centerOf(tester, _containerBKey));
       await tester.pump();
 
-      // Then — both are fixed, mode is back to inspector
+      // Then - both are fixed, mode is back to inspector
       expect(controller.modeNotifier.value, InspectorMode.inspector);
       expect(
         controller.currentRenderBoxNotifier.value?.targetRenderBox,
@@ -136,18 +136,18 @@ void main() {
       await tester.tap(find.byIcon(Icons.compare));
       await tester.pump();
 
-      // When — tap the same container A again
+      // When - tap the same container A again
       await tester.tapAt(_centerOf(tester, _containerAKey));
       await tester.pump();
 
-      // Then — compared stays null, mode returns to inspector
+      // Then - compared stays null, mode returns to inspector
       final controller = _getController(tester);
       expect(controller.modeNotifier.value, InspectorMode.inspector);
       expect(controller.comparedRenderBoxNotifier.value, isNull);
     });
 
     testWidgets('exit inspector clears compare state', (tester) async {
-      // Given — confirm a compare first
+      // Given - confirm a compare first
       await tester.pumpWidget(_buildBody());
       await _enterInspectorAndSelectA(tester);
       await tester.tap(find.byIcon(Icons.compare));
@@ -158,7 +158,7 @@ void main() {
       final controller = _getController(tester);
       expect(controller.comparedRenderBoxNotifier.value, isNotNull);
 
-      // When — turn off inspector via the FAB
+      // When - turn off inspector via the FAB
       await tester.tap(
         find.ancestor(
           of: find.byIcon(Icons.format_shapes),
@@ -203,7 +203,7 @@ void main() {
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyY);
       await tester.pump();
 
-      // Then — stays in inspector, no compareSelect
+      // Then - stays in inspector, no compareSelect
       final controller = _getController(tester);
       expect(controller.modeNotifier.value, InspectorMode.inspector);
     });
@@ -244,12 +244,12 @@ void main() {
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyY);
       await tester.pump();
 
-      // When — release key (old hold behaviour would have exited here)
+      // When - release key (old hold behaviour would have exited here)
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyY);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
       await tester.pump();
 
-      // Then — still in compareSelect
+      // Then - still in compareSelect
       final controller = _getController(tester);
       expect(controller.modeNotifier.value, InspectorMode.compareSelect);
     });

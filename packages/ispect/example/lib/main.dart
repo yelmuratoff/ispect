@@ -11,8 +11,8 @@
 //   • Opt-in rolling file history with bounded disk retention.
 //   • Every ISpect.logger level (info/good/warning/error/debug/critical/…).
 //   • The standalone JSON viewer screen.
-//   • The HTTP composer ("mini-Postman") — wired through onPickComposerFile.
-//   • Environment metadata in exported logs — wired through metadataProvider.
+//   • The HTTP composer ("mini-Postman") - wired through onPickComposerFile.
+//   • Environment metadata in exported logs - wired through metadataProvider.
 //
 // For a deeper tour (custom themes, locales, Dio/HTTP/WS/DB interceptors,
 // Riverpod/Bloc observers, stress tests, compact network URLs, jank logging)
@@ -72,7 +72,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // Keep the observer in State so it survives rebuilds — it captures route
+  // Keep the observer in State so it survives rebuilds - it captures route
   // history for the ISpect panel and must not be re-created per build.
   final _ispectObserver = ISpectNavigatorObserver();
 
@@ -193,12 +193,12 @@ class _HomePage extends StatelessWidget {
     final logger = ISpect.logger;
 
     // Adapter packages (add the one(s) you need to pubspec.yaml):
-    //   ispectify_dio    — Dio interceptor
-    //   ispectify_http   — package:http interceptor
-    //   ispectify_ws     — WebSocket logger
-    //   ispectify_bloc   — Bloc.observer = ISpectBlocObserver()
-    //   ispectify_riverpod — ProviderObserver = ISpectRiverpodObserver()
-    //   ispectify_db     — Database tracing (Hive, SharedPreferences, …)
+    //   ispectify_dio    - Dio interceptor
+    //   ispectify_http   - package:http interceptor
+    //   ispectify_ws     - WebSocket logger
+    //   ispectify_bloc   - Bloc.observer = ISpectBlocObserver()
+    //   ispectify_riverpod - ProviderObserver = ISpectRiverpodObserver()
+    //   ispectify_db     - Database tracing (Hive, SharedPreferences, …)
 
     return Scaffold(
       appBar: AppBar(title: const Text('ISpect Quick Start')),
@@ -298,8 +298,8 @@ class _HomePage extends StatelessWidget {
           const _SectionTitle('Inside the panel'),
           const Text(
             'Tap the floating ISpect button to open the panel:\n'
-            '• Logs — filter, search, export, import, share.\n'
-            '• HTTP composer (api icon) — replay or craft a request; the '
+            '• Logs - filter, search, export, import, share.\n'
+            '• HTTP composer (api icon) - replay or craft a request; the '
             '"attach file" control appears because onPickComposerFile is set.\n'
             '• Performance, widget inspector, color picker.',
           ),

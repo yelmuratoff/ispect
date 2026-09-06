@@ -6,7 +6,7 @@ import 'package:ispect/src/core/res/ispect_theme_data.dart';
 /// Injects ISpect's owned [ThemeData] above [child] so every `Theme.of` inside
 /// resolves to the flat, tonal design language (dark by default).
 ///
-/// No-ops — passes [child] through untouched — when no ISpect scope is present
+/// No-ops - passes [child] through untouched - when no ISpect scope is present
 /// or [ISpectTheme.useHostColors] is set, leaving the host app's theme in place.
 ///
 /// Wrap the build output of every top-level ISpect surface (screens pushed onto

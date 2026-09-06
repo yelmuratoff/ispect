@@ -1,6 +1,6 @@
 /// Ready-to-copy interceptor for **shared_preferences**.
 ///
-/// Implements the full [SharedPreferences] interface — drop-in replacement.
+/// Implements the full [SharedPreferences] interface - drop-in replacement.
 ///
 /// ## Setup
 /// ```dart
@@ -30,9 +30,9 @@ final class ISpectSharedPreferences implements SharedPreferences {
     required SharedPreferences delegate,
     required ISpectLogger logger,
     String source = defaultSource,
-  })  : _prefs = delegate,
-        _logger = logger,
-        _source = source;
+  }) : _prefs = delegate,
+       _logger = logger,
+       _source = source;
 
   final SharedPreferences _prefs;
   final ISpectLogger _logger;
@@ -115,18 +115,15 @@ final class ISpectSharedPreferences implements SharedPreferences {
 
   @override
   Future<bool> remove(String key) => _logger.dbTrace(
-        source: _source,
-        operation: 'delete',
-        key: key,
-        run: () => _prefs.remove(key),
-      );
+    source: _source,
+    operation: 'delete',
+    key: key,
+    run: () => _prefs.remove(key),
+  );
 
   @override
-  Future<bool> clear() => _logger.dbTrace(
-        source: _source,
-        operation: 'clear',
-        run: _prefs.clear,
-      );
+  Future<bool> clear() =>
+      _logger.dbTrace(source: _source, operation: 'clear', run: _prefs.clear);
 
   // --- Passthrough ---------------------------------------------------------
 
@@ -152,11 +149,6 @@ final class ISpectSharedPreferences implements SharedPreferences {
     return result;
   }
 
-  Future<bool> _logWrite(String key, Future<bool> Function() action) =>
-      _logger.dbTrace(
-        source: _source,
-        operation: 'write',
-        key: key,
-        run: action,
-      );
+  Future<bool> _logWrite(String key, Future<bool> Function() action) => _logger
+      .dbTrace(source: _source, operation: 'write', key: key, run: action);
 }

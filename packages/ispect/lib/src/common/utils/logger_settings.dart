@@ -9,7 +9,7 @@ final Expando<ISpectFilter> _installedFilters = Expando<ISpectFilter>(
 /// Applies the logger-owned half of [settings] to [logger].
 ///
 /// Disabled log types become a filter veto, so keys the settings sheet never
-/// listed — custom and adapter-registered ones — keep capturing.
+/// listed - custom and adapter-registered ones - keep capturing.
 void applySettingsToLogger(ISpectLogger logger, ISpectSettingsState settings) {
   logger.configure(
     options: logger.options.copyWith(

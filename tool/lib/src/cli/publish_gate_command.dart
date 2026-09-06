@@ -78,7 +78,7 @@ final class CheckPublishedCommand extends Command<int> {
       );
       if (suggestion != null) {
         stderr.writeln(
-          "[ERR] Lowest version that would pass: $suggestion — run "
+          "[ERR] Lowest version that would pass: $suggestion - run "
           "'ispect_tool version bump $suggestion'",
         );
       }

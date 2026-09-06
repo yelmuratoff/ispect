@@ -3,7 +3,7 @@ import 'package:ispectify/ispectify.dart';
 /// Composite filter combining log-type-key, runtime type, and search criteria.
 ///
 /// The matching criteria are combined with logical OR: a log passes if **any**
-/// active criterion matches. [excludedLogTypeKeys] is a veto instead — a log
+/// active criterion matches. [excludedLogTypeKeys] is a veto instead - a log
 /// whose key is excluded is rejected regardless of the other criteria.
 class ISpectFilter implements Filter<ISpectLogData> {
   ISpectFilter({

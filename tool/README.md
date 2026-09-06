@@ -20,7 +20,7 @@ dart run tool/bin/ispect_tool.dart <command>
 
 | Command                           | Replaces                 | Does                                                                                       |
 | --------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
-| `check`                           | the whole CI gate        | Runs every repository check in one process — what CI and the hook call                     |
+| `check`                           | the whole CI gate        | Runs every repository check in one process - what CI and the hook call                     |
 | `version check`                   | `check_version_sync.sh`  | Every package `version:` matches `version.config`                                          |
 | `version bump <kind\|dev\|X.Y.Z>` | `bump_version.sh`        | Advances `VERSION`, refusing anything Pub does not order above the current one             |
 | `sync [--bump k] [--dry-run]`     | `update_versions.sh`     | Propagates `VERSION` to manifests, internal constraints, and the web lockfile              |
@@ -32,7 +32,7 @@ dart run tool/bin/ispect_tool.dart <command>
 | `check-published`                 | the gate in `publish.sh` | Refuses a version the resolver would not rank above the published peak of its release line |
 | `publish [--dry-run\|--auto]`     | `publish.sh`             | Publishes every package in dependency order behind its preflights                          |
 
-`publish --only <package>` narrows the run to one package — the way to resume a
+`publish --only <package>` narrows the run to one package - the way to resume a
 release after a single package failed while the rest went out.
 
 ## Pre-commit hook
@@ -59,11 +59,11 @@ cd tool && dart test
 
 Three kinds of test carry different weight:
 
-- **Golden** — `readme_builder_test.dart` and `llms_builder_test.dart` regenerate
+- **Golden** - `readme_builder_test.dart` and `llms_builder_test.dart` regenerate
   the committed `README.md`, `packages/*/README.md`, and `llms.txt` and require a
   byte-identical result. These survive the deletion of the bash scripts and are
   the strongest ongoing guarantee.
-- **Unit** — behaviour and error branches per module.
+- **Unit** - behaviour and error branches per module.
 
 `publish_test.dart` never reaches pub.dev: `ProcessRunner` and
 `PublishConfirmation` are injected, and the suite asserts a poisoned `dart` on

@@ -70,7 +70,7 @@ class BoxInfo {
   Rect get targetRectShifted => targetRect.shift(-overlayOffset);
 
   /// Hit-test path filtered to render boxes worth surfacing as breadcrumb
-  /// entries (visual/layout-shaping types only — proxy wrappers like
+  /// entries (visual/layout-shaping types only - proxy wrappers like
   /// [RenderRepaintBoundary] or `_RenderInkFeatures` are dropped).
   ///
   /// Consecutive entries that share a [Size] are collapsed to a single chip;
@@ -198,7 +198,7 @@ class BoxInfo {
 
   /// The nearest [RenderDecoratedBox] with [BoxDecoration] relevant to the
   /// selected target. Checks the target directly, then the hit-test path,
-  /// then the target's direct child — in that priority order.
+  /// then the target's direct child - in that priority order.
   RenderDecoratedBox? get decoratedBoxForDisplay =>
       _findSelectedDecoratedBox() ??
       _findNearestDecoratedBoxFromHitTestPath() ??
@@ -232,7 +232,7 @@ class BoxInfo {
   /// The fill color of a [ColoredBox] that is or wraps the target, if any.
   ///
   /// `_RenderColoredBox` is a private Flutter class, so dynamic dispatch on
-  /// `.color` is used. Discrimination is done via [_coloredBoxRuntimeType] —
+  /// `.color` is used. Discrimination is done via [_coloredBoxRuntimeType] -
   /// see its declaration for the rationale.
   Color? get coloredBoxColor =>
       _tryColoredBoxColor(targetRenderBox) ??
@@ -317,7 +317,7 @@ RenderBox? _findContainerFor(List<RenderBox> hitTestPath, RenderBox target) {
 
 /// Captures `_RenderColoredBox`'s runtime [Type] without referencing its
 /// private name. We construct a [ColoredBox] widget and call its
-/// `createRenderObject` directly — Flutter's implementation ignores the
+/// `createRenderObject` directly - Flutter's implementation ignores the
 /// passed [BuildContext], so a `noSuchMethod` stub is sufficient.
 /// Returns `null` if Flutter ever changes that contract; the caller then
 /// gracefully degrades and the [ColoredBox] color simply isn't surfaced.

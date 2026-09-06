@@ -49,7 +49,7 @@ bool _isRedundantReason(int? code, String reason) {
 /// Status / size summary for a transaction's response or error section,
 /// e.g. `1.2 KB` or `Not Found · 84 B`. Empty when nothing notable is reported.
 ///
-/// The status code and duration are intentionally omitted — both already show
+/// The status code and duration are intentionally omitted - both already show
 /// in the header. The reason phrase is dropped when it is the canonical phrase
 /// for a successful code (`200 OK`, `201 Created`, …) since it only restates
 /// the badge; non-standard and error reasons are kept because they carry
@@ -77,7 +77,7 @@ String transactionRequestSummary(NetworkTransaction tx) {
   return parts.join(' · ');
 }
 
-/// Whether the expanded card has an inline panel — a response summary or an
+/// Whether the expanded card has an inline panel - a response summary or an
 /// error. The request summary alone is excluded: on its own it just repeats
 /// the request content type.
 bool transactionHasInlineDetails(NetworkTransaction tx) =>

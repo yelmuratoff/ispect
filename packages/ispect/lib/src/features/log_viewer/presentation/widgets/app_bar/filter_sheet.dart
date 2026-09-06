@@ -70,7 +70,7 @@ class ISpectFilterSheet extends StatelessWidget {
               ),
             ],
 
-            // Clear all — only when chips are selected
+            // Clear all - only when chips are selected
             if (hasSelectedChips)
               Padding(
                 padding: const EdgeInsets.symmetric(

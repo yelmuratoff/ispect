@@ -77,7 +77,7 @@ abstract final class NetworkMapRedactor {
 
   /// Redacts a data/body field via [RedactionService.redact].
   ///
-  /// Preserves `null` — if the field is absent or `null`, nothing changes.
+  /// Preserves `null` - if the field is absent or `null`, nothing changes.
   static void redactData(
     Map<String, dynamic> map,
     RedactionService redactor, {
@@ -105,7 +105,7 @@ abstract final class NetworkMapRedactor {
 
   /// Redacts an arbitrary map field (e.g. `extra`, `query-parameters`).
   ///
-  /// Keys listed in [preserveKeys] are restored after redaction — useful for
+  /// Keys listed in [preserveKeys] are restored after redaction - useful for
   /// internal metadata like [NetworkJsonKeys.ispectRequestId]. A redactor that
   /// throws, returns `null`, or returns a non-map value produces an empty map;
   /// the raw field is never used as a fallback.

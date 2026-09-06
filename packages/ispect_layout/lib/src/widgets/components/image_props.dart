@@ -17,7 +17,7 @@ const _kImageAncestorWalkLimit = 16;
 /// Recovers the [ImageProvider] that produced a [RenderImage]. Release-safe.
 ///
 /// A [RenderImage]'s owning widget is the [RawImage] leaf, which holds the
-/// decoded `ui.Image` but not the [ImageProvider] — that lives on the [Image]
+/// decoded `ui.Image` but not the [ImageProvider] - that lives on the [Image]
 /// widget that built the [RawImage]. So the owning element is located via
 /// [elementForRenderObject], then it and a bounded number of its ancestors are
 /// checked for the nearest [Image].
@@ -43,7 +43,7 @@ ImageProvider? resolveImageProvider(RenderImage target) {
 
 /// Human-readable source of a [RenderImage]: the URL, asset name, or file path.
 ///
-/// Prefers [RenderImage.debugImageLabel] — the [Image] widget forwards the
+/// Prefers [RenderImage.debugImageLabel] - the [Image] widget forwards the
 /// provider's label here unconditionally, so it is the cheapest path when the
 /// image has decoded. Falls back to resolving the provider from the element
 /// tree. Returns `null` when neither is available (e.g. an undecoded image).
@@ -70,7 +70,7 @@ String _rectLabel(Rect r, int decimalPlaces) =>
     'L${_fmt(r.left, decimalPlaces)} T${_fmt(r.top, decimalPlaces)} '
     'R${_fmt(r.right, decimalPlaces)} B${_fmt(r.bottom, decimalPlaces)}';
 
-/// Inspector props for a [RenderImage] — `Image.network` / `.asset` /
+/// Inspector props for a [RenderImage] - `Image.network` / `.asset` /
 /// `.memory` / `.file` and any other raster image. Defaults are suppressed so
 /// only intentional overrides surface.
 List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {

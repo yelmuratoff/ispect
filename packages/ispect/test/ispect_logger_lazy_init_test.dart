@@ -1,5 +1,5 @@
 // Verifies that `ISpect.logger` never throws when accessed before
-// `initialize()` — the fallback is a default `ISpectLogger`, and a subsequent
+// `initialize()` - the fallback is a default `ISpectLogger`, and a subsequent
 // explicit `initialize(...)` replaces the lazy instance. Covers the hot-restart
 // / early-DI scenario that previously raised `StateError`.
 

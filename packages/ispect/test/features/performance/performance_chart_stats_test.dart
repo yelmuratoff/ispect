@@ -153,7 +153,7 @@ void main() {
     });
 
     test('counts any over-target frame as at least one missed vsync', () {
-      // A 9 ms frame on 120Hz held the previous buffer for 16.67 ms — one
+      // A 9 ms frame on 120Hz held the previous buffer for 16.67 ms - one
       // vsync was demonstrably skipped. The raw counter does not filter for
       // perceptibility; that is what `perceptibleDrops` is for.
       expect(missedVsyncs(9000, target120Hz), 1);
@@ -193,7 +193,7 @@ void main() {
     test('does not count single-vsync skips on a 120Hz panel', () {
       // Scroll-noise frames (9–17 ms) skip one 120Hz vsync but the resulting
       // display lag is below the perception threshold. The drop counter must
-      // stay quiet here — that is the entire point of the metric.
+      // stay quiet here - that is the entire point of the metric.
       expect(perceptibleDrops(9000, target120Hz), 0);
       expect(perceptibleDrops(12000, target120Hz), 0);
       expect(perceptibleDrops(17000, target120Hz), 0);
@@ -202,7 +202,7 @@ void main() {
 
     test('counts a 120Hz frame as a drop once display gap reaches 60Hz', () {
       // ~33 ms on 120Hz: three vsyncs skipped, previous buffer held 25 ms
-      // beyond schedule — one 60Hz frame of visible stutter.
+      // beyond schedule - one 60Hz frame of visible stutter.
       expect(perceptibleDrops(33000, target120Hz), 1);
     });
 

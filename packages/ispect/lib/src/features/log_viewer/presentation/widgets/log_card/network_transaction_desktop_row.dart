@@ -8,7 +8,7 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/net
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_details.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 
-/// Desktop variant of [NetworkTransactionCard] — table-row layout with
+/// Desktop variant of [NetworkTransactionCard] - table-row layout with
 /// inline expandable details and hover-only action buttons.
 class NetworkTransactionDesktopRow extends StatefulWidget {
   const NetworkTransactionDesktopRow({
@@ -101,7 +101,7 @@ class _NetworkTransactionDesktopRowState
               button: true,
               expanded: _expanded,
               label:
-                  '${tx.method ?? "HTTP"} $displayUrl — ${tx.statusCode ?? "pending"}',
+                  '${tx.method ?? "HTTP"} $displayUrl - ${tx.statusCode ?? "pending"}',
               onTap: toggleExpanded,
               child: Material(
                 type: MaterialType.transparency,

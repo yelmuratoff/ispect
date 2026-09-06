@@ -951,7 +951,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get tipSearchLogs =>
-      'टेक्स्ट से लॉग खोजें — पूरे JSON बॉडी में भी खोजता है';
+      'टेक्स्ट से लॉग खोजें - पूरे JSON बॉडी में भी खोजता है';
 
   @override
   String get tipLongPress => 'त्वरित कार्यों के लिए लॉग कार्ड को देर तक दबाएं';
@@ -974,7 +974,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get tipShareSession =>
-      'बग रिपोर्ट के लिए लॉग फ़ाइल साझा करें — डेटा स्वतः छिपाया जाता है';
+      'बग रिपोर्ट के लिए लॉग फ़ाइल साझा करें - डेटा स्वतः छिपाया जाता है';
 
   @override
   String get tipReverseLogs => 'लॉग क्रम पलटने के लिए ऐप बार में तीर दबाएँ';

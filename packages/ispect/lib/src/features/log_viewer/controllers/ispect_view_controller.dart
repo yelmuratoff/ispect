@@ -38,10 +38,10 @@ enum SearchMatchState {
 /// Facade over focused controllers, unified via [Listenable.merge].
 ///
 /// Each domain concern lives in its own [ChangeNotifier]:
-/// - [SelectionController] — active/detail log selection
-/// - [SearchHighlightController] — search match state and navigation
-/// - [SortingController] — column sort state
-/// - [DisplayController] — expand/collapse, order, grouping, timestamps
+/// - [SelectionController] - active/detail log selection
+/// - [SearchHighlightController] - search match state and navigation
+/// - [SortingController] - column sort state
+/// - [DisplayController] - expand/collapse, order, grouping, timestamps
 ///
 /// Consumers that need all updates use the facade directly as a [Listenable].
 /// Consumers that care about a single concern can listen to the specific

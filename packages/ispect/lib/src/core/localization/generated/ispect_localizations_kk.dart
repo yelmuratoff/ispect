@@ -948,7 +948,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get tips => 'Кеңестер';
 
   @override
-  String get tipSearchLogs => 'Мәтін бойынша іздеу — JSON денесінен де іздейді';
+  String get tipSearchLogs => 'Мәтін бойынша іздеу - JSON денесінен де іздейді';
 
   @override
   String get tipLongPress =>
@@ -971,7 +971,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get tipShareSession =>
-      'Бағ-есептер үшін лог файлымен бөлісіңіз — деректер автоматты түрде жасырылады';
+      'Бағ-есептер үшін лог файлымен бөлісіңіз - деректер автоматты түрде жасырылады';
 
   @override
   String get tipReverseLogs =>

@@ -42,7 +42,7 @@ dart run tool/bin/ispect_tool.dart check
 ## Running tests and lint
 
 Diagnostics are compiled out unless `ISPECT_ENABLED` is defined, so every suite
-needs the define to reach its assertions — including the pure Dart packages:
+needs the define to reach its assertions - including the pure Dart packages:
 
 ```bash
 # Pure Dart packages.

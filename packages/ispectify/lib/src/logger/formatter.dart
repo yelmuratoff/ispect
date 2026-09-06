@@ -13,7 +13,7 @@ abstract interface class ILoggerFormatter {
 /// [ILogEntryFormatter]; this formatter intentionally does not reshape the
 /// incoming message so single-line and multi-line entries align identically.
 ///
-/// Coloring is applied per line so each line carries its own reset sequence —
+/// Coloring is applied per line so each line carries its own reset sequence -
 /// terminals and log viewers that strip styling on `\n` keep the color of
 /// every line intact.
 base class ExtendedLoggerFormatter implements ILoggerFormatter {

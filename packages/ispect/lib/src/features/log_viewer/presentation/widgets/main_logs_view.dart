@@ -214,7 +214,7 @@ class _MainLogsViewState extends State<MainLogsView> {
             ],
           ),
         ),
-        // New logs indicator — near the newest-logs edge
+        // New logs indicator - near the newest-logs edge
         if (isDesktop)
           ValueListenableBuilder(
             valueListenable: _controller.hasNewLogs,

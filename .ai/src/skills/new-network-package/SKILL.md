@@ -26,9 +26,9 @@ packages/ispectify_<client>/
       settings_builder.dart              # Builder (extends BaseNetworkInterceptorSettingsBuilder)
       data/
         _data.dart                       # Barrel export for data classes
-        request.dart                     # <Client>RequestData — toJson() for request metadata
-        response.dart                    # <Client>ResponseData — toJson() for response metadata
-        error.dart                       # <Client>ErrorData — toJson() for error metadata (if applicable)
+        request.dart                     # <Client>RequestData - toJson() for request metadata
+        response.dart                    # <Client>ResponseData - toJson() for response metadata
+        error.dart                       # <Client>ErrorData - toJson() for error metadata (if applicable)
       models/
         _models.dart                     # Barrel export for log models
         request.dart                     # <Client>RequestLog extends NetworkRequestLog
@@ -47,19 +47,19 @@ packages/ispectify_<client>/
 
 ## Shared Base from ispectify (DO NOT duplicate)
 
-These are already in `ispectify` — import and extend, never reimplement:
+These are already in `ispectify` - import and extend, never reimplement:
 
-| What | Purpose |
-|------|---------|
-| `NetworkJsonKeys` | All JSON key constants (`method`, `url`, `headers`, `data`, `status-code`, etc.) |
-| `NetworkMapRedactor` | Redaction pipeline: `redactUrl()`, `redactHeaders()`, `redactData()`, `redactMapField()`, `redactPathFields()`, `redactRedirects()`, `redactMultipart()` |
-| `BaseNetworkInterceptor` | Mixin with `safeLog()`, `shouldProcess()`, `redactUrlAndPath()`, `bodyAsMap()`, `payload` (NetworkPayloadSanitizer) |
-| `BaseNetworkInterceptorSettings` | Abstract settings: `enabled`, `enableRedaction`, `print*` flags, `AnsiPen` colors |
-| `BaseNetworkInterceptorSettingsBuilder<B>` | Fluent builder with `.development()`, `.production()`, `.staging()`, `.disabled()` presets |
-| `NetworkRequestLog` / `NetworkResponseLog` / `NetworkErrorLog` | Base log classes |
-| `NetworkPayloadSanitizer` | `decodeJsonGracefully()`, `toStringKeyMap()`, `ensureMap()`, header normalization |
-| `RedactionService` | Pluggable redaction with key-based, pattern-based, and composite strategies |
-| `RequestIdGenerator` | Unique request ID generation for request-response correlation |
+| What                                                           | Purpose                                                                                                                                                  |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NetworkJsonKeys`                                              | All JSON key constants (`method`, `url`, `headers`, `data`, `status-code`, etc.)                                                                         |
+| `NetworkMapRedactor`                                           | Redaction pipeline: `redactUrl()`, `redactHeaders()`, `redactData()`, `redactMapField()`, `redactPathFields()`, `redactRedirects()`, `redactMultipart()` |
+| `BaseNetworkInterceptor`                                       | Mixin with `safeLog()`, `shouldProcess()`, `redactUrlAndPath()`, `bodyAsMap()`, `payload` (NetworkPayloadSanitizer)                                      |
+| `BaseNetworkInterceptorSettings`                               | Abstract settings: `enabled`, `enableRedaction`, `print*` flags, `AnsiPen` colors                                                                        |
+| `BaseNetworkInterceptorSettingsBuilder<B>`                     | Fluent builder with `.development()`, `.production()`, `.staging()`, `.disabled()` presets                                                               |
+| `NetworkRequestLog` / `NetworkResponseLog` / `NetworkErrorLog` | Base log classes                                                                                                                                         |
+| `NetworkPayloadSanitizer`                                      | `decodeJsonGracefully()`, `toStringKeyMap()`, `ensureMap()`, header normalization                                                                        |
+| `RedactionService`                                             | Pluggable redaction with key-based, pattern-based, and composite strategies                                                                              |
+| `RequestIdGenerator`                                           | Unique request ID generation for request-response correlation                                                                                            |
 
 ## Steps to Implement
 
@@ -71,12 +71,12 @@ These are already in `ispectify` — import and extend, never reimplement:
    - Version: read from `version.config` (single source of truth)
    - Dependencies: `ispectify` (use `dependency_overrides` for local dev), the HTTP client package
    - Dev dependencies: `test`, `mocktail` (or equivalent)
-3. Create `analysis_options.yaml` — include the root analysis options.
+3. Create `analysis_options.yaml` - include the root analysis options.
 4. Add `dependency_overrides` pointing to local `../ispectify` path.
 
 ### Step 2: Settings
 
-**`settings.dart`** — extend `BaseNetworkInterceptorSettings`:
+**`settings.dart`** - extend `BaseNetworkInterceptorSettings`:
 
 ```dart
 class ISpect<Client>InterceptorSettings extends BaseNetworkInterceptorSettings {
@@ -105,11 +105,11 @@ class ISpect<Client>InterceptorSettings extends BaseNetworkInterceptorSettings {
   final bool Function(<ClientResponse>)? responseFilter;
   final bool Function(<ClientError>)? errorFilter;
 
-  // copyWith() — forward all fields
+  // copyWith() - forward all fields
 }
 ```
 
-**`settings_builder.dart`** — extend `BaseNetworkInterceptorSettingsBuilder<Self>`:
+**`settings_builder.dart`** - extend `BaseNetworkInterceptorSettingsBuilder<Self>`:
 
 ```dart
 class ISpect<Client>InterceptorSettingsBuilder
@@ -123,7 +123,7 @@ class ISpect<Client>InterceptorSettingsBuilder
 
 ### Step 3: Data classes
 
-**`data/request.dart`** — `<Client>RequestData`:
+**`data/request.dart`** - `<Client>RequestData`:
 
 ```dart
 class <Client>RequestData {
@@ -202,18 +202,19 @@ final class ISpect<Client>Interceptor with BaseNetworkInterceptor {
   });
 
   // Use mixin helpers:
-  // - safeLog(() => buildLog(...)) — prevents log failures from breaking HTTP pipeline
-  // - shouldProcess(settings.enabled, filter, value) — consolidated enable + filter check
-  // - redactUrlAndPath(url, redactor) — returns (redactedUrl, redactedPath)
-  // - payload.body(), payload.headersMap(), payload.ensureMap() — payload normalization
+  // - safeLog(() => buildLog(...)) - prevents log failures from breaking HTTP pipeline
+  // - shouldProcess(settings.enabled, filter, value) - consolidated enable + filter check
+  // - redactUrlAndPath(url, redactor) - returns (redactedUrl, redactedPath)
+  // - payload.body(), payload.headersMap(), payload.ensureMap() - payload normalization
 
-  // configure() method — runtime reconfiguration with enableRedaction param
+  // configure() method - runtime reconfiguration with enableRedaction param
 }
 ```
 
 ### Step 6: Tests
 
 Cover:
+
 - Request/response/error logging
 - Filter application (request/response/error filters)
 - Disabled state (no logging)
@@ -234,21 +235,21 @@ Cover:
 
 ## Key Rules
 
-1. **NEVER hardcode JSON key strings** — always use `NetworkJsonKeys.*`.
-2. **NEVER reimplement redaction** — use `NetworkMapRedactor.*` methods.
-3. **NEVER duplicate settings/builder logic** — extend the base classes.
+1. **NEVER hardcode JSON key strings** - always use `NetworkJsonKeys.*`.
+2. **NEVER reimplement redaction** - use `NetworkMapRedactor.*` methods.
+3. **NEVER duplicate settings/builder logic** - extend the base classes.
 4. **Log models must pass `metadata`** via `requestData.toJson()` to enable JSON export.
 5. **`configure()` must include `enableRedaction`** parameter.
-6. **`redactHeaders()` returns the result** — if you need type conversion (e.g. `Map<String, String>`), do it in your data class, not in the shared utility.
-7. **Interceptor must not throw** — wrap all log-building in `safeLog()`.
-8. **Field ordering must follow the convention** — see Step 3.
-9. **Version comes from `version.config`** — never hardcode in `pubspec.yaml`.
+6. **`redactHeaders()` returns the result** - if you need type conversion (e.g. `Map<String, String>`), do it in your data class, not in the shared utility.
+7. **Interceptor must not throw** - wrap all log-building in `safeLog()`.
+8. **Field ordering must follow the convention** - see Step 3.
+9. **Version comes from `version.config`** - never hardcode in `pubspec.yaml`.
 
 ## Checklist
 
 Before marking complete, verify:
 
-- [ ] `dart analyze --fatal-infos` / `flutter analyze --fatal-infos` — zero issues
+- [ ] `dart analyze --fatal-infos` / `flutter analyze --fatal-infos` - zero issues
 - [ ] All tests pass
 - [ ] Zero hardcoded JSON key strings (grep for quoted strings in data/ files)
 - [ ] Redaction uses `NetworkMapRedactor` exclusively

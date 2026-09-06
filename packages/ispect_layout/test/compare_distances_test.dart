@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/src/widgets/inspector/compare_distances.dart';
 
 void main() {
-  group('computeCompareDistances — horizontal gap', () {
+  group('computeCompareDistances - horizontal gap', () {
     test('from is left of to', () {
       // Given: from=(0,0,100,50), to=(150,0,250,50) → gap = 50
       final result = computeCompareDistances(
@@ -34,7 +34,7 @@ void main() {
     });
   });
 
-  group('computeCompareDistances — vertical gap', () {
+  group('computeCompareDistances - vertical gap', () {
     test('from is above to', () {
       // Given: from=(0,0,100,50), to=(0,100,100,50) → gap = 50
       final result = computeCompareDistances(
@@ -64,7 +64,7 @@ void main() {
     });
   });
 
-  group('computeCompareDistances — diagonal', () {
+  group('computeCompareDistances - diagonal', () {
     test('both H and V gap → two distances', () {
       // Given: diagonal placement
       final result = computeCompareDistances(
@@ -83,9 +83,9 @@ void main() {
     });
   });
 
-  group('computeCompareDistances — overlap', () {
+  group('computeCompareDistances - overlap', () {
     test('to inside from → 4 LTRB distances', () {
-      // Given: from=(0,0,100,100), to=(10,10,80,80) — to is fully inside from
+      // Given: from=(0,0,100,100), to=(10,10,80,80) - to is fully inside from
       final result = computeCompareDistances(
         const Rect.fromLTWH(0, 0, 100, 100),
         const Rect.fromLTWH(10, 10, 80, 80), // right=90, bottom=90
@@ -103,7 +103,7 @@ void main() {
     });
 
     test(
-      'partial overlap — aligned edges produce zero distances (filtered)',
+      'partial overlap - aligned edges produce zero distances (filtered)',
       () {
         // Given: same top/bottom edges, different left/right
         final result = computeCompareDistances(
@@ -119,7 +119,7 @@ void main() {
     );
   });
 
-  group('computeCompareDistances — scale', () {
+  group('computeCompareDistances - scale', () {
     test('scale=2 halves logical values', () {
       // Given: screen gap = 100, scale = 2 → logical = 50
       final result = computeCompareDistances(
@@ -147,7 +147,7 @@ void main() {
     });
   });
 
-  group('computeCompareDistances — filtering', () {
+  group('computeCompareDistances - filtering', () {
     test('distance below 0.5 is ignored', () {
       // Given: H gap = 0.3 → below threshold
       final result = computeCompareDistances(

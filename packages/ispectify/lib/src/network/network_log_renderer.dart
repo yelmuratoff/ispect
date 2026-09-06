@@ -426,7 +426,7 @@ abstract final class NetworkLogRenderer {
 
 /// Render preferences resolved for a single entry. Defaults match the
 /// historical interceptor defaults so an entry without any hints (e.g. a
-/// custom adapter) prints with body but without headers — matching what Dio
+/// custom adapter) prints with body but without headers - matching what Dio
 /// and http used to produce.
 class _RenderHints {
   const _RenderHints({

@@ -6,7 +6,7 @@ extension ISpectDataX on ISpectLogData {
   ///
   /// Preserves [ISpectLogData.id] by default so the copy stays equal to the
   /// original under the id-based `==`/`hashCode`; pass [id] to mint a new
-  /// identity. Always returns a base [ISpectLogData] — subtypes such as
+  /// identity. Always returns a base [ISpectLogData] - subtypes such as
   /// [ISpectLogException]/[ISpectLogError] are not reconstructed, since this is
   /// an extension method and cannot dispatch on the runtime type.
   ISpectLogData copyWith({

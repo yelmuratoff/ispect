@@ -257,7 +257,7 @@ class _ColorPreviewChip extends StatelessWidget {
       builder: (context, _) {
         final color = controller.selectedColorStateNotifier.value;
         final hasColor = color != null;
-        final hex = hasColor ? colorToDisplayHex(color) : '—';
+        final hex = hasColor ? colorToDisplayHex(color) : '-';
 
         return Material(
           color: controller.theme.chromeOnSurfaceColor.withValues(

@@ -1,5 +1,5 @@
 <!--
-  GENERATED FILE — do not edit by hand.
+  GENERATED FILE - do not edit by hand.
   Source:     docs/readme/ispectify_riverpod.md
   Regenerate: dart run tool/bin/ispect_tool.dart readme
 -->
@@ -112,7 +112,7 @@ application-defined formatters must never run.
 // Logs disabled entirely.
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.silent);
 
-// Lifecycle creation, disposal, and failures — updates are muted.
+// Lifecycle creation, disposal, and failures - updates are muted.
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.minimal);
 
 // Reduces values to coarse structural labels. Use when provider state may

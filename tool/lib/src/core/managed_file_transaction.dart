@@ -119,7 +119,7 @@ final class ManagedFileTransaction {
   ///
   /// A file that existed is rewritten from the snapshot; a file the run
   /// created is removed. Returns false when any target could not be restored,
-  /// having reported each failure and attempted the remaining targets — a
+  /// having reported each failure and attempted the remaining targets - a
   /// partial rollback still recovers everything it can.
   bool rollback() {
     final snapshot = _snapshot;
@@ -237,8 +237,8 @@ final class ManagedFileTransaction {
   /// The directories between [target] and the repository root, nearest first.
   ///
   /// The root itself is excluded: the bash original walks a relative path and
-  /// stops at `.`, so a repository reached through a symlink — every temp
-  /// directory on macOS — stays usable.
+  /// stops at `.`, so a repository reached through a symlink - every temp
+  /// directory on macOS - stays usable.
   Iterable<String> _ancestors(String target) sync* {
     var ancestor = p.dirname(target);
     while (ancestor != '.' && ancestor != '/' && ancestor.isNotEmpty) {

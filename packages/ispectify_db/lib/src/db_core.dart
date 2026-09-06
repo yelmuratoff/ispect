@@ -4,7 +4,7 @@ import 'package:ispectify_db/src/constants.dart';
 
 /// Internal utilities for DB logging: redaction, truncation, and classification.
 ///
-/// Not intended for direct use — prefer the [ISpectLoggerDb] extension methods
+/// Not intended for direct use - prefer the [ISpectLoggerDb] extension methods
 /// ([db], [dbTrace], [dbStart]/[dbEnd], [dbTransaction]).
 ///
 /// For SQL fingerprinting see [DbSqlDigest].

@@ -37,7 +37,7 @@ class RiverpodFailData {
 
   /// Returns a raw, JSON-compatible map of the event.
   ///
-  /// The raw [error] / [stackTrace] are intentionally omitted — they travel
+  /// The raw [error] / [stackTrace] are intentionally omitted - they travel
   /// on the trace entry itself, not in `meta`.
   Map<String, dynamic> toJson() => <String, dynamic>{
         RiverpodJsonKeys.providerName: providerName,

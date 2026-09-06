@@ -973,7 +973,7 @@ final List<_Rule> _propsRules = [
     (b, dp) => clipPathProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  // Skip in the wrapper chain when neither painter is set — the section
+  // Skip in the wrapper chain when neither painter is set - the section
   // would render as an empty header.
   _rule<RenderCustomPaint>(
     (b, _) => customPaintProps(b),

@@ -165,7 +165,7 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
     ),
   );
 
-  /// The breadcrumb only earns space when there is somewhere to navigate to —
+  /// The breadcrumb only earns space when there is somewhere to navigate to -
   /// a single meaningful entry means the chips would just echo the title.
   Widget? _buildBreadcrumb() {
     final onSelect = widget.onSelectFromPath;
@@ -415,7 +415,7 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
 
   /// Walks the parent chain, collecting render boxes that share the target's
   /// paint size and carry type-specific props. Stops at the first size
-  /// mismatch — wrappers further up apply to a different bounding box, so
+  /// mismatch - wrappers further up apply to a different bounding box, so
   /// surfacing them here would mislead about what the displayed size
   /// actually represents.
   List<RenderBox> _wrappersWithTypeProps() {
@@ -654,7 +654,7 @@ class _ComparedRow extends StatelessWidget {
 /// Renders the inspected icon glyph next to its `U+XXXX` code point.
 ///
 /// Release builds with `--tree-shake-icons` (default) may render a glyph
-/// the host app never references statically as tofu — the adjacent code
+/// the host app never references statically as tofu - the adjacent code
 /// point keeps the row readable. Build with `--no-tree-shake-icons` if
 /// faithful glyph rendering matters in release.
 class _IconGlyphPreview extends StatelessWidget {
