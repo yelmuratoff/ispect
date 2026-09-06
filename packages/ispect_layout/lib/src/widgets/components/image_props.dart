@@ -47,12 +47,19 @@ ImageProvider? resolveImageProvider(RenderImage target) {
 /// provider's label here unconditionally, so it is the cheapest path when the
 /// image has decoded. Falls back to resolving the provider from the element
 /// tree. Returns `null` when neither is available (e.g. an undecoded image).
+///
+/// [MemoryImage] builds its label with `describeIdentity`, which collapses to
+/// `<optimized out>` in profile and release; the provider is preferred there.
 String? imageSourceLabel(RenderImage target) {
   final label = target.debugImageLabel;
-  if (label != null && label.isNotEmpty) return label;
+  final hasLabel = label != null && label.isNotEmpty;
+  if (hasLabel && !label.contains(_kOptimizedOutMarker)) return label;
   final provider = resolveImageProvider(target);
-  return provider == null ? null : describeImageProvider(provider);
+  if (provider != null) return describeImageProvider(provider);
+  return hasLabel ? label : null;
 }
+
+const _kOptimizedOutMarker = '<optimized out>';
 
 String _formatBytes(int bytes) {
   if (bytes < 1024) return '$bytes B';

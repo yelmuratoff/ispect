@@ -138,6 +138,167 @@ void main() {
     expect(_text(_prop(props, 'clip behavior')), 'antiAlias');
   });
 
+  testWidgets('ClipRRect resolves directional radii with its text direction', (
+    tester,
+  ) async {
+    const key = ValueKey('clip-rrect');
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.rtl,
+        child: ClipRRect(
+          key: key,
+          borderRadius: BorderRadiusDirectional.only(
+            topStart: Radius.circular(4),
+            topEnd: Radius.circular(8),
+          ),
+          child: SizedBox(width: 20, height: 20),
+        ),
+      ),
+    );
+    final render = tester.renderObject<RenderClipRRect>(find.byKey(key));
+
+    final grid = _prop(clipRRectProps(render), 'radius')?.child;
+
+    expect(grid, isA<BorderRadiusGrid>());
+    expect((grid! as BorderRadiusGrid).topLeft, const Radius.circular(8));
+    expect((grid as BorderRadiusGrid).topRight, const Radius.circular(4));
+  });
+
+  testWidgets('ClipRSuperellipse exposes directional radii and clipping', (
+    tester,
+  ) async {
+    const key = ValueKey('clip-superellipse');
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.rtl,
+        child: ClipRSuperellipse(
+          key: key,
+          borderRadius: BorderRadiusDirectional.only(
+            topStart: Radius.circular(4),
+            topEnd: Radius.circular(8),
+          ),
+          clipBehavior: Clip.hardEdge,
+          child: SizedBox(width: 20, height: 20),
+        ),
+      ),
+    );
+    final render = tester.renderObject<RenderClipRSuperellipse>(
+      find.byKey(key),
+    );
+
+    final props = typeProps(render);
+    final grid = _prop(props, 'radius')?.child;
+
+    expect(hasTypeProps(render), isTrue);
+    expect(grid, isA<BorderRadiusGrid>());
+    expect((grid! as BorderRadiusGrid).topLeft, const Radius.circular(8));
+    expect(_text(_prop(props, 'clip behavior')), 'hardEdge');
+  });
+
+  testWidgets('Padding exposes its resolved insets', (tester) async {
+    const key = ValueKey('padding');
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.rtl,
+        child: Padding(
+          key: key,
+          padding: EdgeInsetsDirectional.only(start: 4, end: 8, top: 2),
+          child: SizedBox(width: 20, height: 20),
+        ),
+      ),
+    );
+    final render = tester.renderObject<RenderPadding>(find.byKey(key));
+
+    final props = typeProps(render);
+
+    expect(_text(_prop(props, 'padding')), 'L:8.0 T:2.0 R:4.0 B:0.0');
+  });
+
+  test('uniform and symmetric padding collapse to short forms', () {
+    expect(
+      _text(
+        _prop(
+          paddingProps(RenderPadding(padding: EdgeInsets.all(6))),
+          'padding',
+        ),
+      ),
+      '6.0',
+    );
+    expect(
+      _text(
+        _prop(
+          paddingProps(
+            RenderPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            ),
+          ),
+          'padding',
+        ),
+      ),
+      'h:6.0 v:2.0',
+    );
+  });
+
+  test('ConstrainedBox exposes its additional constraints', () {
+    final props = typeProps(
+      RenderConstrainedBox(
+        additionalConstraints: const BoxConstraints(
+          minWidth: 10,
+          maxWidth: 40,
+          minHeight: 20,
+          maxHeight: 20,
+        ),
+      ),
+    );
+
+    expect(_text(_prop(props, 'width')), '10.0–40.0');
+    expect(_text(_prop(props, 'height')), '=20.0');
+  });
+
+  test('expanding constraints render as infinity instead of a number', () {
+    final props = constrainedBoxProps(
+      RenderConstrainedBox(
+        additionalConstraints: const BoxConstraints.expand(),
+      ),
+    );
+
+    expect(_text(_prop(props, 'width')), '=∞');
+  });
+
+  test('Align exposes alignment and size factors', () {
+    final props = typeProps(
+      RenderPositionedBox(
+        alignment: Alignment.bottomRight,
+        widthFactor: 2,
+        textDirection: TextDirection.ltr,
+      ),
+    );
+
+    expect(
+      (_prop(props, 'alignment')?.child as EllipsizedText?)?.value,
+      'bottomRight',
+    );
+    expect(_text(_prop(props, 'width factor')), '2.0');
+    expect(_prop(props, 'height factor'), isNull);
+  });
+
+  test('ShapeDecoration exposes color, shape, radius, and shadows', () {
+    final props = shapeDecorationProps(
+      const ShapeDecoration(
+        color: Color(0xFF112233),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(6)),
+        ),
+        shadows: [BoxShadow(blurRadius: 4)],
+      ),
+    );
+
+    expect(_prop(props, 'color'), isNotNull);
+    expect(_text(_prop(props, 'shape')), 'RoundedRectangleBorder');
+    expect(_text(_prop(props, 'border radius')), '6.0');
+    expect(_prop(props, 'shadows'), isNotNull);
+  });
+
   testWidgets('aligned rotation does not fabricate a translation', (
     tester,
   ) async {

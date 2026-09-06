@@ -31,6 +31,30 @@ void main() {
       expect(_textOf(source?.child), 'https://example.com/cat.png');
     });
 
+    testWidgets('prefers the resolved provider over an optimized-out label', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const Directionality(
+          textDirection: TextDirection.ltr,
+          child: Image(image: _IdleImageProvider(), width: 20, height: 20),
+        ),
+      );
+      final render = tester.renderObject<RenderImage>(find.byType(RawImage))
+        ..debugImageLabel = 'MemoryImage(<optimized out>#1a2b3)';
+
+      expect(imageSourceLabel(render), '_IdleImageProvider');
+    });
+
+    test('keeps an optimized-out label when no provider can be resolved', () {
+      final render = RenderImage(
+        debugImageLabel: 'MemoryImage(<optimized out>#1a2b3)',
+        textDirection: TextDirection.ltr,
+      );
+
+      expect(imageSourceLabel(render), 'MemoryImage(<optimized out>#1a2b3)');
+    });
+
     test('omits source when no label or provider is available', () {
       final render = RenderImage(textDirection: TextDirection.ltr);
 

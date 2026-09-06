@@ -71,8 +71,8 @@ List<PropSpec> _clipperProps(
 
 List<PropSpec> constraintsProps(BoxConstraints c, {int decimalPlaces = 1}) {
   String fmt(double min, double max) {
-    if (min == max) return '=${_fmt(min, decimalPlaces)}';
     final hi = max == double.infinity ? '∞' : _fmt(max, decimalPlaces);
+    if (min == max) return '=$hi';
     return '${_fmt(min, decimalPlaces)}–$hi';
   }
 
@@ -260,6 +260,34 @@ List<PropSpec> decorationProps(
     ..._decorationImageProps(d.image!, decimalPlaces: decimalPlaces),
 ];
 
+List<PropSpec> shapeDecorationProps(
+  ShapeDecoration d, {
+  int decimalPlaces = 1,
+  TextDirection textDirection = TextDirection.ltr,
+}) => [
+  if (d.color != null)
+    (icon: Icons.palette, subtitle: 'color', child: ColorHexChip(d.color!)),
+  ...shapeBorderProps(
+    d.shape,
+    decimalPlaces: decimalPlaces,
+    textDirection: textDirection,
+  ),
+  if (d.shadows case final shadows? when shadows.isNotEmpty)
+    (
+      icon: Icons.blur_on,
+      subtitle: 'shadows',
+      child: ShadowsView(shadows, decimalPlaces: decimalPlaces),
+    ),
+  if (d.gradient != null)
+    (
+      icon: Icons.gradient,
+      subtitle: 'gradient',
+      child: GradientView(d.gradient!, decimalPlaces: decimalPlaces),
+    ),
+  if (d.image != null)
+    ..._decorationImageProps(d.image!, decimalPlaces: decimalPlaces),
+];
+
 List<PropSpec> _decorationImageProps(
   DecorationImage img, {
   required int decimalPlaces,
@@ -387,6 +415,60 @@ bool _isActiveBorderSide(BorderSide side) => side.style != BorderStyle.none;
 
 // ─── Per-render-box extractors ───────────────────────────────────────────────
 
+List<PropSpec> paddingProps(RenderPadding target, {int decimalPlaces = 1}) {
+  final padding = target.padding.resolve(
+    target.textDirection ?? TextDirection.ltr,
+  );
+  return [
+    (
+      icon: Icons.straighten,
+      subtitle: 'padding',
+      child: Text(_formatEdgeInsets(padding, decimalPlaces)),
+    ),
+  ];
+}
+
+String _formatEdgeInsets(EdgeInsets p, int decimalPlaces) {
+  String f(double v) => _fmt(v, decimalPlaces);
+  if (p.left == p.right && p.top == p.bottom) {
+    return p.left == p.top ? f(p.left) : 'h:${f(p.left)} v:${f(p.top)}';
+  }
+  return 'L:${f(p.left)} T:${f(p.top)} R:${f(p.right)} B:${f(p.bottom)}';
+}
+
+List<PropSpec> constrainedBoxProps(
+  RenderConstrainedBox target, {
+  int decimalPlaces = 1,
+}) => constraintsProps(
+  target.additionalConstraints,
+  decimalPlaces: decimalPlaces,
+);
+
+List<PropSpec> positionedBoxProps(
+  RenderPositionedBox target, {
+  int decimalPlaces = 1,
+}) => [
+  (
+    icon: Icons.crop_free,
+    subtitle: 'alignment',
+    child: EllipsizedText(
+      describeAlignment(target.alignment, decimalPlaces: decimalPlaces),
+    ),
+  ),
+  if (target.widthFactor case final factor?)
+    (
+      icon: Icons.swap_horiz,
+      subtitle: 'width factor',
+      child: Text(_fmt(factor, decimalPlaces)),
+    ),
+  if (target.heightFactor case final factor?)
+    (
+      icon: Icons.swap_vert,
+      subtitle: 'height factor',
+      child: Text(_fmt(factor, decimalPlaces)),
+    ),
+];
+
 List<PropSpec> stackProps(RenderStack target, {int decimalPlaces = 1}) => [
   (
     icon: Icons.align_vertical_bottom,
@@ -459,52 +541,52 @@ List<PropSpec> wrapProps(RenderWrap target, {int decimalPlaces = 1}) => [
   if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
 ];
 
+List<PropSpec> _roundedClipProps(
+  BorderRadiusGeometry borderRadius,
+  Clip clipBehavior, {
+  required TextDirection? textDirection,
+  required int decimalPlaces,
+}) {
+  final direction = textDirection ?? TextDirection.ltr;
+  return [
+    if (formatBorderRadius(
+          borderRadius,
+          decimalPlaces: decimalPlaces,
+          textDirection: direction,
+        )
+        case final br?)
+      (
+        icon: Icons.rounded_corner,
+        subtitle: br.label,
+        child: buildBorderRadiusChild(
+          borderRadius,
+          decimalPlaces: decimalPlaces,
+          textDirection: direction,
+        ),
+      ),
+    if (_clipBehaviorProp(clipBehavior) case final c?) c,
+  ];
+}
+
 List<PropSpec> clipRRectProps(
   RenderClipRRect target, {
   int decimalPlaces = 1,
-}) => [
-  if (formatBorderRadius(target.borderRadius, decimalPlaces: decimalPlaces)
-      case final br?)
-    (
-      icon: Icons.rounded_corner,
-      subtitle: br.label,
-      child: buildBorderRadiusChild(
-        target.borderRadius,
-        decimalPlaces: decimalPlaces,
-      ),
-    ),
-  if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
-];
+}) => _roundedClipProps(
+  target.borderRadius,
+  target.clipBehavior,
+  textDirection: target.textDirection,
+  decimalPlaces: decimalPlaces,
+);
 
 List<PropSpec> clipRSuperellipseProps(
-  RenderBox target, {
+  RenderClipRSuperellipse target, {
   int decimalPlaces = 1,
-}) {
-  if (!_isRenderClipRSuperellipse(target)) return const [];
-  try {
-    final dynamicTarget = target as dynamic;
-    final borderRadius = dynamicTarget.borderRadius as BorderRadius;
-    final clipBehavior = dynamicTarget.clipBehavior as Clip;
-    return [
-      if (formatBorderRadius(borderRadius, decimalPlaces: decimalPlaces)
-          case final br?)
-        (
-          icon: Icons.rounded_corner,
-          subtitle: br.label,
-          child: buildBorderRadiusChild(
-            borderRadius,
-            decimalPlaces: decimalPlaces,
-          ),
-        ),
-      if (_clipBehaviorProp(clipBehavior) case final c?) c,
-    ];
-  } catch (_) {
-    return const [];
-  }
-}
-
-bool _isRenderClipRSuperellipse(RenderBox target) =>
-    target.runtimeType.toString() == 'RenderClipRSuperellipse';
+}) => _roundedClipProps(
+  target.borderRadius,
+  target.clipBehavior,
+  textDirection: target.textDirection,
+  decimalPlaces: decimalPlaces,
+);
 
 List<PropSpec> clipRectProps(RenderClipRect target) => [
   ..._clipperProps(target.clipper),
@@ -931,6 +1013,18 @@ _Rule _rule<T extends RenderBox>(
 );
 
 final List<_Rule> _propsRules = [
+  _rule<RenderPadding>(
+    (b, dp) => paddingProps(b, decimalPlaces: dp),
+    wrapper: false,
+  ),
+  _rule<RenderConstrainedBox>(
+    (b, dp) => constrainedBoxProps(b, decimalPlaces: dp),
+    wrapper: false,
+  ),
+  _rule<RenderPositionedBox>(
+    (b, dp) => positionedBoxProps(b, decimalPlaces: dp),
+    wrapper: false,
+  ),
   _rule<RenderStack>(
     (b, dp) => stackProps(b, decimalPlaces: dp),
     wrapper: false,
@@ -962,9 +1056,8 @@ final List<_Rule> _propsRules = [
     (b, dp) => clipRRectProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
-  (
-    match: _isRenderClipRSuperellipse,
-    build: (b, dp) => clipRSuperellipseProps(b, decimalPlaces: dp),
+  _rule<RenderClipRSuperellipse>(
+    (b, dp) => clipRSuperellipseProps(b, decimalPlaces: dp),
     wrapper: true,
   ),
   _rule<RenderClipRect>((b, _) => clipRectProps(b), wrapper: true),

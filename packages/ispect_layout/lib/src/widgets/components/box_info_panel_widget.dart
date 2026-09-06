@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/components/property_extractors.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
+import 'package:ispect_layout/src/widgets/components/render_tree_dump.dart';
 import 'package:ispect_layout/src/widgets/inspector/box_info.dart';
 import 'package:ispect_layout/src/widgets/inspector/compare_distances.dart';
 import 'package:ispect_layout/src/widgets/inspector/render_box_extension.dart';
@@ -402,15 +403,22 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
       ];
     }
     final decoratedBox = widget.boxInfo.decoratedBoxForDisplay;
-    if (decoratedBox?.decoration case final BoxDecoration d) {
-      return decorationProps(
+    if (decoratedBox == null) return const [];
+    final textDirection =
+        decoratedBox.configuration.textDirection ?? TextDirection.ltr;
+    return switch (decoratedBox.decoration) {
+      final BoxDecoration d => decorationProps(
         d,
         decimalPlaces: widget.decimalPlaces,
-        textDirection:
-            decoratedBox?.configuration.textDirection ?? TextDirection.ltr,
-      );
-    }
-    return [];
+        textDirection: textDirection,
+      ),
+      final ShapeDecoration d => shapeDecorationProps(
+        d,
+        decimalPlaces: widget.decimalPlaces,
+        textDirection: textDirection,
+      ),
+      _ => const [],
+    };
   }
 
   /// Walks the parent chain, collecting render boxes that share the target's
@@ -549,7 +557,10 @@ class _PanelTitleBar extends StatelessWidget {
     BuildContext context,
     RenderBox target,
   ) async {
-    final full = target.toStringDeep();
+    final deep = target.toStringDeep();
+    final full = deep.isEmpty
+        ? describeRenderTree(target, decimalPlaces: decimalPlaces)
+        : deep;
     final limit = maxRenderTreeClipboardCharacters;
     const marker = '\n…';
     final truncated = full.length > limit

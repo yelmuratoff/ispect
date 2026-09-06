@@ -80,6 +80,34 @@ void main() {
     expect(find.text('0.25'), findsOneWidget);
   });
 
+  testWidgets('ShapeDecoration surfaces an appearance section', (tester) async {
+    const decoratedKey = ValueKey('shape-decorated');
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: DecoratedBox(
+          key: decoratedKey,
+          decoration: ShapeDecoration(
+            color: Color(0xFF112233),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(6)),
+            ),
+          ),
+          child: SizedBox(width: 20, height: 20),
+        ),
+      ),
+    );
+    final decorated = tester.renderObject<RenderDecoratedBox>(
+      find.byKey(decoratedKey),
+    );
+
+    await _pumpPanel(tester, decorated);
+
+    expect(find.text('APPEARANCE'), findsOneWidget);
+    expect(find.byType(ColorHexChip), findsOneWidget);
+    expect(find.text('RoundedRectangleBorder'), findsOneWidget);
+  });
+
   testWidgets('directional radius is resolved with decoration text direction', (
     tester,
   ) async {

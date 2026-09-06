@@ -275,7 +275,7 @@ bool _isStronglyMeaningfulRenderBox(RenderBox box) =>
     box is RenderAnimatedOpacity ||
     box is RenderClipRect ||
     box is RenderClipRRect ||
-    box.runtimeType.toString() == 'RenderClipRSuperellipse' ||
+    box is RenderClipRSuperellipse ||
     box is RenderClipOval ||
     box is RenderClipPath ||
     box is RenderCustomPaint ||
