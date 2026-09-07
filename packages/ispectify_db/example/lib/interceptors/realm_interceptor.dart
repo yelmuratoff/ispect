@@ -36,9 +36,9 @@ final class ISpectRealm implements Realm {
     required ISpectLogger logger,
     String source = defaultSource,
     this.logConfig = const ISpectDbConfig(),
-  }) : _realm = delegate,
-       _logger = logger,
-       _source = source;
+  })  : _realm = delegate,
+        _logger = logger,
+        _source = source;
 
   final Realm _realm;
   final ISpectLogger _logger;
@@ -172,22 +172,23 @@ final class ISpectRealm implements Realm {
 
   @override
   T write<T>(T Function() writeCallback) => _logger.dbTraceSync(
-    source: _source,
-    operation: 'transaction',
-    run: () => _realm.write(writeCallback),
-    config: logConfig,
-  );
+        source: _source,
+        operation: 'transaction',
+        run: () => _realm.write(writeCallback),
+        config: logConfig,
+      );
 
   @override
   Future<T> writeAsync<T>(
     T Function() writeCallback, [
     CancellationToken? cancellationToken,
-  ]) => _logger.dbTrace(
-    source: _source,
-    operation: 'transaction',
-    run: () => _realm.writeAsync(writeCallback, cancellationToken),
-    config: logConfig,
-  );
+  ]) =>
+      _logger.dbTrace(
+        source: _source,
+        operation: 'transaction',
+        run: () => _realm.writeAsync(writeCallback, cancellationToken),
+        config: logConfig,
+      );
 
   // --- Passthrough ----------------------------------------------------------
 
@@ -226,11 +227,11 @@ final class ISpectRealm implements Realm {
 
   @override
   ISpectRealm freeze() => ISpectRealm(
-    delegate: _realm.freeze(),
-    logger: _logger,
-    source: _source,
-    logConfig: logConfig,
-  );
+        delegate: _realm.freeze(),
+        logger: _logger,
+        source: _source,
+        logConfig: logConfig,
+      );
 
   @override
   Transaction beginWrite() => _realm.beginWrite();

@@ -33,8 +33,8 @@ final class ISpectDriftInterceptor extends QueryInterceptor {
     required ISpectLogger logger,
     String source = defaultSource,
     this.config = const ISpectDbConfig(),
-  }) : _logger = logger,
-       _source = source;
+  })  : _logger = logger,
+        _source = source;
 
   final ISpectLogger _logger;
   final String _source;
@@ -48,85 +48,91 @@ final class ISpectDriftInterceptor extends QueryInterceptor {
     QueryExecutor executor,
     String statement,
     List<Object?> args,
-  ) => _logger.dbTrace(
-    source: _source,
-    operation: 'select',
-    statement: statement,
-    args: args,
-    run: () => executor.runSelect(statement, args),
-    projectResult: (rows) => {'rows': rows.length},
-    config: config,
-  );
+  ) =>
+      _logger.dbTrace(
+        source: _source,
+        operation: 'select',
+        statement: statement,
+        args: args,
+        run: () => executor.runSelect(statement, args),
+        projectResult: (rows) => {'rows': rows.length},
+        config: config,
+      );
 
   @override
   Future<int> runInsert(
     QueryExecutor executor,
     String statement,
     List<Object?> args,
-  ) => _logger.dbTrace(
-    source: _source,
-    operation: 'insert',
-    statement: statement,
-    args: args,
-    run: () => executor.runInsert(statement, args),
-    projectResult: (id) => {'lastInsertId': id},
-    config: config,
-  );
+  ) =>
+      _logger.dbTrace(
+        source: _source,
+        operation: 'insert',
+        statement: statement,
+        args: args,
+        run: () => executor.runInsert(statement, args),
+        projectResult: (id) => {'lastInsertId': id},
+        config: config,
+      );
 
   @override
   Future<int> runUpdate(
     QueryExecutor executor,
     String statement,
     List<Object?> args,
-  ) => _logger.dbTrace(
-    source: _source,
-    operation: 'update',
-    statement: statement,
-    args: args,
-    run: () => executor.runUpdate(statement, args),
-    projectResult: (n) => {'affected': n},
-    config: config,
-  );
+  ) =>
+      _logger.dbTrace(
+        source: _source,
+        operation: 'update',
+        statement: statement,
+        args: args,
+        run: () => executor.runUpdate(statement, args),
+        projectResult: (n) => {'affected': n},
+        config: config,
+      );
 
   @override
   Future<int> runDelete(
     QueryExecutor executor,
     String statement,
     List<Object?> args,
-  ) => _logger.dbTrace(
-    source: _source,
-    operation: 'delete',
-    statement: statement,
-    args: args,
-    run: () => executor.runDelete(statement, args),
-    projectResult: (n) => {'affected': n},
-    config: config,
-  );
+  ) =>
+      _logger.dbTrace(
+        source: _source,
+        operation: 'delete',
+        statement: statement,
+        args: args,
+        run: () => executor.runDelete(statement, args),
+        projectResult: (n) => {'affected': n},
+        config: config,
+      );
 
   @override
   Future<void> runCustom(
     QueryExecutor executor,
     String statement,
     List<Object?> args,
-  ) => _logger.dbTrace(
-    source: _source,
-    operation: 'execute',
-    statement: statement,
-    args: args,
-    run: () => executor.runCustom(statement, args),
-    config: config,
-  );
+  ) =>
+      _logger.dbTrace(
+        source: _source,
+        operation: 'execute',
+        statement: statement,
+        args: args,
+        run: () => executor.runCustom(statement, args),
+        config: config,
+      );
 
   @override
   Future<void> runBatched(
     QueryExecutor executor,
     BatchedStatements statements,
-  ) => _logger.dbTrace(
-    source: _source,
-    operation: 'batch',
-    meta: {'batchSize': statements.statements.length},
-    run: () => executor.runBatched(statements),
-    projectResult: (_) => {'statements': statements.statements.length},
-    config: config,
-  );
+  ) =>
+      _logger.dbTrace(
+        source: _source,
+        operation: 'batch',
+        meta: {'batchSize': statements.statements.length},
+        run: () => executor.runBatched(statements),
+        projectResult: (_) => {'statements': statements.statements.length},
+        config: config,
+      );
 }

@@ -94,7 +94,8 @@ class _InMemorySecureStorage implements FlutterSecureStorage {
     WebOptions? webOptions,
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
-  }) async => _data[key];
+  }) async =>
+      _data[key];
 
   @override
   Future<void> delete({
@@ -129,7 +130,8 @@ class _InMemorySecureStorage implements FlutterSecureStorage {
     WebOptions? webOptions,
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
-  }) async => Map.unmodifiable(_data);
+  }) async =>
+      Map.unmodifiable(_data);
 
   @override
   Future<bool> containsKey({
@@ -140,7 +142,8 @@ class _InMemorySecureStorage implements FlutterSecureStorage {
     WebOptions? webOptions,
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
-  }) async => _data.containsKey(key);
+  }) async =>
+      _data.containsKey(key);
 
   @override
   AndroidOptions get aOptions => const AndroidOptions();

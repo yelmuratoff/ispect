@@ -23,14 +23,14 @@ void main() {
     // getApplicationDocumentsDirectory even when a custom path is provided.
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-          const MethodChannel('plugins.flutter.io/path_provider'),
-          (MethodCall methodCall) async {
-            if (methodCall.method == 'getApplicationDocumentsDirectory') {
-              return tempDir.path;
-            }
-            return null;
-          },
-        );
+      const MethodChannel('plugins.flutter.io/path_provider'),
+      (MethodCall methodCall) async {
+        if (methodCall.method == 'getApplicationDocumentsDirectory') {
+          return tempDir.path;
+        }
+        return null;
+      },
+    );
 
     // Use unique container name per test to avoid singleton cache conflicts.
     final containerName = 'test_${tempDir.hashCode}';
@@ -51,9 +51,9 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 50));
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-          const MethodChannel('plugins.flutter.io/path_provider'),
-          null,
-        );
+      const MethodChannel('plugins.flutter.io/path_provider'),
+      null,
+    );
     if (tempDir.existsSync()) {
       tempDir.deleteSync(recursive: true);
     }

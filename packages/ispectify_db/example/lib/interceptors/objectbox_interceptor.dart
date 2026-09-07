@@ -35,10 +35,10 @@ final class ISpectObjectBox<T> implements Box<T> {
     required String boxName,
     String source = defaultSource,
     this.config = const ISpectDbConfig(),
-  }) : _box = delegate,
-       _logger = logger,
-       _boxName = boxName,
-       _source = source;
+  })  : _box = delegate,
+        _logger = logger,
+        _boxName = boxName,
+        _source = source;
 
   final Box<T> _box;
   final ISpectLogger _logger;
@@ -102,14 +102,14 @@ final class ISpectObjectBox<T> implements Box<T> {
 
   @override
   Future<T?> getAsync(int id) => _logger.dbTrace(
-    source: _source,
-    operation: 'getAsync',
-    table: _boxName,
-    key: id.toString(),
-    run: () => _box.getAsync(id),
-    projectResult: (val) => val != null ? '1 object' : 'null',
-    config: config,
-  );
+        source: _source,
+        operation: 'getAsync',
+        table: _boxName,
+        key: id.toString(),
+        run: () => _box.getAsync(id),
+        projectResult: (val) => val != null ? '1 object' : 'null',
+        config: config,
+      );
 
   @override
   Future<List<T?>> getManyAsync(List<int> ids, {bool growableResult = false}) =>
@@ -128,25 +128,25 @@ final class ISpectObjectBox<T> implements Box<T> {
 
   @override
   Future<List<T>> getAllAsync() => _logger.dbTrace(
-    source: _source,
-    operation: 'getAllAsync',
-    table: _boxName,
-    run: () => _box.getAllAsync(),
-    projectResult: (items) => {'count': items.length},
-    config: config,
-  );
+        source: _source,
+        operation: 'getAllAsync',
+        table: _boxName,
+        run: () => _box.getAllAsync(),
+        projectResult: (items) => {'count': items.length},
+        config: config,
+      );
 
   // --- Sync writes ----------------------------------------------------------
 
   @override
   int put(T object, {PutMode mode = PutMode.put}) => _logger.dbTraceSync(
-    source: _source,
-    operation: 'put',
-    table: _boxName,
-    run: () => _box.put(object, mode: mode),
-    projectResult: (id) => {'id': id},
-    config: config,
-  );
+        source: _source,
+        operation: 'put',
+        table: _boxName,
+        run: () => _box.put(object, mode: mode),
+        projectResult: (id) => {'id': id},
+        config: config,
+      );
 
   @override
   List<int> putMany(List<T> objects, {PutMode mode = PutMode.put}) =>
@@ -188,39 +188,41 @@ final class ISpectObjectBox<T> implements Box<T> {
   Future<List<int>> putManyAsync(
     List<T> objects, {
     PutMode mode = PutMode.put,
-  }) => _logger.dbTrace(
-    source: _source,
-    operation: 'putManyAsync',
-    table: _boxName,
-    meta: {'count': objects.length},
-    run: () => _box.putManyAsync(objects, mode: mode),
-    projectResult: (ids) => {'inserted': ids.length},
-    config: config,
-  );
+  }) =>
+      _logger.dbTrace(
+        source: _source,
+        operation: 'putManyAsync',
+        table: _boxName,
+        meta: {'count': objects.length},
+        run: () => _box.putManyAsync(objects, mode: mode),
+        projectResult: (ids) => {'inserted': ids.length},
+        config: config,
+      );
 
   @override
   Future<List<T>> putAndGetManyAsync(
     List<T> objects, {
     PutMode mode = PutMode.put,
-  }) => _logger.dbTrace(
-    source: _source,
-    operation: 'putAndGetManyAsync',
-    table: _boxName,
-    meta: {'count': objects.length},
-    run: () => _box.putAndGetManyAsync(objects, mode: mode),
-    projectResult: (items) => {'inserted': items.length},
-    config: config,
-  );
+  }) =>
+      _logger.dbTrace(
+        source: _source,
+        operation: 'putAndGetManyAsync',
+        table: _boxName,
+        meta: {'count': objects.length},
+        run: () => _box.putAndGetManyAsync(objects, mode: mode),
+        projectResult: (items) => {'inserted': items.length},
+        config: config,
+      );
 
   @override
   int putQueued(T object, {PutMode mode = PutMode.put}) => _logger.dbTraceSync(
-    source: _source,
-    operation: 'putQueued',
-    table: _boxName,
-    run: () => _box.putQueued(object, mode: mode),
-    projectResult: (id) => {'id': id},
-    config: config,
-  );
+        source: _source,
+        operation: 'putQueued',
+        table: _boxName,
+        run: () => _box.putQueued(object, mode: mode),
+        projectResult: (id) => {'id': id},
+        config: config,
+      );
 
   @override
   @Deprecated('Use putAsync or putQueued instead.')
@@ -232,69 +234,69 @@ final class ISpectObjectBox<T> implements Box<T> {
 
   @override
   bool remove(int id) => _logger.dbTraceSync(
-    source: _source,
-    operation: 'delete',
-    table: _boxName,
-    key: id.toString(),
-    run: () => _box.remove(id),
-    projectResult: (deleted) => {'deleted': deleted},
-    config: config,
-  );
+        source: _source,
+        operation: 'delete',
+        table: _boxName,
+        key: id.toString(),
+        run: () => _box.remove(id),
+        projectResult: (deleted) => {'deleted': deleted},
+        config: config,
+      );
 
   @override
   int removeMany(List<int> ids) => _logger.dbTraceSync(
-    source: _source,
-    operation: 'deleteMany',
-    table: _boxName,
-    meta: {'ids': ids.length},
-    run: () => _box.removeMany(ids),
-    projectResult: (count) => {'deleted': count},
-    config: config,
-  );
+        source: _source,
+        operation: 'deleteMany',
+        table: _boxName,
+        meta: {'ids': ids.length},
+        run: () => _box.removeMany(ids),
+        projectResult: (count) => {'deleted': count},
+        config: config,
+      );
 
   @override
   int removeAll() => _logger.dbTraceSync(
-    source: _source,
-    operation: 'clear',
-    table: _boxName,
-    run: _box.removeAll,
-    projectResult: (count) => {'cleared': count},
-    config: config,
-  );
+        source: _source,
+        operation: 'clear',
+        table: _boxName,
+        run: _box.removeAll,
+        projectResult: (count) => {'cleared': count},
+        config: config,
+      );
 
   // --- Async deletes --------------------------------------------------------
 
   @override
   Future<bool> removeAsync(int id) => _logger.dbTrace(
-    source: _source,
-    operation: 'deleteAsync',
-    table: _boxName,
-    key: id.toString(),
-    run: () => _box.removeAsync(id),
-    projectResult: (deleted) => {'deleted': deleted},
-    config: config,
-  );
+        source: _source,
+        operation: 'deleteAsync',
+        table: _boxName,
+        key: id.toString(),
+        run: () => _box.removeAsync(id),
+        projectResult: (deleted) => {'deleted': deleted},
+        config: config,
+      );
 
   @override
   Future<int> removeManyAsync(List<int> ids) => _logger.dbTrace(
-    source: _source,
-    operation: 'deleteManyAsync',
-    table: _boxName,
-    meta: {'ids': ids.length},
-    run: () => _box.removeManyAsync(ids),
-    projectResult: (count) => {'deleted': count},
-    config: config,
-  );
+        source: _source,
+        operation: 'deleteManyAsync',
+        table: _boxName,
+        meta: {'ids': ids.length},
+        run: () => _box.removeManyAsync(ids),
+        projectResult: (count) => {'deleted': count},
+        config: config,
+      );
 
   @override
   Future<int> removeAllAsync() => _logger.dbTrace(
-    source: _source,
-    operation: 'clearAsync',
-    table: _boxName,
-    run: _box.removeAllAsync,
-    projectResult: (count) => {'cleared': count},
-    config: config,
-  );
+        source: _source,
+        operation: 'clearAsync',
+        table: _boxName,
+        run: _box.removeAllAsync,
+        projectResult: (count) => {'cleared': count},
+        config: config,
+      );
 
   // --- Aggregations ---------------------------------------------------------
 

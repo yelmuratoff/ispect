@@ -30,9 +30,9 @@ final class ISpectSharedPreferences implements SharedPreferences {
     required SharedPreferences delegate,
     required ISpectLogger logger,
     String source = defaultSource,
-  }) : _prefs = delegate,
-       _logger = logger,
-       _source = source;
+  })  : _prefs = delegate,
+        _logger = logger,
+        _source = source;
 
   final SharedPreferences _prefs;
   final ISpectLogger _logger;
@@ -115,11 +115,11 @@ final class ISpectSharedPreferences implements SharedPreferences {
 
   @override
   Future<bool> remove(String key) => _logger.dbTrace(
-    source: _source,
-    operation: 'delete',
-    key: key,
-    run: () => _prefs.remove(key),
-  );
+        source: _source,
+        operation: 'delete',
+        key: key,
+        run: () => _prefs.remove(key),
+      );
 
   @override
   Future<bool> clear() =>
