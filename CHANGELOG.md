@@ -52,7 +52,7 @@
 
 - **Typography inspection:** Text size, line height, letter spacing, and word spacing preserve hundredths, so `0.25` no longer shows as `0.3`.
 - **Layout inspection:** Corrected RTL radii, fitted-box sizing, transformed padding and pivots, center-sliced image fit, color filters, flex/stack parent data, and missing clip or directional fields.
-- **Layout inspector in release:** The render-tree copy action no longer copies an empty string in profile and release builds, `ClipRSuperellipse` and RTL `ClipRRect` radii are read through typed APIs, and `Image.memory` sources keep a readable label.
+- **Layout inspector in release:** The render-tree copy action no longer copies an empty string in profile and release builds, `ClipRSuperellipse` and RTL `ClipRRect` radii are reported correctly, and `Image.memory` sources keep a readable label.
 - **Apple file history:** Rolling history now initializes in iOS and macOS cache sandboxes.
 - **Concurrent diagnostics:** Fixed BLoC event correlation and stale asynchronous log-viewer updates.
 - **Lifecycle:** Shutdown and forced reinitialization clean up logger state consistently, including on failure.
