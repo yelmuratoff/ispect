@@ -81,7 +81,7 @@ A standalone package. It works on its own, without the rest of the [ISpect toolk
 Everything above is read from public render-object state, so it works in profile and release builds compiled with `ISPECT_ENABLED` (pass `isEnabled: true`; the inspector is off by default in release). Two limitations remain:
 
 - `--obfuscate` mangles type names, so render-object labels, breadcrumb chips, `clipper` / `painter` / `shape` values, and `SvgPicture` detection show obfuscated names.
-- `ColorFilter.mode(...)` on a `DecorationImage` or `SvgPicture` shows as `ColorFilter` in release; `dart:ui` exposes no accessors for its colour and blend mode.
+- `ColorFilter.mode(...)` and `ColorFilter.matrix(...)` on a `DecorationImage` or `SvgPicture` show as `ColorFilter` in release; `dart:ui` exposes no accessors for their colour, blend mode, or matrix.
 
 ## Install
 

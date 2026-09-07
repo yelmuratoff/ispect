@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -899,10 +900,7 @@ List<PropSpec> backdropFilterProps(RenderBackdropFilter target) => [
   (
     icon: Icons.blur_on,
     subtitle: 'filter',
-    // `filter` is deprecated in Flutter >=3.40 in favour of `filterConfig`,
-    // but the pinned CI Flutter (3.32.6) only exposes `filter`.
-    // ignore: deprecated_member_use
-    child: EllipsizedText(describeImageFilter(target.filter)),
+    child: EllipsizedText(_describeBackdropFilter(target)),
   ),
   if (target.blendMode != BlendMode.srcOver)
     (
@@ -910,7 +908,32 @@ List<PropSpec> backdropFilterProps(RenderBackdropFilter target) => [
       subtitle: 'blend mode',
       child: Text(target.blendMode.name),
     ),
+  if (!target.enabled)
+    (icon: Icons.visibility_off, subtitle: 'enabled', child: const Text('off')),
 ];
+
+/// Since Flutter 3.40 `RenderBackdropFilter.filter` is deprecated in favour
+/// of `filterConfig` and throws when the widget was built with a config; the
+/// pinned CI Flutter (3.32.6) has no `filterConfig`, so it is read via
+/// `dynamic`.
+String _describeBackdropFilter(RenderBackdropFilter target) {
+  ImageFilter? filter;
+  try {
+    // ignore: deprecated_member_use
+    filter = target.filter;
+  } on Object {
+    filter = null;
+  }
+  if (filter != null) return describeImageFilter(filter);
+
+  Object? config;
+  try {
+    config = (target as dynamic).filterConfig as Object;
+  } on Object {
+    config = null;
+  }
+  return config == null ? 'ImageFilter' : describeImageFilterConfig(config);
+}
 
 List<PropSpec> editableProps(RenderEditable target) => [
   (

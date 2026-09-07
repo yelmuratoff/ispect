@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -299,6 +301,30 @@ void main() {
     expect(_prop(props, 'shadows'), isNotNull);
   });
 
+  test('BackdropFilter exposes its filter and disabled state', () {
+    final props = backdropFilterProps(
+      RenderBackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 3),
+        enabled: false,
+      ),
+    );
+
+    expect(
+      (_prop(props, 'filter')?.child as EllipsizedText?)?.value,
+      'blur(2.0, 3.0)',
+    );
+    expect(_text(_prop(props, 'enabled')), 'off');
+  });
+
+  test('BackdropFilter built with a filter config still reports it', () {
+    final props = backdropFilterProps(_ConfigBackedBackdropFilter());
+
+    expect(
+      (_prop(props, 'filter')?.child as EllipsizedText?)?.value,
+      startsWith('blur(2.0, 3.0'),
+    );
+  });
+
   testWidgets('aligned rotation does not fabricate a translation', (
     tester,
   ) async {
@@ -348,4 +374,30 @@ void main() {
     expect(_prop(props, 'scale'), isNull);
     expect(_prop(props, 'rotation°'), isNull);
   });
+}
+
+/// Mimics Flutter 3.40+, where `filter` throws for a render object built
+/// with `filterConfig`. On SDKs that predate `filterConfig` the getter is
+/// served through [noSuchMethod] with a config shaped like Flutter's blur
+/// config, so the fallback path runs on every supported Flutter.
+class _ConfigBackedBackdropFilter extends RenderBackdropFilter {
+  _ConfigBackedBackdropFilter()
+    : super(filter: ImageFilter.blur(sigmaX: 2, sigmaY: 3));
+
+  @override
+  ImageFilter get filter => throw AssertionError('built with filterConfig');
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      invocation.memberName == #filterConfig
+      ? const _BlurConfig()
+      : super.noSuchMethod(invocation);
+}
+
+class _BlurConfig {
+  const _BlurConfig();
+  double get sigmaX => 2;
+  double get sigmaY => 3;
+  TileMode get tileMode => TileMode.clamp;
+  bool get bounded => false;
 }

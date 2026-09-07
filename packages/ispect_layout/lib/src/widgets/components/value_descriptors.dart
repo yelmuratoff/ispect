@@ -130,35 +130,106 @@ String describeTextScaler(TextScaler scaler) {
 /// [ImageFilter] subclasses (`_GaussianBlurImageFilter` etc. in
 /// `dart:ui/painting.dart`) are library-private. Kind is identified by
 /// comparing `runtimeType` against factory-constructed sentinels; parameter
-/// fields (`sigmaX`, `radiusX`, `innerFilter`, …) are public on the
-/// private classes and read via `dynamic`.
+/// fields (`sigmaX`, `radiusX`, `data`, `innerFilter`, …) are public on the
+/// private classes and read via `dynamic`. Structured fields are preferred
+/// over `toString()` so debug and release builds describe a filter the same
+/// way; `toString()` is consulted only for kinds without a sentinel.
 String describeImageFilter(ImageFilter filter) {
   assert(_assertReleaseSafeContracts());
+  final kind = _ImageFilterKind.lookup(filter.runtimeType);
+  if (kind != null) {
+    final structured = _describeKnownImageFilter(filter, kind);
+    if (structured != null) return structured;
+  }
   final raw = filter.toString();
   if (!raw.startsWith(_kStrippedToStringPrefix)) {
-    return raw
-        .replaceFirst('ImageFilter.', '')
-        .replaceAllMapped(
-          RegExp(r',\s*(TileMode\.\w+|unspecified)\)$'),
-          (_) => ')',
-        );
+    return raw.replaceFirst('ImageFilter.', '');
   }
-  final kind = _ImageFilterKind.lookup(filter.runtimeType);
-  if (kind == null) return 'ImageFilter';
+  return kind == null ? 'ImageFilter' : 'ImageFilter.${kind.name}';
+}
+
+String? _describeKnownImageFilter(ImageFilter filter, _ImageFilterKind kind) {
   try {
     final dyn = filter as dynamic;
     String d(Object? v) => (v as double).toStringAsFixed(1);
     return switch (kind) {
-      _ImageFilterKind.blur => 'blur(${d(dyn.sigmaX)}, ${d(dyn.sigmaY)})',
+      _ImageFilterKind.blur => _describeBlur(
+        sigmaX: dyn.sigmaX as double,
+        sigmaY: dyn.sigmaY as double,
+        tileMode: dyn.tileMode as TileMode?,
+      ),
       _ImageFilterKind.dilate => 'dilate(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
       _ImageFilterKind.erode => 'erode(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
-      _ImageFilterKind.matrix => 'matrix',
+      _ImageFilterKind.matrix => _describeMatrixFilter(
+        dyn.data as Float64List,
+        dyn.filterQuality as FilterQuality,
+      ),
       _ImageFilterKind.compose =>
         'compose(${describeImageFilter(dyn.innerFilter as ImageFilter)} '
             '→ ${describeImageFilter(dyn.outerFilter as ImageFilter)})',
     };
-  } catch (_) {
-    return 'ImageFilter.${kind.name}';
+  } on Object {
+    return null;
+  }
+}
+
+String _describeBlur({
+  required double sigmaX,
+  required double sigmaY,
+  required TileMode? tileMode,
+  bool bounded = false,
+}) {
+  final parts = <String>[
+    sigmaX.toStringAsFixed(1),
+    sigmaY.toStringAsFixed(1),
+    if (tileMode != null) tileMode.name,
+    if (bounded) 'bounded',
+  ];
+  return 'blur(${parts.join(', ')})';
+}
+
+String _describeMatrixFilter(Float64List data, FilterQuality quality) {
+  final values = data.map((v) => v.toStringAsFixed(1)).join(', ');
+  return quality == FilterQuality.medium
+      ? 'matrix([$values])'
+      : 'matrix([$values], ${quality.name})';
+}
+
+/// Describes a Flutter `ImageFilterConfig` (Flutter 3.40+) without naming
+/// the type, so this package still compiles against Flutter 3.32. Its
+/// subclasses are private; the public fields (`filter`, `sigmaX`, `sigmaY`,
+/// `tileMode`, `bounded`, `outer`, `inner`) are read via `dynamic`, and an
+/// unrecognised shape degrades to the runtime type name.
+String describeImageFilterConfig(Object config) {
+  final dyn = config as dynamic;
+  final direct = _read(() => dyn.filter as ImageFilter?);
+  if (direct != null) return describeImageFilter(direct);
+
+  final sigmaX = _read(() => dyn.sigmaX as double);
+  final sigmaY = _read(() => dyn.sigmaY as double);
+  if (sigmaX != null && sigmaY != null) {
+    return _describeBlur(
+      sigmaX: sigmaX,
+      sigmaY: sigmaY,
+      tileMode: _read<TileMode?>(() => dyn.tileMode as TileMode?),
+      bounded: _read(() => dyn.bounded as bool) ?? false,
+    );
+  }
+
+  final outer = _read(() => dyn.outer as Object);
+  final inner = _read(() => dyn.inner as Object);
+  if (outer != null && inner != null) {
+    return 'compose(${describeImageFilterConfig(inner)} '
+        '→ ${describeImageFilterConfig(outer)})';
+  }
+  return config.runtimeType.toString();
+}
+
+T? _read<T>(T Function() read) {
+  try {
+    return read();
+  } on Object {
+    return null;
   }
 }
 
@@ -170,18 +241,12 @@ enum _ImageFilterKind {
   compose;
 
   static final Map<Type, _ImageFilterKind> _byType = () {
-    final identity4x4 = Float64List.fromList(<double>[
-      1, 0, 0, 0, //
-      0, 1, 0, 0, //
-      0, 0, 1, 0, //
-      0, 0, 0, 1, //
-    ]);
     final blurFilter = ImageFilter.blur();
     return {
       blurFilter.runtimeType: blur,
       ImageFilter.dilate().runtimeType: dilate,
       ImageFilter.erode().runtimeType: erode,
-      ImageFilter.matrix(identity4x4).runtimeType: matrix,
+      ImageFilter.matrix(_identity4x4).runtimeType: matrix,
       ImageFilter.compose(outer: blurFilter, inner: blurFilter).runtimeType:
           compose,
     };
@@ -189,6 +254,12 @@ enum _ImageFilterKind {
 
   static _ImageFilterKind? lookup(Type t) => _byType[t];
 }
+
+final Float64List _identity4x4 = Float64List(16)
+  ..[0] = 1
+  ..[5] = 1
+  ..[10] = 1
+  ..[15] = 1;
 
 /// Best-effort short description of an [ImageProvider]: URL for network
 /// images, asset name for bundled assets, file path for files; falls back
@@ -397,12 +468,35 @@ bool _assertReleaseSafeContracts() {
   _contractsValidated = true;
 
   // Source: dart:ui/painting.dart, `_GaussianBlurImageFilter` etc.
-  final blur = ImageFilter.blur(sigmaX: 1, sigmaY: 2);
+  final blur = ImageFilter.blur(
+    sigmaX: 1,
+    sigmaY: 2,
+    tileMode: TileMode.mirror,
+  );
   final dynBlur = blur as dynamic;
   assert(
-    _holds(() => dynBlur.sigmaX == 1.0 && dynBlur.sigmaY == 2.0),
-    'ImageFilter.blur sigmaX/sigmaY renamed in Flutter; '
+    _holds(
+      () =>
+          dynBlur.sigmaX == 1.0 &&
+          dynBlur.sigmaY == 2.0 &&
+          dynBlur.tileMode == TileMode.mirror,
+    ),
+    'ImageFilter.blur sigmaX/sigmaY/tileMode renamed in Flutter; '
     'update the blur branch of describeImageFilter',
+  );
+  final matrix = ImageFilter.matrix(
+    _identity4x4,
+    filterQuality: FilterQuality.high,
+  );
+  final dynMatrix = matrix as dynamic;
+  assert(
+    _holds(
+      () =>
+          dynMatrix.data is Float64List &&
+          dynMatrix.filterQuality == FilterQuality.high,
+    ),
+    'ImageFilter.matrix data/filterQuality renamed in Flutter; '
+    'update the matrix branch of describeImageFilter',
   );
   final dilate = ImageFilter.dilate(radiusX: 3, radiusY: 4);
   final dynDilate = dilate as dynamic;
