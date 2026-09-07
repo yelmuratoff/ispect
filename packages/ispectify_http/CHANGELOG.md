@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.0.0-rc.10
+## 7.0.0-rc.11
 
 ### Breaking Changes
 
@@ -42,12 +42,18 @@
 - **WebSocket correlation:** `onSent` and `onReceived` accept a `messageId` to pair a frame with its reply.
 - **Larger diagnostic handoff:** Larger payload, record, and export budgets; exports report actual and truncated counts, and imports report skipped records.
 - **Clearer network cards:** Larger body previews with explicit truncation cues, and header names stay visible with redacted values behind a compact disclosure.
+- **Tighter log cards:** Mobile log and network cards use a smaller corner radius that matches the search field.
+- **Rounder tiles:** Bordered tiles in the context menu, Settings, and HTTP composer draw their outline with the same squircle corner as their fill, so the corners are no longer visibly sharper than the rest of the UI.
 - **Panel header:** The open panel shows the `pageTitle` with a close control, and every action tile shows a localized caption.
+- **Filter sheet height:** On phones the filter sheet opens as tall as its content, so every log type is visible without dragging; past 85% of the screen it scrolls instead.
+- **Layout inspector coverage:** Selecting `Padding`, `ConstrainedBox`, `SizedBox`, `Align`, or `Center` shows their insets, constraints, and alignment, and `ShapeDecoration` surfaces its colour, shape, radius, shadows, and gradient.
 
 ### Bug Fixes
 
 - **Typography inspection:** Text size, line height, letter spacing, and word spacing preserve hundredths, so `0.25` no longer shows as `0.3`.
 - **Layout inspection:** Corrected RTL radii, fitted-box sizing, transformed padding and pivots, center-sliced image fit, color filters, flex/stack parent data, and missing clip or directional fields.
+- **Layout inspector in release:** The render-tree copy action no longer copies an empty string in profile and release builds, `ClipRSuperellipse` and RTL `ClipRRect` radii are reported correctly, `Image.memory` sources keep a readable label, and blur, matrix, and composed image filters read the same in debug and release.
+- **Layout inspector on Flutter 3.40+:** Inspecting a widget under a `BackdropFilter` built with `filterConfig` no longer breaks the panel, and a disabled `BackdropFilter` is labelled as such.
 - **Apple file history:** Rolling history now initializes in iOS and macOS cache sandboxes.
 - **Concurrent diagnostics:** Fixed BLoC event correlation and stale asynchronous log-viewer updates.
 - **Lifecycle:** Shutdown and forced reinitialization clean up logger state consistently, including on failure.
