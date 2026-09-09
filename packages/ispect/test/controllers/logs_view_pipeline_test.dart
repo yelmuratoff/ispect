@@ -100,6 +100,53 @@ void main() {
     expect(state.idToVisualIndex, {'A': 0, 'REQUEST-1': 1, 'RESPONSE-1': 1});
   });
 
+  test('a type filter keeps HTTP transactions grouped and whole', () {
+    final logs = [
+      plain('A'),
+      ...transaction(1),
+      ...transaction(2),
+      transaction(3).first,
+    ];
+    view.setOnlyLogTypeKey(ISpectLogType.httpResponse.key);
+
+    final state = pipeline.compute(logs);
+
+    expect(ids(state.filtered), ['RESPONSE-1', 'RESPONSE-2']);
+    final rows = state.grouped!.cast<NetworkTransaction>();
+    expect(rows.map((tx) => tx.request.id), ['REQUEST-1', 'REQUEST-2']);
+    expect(rows.map((tx) => tx.response?.id), ['RESPONSE-1', 'RESPONSE-2']);
+    expect(state.idToVisualIndex, {
+      'REQUEST-2': 0,
+      'RESPONSE-2': 0,
+      'REQUEST-1': 1,
+      'RESPONSE-1': 1,
+    });
+  });
+
+  test('a type filter stays flat while grouping is off', () {
+    view
+      ..toggleGroupHttpLogs()
+      ..setOnlyLogTypeKey(ISpectLogType.httpResponse.key);
+
+    final state = pipeline.compute([plain('A'), ...transaction(1)]);
+
+    expect(state.grouped, isNull);
+    expect(ids(state.sorted), ['RESPONSE-1']);
+  });
+
+  test('search in filter mode keeps a matched transaction whole', () {
+    view
+      ..searchMode = SearchMode.filter
+      ..searchByCorrelationId('response 2');
+
+    final state = pipeline.compute([...transaction(1), ...transaction(2)]);
+
+    expect(ids(state.filtered), ['RESPONSE-2']);
+    final row = state.grouped!.single as NetworkTransaction;
+    expect(row.request.id, 'REQUEST-2');
+    expect(row.response?.id, 'RESPONSE-2');
+  });
+
   test('an unchanged snapshot reuses the visual index map', () {
     final logs = [plain('A'), plain('B')];
 

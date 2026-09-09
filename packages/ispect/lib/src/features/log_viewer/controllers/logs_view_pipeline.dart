@@ -31,7 +31,8 @@ final class LogsViewState {
   final List<ISpectLogData> sorted;
 
   /// [sorted] with HTTP request/response/error triples folded into
-  /// [NetworkTransaction] rows, or null when grouping is off.
+  /// [NetworkTransaction] rows, or null when grouping is off. A transaction
+  /// stays whole when only some of its entries pass the active filter.
   final List<Object>? grouped;
 
   /// Whether the list renders newest-first through index inversion.
@@ -90,10 +91,9 @@ final class LogsViewPipeline {
     final sorted = _screen.applySortingIfNeeded(filtered);
     final isReversed =
         _view.sortColumn == LogSortColumn.time && _view.isLogOrderReversed;
-    final shouldGroup = _view.groupHttpLogs && _view.filter.logTypeKeys.isEmpty;
-    final grouped = shouldGroup
+    final grouped = _view.groupHttpLogs
         ? _transactionService
-              .getGroupedEntries(sorted, _view.outputGeneration)
+              .getGroupedEntries(sorted, _view.outputGeneration, source: logs)
               .entries
         : null;
 

@@ -66,6 +66,7 @@
 - **Database console lines:** Traces name the table, show normalized SQL, and carry affected rows, item counts, size, and cache hits.
 - **Log type filters:** Toggles survive reopening the settings sheet, `Select All` and `Deselect All` take effect, custom log types are no longer suppressed, and disabling a type removes its entries from the viewer, chips, and counters immediately.
 - **Relative timestamps:** The `Relative time` toggle applies to mobile log cards and grouped HTTP rows.
+- **Grouped HTTP logs under filters:** Selecting `http-request`, `http-response`, or `http-error` in the filter sheet keeps HTTP logs grouped, and a transaction card stays whole when only one of its entries matches the active filter or search.
 - **Documentation:** Fixed the documented `ispectify_db` defaults for `attachStackOnError` and `sampleRate`, and removed the never-emitted `db-slow-query` entry.
 
 ### Deprecations
