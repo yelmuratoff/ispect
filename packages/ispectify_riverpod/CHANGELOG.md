@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.0.0-rc.12
+## 7.0.0-rc.13
 
 ### Breaking Changes
 
@@ -15,6 +15,7 @@
 
 ### Behavioral Changes
 
+- **Mobile log details:** Tap a log card to open its full details immediately; use the arrow to toggle the inline preview. HTTP cards open the response or error when available, with request/response switching inside the detail view.
 - **Squircle surfaces:** Every ISpect surface shares one corner shape, and tooltips use ISpect's own colours instead of Material's default.
 - **Panel resting state:** The panel is either parked at a screen edge or open, and parks whenever an ISpect screen opens. A caller-supplied `DraggablePanelController` keeps its own placement.
 - **Readable diagnostics by default:** Exceptions, stack traces, ordinary URLs, SQL table and column names, correlation ids, route paths, and bounded `toJson()` snapshots stay readable after redaction, and non-secret keys such as `cache_key` and `idempotency_key` are no longer masked.
@@ -50,6 +51,10 @@
 
 ### Bug Fixes
 
+- **Desktop HTTP selection:** Selecting a grouped transaction defaults to its response or error, falling back to the request while pending.
+- **Desktop HTTP rows:** Hover actions keep a compact, stable row height without shifting neighbouring logs.
+- **Log action titles:** Actions headers preserve names such as HTTP Request and BLoC Create, including custom display titles.
+- **Grouped log actions:** Long-press a grouped HTTP card to open Actions. Expand/collapse buttons now use the same styling as Actions.
 - **Typography inspection:** Text size, line height, letter spacing, and word spacing preserve hundredths, so `0.25` no longer shows as `0.3`.
 - **Layout inspection:** Corrected RTL radii, fitted-box sizing, transformed padding and pivots, center-sliced image fit, color filters, flex/stack parent data, and missing clip or directional fields.
 - **Layout inspector in release:** The render-tree copy action no longer copies an empty string in profile and release builds, `ClipRSuperellipse` and RTL `ClipRRect` radii are reported correctly, `Image.memory` sources keep a readable label, and blur, matrix, and composed image filters read the same in debug and release.

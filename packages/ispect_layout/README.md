@@ -87,7 +87,7 @@ Everything above is read from public render-object state, so it works in profile
 
 ```yaml
 dependencies:
-  ispect_layout: ^7.0.0-rc.12
+  ispect_layout: ^7.0.0-rc.13
 ```
 
 ## Quick start
