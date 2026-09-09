@@ -6,6 +6,8 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_search_highlight_surface.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_context_menu.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_desktop_row.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_details.dart';
@@ -44,10 +46,19 @@ class NetworkTransactionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void openMenu() => showLogContextMenu(
+      context: context,
+      position: Offset.zero,
+      data: transaction.request,
+      onShareTap: () => shareTransaction(context, transaction),
+      onOpenDetail: onOpenResponseDetail ?? onOpenRequestDetail,
+    );
+
     if (context.screenSize.isDesktop) {
       return NetworkTransactionDesktopRow(
         transaction: transaction,
         onTap: onTap,
+        onLongPress: openMenu,
         onOpenRequestDetail: onOpenRequestDetail,
         onOpenResponseDetail: onOpenResponseDetail,
         typeColumnWidth: typeColumnWidth,
@@ -62,6 +73,7 @@ class NetworkTransactionCard extends StatelessWidget {
       child: _MobileTransactionCard(
         transaction: transaction,
         onTap: onTap,
+        onLongPress: openMenu,
         onOpenRequestDetail: onOpenRequestDetail,
         onOpenResponseDetail: onOpenResponseDetail,
         searchMatchState: searchMatchState,
@@ -75,6 +87,7 @@ class NetworkTransactionCard extends StatelessWidget {
 class _MobileTransactionCard extends StatefulWidget {
   const _MobileTransactionCard({
     required this.transaction,
+    required this.onLongPress,
     this.onTap,
     this.onOpenRequestDetail,
     this.onOpenResponseDetail,
@@ -84,6 +97,7 @@ class _MobileTransactionCard extends StatefulWidget {
   });
 
   final NetworkTransaction transaction;
+  final VoidCallback onLongPress;
   final VoidCallback? onTap;
   final VoidCallback? onOpenRequestDetail;
   final VoidCallback? onOpenResponseDetail;
@@ -108,7 +122,14 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
 
     void toggleExpanded() {
       setState(() => _expanded = !_expanded);
+    }
+
+    final openDetail =
+        widget.onOpenResponseDetail ?? widget.onOpenRequestDetail;
+
+    void handleTap() {
       widget.onTap?.call();
+      (openDetail ?? toggleExpanded)();
     }
 
     return ISpectSearchHighlightSurface(
@@ -126,18 +147,22 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Semantics(
+              container: true,
+              explicitChildNodes: true,
               button: true,
-              expanded: _expanded,
+              expanded: openDetail == null ? _expanded : null,
               label:
                   '${tx.method ?? "HTTP"} $displayUrl - ${tx.statusCode ?? "pending"}',
-              onTap: toggleExpanded,
+              onTap: handleTap,
+              onLongPress: widget.onLongPress,
               child: Material(
                 type: MaterialType.transparency,
                 child: InkWell(
                   excludeFromSemantics: true,
-                  onTap: toggleExpanded,
+                  onTap: handleTap,
+                  onLongPress: widget.onLongPress,
                   child: Padding(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.only(left: 10),
                     child: _MobileHeader(
                       tx: tx,
                       color: color,
@@ -145,6 +170,7 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
                       compactUrl: widget.compactUrl,
                       displayUrl: displayUrl,
                       useRelativeTime: widget.useRelativeTime,
+                      onToggleExpanded: toggleExpanded,
                     ),
                   ),
                 ),
@@ -186,7 +212,6 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
   }
 }
 
-/// Collapsed header for mobile - badges + chevron only, no action buttons.
 class _MobileHeader extends StatelessWidget {
   const _MobileHeader({
     required this.tx,
@@ -195,6 +220,7 @@ class _MobileHeader extends StatelessWidget {
     required this.compactUrl,
     required this.displayUrl,
     required this.useRelativeTime,
+    required this.onToggleExpanded,
   });
 
   final NetworkTransaction tx;
@@ -203,77 +229,93 @@ class _MobileHeader extends StatelessWidget {
   final bool compactUrl;
   final String displayUrl;
   final bool useRelativeTime;
+  final VoidCallback onToggleExpanded;
 
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                MethodBadge(method: tx.method ?? 'HTTP', color: color),
-                const Gap(6),
-                Expanded(
-                  child: Text(
-                    transactionListUrl(displayUrl, compact: compactUrl),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: context.appTheme.textColor.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Text(
-              context.formatLogTime(
-                tx.request.time,
-                relative: useRelativeTime,
-                absolute: _formatTime(tx.request.time),
-              ),
-              maxLines: 1,
-              style: TextStyle(
-                color: context.appTheme.textColor.withValues(alpha: 0.6),
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-      if (tx.statusCode case final code?) ...[
-        const Gap(4),
+  Widget build(BuildContext context) {
+    final stackMetadata = MediaQuery.textScalerOf(context).scale(12) > 18;
+    final badges = <Widget>[
+      if (tx.statusCode case final code?)
         StatusBadge(text: '$code', color: color),
-      ],
-      if (tx.duration case final duration?) ...[
-        const Gap(4),
+      if (tx.duration case final duration?)
         StatusBadge(
           text: formatTransactionDuration(duration),
           color: context.appTheme.textColor.withValues(alpha: 0.5),
         ),
-      ],
-      if (tx.isPending) ...[
-        const Gap(4),
+      if (tx.isPending)
         StatusBadge(
           text: ISpectLocalization.of(context).pending,
           color: JsonColors.statusWarning,
         ),
+    ];
+    return Row(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    MethodBadge(method: tx.method ?? 'HTTP', color: color),
+                    const Gap(6),
+                    Expanded(
+                      child: Text(
+                        transactionListUrl(displayUrl, compact: compactUrl),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: context.appTheme.textColor.withValues(
+                            alpha: 0.7,
+                          ),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  context.formatLogTime(
+                    tx.request.time,
+                    relative: useRelativeTime,
+                    absolute: _formatTime(tx.request.time),
+                  ),
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: context.appTheme.textColor.withValues(alpha: 0.6),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (stackMetadata && badges.isNotEmpty) ...[
+                  const Gap(4),
+                  Wrap(spacing: 4, runSpacing: 4, children: badges),
+                ],
+              ],
+            ),
+          ),
+        ),
+        if (!stackMetadata)
+          for (final badge in badges) ...[const Gap(4), badge],
+        Semantics(
+          expanded: expanded,
+          child: SquareIconButton(
+            icon: expanded
+                ? Icons.keyboard_arrow_up_rounded
+                : Icons.keyboard_arrow_down_rounded,
+            color: color,
+            tooltip: expanded
+                ? context.ispectL10n.collapseLogs
+                : context.ispectL10n.expandLogs,
+            onPressed: onToggleExpanded,
+          ),
+        ),
       ],
-      const Gap(4),
-      Icon(
-        expanded
-            ? Icons.keyboard_arrow_up_rounded
-            : Icons.keyboard_arrow_down_rounded,
-        size: 18,
-        color: color.withValues(alpha: 0.5),
-      ),
-    ],
-  );
+    );
+  }
 
   static String _formatTime(DateTime time) {
     final h = time.hour.toString().padLeft(2, '0');

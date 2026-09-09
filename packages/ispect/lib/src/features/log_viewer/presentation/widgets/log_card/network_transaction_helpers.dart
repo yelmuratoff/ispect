@@ -272,6 +272,7 @@ List<Widget> buildActionWidgets({
             ? Icons.arrow_upward_rounded
             : Icons.open_in_new_rounded,
         iconOnly: compactDetailChips,
+        dense: useDesktopStyle,
         onTap: onOpenRequestDetail,
       ),
     ]);
@@ -290,6 +291,7 @@ List<Widget> buildActionWidgets({
             ? Icons.arrow_downward_rounded
             : Icons.open_in_new_rounded,
         iconOnly: compactDetailChips,
+        dense: useDesktopStyle,
         onTap: onOpenResponseDetail,
       ),
     ]);

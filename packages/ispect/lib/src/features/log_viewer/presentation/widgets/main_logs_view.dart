@@ -407,7 +407,9 @@ class _MainLogsViewState extends State<MainLogsView> {
       compactUrl: widget.logsViewController.compactNetworkUrls,
       useRelativeTime: useRelativeTime,
       onTap: isDesktop
-          ? () => widget.logsViewController.selectLog(entry.request)
+          ? () => widget.logsViewController.selectLog(
+              responseOrError ?? entry.request,
+            )
           : null,
       onOpenRequestDetail: isDesktop
           ? () => widget.logsViewController.selectAndFollowDetail(entry.request)

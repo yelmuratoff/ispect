@@ -146,11 +146,12 @@ class _LogCardHeader extends StatelessWidget {
     }
 
     return Semantics(
+      container: true,
+      explicitChildNodes: true,
       button: true,
-      expanded: isExpanded,
       label:
           '${ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? "Log"}: ${message ?? ""}',
-      onTap: onTap,
+      onTap: openDetail,
       child: Material(
         type: MaterialType.transparency,
         child: GestureDetector(
@@ -158,7 +159,7 @@ class _LogCardHeader extends StatelessWidget {
           onLongPressStart: (details) => openMenu(details.globalPosition),
           child: InkWell(
             excludeFromSemantics: true,
-            onTap: onTap,
+            onTap: openDetail,
             borderRadius: const BorderRadius.only(
               topRight: Radius.circular(10),
               bottomRight: Radius.circular(10),
@@ -189,6 +190,7 @@ class _LogCardHeader extends StatelessWidget {
                       ? data.traceDurationMs
                       : null,
                   onExpandTap: openDetail,
+                  onToggleExpanded: onTap,
                   onMenuTap: () => openMenu(Offset.zero),
                 ),
               ),

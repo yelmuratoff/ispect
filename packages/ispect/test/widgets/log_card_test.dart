@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
 
 import '../helpers/pump_ispect.dart';
 
@@ -148,17 +149,38 @@ void main() {
       expect(find.textContaining('12:00:00'), findsOneWidget);
     });
 
-    testWidgets('Given a LogCard with an onTap callback, '
-        'When the header is tapped, '
-        'Then the onTap callback is invoked', (tester) async {
+    testWidgets('tapping a collapsed log opens details without expanding it', (
+      tester,
+    ) async {
+      var expanded = false;
+      final data = makeLogData();
+      await tester.pumpWidget(
+        buildLogCard(data: data, onTap: () => expanded = true),
+      );
+
+      await tester.tap(find.text('Test message'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(LogDetailView), findsOneWidget);
+      expect(
+        tester.widget<LogDetailView>(find.byType(LogDetailView)).activeData,
+        same(data),
+      );
+      expect(expanded, isFalse);
+    });
+
+    testWidgets('the disclosure toggles the preview without opening details', (
+      tester,
+    ) async {
       var tapped = false;
       await tester.pumpWidget(buildLogCard(onTap: () => tapped = true));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(InkWell).first);
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded));
       await tester.pumpAndSettle();
 
       expect(tapped, isTrue);
+      expect(find.byType(LogDetailView), findsNothing);
     });
 
     testWidgets('Given an expanded LogCard, '

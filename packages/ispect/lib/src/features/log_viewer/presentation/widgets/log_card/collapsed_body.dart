@@ -11,6 +11,7 @@ class CollapsedBody extends StatelessWidget {
     required this.message,
     required this.errorMessage,
     required this.expanded,
+    this.onToggleExpanded,
     this.subtitle,
     this.statusCode,
     this.slowDurationMs,
@@ -22,6 +23,7 @@ class CollapsedBody extends StatelessWidget {
   final String? title;
   final String dateTime;
   final VoidCallback? onExpandTap;
+  final VoidCallback? onToggleExpanded;
   final VoidCallback? onMenuTap;
 
   final String? message;
@@ -118,13 +120,28 @@ class CollapsedBody extends StatelessWidget {
         SlowBadge(durationMs: slowDurationMs!),
       ],
       const Gap(4),
-      SquareIconButton(
-        icon: Icons.open_in_full_rounded,
-        color: color,
-        tooltip: context.ispectL10n.expandLogs,
-        dense: true,
-        onPressed: onExpandTap,
-      ),
+      if (onToggleExpanded != null)
+        Semantics(
+          expanded: expanded,
+          child: SquareIconButton(
+            icon: expanded
+                ? Icons.keyboard_arrow_up_rounded
+                : Icons.keyboard_arrow_down_rounded,
+            color: color,
+            tooltip: expanded
+                ? context.ispectL10n.collapseLogs
+                : context.ispectL10n.expandLogs,
+            onPressed: onToggleExpanded,
+          ),
+        )
+      else
+        SquareIconButton(
+          icon: Icons.open_in_full_rounded,
+          color: color,
+          tooltip: context.ispectL10n.expandLogs,
+          dense: true,
+          onPressed: onExpandTap,
+        ),
       const Gap(4),
       SquareIconButton(
         icon: Icons.more_vert_rounded,

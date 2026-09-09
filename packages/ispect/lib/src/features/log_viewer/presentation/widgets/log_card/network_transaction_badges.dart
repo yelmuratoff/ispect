@@ -159,6 +159,7 @@ class DetailChip extends StatelessWidget {
     required this.onTap,
     this.icon = Icons.open_in_new_rounded,
     this.iconOnly = false,
+    this.dense = false,
     super.key,
   });
 
@@ -167,6 +168,7 @@ class DetailChip extends StatelessWidget {
   final VoidCallback? onTap;
   final IconData icon;
   final bool iconOnly;
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
@@ -207,7 +209,14 @@ class DetailChip extends StatelessWidget {
           color: color.withValues(alpha: 0.08),
           radius: ISpectConstants.mediumBorderRadius,
         ),
-        child: iconOnly
+        child: dense
+            ? ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: ISpectConstants.iconButtonDimension,
+                ),
+                child: content,
+              )
+            : iconOnly
             ? content
             : SizedBox(
                 height: ISpectConstants.actionControlHeight,
@@ -226,13 +235,15 @@ class DetailChip extends StatelessWidget {
           excludeFromSemantics: true,
           customBorder: ISpectSquircle.insetBorder(
             radius: ISpectConstants.mediumBorderRadius,
-            insets: iconOnly
+            insets: iconOnly || dense
                 ? EdgeInsets.zero
                 : const EdgeInsets.symmetric(vertical: feedbackInset),
           ),
           onTap: onTap,
           child: iconOnly
               ? Tooltip(message: label, child: chip)
+              : dense
+              ? chip
               : ConstrainedBox(
                   constraints: const BoxConstraints(
                     minHeight: kMinInteractiveDimension,

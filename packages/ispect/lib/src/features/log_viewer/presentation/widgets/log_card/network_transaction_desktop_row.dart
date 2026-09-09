@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/column_widths.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
@@ -16,6 +17,7 @@ class NetworkTransactionDesktopRow extends StatefulWidget {
     required this.typeColumnWidth,
     required this.timeColumnWidth,
     this.onTap,
+    this.onLongPress,
     this.onOpenRequestDetail,
     this.onOpenResponseDetail,
     this.searchMatchState = SearchMatchState.none,
@@ -26,6 +28,7 @@ class NetworkTransactionDesktopRow extends StatefulWidget {
 
   final NetworkTransaction transaction;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final VoidCallback? onOpenRequestDetail;
   final VoidCallback? onOpenResponseDetail;
   final double typeColumnWidth;
@@ -103,11 +106,13 @@ class _NetworkTransactionDesktopRowState
               label:
                   '${tx.method ?? "HTTP"} $displayUrl - ${tx.statusCode ?? "pending"}',
               onTap: toggleExpanded,
+              onLongPress: widget.onLongPress,
               child: Material(
                 type: MaterialType.transparency,
                 child: InkWell(
                   excludeFromSemantics: true,
                   onTap: toggleExpanded,
+                  onLongPress: widget.onLongPress,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -128,107 +133,112 @@ class _NetworkTransactionDesktopRowState
                               : widget.typeColumnWidth,
                           timeWidth: isCompact ? 0 : widget.timeColumnWidth,
                         );
-                        return Row(
-                          children: [
-                            Icon(
-                              Icons.swap_vert_rounded,
-                              size: 16,
-                              color: color,
-                            ),
-                            const Gap(8),
-                            SizedBox(
-                              width: scaled.typeWidth,
-                              child: Text(
-                                'http-transaction',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: color,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 12,
+                        return ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minHeight: ISpectConstants.iconButtonDimension,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.swap_vert_rounded,
+                                size: 16,
+                                color: color,
+                              ),
+                              const Gap(8),
+                              SizedBox(
+                                width: scaled.typeWidth,
+                                child: Text(
+                                  'http-transaction',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: color,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const Gap(8),
-                            if (!isCompact) ...[
-                              SizedBox(
-                                width: scaled.timeWidth,
+                              const Gap(8),
+                              if (!isCompact) ...[
+                                SizedBox(
+                                  width: scaled.timeWidth,
+                                  child: Text(
+                                    context.formatLogTime(
+                                      tx.request.time,
+                                      relative: widget.useRelativeTime,
+                                      absolute: tx.request.formattedTime,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: onSurface.withValues(alpha: 0.45),
+                                      fontSize: 11,
+                                      fontFamily: 'monospace',
+                                    ),
+                                  ),
+                                ),
+                                const Gap(12),
+                              ],
+                              MethodBadge(
+                                method: tx.method ?? 'HTTP',
+                                color: color,
+                              ),
+                              const Gap(6),
+                              Expanded(
                                 child: Text(
-                                  context.formatLogTime(
-                                    tx.request.time,
-                                    relative: widget.useRelativeTime,
-                                    absolute: tx.request.formattedTime,
+                                  transactionListUrl(
+                                    displayUrl,
+                                    compact: widget.compactUrl,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    color: onSurface.withValues(alpha: 0.45),
-                                    fontSize: 11,
-                                    fontFamily: 'monospace',
+                                    color: onSurface.withValues(alpha: 0.75),
+                                    fontSize: 12,
                                   ),
                                 ),
                               ),
-                              const Gap(12),
-                            ],
-                            MethodBadge(
-                              method: tx.method ?? 'HTTP',
-                              color: color,
-                            ),
-                            const Gap(6),
-                            Expanded(
-                              child: Text(
-                                transactionListUrl(
-                                  displayUrl,
-                                  compact: widget.compactUrl,
+                              if (tx.statusCode case final code?) ...[
+                                const Gap(8),
+                                DesktopStatusBadge(statusCode: code),
+                              ],
+                              if (tx.duration case final d?) ...[
+                                const Gap(8),
+                                DurationBadge(duration: d),
+                              ],
+                              if (tx.isPending) ...[
+                                const Gap(8),
+                                PendingBadge(
+                                  label: ISpectLocalization.of(context).pending,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: onSurface.withValues(alpha: 0.75),
-                                  fontSize: 12,
+                              ],
+                              if (_isHovered && canShowHoverActions) ...[
+                                const Gap(8),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: buildActionWidgets(
+                                    context: context,
+                                    tx: tx,
+                                    color: color,
+                                    useDesktopStyle: true,
+                                    compactDetailChips: compactDetailChips,
+                                    onOpenRequestDetail:
+                                        widget.onOpenRequestDetail,
+                                    onOpenResponseDetail:
+                                        widget.onOpenResponseDetail,
+                                  ),
                                 ),
-                              ),
-                            ),
-                            if (tx.statusCode case final code?) ...[
-                              const Gap(8),
-                              DesktopStatusBadge(statusCode: code),
-                            ],
-                            if (tx.duration case final d?) ...[
-                              const Gap(8),
-                              DurationBadge(duration: d),
-                            ],
-                            if (tx.isPending) ...[
-                              const Gap(8),
-                              PendingBadge(
-                                label: ISpectLocalization.of(context).pending,
-                              ),
-                            ],
-                            if (_isHovered && canShowHoverActions) ...[
-                              const Gap(8),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: buildActionWidgets(
-                                  context: context,
-                                  tx: tx,
-                                  color: color,
-                                  useDesktopStyle: true,
-                                  compactDetailChips: compactDetailChips,
-                                  onOpenRequestDetail:
-                                      widget.onOpenRequestDetail,
-                                  onOpenResponseDetail:
-                                      widget.onOpenResponseDetail,
-                                ),
+                              ],
+                              const Gap(4),
+                              Icon(
+                                _expanded
+                                    ? Icons.keyboard_arrow_up_rounded
+                                    : Icons.keyboard_arrow_down_rounded,
+                                size: 16,
+                                color: onSurface.withValues(alpha: 0.3),
                               ),
                             ],
-                            const Gap(4),
-                            Icon(
-                              _expanded
-                                  ? Icons.keyboard_arrow_up_rounded
-                                  : Icons.keyboard_arrow_down_rounded,
-                              size: 16,
-                              color: onSurface.withValues(alpha: 0.3),
-                            ),
-                          ],
+                          ),
                         );
                       },
                     ),

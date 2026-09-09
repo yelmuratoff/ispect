@@ -8,6 +8,7 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_icon_badge.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
 import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/ispect.dart';
@@ -42,6 +43,7 @@ Future<void> showLogContextMenu({
       ISpect.senders.isNotEmpty &&
       HttpComposerController.seedFromLog(data) != null;
   final logKey = data.key;
+  final logTitle = _formatLogType(context, logKey);
   final logDescription = theme.getTypeDescription(context, key: logKey);
   final logIcon = theme.getTypeIcon(context, key: logKey);
   final logColor = theme.getTypeColor(context, key: logKey);
@@ -68,7 +70,7 @@ Future<void> showLogContextMenu({
         hasNavigationFlow: hasNavigationFlow,
         hasFilterActions: hasFilterActions,
         l10n: l10n,
-        headerTitle: _formatLogType(logKey, l10n.actions),
+        headerTitle: logTitle,
         headerSubtitle: logDescription,
         headerIcon: logIcon,
         headerIconColor: logColor,
@@ -102,10 +104,14 @@ Future<void> showLogContextMenu({
   }
 }
 
-/// Capitalises the log type for display, or falls back to the generic
-/// "Actions" label when the log carries no key.
-String _formatLogType(String? key, String fallback) {
-  if (key == null || key.isEmpty) return fallback;
+String _formatLogType(BuildContext context, String? key) {
+  if (key == null || key.isEmpty) return context.ispectL10n.actions;
+  for (final type in context.iSpect.theme.customLogTypes) {
+    if (type.key == key && type.title != null) return type.title!;
+  }
+  for (final description in ISpectConstants.defaultLogDescriptions(context)) {
+    if (description.key == key) return description.displayTitle;
+  }
   return key[0].toUpperCase() + key.substring(1);
 }
 

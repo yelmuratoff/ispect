@@ -31,6 +31,8 @@ class LogDetailView extends StatefulWidget {
   final void Function(String id)? onShowRelated;
 
   void push(BuildContext context) {
+    var displayedData = activeData;
+    var pairedData = correlatedLog;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (routeContext) {
@@ -38,21 +40,31 @@ class LogDetailView extends StatefulWidget {
           return ISpectThemeScope(
             child: Scaffold(
               body: SafeArea(
-                child: LogDetailView(
-                  activeData: activeData,
-                  correlatedLog: correlatedLog,
-                  correlationDuration: correlationDuration,
-                  onNavigateToCorrelated: onNavigateToCorrelated,
-                  onClose: () {
-                    onClose?.call();
-                    Navigator.of(routeContext).pop();
-                  },
-                  onShowRelated: showRelated == null
-                      ? null
-                      : (id) {
-                          showRelated(id);
-                          Navigator.of(routeContext).pop();
-                        },
+                child: StatefulBuilder(
+                  builder: (context, setState) => LogDetailView(
+                    activeData: displayedData,
+                    correlatedLog: pairedData,
+                    correlationDuration: correlationDuration,
+                    onNavigateToCorrelated:
+                        onNavigateToCorrelated ??
+                        (pairedData == null
+                            ? null
+                            : () => setState(() {
+                                final previousData = displayedData;
+                                displayedData = pairedData!;
+                                pairedData = previousData;
+                              })),
+                    onClose: () {
+                      onClose?.call();
+                      Navigator.of(routeContext).pop();
+                    },
+                    onShowRelated: showRelated == null
+                        ? null
+                        : (id) {
+                            showRelated(id);
+                            Navigator.of(routeContext).pop();
+                          },
+                  ),
                 ),
               ),
             ),
