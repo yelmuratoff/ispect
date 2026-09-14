@@ -60,6 +60,7 @@
 - **Layout inspector in release:** The render-tree copy action no longer copies an empty string in profile and release builds, `ClipRSuperellipse` and RTL `ClipRRect` radii are reported correctly, `Image.memory` sources keep a readable label, and blur, matrix, and composed image filters read the same in debug and release.
 - **Layout inspector on Flutter 3.40+:** Inspecting a widget under a `BackdropFilter` built with `filterConfig` no longer breaks the panel, and a disabled `BackdropFilter` is labelled as such.
 - **Apple file history:** Rolling history now initializes in iOS and macOS cache sandboxes.
+- **Linux exports:** Saving and sharing logs on Linux no longer fails with an unsafe-permissions error, and shared export folders stay private to the current user.
 - **Concurrent diagnostics:** Fixed BLoC event correlation and stale asynchronous log-viewer updates.
 - **Lifecycle:** Shutdown and forced reinitialization clean up logger state consistently, including on failure.
 - **Host error callbacks:** Flutter, platform, and zoned callbacks keep receiving the original error and stack trace.

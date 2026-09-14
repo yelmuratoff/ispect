@@ -111,6 +111,7 @@ class NativeLogsFile extends BaseLogsFile {
           logsDir.path,
         );
       }
+      await _makeDirectoryOwnerOnly(canonicalLogsDir);
       await _validatePrivateDirectoryPermissions(
         canonicalLogsDir,
         label: 'logs directory',
@@ -376,6 +377,7 @@ class NativeLogsFile extends BaseLogsFile {
     final created = await root.createTemp(_currentProcessDirectoryPrefix);
     try {
       final directory = await _validateProcessDirectory(created, root);
+      await _makeDirectoryOwnerOnly(directory);
       await _ensureCurrentShareLease(directory);
       return directory;
     } catch (_) {
@@ -923,23 +925,43 @@ class NativeLogsFile extends BaseLogsFile {
     }
   }
 
-  static Future<void> _makePersistentFileOwnerOnly(File file) async {
+  static Future<void> _makePersistentFileOwnerOnly(File file) =>
+      _restrictToOwner(
+        file.path,
+        mode: '0600',
+        failureMessage: 'Failed to restrict persistent log file permissions.',
+      );
+
+  static Future<void> _makeDirectoryOwnerOnly(Directory directory) async {
+    if (!Platform.isLinux && !Platform.isMacOS) return;
+    const groupOrWorldPermissionBits = 0x3f;
+    const failureMessage = 'Failed to restrict native directory permissions.';
+    if ((await directory.stat()).mode & groupOrWorldPermissionBits == 0) return;
+    await _restrictToOwner(
+      directory.path,
+      mode: '0700',
+      failureMessage: failureMessage,
+    );
+    if ((await directory.stat()).mode & groupOrWorldPermissionBits != 0) {
+      throw FileSystemException(failureMessage, directory.path);
+    }
+  }
+
+  static Future<void> _restrictToOwner(
+    String path, {
+    required String mode,
+    required String failureMessage,
+  }) async {
     if (!Platform.isLinux && !Platform.isMacOS) return;
     try {
-      final result = await Process.run('/bin/chmod', ['0600', file.path]);
+      final result = await Process.run('/bin/chmod', [mode, path]);
       if (result.exitCode != 0) {
-        throw FileSystemException(
-          'Failed to restrict persistent log file permissions.',
-          file.path,
-        );
+        throw FileSystemException(failureMessage, path);
       }
     } on FileSystemException {
       rethrow;
     } catch (_) {
-      throw FileSystemException(
-        'Failed to restrict persistent log file permissions.',
-        file.path,
-      );
+      throw FileSystemException(failureMessage, path);
     }
   }
 
