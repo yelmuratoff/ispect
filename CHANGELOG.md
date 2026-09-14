@@ -4,24 +4,24 @@
 
 ### Breaking Changes
 
-- **Floating panel:** The diagnostics panel is now a floating window built on `draggable_panel` 4.1.0. `panelItems` takes `PanelAction`, `panelButtons` takes `PanelActionButton`, `ISpectTheme.panelTheme` takes `DraggablePanelThemeData` next to the new `panelActionTheme`, and `panelBuilder` receives `ISpectPanelData.actions`. See `docs/DEPRECATIONS.md` for the symbol map.
-- **Minimum SDK:** `ispect` requires Flutter 3.35; `ispect_layout` requires Dart 3.8 and Flutter 3.32.
+- **Floating panel:** The diagnostics panel is a floating window built on `draggable_panel` 4.1.0; `panelItems`, `panelButtons`, `ISpectTheme.panelTheme`, and `panelBuilder` take the new panel types. See `docs/DEPRECATIONS.md` for the symbol map.
+- **Minimum SDK:** `ispect` requires Dart 3.8 and Flutter 3.35; `ispect_layout` requires Dart 3.8 and Flutter 3.32.
 - **`JsonScreen`** is no longer a `const` constructor.
 - **Custom log types:** Filter custom `ISpectLogData` subclasses by log key instead of `TypeFilter`.
-- **Redaction and settings overrides:** Subclasses overriding `RedactionService.redactForExport`, `redactEnvelopeForExport`, `redactHeaders`, or the `copyWith`/`configure` methods of network, trace, BLoC, and Riverpod settings must accept the new optional parameters.
+- **Redaction and settings overrides:** Subclasses overriding the `RedactionService` export and header methods, or `copyWith`/`configure` on network, trace, BLoC, and Riverpod settings, must accept the new optional parameters.
 - **Observer payloads:** Observers receive the redacted entry with exception, error, and stack trace as scrubbed text; `ISpect.run` error callbacks still receive the originals.
-- **`WsDiagnosticsSink`:** `onSent` and `onReceived` gained an optional `messageId` parameter that implementers must declare.
+- **`WsDiagnosticsSink`:** `onSent` and `onReceived` gained an optional `messageId` parameter, which pairs a frame with its reply and implementers must declare.
 - **Adapter error records:** http and Dio error responses store their payload under `error-data`, and the Dio error record no longer duplicates the request blob at top level.
 
 ### Behavioral Changes
 
 - **Mobile log details:** Tap a log card to open its full details immediately; use the arrow to toggle the inline preview. HTTP cards open the response or error when available, with request/response switching inside the detail view.
-- **Squircle surfaces:** Every ISpect surface shares one corner shape, and tooltips use ISpect's own colours instead of Material's default.
+- **Squircle surfaces:** Every ISpect surface, including bordered tiles, shares one corner shape; mobile log and network cards use a smaller radius that matches the search field, and tooltips use ISpect's own colors.
 - **Panel resting state:** The panel is either parked at a screen edge or open, and parks whenever an ISpect screen opens. A caller-supplied `DraggablePanelController` keeps its own placement.
-- **Readable diagnostics by default:** Exceptions, stack traces, ordinary URLs, SQL table and column names, correlation ids, route paths, and bounded `toJson()` snapshots stay readable after redaction, and non-secret keys such as `cache_key` and `idempotency_key` are no longer masked.
+- **Readable diagnostics by default:** Exceptions, stack traces, ordinary URLs, SQL identifiers, correlation ids, route paths, and bounded `toJson()` snapshots stay readable after redaction; non-secret keys such as `cache_key` are no longer masked.
 - **Capture mode:** `DiagnosticCaptureMode.balanced` is the default; choose `strict` when application `toJson()` and `toString()` must never run. The BLoC and Riverpod `compact` presets use strict capture.
 - **Header capture:** `printRequestHeaders` and `printResponseHeaders` default to `true` and are captured after redaction; use `metadataOnly()` to opt out.
-- **Lazy masking:** Payloads are masked on first read instead of at capture, so entries nobody inspects cost far less.
+- **Lazy masking:** Payloads are masked when an entry is first read rather than when it is captured, so entries nobody inspects cost far less.
 - **Throwing `Uri` values:** A custom `Uri` whose accessors throw is omitted from the log instead of failing capture.
 - **Layout inspector precision:** Runtime measurements default to two decimal places; `decimalPlaces` still overrides.
 - **Native exports:** Persistent exports use the application's private support directory.
@@ -39,26 +39,23 @@
 - **Diagnostics never break the host:** A throwing filter or an internal failure in Dio, http, WebSocket, or database capture becomes a warning instead of an exception.
 - **Configurable budgets:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` persist through `ISpectSettingsState`, and the Settings sheet offers one-tap Capture, Resource, and Processing profiles.
 - **Runtime reconfiguration:** Dio and http can change capture settings at runtime, and lowering `maxHistoryItems` trims the retained entries.
-- **Faster hot paths:** Excluded log keys skip capture entirely, values are not captured when nothing consumes them, exports reuse capture-time redaction, and the log list and layout inspector redraw less often.
-- **WebSocket correlation:** `onSent` and `onReceived` accept a `messageId` to pair a frame with its reply.
+- **Faster hot paths:** Excluded log keys and logs with no consumer skip capture, and the log list and layout inspector redraw less often.
 - **Larger diagnostic handoff:** Larger payload, record, and export budgets; exports report actual and truncated counts, and imports report skipped records.
 - **Clearer network cards:** Larger body previews with explicit truncation cues, and header names stay visible with redacted values behind a compact disclosure.
-- **Tighter log cards:** Mobile log and network cards use a smaller corner radius that matches the search field.
-- **Rounder tiles:** Bordered tiles in the context menu, Settings, and HTTP composer draw their outline with the same squircle corner as their fill, so the corners are no longer visibly sharper than the rest of the UI.
 - **Panel header:** The open panel shows the `pageTitle` with a close control, and every action tile shows a localized caption.
 - **Filter sheet height:** On phones the filter sheet opens as tall as its content, so every log type is visible without dragging; past 85% of the screen it scrolls instead.
-- **Layout inspector coverage:** Selecting `Padding`, `ConstrainedBox`, `SizedBox`, `Align`, or `Center` shows their insets, constraints, and alignment, and `ShapeDecoration` surfaces its colour, shape, radius, shadows, and gradient.
+- **Layout inspector coverage:** Selecting `Padding`, `ConstrainedBox`, `SizedBox`, `Align`, or `Center` shows their insets, constraints, and alignment, and `ShapeDecoration` surfaces its color, shape, radius, shadows, and gradient.
 
 ### Bug Fixes
 
 - **Desktop HTTP selection:** Selecting a grouped transaction defaults to its response or error, falling back to the request while pending.
-- **Desktop HTTP rows:** Hover actions keep a compact, stable row height without shifting neighbouring logs.
+- **Desktop HTTP rows:** Hover actions keep a compact, stable row height without shifting neighboring logs.
 - **Log action titles:** Actions headers preserve names such as HTTP Request and BLoC Create, including custom display titles.
 - **Grouped log actions:** Long-press a grouped HTTP card to open Actions. Expand/collapse buttons now use the same styling as Actions.
 - **Typography inspection:** Text size, line height, letter spacing, and word spacing preserve hundredths, so `0.25` no longer shows as `0.3`.
 - **Layout inspection:** Corrected RTL radii, fitted-box sizing, transformed padding and pivots, center-sliced image fit, color filters, flex/stack parent data, and missing clip or directional fields.
-- **Layout inspector in release:** The render-tree copy action no longer copies an empty string in profile and release builds, `ClipRSuperellipse` and RTL `ClipRRect` radii are reported correctly, `Image.memory` sources keep a readable label, and blur, matrix, and composed image filters read the same in debug and release.
-- **Layout inspector on Flutter 3.40+:** Inspecting a widget under a `BackdropFilter` built with `filterConfig` no longer breaks the panel, and a disabled `BackdropFilter` is labelled as such.
+- **Layout inspector in release:** Render-tree copy, `ClipRSuperellipse` and RTL `ClipRRect` radii, `Image.memory` labels, and blur, matrix, and composed image filters now match debug builds.
+- **Layout inspector on Flutter 3.40+:** Inspecting a widget under a `BackdropFilter` built with `filterConfig` no longer breaks the panel, and a disabled `BackdropFilter` is labeled as such.
 - **Apple file history:** Rolling history now initializes in iOS and macOS cache sandboxes.
 - **Linux exports:** Saving and sharing logs on Linux no longer fails with an unsafe-permissions error, and shared export folders stay private to the current user.
 - **Concurrent diagnostics:** Fixed BLoC event correlation and stale asynchronous log-viewer updates.
@@ -77,7 +74,13 @@
 
 ### Deprecations
 
-- **Scheduled for 8.0.0:** `RedactionService.redactTarget`, `redactWithStats`, `redactHeadersWithStats`, `ISpectLogData.header`, and the `static redact(...)` helpers on `ispectify_bloc` and `ispectify_riverpod` data classes. Existing compatibility aliases stay available through 7.x. See `docs/DEPRECATIONS.md`.
+- **Scheduled for 8.0.0:** `RedactionService.redactTarget`, `redactWithStats`, `redactHeadersWithStats`, `ISpectLogData.header`, and the `static redact(...)` helpers on BLoC and Riverpod data classes; see `docs/DEPRECATIONS.md`.
+
+### CI
+
+- **Pinned Flutter baseline:** Required jobs run on Flutter 3.35.7, `ispect_layout` is also checked on its 3.32.6 floor, and the latest stable channel is an advisory signal.
+- **Production safety:** Every package verifies its APIs stay inert without `ISPECT_ENABLED`, and release AOT builds confirm ISpect code is stripped when the flag is omitted.
+- **Release checks:** Pull requests validate versions, generated READMEs, `llms.txt`, and the web viewer lockfile with the Dart release tooling.
 
 ## 6.1.7
 

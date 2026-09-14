@@ -15,20 +15,24 @@ Write concise, user-facing changelog entries that match the project's existing s
 
 ## Rules
 
-1. **Add to the CURRENT dev version** - don't create new version headers unless asked.
+1. **Add to the section for the current `VERSION` in `version.config`** (a dev, rc, or stable header) - don't create new version headers unless asked.
 2. **Group under existing section headers:**
-   - `Code Quality` - refactors, cleanup, deprecations
+   - `Breaking Changes` - API, SDK, or data-shape changes that require consumer action (major releases)
+   - `Code Quality` - refactors, cleanup
    - `Behavioral Changes` - defaults changed, new behaviors
    - `Security` - redaction, data protection, vulnerability fixes
    - `Bug Fixes` - resolved issues
    - `Improvements` - new features, UI enhancements, DX improvements
+   - `Deprecations` - APIs scheduled for removal, with the target version and a pointer to `docs/DEPRECATIONS.md`
    - `CI` - pipeline, workflow changes
    - `Tests` - new or updated tests
-3. **Format:** Single `- ` bullet per entry, one or two lines max.
+3. **Format:** Single `- ` bullet per entry, one or two lines max. One change per bullet; merge overlapping entries instead of repeating a change across sections.
 4. **Bold the feature name** at the start: `- **Feature name:** Brief description.`
 5. **Use backticks** for class/method/parameter names.
 6. **No implementation details** - describe _what changed_ for the user, not _how_ it was built internally.
 7. **No sub-bullets or nested lists.**
+8. **US English spelling** (`color`, `behavior`), matching the section headers.
+9. **Propagate** with `dart run tool/bin/ispect_tool.dart changelog --version <VERSION> --full-copy --yes`; package changelogs are copies of the root file, and without `--full-copy` a section that already exists is skipped.
 
 ## Examples
 
