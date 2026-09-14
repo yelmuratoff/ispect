@@ -11,8 +11,8 @@ Use the repository scripts for version, changelog, README, and publish-preflight
 
 The tooling is a Dart CLI in `tool/`. Run `cd tool && dart pub get` once after a
 fresh clone, then drive everything through `dart run tool/bin/ispect_tool.dart`.
-The scripts in `bash/` are frozen and slated for deletion - do not call or edit
-them.
+The release bash scripts are deleted; `bash/` keeps only `run_benchmarks.sh` and
+`measure_release_size.sh` for `.github/workflows/benchmarks.yml`.
 
 1. Read `version.config` to identify the current `VERSION`.
 2. For version changes, prefer a dry run first:
@@ -21,6 +21,7 @@ them.
    - `dart run tool/bin/ispect_tool.dart release-prep`
    - `dart run tool/bin/ispect_tool.dart release-prep --skip-bump`
    - `dart run tool/bin/ispect_tool.dart release-prep --carry-changelog`
+   - `release-prep` bumps only by `patch|minor|major`; from `7.0.0-rc.13` those give `7.0.0-rc.14`, `7.1.0`, and `8.0.0`. To cut a stable from a prerelease, run `dart run tool/bin/ispect_tool.dart version bump <X.Y.Z>` and follow `docs/VERSION_MANAGEMENT.md` - never `patch`, `minor`, or `major`.
 4. For changelog-only propagation, update root `CHANGELOG.md`, then run:
    - `dart run tool/bin/ispect_tool.dart changelog --version <VERSION>`
 5. For README edits, change the source under `docs/readme/**`, then run:

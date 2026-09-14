@@ -9,9 +9,10 @@
 
 ## Adding Dependencies
 
-- Prefer existing dependencies: `collection`, `meta`, `ansicolor`, `web`, `dio`, `http`, `http_interceptor`, `ws`, BLoC, and Flutter SDK libraries where already present.
+- Prefer existing dependencies: `collection`, `meta`, `ansicolor`, `web`, `dio`, `http`, `http_interceptor`, BLoC, and Flutter SDK libraries where already present.
 - Add a new dependency only to the package that uses it, not to the root workspace.
-- For publishable packages, avoid `any` constraints; `publish.sh` treats them as a preflight issue.
+- Keep `ispectify_ws` free of WebSocket client dependencies; `ws` belongs to `packages/ispectify_ws/example` only.
+- For publishable packages, avoid `any` constraints; `dart run tool/bin/ispect_tool.dart publish` rejects them in preflight.
 
 ## Versioning
 

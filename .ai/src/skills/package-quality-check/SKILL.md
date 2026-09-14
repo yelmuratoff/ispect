@@ -11,14 +11,15 @@ Run the correct package-scoped analyzer, tests, and repo consistency checks for 
 
 1. Identify the affected target from changed files or the user's package name.
 2. Use pure Dart commands for `packages/ispectify`, `packages/ispectify_db`, `packages/ispectify_dio`, `packages/ispectify_http`, `packages/ispectify_ws`, `packages/ispectify_bloc`, and `packages/ispectify_riverpod`:
-   - `cd packages/<package> && dart pub get`
+   - `cd packages/<package> && dart pub get` (`dart pub get --no-example` for `ispectify_db`)
    - `cd packages/<package> && dart analyze --fatal-infos`
-   - `cd packages/<package> && flutter test --dart-define=ISPECT_ENABLED=true --coverage`
+   - `cd packages/<package> && flutter test --dart-define=ISPECT_ENABLED=true --coverage` (add `--no-pub` for `ispectify_db`)
    - `cd packages/<package> && dart test --run-skipped test/production_safety_test.dart`
 3. Use Flutter commands for `packages/ispect` and `packages/ispect_layout`:
    - `cd packages/<package> && flutter pub get`
    - `cd packages/<package> && flutter analyze --fatal-infos`
    - `cd packages/<package> && flutter test --dart-define=ISPECT_ENABLED=true --coverage`
+   - `cd packages/<package> && flutter test --run-skipped test/production_safety_test.dart`
 4. Use Flutter web demo commands for `web_logs_viewer`:
    - `cd web_logs_viewer && flutter pub get`
    - `cd web_logs_viewer && flutter analyze`
@@ -33,6 +34,6 @@ Run the correct package-scoped analyzer, tests, and repo consistency checks for 
 ## Gotchas
 
 - The repo root is not a Melos workspace; root-level `dart test` does not validate all packages.
-- `ispectify_dio`, `ispectify_http`, `ispectify_ws`, and `ispectify_bloc` are Flutter-package CI jobs even though their code is mostly non-UI.
+- `ispectify_dio`, `ispectify_http`, `ispectify_ws`, `ispectify_bloc`, and `ispectify_riverpod` run in the Flutter-package CI job (`test-flutter` in `.github/workflows/test.yml`) even though their code is non-UI; only `ispectify` and `ispectify_db` run in `test-dart`.
 - Coverage directories are generated output; do not commit them.
 - The pinned required Flutter CI signal is `3.35.7`, plus `3.32.6` for `ispect_layout`; latest stable is advisory.

@@ -13,17 +13,18 @@ Determine whether `$ARGUMENTS` is a pure Dart package or Flutter package:
 Run the matching commands:
 
 - Pure Dart:
-  - `cd packages/$ARGUMENTS && dart pub get`
+  - `cd packages/$ARGUMENTS && dart pub get` (`dart pub get --no-example` for `ispectify_db`)
   - `cd packages/$ARGUMENTS && dart analyze --fatal-infos`
-  - `cd packages/$ARGUMENTS && flutter test --dart-define=ISPECT_ENABLED=true --coverage`
+  - `cd packages/$ARGUMENTS && flutter test --dart-define=ISPECT_ENABLED=true --coverage` (add `--no-pub` for `ispectify_db`)
 - Flutter:
   - `cd packages/$ARGUMENTS && flutter pub get`
   - `cd packages/$ARGUMENTS && flutter analyze --fatal-infos`
   - `cd packages/$ARGUMENTS && flutter test --dart-define=ISPECT_ENABLED=true --coverage`
 
-Where `test/production_safety_test.dart` exists, also run it without the define:
+Also run `test/production_safety_test.dart` without the define:
 
-- `cd packages/$ARGUMENTS && dart test --run-skipped test/production_safety_test.dart`
+- Pure Dart: `cd packages/$ARGUMENTS && dart test --run-skipped test/production_safety_test.dart`
+- Flutter: `cd packages/$ARGUMENTS && flutter test --run-skipped test/production_safety_test.dart`
 
 If `$ARGUMENTS` is `web_logs_viewer`, run:
 

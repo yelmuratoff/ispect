@@ -10,7 +10,7 @@ Captured diagnostics can contain sensitive data, so redaction and data minimizat
 
 ## Tech Stack
 
-- Dart SDK `>=3.6.0 <4.0.0`; `ispect` requires Flutter `>=3.35.0` and `ispect_layout` Flutter `>=3.32.0`. CI pins Flutter `3.35.7` and also runs `ispect_layout` on its `3.32.6` floor.
+- Dart SDK `>=3.6.0 <4.0.0` for the `ispectify*` packages and `>=3.8.0 <4.0.0` for `ispect` and `ispect_layout`; `ispect` requires Flutter `>=3.35.0` and `ispect_layout` Flutter `>=3.32.0`. CI pins Flutter `3.35.7` and also runs `ispect_layout` on its `3.32.6` floor.
 - Pure Dart packages: `packages/ispectify`, `packages/ispectify_db`, `packages/ispectify_dio`, `packages/ispectify_http`, `packages/ispectify_ws`, `packages/ispectify_bloc`, `packages/ispectify_riverpod`.
 - Flutter packages: `packages/ispect`, `packages/ispect_layout`.
 - `web_logs_viewer` is a Flutter web demo using local path overrides to the packages.
@@ -33,7 +33,8 @@ Captured diagnostics can contain sensitive data, so redaction and data minimizat
 - Dart tests: `cd packages/<package> && flutter test --dart-define=ISPECT_ENABLED=true --coverage`
 - Flutter analyze: `cd packages/<package> && flutter analyze --fatal-infos`
 - Flutter tests: `cd packages/<package> && flutter test --dart-define=ISPECT_ENABLED=true --coverage`
-- Disabled-build check: `cd packages/<package> && dart test --run-skipped test/production_safety_test.dart`
+- Disabled-build check (Dart): `cd packages/<package> && dart test --run-skipped test/production_safety_test.dart`
+- Disabled-build check (Flutter): `cd packages/<package> && flutter test --run-skipped test/production_safety_test.dart`
 - Web demo: `cd web_logs_viewer && flutter pub get && flutter analyze && flutter test`
 - Format changed Dart files: `dart format <paths>`
 - README drift check: `dart run tool/bin/ispect_tool.dart readme --check`

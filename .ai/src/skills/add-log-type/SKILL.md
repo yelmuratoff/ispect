@@ -27,13 +27,14 @@ key shown as its raw string). Wire every item below.
 6. `lib/src/core/res/constants/ispect_log_descriptions.dart` - add `LogDescription(key: 'my-key', title: 'My Key', description: l10n.myKeyLogDesc)`.
 7. Localization (ARB is the source; generated files are rebuilt):
    - Add `"myKeyLogDesc": "…"` to `lib/src/core/localization/translations/intl_en.arb` (the template - required).
-   - Optionally add real translations to other `intl_*.arb`; locales without it fall back to the English template (the existing `ws-error` precedent).
-   - Regenerate: `cd packages/ispect && flutter gen-l10n`. Never hand-edit `lib/src/core/localization/generated/**`. `untranslated.json` is a generated, git-ignored report - do not commit it.
+   - Translate it into every other `intl_*.arb` in that directory (14 files including `intl_en.arb`, among them `intl_ku.arb` and `intl_ckb.arb`); existing keys such as `wsErrorLogDesc` are translated in all of them.
+   - Regenerate: `cd packages/ispect && flutter gen-l10n`. Never hand-edit `lib/src/core/localization/generated/**`.
+   - `l10n.yaml` writes the untranslated report to `packages/ispect/untranslated.json`, which `.gitignore` excludes - read it to confirm the new key is translated everywhere, and keep it out of commits. `lib/src/core/localization/translations/untranslated.json` is a separate tracked file; leave it untouched.
 
 ## Verify
 
 - `cd packages/ispectify && dart analyze --fatal-infos && flutter test --dart-define=ISPECT_ENABLED=true`
-- `cd packages/ispect && flutter analyze --fatal-infos && flutter test`
+- `cd packages/ispect && flutter analyze --fatal-infos && flutter test --dart-define=ISPECT_ENABLED=true`
 - `dart format` the changed Dart files.
 
 ## Gotchas
