@@ -209,7 +209,7 @@ uses `openat`/`fstat` on POSIX and handle-based reparse-point checks on Windows.
 
 ## Reporting security issues
 
-Do not open a public issue for a suspected security problem. Send a private report to the project maintainer with:
+Do not open a public issue for a suspected security problem. Report it privately through GitHub: open [Report a vulnerability](https://github.com/yelmuratoff/ispect/security/advisories/new) on the repository's Security tab. Reproduce against the latest published version of the affected package where possible, and include:
 
 - The affected package and version.
 - Reproduction steps.
