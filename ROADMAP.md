@@ -15,7 +15,7 @@ The point of the numbers is to turn "ISpect is cheap" into evidence: the disable
 
 Most pure-Dart coverage is now automated: `ispectify`, `ispectify_db`, Dio, and
 http run with fixed inputs and AOT compilation. The remaining measurements
-need Flutter `3.32.6` and a recorded Android device.
+need Flutter `3.35.7` and a recorded Android device.
 
 - **Disabled-build footprint** - APK `--analyze-size` runs are automated. Still record cold start with `flutter run --profile --trace-startup` (`timeToFirstFrameMicros`) for each variant.
 - **Per-log, redaction, export, DB, and adapter cost** - automated AOT cases cover metadata/payload logs, disabled/bounded history, 1/10/100 KB redaction, JSON Lines export, in-memory DB tracing, and Dio/http metadata/body capture.

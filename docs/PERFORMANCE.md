@@ -73,7 +73,7 @@ rate, OS, commit, and generated report.
 
 ## Reproducing measurements
 
-Use Flutter `3.32.6` for the CI-aligned Android series. An iOS series may use a
+Use Flutter `3.35.7` for the CI-aligned Android series. An iOS series may use a
 newer Flutter SDK required by the installed Xcode and generated iOS host, but
 must keep that SDK version fixed across every compared run. Record the Flutter
 SDK, machine, operating system, device, commit SHA, and date with every result.

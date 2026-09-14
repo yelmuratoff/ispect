@@ -55,7 +55,7 @@ When you update `CHANGELOG.md` or `version.config`, GitHub Actions automatically
 
 - Runs `release_prep.sh --skip-bump` to synchronize versions, dependencies, changelogs, generated READMEs, and `llms.txt`.
 - Synchronizes the standalone web-viewer manifest and lockfile.
-- Validates the lockfile with the CI-pinned Flutter 3.32.6 toolchain.
+- Validates the lockfile with the CI-pinned Flutter 3.35.7 toolchain.
 - Commits and pushes the changes.
 
 On a pull request, GitHub Actions checks that:

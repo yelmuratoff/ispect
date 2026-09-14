@@ -34,7 +34,7 @@ jobs:
       - name: Setup Flutter test runner
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: "3.32.6"
+          flutter-version: "3.35.7"
           channel: stable
           cache: true
 
@@ -112,10 +112,15 @@ jobs:
           - ispectify_bloc
           - ispectify_riverpod
         flutter:
-          - version: "3.32.6"
+          - version: "3.35.7"
             channel_signal: required
           - version: "stable"
             channel_signal: advisory
+        include:
+          - package: ispect_layout
+            flutter:
+              version: "3.32.6"
+              channel_signal: required
 
     steps:
       - name: Checkout
@@ -152,7 +157,7 @@ jobs:
           flutter test --dart-define=ISPECT_ENABLED=true --coverage
 
       - name: Verify disabled production API
-        if: matrix.flutter.version == '3.32.6' && hashFiles(format('packages/{0}/test/production_safety_test.dart', matrix.package)) != ''
+        if: matrix.flutter.channel_signal == 'required' && hashFiles(format('packages/{0}/test/production_safety_test.dart', matrix.package)) != ''
         run: |
           cd packages/${{ matrix.package }}
           flutter test --run-skipped test/production_safety_test.dart
@@ -165,7 +170,7 @@ jobs:
           path: packages/${{ matrix.package }}/coverage/lcov.info
 
       - name: Upload to Codecov
-        if: always() && matrix.flutter.version == '3.32.6'
+        if: always() && matrix.flutter.version == '3.35.7'
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: packages/${{ matrix.package }}/coverage/lcov.info

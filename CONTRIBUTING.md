@@ -4,7 +4,7 @@ Thanks for the interest. This is the short version of how the monorepo is laid o
 
 ## Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.32.6+).
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.35.7+).
 - [Dart SDK](https://dart.dev/get-dart) (stable).
 
 ## Monorepo structure
