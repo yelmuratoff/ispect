@@ -27,8 +27,9 @@ CI runs against a pinned Flutter SDK (`3.35.7`) as the required signal, and agai
 
 ## Release channels
 
-The `7.x` line is the current pre-release development channel. The `6.x` line
-is the current stable channel on pub.dev, while new work targets `7.x`.
+The `7.x` line is the current stable channel on pub.dev, and new work targets
+it. `6.x` is the previous major line; upgrade notes live in `CHANGELOG.md` and
+`docs/DEPRECATIONS.md`.
 
 ## Compatibility changes
 

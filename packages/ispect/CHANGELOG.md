@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.0.0-rc.13
+## 7.0.0
 
 ### Breaking Changes
 
