@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http_interceptor/http_interceptor.dart';
-import 'package:http_parser/http_parser.dart';
+import 'package:http_parser/http_parser.dart' as http_parser;
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/src/data/request.dart';
 import 'package:ispectify_http/src/utils/multipart_serializer.dart';
@@ -223,7 +223,7 @@ class HttpResponseData {
   static Encoding _encodingFor(Map<String, String> headers) {
     final rawContentType = headers['content-type'];
     if (rawContentType == null) return latin1;
-    final contentType = MediaType.parse(rawContentType);
+    final contentType = http_parser.MediaType.parse(rawContentType);
     final charset = contentType.parameters['charset'];
     if (charset != null) {
       return Encoding.getByName(charset) ??
