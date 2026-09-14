@@ -28,6 +28,14 @@ dart run tool/bin/ispect_tool.dart <command>
 `publish --only <package>` narrows the run to one package - the way to resume a
 release after a single package failed while the rest went out.
 
+```bash
+./bash/release_prep.sh --carry-changelog
+→ dart run tool/bin/ispect_tool.dart release-prep --carry-changelog
+
+./bash/publish.sh --auto
+→ dart run tool/bin/ispect_tool.dart publish --auto
+```
+
 ## Pre-commit hook
 
 ```bash
