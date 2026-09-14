@@ -20,7 +20,7 @@ CI runs against a pinned Flutter SDK (`3.35.7`) as the required signal, and agai
 | `ispectify`      | Dart                                         | Logging, tracing, filters, observers, redaction, history, export.           |
 | `ispectify_dio`  | Dart / Flutter apps using Dio                | Dio interceptor with redaction.                                             |
 | `ispectify_http` | Dart / Flutter apps using `http_interceptor` | HTTP interceptor with redaction.                                            |
-| `ispectify_ws`   | Dart / Flutter apps using `ws`               | WebSocket diagnostics with redaction.                                       |
+| `ispectify_ws`   | Dart / Flutter, any WebSocket client         | Provider-agnostic WebSocket diagnostics with redaction.                     |
 | `ispectify_db`   | Dart                                         | Passive DB operation tracing through explicit wrappers and extensions.      |
 | `ispectify_bloc` | Dart / Flutter apps using `bloc`             | BLoC and Cubit observer.                                                    |
 | `ispectify_riverpod` | Dart / Flutter apps using `riverpod`     | Riverpod `ProviderObserver` for add, update, dispose, and failure events.   |

@@ -1,7 +1,9 @@
 # Diagnostics Egress Cost Plan
 
-Status: Complete. Phase 1 was folded into Phase 3, which is specified and
-implemented in `docs/specs/2026-08-03-split-bound-and-mask-design.md`.
+Status: In progress. Phases 0, 2, and 5 are done. Phase 1 was folded into
+Phase 3, whose first slice is implemented in
+`docs/specs/2026-08-03-split-bound-and-mask-design.md`; the remaining Phase 3
+scope stays open and unratified, and Phase 4 is open.
 
 Measured against 7.0.0-dev5: logging a 1 KB payload fell from 129.8 µs to about
 30 µs with or without console output, a 100-entry JSON Lines share from 25.5 ms

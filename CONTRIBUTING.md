@@ -24,13 +24,16 @@ packages/
 
 Only `ispect` and `ispect_layout` depend on Flutter. Every `ispectify*` package is pure Dart.
 
-Dependency chain: `ispectify` → `ispectify_*` → `ispect`.
+Dependencies: every `ispectify_*` package depends on `ispectify`. `ispect` depends on `ispectify`, `ispect_layout`, and `draggable_panel`, not on the `ispectify_*` adapters; apps add those alongside it. `ispect_layout` has no internal dependencies.
 
 ## Local setup
 
 ```bash
 git clone https://github.com/yelmuratoff/ispect.git
 cd ispect
+
+# Resolve the tool dependencies; the hook and every ispect_tool command need them.
+(cd tool && dart pub get)
 
 # Install the pre-commit hook.
 cp tool/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
@@ -56,7 +59,11 @@ Packages that ship `test/production_safety_test.dart` assert the opposite and
 run without the define:
 
 ```bash
+# Pure Dart packages.
 cd packages/ispectify && dart test --run-skipped test/production_safety_test.dart
+
+# Flutter packages (ispect, ispect_layout), whose tests import flutter_test.
+cd packages/ispect && flutter test --run-skipped test/production_safety_test.dart
 ```
 
 ## Version management
@@ -64,13 +71,15 @@ cd packages/ispectify && dart test --run-skipped test/production_safety_test.dar
 `version.config` is the single source of truth. Never edit package `pubspec.yaml` versions by hand.
 
 ```bash
-# Bump version.
-dart run tool/bin/ispect_tool.dart sync --bump patch|minor|major
+# Bump the version and regenerate changelogs, READMEs, and llms.txt.
+dart run tool/bin/ispect_tool.dart release-prep --bump patch|minor|major
 
-# Validate sync.
-dart run tool/bin/ispect_tool.dart version check
+# Validate versions, internal constraints, and generated docs.
+dart run tool/bin/ispect_tool.dart check
 ```
 
+Cutting a stable release from a prerelease needs an explicit `version bump`; see
+[Cutting a stable release from a prerelease](docs/VERSION_MANAGEMENT.md#cutting-a-stable-release-from-a-prerelease).
 See [docs/VERSION_MANAGEMENT.md](docs/VERSION_MANAGEMENT.md) for the full reference.
 
 ## Automation scripts

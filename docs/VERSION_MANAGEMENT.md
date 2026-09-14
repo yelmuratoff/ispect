@@ -35,9 +35,11 @@ dart run tool/bin/ispect_tool.dart release-prep --skip-bump --recover-changelog
 ```
 
 The default patch mode increments a stable patch version or advances the
-counter of the current prerelease. Use `--skip-bump` after editing
-`CHANGELOG.md` or `docs/readme/**` to regenerate everything without changing
-the version.
+counter of the current prerelease; `minor` and `major` open the next stable
+line. Use `--skip-bump` after editing `CHANGELOG.md` or `docs/readme/**` to
+regenerate everything without changing the version. `release-prep` accepts no
+explicit version, so a stable release cut from its own prerelease follows
+[Cutting a stable release from a prerelease](#cutting-a-stable-release-from-a-prerelease).
 
 ### Prerelease numbering
 
@@ -70,16 +72,40 @@ prerelease carry when the root changelog still starts with the immediately
 previous prerelease. Recovery is explicit, and stable changelog sections are
 never renamed.
 
+### Cutting a stable release from a prerelease
+
+No bump kind turns `7.0.0-rc.13` into `7.0.0`: `patch` gives `7.0.0-rc.14`,
+`minor` gives `7.1.0`, and `major` gives `8.0.0`. Set the version explicitly
+and move the prerelease notes onto it:
+
+```bash
+# 1. Write VERSION=7.0.0 only; step 3 propagates it.
+dart run tool/bin/ispect_tool.dart version bump 7.0.0 --no-sync
+
+# 2. In CHANGELOG.md, rename the heading `## 7.0.0-rc.13` to `## 7.0.0`.
+
+# 3. Sync manifests, constraints, the web lockfile, changelogs, READMEs, and llms.txt.
+dart run tool/bin/ispect_tool.dart release-prep --skip-bump
+
+# 4. Confirm the repository is releasable.
+dart run tool/bin/ispect_tool.dart check
+```
+
+Rename the heading before step 3. Otherwise `release-prep --skip-bump` inserts
+an empty `## 7.0.0` stub above the `## 7.0.0-rc.13` notes, and
+`--recover-changelog` refuses the rename because it only follows the next
+prerelease (`7.0.0-rc.14`).
+
 ### Automatic updates via CI/CD
 
 The GitHub Actions workflows automate the rest.
 
 `sync_versions_and_changelogs.yml`:
 
-- Triggers when `version.config` or `CHANGELOG.md` changes.
+- Triggers on pushes to `main` or `develop` that change `version.config`, `CHANGELOG.md`, `llms.txt`, `docs/readme/**`, `docs/*.md`, `ROADMAP.md`, `SECURITY.md`, `web_logs_viewer/pubspec.lock`, `tool/**`, or the workflow itself.
 - Runs `ispect_tool release-prep --skip-bump`, using the same workflow as local development.
 - Validates the web-viewer lockfile with the CI-pinned Flutter 3.35.7 toolchain.
-- Commits and pushes the changes back.
+- Opens a pull request from an `auto/sync/<sha>` branch when that run changed any files.
 
 `validate_versions.yml`:
 
@@ -101,7 +127,7 @@ The GitHub Actions workflows automate the rest.
 
 ## Best practices
 
-1. Use `ispect_tool release-prep` for every bump or no-bump synchronization.
+1. Use `ispect_tool release-prep` for every patch, minor, or major bump and every no-bump synchronization, and the sequence in [Cutting a stable release from a prerelease](#cutting-a-stable-release-from-a-prerelease) for a stable cut.
 2. Keep user-facing notes in the root `CHANGELOG.md`.
 3. Keep README source changes under `docs/readme/**`.
 4. Install the pre-commit hook to catch version drift locally.

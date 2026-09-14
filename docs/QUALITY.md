@@ -23,7 +23,11 @@ need the define to reach their assertions. Packages that ship
 `test/production_safety_test.dart` assert the opposite and run without it:
 
 ```bash
+# Pure Dart packages (ispectify*).
 dart test --run-skipped test/production_safety_test.dart
+
+# Flutter packages (ispect, ispect_layout), whose tests import flutter_test.
+flutter test --run-skipped test/production_safety_test.dart
 ```
 
 Generated README files must match `docs/readme/`:
@@ -43,8 +47,8 @@ dart run tool/bin/ispect_tool.dart deps
 
 | Signal                                          | Required | Notes                                                                     |
 | ----------------------------------------------- | -------- | ------------------------------------------------------------------------- |
-| Dart package analyze and tests                  | Yes      | Runs for pure Dart packages.                                              |
-| Flutter package analyze and tests, pinned SDK   | Yes      | Compatibility baseline.                                                   |
+| Dart package analyze and tests                  | Yes      | Covers `ispectify` and `ispectify_db`.                                    |
+| Flutter package analyze and tests, pinned SDK   | Yes      | Compatibility baseline. Covers `ispect`, `ispect_layout`, and the other `ispectify_*` packages. |
 | Flutter package analyze and tests, latest stable | Advisory | Tracks future breakage without blocking unrelated work.                   |
 | README generation check                         | Yes      | Catches drift in generated READMEs.                                       |
 | Version and dependency sync                     | Yes      | Keeps monorepo package versions aligned.                                  |
@@ -53,7 +57,9 @@ dart run tool/bin/ispect_tool.dart deps
 
 ## Coverage policy
 
-Coverage is reported to Codecov. Coverage gates land package by package, starting with the business-critical core packages:
+Coverage is reported to Codecov per package flag. It does not gate merges: the project and patch statuses in `codecov.yml` are informational, and it defines no `ispectify_riverpod` flag yet.
+
+Gates are planned to land package by package, starting with the business-critical core packages:
 
 - `ispectify`
 - `ispectify_dio`

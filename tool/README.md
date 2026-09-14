@@ -1,26 +1,19 @@
 # ispect_tool
 
-Release, version, and documentation tooling for the ISpect monorepo. Replaces
-the bash scripts under `bash/`, which are frozen and scheduled for deletion.
+Release, version, and documentation tooling for the ISpect monorepo. It
+replaced the release scripts that used to live under `bash/`; only
+`bash/run_benchmarks.sh` and `bash/measure_release_size.sh` remain there.
 
 ```bash
 cd tool && dart pub get          # once after a fresh clone
 dart run tool/bin/ispect_tool.dart <command>
 ```
 
-```bash
-./bash/release_prep.sh --carry-changelog
-→ dart run tool/bin/ispect_tool.dart release-prep --carry-changelog
-
-./bash/publish.sh --auto
-→ dart run tool/bin/ispect_tool.dart publish --auto
-```
-
 ## Commands
 
-| Command                           | Replaces                 | Does                                                                                       |
+| Command                           | Replaced (deleted)       | Does                                                                                       |
 | --------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
-| `check`                           | the whole CI gate        | Runs every repository check in one process - what CI and the hook call                     |
+| `check`                           | -                        | Runs every repository check in one process - what CI and the hook call                     |
 | `version check`                   | `check_version_sync.sh`  | Every package `version:` matches `version.config`                                          |
 | `version bump <kind\|dev\|X.Y.Z>` | `bump_version.sh`        | Advances `VERSION`, refusing anything Pub does not order above the current one             |
 | `sync [--bump k] [--dry-run]`     | `update_versions.sh`     | Propagates `VERSION` to manifests, internal constraints, and the web lockfile              |
@@ -57,12 +50,11 @@ drive it in-process instead of spawning a subprocess. `lib/src/cli/` holds thin
 cd tool && dart test
 ```
 
-Three kinds of test carry different weight:
+Two kinds of test carry different weight:
 
 - **Golden** - `readme_builder_test.dart` and `llms_builder_test.dart` regenerate
   the committed `README.md`, `packages/*/README.md`, and `llms.txt` and require a
-  byte-identical result. These survive the deletion of the bash scripts and are
-  the strongest ongoing guarantee.
+  byte-identical result. These are the strongest ongoing guarantee.
 - **Unit** - behaviour and error branches per module.
 
 `publish_test.dart` never reaches pub.dev: `ProcessRunner` and

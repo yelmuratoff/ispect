@@ -8,7 +8,7 @@ A short overview of the version-management workflow. The full reference lives in
 
 - `version.config`, the single source of truth for the current version.
 - `CHANGELOG.md`, the release notes for every version.
-- `tool/`, the Dart CLI owning every release command. `release-prep` is the single command for bumps and release synchronization; `version check` and `deps` validate versions and internal dependencies. See `tool/README.md`.
+- `tool/`, the Dart CLI owning every release command. `release-prep` handles patch, minor, and major bumps and release synchronization; `version bump <X.Y.Z>` sets an explicit version, such as a stable cut from a prerelease; `version check` and `deps` validate versions and internal dependencies. See `tool/README.md`.
 - `bash/run_benchmarks.sh` and `bash/measure_release_size.sh`, fixed command sequences that stay shell.
 
 ### GitHub Actions workflows
@@ -38,25 +38,30 @@ dart run tool/bin/ispect_tool.dart release-prep --carry-changelog
 dart run tool/bin/ispect_tool.dart release-prep --skip-bump --recover-changelog
 ```
 
+No bump kind turns a prerelease such as `7.0.0-rc.13` into `7.0.0`. Follow
+[Cutting a stable release from a prerelease](VERSION_MANAGEMENT.md#cutting-a-stable-release-from-a-prerelease)
+for that cut.
+
 ## Prerelease numbering
 
 Write the counter as its own dot-separated identifier - `7.1.0-dev.1`,
 `7.1.0-dev.2`, … `7.1.0-dev.10`. Glued to its label, the counter is compared as
 text, so `7.1.0-dev10` resolves below `7.1.0-dev8` and consumers keep getting
 the older code with no error anywhere. The scripts reject any version Pub does
-not order above the current one, and `publish.sh` blocks a release that is not
-ranked above the published peak of its `MAJOR.MINOR` line. Details and the
-escape routes for an already published glued series live in
+not order above the current one, and `ispect_tool publish` and
+`ispect_tool check-published` block a release that is not ranked above the
+published peak of its `MAJOR.MINOR` line. Details and the escape routes for an
+already published glued series live in
 [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md).
 
 ## CI process
 
-When you update `CHANGELOG.md` or `version.config`, GitHub Actions automatically:
+When a push to `main` or `develop` changes `CHANGELOG.md`, `version.config`, README or docs sources, `llms.txt`, `tool/**`, or the other paths listed in `sync_versions_and_changelogs.yml`, GitHub Actions automatically:
 
-- Runs `release_prep.sh --skip-bump` to synchronize versions, dependencies, changelogs, generated READMEs, and `llms.txt`.
+- Runs `ispect_tool release-prep --skip-bump` to synchronize versions, dependencies, changelogs, generated READMEs, and `llms.txt`.
 - Synchronizes the standalone web-viewer manifest and lockfile.
 - Validates the lockfile with the CI-pinned Flutter 3.35.7 toolchain.
-- Commits and pushes the changes.
+- Opens a pull request from an `auto/sync/<sha>` branch when the run changed any files.
 
 On a pull request, GitHub Actions checks that:
 
@@ -76,7 +81,7 @@ The system manages dependencies between ISpect packages:
 
 ## Best practices
 
-1. Use `ispect_tool release-prep` for bumps and `ispect_tool release-prep --skip-bump` for no-bump synchronization.
+1. Use `ispect_tool release-prep` for patch, minor, and major bumps, `ispect_tool release-prep --skip-bump` for no-bump synchronization, and the stable-cut sequence in `VERSION_MANAGEMENT.md` to leave a prerelease.
 2. Edit release notes only in the root `CHANGELOG.md`.
 3. Edit README content only under `docs/readme/**`.
 4. Review the generated diff and run `ispect_tool publish --dry-run` before publishing.

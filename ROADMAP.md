@@ -44,7 +44,7 @@ packages/ispect/example/lib/
   db/main.dart           # database/storage tracing
   bloc/main.dart         # BLoC observer
   riverpod/main.dart     # Riverpod observer
-  routing/main.dart      # navigator observer (+ GoRouter/AutoRoute)
+  routing/main.dart      # navigator observer
 ```
 
 - **Complete:** focused showcase entry points live under `packages/ispect/example/lib/{network,ws,db,bloc,riverpod,routing}/main.dart` and run with `flutter run -t lib/<category>/main.dart`. `complex_example.dart` remains the all-in-one tour.
