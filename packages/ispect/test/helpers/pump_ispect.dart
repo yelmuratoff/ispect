@@ -5,10 +5,10 @@ import 'package:ispect/ispect.dart';
 /// [ISpectScopeController] (provides `context.ispectTheme`) and
 /// [MaterialApp] with ISpect localization delegates.
 Widget appShell(Widget child) => ISpectScopeController(
-      model: ISpectScopeModel(isISpectEnabled: true),
-      child: MaterialApp(
-        localizationsDelegates: ISpectLocalization.localizationDelegates,
-        supportedLocales: ISpectLocalization.supportedLocales,
-        home: Scaffold(body: child),
-      ),
-    );
+  model: ISpectScopeModel(isISpectEnabled: true),
+  child: MaterialApp(
+    localizationsDelegates: ISpectLocalization.localizationDelegates,
+    supportedLocales: ISpectLocalization.supportedLocales,
+    home: Scaffold(body: child),
+  ),
+);

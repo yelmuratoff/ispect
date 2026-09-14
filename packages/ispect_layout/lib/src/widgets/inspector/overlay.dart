@@ -11,6 +11,7 @@ class InspectorOverlay extends StatefulWidget {
     required this.size,
     required this.boxInfo,
     required this.decimalPlaces,
+    required this.maxRenderTreeClipboardCharacters,
     required this.theme,
     this.hoveredBoxInfo,
     this.comparedBoxInfo,
@@ -22,6 +23,7 @@ class InspectorOverlay extends StatefulWidget {
   final Size size;
   final BoxInfo? boxInfo;
   final int decimalPlaces;
+  final int maxRenderTreeClipboardCharacters;
   final InspectorTheme theme;
   final BoxInfo? hoveredBoxInfo;
   final BoxInfo? comparedBoxInfo;
@@ -86,12 +88,15 @@ class _InspectorOverlayState extends State<InspectorOverlay>
 
     if (!canRenderBox && !canRenderHovered && !canRenderCompared) return;
 
-    final currentBoxRect =
-        canRenderBox ? widget.boxInfo!.targetRectShifted : null;
-    final currentHoverRect =
-        canRenderHovered ? widget.hoveredBoxInfo!.targetRectShifted : null;
-    final currentComparedRect =
-        canRenderCompared ? widget.comparedBoxInfo!.targetRectShifted : null;
+    final currentBoxRect = canRenderBox
+        ? widget.boxInfo!.targetRectShifted
+        : null;
+    final currentHoverRect = canRenderHovered
+        ? widget.hoveredBoxInfo!.targetRectShifted
+        : null;
+    final currentComparedRect = canRenderCompared
+        ? widget.comparedBoxInfo!.targetRectShifted
+        : null;
 
     if (currentBoxRect != _lastBoxInfoTargetRect ||
         currentHoverRect != _lastHoverBoxInfoTargetRect ||
@@ -121,6 +126,8 @@ class _InspectorOverlayState extends State<InspectorOverlay>
       child: BoxInfoWidget(
         boxInfo: widget.boxInfo,
         decimalPlaces: widget.decimalPlaces,
+        maxRenderTreeClipboardCharacters:
+            widget.maxRenderTreeClipboardCharacters,
         theme: widget.theme,
         hoveredBoxInfo: widget.hoveredBoxInfo,
         comparedBoxInfo: widget.comparedBoxInfo,

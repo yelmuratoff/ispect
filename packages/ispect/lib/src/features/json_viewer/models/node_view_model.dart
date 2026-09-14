@@ -11,15 +11,14 @@ class NodeViewModelState extends ChangeNotifier {
     required Object? value,
     required NodeViewModelState? parent,
     required Object? rawValue,
-  }) =>
-      NodeViewModelState._(
-        key: key,
-        value: value,
-        treeDepth: treeDepth,
-        parent: parent,
-        rawValue: rawValue,
-        kind: const NodeKind.property(),
-      );
+  }) => NodeViewModelState._(
+    key: key,
+    value: value,
+    treeDepth: treeDepth,
+    parent: parent,
+    rawValue: rawValue,
+    kind: const NodeKind.property(),
+  );
 
   /// Build a `NodeViewModelState` as a class.
   factory NodeViewModelState.fromClass({
@@ -27,14 +26,13 @@ class NodeViewModelState extends ChangeNotifier {
     required String key,
     required NodeViewModelState? parent,
     required Object? rawValue,
-  }) =>
-      NodeViewModelState._(
-        kind: const NodeKind.object(),
-        key: key,
-        treeDepth: treeDepth,
-        parent: parent,
-        rawValue: rawValue,
-      );
+  }) => NodeViewModelState._(
+    kind: const NodeKind.object(),
+    key: key,
+    treeDepth: treeDepth,
+    parent: parent,
+    rawValue: rawValue,
+  );
 
   /// Build a `NodeViewModelState` as an array.
   factory NodeViewModelState.fromArray({
@@ -42,14 +40,13 @@ class NodeViewModelState extends ChangeNotifier {
     required String key,
     required NodeViewModelState? parent,
     required Object? rawValue,
-  }) =>
-      NodeViewModelState._(
-        kind: const NodeKind.array(),
-        key: key,
-        treeDepth: treeDepth,
-        parent: parent,
-        rawValue: rawValue,
-      );
+  }) => NodeViewModelState._(
+    kind: const NodeKind.array(),
+    key: key,
+    treeDepth: treeDepth,
+    parent: parent,
+    rawValue: rawValue,
+  );
 
   NodeViewModelState._({
     required this.treeDepth,
@@ -100,11 +97,10 @@ class NodeViewModelState extends ChangeNotifier {
 
   /// Gets the children of this node.
   Iterable<NodeViewModelState> get children => switch ((kind, value)) {
-        (ClassNodeKind(), final Map<String, NodeViewModelState> map) =>
-          map.values,
-        (ArrayNodeKind(), final List<NodeViewModelState> list) => list,
-        _ => const <NodeViewModelState>[],
-      };
+    (ClassNodeKind(), final Map<String, NodeViewModelState> map) => map.values,
+    (ArrayNodeKind(), final List<NodeViewModelState> list) => list,
+    _ => const <NodeViewModelState>[],
+  };
 }
 
 /// A matched search in the given `node`.
@@ -121,10 +117,7 @@ class SearchResult {
 }
 
 /// The location of the search match in a node.
-enum SearchMatchLocation {
-  key,
-  value,
-}
+enum SearchMatchLocation { key, value }
 
 sealed class NodeKind {
   const NodeKind();

@@ -1,7 +1,5 @@
 // ignore_for_file: implementation_imports, inference_failure_on_function_return_type, avoid_positional_boolean_parameters
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
@@ -22,7 +20,7 @@ class ISpectAppBar extends StatefulWidget {
     required this.title,
     required this.titlesController,
     required this.controller,
-    required this.titles,
+    required this.counts,
     required this.uniqTitles,
     required this.onToggleTitle,
     required this.focusNode,
@@ -41,7 +39,7 @@ class ISpectAppBar extends StatefulWidget {
   final GroupButtonController titlesController;
   final ISpectViewController controller;
 
-  final List<String?> titles;
+  final Map<String, int> counts;
   final List<String?> uniqTitles;
 
   final VoidCallback? onSettingsTap;
@@ -73,7 +71,6 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
   TextEditingController get _searchController =>
       widget.controller.searchController;
   final _hasSearchText = ValueNotifier(false);
-  Timer? _debounce;
 
   @override
   void initState() {
@@ -84,7 +81,6 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
     _searchController.removeListener(_syncSearchText);
     _hasSearchText.dispose();
     super.dispose();
@@ -132,7 +128,8 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
-        backgroundColor: widget.backgroundColor ??
+        backgroundColor:
+            widget.backgroundColor ??
             context.ispectThemeBackground ??
             context.appTheme.scaffoldBackgroundColor,
         actions: [
@@ -215,14 +212,10 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
 
   void _onSearchChanged(String query) {
     _hasSearchText.value = query.isNotEmpty;
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      widget.controller.updateFilterSearchQuery(query);
-    });
+    widget.controller.updateFilterSearchQuery(query);
   }
 
   void _onSearchClear() {
-    _debounce?.cancel();
     _searchController.clear();
     _hasSearchText.value = false;
     widget.controller.updateFilterSearchQuery('');
@@ -231,15 +224,11 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
   void _showFilterSheet(BuildContext context) {
     showISpectSheet<void>(
       context,
-      fitContent: false,
-      initialChildSize: 0.5,
-      minChildSize: 0.3,
-      maxChildSize: 0.8,
       topOnlyRadius: true,
       routeSettings: const RouteSettings(name: 'ISpect Filter Sheet'),
       builder: (context, scrollController) => ISpectFilterSheet(
         controller: widget.controller,
-        titles: widget.titles,
+        counts: widget.counts,
         uniqTitles: widget.uniqTitles,
         titlesController: widget.titlesController,
         onToggleTitle: widget.onToggleTitle,
@@ -268,7 +257,8 @@ class _AppBarTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasCounter = (totalCount ?? 0) > 0 ||
+    final hasCounter =
+        (totalCount ?? 0) > 0 ||
         (errorCount ?? 0) > 0 ||
         (warningCount ?? 0) > 0;
     return Semantics(

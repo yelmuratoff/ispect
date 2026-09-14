@@ -75,13 +75,15 @@ import 'ispect_localizations_zh.dart';
 /// property.
 abstract class ISpectGeneratedLocalization {
   ISpectGeneratedLocalization(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
   static ISpectGeneratedLocalization? of(BuildContext context) {
     return Localizations.of<ISpectGeneratedLocalization>(
-        context, ISpectGeneratedLocalization);
+      context,
+      ISpectGeneratedLocalization,
+    );
   }
 
   static const LocalizationsDelegate<ISpectGeneratedLocalization> delegate =
@@ -99,11 +101,11 @@ abstract class ISpectGeneratedLocalization {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -120,7 +122,7 @@ abstract class ISpectGeneratedLocalization {
     Locale('ku'),
     Locale('pt'),
     Locale('ru'),
-    Locale('zh')
+    Locale('zh'),
   ];
 
   /// No description provided for @actions.
@@ -639,6 +641,12 @@ abstract class ISpectGeneratedLocalization {
   /// **'Message printed to console'**
   String get printLogDesc;
 
+  /// No description provided for @previewTruncated.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview truncated'**
+  String get previewTruncated;
+
   /// No description provided for @projectDomain.
   ///
   /// In en, this message translates to:
@@ -1148,6 +1156,36 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Back to the main screen'**
   String get backToMainScreen;
+
+  /// No description provided for @logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs'**
+  String get logs;
+
+  /// No description provided for @performance.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance'**
+  String get performance;
+
+  /// No description provided for @inspector.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspector'**
+  String get inspector;
+
+  /// No description provided for @colorPicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get colorPicker;
+
+  /// No description provided for @composer.
+  ///
+  /// In en, this message translates to:
+  /// **'Composer'**
+  String get composer;
 
   /// No description provided for @navigationFlow.
   ///
@@ -1812,7 +1850,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @tipSearchLogs.
   ///
   /// In en, this message translates to:
-  /// **'Search logs by text — searches full JSON body too'**
+  /// **'Search logs by text - searches full JSON body too'**
   String get tipSearchLogs;
 
   /// No description provided for @tipLongPress.
@@ -1848,7 +1886,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @tipShareSession.
   ///
   /// In en, this message translates to:
-  /// **'Share the log file for bug reports — payloads are auto-redacted'**
+  /// **'Share the log file for bug reports - payloads are auto-redacted'**
   String get tipShareSession;
 
   /// No description provided for @tipReverseLogs.
@@ -2135,26 +2173,27 @@ class _ISpectGeneratedLocalizationDelegate
   @override
   Future<ISpectGeneratedLocalization> load(Locale locale) {
     return SynchronousFuture<ISpectGeneratedLocalization>(
-        lookupISpectGeneratedLocalization(locale));
+      lookupISpectGeneratedLocalization(locale),
+    );
   }
 
   @override
   bool isSupported(Locale locale) => <String>[
-        'ar',
-        'ckb',
-        'de',
-        'en',
-        'es',
-        'fr',
-        'hi',
-        'ja',
-        'kk',
-        'ko',
-        'ku',
-        'pt',
-        'ru',
-        'zh'
-      ].contains(locale.languageCode);
+    'ar',
+    'ckb',
+    'de',
+    'en',
+    'es',
+    'fr',
+    'hi',
+    'ja',
+    'kk',
+    'ko',
+    'ku',
+    'pt',
+    'ru',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_ISpectGeneratedLocalizationDelegate old) => false;
@@ -2194,8 +2233,9 @@ ISpectGeneratedLocalization lookupISpectGeneratedLocalization(Locale locale) {
   }
 
   throw FlutterError(
-      'ISpectGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'ISpectGeneratedLocalization.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

@@ -19,13 +19,15 @@ class CustomInspectorExample extends StatelessWidget {
             return ListenableBuilder(
               listenable: controller.modeNotifier,
               child: child,
-              builder: (context, child) => DraggablePanel(
-                items: [
-                  DraggablePanelItem(
+              builder: (context, child) => DraggableActionPanel(
+                actions: [
+                  PanelAction(
                     icon: Icons.format_shapes,
-                    enableBadge: controller.modeNotifier.value ==
-                        InspectorMode.inspector,
-                    onTap: (context) {
+                    badge:
+                        controller.modeNotifier.value == InspectorMode.inspector
+                        ? const PanelBadge.dot()
+                        : null,
+                    onPressed: () {
                       controller.setMode(
                         controller.modeNotifier.value == InspectorMode.inspector
                             ? InspectorMode.none
@@ -33,11 +35,14 @@ class CustomInspectorExample extends StatelessWidget {
                       );
                     },
                   ),
-                  DraggablePanelItem(
+                  PanelAction(
                     icon: Icons.colorize,
-                    enableBadge: controller.modeNotifier.value ==
-                        InspectorMode.colorPicker,
-                    onTap: (context) {
+                    badge:
+                        controller.modeNotifier.value ==
+                            InspectorMode.colorPicker
+                        ? const PanelBadge.dot()
+                        : null,
+                    onPressed: () {
                       controller.setMode(
                         controller.modeNotifier.value ==
                                 InspectorMode.colorPicker
@@ -47,11 +52,12 @@ class CustomInspectorExample extends StatelessWidget {
                       );
                     },
                   ),
-                  DraggablePanelItem(
+                  PanelAction(
                     icon: Icons.zoom_in,
-                    enableBadge:
-                        controller.modeNotifier.value == InspectorMode.zoom,
-                    onTap: (context) {
+                    badge: controller.modeNotifier.value == InspectorMode.zoom
+                        ? const PanelBadge.dot()
+                        : null,
+                    onPressed: () {
                       controller.setMode(
                         controller.modeNotifier.value == InspectorMode.zoom
                             ? InspectorMode.none

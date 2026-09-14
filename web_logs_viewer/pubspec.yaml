@@ -29,19 +29,19 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  ispect: ^5.0.0
-  ispectify: ^5.0.0
-  ispectify_dio: ^5.0.0
-  ispectify_http: ^5.0.0
-  ispectify_bloc: ^5.0.0
-  ispectify_ws: ^5.0.0
-  ispectify_db: ^5.0.0
+  ispect: ^7.0.0
+  ispectify: ^7.0.0
+  ispectify_dio: ^7.0.0
+  ispectify_http: ^7.0.0
+  ispectify_bloc: ^7.0.0
+  ispectify_ws: ^7.0.0
+  ispectify_db: ^7.0.0
 
   iconsax_plus: ^1.0.0
 
   file_picker: ^10.3.3
   super_drag_and_drop: ^0.9.1
-  collection: any
+  collection: ^1.19.1
   dio: ^5.8.0+1
   dio_web_adapter: ^2.1.1
   ws: ^1.0.0
@@ -51,7 +51,7 @@ dependencies:
   flutter_riverpod: ^2.5.1
   share_plus: ^12.0.0
   open_filex: ^4.7.0
-  auto_route:
+  auto_route: ^10.2.0
 
 dev_dependencies:
   flutter_test:

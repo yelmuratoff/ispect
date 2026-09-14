@@ -38,14 +38,14 @@ class ISpectColumnBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        crossAxisAlignment: crossAxisAlignment,
-        mainAxisSize: mainAxisSize,
-        mainAxisAlignment: mainAxisAlignment,
-        verticalDirection: verticalDirection,
-        children: List.generate(
-          itemCount,
-          (index) => itemBuilder(context, index),
-          growable: false,
-        ),
-      );
+    crossAxisAlignment: crossAxisAlignment,
+    mainAxisSize: mainAxisSize,
+    mainAxisAlignment: mainAxisAlignment,
+    verticalDirection: verticalDirection,
+    children: List.generate(
+      itemCount,
+      (index) => itemBuilder(context, index),
+      growable: false,
+    ),
+  );
 }

@@ -16,13 +16,16 @@ abstract final class LogFactory {
   }) {
     final resolvedLevel = level ?? type.level;
     return ISpectLogData(
-      message?.toString() ?? '',
+      message ?? '',
       key: type.key,
       exception: exception,
       stackTrace: stackTrace,
       pen: pen ?? options?.penByKey(type.key),
       logLevel: resolvedLevel,
       additionalData: additionalData,
+      captureMode: options?.captureMode ?? DiagnosticCaptureMode.balanced,
+      resourceLimits:
+          options?.resourceLimits ?? DiagnosticResourceLimits.balanced,
     );
   }
 }

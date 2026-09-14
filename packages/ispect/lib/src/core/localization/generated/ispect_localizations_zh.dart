@@ -274,6 +274,9 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get printLogDesc => '消息已输出到控制台';
 
   @override
+  String get previewTruncated => '预览已截断';
+
+  @override
   String get projectDomain => '项目域';
 
   @override
@@ -569,6 +572,21 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => '返回主屏幕';
+
+  @override
+  String get logs => '日志';
+
+  @override
+  String get performance => '性能';
+
+  @override
+  String get inspector => '检查器';
+
+  @override
+  String get colorPicker => '颜色';
+
+  @override
+  String get composer => '构造器';
 
   @override
   String get navigationFlow => '导航流程';
@@ -910,7 +928,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get tips => '提示';
 
   @override
-  String get tipSearchLogs => '按文本搜索日志 — 也搜索完整的JSON内容';
+  String get tipSearchLogs => '按文本搜索日志 - 也搜索完整的JSON内容';
 
   @override
   String get tipLongPress => '长按日志卡片可快速操作';
@@ -928,7 +946,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get tipNavigationFlow => '在设置中打开导航流，可视化查看路由历史';
 
   @override
-  String get tipShareSession => '分享日志文件用于错误报告 — 数据会自动脱敏';
+  String get tipShareSession => '分享日志文件用于错误报告 - 数据会自动脱敏';
 
   @override
   String get tipReverseLogs => '点击顶栏的箭头反转日志顺序';

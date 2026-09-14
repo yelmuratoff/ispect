@@ -28,68 +28,129 @@ class ISpectHttpInterceptor
     RedactionService? redactor,
   })  : _settings = settings,
         _logger = logger ?? ISpectLogger(),
-        _redactor = redactor ?? RedactionService();
+        _explicitRedactor = redactor {
+    settings.resourceLimits?.validate();
+  }
 
   final ISpectLogger _logger;
-  final RedactionService _redactor;
+  final RedactionService? _explicitRedactor;
 
   @override
   ISpectLogger get logger => _logger;
 
   @override
-  RedactionService get redactor => _redactor;
+  RedactionService get redactor =>
+      ISpectRedaction.resolveService(service: _explicitRedactor);
+
+  bool get _captureEnabled => _logger.hasActiveConsumers && settings.enabled;
+  bool get _requestCaptureEnabled => _captureEnabled && settings.logRequests;
+  bool get _responseCaptureEnabled => _captureEnabled && settings.logResponses;
+
+  bool _captureResponseEnabled(bool isErrorResponse) =>
+      isErrorResponse ? _captureEnabled : _responseCaptureEnabled;
 
   ISpectHttpInterceptorSettings get settings => _settings;
   ISpectHttpInterceptorSettings _settings;
 
-  final Expando<String> _requestIds = Expando<String>('ispect_rid');
-  final Expando<Stopwatch> _stopwatches = Expando<Stopwatch>('ispect_sw');
+  late final Expando<String> _requestIds = Expando<String>('ispect_rid');
+  late final Expando<Stopwatch> _stopwatches = Expando<Stopwatch>('ispect_sw');
 
   @override
   bool get enableRedaction => settings.enableRedaction;
+
+  @override
+  DiagnosticCaptureMode get captureMode => settings.captureMode;
+
+  @override
+  DiagnosticResourceLimits get resourceLimits =>
+      settings.resourceLimits ?? _logger.options.resourceLimits;
+
+  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
+        redact: false,
+        resourceLimits: resourceLimits,
+      );
 
   @override
   BaseNetworkInterceptorSettings get configurableSettings => _settings;
 
   @override
   void applyConfigurableSettings(BaseNetworkInterceptorSettings updated) {
-    _settings = updated as ISpectHttpInterceptorSettings;
+    final typed = updated as ISpectHttpInterceptorSettings;
+    typed.resourceLimits?.validate();
+    _settings = typed;
   }
 
   @override
-  FutureOr<bool> shouldInterceptRequest({required BaseRequest request}) => true;
+  FutureOr<bool> shouldInterceptRequest({required BaseRequest request}) =>
+      _captureEnabled;
 
   @override
   FutureOr<bool> shouldInterceptResponse({required BaseResponse response}) =>
-      true;
+      _captureEnabled;
 
   @override
   Future<BaseRequest> interceptRequest({
     required BaseRequest request,
   }) async {
-    if (!settings.enabled || !settings.shouldProcessRequest(request)) {
-      return request;
-    }
+    guardDiagnostics(
+      _logger,
+      () => _captureRequest(request),
+      what: 'http request capture',
+    );
+    return request;
+  }
+
+  void _captureRequest(BaseRequest request) {
+    if (!_captureEnabled) return;
+
+    final logRequest =
+        settings.logRequests && settings.shouldProcessRequest(request);
+    if (!_captureEnabled) return;
 
     final requestId = generateTraceId();
     _requestIds[request] = requestId;
     _stopwatches[request] = Stopwatch()..start();
 
-    final useRedaction = settings.enableRedaction;
+    if (!logRequest || !_requestCaptureEnabled) return;
+
+    final redactionActive = settings.isRedactionActive;
+    final operation = redactDiagnosticText(
+      request.method,
+      useRedaction: redactionActive,
+    );
+    if (!_requestCaptureEnabled) return;
+
     final (:url, path: _) = redactUrlAndPath(
       request.url,
-      useRedaction: useRedaction,
+      useRedaction: redactionActive,
     );
+    if (!_requestCaptureEnabled) return;
 
-    final requestDataJson = HttpRequestData(request).toJson();
-    if (useRedaction) HttpRequestData.redact(requestDataJson, redactor);
+    final requestDataJson = HttpRequestData(
+      request,
+      resourceLimits: resourceLimits,
+    ).toJson(
+      includeData: settings.printRequestData,
+      includeHeaders: settings.printRequestHeaders,
+      redactionActive: redactionActive,
+      captureMode: settings.captureMode,
+    );
+    if (!_requestCaptureEnabled) return;
+    if (redactionActive) {
+      HttpRequestData.redact(
+        requestDataJson,
+        redactor,
+        resourceLimits: resourceLimits,
+      );
+    }
 
+    if (!_requestCaptureEnabled) return;
     _logger.httpRequest(
       source: 'http',
-      operation: request.method,
+      operation: operation,
       target: url,
       correlationId: requestId,
-      config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+      config: _traceConfig,
       meta: {
         NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.requestData: requestDataJson,
@@ -99,67 +160,109 @@ class ISpectHttpInterceptor
         },
       },
     );
-    return request;
   }
 
   @override
   Future<BaseResponse> interceptResponse({
     required BaseResponse response,
   }) async {
+    guardDiagnostics(
+      _logger,
+      () => _captureResponse(response),
+      what: 'http response capture',
+    );
+    return response;
+  }
+
+  void _captureResponse(BaseResponse response) {
+    if (!_captureEnabled) return;
+
     final isErrorResponse =
         response.statusCode >= 400 && response.statusCode < 600;
 
-    if (!settings.enabled) return response;
-    if (!isErrorResponse && !settings.shouldProcessResponse(response)) {
-      return response;
+    if (!isErrorResponse &&
+        (!settings.logResponses || !settings.shouldProcessResponse(response))) {
+      return;
     }
     if (isErrorResponse && !settings.shouldProcessError(response)) {
-      return response;
+      return;
     }
+    if (!_captureResponseEnabled(isErrorResponse)) return;
 
     final request = response.request;
     final requestId = request != null ? _requestIds[request] : null;
     final sw = request != null ? _stopwatches[request] : null;
     sw?.stop();
 
-    final useRedaction = settings.enableRedaction;
+    final redactionActive = settings.isRedactionActive;
+    final method = request?.method ?? 'UNKNOWN';
+    final operation = redactDiagnosticText(
+      method,
+      useRedaction: redactionActive,
+    );
+    if (!_captureResponseEnabled(isErrorResponse)) return;
+
     final requestUrl = request?.url;
     final (:url, path: _) = requestUrl != null
-        ? redactUrlAndPath(requestUrl, useRedaction: useRedaction)
+        ? redactUrlAndPath(requestUrl, useRedaction: redactionActive)
         : (url: '', path: '');
+    if (!_captureResponseEnabled(isErrorResponse)) return;
 
+    final includeResponseData =
+        isErrorResponse ? settings.printErrorData : settings.printResponseData;
+    final includeResponseHeaders = isErrorResponse
+        ? settings.printErrorHeaders
+        : settings.printResponseHeaders;
+    final includeResponseMessage = isErrorResponse
+        ? settings.printErrorMessage
+        : settings.printResponseMessage;
     final responseData = HttpResponseData(
       baseResponse: response,
-      requestData: HttpRequestData(request),
+      requestData: HttpRequestData(
+        request,
+        resourceLimits: resourceLimits,
+      ),
       response: response is Response ? response : null,
       multipartRequest: request is MultipartRequest ? request : null,
-      preDecodedBody: _responseBodyPayload(
-        response,
-        useRedaction,
-        include: isErrorResponse
-            ? settings.printErrorData
-            : settings.printResponseData,
-      ),
     );
 
-    final responseDataJson = responseData.toJson();
-    if (useRedaction) HttpResponseData.redact(responseDataJson, redactor);
+    final responseDataJson = responseData.toJson(
+      includeData: includeResponseData,
+      includeHeaders: includeResponseHeaders,
+      includeMessage: includeResponseMessage,
+      includeRequestData: settings.printRequestData,
+      includeRequestHeaders: settings.printRequestHeaders,
+      redactionActive: redactionActive,
+      captureMode: settings.captureMode,
+    );
+    if (!_captureResponseEnabled(isErrorResponse)) return;
+    if (redactionActive) {
+      HttpResponseData.redact(
+        responseDataJson,
+        redactor,
+        resourceLimits: resourceLimits,
+      );
+    }
+
+    if (!_captureResponseEnabled(isErrorResponse)) return;
     final baseMeta = <String, Object?>{
       if (requestId != null) NetworkJsonKeys.requestId: requestId,
       NetworkJsonKeys.statusCode: response.statusCode,
-      NetworkJsonKeys.responseData: responseDataJson,
+      if (isErrorResponse)
+        NetworkJsonKeys.errorData: responseDataJson
+      else
+        NetworkJsonKeys.responseData: responseDataJson,
     };
 
-    final method = request?.method ?? 'UNKNOWN';
-
+    if (!_captureResponseEnabled(isErrorResponse)) return;
     if (isErrorResponse) {
       _logger.httpError(
         source: 'http',
-        operation: method,
+        operation: operation,
         target: url,
         correlationId: requestId,
         duration: sw?.elapsed,
-        config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+        config: _traceConfig,
         meta: {
           ...baseMeta,
           NetworkLogRenderer.renderHintsKey: {
@@ -172,11 +275,11 @@ class ISpectHttpInterceptor
     } else {
       _logger.httpResponse(
         source: 'http',
-        operation: method,
+        operation: operation,
         target: url,
         correlationId: requestId,
         duration: sw?.elapsed,
-        config: useRedaction ? null : BaseNetworkInterceptor.noRedactConfig,
+        config: _traceConfig,
         meta: {
           ...baseMeta,
           NetworkLogRenderer.renderHintsKey: {
@@ -187,18 +290,5 @@ class ISpectHttpInterceptor
         },
       );
     }
-
-    return response;
-  }
-
-  Object? _responseBodyPayload(
-    BaseResponse response,
-    bool useRedaction, {
-    required bool include,
-  }) {
-    if (!include) return null;
-    if (response is! Response || response.body.isEmpty) return null;
-
-    return NetworkPayloadSanitizer.decodeJsonGracefully(response.body);
   }
 }

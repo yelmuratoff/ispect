@@ -6,7 +6,7 @@ import 'utils.dart';
 
 /// Shows a snackbar confirming the picked colour with a Copy action and,
 /// when [showColorSchemeMatch] is true, a subtle line listing matching
-/// `ColorScheme` tokens (e.g. `colorScheme.primary`) — surfaced here rather
+/// `ColorScheme` tokens (e.g. `colorScheme.primary`) - surfaced here rather
 /// than in the live picker overlay so it doesn't reflow during pixel hunting.
 void showColorPickerResultSnackbar({
   required BuildContext context,

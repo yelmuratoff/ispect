@@ -18,6 +18,8 @@ navigation diagnostics.
 
 ```yaml
 dependencies:
+  flutter_localizations:
+    sdk: flutter
   ispect: ^{{version}}
 ```
 
@@ -129,7 +131,7 @@ cd packages/ispectify_riverpod/example && dart run -DISPECT_ENABLED=true main.da
   <tr>
     <td align="center" width="33%">
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/settings.png?raw=true" width="240" alt="Settings panel" /><br />
-      <sub><strong>Settings</strong><br />Tune filters, history, and debug flags.</sub>
+      <sub><strong>Settings</strong><br />Tune capture, resources, processing, history, and filters.</sub>
     </td>
     <td align="center" width="33%">
       <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/share.png?raw=true" width="240" alt="Share sheet" /><br />
@@ -144,7 +146,7 @@ cd packages/ispectify_riverpod/example && dart run -DISPECT_ENABLED=true main.da
 
 <div align="center">
   <img src="https://github.com/yelmuratoff/ispect/blob/main/assets/http_composer.png?raw=true" width="240" alt="HTTP composer" />
-  <p><em>HTTP composer — replay a captured request or build one from scratch, then send it through your registered client.</em></p>
+  <p><em>HTTP composer - replay a captured request or build one from scratch, then send it through your registered client.</em></p>
 </div>
 
 <table>
@@ -225,15 +227,28 @@ The toolkit handles the diagnostics most projects rebuild by hand for every new 
 
 ## Data handling
 
-ISpect only captures what you enable. Logs, network metadata, optional bodies and headers, database trace arguments, BLoC events, navigation, and exports are all opt-in at the call site.
+ISpect only captures integrations you enable. Network bodies and headers,
+BLoC/Riverpod values, database trace arguments, navigation, and exports remain
+scoped to those integrations; supported network and state integrations use
+full bounded redacted diagnostics by default.
 
-Redaction is on by default for every supported network and database interceptor. The shared engine masks auth headers, cookies, bearer tokens, passwords, API keys, common PII (emails, phone numbers, SSN-class IDs), and financial fields. Application-specific keys (tenant IDs, internal tokens, account numbers) live in your `RedactionService` configuration, because only your team knows what counts as sensitive in your data model.
+Redaction is on by default for every supported network and database interceptor. The shared engine masks auth headers, cookies, bearer tokens, passwords, API keys, common PII (emails, phone numbers, SSN-class IDs), and financial fields. Application-specific keys (tenant IDs, internal tokens, account numbers) belong in the global policy, because only your team knows what counts as sensitive in your data model:
 
-The same redactor runs across every boundary that can leak. Interceptors, log export, clipboard helpers, cURL generation, and observer payloads all pass through it. A request masked in the viewer is also masked in the exported session, the cURL you paste into a ticket, and the payload an observer ships to an internal sink.
+```dart
+ISpectRedaction.configure(
+  service: RedactionService(
+    additionalSensitiveKeys: {'tenant_id', 'internal_token'},
+  ),
+);
+```
+
+This is the default-policy SSOT for core logs, traces, persistence, interceptors, database diagnostics, state observers, export, clipboard, and cURL generation. Flutter apps may pass the same service through `ISpect.run(redactionService: ...)` for a policy that is restored by `ISpect.dispose()`. An explicit service supplied to one integration remains a local override. `ISpectRedaction.enabled` remains the global masking switch.
 
 A few habits that pay off on shared internal builds:
 
-- Capture metadata first. Turn body and header logging on only for the bug you are chasing.
+- Use `metadataOnly()` or `compact` presets when a shared build needs stronger data minimization.
+- Use `DiagnosticCaptureMode.strict` when application-defined `toJson()` and
+  `toString()` methods must never run; balanced capture is the useful default.
 - Register your domain-specific redaction keys before sharing exported sessions outside the engineering team.
 - Treat exported `.json` sessions according to the data class they contain. They are plain-text artifacts and travel through the same channels as any internal log.
 - Review observer adapters before pointing them at a centralized sink. An observer sees whatever category you choose to forward.
@@ -241,15 +256,52 @@ A few habits that pay off on shared internal builds:
 
 `docs/SECURITY.md` has the full data-handling policy and a rollout checklist.
 
-## Minimal safe setup
+JSON handoffs retain up to 256 KiB per structured value, 1 MiB per record, and
+32 MiB per export. Their metadata reports `totalLogs`, `exportedLogs`, and
+`truncated`. Call `LogsJsonService.importFromJsonWithReport(...)` when the UI
+needs to disclose skipped invalid entries.
 
-Start with the UI shell and metadata-only diagnostics. Turn deeper capture on for the specific problem you are investigating.
+These are balanced defaults, not fixed product limits. Configure capture,
+import/export, viewer, clipboard, network, database, observer, correlation,
+batching, yielding, and search budgets on the logger:
+
+```dart
+final logger = ISpectFlutter.init(
+  options: ISpectLoggerOptions(
+    resourceLimits: DiagnosticResourceLimits.constrained,
+    processingPolicy: DiagnosticProcessingPolicy.responsive,
+  ),
+);
+```
+
+Use `copyWith` for individual values or the `extended`/`throughput` profiles
+for a controlled larger session. Selected profiles and per-field overrides
+remain authoritative through redaction, observers, replay, persistence,
+clipboard, and export instead of silently reverting to `balanced`. Every
+profile remains bounded by validated host-protection ceilings, and redaction
+stays enabled independently.
+
+No policy setup is required for the default path. In Flutter, the Settings
+sheet offers Capture, Resource, and Processing profiles under Advanced.
+Capture can switch from the useful `Balanced` default to `Strict`, which never
+invokes application-defined formatters. Selections update capture, search,
+viewer, import, and export behavior immediately and are included in
+`ISpectSettingsState.toJson()`. Per-field `copyWith` values also round-trip
+through `ISpectOptions.initialSettings`; a non-preset resource or processing
+combination is shown as `Custom`.
+
+## Hardened setup
+
+Defaults prioritize useful redacted diagnostics in internal builds. Opt into
+metadata-only network capture or compact state summaries when a build needs
+stricter minimization. Those presets also select strict capture; logger,
+adapter, observer, and database settings expose the same mode directly.
 
 1. Add `ispect` and wrap the app with `ISpect.run(...)` and `ISpectBuilder.wrap(...)`.
 2. Run internal builds with `--dart-define=ISPECT_ENABLED=true`.
 3. Keep production jobs free of that flag.
 4. Add network, database, BLoC, and Riverpod modules one at a time as you need them.
-5. Leave body and header capture off until a payload-level investigation needs it.
+5. Use `metadataOnly()` or `compact` presets for integrations that do not need payload values.
 6. Add your project's redaction keys before sharing exported sessions with anyone outside the team.
 
 ### Rolling file history (opt-in)
@@ -271,7 +323,7 @@ ISpect.run(() => runApp(const App()), logger: logger);
 
 `RollingFileLogHistory` writes redacted JSON Lines to the application cache, rotates segments by their actual UTF-8 size, and bounds both retained days and total disk usage. Existing 4.x `logs_YYYY-MM-DD.json` files remain readable. `ISpectFlutter.init(fileHistory: ...)` falls back to normal in-memory history on web, and creates no directory, timer, or file when `ISPECT_ENABLED` is omitted.
 
-Passing `fileHistory:` above is all it takes: the log viewer then automatically surfaces a **Daily Sessions** browser — reachable from the settings sheet or by tapping the app-bar title — where each retained day reopens in the same viewer for browsing and search. The browser appears whenever `ISpect.logger.fileLogHistory` is set; nothing else needs wiring. Optionally set `onOpenFile`/`onShare` on the builder's `ISpectOptions` to add open-in-file-manager and share buttons for those sessions.
+Passing `fileHistory:` above is all it takes: the log viewer then automatically surfaces a **Daily Sessions** browser - reachable from the settings sheet or by tapping the app-bar title - where each retained day reopens in the same viewer for browsing and search. The browser appears whenever `ISpect.logger.fileLogHistory` is set; nothing else needs wiring. Optionally set `onOpenFile`/`onShare` on the builder's `ISpectOptions` to add open-in-file-manager and share buttons for those sessions.
 
 Persistence activates only on non-web builds run with `--dart-define=ISPECT_ENABLED=true` (see [Production safety](#production-safety)); otherwise the file history stays inert.
 
@@ -281,21 +333,24 @@ The global redaction switch remains authoritative. Setting `ISpectRedaction.enab
 
 ## Release channel
 
-The `5.x` line is the current stable channel and is the recommended pin for new integrations. If your dependency policy still requires the older API surface, the latest 4.x release remains available on pub.dev.
+The version declared in `version.config` (currently `{{version}}`) is the
+repository version used by package metadata and generated documentation. It
+may be a stable release or a prerelease; check pub.dev for the latest published
+stable version before pinning a production integration.
 
 ## Project state
 
 What you can verify from the repository today:
 
-- The current line is `5.x` stable. 4.x stable is still available on pub.dev for teams that need it.
-- SDK baseline is Dart `>=3.6.0 <4.0.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
-- A `production_safety` CI job builds a release APK without `ISPECT_ENABLED` and counts residual `"ispect"` strings in the binary.
-- Network capture, export, clipboard, cURL generation, and observer boundaries share the same `RedactionService`.
+- Repository metadata and generated documentation currently target `{{version}}`.
+- SDK baseline is Dart `>=3.6.0 <4.0.0` for the pure Dart packages. `ispect` requires Dart `>=3.8.0` and Flutter `>=3.35.0`; `ispect_layout` requires Dart `>=3.8.0` and Flutter `>=3.32.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
+- The `production_safety` workflow runs disabled direct-API tests for every package and compares disabled/enabled release AOT probes using exact implementation sentinels.
+- Core diagnostics and supported integrations resolve one configurable default `RedactionService`; explicit integration services remain local overrides.
 - Deprecations come with replacements and removal targets in `docs/DEPRECATIONS.md`.
 
 Linked policies:
 
-- [AI integration prompt](https://github.com/yelmuratoff/ispect/blob/main/docs/prompt.md) — paste into any AI assistant to add ISpect for you
+- [AI integration prompt](https://github.com/yelmuratoff/ispect/blob/main/docs/prompt.md) - paste into any AI assistant to add ISpect for you
 - [Security and data handling](https://github.com/yelmuratoff/ispect/blob/main/docs/SECURITY.md)
 - [Compatibility policy](https://github.com/yelmuratoff/ispect/blob/main/docs/COMPATIBILITY.md)
 - [Deprecations and migration notes](https://github.com/yelmuratoff/ispect/blob/main/docs/DEPRECATIONS.md)
@@ -318,10 +373,10 @@ for the measurement method and controls.
 
 ## Repository
 
-This is a monorepo. Every package above plus the standalone web log viewer lives in the same tree, with shared scripts for versioning, publishing, and doc sync. See [`bash/README.md`](https://github.com/yelmuratoff/ispect/blob/main/bash/README.md) for the automation stack and [`docs/VERSION_MANAGEMENT.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/VERSION_MANAGEMENT.md) for the release workflow.
+This is a monorepo. Every package above plus the standalone web log viewer lives in the same tree, with shared scripts for versioning, publishing, and doc sync. See [`tool/README.md`](https://github.com/yelmuratoff/ispect/blob/main/tool/README.md) for the automation stack and [`docs/VERSION_MANAGEMENT.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/VERSION_MANAGEMENT.md) for the release workflow.
 
 ## Documentation workflow
 
-Package READMEs are generated. Sources live in `docs/readme/<package>.md` and shared fragments in `docs/readme/_partials/`. Run `./bash/build_readme.sh` to regenerate, and `./bash/build_readme.sh --check` in CI to catch drift. Hand-edits to `packages/*/README.md` get overwritten on the next build.
+Package READMEs are generated. Sources live in `docs/readme/<package>.md` and shared fragments in `docs/readme/_partials/`. Run `dart run tool/bin/ispect_tool.dart readme` to regenerate, and `readme --check` in CI to catch drift. Hand-edits to `packages/*/README.md` get overwritten on the next build.
 
 <!-- partial:footer -->

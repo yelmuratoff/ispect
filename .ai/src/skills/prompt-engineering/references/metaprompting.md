@@ -1,23 +1,23 @@
 # Metaprompting
 
-Ask the model to improve its own instructions. Most powerful technique when you can't pinpoint *why* a prompt under-performs but you can see *that* it does.
+Ask the model to improve its own instructions. Most powerful technique when you can't pinpoint _why_ a prompt under-performs but you can see _that_ it does.
 
 ## When to use
 
 - A prompt produces good output but slowly (overthinks, re-reads files, takes too long to first useful action).
 - A prompt produces wrong output and you can't tell which instruction is the culprit.
-- A prompt has accreted over many edits and feels muddled — you suspect redundancy or contradiction but can't see it.
+- A prompt has accreted over many edits and feels muddled - you suspect redundancy or contradiction but can't see it.
 - You inherit a prompt from someone else and want a second opinion before tuning.
 
 ## When NOT to use
 
-- The prompt is short and clear — you can debug it by reading.
-- The model is producing output that *looks fine* and you have no eval signal — metaprompting will surface plausible-but-empty edits.
-- You haven't run an eval yet — without ground truth, you can't tell if the model's suggested changes are actually improvements.
+- The prompt is short and clear - you can debug it by reading.
+- The model is producing output that _looks fine_ and you have no eval signal - metaprompting will surface plausible-but-empty edits.
+- You haven't run an eval yet - without ground truth, you can't tell if the model's suggested changes are actually improvements.
 
 ## Template
 
-Run this *immediately after* a turn that under-performed, in the same conversation, so the model has the failure context fresh.
+Run this _immediately after_ a turn that under-performed, in the same conversation, so the model has the failure context fresh.
 
 ```text
 That was a high quality response, thanks! It seemed like it took you a while to finish responding though. Is there a way to clarify your instructions so you can get to a response as good as this faster next time? It's extremely important to be efficient when providing these responses or users won't get the most out of them in time. Let's see if we can improve!
@@ -37,7 +37,8 @@ Adapt the framing to the failure mode:
 ## How to filter the model's suggestions
 
 Single-run output from metaprompting is **noisy**. The model often proposes:
-- Overly specific edits tuned to *this exact* failure ("when the user asks about X, do Y") — won't generalize.
+
+- Overly specific edits tuned to _this exact_ failure ("when the user asks about X, do Y") - won't generalize.
 - Plausible-sounding but redundant additions (rephrasing rules already in the prompt).
 - Cosmetic reordering with no behavioural effect.
 
@@ -45,9 +46,9 @@ The fix: **run it 2–3 times in fresh conversations**, then keep only suggestio
 
 For each surviving suggestion:
 
-1. **Generalize it** — strip references to the specific user request. The edit should work for *any* request of this class, not just this one.
-2. **Check it doesn't contradict an existing instruction** — metaprompting often adds rules that quietly override earlier ones.
-3. **Apply it and re-run the eval** — if the score doesn't move, revert. Don't keep edits on faith.
+1. **Generalize it** - strip references to the specific user request. The edit should work for _any_ request of this class, not just this one.
+2. **Check it doesn't contradict an existing instruction** - metaprompting often adds rules that quietly override earlier ones.
+3. **Apply it and re-run the eval** - if the score doesn't move, revert. Don't keep edits on faith.
 
 ## Example session
 
@@ -57,10 +58,10 @@ Original prompt has 800 lines. Failure: agent reads files one at a time, takes 4
 
 That's recurring + generalizable + non-conflicting → apply, re-run eval, keep if score improves.
 
-Ignored from the same runs (only appeared in one): "Skip reading test files when the user mentions a bug" — too specific, would break for other workloads.
+Ignored from the same runs (only appeared in one): "Skip reading test files when the user mentions a bug" - too specific, would break for other workloads.
 
 ## Iteration boundary
 
-Metaprompting is a debugging tool, not a design tool. Use it to surface issues with an existing prompt, not to write a new one from scratch — for that, start from a vetted reference (Anthropic best-practices, OpenAI Codex starter prompt) and trim.
+Metaprompting is a debugging tool, not a design tool. Use it to surface issues with an existing prompt, not to write a new one from scratch - for that, start from a vetted reference (Anthropic best-practices, OpenAI Codex starter prompt) and trim.
 
-When the model's metaprompt suggestions stop changing across runs (you see the same handful of "improvements" that have already been applied), the prompt has stabilized — stop. Further metaprompting at that point produces noise.
+When the model's metaprompt suggestions stop changing across runs (you see the same handful of "improvements" that have already been applied), the prompt has stabilized - stop. Further metaprompting at that point produces noise.

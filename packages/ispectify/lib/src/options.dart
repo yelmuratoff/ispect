@@ -11,18 +11,25 @@ class ISpectLoggerOptions {
     int maxHistoryItems = 10000,
     int logTruncateLength = kDefaultStringTruncateLimit,
     Map<String, AnsiPen>? customColors,
-  })  : assert(maxHistoryItems >= 0, 'maxHistoryItems must be non-negative'),
-        assert(
-          logTruncateLength >= 0,
-          'logTruncateLength must be non-negative',
-        ),
-        _useHistory = useHistory,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
+    this.processingPolicy = DiagnosticProcessingPolicy.balanced,
+  })  : _useHistory = useHistory,
         _useConsoleLogs = useConsoleLogs,
         _forwardErrorToConsole = forwardErrorToConsole,
-        _maxHistoryItems = maxHistoryItems,
-        _logTruncateLength = logTruncateLength,
+        _maxHistoryItems = _requireNonNegative(
+          maxHistoryItems,
+          'maxHistoryItems',
+        ),
+        _logTruncateLength = _requireNonNegative(
+          logTruncateLength,
+          'logTruncateLength',
+        ),
         _customColors =
-            customColors != null ? Map.unmodifiable(customColors) : null;
+            customColors != null ? Map.unmodifiable(customColors) : null {
+    resourceLimits.validate();
+    processingPolicy.validate();
+  }
 
   bool get useHistory => _useHistory && enabled;
   final bool _useHistory;
@@ -46,6 +53,15 @@ class ISpectLoggerOptions {
   final int _logTruncateLength;
 
   final bool enabled;
+
+  /// Controls application-defined formatting during active capture.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Resource budgets inherited by core logging and attached integrations.
+  final DiagnosticResourceLimits resourceLimits;
+
+  /// Cooperative scheduling inherited by import and export operations.
+  final DiagnosticProcessingPolicy processingPolicy;
 
   final Map<String, AnsiPen>? _customColors;
 
@@ -73,6 +89,9 @@ class ISpectLoggerOptions {
     int? maxHistoryItems,
     int? logTruncateLength,
     Map<String, AnsiPen>? customColors,
+    DiagnosticCaptureMode? captureMode,
+    DiagnosticResourceLimits? resourceLimits,
+    DiagnosticProcessingPolicy? processingPolicy,
   }) =>
       ISpectLoggerOptions(
         enabled: enabled ?? this.enabled,
@@ -82,5 +101,15 @@ class ISpectLoggerOptions {
         maxHistoryItems: maxHistoryItems ?? _maxHistoryItems,
         logTruncateLength: logTruncateLength ?? _logTruncateLength,
         customColors: customColors ?? _customColors,
+        captureMode: captureMode ?? this.captureMode,
+        resourceLimits: resourceLimits ?? this.resourceLimits,
+        processingPolicy: processingPolicy ?? this.processingPolicy,
       );
+}
+
+int _requireNonNegative(int value, String name) {
+  if (value < 0) {
+    throw ArgumentError.value(value, name, 'must be non-negative');
+  }
+  return value;
 }

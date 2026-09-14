@@ -281,6 +281,9 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get printLogDesc => 'Сообщение выведено в консоль';
 
   @override
+  String get previewTruncated => 'Предпросмотр обрезан';
+
+  @override
   String get projectDomain => 'Домен проекта';
 
   @override
@@ -579,6 +582,21 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'Вернуться на главный экран';
+
+  @override
+  String get logs => 'Логи';
+
+  @override
+  String get performance => 'Производительность';
+
+  @override
+  String get inspector => 'Инспектор';
+
+  @override
+  String get colorPicker => 'Цвет';
+
+  @override
+  String get composer => 'Композер';
 
   @override
   String get navigationFlow => 'Поток навигации';
@@ -933,7 +951,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String get tips => 'Подсказки';
 
   @override
-  String get tipSearchLogs => 'Поиск по тексту — ищет также в JSON теле лога';
+  String get tipSearchLogs => 'Поиск по тексту - ищет также в JSON теле лога';
 
   @override
   String get tipLongPress =>
@@ -951,11 +969,11 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'Открой Поток навигации в настройках — увидишь историю маршрутов';
+      'Открой Поток навигации в настройках - увидишь историю маршрутов';
 
   @override
   String get tipShareSession =>
-      'Поделись файлом логов для багрепортов — данные маскируются автоматически';
+      'Поделись файлом логов для багрепортов - данные маскируются автоматически';
 
   @override
   String get tipReverseLogs =>

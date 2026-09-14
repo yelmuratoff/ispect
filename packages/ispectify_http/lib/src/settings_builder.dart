@@ -20,8 +20,12 @@ class ISpectHttpInterceptorSettingsBuilder
         BaseRequest,
         BaseResponse,
         BaseResponse> {
-  /// Creates a builder with default settings (moderate verbosity).
+  /// Creates a builder with full diagnostics and redaction enabled.
   ISpectHttpInterceptorSettingsBuilder();
+
+  /// Metadata only: request and response envelopes without payloads or headers.
+  factory ISpectHttpInterceptorSettingsBuilder.metadataOnly() =>
+      ISpectHttpInterceptorSettingsBuilder()..applyMetadataOnlyDefaults();
 
   /// Development: verbose logging, redaction enabled.
   factory ISpectHttpInterceptorSettingsBuilder.development() =>
@@ -43,6 +47,10 @@ class ISpectHttpInterceptorSettingsBuilder
   ISpectHttpInterceptorSettings build() => ISpectHttpInterceptorSettings(
         enabled: enabled,
         enableRedaction: enableRedaction,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+        logRequests: logRequests,
+        logResponses: logResponses,
         printResponseData: printResponseData,
         printResponseHeaders: printResponseHeaders,
         printResponseMessage: printResponseMessage,

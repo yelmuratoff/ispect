@@ -1,7 +1,7 @@
 <!--
-  GENERATED FILE — do not edit by hand.
+  GENERATED FILE - do not edit by hand.
   Source:     docs/readme/ispect_layout.md
-  Regenerate: ./bash/build_readme.sh
+  Regenerate: dart run tool/bin/ispect_tool.dart readme
 -->
 
 <div align="center">
@@ -47,7 +47,6 @@
   </p>
 </div>
 
-
 `ispect_layout` is a visual layout inspector for Flutter. Tap any widget at runtime to read its render box (size, constraints, padding, decoration, text styles, transform matrix, clip shape), or compare two widgets to measure the pixel gap between them.
 
 A standalone package. It works on its own, without the rest of the [ISpect toolkit](#the-ispect-toolkit).
@@ -68,7 +67,8 @@ A standalone package. It works on its own, without the rest of the [ISpect toolk
 ## What it surfaces
 
 - Render box: size, padding, constraints, hit-test path visualisation.
-- Decoration: colour, per-side border, shadows (including `spreadRadius`), gradients (visual preview, stops, `begin` / `end`, `tileMode`), and `DecorationImage`.
+- Decoration: colour, per-side border, shadows (including `spreadRadius`), gradients (visual preview, stops, `begin` / `end`, `tileMode`), `DecorationImage`, and `ShapeDecoration` (shape, radius, shadows, gradient).
+- Layout helpers: `Padding` insets, `ConstrainedBox` / `SizedBox` constraints, and `Align` / `Center` alignment with size factors.
 - Border radius formatted per corner (TL, TR, BR, BL), collapsed when uniform. Elliptical radii rendered as `x×y`.
 - Text: plain-text preview, span-by-span style breakdown, `didExceedMaxLines`, `maxLines`, `overflow`, `textScaler`.
 - Render-object coverage: `RenderFlex`, `RenderStack`, `RenderWrap`, `RenderImage`, `RenderOpacity`, `RenderAnimatedOpacity`, `RenderPhysicalShape`, `RenderPhysicalModel`, `RenderFittedBox`, `RenderAspectRatio`, `RenderCustomPaint`, `RenderTransform` (matrix decomposition), `RenderBackdropFilter`, every `RenderClip*`, and `RenderEditable` (text fields).
@@ -76,14 +76,27 @@ A standalone package. It works on its own, without the rest of the [ISpect toolk
 - Compare mode: tap Compare (or press `Alt+Y`) and pick a second widget to see horizontal and vertical gaps or LTRB offsets with a visual overlay.
 - Colour picker with pixel-level sampling, `ColorScheme` hints, a zoom/magnifier overlay, and physical-keyboard shortcuts.
 
+### Profile and release builds
+
+Everything above is read from public render-object state, so it works in profile and release builds compiled with `ISPECT_ENABLED` (pass `isEnabled: true`; the inspector is off by default in release). Two limitations remain:
+
+- `--obfuscate` mangles type names, so render-object labels, breadcrumb chips, `clipper` / `painter` / `shape` values, and `SvgPicture` detection show obfuscated names.
+- `ColorFilter.mode(...)` and `ColorFilter.matrix(...)` on a `DecorationImage` or `SvgPicture` show as `ColorFilter` in release; `dart:ui` exposes no accessors for their colour, blend mode, or matrix.
+
 ## Install
 
 ```yaml
 dependencies:
-  ispect_layout: ^6.1.7
+  ispect_layout: ^7.0.0
 ```
 
 ## Quick start
+
+Enable diagnostics explicitly in internal builds:
+
+```bash
+flutter run --dart-define=ISPECT_ENABLED=true
+```
 
 ```dart
 import 'package:flutter/material.dart';
@@ -94,13 +107,17 @@ void main() {
     MaterialApp(
       home: const MyApp(),
       builder: (context, child) => Inspector(
-        isEnabled: true, // typically `kDebugMode`.
+        isEnabled: true,
         child: child!,
       ),
     ),
   );
 }
 ```
+
+`ISPECT_ENABLED` is the absolute compile-time gate. `isEnabled` is only an
+additional runtime switch and cannot turn the inspector on when the build flag
+is omitted.
 
 Tap the widget-inspector FAB to start selecting. Tap the Compare icon (or press `Alt+Y`) to lock the current selection, then tap a second widget to see the pixel distance.
 
@@ -120,9 +137,16 @@ Inspector(
   isEnabled: true,
   initialPanelExpanded: false,
   decimalPlaces: 3,
+  maxRenderTreeClipboardCharacters: 100000,
   child: child!,
 )
 ```
+
+`maxRenderTreeClipboardCharacters` bounds the final render-tree text copied
+from the selection panel. Its balanced default is 10,000 characters. Set a
+smaller value for constrained test devices or raise it, up to the finite
+host-protection ceiling, for controlled internal sessions. When you provide an
+`InspectorController`, configure the limit on that controller instead.
 
 For custom multi-key shortcuts, pass `ShortcutActivator`s to `InspectorController`:
 
@@ -166,7 +190,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

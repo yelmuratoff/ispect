@@ -1,7 +1,7 @@
 ---
 title: Signs of AI writing
 source: Condensed from https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing
-purpose: Field guide of patterns that mark prose as AI-generated. Use as a reference when humanizing text — scan for these tells and rewrite.
+purpose: Field guide of patterns that mark prose as AI-generated. Use as a reference when humanizing text - scan for these tells and rewrite.
 ---
 
 # Signs of AI writing
@@ -10,7 +10,7 @@ A catalog of writing patterns that strongly correlate with LLM output. Each entr
 
 LLMs regress to the statistical mean of their training data. They drift toward generic, positive, fluent, promotional, formula-driven prose. The patterns below are the visible surface of that drift.
 
-The patterns themselves are language-independent. Every category has an equivalent form in any language an LLM writes in. The "Watch for" lists are in English because that is where the patterns are most thoroughly documented, but they are illustrative, not exhaustive. When humanizing non-English prose, recognise the *shape* of the pattern (a participial tag that moralises, a sweeping opener, a piled-up hedge, a fancier-than-needed verb of being) and rewrite it using the plain register of whatever language the text is in. Trust your ear over any specific word list.
+The patterns themselves are language-independent. Every category has an equivalent form in any language an LLM writes in. The "Watch for" lists are in English because that is where the patterns are most thoroughly documented, but they are illustrative, not exhaustive. When humanizing non-English prose, recognise the _shape_ of the pattern (a participial tag that moralises, a sweeping opener, a piled-up hedge, a fancier-than-needed verb of being) and rewrite it using the plain register of whatever language the text is in. Trust your ear over any specific word list.
 
 ## Significance inflation
 
@@ -122,7 +122,7 @@ Words that spiked in frequency after late 2022. One or two may be coincidence. A
 
 **The core list (English illustration):** delve, tapestry, landscape (abstract), realm, interplay, intricacies, intricate, additionally (sentence-initial), furthermore, moreover, consequently, underscore (verb), showcase, testament, enduring, vibrant, seamless, robust, groundbreaking, nestled, breathtaking, renowned, synergy, holistic, multifaceted, garner, foster, fostering, harness, elevate, align with, resonate with, crucial, pivotal, key (adjective), valuable, emphasize, highlight (verb), enhance.
 
-Every language has its own cluster of these — the words that sound a register too formal, a notch too admiring, a step too abstract for the surrounding sentences. Learn to feel that mismatch in the language you are working in.
+Every language has its own cluster of these - the words that sound a register too formal, a notch too admiring, a step too abstract for the surrounding sentences. Learn to feel that mismatch in the language you are working in.
 
 **Fix:** Replace with plain everyday equivalents.
 
@@ -132,7 +132,7 @@ Sentence-modifying adverbs used to sound thoughtful without adding meaning. Real
 
 **Watch for:** ultimately, fundamentally, essentially, critically, importantly, notably, significantly, arguably, undoubtedly, indeed, crucially, primarily, largely, broadly speaking, in essence, at its core, interestingly, remarkably, curiously, surprisingly, what's striking is, perhaps most importantly.
 
-**Fix:** Cut the adverb. If the sentence still reads, it was filler. If the sentence breaks, the adverb was hiding a missing argument — write the argument instead.
+**Fix:** Cut the adverb. If the sentence still reads, it was filler. If the sentence breaks, the adverb was hiding a missing argument - write the argument instead.
 
 ## Copula substitution
 
@@ -148,13 +148,13 @@ LLMs avoid plain "is/are/has" and reach for fancier verbs of being. One 2023 stu
 
 Performative "not X, but Y" constructions, used to sound balanced or insightful. The negated half exists only to set up the affirmative half, which adds nothing the affirmative half could not say on its own.
 
-**Watch for:** Not X, but Y, Not only X but Y, It's not X, it's Y, It's not just X, it's Y, Not X, not Y, just Z, X is not Y, but Z, no X, no Y, just Z, and any extended enumeration of negations leading to a single affirmation (neither A, nor B, nor C — but D).
+**Watch for:** Not X, but Y, Not only X but Y, It's not X, it's Y, It's not just X, it's Y, Not X, not Y, just Z, X is not Y, but Z, no X, no Y, just Z, and any extended enumeration of negations leading to a single affirmation (neither A, nor B, nor C - but D).
 
 **Example:** "The self-portrait is not a mirror but a portal: not a representation of self, but a mechanism for its reinvention." Or the shorter, blanker form: "It's not a phone. It's a lifestyle."
 
-**Shape to recognise across languages:** any sentence that spends a clause negating one thing in order to assert another, especially when the negated thing is a strawman no real reader would have proposed. The pattern is the *shape*, not the specific connectors.
+**Shape to recognise across languages:** any sentence that spends a clause negating one thing in order to assert another, especially when the negated thing is a strawman no real reader would have proposed. The pattern is the _shape_, not the specific connectors.
 
-**Fix:** One positive sentence stating the actual point. If the contrast is genuinely informative — a real, common misconception that needs correcting — keep it; if it is rhetorical scaffolding, cut it.
+**Fix:** One positive sentence stating the actual point. If the contrast is genuinely informative - a real, common misconception that needs correcting - keep it; if it is rhetorical scaffolding, cut it.
 
 ## Performative rhetorical question pairs
 
@@ -212,7 +212,7 @@ Bolding random nouns or phrases mid-paragraph for "emphasis." Echoes README, sal
 
 Two- or three-row tables for material that would read more naturally as a sentence. AI uses tables as a "look comprehensive" signal even when the content does not benefit from columnar layout.
 
-**Example:** A table with rows "Market size: $2.1B / Major players: A, B, C / Year founded: 2014" — when one sentence would carry the same information with more flow.
+**Example:** A table with rows "Market size: $2.1B / Major players: A, B, C / Year founded: 2014" - when one sentence would carry the same information with more flow.
 
 **Fix:** Convert to prose unless the data is genuinely tabular (three or more rows comparing the same fields, or a real lookup grid).
 
@@ -238,13 +238,13 @@ Emoji prefixed to section headings or bullet points. 🧠 Cognitive, 🚨 Import
 
 Real writers use em dashes. LLMs overuse them, especially for parallelism and "punched up" emphasis, in places where commas or periods would work.
 
-**Example:** "This isn't a debate — it's a teardown. Not just a critique — a dismantling."
+**Example:** "This isn't a debate - it's a teardown. Not just a critique - a dismantling."
 
 **Fix:** Replace with commas, periods, or parentheses depending on intent.
 
 ## Curly quotes and curly apostrophes
 
-ChatGPT and DeepSeek default to curly quotes ("..." and 'apostrophe'). Sometimes mixed inconsistently with straight ones in the same response. Not proof on its own — many editors and word processors use them too — but combined with other tells, a useful signal.
+ChatGPT and DeepSeek default to curly quotes ("..." and 'apostrophe'). Sometimes mixed inconsistently with straight ones in the same response. Not proof on its own - many editors and word processors use them too - but combined with other tells, a useful signal.
 
 ## Sycophantic openers and chatbot closers
 
@@ -286,7 +286,7 @@ Sentence-opening phrases that announce a turn without doing any of the work of t
 
 ## Metaphor verbs for "explain"
 
-Pet "explanation" verbs that AI reaches for in place of plain *examine, show, describe, look at,* or *explain*. Each carries a faintly performed sense of effort or discovery.
+Pet "explanation" verbs that AI reaches for in place of plain _examine, show, describe, look at,_ or _explain_. Each carries a faintly performed sense of effort or discovery.
 
 **Watch for:** unpack, unlock, decode, dive into, dive deeper, take a closer look at, peel back the layers, explore (in the metaphorical sense), unravel, uncover, shed light on, distill, navigate (figurative).
 
@@ -308,7 +308,7 @@ Piling qualifiers on top of qualifiers so a claim survives any possible objectio
 
 A paragraph of sentences all roughly the same length and shape. No short jabs, no long swerves. The reader notices it as a low background hum, like fluorescent light. By itself this is not proof of AI, but combined with any of the lexical tells above it is one of the strongest signals.
 
-**Fix:** Drop a five-word sentence into a run of long ones. Let a long sentence go long. Vary openings — sometimes start with a clause, sometimes with the subject, sometimes mid-thought.
+**Fix:** Drop a five-word sentence into a run of long ones. Let a long sentence go long. Vary openings - sometimes start with a clause, sometimes with the subject, sometimes mid-thought.
 
 ## Generic upbeat endings
 
@@ -316,7 +316,7 @@ The closing sentence that gestures vaguely at a bright future, expanding horizon
 
 **Watch for:** the future looks bright, exciting times lie ahead, the possibilities are endless, only time will tell, one thing is certain, as we move forward, the journey continues, the best is yet to come, at the end of the day, when all is said and done, in the end.
 
-**Fix:** End on a concrete detail or a specific open question. If you cannot find one, the piece is already done — just stop.
+**Fix:** End on a concrete detail or a specific open question. If you cannot find one, the piece is already done - just stop.
 
 ## Section summaries
 
@@ -330,11 +330,11 @@ Closing a section or piece by restating what the reader just read.
 
 A separate cluster of tells that appears when LLMs generate short stories, scene-style writing, or narrative passages inside non-fiction. Worth recognising as a family because they cluster: where you find one, the others tend to follow.
 
-**Generated character names.** Slightly fantasy-flavoured, often alliterative or with unusual but pronounceable consonants. Recurrent defaults include *Elara Voss, Kaelan Thorne, Lyra Whisperwind, Seraphina, Aric, Maren*. The names sound made-up because they were — not from any real cultural pool, just plausible-sounding phonemes.
+**Generated character names.** Slightly fantasy-flavoured, often alliterative or with unusual but pronounceable consonants. Recurrent defaults include _Elara Voss, Kaelan Thorne, Lyra Whisperwind, Seraphina, Aric, Maren_. The names sound made-up because they were - not from any real cultural pool, just plausible-sounding phonemes.
 
 **Foreshadowing winks.** "Little did she know..." / "She didn't know it yet, but..." / "If she had known what was coming..." The narrator stepping in to telegraph the future.
 
-**Sensory clichés as scene-setting.** *The whisper of the leaves. Dancing shadows. The air was thick with possibility. Her eyes held untold stories. A silence that spoke volumes. The world seemed to hold its breath.* Each is a placeholder for an observation the model did not actually make.
+**Sensory clichés as scene-setting.** _The whisper of the leaves. Dancing shadows. The air was thick with possibility. Her eyes held untold stories. A silence that spoke volumes. The world seemed to hold its breath._ Each is a placeholder for an observation the model did not actually make.
 
 **Over-figurative "as if" and "as though".** Almost every action or description carrying a second figurative layer: "She paused, as if weighing centuries of meaning." Used once or twice it works; used four times a paragraph it becomes the dominant prose smell.
 
@@ -359,7 +359,7 @@ When humanizing, scan the draft for these in order. Each one usually requires a 
 1. Em dashes, semicolons, framing colons, mid-paragraph bold.
 2. First sentence: context-establishing opener, cliché-metaphor opener, definition-style lead, or pseudo-inclusive "whether X or Y." If yes, rewrite the opening before anything else.
 3. AI-vocabulary cluster (delve, tapestry, landscape, robust, vibrant), empty intensifiers (powerful, compelling, transformative), and abstract-adverb filler (ultimately, fundamentally, interestingly).
-4. Metaphor verbs for "explain" (unpack, unlock, dive into) — replace with plain ones.
+4. Metaphor verbs for "explain" (unpack, unlock, dive into) - replace with plain ones.
 5. Significance inflation and participial tags.
 6. Negative parallelisms ("Not X, but Y" and family), forced triads, false ranges, performative rhetorical question pairs.
 7. Promotional adjectives and copula substitution (serves as, stands as, boasts).

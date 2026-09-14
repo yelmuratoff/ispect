@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/src/data/_data.dart';
+import 'package:ispectify_bloc/src/safe_type_label.dart';
 import 'package:ispectify_bloc/src/settings.dart';
 import 'package:meta/meta.dart';
 
@@ -37,8 +38,7 @@ typedef BlocFilterPredicate = bool Function(Object? candidate);
 class ISpectBlocObserver extends BlocObserver {
   ISpectBlocObserver({
     ISpectLogger? logger,
-    // ignore: use_named_constants — the matching named const is deprecated.
-    this.settings = const ISpectBlocSettings(),
+    this.settings = ISpectBlocSettings.verbose,
     this.onBlocEvent,
     this.onBlocTransition,
     this.onBlocChange,
@@ -49,6 +49,7 @@ class ISpectBlocObserver extends BlocObserver {
     this.filterPredicate,
   }) : filters = List<Pattern>.unmodifiable(filters) {
     _logger = logger ?? ISpectLogger();
+    settings.resourceLimits?.validate();
   }
 
   late final ISpectLogger _logger;
@@ -66,87 +67,159 @@ class ISpectBlocObserver extends BlocObserver {
 
   /// Test-only override for the compile-time [kISpectEnabled] gate.
   ///
-  /// Production code leaves this `null`, so logging follows `kISpectEnabled`
-  /// and tree-shakes away when the flag is omitted. Tests set it to exercise
-  /// the enabled path without a `--dart-define`.
+  /// This can only narrow the compile-time gate; it can never enable ISpect
+  /// when the build omitted `ISPECT_ENABLED`.
   @visibleForTesting
   static bool? debugEnabledOverride;
 
-  bool get _ispectEnabled => debugEnabledOverride ?? kISpectEnabled;
+  bool get _ispectEnabled => kISpectEnabled && (debugEnabledOverride ?? true);
+  bool get _loggingEnabled =>
+      _ispectEnabled && _logger.isEnabled && settings.enabled;
+  bool get _captureEnabled => _loggingEnabled && _logger.hasActiveConsumers;
 
-  /// Event correlation: stores pending eventIds per bloc instance.
-  /// Queue (FIFO) handles concurrent events correctly.
-  /// Expando is GC-safe — cleaned when Bloc is destroyed.
-  static final _pendingEventIds = Expando<Queue<String>>('bloc_event_ids');
+  static final _pendingEvents =
+      Expando<_PendingEventCorrelations>('bloc_event_ids');
+
+  DiagnosticResourceLimits get _resourceLimits =>
+      settings.resourceLimits ?? _logger.options.resourceLimits;
 
   bool _isFiltered(Object? candidate) {
-    if (filterPredicate?.call(candidate) ?? false) {
+    final predicateMatch = filterPredicate?.call(candidate) ?? false;
+    if (!_loggingEnabled) {
+      return true;
+    }
+    if (predicateMatch) {
       return true;
     }
     if (filters.isEmpty) {
       return false;
     }
-    final candidateString = switch (candidate) {
-      final String value => value,
-      final BlocBase<dynamic> bloc => bloc.runtimeType.toString(),
-      final Type type => type.toString(),
-      _ => candidate?.toString() ?? '',
-    };
+    final candidateString = _filterText(candidate);
     if (candidateString.isEmpty) {
       return false;
     }
     for (final pattern in filters) {
-      if (candidateString.contains(pattern)) {
-        return true;
-      }
+      var matches = false;
+      try {
+        matches = candidateString.contains(pattern);
+      } catch (_) {}
+      if (!_loggingEnabled) return true;
+      if (matches) return true;
     }
     return false;
+  }
+
+  String _filterText(Object? candidate) {
+    final value = switch (candidate) {
+      null => '',
+      final String value => value,
+      final BlocBase<dynamic> bloc => safeBlocTypeLabel(
+          bloc,
+          captureMode: settings.captureMode,
+          resourceLimits: _resourceLimits,
+        ),
+      _ => LogExportOutput.boundJsonValue(
+          candidate,
+          resourceLimits: _resourceLimits,
+          allowCustomSerialization:
+              settings.captureMode == DiagnosticCaptureMode.balanced,
+          allowCustomStringification:
+              settings.captureMode == DiagnosticCaptureMode.balanced,
+        ),
+    };
+    final text = switch (value) {
+      final String value => value,
+      final num value => value.toString(),
+      final bool value => value.toString(),
+      _ => JsonValueNormalizer.unprintableValue,
+    };
+    return LogExportOutput.truncateUtf8(
+      text,
+      maxBytes: _resourceLimits.maxStateTraceBytes,
+    );
   }
 
   bool _shouldLog({
     required bool toggle,
     required Object? candidate,
+    bool hasAdapterCallback = false,
   }) {
-    if (!_ispectEnabled || !settings.enabled || !toggle) {
+    if (!_loggingEnabled || !toggle) {
       return false;
     }
-    return !_isFiltered(candidate);
+    if (!_captureEnabled && !hasAdapterCallback) {
+      return false;
+    }
+    final filtered = _isFiltered(candidate);
+    return _loggingEnabled && !filtered;
   }
 
-  void _logCallbackError(String callbackName, Object error) {
+  void _logCallbackError(String callbackName, Object _) {
     try {
       _logger.warning(
-        'ISpectBlocObserver: $callbackName callback threw: $error',
+        'ISpectBlocObserver: $callbackName callback threw safely.',
       );
     } catch (_) {}
   }
 
-  /// Defaults to a [RedactionService] when redaction is enabled but no explicit
-  /// redactor was supplied, so sensitive payloads are masked out of the box —
-  /// matching the network/DB interceptors. `null` only when redaction is off.
-  late final RedactionService? _redactor = settings.enableRedaction
-      ? (settings.redactor ?? RedactionService())
-      : null;
+  StateTracePreparer? _preparerCache;
 
-  Map<String, Object?> _withRedaction(
-    Map<String, dynamic> data,
-    void Function(Map<String, dynamic>, RedactionService) redact,
-  ) {
-    final redactor = _redactor;
-    if (redactor != null) {
-      redact(data, redactor);
+  StateTracePreparer get _preparer {
+    final redactor = settings.isRedactionActive
+        ? ISpectRedaction.resolveService(service: settings.redactor)
+        : null;
+    final limits = _resourceLimits;
+    final cached = _preparerCache;
+    if (cached != null &&
+        identical(cached.redactor, redactor) &&
+        identical(cached.resourceLimits, limits) &&
+        cached.captureMode == settings.captureMode) {
+      return cached;
     }
-    return data;
+    return _preparerCache = StateTracePreparer(
+      redactor: redactor,
+      captureMode: settings.captureMode,
+      resourceLimits: limits,
+    );
   }
+
+  // Every caller-controlled trace field is prepared by _preparer. A second
+  // generic pass would replace the configured redactor and repeat boundary
+  // traversal.
+  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
+        redact: false,
+        attachStackOnError: true,
+        resourceLimits: _resourceLimits,
+      );
 
   @override
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     super.onEvent(bloc, event);
-    if (!_shouldLog(toggle: settings.printEvents, candidate: bloc)) {
+    if (!_loggingEnabled || !settings.printEvents) {
+      return;
+    }
+    if (!_captureEnabled && onBlocEvent == null) {
+      return;
+    }
+    var correlations = _captureEnabled
+        ? _pendingEvents[bloc] ??= _PendingEventCorrelations(
+            capacity: _resourceLimits.maxPendingCorrelations,
+          )
+        : null;
+    final filtered = _isFiltered(bloc);
+    if (!_loggingEnabled) {
+      return;
+    }
+    if (filtered) {
+      if (_captureEnabled) correlations?.add(event, null);
       return;
     }
     final accepted = settings.eventFilter?.call(bloc, event) ?? true;
+    if (!_loggingEnabled) {
+      return;
+    }
     if (!accepted) {
+      if (_captureEnabled) correlations?.add(event, null);
       return;
     }
     try {
@@ -154,25 +227,41 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocEvent', callbackError);
     }
+    if (!_loggingEnabled) {
+      return;
+    }
 
+    if (!_captureEnabled) {
+      return;
+    }
+    correlations ??= _pendingEvents[bloc] ??= _PendingEventCorrelations(
+      capacity: _resourceLimits.maxPendingCorrelations,
+    );
     final eventId = generateTraceId();
-    (_pendingEventIds[bloc] ??= Queue<String>()).add(eventId);
+    correlations.add(event, eventId);
 
     final data = BlocEventData(
       bloc: bloc,
       event: event,
       includeFullData: settings.printEventFullData,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
-    final meta = _withRedaction(data.toJson(), BlocEventData.redact);
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(meta, BlocJsonKeys.blocType, data.blocType);
     final redactedEvent = meta[BlocJsonKeys.event];
     _logger.blocEvent(
       source: _source,
-      target: data.blocType,
+      target: target,
       correlationId: eventId,
       meta: meta,
-      consoleMessage: redactedEvent != null
-          ? '[bloc] event → ${data.blocType}\nEvent(${data.eventType}): $redactedEvent'
-          : '[bloc] event → ${data.blocType} (${data.eventType})',
+      config: _traceConfig,
+      consoleMessage: _preparer.prepareText(
+        redactedEvent != null
+            ? 'event → $target\n'
+                'Event(${data.eventType}): $redactedEvent'
+            : 'event → $target (${data.eventType})',
+      ),
     );
   }
 
@@ -182,50 +271,81 @@ class ISpectBlocObserver extends BlocObserver {
     Transition<dynamic, dynamic> transition,
   ) {
     super.onTransition(bloc, transition);
-    if (!_shouldLog(toggle: settings.printTransitions, candidate: bloc)) {
-      return;
-    }
-    final accepted = settings.transitionFilter?.call(bloc, transition) ?? true;
-    if (!accepted) {
-      return;
-    }
+    final correlations = _pendingEvents[bloc];
+    final eventId = correlations?.correlationIdFor(transition.event);
     try {
-      onBlocTransition?.call(bloc, transition);
-    } catch (callbackError) {
-      _logCallbackError('onBlocTransition', callbackError);
-    }
+      if (!_shouldLog(
+        toggle: settings.printTransitions,
+        candidate: bloc,
+        hasAdapterCallback: onBlocTransition != null,
+      )) {
+        return;
+      }
+      final accepted =
+          settings.transitionFilter?.call(bloc, transition) ?? true;
+      if (!_loggingEnabled) {
+        return;
+      }
+      if (!accepted) {
+        return;
+      }
+      try {
+        onBlocTransition?.call(bloc, transition);
+      } catch (callbackError) {
+        _logCallbackError('onBlocTransition', callbackError);
+      }
+      if (!_captureEnabled) {
+        return;
+      }
 
-    final eventId = _pendingEventIds[bloc]?.firstOrNull;
-    final data = BlocTransitionData(
-      bloc: bloc,
-      transition: transition,
-      includeEventFullData: settings.printEventFullData,
-      formattedCurrentState: settings.formatState(transition.currentState),
-      formattedNextState: settings.formatState(transition.nextState),
-    );
-    final meta = _withRedaction(data.toJson(), BlocTransitionData.redact);
-    _logger.blocTransition(
-      source: _source,
-      target: data.blocType,
-      correlationId: eventId,
-      meta: meta,
-      consoleMessage: _buildBlocTransitionMessage(
-        blocType: data.blocType,
-        eventTypeName: data.eventType,
-        currentState: meta[BlocJsonKeys.currentState],
-        nextState: meta[BlocJsonKeys.nextState],
-        event: meta[BlocJsonKeys.event],
-      ),
-    );
+      final data = BlocTransitionData(
+        bloc: bloc,
+        transition: transition,
+        includeEventFullData: settings.printEventFullData,
+        formattedCurrentState: settings.formatState(transition.currentState),
+        formattedNextState: settings.formatState(transition.nextState),
+        captureMode: settings.captureMode,
+        resourceLimits: _resourceLimits,
+      );
+      final meta = _preparer.prepareMeta(data.toJson());
+      final target =
+          _preparer.target(meta, BlocJsonKeys.blocType, data.blocType);
+      _logger.blocTransition(
+        source: _source,
+        target: target,
+        correlationId: eventId,
+        meta: meta,
+        config: _traceConfig,
+        consoleMessage: _preparer.prepareText(
+          _buildBlocTransitionMessage(
+            blocType: target,
+            eventTypeName: data.eventType,
+            currentState: meta[BlocJsonKeys.currentState],
+            nextState: meta[BlocJsonKeys.nextState],
+            event: meta[BlocJsonKeys.event],
+          ),
+        ),
+      );
+    } finally {
+      correlations?.nextChangeCorrelationId = _loggingEnabled ? eventId : null;
+    }
   }
 
   @override
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
-    if (!_shouldLog(toggle: settings.printChanges, candidate: bloc)) {
+    final eventId = _pendingEvents[bloc]?.takeNextChangeCorrelationId();
+    if (!_shouldLog(
+      toggle: settings.printChanges,
+      candidate: bloc,
+      hasAdapterCallback: onBlocChange != null,
+    )) {
       return;
     }
     final accepted = settings.changeFilter?.call(bloc, change) ?? true;
+    if (!_loggingEnabled) {
+      return;
+    }
     if (!accepted) {
       return;
     }
@@ -234,25 +354,32 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocChange', callbackError);
     }
+    if (!_captureEnabled) {
+      return;
+    }
 
-    // Peek eventId (no pop — pop happens only in onDone)
-    final eventId = _pendingEventIds[bloc]?.firstOrNull;
     final data = BlocChangeData(
       bloc: bloc,
       change: change,
       formattedCurrentState: settings.formatState(change.currentState),
       formattedNextState: settings.formatState(change.nextState),
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
-    final meta = _withRedaction(data.toJson(), BlocChangeData.redact);
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(meta, BlocJsonKeys.blocType, data.blocType);
     _logger.blocState(
       source: _source,
-      target: data.blocType,
+      target: target,
       correlationId: eventId,
       meta: meta,
-      consoleMessage: _buildBlocChangeMessage(
-        blocType: data.blocType,
-        currentState: meta[BlocJsonKeys.currentState],
-        nextState: meta[BlocJsonKeys.nextState],
+      config: _traceConfig,
+      consoleMessage: _preparer.prepareText(
+        _buildBlocChangeMessage(
+          blocType: target,
+          currentState: meta[BlocJsonKeys.currentState],
+          nextState: meta[BlocJsonKeys.nextState],
+        ),
       ),
     );
   }
@@ -260,7 +387,11 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
-    if (!_shouldLog(toggle: settings.printErrors, candidate: error)) {
+    if (!_shouldLog(
+      toggle: settings.printErrors,
+      candidate: bloc,
+      hasAdapterCallback: onBlocError != null,
+    )) {
       return;
     }
     try {
@@ -268,26 +399,37 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocError', callbackError);
     }
+    if (!_captureEnabled) {
+      return;
+    }
 
     final data = BlocErrorData(
       bloc: bloc,
       error: error,
       stackTrace: stackTrace,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
-    final meta = _withRedaction(data.toJson(), BlocErrorData.redact);
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(meta, BlocJsonKeys.blocType, data.blocType);
     _logger.blocError(
       source: _source,
-      target: data.blocType,
-      error: error,
-      errorStackTrace: stackTrace,
+      target: target,
+      error: _preparer.prepareError(error)!,
+      errorStackTrace: _preparer.prepareStack(stackTrace),
       meta: meta,
+      config: _traceConfig,
     );
   }
 
   @override
   void onCreate(BlocBase<dynamic> bloc) {
     super.onCreate(bloc);
-    if (!_shouldLog(toggle: settings.printCreations, candidate: bloc)) {
+    if (!_shouldLog(
+      toggle: settings.printCreations,
+      candidate: bloc,
+      hasAdapterCallback: onBlocCreate != null,
+    )) {
       return;
     }
     try {
@@ -295,20 +437,34 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocCreate', callbackError);
     }
+    if (!_captureEnabled) {
+      return;
+    }
 
-    final data = BlocLifecycleData(bloc: bloc);
-    final meta = _withRedaction(data.toJson(), BlocLifecycleData.redact);
+    final data = BlocLifecycleData(
+      bloc: bloc,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
+    );
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(meta, BlocJsonKeys.blocType, data.blocType);
     _logger.blocCreate(
       source: _source,
-      target: data.blocType,
+      target: target,
       meta: meta,
+      config: _traceConfig,
     );
   }
 
   @override
   void onClose(BlocBase<dynamic> bloc) {
     super.onClose(bloc);
-    if (!_shouldLog(toggle: settings.printClosings, candidate: bloc)) {
+    _pendingEvents[bloc] = null;
+    if (!_shouldLog(
+      toggle: settings.printClosings,
+      candidate: bloc,
+      hasAdapterCallback: onBlocClose != null,
+    )) {
       return;
     }
     try {
@@ -316,17 +472,23 @@ class ISpectBlocObserver extends BlocObserver {
     } catch (callbackError) {
       _logCallbackError('onBlocClose', callbackError);
     }
+    if (!_captureEnabled) {
+      return;
+    }
 
-    final data = BlocLifecycleData(bloc: bloc);
-    final meta = _withRedaction(data.toJson(), BlocLifecycleData.redact);
+    final data = BlocLifecycleData(
+      bloc: bloc,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
+    );
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(meta, BlocJsonKeys.blocType, data.blocType);
     _logger.blocClose(
       source: _source,
-      target: data.blocType,
+      target: target,
       meta: meta,
+      config: _traceConfig,
     );
-
-    // Clear any pending event IDs for this bloc to prevent memory leaks.
-    _pendingEventIds[bloc] = null;
   }
 
   @override
@@ -338,13 +500,11 @@ class ISpectBlocObserver extends BlocObserver {
   ]) {
     super.onDone(bloc, event, error, stackTrace);
 
-    // Pop eventId BEFORE any early returns to prevent memory leaks.
-    final queue = _pendingEventIds[bloc];
-    final eventId = queue?.firstOrNull;
-    if (queue != null && queue.isNotEmpty) queue.removeFirst();
+    final eventId = _pendingEvents[bloc]?.remove(event);
 
-    final isEnabled = _ispectEnabled && settings.enabled && !_isFiltered(bloc);
-    if (!isEnabled) return;
+    if (!_captureEnabled) return;
+    final filtered = _isFiltered(bloc);
+    if (!_captureEnabled || filtered) return;
 
     final shouldLogCompletion = (settings.printCompletions && error == null) ||
         (settings.printErrors && error != null);
@@ -355,20 +515,28 @@ class ISpectBlocObserver extends BlocObserver {
       event: event,
       hasError: error != null,
       includeFullData: settings.printEventFullData,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
-    final meta = _withRedaction(data.toJson(), BlocDoneData.redact);
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(meta, BlocJsonKeys.blocType, data.blocType);
     final redactedEvent = meta[BlocJsonKeys.event];
     _logger.blocDone(
       source: _source,
-      target: data.blocType,
+      target: target,
       hasError: data.hasError,
-      error: error,
-      errorStackTrace: stackTrace,
+      error: _preparer.prepareError(error),
+      errorStackTrace: _preparer.prepareStack(stackTrace),
       correlationId: eventId,
       meta: meta,
-      consoleMessage: redactedEvent != null
-          ? '[bloc] done → ${data.blocType}\nEvent(${data.eventType}): $redactedEvent'
-          : '[bloc] done → ${data.blocType}${data.eventType != null ? ' (${data.eventType})' : ''}',
+      config: _traceConfig,
+      consoleMessage: _preparer.prepareText(
+        redactedEvent != null
+            ? 'done → $target\n'
+                'Event(${data.eventType}): $redactedEvent'
+            : 'done → $target'
+                '${data.eventType != null ? ' (${data.eventType})' : ''}',
+      ),
     );
   }
 
@@ -379,7 +547,7 @@ class ISpectBlocObserver extends BlocObserver {
     required Object? nextState,
     required Object? event,
   }) {
-    final buf = StringBuffer('[bloc] transition → $blocType')
+    final buf = StringBuffer('transition → $blocType')
       ..write('\n$currentState → $nextState');
     if (event != null) {
       buf.write('\nEvent($eventTypeName): $event');
@@ -394,5 +562,73 @@ class ISpectBlocObserver extends BlocObserver {
     required Object? currentState,
     required Object? nextState,
   }) =>
-      '[bloc] state → $blocType\n$currentState → $nextState';
+      'state → $blocType\n$currentState → $nextState';
+}
+
+final class _PendingEventCorrelations {
+  _PendingEventCorrelations({required this.capacity});
+
+  final int capacity;
+  final Map<Object?, _PendingEventCorrelation> _events =
+      HashMap<Object?, _PendingEventCorrelation>.identity();
+  var _overflowCount = 0;
+  String? nextChangeCorrelationId;
+
+  void add(Object? event, String? correlationId) {
+    final pending = _events[event];
+    if (pending != null) {
+      pending.addDuplicate();
+      return;
+    }
+    if (_overflowCount > 0 || _events.length >= capacity) {
+      _overflowCount++;
+      return;
+    }
+    _events[event] = _PendingEventCorrelation(correlationId);
+  }
+
+  String? correlationIdFor(Object? event) => _events[event]?.correlationId;
+
+  String? takeNextChangeCorrelationId() {
+    final correlationId = nextChangeCorrelationId;
+    nextChangeCorrelationId = null;
+    return correlationId;
+  }
+
+  String? remove(Object? event) {
+    final pending = _events[event];
+    if (pending != null) {
+      final correlationId = pending.correlationId;
+      if (pending.removeOne()) {
+        _events.remove(event);
+      }
+      return correlationId;
+    }
+    if (_overflowCount > 0) {
+      _overflowCount--;
+    }
+    return null;
+  }
+}
+
+final class _PendingEventCorrelation {
+  _PendingEventCorrelation(this._correlationId);
+
+  String? _correlationId;
+  var _pendingCount = 1;
+  var _isAmbiguous = false;
+
+  String? get correlationId =>
+      _pendingCount == 1 && !_isAmbiguous ? _correlationId : null;
+
+  void addDuplicate() {
+    _pendingCount++;
+    _isAmbiguous = true;
+    _correlationId = null;
+  }
+
+  bool removeOne() {
+    _pendingCount--;
+    return _pendingCount == 0;
+  }
 }

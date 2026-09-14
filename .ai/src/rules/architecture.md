@@ -3,7 +3,8 @@
 ## Package Boundaries
 
 - Put shared logging, trace categories, redaction, filters, history, and network primitives in `packages/ispectify`.
-- Put client-specific network adapters in their package: Dio in `ispectify_dio`, `http_interceptor` in `ispectify_http`, `ws` in `ispectify_ws`.
+- Put client-specific network adapters in their package: Dio in `ispectify_dio`, `http_interceptor` in `ispectify_http`.
+- Keep `ispectify_ws` provider-agnostic (`WsDiagnostics`, `WsDiagnosticsSink`, only `ispectify` as a dependency); client-specific WebSocket adapters such as `ws` live in `packages/ispectify_ws/example`.
 - Put database tracing primitives in `packages/ispectify_db`; storage-driver examples and wrappers stay under `packages/ispectify_db/example`.
 - Put Flutter UI, scopes, overlays, export/import UI, localization, and the app-facing `ISpect` entry point in `packages/ispect`.
 - Put visual layout inspection mechanics in `packages/ispect_layout`; avoid moving inspector state into the app shell package.

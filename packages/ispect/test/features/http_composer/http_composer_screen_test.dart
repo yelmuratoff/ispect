@@ -25,14 +25,29 @@ class _FakeSender implements NetworkRequestSender {
   }
 }
 
+final class _HostileReplayError implements Exception {
+  int toJsonCalls = 0;
+  int toStringCalls = 0;
+
+  Map<String, Object?> toJson() {
+    toJsonCalls++;
+    throw StateError('REPLAY_SCREEN_JSON_SECRET');
+  }
+
+  @override
+  String toString() {
+    toStringCalls++;
+    throw StateError('REPLAY_SCREEN_TEXT_SECRET');
+  }
+}
+
 void main() {
   group('HttpComposerScreen', () {
-    testWidgets('sends the composed request and shows the response status',
-        (tester) async {
+    testWidgets('sends the composed request and shows the response status', (
+      tester,
+    ) async {
       final sender = _FakeSender();
-      await tester.pumpWidget(
-        appShell(HttpComposerScreen(senders: [sender])),
-      );
+      await tester.pumpWidget(appShell(HttpComposerScreen(senders: [sender])));
 
       await tester.enterText(
         find.byType(TextField).first,
@@ -46,17 +61,16 @@ void main() {
       expect(find.text('200'), findsOneWidget);
     });
 
-    testWidgets('opens the JSON viewer for a JSON response body',
-        (tester) async {
+    testWidgets('opens the JSON viewer for a JSON response body', (
+      tester,
+    ) async {
       final sender = _FakeSender(
         result: const NetworkReplayResult(
           statusCode: 200,
           body: {'name': 'Ada'},
         ),
       );
-      await tester.pumpWidget(
-        appShell(HttpComposerScreen(senders: [sender])),
-      );
+      await tester.pumpWidget(appShell(HttpComposerScreen(senders: [sender])));
 
       await tester.enterText(
         find.byType(TextField).first,
@@ -76,17 +90,17 @@ void main() {
       expect(find.byType(JsonScreen), findsOneWidget);
     });
 
-    testWidgets('hides the send button when no client is registered',
-        (tester) async {
-      await tester.pumpWidget(
-        appShell(const HttpComposerScreen(senders: [])),
-      );
+    testWidgets('hides the send button when no client is registered', (
+      tester,
+    ) async {
+      await tester.pumpWidget(appShell(const HttpComposerScreen(senders: [])));
 
       expect(find.byIcon(Icons.send_rounded), findsNothing);
     });
 
-    testWidgets('splits request and response into two panes on desktop',
-        (tester) async {
+    testWidgets('splits request and response into two panes on desktop', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1400, 900);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
@@ -97,9 +111,7 @@ void main() {
           body: {'name': 'Ada'},
         ),
       );
-      await tester.pumpWidget(
-        appShell(HttpComposerScreen(senders: [sender])),
-      );
+      await tester.pumpWidget(appShell(HttpComposerScreen(senders: [sender])));
 
       expect(find.byType(ResizableSplitView), findsOneWidget);
       expect(find.byIcon(Icons.inbox_rounded), findsOneWidget);
@@ -126,9 +138,7 @@ void main() {
       addTearDown(tester.view.reset);
 
       final sender = _FakeSender();
-      await tester.pumpWidget(
-        appShell(HttpComposerScreen(senders: [sender])),
-      );
+      await tester.pumpWidget(appShell(HttpComposerScreen(senders: [sender])));
 
       expect(find.byType(ResizableSplitView), findsNothing);
 
@@ -140,6 +150,27 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('200'), findsOneWidget);
+    });
+
+    testWidgets('renders a hostile sender error without invoking formatters', (
+      tester,
+    ) async {
+      final error = _HostileReplayError();
+      final sender = _FakeSender(result: NetworkReplayResult(error: error));
+      await tester.pumpWidget(appShell(HttpComposerScreen(senders: [sender])));
+
+      await tester.enterText(
+        find.byType(TextField).first,
+        'https://api.test/ping',
+      );
+      await tester.tap(find.byIcon(Icons.send_rounded));
+      await tester.pumpAndSettle();
+
+      expect(error.toJsonCalls, 0);
+      expect(error.toStringCalls, 0);
+      expect(find.text('ERR'), findsOneWidget);
+      expect(find.textContaining('REPLAY_SCREEN_'), findsNothing);
+      expect(tester.takeException(), isNull);
     });
   });
 }

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 /// buffer with straight (non-premultiplied) alpha (as produced by
 /// `ui.Image.toByteData(format: ImageByteFormat.rawStraightRgba)`).
 ///
-/// Returns `null` for out-of-range coordinates or truncated buffers — callers
+/// Returns `null` for out-of-range coordinates or truncated buffers - callers
 /// must handle this rather than relying on a default colour.
 ///
 /// The buffer layout is asserted in debug mode; in release the bounds checks

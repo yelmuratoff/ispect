@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 ///
 /// The reverse lookup table (`argb32 → [tokenNames]`) is cached per
 /// [ColorScheme] instance via an [Expando], so the 50-entry map is built
-/// at most once per scheme — not on every pointer tick during picking.
+/// at most once per scheme - not on every pointer tick during picking.
 class ColorSchemeInspector {
   ColorSchemeInspector._();
 
-  static final Expando<Map<int, List<String>>> _cache =
-      Expando('ColorSchemeInspector.reverseLookup');
+  static final Expando<Map<int, List<String>>> _cache = Expando(
+    'ColorSchemeInspector.reverseLookup',
+  );
 
   /// Returns all `ColorScheme` tokens that exactly match [color], or an empty
   /// list if none match. Multiple tokens can share a value (e.g.
@@ -23,11 +24,8 @@ class ColorSchemeInspector {
   /// Backwards-compatible string form: `colorScheme.foo` or
   /// `colorScheme.foo, colorScheme.bar`. Returns empty string when no match.
   ///
-  /// Prefer [matchingTokens] for new code — it preserves structure for the UI.
-  static String identifyColorSchemeMatch(
-    Color color,
-    ColorScheme colorScheme,
-  ) {
+  /// Prefer [matchingTokens] for new code - it preserves structure for the UI.
+  static String identifyColorSchemeMatch(Color color, ColorScheme colorScheme) {
     final names = matchingTokens(color, colorScheme);
     if (names.isEmpty) return '';
     return names.map((n) => 'colorScheme.$n').join(', ');

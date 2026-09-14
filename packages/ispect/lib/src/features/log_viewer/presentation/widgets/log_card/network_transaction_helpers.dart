@@ -49,7 +49,7 @@ bool _isRedundantReason(int? code, String reason) {
 /// Status / size summary for a transaction's response or error section,
 /// e.g. `1.2 KB` or `Not Found · 84 B`. Empty when nothing notable is reported.
 ///
-/// The status code and duration are intentionally omitted — both already show
+/// The status code and duration are intentionally omitted - both already show
 /// in the header. The reason phrase is dropped when it is the canonical phrase
 /// for a successful code (`200 OK`, `201 Created`, …) since it only restates
 /// the badge; non-standard and error reasons are kept because they carry
@@ -77,12 +77,19 @@ String transactionRequestSummary(NetworkTransaction tx) {
   return parts.join(' · ');
 }
 
-/// Whether the expanded card has an inline panel — a response summary or an
+/// Whether the expanded card has an inline panel - a response summary or an
 /// error. The request summary alone is excluded: on its own it just repeats
 /// the request content type.
 bool transactionHasInlineDetails(NetworkTransaction tx) =>
     (tx.response != null && transactionStatusSummary(tx).isNotEmpty) ||
-    tx.error != null;
+    tx.error != null ||
+    (NetworkLogRenderer.requestPayload(tx.request)?.hasPreview ?? false) ||
+    (NetworkLogRenderer.responsePayload(
+          tx.response ?? tx.error ?? tx.request,
+        )?.hasPreview ??
+        false);
+
+String transactionDisplayUrl(NetworkTransaction tx) => tx.url ?? '';
 
 /// URL to render in a collapsed transaction row.
 ///
@@ -104,8 +111,11 @@ void shareTransaction(BuildContext context, NetworkTransaction tx) {
   // If only request exists (pending), share directly.
   if (responseLog == null) {
     ISpectShareLogBottomSheet(
-      data: tx.request.toJson(),
-      truncatedData: tx.request.toJson(truncated: true),
+      data: tx.request.toExportJson(redactionActive: true),
+      truncatedData: tx.request.toExportJson(
+        redactionActive: true,
+        truncated: true,
+      ),
     ).show(context);
     return;
   }
@@ -137,8 +147,11 @@ void _showTransactionShareSheet(
           Navigator.of(sheetContext).pop();
           if (!context.mounted) return;
           ISpectShareLogBottomSheet(
-            data: request.toJson(),
-            truncatedData: request.toJson(truncated: true),
+            data: request.toExportJson(redactionActive: true),
+            truncatedData: request.toExportJson(
+              redactionActive: true,
+              truncated: true,
+            ),
           ).show(context);
         },
       ),
@@ -149,8 +162,11 @@ void _showTransactionShareSheet(
           Navigator.of(sheetContext).pop();
           if (!context.mounted) return;
           ISpectShareLogBottomSheet(
-            data: response.toJson(),
-            truncatedData: response.toJson(truncated: true),
+            data: response.toExportJson(redactionActive: true),
+            truncatedData: response.toExportJson(
+              redactionActive: true,
+              truncated: true,
+            ),
           ).show(context);
         },
       ),
@@ -172,8 +188,9 @@ List<Widget> buildActionWidgets({
   final theme = ISpect.read(context).theme;
   final widgets = <Widget>[];
 
-  final redactedCurl =
-      tx.request.curlCommandWith(redactor: defaultCurlRedactor);
+  final redactedCurl = tx.request.curlCommandWith(
+    redactor: defaultCurlRedactor,
+  );
   if (useDesktopStyle) {
     widgets.add(
       SmallActionIcon(
@@ -218,7 +235,8 @@ List<Widget> buildActionWidgets({
     }
   }
 
-  final canEditResend = ISpect.senders.isNotEmpty &&
+  final canEditResend =
+      ISpect.senders.isNotEmpty &&
       HttpComposerController.seedFromLog(tx.request) != null;
   if (canEditResend) {
     void openComposer() => HttpComposerScreen.openFromLog(context, tx.request);
@@ -249,11 +267,12 @@ List<Widget> buildActionWidgets({
         label: l10n.httpRequest,
         color:
             theme.getTypeColor(context, key: ISpectLogType.httpRequest.key) ??
-                color,
+            color,
         icon: compactDetailChips
             ? Icons.arrow_upward_rounded
             : Icons.open_in_new_rounded,
         iconOnly: compactDetailChips,
+        dense: useDesktopStyle,
         onTap: onOpenRequestDetail,
       ),
     ]);
@@ -272,6 +291,7 @@ List<Widget> buildActionWidgets({
             ? Icons.arrow_downward_rounded
             : Icons.open_in_new_rounded,
         iconOnly: compactDetailChips,
+        dense: useDesktopStyle,
         onTap: onOpenResponseDetail,
       ),
     ]);

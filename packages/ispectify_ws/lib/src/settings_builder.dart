@@ -12,29 +12,58 @@ class ISpectWSInterceptorSettingsBuilder
         ISpectLogData,
         ISpectLogData,
         ISpectLogData> {
-  ISpectWSInterceptorSettingsBuilder();
+  ISpectWSInterceptorSettingsBuilder() {
+    printErrorHeaders = ISpectWSInterceptorDefaults.printErrorHeaders;
+    printStateData = ISpectWSInterceptorDefaults.printStateData;
+  }
+
+  factory ISpectWSInterceptorSettingsBuilder.metadataOnly() =>
+      ISpectWSInterceptorSettingsBuilder()
+        ..applyMetadataOnlyDefaults()
+        ..printStateData = false;
 
   factory ISpectWSInterceptorSettingsBuilder.development() =>
-      ISpectWSInterceptorSettingsBuilder()..applyDevelopmentDefaults();
+      ISpectWSInterceptorSettingsBuilder()
+        ..applyDevelopmentDefaults()
+        ..printErrorHeaders = ISpectWSInterceptorDefaults.printErrorHeaders
+        ..printStateData = ISpectWSInterceptorDefaults.printStateData;
 
   factory ISpectWSInterceptorSettingsBuilder.production() =>
-      ISpectWSInterceptorSettingsBuilder()..applyProductionDefaults();
+      ISpectWSInterceptorSettingsBuilder()
+        ..applyProductionDefaults()
+        ..printStateData = false;
 
   factory ISpectWSInterceptorSettingsBuilder.staging() =>
-      ISpectWSInterceptorSettingsBuilder()..applyStagingDefaults();
+      ISpectWSInterceptorSettingsBuilder()
+        ..applyStagingDefaults()
+        ..printStateData = false;
 
   factory ISpectWSInterceptorSettingsBuilder.disabled() =>
       ISpectWSInterceptorSettingsBuilder()..enabled = false;
 
+  bool printStateData = ISpectWSInterceptorDefaults.printStateData;
+
+  /// Retains raw adapter connection-state details.
+  ISpectWSInterceptorSettingsBuilder withStateData() {
+    printStateData = true;
+    return this;
+  }
+
+  /// Omits raw adapter connection-state details.
+  ISpectWSInterceptorSettingsBuilder withoutStateData() {
+    printStateData = false;
+    return this;
+  }
+
   /// Alias for [withRequestFilter] using WS naming convention.
-  @Deprecated('Use withSentChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use withSentChain instead. Will be removed in 8.0.0.')
   ISpectWSInterceptorSettingsBuilder withSentFilter(
     bool Function(ISpectLogData data) filter,
   ) =>
       withRequestFilter(filter);
 
   /// Alias for [withResponseFilter] using WS naming convention.
-  @Deprecated('Use withReceivedChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use withReceivedChain instead. Will be removed in 8.0.0.')
   ISpectWSInterceptorSettingsBuilder withReceivedFilter(
     bool Function(ISpectLogData data) filter,
   ) =>
@@ -56,11 +85,16 @@ class ISpectWSInterceptorSettingsBuilder
   ISpectWSInterceptorSettings build() => ISpectWSInterceptorSettings(
         enabled: enabled,
         enableRedaction: enableRedaction,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+        logRequests: logRequests,
+        logResponses: logResponses,
         printReceivedData: printResponseData,
         printReceivedHeaders: printResponseHeaders,
         printReceivedMessage: printResponseMessage,
         printErrorData: printErrorData,
         printErrorMessage: printErrorMessage,
+        printStateData: printStateData,
         printSentData: printRequestData,
         printSentHeaders: printRequestHeaders,
         sentPen: requestPen,

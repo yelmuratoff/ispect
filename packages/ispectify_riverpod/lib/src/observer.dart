@@ -1,5 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_riverpod/src/data/_data.dart';
+import 'package:ispectify_riverpod/src/safe_type_label.dart';
 import 'package:ispectify_riverpod/src/settings.dart';
 import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart';
@@ -37,7 +38,7 @@ typedef RiverpodFilterPredicate = bool Function(Object? candidate);
 class ISpectRiverpodObserver extends ProviderObserver {
   ISpectRiverpodObserver({
     ISpectLogger? logger,
-    this.settings = const ISpectRiverpodSettings(),
+    this.settings = ISpectRiverpodSettings.verbose,
     this.onProviderAdd,
     this.onProviderUpdate,
     this.onProviderDispose,
@@ -46,6 +47,7 @@ class ISpectRiverpodObserver extends ProviderObserver {
     this.filterPredicate,
   }) : filters = List<Pattern>.unmodifiable(filters) {
     _logger = logger ?? ISpectLogger();
+    settings.resourceLimits?.validate();
   }
 
   late final ISpectLogger _logger;
@@ -61,24 +63,38 @@ class ISpectRiverpodObserver extends ProviderObserver {
 
   /// Test-only override for the compile-time [kISpectEnabled] gate.
   ///
-  /// Production code leaves this `null`, so logging follows `kISpectEnabled`
-  /// and tree-shakes away when the flag is omitted. Tests set it to exercise
-  /// the enabled path without a `--dart-define`.
+  /// This can only narrow the compile-time gate; it can never enable ISpect
+  /// when the build omitted `ISPECT_ENABLED`.
   @visibleForTesting
   static bool? debugEnabledOverride;
 
-  bool get _ispectEnabled => debugEnabledOverride ?? kISpectEnabled;
+  bool get _ispectEnabled => kISpectEnabled && (debugEnabledOverride ?? true);
+  bool get _loggingEnabled =>
+      _ispectEnabled && _logger.isEnabled && settings.enabled;
+  bool get _captureEnabled => _loggingEnabled && _logger.hasActiveConsumers;
+  DiagnosticResourceLimits get _resourceLimits =>
+      settings.resourceLimits ?? _logger.options.resourceLimits;
 
   bool _isFiltered(ProviderBase<Object?> provider) {
-    final providerName = _providerName(provider);
-    if (filterPredicate?.call(providerName) ?? false) {
+    String? resolvedName;
+    String providerName() => resolvedName ??= _providerName(provider);
+    final predicateMatch = filterPredicate?.call(providerName()) ?? false;
+    if (!_loggingEnabled) {
+      return true;
+    }
+    if (predicateMatch) {
       return true;
     }
     if (filters.isEmpty) {
       return false;
     }
     for (final pattern in filters) {
-      if (providerName.contains(pattern)) {
+      var matches = false;
+      try {
+        matches = providerName().contains(pattern);
+      } catch (_) {}
+      if (!_loggingEnabled) return true;
+      if (matches) {
         return true;
       }
     }
@@ -88,44 +104,70 @@ class ISpectRiverpodObserver extends ProviderObserver {
   bool _shouldLog({
     required bool toggle,
     required ProviderBase<Object?> provider,
+    bool hasAdapterCallback = false,
   }) {
-    if (!_ispectEnabled || !settings.enabled || !toggle) {
+    if (!_loggingEnabled || !toggle) {
       return false;
     }
-    if (settings.providerFilter?.call(provider) == false) {
+    if (!_captureEnabled && !hasAdapterCallback) {
       return false;
     }
-    return !_isFiltered(provider);
+    final accepted = settings.providerFilter?.call(provider) ?? true;
+    if (!_loggingEnabled || !accepted) {
+      return false;
+    }
+    final filtered = _isFiltered(provider);
+    return _loggingEnabled && !filtered;
   }
 
-  void _logCallbackError(String callbackName, Object error) {
+  void _logCallbackError(String callbackName, Object _) {
     try {
       _logger.warning(
-        'ISpectRiverpodObserver: $callbackName callback threw: $error',
+        'ISpectRiverpodObserver: $callbackName callback threw safely.',
       );
     } catch (_) {}
   }
 
-  /// Defaults to a [RedactionService] when redaction is enabled but no explicit
-  /// redactor was supplied, so sensitive payloads are masked out of the box —
-  /// matching the network/DB interceptors. `null` only when redaction is off.
-  late final RedactionService? _redactor = settings.enableRedaction
-      ? (settings.redactor ?? RedactionService())
-      : null;
+  StateTracePreparer? _preparerCache;
 
-  Map<String, Object?> _withRedaction(
-    Map<String, dynamic> data,
-    void Function(Map<String, dynamic>, RedactionService) redact,
-  ) {
-    final redactor = _redactor;
-    if (redactor != null) {
-      redact(data, redactor);
+  StateTracePreparer get _preparer {
+    final redactor = settings.isRedactionActive
+        ? ISpectRedaction.resolveService(service: settings.redactor)
+        : null;
+    final limits = _resourceLimits;
+    final cached = _preparerCache;
+    if (cached != null &&
+        identical(cached.redactor, redactor) &&
+        identical(cached.resourceLimits, limits) &&
+        cached.captureMode == settings.captureMode) {
+      return cached;
     }
-    return data;
+    return _preparerCache = StateTracePreparer(
+      redactor: redactor,
+      captureMode: settings.captureMode,
+      resourceLimits: limits,
+    );
   }
 
-  static String _providerName(ProviderBase<Object?> provider) =>
-      provider.name ?? provider.runtimeType.toString();
+  // Every caller-controlled trace field is prepared by _preparer. A second
+  // generic pass would replace the configured redactor and repeat boundary
+  // traversal.
+  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
+        redact: false,
+        attachStackOnError: true,
+        resourceLimits: _resourceLimits,
+      );
+
+  String _providerName(ProviderBase<Object?> provider) =>
+      LogExportOutput.truncateUtf8(
+        provider.name ??
+            safeRiverpodProviderTypeLabel(
+              provider,
+              captureMode: settings.captureMode,
+              resourceLimits: _resourceLimits,
+            ),
+        maxBytes: _resourceLimits.maxStateTraceBytes,
+      );
 
   @override
   void didAddProvider(
@@ -134,7 +176,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
     ProviderContainer container,
   ) {
     super.didAddProvider(provider, value, container);
-    if (!_shouldLog(toggle: settings.printAdds, provider: provider)) {
+    if (!_shouldLog(
+      toggle: settings.printAdds,
+      provider: provider,
+      hasAdapterCallback: onProviderAdd != null,
+    )) {
       return;
     }
     try {
@@ -142,20 +188,34 @@ class ISpectRiverpodObserver extends ProviderObserver {
     } catch (callbackError) {
       _logCallbackError('onProviderAdd', callbackError);
     }
+    if (!_captureEnabled) {
+      return;
+    }
 
     final data = RiverpodAddData(
       provider: provider,
       value: value,
       includeValue: settings.printValues,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
-    final meta = _withRedaction(data.toJson(), RiverpodAddData.redact);
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(
+      meta,
+      RiverpodJsonKeys.providerName,
+      data.providerName,
+    );
     _logger.riverpodAdd(
       source: _source,
-      target: data.providerName,
+      target: target,
       meta: meta,
-      consoleMessage: settings.printValues
-          ? '[riverpod] add → ${data.providerName}\nValue: ${meta[RiverpodJsonKeys.value]}'
-          : '[riverpod] add → ${data.providerName}',
+      config: _traceConfig,
+      consoleMessage: _preparer.prepareText(
+        settings.printValues
+            ? '[riverpod] add → $target\n'
+                'Value: ${meta[RiverpodJsonKeys.value]}'
+            : '[riverpod] add → $target',
+      ),
     );
   }
 
@@ -167,7 +227,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
     ProviderContainer container,
   ) {
     super.didUpdateProvider(provider, previousValue, newValue, container);
-    if (!_shouldLog(toggle: settings.printUpdates, provider: provider)) {
+    if (!_shouldLog(
+      toggle: settings.printUpdates,
+      provider: provider,
+      hasAdapterCallback: onProviderUpdate != null,
+    )) {
       return;
     }
     final accepted = settings.updateFilter?.call(
@@ -176,6 +240,9 @@ class ISpectRiverpodObserver extends ProviderObserver {
           newValue,
         ) ??
         true;
+    if (!_loggingEnabled) {
+      return;
+    }
     if (!accepted) {
       return;
     }
@@ -184,24 +251,37 @@ class ISpectRiverpodObserver extends ProviderObserver {
     } catch (callbackError) {
       _logCallbackError('onProviderUpdate', callbackError);
     }
+    if (!_captureEnabled) {
+      return;
+    }
 
     final data = RiverpodUpdateData(
       provider: provider,
       previousValue: previousValue,
       newValue: newValue,
       includeValue: settings.printValues,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
-    final meta = _withRedaction(data.toJson(), RiverpodUpdateData.redact);
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(
+      meta,
+      RiverpodJsonKeys.providerName,
+      data.providerName,
+    );
     final previousFormatted = meta[RiverpodJsonKeys.previousValue] ??
         meta[RiverpodJsonKeys.previousValueType];
     final nextFormatted =
         meta[RiverpodJsonKeys.newValue] ?? meta[RiverpodJsonKeys.newValueType];
     _logger.riverpodUpdate(
       source: _source,
-      target: data.providerName,
+      target: target,
       meta: meta,
-      consoleMessage:
-          '[riverpod] update → ${data.providerName}\n$previousFormatted → $nextFormatted',
+      config: _traceConfig,
+      consoleMessage: _preparer.prepareText(
+        '[riverpod] update → $target\n'
+        '$previousFormatted → $nextFormatted',
+      ),
     );
   }
 
@@ -211,7 +291,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
     ProviderContainer container,
   ) {
     super.didDisposeProvider(provider, container);
-    if (!_shouldLog(toggle: settings.printDisposes, provider: provider)) {
+    if (!_shouldLog(
+      toggle: settings.printDisposes,
+      provider: provider,
+      hasAdapterCallback: onProviderDispose != null,
+    )) {
       return;
     }
     try {
@@ -219,14 +303,29 @@ class ISpectRiverpodObserver extends ProviderObserver {
     } catch (callbackError) {
       _logCallbackError('onProviderDispose', callbackError);
     }
+    if (!_captureEnabled) {
+      return;
+    }
 
-    final data = RiverpodDisposeData(provider: provider);
-    final meta = _withRedaction(data.toJson(), RiverpodDisposeData.redact);
+    final data = RiverpodDisposeData(
+      provider: provider,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
+    );
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(
+      meta,
+      RiverpodJsonKeys.providerName,
+      data.providerName,
+    );
     _logger.riverpodDispose(
       source: _source,
-      target: data.providerName,
+      target: target,
       meta: meta,
-      consoleMessage: '[riverpod] dispose → ${data.providerName}',
+      config: _traceConfig,
+      consoleMessage: _preparer.prepareText(
+        '[riverpod] dispose → $target',
+      ),
     );
   }
 
@@ -238,7 +337,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
     ProviderContainer container,
   ) {
     super.providerDidFail(provider, error, stackTrace, container);
-    if (!_shouldLog(toggle: settings.printFails, provider: provider)) {
+    if (!_shouldLog(
+      toggle: settings.printFails,
+      provider: provider,
+      hasAdapterCallback: onProviderFail != null,
+    )) {
       return;
     }
     try {
@@ -246,20 +349,33 @@ class ISpectRiverpodObserver extends ProviderObserver {
     } catch (callbackError) {
       _logCallbackError('onProviderFail', callbackError);
     }
+    if (!_captureEnabled) {
+      return;
+    }
 
     final data = RiverpodFailData(
       provider: provider,
       error: error,
       stackTrace: stackTrace,
+      captureMode: settings.captureMode,
+      resourceLimits: _resourceLimits,
     );
-    final meta = _withRedaction(data.toJson(), RiverpodFailData.redact);
+    final meta = _preparer.prepareMeta(data.toJson());
+    final target = _preparer.target(
+      meta,
+      RiverpodJsonKeys.providerName,
+      data.providerName,
+    );
     _logger.riverpodFail(
       source: _source,
-      target: data.providerName,
-      error: error,
-      errorStackTrace: stackTrace,
+      target: target,
+      error: _preparer.prepareError(error)!,
+      errorStackTrace: _preparer.prepareStack(stackTrace),
       meta: meta,
-      consoleMessage: '[riverpod] fail → ${data.providerName}',
+      config: _traceConfig,
+      consoleMessage: _preparer.prepareText(
+        '[riverpod] fail → $target',
+      ),
     );
   }
 }

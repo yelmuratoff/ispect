@@ -280,6 +280,9 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get printLogDesc => 'Хабарлама консольге шығарылды';
 
   @override
+  String get previewTruncated => 'Алдын ала қарау қысқартылды';
+
+  @override
   String get projectDomain => 'Жоба домені';
 
   @override
@@ -576,6 +579,21 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'Негізгі экранға оралу';
+
+  @override
+  String get logs => 'Логтар';
+
+  @override
+  String get performance => 'Өнімділік';
+
+  @override
+  String get inspector => 'Инспектор';
+
+  @override
+  String get colorPicker => 'Түс';
+
+  @override
+  String get composer => 'Композер';
 
   @override
   String get navigationFlow => 'Навигация ағыны';
@@ -930,7 +948,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get tips => 'Кеңестер';
 
   @override
-  String get tipSearchLogs => 'Мәтін бойынша іздеу — JSON денесінен де іздейді';
+  String get tipSearchLogs => 'Мәтін бойынша іздеу - JSON денесінен де іздейді';
 
   @override
   String get tipLongPress =>
@@ -953,7 +971,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get tipShareSession =>
-      'Бағ-есептер үшін лог файлымен бөлісіңіз — деректер автоматты түрде жасырылады';
+      'Бағ-есептер үшін лог файлымен бөлісіңіз - деректер автоматты түрде жасырылады';
 
   @override
   String get tipReverseLogs =>

@@ -3,14 +3,15 @@
 `ispectify_bloc` plugs the [`bloc`](https://pub.dev/packages/bloc) and [`flutter_bloc`](https://pub.dev/packages/flutter_bloc) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `BlocObserver` forwards every event, state change, transition, and error through the log pipeline, so the whole state-management timeline shows up in the log viewer.
 
 - Events, transitions, errors, and create/close lifecycle hooks.
-- Per-type filtering. Mute specific `Bloc` or `Cubit` classes without touching their code.
+- Family and typed-predicate filtering. Mute BLoCs without formatting caller-owned objects.
 - Zero configuration. Set `Bloc.observer` and the rest is done.
 
 ## Install
 
 ```yaml
 dependencies:
-  flutter_bloc: ^8.0.0
+  flutter_bloc: ^9.1.0
+  ispect: ^{{version}}
   ispectify: ^{{version}}
   ispectify_bloc: ^{{version}}
 ```
@@ -18,6 +19,7 @@ dependencies:
 ## Quick start
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
@@ -34,7 +36,7 @@ The observer emits logs under the `bloc-event`, `bloc-transition`, `bloc-state`,
 
 ## Settings
 
-`ISpectBlocSettings` controls which lifecycle events are captured and whether raw event/state payloads are written to trace meta. Payload capture is off by default — runtime types are emitted instead, so it is safe to leave the observer enabled in shared environments.
+`ISpectBlocSettings` controls which lifecycle events are captured and whether event/state payloads are written to trace meta. Full bounded payloads are captured and redacted by default. The `compact` preset keeps lifecycle visibility while replacing values with coarse structural labels such as `String`, `int`, `List`, or `Map`.
 
 ```dart
 const settings = ISpectBlocSettings(
@@ -45,11 +47,17 @@ const settings = ISpectBlocSettings(
   printClosings: true,
   printCompletions: true,
   printErrors: true,
-  printEventFullData: true,  // raw event payloads on by default
-  printStateFullData: true,  // raw state payloads on by default
-  enableRedaction: true,     // route meta values through RedactionService when set
+  printEventFullData: true,
+  printStateFullData: true,
+  enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 ```
+
+Balanced capture retains guarded, bounded `toJson()` or `toString()` output
+before redaction. Set `captureMode: DiagnosticCaptureMode.strict` when
+application-defined formatters must never run.
 
 ### Presets
 
@@ -57,31 +65,39 @@ const settings = ISpectBlocSettings(
 // Logs disabled entirely.
 ISpectBlocObserver(settings: ISpectBlocSettings.silent);
 
-// Skip per-change / per-completion noise — keeps creations, transitions, errors.
+// Skip per-change / per-completion noise - keeps creations, transitions, errors.
 ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
 
-// Full event and state payloads are captured by default. Opt out per flag to
-// log only the runtime type:
-ISpectBlocObserver(
-  settings: ISpectBlocSettings(
-    printEventFullData: false,
-    printStateFullData: false,
-  ),
-);
+ISpectBlocObserver(settings: ISpectBlocSettings.compact);
 ```
+
+`compact` uses strict capture automatically.
+Omit `resourceLimits` to inherit the logger policy; set it locally to tune
+state payload and pending-correlation budgets for this observer.
+For an existing customized settings object,
+`copyWith(inheritResourceLimits: true)` restores logger-owned budgets and
+`copyWith(inheritRedactionService: true)` restores the global
+`ISpectRedaction.service`.
 
 ### Filtering noisy blocs
 
 ```dart
 ISpectBlocObserver(
-  // Drop everything for blocs whose runtime type matches one of these patterns.
-  filters: [RegExp(r'AnalyticsBloc'), 'MetricsCubit'],
+  // Pattern filters see only Bloc, Cubit, or BlocBase.
+  filters: ['Cubit'],
+
+  // Use explicit type checks when an exact application class must be muted.
+  filterPredicate: (candidate) =>
+      candidate is AnalyticsBloc || candidate is MetricsCubit,
+
   settings: ISpectBlocSettings(
     // Or skip individual events / transitions / changes by inspecting them.
     eventFilter: (bloc, event) => event is! HeartbeatEvent,
   ),
 );
 ```
+
+<!-- partial:redaction -->
 
 <!-- partial:install_matrix -->
 

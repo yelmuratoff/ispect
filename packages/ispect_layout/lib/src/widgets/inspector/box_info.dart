@@ -48,11 +48,11 @@ class BoxInfo {
   /// user pick any ancestor from the hit-test path (Row/Column/Stack/Padding)
   /// without re-running pointer detection.
   BoxInfo withTarget(RenderBox newTarget) => BoxInfo(
-        targetRenderBox: newTarget,
-        containerRenderBox: _findContainerFor(hitTestPath, newTarget),
-        overlayOffset: overlayOffset,
-        hitTestPath: hitTestPath,
-      );
+    targetRenderBox: newTarget,
+    containerRenderBox: _findContainerFor(hitTestPath, newTarget),
+    overlayOffset: overlayOffset,
+    hitTestPath: hitTestPath,
+  );
 
   final RenderBox targetRenderBox;
   final RenderBox? containerRenderBox;
@@ -70,7 +70,7 @@ class BoxInfo {
   Rect get targetRectShifted => targetRect.shift(-overlayOffset);
 
   /// Hit-test path filtered to render boxes worth surfacing as breadcrumb
-  /// entries (visual/layout-shaping types only — proxy wrappers like
+  /// entries (visual/layout-shaping types only - proxy wrappers like
   /// [RenderRepaintBoundary] or `_RenderInkFeatures` are dropped).
   ///
   /// Consecutive entries that share a [Size] are collapsed to a single chip;
@@ -106,30 +106,25 @@ class BoxInfo {
   /// Calculate original padding by comparing positions in local coordinates
   EdgeInsets _calculateOriginalPadding() {
     if (containerRenderBox == null) return EdgeInsets.zero;
+    final transform = targetRenderBox.getTransformTo(containerRenderBox);
+    final targetBounds = MatrixUtils.transformRect(
+      transform,
+      Offset.zero & targetRenderBox.size,
+    );
 
-    // Get the target's position relative to the container
-    final targetOffset = targetRenderBox.localToGlobal(Offset.zero);
-    final containerOffset = containerRenderBox!.localToGlobal(Offset.zero);
-
-    // Calculate scale factor from the transformation
-    final scaledTargetSize = targetRect.size;
-    final originalTargetSize = targetRenderBox.size;
-    final scale = originalTargetSize.width > 0
-        ? scaledTargetSize.width / originalTargetSize.width
-        : 1.0;
-
-    // Calculate padding in original coordinates
-    final left = (targetOffset.dx - containerOffset.dx) / scale;
-    final top = (targetOffset.dy - containerOffset.dy) / scale;
-    final right =
-        containerRenderBox!.size.width - originalTargetSize.width - left;
-    final bottom =
-        containerRenderBox!.size.height - originalTargetSize.height - top;
+    final left = targetBounds.left;
+    final top = targetBounds.top;
+    final right = containerRenderBox!.size.width - targetBounds.right;
+    final bottom = containerRenderBox!.size.height - targetBounds.bottom;
 
     // Snap sub-pixel floating-point noise to zero.
     double snap(double v) => v.abs() < 0.5 ? 0.0 : v;
     return EdgeInsets.fromLTRB(
-        snap(left), snap(top), snap(right), snap(bottom));
+      snap(left),
+      snap(top),
+      snap(right),
+      snap(bottom),
+    );
   }
 
   Rect? get paddingRectLeft => containerRect != null
@@ -203,7 +198,7 @@ class BoxInfo {
 
   /// The nearest [RenderDecoratedBox] with [BoxDecoration] relevant to the
   /// selected target. Checks the target directly, then the hit-test path,
-  /// then the target's direct child — in that priority order.
+  /// then the target's direct child - in that priority order.
   RenderDecoratedBox? get decoratedBoxForDisplay =>
       _findSelectedDecoratedBox() ??
       _findNearestDecoratedBoxFromHitTestPath() ??
@@ -211,8 +206,8 @@ class BoxInfo {
 
   RenderDecoratedBox? _findSelectedDecoratedBox() =>
       targetRenderBox is RenderDecoratedBox
-          ? targetRenderBox as RenderDecoratedBox
-          : null;
+      ? targetRenderBox as RenderDecoratedBox
+      : null;
 
   RenderDecoratedBox? _findNearestDecoratedBoxFromHitTestPath() {
     for (final box in hitTestPath) {
@@ -237,7 +232,7 @@ class BoxInfo {
   /// The fill color of a [ColoredBox] that is or wraps the target, if any.
   ///
   /// `_RenderColoredBox` is a private Flutter class, so dynamic dispatch on
-  /// `.color` is used. Discrimination is done via [_coloredBoxRuntimeType] —
+  /// `.color` is used. Discrimination is done via [_coloredBoxRuntimeType] -
   /// see its declaration for the rationale.
   Color? get coloredBoxColor =>
       _tryColoredBoxColor(targetRenderBox) ??
@@ -322,15 +317,15 @@ RenderBox? _findContainerFor(List<RenderBox> hitTestPath, RenderBox target) {
 
 /// Captures `_RenderColoredBox`'s runtime [Type] without referencing its
 /// private name. We construct a [ColoredBox] widget and call its
-/// `createRenderObject` directly — Flutter's implementation ignores the
+/// `createRenderObject` directly - Flutter's implementation ignores the
 /// passed [BuildContext], so a `noSuchMethod` stub is sufficient.
 /// Returns `null` if Flutter ever changes that contract; the caller then
 /// gracefully degrades and the [ColoredBox] color simply isn't surfaced.
 final Type? _coloredBoxRuntimeType = (() {
   try {
-    return const ColoredBox(color: Color(0x00000000))
-        .createRenderObject(_NoopBuildContext())
-        .runtimeType;
+    return const ColoredBox(
+      color: Color(0x00000000),
+    ).createRenderObject(_NoopBuildContext()).runtimeType;
   } catch (_) {
     return null;
   }

@@ -13,6 +13,7 @@ class BoxInfoWidget extends StatelessWidget {
     super.key,
     this.boxInfo,
     required this.decimalPlaces,
+    required this.maxRenderTreeClipboardCharacters,
     required this.theme,
     this.hoveredBoxInfo,
     this.comparedBoxInfo,
@@ -23,6 +24,7 @@ class BoxInfoWidget extends StatelessWidget {
 
   final BoxInfo? boxInfo;
   final int decimalPlaces;
+  final int maxRenderTreeClipboardCharacters;
   final InspectorTheme theme;
   final BoxInfo? hoveredBoxInfo;
   final BoxInfo? comparedBoxInfo;
@@ -53,6 +55,7 @@ class BoxInfoWidget extends StatelessWidget {
     return BoxInfoPanelWidget(
       boxInfo: boxInfo!,
       decimalPlaces: decimalPlaces,
+      maxRenderTreeClipboardCharacters: maxRenderTreeClipboardCharacters,
       comparedBoxInfo: comparedBoxInfo,
       onCompare: onCompare,
       isCompareActive: isCompareActive,

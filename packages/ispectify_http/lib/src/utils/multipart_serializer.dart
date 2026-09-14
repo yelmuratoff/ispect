@@ -6,22 +6,30 @@ import 'package:ispectify/ispectify.dart';
 class HttpMultipartSerializer {
   const HttpMultipartSerializer._();
 
-  static Map<String, dynamic> serialize(MultipartRequest request) {
-    final fields = Map<String, Object?>.from(request.fields);
-    final files = request.files
-        .map(
-          (file) => <String, Object?>{
-            NetworkJsonKeys.fieldName: file.field,
-            NetworkJsonKeys.filename: file.filename,
-            NetworkJsonKeys.contentTypeValue: file.contentType.toString(),
-            NetworkJsonKeys.length: file.length,
-          },
-        )
-        .toList();
-
-    return {
-      NetworkJsonKeys.fields: fields,
-      NetworkJsonKeys.files: files,
-    };
+  static Map<String, dynamic> serialize(
+    MultipartRequest request, {
+    bool redactionActive = false,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
+    final fields = LogExportOutput.boundJsonValue(
+      request.fields,
+      maxBytes: MultipartCapture.sectionBudget(resourceLimits),
+      resourceLimits: resourceLimits,
+      replaceOversizedStrings: redactionActive,
+    );
+    return MultipartCapture.envelope(
+      fields: fields is Map<String, Object?> ? fields : <String, Object?>{},
+      files: request.files.map(
+        (file) => <String, Object?>{
+          NetworkJsonKeys.fieldName: file.field,
+          NetworkJsonKeys.filename: file.filename,
+          NetworkJsonKeys.contentTypeValue: file.contentType.toString(),
+          NetworkJsonKeys.length: file.length,
+        },
+      ),
+      redactionActive: redactionActive,
+      resourceLimits: resourceLimits,
+    );
   }
 }

@@ -3,10 +3,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispectify/ispectify.dart';
 
-typedef ISpectWidgetBuilder = Widget Function(
-  BuildContext context,
-  List<ISpectLogData> data,
-);
+typedef ISpectWidgetBuilder =
+    Widget Function(BuildContext context, List<ISpectLogData> data);
 
 /// Builder widget for ISpectLogger data streams.
 class ISpectLogsBuilder extends StatefulWidget {

@@ -1,5 +1,6 @@
 import 'package:ispectify/ispectify.dart';
 
+/// Run with `dart run -DISPECT_ENABLED=true example/ispectify_example.dart`.
 Future<void> main() async {
   final logger = ISpectLogger(
     options: ISpectLoggerOptions(

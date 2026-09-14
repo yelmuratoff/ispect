@@ -1,6 +1,6 @@
 // Pins down `ISpectNavigatorObserver.shouldLog`: the destination route's kind
 // alone decides logging. The regression case is a page pushed from under a
-// modal (e.g. a profile opened from a bottom sheet) — it must stay a page
+// modal (e.g. a profile opened from a bottom sheet) - it must stay a page
 // transition governed by `isLogPages`, not get dropped as "modal".
 
 import 'package:flutter/material.dart';
@@ -9,9 +9,9 @@ import 'package:ispect/ispect.dart';
 
 void main() {
   PageRoute<void> pageRoute({String? name}) => MaterialPageRoute<void>(
-        settings: name == null ? null : RouteSettings(name: name),
-        builder: (_) => const SizedBox.shrink(),
-      );
+    settings: name == null ? null : RouteSettings(name: name),
+    builder: (_) => const SizedBox.shrink(),
+  );
 
   group('ISpectNavigatorObserver.shouldLog', () {
     test('logs page destinations when isLogPages is true', () {
@@ -97,8 +97,7 @@ class _FakePopupRoute extends PopupRoute<void> {
     BuildContext context,
     Animation<double> animation,
     Animation<double> secondaryAnimation,
-  ) =>
-      const SizedBox.shrink();
+  ) => const SizedBox.shrink();
 }
 
 class _FakeRoute extends Route<void> {}

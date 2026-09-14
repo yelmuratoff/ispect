@@ -3,6 +3,7 @@ import 'package:ispectify/src/models/log_type.dart';
 import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
+import 'package:ispectify/src/trace/trace_helpers.dart';
 
 /// Trace helpers for WebSocket send / receive events.
 extension ISpectLoggerWs on ISpectLogger {
@@ -19,25 +20,29 @@ extension ISpectLoggerWs on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
     String? consoleMessage,
-  }) =>
-      traceCategory(
-        category: wsCategory,
-        source: source,
-        operation: operation,
-        target: target,
-        logKey: error == null ? ISpectLogType.wsSent.key : null,
-        success: error == null,
-        error: error,
-        errorStackTrace: errorStackTrace,
-        meta: {
+  }) {
+    if (!isEnabled) return;
+    traceCategory(
+      category: wsCategory,
+      source: source,
+      operation: operation,
+      target: target,
+      logKey: error == null ? ISpectLogType.wsSent.key : null,
+      success: error == null,
+      error: error,
+      errorStackTrace: errorStackTrace,
+      meta: boundedTraceMeta(
+        fields: {
           if (eventType != null) 'eventType': eventType,
           if (sizeBytes != null) 'sizeBytes': sizeBytes,
-          ...?meta,
         },
-        config: config,
-        correlationId: correlationId,
-        consoleMessage: consoleMessage,
-      );
+        overrides: meta,
+      ),
+      config: config,
+      correlationId: correlationId,
+      consoleMessage: consoleMessage,
+    );
+  }
 
   /// Logs an inbound WebSocket message under [wsCategory].
   void wsReceive({
@@ -52,25 +57,29 @@ extension ISpectLoggerWs on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
     String? consoleMessage,
-  }) =>
-      traceCategory(
-        category: wsCategory,
-        source: source,
-        operation: operation,
-        target: target,
-        logKey: error == null ? ISpectLogType.wsReceived.key : null,
-        success: error == null,
-        error: error,
-        errorStackTrace: errorStackTrace,
-        meta: {
+  }) {
+    if (!isEnabled) return;
+    traceCategory(
+      category: wsCategory,
+      source: source,
+      operation: operation,
+      target: target,
+      logKey: error == null ? ISpectLogType.wsReceived.key : null,
+      success: error == null,
+      error: error,
+      errorStackTrace: errorStackTrace,
+      meta: boundedTraceMeta(
+        fields: {
           if (eventType != null) 'eventType': eventType,
           if (sizeBytes != null) 'sizeBytes': sizeBytes,
-          ...?meta,
         },
-        config: config,
-        correlationId: correlationId,
-        consoleMessage: consoleMessage,
-      );
+        overrides: meta,
+      ),
+      config: config,
+      correlationId: correlationId,
+      consoleMessage: consoleMessage,
+    );
+  }
 
   /// Logs a WebSocket connection-state change under [wsCategory].
   ///
@@ -85,20 +94,22 @@ extension ISpectLoggerWs on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
     String? consoleMessage,
-  }) =>
-      traceCategory(
-        category: wsCategory,
-        source: source,
-        operation: 'state',
-        target: target,
-        logKey: ISpectLogType.wsState.key,
-        success: true,
-        meta: {
-          'state': state,
-          ...?meta,
-        },
-        config: config,
-        correlationId: correlationId,
-        consoleMessage: consoleMessage,
-      );
+  }) {
+    if (!isEnabled) return;
+    traceCategory(
+      category: wsCategory,
+      source: source,
+      operation: 'state',
+      target: target,
+      logKey: ISpectLogType.wsState.key,
+      success: true,
+      meta: boundedTraceMeta(
+        fields: {'state': state},
+        overrides: meta,
+      ),
+      config: config,
+      correlationId: correlationId,
+      consoleMessage: consoleMessage,
+    );
+  }
 }

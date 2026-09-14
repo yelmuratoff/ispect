@@ -2,6 +2,7 @@ import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
+import 'package:ispectify/src/trace/trace_helpers.dart';
 
 /// Trace helpers for payment and in-app purchase flows.
 extension ISpectLoggerPayment on ISpectLogger {
@@ -19,20 +20,24 @@ extension ISpectLoggerPayment on ISpectLogger {
     Object? Function(T)? projectResult,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) =>
-      traceCategoryAsync(
-        category: paymentCategory,
-        source: source,
-        operation: operation,
-        target: productId,
-        meta: {
+  }) {
+    if (!isEnabled) return run();
+    return traceCategoryAsync(
+      category: paymentCategory,
+      source: source,
+      operation: operation,
+      target: productId,
+      meta: boundedTraceMeta(
+        fields: {
           if (amount != null) 'amount': amount,
           if (currency != null) 'currency': currency,
-          ...?meta,
         },
-        run: run,
-        projectResult: projectResult,
-        config: config,
-        correlationId: correlationId,
-      );
+        overrides: meta,
+      ),
+      run: run,
+      projectResult: projectResult,
+      config: config,
+      correlationId: correlationId,
+    );
+  }
 }

@@ -7,6 +7,18 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_http/ispectify_http.dart';
 import 'package:test/test.dart';
 
+final class _TypedResponseBody {
+  int toJsonCalls = 0;
+
+  Object? toJson() {
+    toJsonCalls++;
+    return const {
+      'status': 'ready',
+      'token': 'TYPED-RESPONSE-SECRET',
+    };
+  }
+}
+
 void main() {
   group('JSON Serialization', () {
     test('HttpRequestData.toJson produces JSON-encodable data', () {
@@ -17,8 +29,22 @@ void main() {
       final jsonData = requestData.toJson();
 
       expect(jsonData['url'], isA<String>());
-      expect(jsonData['url'], equals('https://example.com/test'));
+      expect(jsonData['url'], 'https://example.com/test');
       expect(() => jsonEncode(jsonData), returnsNormally);
+    });
+
+    test('HttpRequestData.toJson captures query parameters separately', () {
+      final request = http.Request(
+        'GET',
+        Uri.parse('https://example.com/search?page=2&filter=active'),
+      );
+
+      final jsonData = HttpRequestData(request).toJson();
+
+      expect(
+        jsonData[NetworkJsonKeys.queryParameters],
+        {'page': '2', 'filter': 'active'},
+      );
     });
 
     test('HttpResponseData.toJson produces JSON-encodable data', () {
@@ -42,7 +68,7 @@ void main() {
       final jsonData = responseData.toJson();
 
       expect(jsonData['url'], isA<String>());
-      expect(jsonData['url'], equals('https://example.com/test'));
+      expect(jsonData['url'], 'https://example.com/test');
       expect(() => jsonEncode(jsonData), returnsNormally);
     });
 
@@ -66,9 +92,73 @@ void main() {
       expect(nullJsonData['url'], isA<String>());
       expect(() => jsonEncode(nullJsonData), returnsNormally);
     });
+
+    test('strict mode keeps request URLs opaque', () {
+      final request =
+          http.Request('GET', Uri.parse('https://example.com/private'));
+
+      final jsonData = HttpRequestData(request).toJson(
+        captureMode: DiagnosticCaptureMode.strict,
+      );
+
+      expect(jsonData['url'], JsonValueNormalizer.unprintableValue);
+      expect(jsonData[NetworkJsonKeys.queryParameters], isEmpty);
+    });
+
+    test('response capture mode applies to a prepared typed body', () {
+      final request =
+          http.Request('GET', Uri.parse('https://example.com/typed'));
+      final response = http.Response('', 200, request: request);
+      final body = _TypedResponseBody();
+      final responseData = HttpResponseData(
+        response: response,
+        baseResponse: response,
+        requestData: HttpRequestData(request),
+        multipartRequest: null,
+        preDecodedBody: body,
+      );
+
+      final balanced = responseData.toJson(redactionActive: true);
+      HttpResponseData.redact(balanced, RedactionService());
+
+      expect(
+        balanced[NetworkJsonKeys.body],
+        {
+          'status': 'ready',
+          'token': isNot('TYPED-RESPONSE-SECRET'),
+        },
+      );
+      expect(body.toJsonCalls, 1);
+
+      final strict = responseData.toJson(
+        captureMode: DiagnosticCaptureMode.strict,
+      );
+
+      expect(
+        strict[NetworkJsonKeys.body],
+        JsonValueNormalizer.unprintableValue,
+      );
+      expect(body.toJsonCalls, 1);
+    });
   });
 
   group('Redaction in JSON Export', () {
+    test('HttpRequestData redacts sensitive query parameters', () {
+      const secret = 'HTTP-QUERY-SECRET';
+      final request = http.Request(
+        'GET',
+        Uri.parse('https://example.com/search?page=2&token=$secret'),
+      );
+      final json = HttpRequestData(request).toJson();
+
+      HttpRequestData.redact(json, RedactionService());
+
+      final query =
+          json[NetworkJsonKeys.queryParameters] as Map<String, dynamic>;
+      expect(query['page'], '2');
+      expect(query['token'], isNot(secret));
+    });
+
     test(
       'HttpResponseData.toJson redacts JSON body content when redaction enabled',
       () {
@@ -169,7 +259,7 @@ void main() {
       final mp = json['multipart-request'] as Map<String, dynamic>;
       final fields = mp['fields'] as Map<String, dynamic>;
 
-      // 'username' is now in defaultSensitiveKeys — it gets redacted
+      // 'username' is now in defaultSensitiveKeys - it gets redacted
       expect(fields['username'], isNot(equals('john_doe')));
       expect(fields['password'], isNot(equals('secret123')));
       expect(fields['token'], isNot(equals('sensitive-token')));

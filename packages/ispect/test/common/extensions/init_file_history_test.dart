@@ -17,7 +17,7 @@ void main() {
 
     expect(history, isNull);
     expect(called, isFalse);
-  });
+  }, skip: kISpectEnabled);
 
   test('web factory falls back without calling the directory provider', () {
     var called = false;
@@ -71,5 +71,5 @@ void main() {
     );
 
     expect(logger.fileLogHistory, isNull);
-  });
+  }, skip: kISpectEnabled);
 }

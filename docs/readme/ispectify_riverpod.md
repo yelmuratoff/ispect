@@ -2,7 +2,7 @@
 
 `ispectify_riverpod` plugs the [`riverpod`](https://pub.dev/packages/riverpod) and [`flutter_riverpod`](https://pub.dev/packages/flutter_riverpod) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `ProviderObserver` forwards every provider add, update, dispose, and failure through the log pipeline, so the whole provider lifecycle shows up in the log viewer.
 
-- Adds, updates, disposes, and failures with provider values captured by default.
+- Adds, updates, disposes, and failures with full redacted values by default.
 - Per-provider filtering. Mute noisy providers without touching their code.
 - Zero configuration. Hand the observer to `ProviderScope` (or `ProviderContainer`) and you are done.
 
@@ -11,6 +11,7 @@
 ```yaml
 dependencies:
   flutter_riverpod: ^2.5.0
+  ispect: ^{{version}}
   ispectify: ^{{version}}
   ispectify_riverpod: ^{{version}}
 ```
@@ -18,6 +19,7 @@ dependencies:
 ## Quick start
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_riverpod/ispectify_riverpod.dart';
@@ -36,7 +38,11 @@ The observer emits logs under the `riverpod-add`, `riverpod-update`, `riverpod-d
 
 ## Settings
 
-`ISpectRiverpodSettings` controls which lifecycle events are captured and whether raw provider values are written to trace meta. `printValues` defaults to `true` — ISpect is compile-time gated by `ISPECT_ENABLED` and never ships to production, so verbose value capture is the more useful trade.
+`ISpectRiverpodSettings` controls which lifecycle events are captured and
+whether provider values are written to trace meta. `printValues` defaults to
+`true`, so bounded provider values are retained after redaction. The `compact`
+preset replaces them with coarse structural labels such as `String`, `int`,
+`List`, or `Map`. Unnamed providers use the family label `Provider`.
 
 ```dart
 const settings = ISpectRiverpodSettings(
@@ -44,10 +50,16 @@ const settings = ISpectRiverpodSettings(
   printUpdates: true,
   printDisposes: true,
   printFails: true,
-  printValues: true,        // raw values in meta — default
-  enableRedaction: true,    // route values through RedactionService when set
+  printValues: true,
+  enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 ```
+
+Balanced capture retains guarded, bounded `toJson()` or `toString()` output
+before redaction. Set `captureMode: DiagnosticCaptureMode.strict` when
+application-defined formatters must never run.
 
 ### Presets
 
@@ -55,13 +67,22 @@ const settings = ISpectRiverpodSettings(
 // Logs disabled entirely.
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.silent);
 
-// Lifecycle creation, disposal, and failures — updates are muted.
+// Lifecycle creation, disposal, and failures - updates are muted.
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.minimal);
 
-// Reduces values to runtime types only. Use when provider state may carry PII
-// and you still want lifecycle visibility.
+// Reduces values to coarse structural labels. Use when provider state may
+// carry PII and you still want lifecycle visibility.
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.compact);
+
 ```
+
+`compact` uses strict capture automatically.
+Omit `resourceLimits` to inherit the logger policy; set it locally to tune
+provider-value and state-trace budgets for this observer.
+For an existing customized settings object,
+`copyWith(inheritResourceLimits: true)` restores logger-owned budgets and
+`copyWith(inheritRedactionService: true)` restores the global
+`ISpectRedaction.service`.
 
 ### Filtering noisy providers
 
@@ -86,7 +107,7 @@ ISpectRiverpodObserver(
   logger: ISpect.logger,
   settings: ISpectRiverpodSettings(
     redactor: RedactionService(
-      sensitiveKeys: {...defaultSensitiveKeys, 'access-token'},
+      additionalSensitiveKeys: {'access-token'},
     ),
   ),
 );

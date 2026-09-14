@@ -27,8 +27,11 @@ class DefaultISpectLoggerHistory implements ILogHistory {
     this.settings, {
     List<ISpectLogData>? history,
   }) {
-    if (history != null) {
-      _history.addAll(history);
+    if (kISpectEnabled && history != null) {
+      final maxItems = settings.maxHistoryItems;
+      if (maxItems <= 0) return;
+      final overflow = history.length - maxItems;
+      _history.addAll(overflow > 0 ? history.skip(overflow) : history);
     }
   }
 
@@ -61,10 +64,13 @@ class DefaultISpectLoggerHistory implements ILogHistory {
   }
 
   /// Adds data bypassing the [ISpectLoggerOptions.useHistory] guard.
+  ///
+  /// The compile-time [kISpectEnabled] gate is never bypassed.
   @visibleForTesting
   void addForTesting(ISpectLogData data) => _addEntry(data);
 
   void _addEntry(ISpectLogData data) {
+    if (!kISpectEnabled) return;
     final maxItems = settings.maxHistoryItems;
     if (maxItems <= 0) return;
 

@@ -6,7 +6,7 @@ One logical change per commit, imperative mood, generated artefacts stay out of 
 
 - Match the project's existing commit style (`git log --oneline -10`). If none is established, default to Conventional Commits: `<type>: <subject>` with `feat`, `fix`, `refactor`, `docs`, `test`, `chore`.
 - One logical change per commit. Split unrelated work into separate commits.
-- Subject in imperative mood, ≤72 chars. Body explains *why*; skip the body when the subject says enough.
+- Subject in imperative mood, ≤72 chars. Body explains _why_; skip the body when the subject says enough.
 
 ## Branches
 
@@ -16,7 +16,7 @@ One logical change per commit, imperative mood, generated artefacts stay out of 
 ## Pull Requests
 
 - Link the related ticket or issue in the description.
-- Resolve hook or CI failures at the source rather than passing `--no-verify` — a green CI built on bypassed checks lies.
+- Resolve hook or CI failures at the source rather than passing `--no-verify` - a green CI built on bypassed checks lies.
 - Prefer additive commits while reviewers are looking; coordinate before force-pushing a shared branch.
 
 ## Keep Out of History

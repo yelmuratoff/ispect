@@ -1,9 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_pipeline.dart';
+import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/log_factory.dart';
-import 'package:ispectify/src/observer/observer_manager.dart';
+import 'package:ispectify/src/observer/observer_registry.dart';
+import 'package:ispectify/src/redaction/constants/placeholders.dart'
+    as placeholders;
+import 'package:ispectify/src/redaction/egress_provenance.dart';
+import 'package:ispectify/src/utils/safe_object_description.dart';
+import 'package:meta/meta.dart';
 
 /// Customizable logging and inspection utility for mobile applications.
 ///
@@ -24,9 +32,46 @@ class ISpectLogger {
     ISpectFilter? filter,
     ISpectErrorHandler? errorHandler,
     ILogHistory? history,
+  }) : this._(
+          logger: logger,
+          observer: observer,
+          options: options,
+          filter: filter,
+          errorHandler: errorHandler,
+          history: history,
+        );
+
+  /// Creates a logger with injectable test dependencies.
+  ///
+  /// Tests must still run with `-DISPECT_ENABLED=true`; this constructor never
+  /// bypasses the same compile-time gate used by production entry points.
+  @visibleForTesting
+  ISpectLogger.testing({
+    ISpectBaseLogger? logger,
+    ISpectObserver? observer,
+    ISpectLoggerOptions? options,
+    ISpectFilter? filter,
+    ISpectErrorHandler? errorHandler,
+    ILogHistory? history,
+  }) : this._(
+          logger: logger,
+          observer: observer,
+          options: options,
+          filter: filter,
+          errorHandler: errorHandler,
+          history: history,
+        );
+
+  ISpectLogger._({
+    ISpectBaseLogger? logger,
+    ISpectObserver? observer,
+    ISpectLoggerOptions? options,
+    ISpectFilter? filter,
+    ISpectErrorHandler? errorHandler,
+    ILogHistory? history,
   })  : _hasCustomErrorHandler = errorHandler != null,
         _loggerStreamController = StreamController<ISpectLogData>.broadcast() {
-    final resolvedOptions = options ?? ISpectLoggerOptions();
+    final resolvedOptions = _guardOptions(options ?? ISpectLoggerOptions());
     _options = resolvedOptions;
     _logger = logger ?? ISpectBaseLogger();
     _filter = filter;
@@ -39,18 +84,37 @@ class ISpectLogger {
       history: _history,
       filter: _filter,
     );
-    _observerManager = ObserverManager(() => _logger);
     _replaceObserver(observer);
   }
+
+  ISpectLoggerOptions _guardOptions(ISpectLoggerOptions options) {
+    if (_compileGateEnabled) return options;
+    return options.copyWith(enabled: false);
+  }
+
+  bool get _compileGateEnabled => kISpectEnabled;
 
   final StreamController<ISpectLogData> _loggerStreamController;
 
   bool _hasCustomErrorHandler;
 
   bool _isDisposed = false;
+  Future<void>? _disposeFuture;
 
   /// Whether this logger has been disposed and can no longer emit logs.
   bool get isDisposed => _isDisposed;
+
+  /// Whether this logger can currently capture diagnostics.
+  bool get isEnabled => _compileGateEnabled && !_isDisposed && _options.enabled;
+
+  /// Whether an emitted entry currently has at least one destination.
+  ///
+  /// This is a read-time snapshot: configuration, observers, and stream
+  /// subscriptions can change before the next logging call. Custom history
+  /// implementations count as consumers because their acceptance policy is
+  /// intentionally opaque to the logger.
+  bool get hasActiveConsumers =>
+      isEnabled && (hasObservers || _pipeline.hasDispatchTarget);
 
   late ISpectLoggerOptions _options;
 
@@ -61,18 +125,16 @@ class ISpectLogger {
   ISpectFilter? _filter;
   late LogPipeline _pipeline;
 
-  late final ObserverManager _observerManager;
+  final ObserverRegistry _observers = ObserverRegistry();
 
   void _replaceObserver(ISpectObserver? observer) {
-    if (_isDisposed) return;
-    _observerManager.replace(observer);
+    if (_isDisposed || !_compileGateEnabled) return;
+    _observers.replace(observer);
   }
 
   late ILogHistory _history;
 
   bool get _isActive => !_isDisposed;
-
-  // ======= OBSERVER METHODS =======
 
   /// Registers an observer. Remains active until [removeObserver] or
   /// [clearObservers] is called. Prefer [observe] when you want automatic
@@ -82,34 +144,34 @@ class ISpectLogger {
   /// the log. A re-entrant `log(...)` call from inside an observer is dropped
   /// to prevent recursion (see [stream] for the same guard on listeners).
   void addObserver(ISpectObserver observer) {
-    if (!_isActive) return;
-    _observerManager.add(observer);
+    if (!_isActive || !_compileGateEnabled) return;
+    _observers.add(observer);
   }
 
-  /// Registers an observer and returns a disposer to remove it later — useful
+  /// Registers an observer and returns a disposer to remove it later - useful
   /// for scoped subscriptions (e.g. widget lifecycle).
   ISpectObserverDisposer observe(ISpectObserver observer) {
-    if (!_isActive) return () {};
-    return _observerManager.observe(observer);
+    if (!_isActive || !_compileGateEnabled) return () {};
+    return _observers.observe(observer);
   }
 
   void removeObserver(ISpectObserver observer) {
-    if (!_isActive) return;
-    _observerManager.remove(observer);
+    if (!_isActive || !_compileGateEnabled) return;
+    _observers.remove(observer);
   }
 
   void clearObservers() {
-    if (!_isActive) return;
-    _observerManager.clear();
+    if (!_isActive || !_compileGateEnabled) return;
+    _observers.clear();
   }
 
-  bool get hasObservers => _observerManager.hasObservers;
+  bool get hasObservers => _compileGateEnabled && _observers.hasObservers;
 
   /// Wraps each observer call in a try-catch so a single failing observer
   /// cannot break notification for the rest.
   void _notifyObservers(void Function(ISpectObserver) notify) {
-    if (!_isActive) return;
-    _observerManager.notify(notify);
+    if (!_isActive || !_compileGateEnabled) return;
+    _observers.notify(notify, _logger);
   }
 
   /// Replaces only the provided components; others retain their current values.
@@ -132,7 +194,7 @@ class ISpectLogger {
     }
 
     if (options != null) {
-      _options = options;
+      _options = _guardOptions(options);
     }
 
     if (logger != null) {
@@ -153,7 +215,7 @@ class ISpectLogger {
       // in FileLogHistory) before replacing it.
       _history.dispose();
       _history = history;
-    } else if (_history is DefaultISpectLoggerHistory) {
+    } else if (options != null && _history is DefaultISpectLoggerHistory) {
       // Rebuild default history to inherit updated options while
       // keeping the accumulated entries.
       _history = DefaultISpectLoggerHistory(
@@ -182,7 +244,10 @@ class ISpectLogger {
   /// Listeners are notified synchronously. A re-entrant `log(...)` call from
   /// inside a listener is dropped to prevent recursion; if you need to log
   /// from a listener, schedule it (e.g. `Future.microtask`) so it runs on a
-  /// fresh stack.
+  /// fresh stack. Stream and history values are sanitized outbound snapshots
+  /// by default. Setting [ISpectRedaction.enabled] to `false` opts out of
+  /// content masking, while non-executing traversal and output bounds remain
+  /// enforced.
   Stream<ISpectLogData> get stream => _loggerStreamController.stream;
 
   List<ISpectLogData> get history => _history.history;
@@ -192,8 +257,6 @@ class ISpectLogger {
   FileLogHistory? get fileLogHistory =>
       _history is FileLogHistory ? _history as FileLogHistory : null;
 
-  // ======= OPTIONS METHODS =======
-
   void clearHistory() {
     if (!_isActive) return;
     _history.clear();
@@ -201,17 +264,13 @@ class ISpectLogger {
 
   void enable() {
     if (!_isActive) return;
-    _options = _options.copyWith(enabled: true);
-    _pipeline.update(options: _options);
+    configure(options: _options.copyWith(enabled: true));
   }
 
   void disable() {
     if (!_isActive) return;
-    _options = _options.copyWith(enabled: false);
-    _pipeline.update(options: _options);
+    configure(options: _options.copyWith(enabled: false));
   }
-
-  // ======= LOGGING METHODS =======
 
   /// Routes [exception] through the configured [ISpectErrorHandler] to produce
   /// a typed log entry.
@@ -220,10 +279,9 @@ class ISpectLogger {
     StackTrace? stackTrace,
     Object? message,
   }) {
-    if (!_isActive) return;
+    if (!hasActiveConsumers) return;
 
-    final data =
-        _errorHandler.handle(exception, stackTrace, message?.toString());
+    final data = _errorHandler.handle(exception, stackTrace, message);
 
     _processLog(data);
   }
@@ -256,10 +314,14 @@ class ISpectLogger {
     );
   }
 
-  /// Emits a pre-built [ISpectLogData] entry as-is.
-  void logData(ISpectLogData log) {
+  /// Emits a pre-built [ISpectLogData] entry.
+  ///
+  /// [redact] defaults to true. Set it to false only when the caller has made
+  /// an explicit local-debugging opt-out and already bounded every field.
+  /// Non-executing snapshotting and output budgets still apply.
+  void logData(ISpectLogData log, {bool redact = true}) {
     if (!_isActive) return;
-    _processLog(log);
+    _processLog(log, redact: redact);
   }
 
   void critical(
@@ -349,6 +411,7 @@ class ISpectLogger {
   }
 
   void good(Object? message) {
+    if (!hasActiveConsumers) return;
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.good,
@@ -366,16 +429,37 @@ class ISpectLogger {
     String? analytics,
     Map<String, dynamic>? parameters,
   }) {
+    if (!hasActiveConsumers) return;
+    final componentBudget = _options.resourceLimits.maxCapturedValueBytes ~/ 2;
+    final safeEvent = LogExportOutput.truncateUtf8(
+      event ?? 'Event',
+      maxBytes: componentBudget,
+    );
+    final capturedMessage = LogExportOutput.boundJsonValue(
+      message,
+      maxBytes: componentBudget,
+      resourceLimits: _options.resourceLimits,
+      allowCustomStringification:
+          _options.captureMode == DiagnosticCaptureMode.balanced,
+    );
+    final safeMessage = safeScalarText(capturedMessage) ?? '';
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.analytics,
-        message: '${event ?? 'Event'}: $message\nParameters: $parameters',
+        message: '$safeEvent: $safeMessage',
         options: _options,
+        additionalData: analytics == null && parameters == null
+            ? null
+            : {
+                if (analytics != null) 'analytics': analytics,
+                if (parameters != null) 'parameters': parameters,
+              },
       ),
     );
   }
 
   void print(Object? message) {
+    if (!hasActiveConsumers) return;
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.print,
@@ -391,6 +475,7 @@ class ISpectLogger {
     Object? message, {
     String? transitionId,
   }) {
+    if (!hasActiveConsumers) return;
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.route,
@@ -405,6 +490,7 @@ class ISpectLogger {
   }
 
   void provider(Object? message) {
+    if (!hasActiveConsumers) return;
     _processLog(
       LogFactory.fromType(
         type: ISpectLogType.provider,
@@ -423,7 +509,7 @@ class ISpectLogger {
     AnsiPen? pen,
     Map<String, dynamic>? additionalData,
   }) {
-    if (!_isActive) return;
+    if (!hasActiveConsumers) return;
 
     final logType = type ?? ISpectLogType.fromLogLevel(logLevel);
     final data = LogFactory.fromType(
@@ -447,35 +533,299 @@ class ISpectLogger {
   /// rather than recursing. Safe without a lock in Dart's single-threaded loop.
   bool _isProcessing = false;
 
-  void _processLog(ISpectLogData data) {
-    if (!_isActive) return;
+  void _processLog(ISpectLogData data, {bool redact = true}) {
+    if (!_isActive || !_options.enabled) return;
     if (_isProcessing) return;
-    if (!_pipeline.shouldProcess(data)) return;
+    if (!hasActiveConsumers) return;
+    if (_pipeline.vetoesKey(captureISpectLogWithoutPayload(data).key)) return;
 
     _isProcessing = true;
     try {
-      _notifyObservers(data.notifyObserver);
-      _pipeline.dispatch(data);
+      final egressData = _prepareEgressData(data, redact: redact);
+      if (!_pipeline.shouldProcess(egressData)) return;
+      if (hasObservers) {
+        _notifyObservers((observer) {
+          data.notifyObserver(_RedactedObserverProxy(observer, egressData));
+        });
+      }
+      _pipeline.dispatch(
+        data,
+        historyData: egressData,
+        streamData: egressData,
+        consoleData: egressData,
+      );
     } finally {
       _isProcessing = false;
     }
   }
 
+  ISpectLogData _prepareEgressData(
+    ISpectLogData data, {
+    required bool redact,
+  }) {
+    final captured = captureISpectLogDataForEgress(data);
+    final resourceLimits = captured.resourceLimits;
+    final redactor =
+        ISpectRedaction.enabled && redact ? ISpectRedaction.service : null;
+    final safeMessage = _prepareEgressText(
+      redactor,
+      captured.message,
+      resourceLimits,
+    );
+    final safeException = _prepareEgressText(
+          redactor,
+          captured.exceptionText,
+          resourceLimits,
+        ) ??
+        defaultPlaceholder;
+    final safeError = captured.error == null
+        ? null
+        : capturedDiagnosticError(
+            _prepareEgressText(
+                  redactor,
+                  captured.errorText,
+                  resourceLimits,
+                ) ??
+                defaultPlaceholder,
+          );
+    final safeStack = captured.stackTrace == null
+        ? null
+        : capturedDiagnosticStackTrace(
+            _prepareEgressText(
+                  redactor,
+                  captured.stackTraceText,
+                  resourceLimits,
+                ) ??
+                defaultPlaceholder,
+          );
+    final additionalData = captured.additionalData;
+    final masker = _egressMasker(redactor);
+
+    final safeKey = _prepareEgressText(redactor, captured.key, resourceLimits);
+    final egress = _buildEgressData(
+      captured: captured,
+      resourceLimits: resourceLimits,
+      safeError: safeError,
+      safeException: safeException,
+      safeMessage: safeMessage,
+      safeStack: safeStack,
+      safeKey: safeKey,
+      additionalData: additionalData,
+      masker: masker,
+    );
+    if (redactor != null) {
+      markExportRedacted(egress, redactor, resourceLimits);
+    }
+    return egress;
+  }
+
+  DiagnosticMasker? _egressMasker(RedactionService? redactor) {
+    if (redactor == null) return null;
+    return (value, limits) {
+      final safe = _prepareEgressValue(redactor, value, limits);
+      return safe is Map ? Map<String, dynamic>.from(safe) : null;
+    };
+  }
+
+  ISpectLogData _buildEgressData({
+    required ({
+      String id,
+      DiagnosticCaptureMode captureMode,
+      DiagnosticResourceLimits resourceLimits,
+      DateTime time,
+      String? key,
+      Object? message,
+      LogLevel? logLevel,
+      AnsiPen? pen,
+      Map<String, dynamic>? additionalData,
+      Object? exception,
+      String? exceptionText,
+      Error? error,
+      String? errorText,
+      StackTrace? stackTrace,
+      String? stackTraceText,
+    }) captured,
+    required DiagnosticResourceLimits resourceLimits,
+    required Error? safeError,
+    required String safeException,
+    required String? safeMessage,
+    required StackTrace? safeStack,
+    required String? safeKey,
+    required Map<String, dynamic>? additionalData,
+    required DiagnosticMasker? masker,
+  }) {
+    if (safeError != null) {
+      return ISpectLogError(
+        safeError,
+        message: safeMessage,
+        stackTrace: safeStack,
+        time: captured.time,
+        logLevel: captured.logLevel,
+        pen: captured.pen,
+        key: safeKey,
+        additionalData: additionalData,
+        id: captured.id,
+        captureMode: DiagnosticCaptureMode.strict,
+        resourceLimits: resourceLimits,
+        maskAdditionalData: masker,
+      );
+    }
+    if (captured.exception != null) {
+      return ISpectLogException(
+        capturedDiagnosticException(safeException),
+        message: safeMessage,
+        stackTrace: safeStack,
+        time: captured.time,
+        logLevel: captured.logLevel,
+        pen: captured.pen,
+        key: safeKey,
+        additionalData: additionalData,
+        id: captured.id,
+        captureMode: DiagnosticCaptureMode.strict,
+        resourceLimits: resourceLimits,
+        maskAdditionalData: masker,
+      );
+    }
+    return ISpectLogData(
+      safeMessage,
+      time: captured.time,
+      logLevel: captured.logLevel,
+      stackTrace: safeStack,
+      pen: captured.pen,
+      key: safeKey,
+      additionalData: additionalData,
+      id: captured.id,
+      captureMode: DiagnosticCaptureMode.strict,
+      resourceLimits: resourceLimits,
+      maskAdditionalData: masker,
+    );
+  }
+
   /// Closes the stream, drops observers, releases history resources. After
   /// this call the logger becomes a no-op.
-  Future<void> dispose() async {
-    if (_isDisposed) return;
+  Future<void> dispose() {
+    final pending = _disposeFuture;
+    if (pending != null) return pending;
+
+    final completer = Completer<void>();
+    final operation = completer.future;
+    _disposeFuture = operation;
+    final redactionEnabled = ISpectRedaction.enabled;
+    final redactionService = ISpectRedaction.service;
     _isDisposed = true;
-    _observerManager.clear();
+    late final Future<void> resources;
+    try {
+      resources = ISpectRedaction.runWithPolicy(
+        enabled: redactionEnabled,
+        service: redactionService,
+        body: _disposeResources,
+      );
+    } catch (error, stackTrace) {
+      completer.completeError(error, stackTrace);
+      return operation;
+    }
+    unawaited(
+      resources.then<void>(
+        (_) => completer.complete(),
+        onError: (Object error, StackTrace stackTrace) {
+          completer.completeError(error, stackTrace);
+        },
+      ),
+    );
+    return operation;
+  }
+
+  Future<void> _disposeResources() async {
+    _observers.clear();
+    (Object, StackTrace)? firstFailure;
     try {
       if (_history case final FileLogHistory fileHistory) {
         await fileHistory.saveToDailyFile();
       }
-    } finally {
+    } catch (error, stackTrace) {
+      firstFailure = (error, stackTrace);
+    }
+
+    try {
       _history.dispose();
+    } catch (error, stackTrace) {
+      firstFailure ??= (error, stackTrace);
+    }
+
+    try {
       await _loggerStreamController.close();
+    } catch (error, stackTrace) {
+      firstFailure ??= (error, stackTrace);
+    }
+
+    final failure = firstFailure;
+    if (failure != null) {
+      Error.throwWithStackTrace(failure.$1, failure.$2);
     }
   }
 }
 
+String? _prepareEgressText(
+  RedactionService? redactor,
+  Object? value,
+  DiagnosticResourceLimits resourceLimits,
+) {
+  final safe = _prepareEgressValue(redactor, value, resourceLimits);
+  if (safe == null) return null;
+  if (safe is String) return safe;
+  if (safe is bool || safe is num) return safe.toString();
+  try {
+    return LogExportOutput.truncateUtf8(
+      jsonEncode(safe),
+      maxBytes: resourceLimits.maxCapturedValueBytes,
+    );
+  } catch (_) {
+    return defaultPlaceholder;
+  }
+}
+
+Object? _prepareEgressValue(
+  RedactionService? redactor,
+  Object? value,
+  DiagnosticResourceLimits resourceLimits,
+) {
+  final byteLength = switch (value) {
+    final ByteBuffer buffer => buffer.lengthInBytes,
+    final TypedData data => data.lengthInBytes,
+    _ => null,
+  };
+  if (byteLength != null) return placeholders.binaryPlaceholder(byteLength);
+  try {
+    if (redactor != null) {
+      return redactor.redactForExport(
+        value,
+        resourceLimits: resourceLimits,
+      );
+    }
+    return LogExportOutput.boundJsonValue(
+      value,
+      resourceLimits: resourceLimits,
+      preserveTypes: true,
+    );
+  } catch (_) {
+    return defaultPlaceholder;
+  }
+}
+
 typedef ISpectObserverDisposer = void Function();
+
+final class _RedactedObserverProxy implements ISpectObserver {
+  const _RedactedObserverProxy(this._observer, this._data);
+
+  final ISpectObserver _observer;
+  final ISpectLogData _data;
+
+  @override
+  void onError(ISpectLogData _) => _observer.onError(_data);
+
+  @override
+  void onException(ISpectLogData _) => _observer.onException(_data);
+
+  @override
+  void onLog(ISpectLogData _) => _observer.onLog(_data);
+}

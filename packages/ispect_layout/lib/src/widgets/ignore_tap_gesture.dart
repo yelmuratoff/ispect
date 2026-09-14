@@ -13,9 +13,9 @@ class IgnoreTapGesture extends StatelessWidget {
       gestures: {
         BlockingGestureRecognizer:
             GestureRecognizerFactoryWithHandlers<BlockingGestureRecognizer>(
-          () => BlockingGestureRecognizer(),
-          (BlockingGestureRecognizer instance) {},
-        ),
+              () => BlockingGestureRecognizer(),
+              (BlockingGestureRecognizer instance) {},
+            ),
       },
     );
   }

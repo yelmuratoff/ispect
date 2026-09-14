@@ -32,17 +32,16 @@ class HighlightedText extends StatelessWidget {
       return Text(text, style: style, textWidthBasis: textWidthBasis);
     }
 
-    final positions =
-        TextMatchService.instance.findMatches(text, highlightedText);
+    final positions = TextMatchService.instance.findMatches(
+      text,
+      highlightedText,
+    );
     if (positions.isEmpty) {
       return Text(text, style: style, textWidthBasis: textWidthBasis);
     }
 
     final spans = _buildSpans(text, positions, highlightedText.length);
-    return Text.rich(
-      TextSpan(children: spans),
-      textWidthBasis: textWidthBasis,
-    );
+    return Text.rich(TextSpan(children: spans), textWidthBasis: textWidthBasis);
   }
 
   List<InlineSpan> _buildSpans(
@@ -56,8 +55,9 @@ class HighlightedText extends StatelessWidget {
     for (var i = 0; i < positions.length; i++) {
       final start = positions[i];
       final isFocused = start == focusedSearchMatchIndex;
-      final highlightStyle =
-          isFocused ? primaryMatchStyle : secondaryMatchStyle;
+      final highlightStyle = isFocused
+          ? primaryMatchStyle
+          : secondaryMatchStyle;
 
       if (start > lastEnd) {
         spans.add(

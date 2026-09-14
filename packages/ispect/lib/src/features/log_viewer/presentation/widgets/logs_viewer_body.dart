@@ -67,7 +67,8 @@ class _LogsViewerBodyState extends State<LogsViewerBody> {
   }
 
   void _syncDataCaches() {
-    final dataChanged = !identical(_lastController, widget.controller) ||
+    final dataChanged =
+        !identical(_lastController, widget.controller) ||
         !identical(_lastLogsData, widget.logsData);
     if (!dataChanged) return;
 
@@ -105,8 +106,9 @@ class _LogsViewerBodyState extends State<LogsViewerBody> {
           return logsView;
         }
 
-        final activeForDetail =
-            isDesktop ? controller.detailData! : controller.activeData!;
+        final activeForDetail = isDesktop
+            ? controller.detailData!
+            : controller.activeData!;
 
         final correlation = _findCorrelation(activeForDetail, widget.logsData);
 
@@ -168,10 +170,9 @@ class _LogsViewerBodyState extends State<LogsViewerBody> {
   LogCorrelation? _findCorrelation(
     ISpectLogData activeLog,
     List<ISpectLogData> allLogs,
-  ) =>
-      _correlationIndex.find(
-        activeLog,
-        allLogs,
-        widget.controller.outputGeneration,
-      );
+  ) => _correlationIndex.find(
+    activeLog,
+    allLogs,
+    widget.controller.outputGeneration,
+  );
 }

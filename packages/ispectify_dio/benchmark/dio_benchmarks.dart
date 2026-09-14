@@ -101,7 +101,8 @@ Dio _client({ISpectDioInterceptorSettings? settings}) {
         logger: ISpectLogger(
           options: ISpectLoggerOptions(
             useConsoleLogs: false,
-            useHistory: false,
+            useHistory: true,
+            maxHistoryItems: 1000,
           ),
         ),
         settings: settings,

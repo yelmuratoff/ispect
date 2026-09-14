@@ -4,7 +4,7 @@ import 'package:ispectify_db/src/constants.dart';
 
 /// Internal utilities for DB logging: redaction, truncation, and classification.
 ///
-/// Not intended for direct use — prefer the [ISpectLoggerDb] extension methods
+/// Not intended for direct use - prefer the [ISpectLoggerDb] extension methods
 /// ([db], [dbTrace], [dbStart]/[dbEnd], [dbTransaction]).
 ///
 /// For SQL fingerprinting see [DbSqlDigest].
@@ -46,23 +46,17 @@ final class ISpectDbCore {
     return shouldRedact ? redact(data, keys) : data;
   }
 
-  /// Redacts positional arguments in a [List] when the SQL [statement]
-  /// references columns that match any of the [keys].
+  /// Redacts every positional argument in [args].
   ///
-  /// Because positional parameters (`?`) cannot be reliably mapped to specific
-  /// column names in all SQL dialects, this method redacts **all** list values
-  /// when the statement mentions at least one sensitive column name.
-  /// If [statement] is `null`, all values are redacted as a precaution.
+  /// Positional parameters cannot be reliably mapped to columns across SQL
+  /// dialects, so selective redaction is unsafe. [keys] and [statement] remain
+  /// accepted for source compatibility but do not narrow masking.
   static List<Object?> redactPositionalArgs(
     List<Object?> args,
     Iterable<String> keys,
     String? statement,
   ) {
     if (args.isEmpty) return args;
-    final stmtLower = statement?.toLowerCase();
-    final sensitive = stmtLower == null ||
-        keys.any((k) => stmtLower.contains(k.toLowerCase()));
-    if (!sensitive) return args;
     return args.map((e) => e == null ? null : defaultPlaceholder).toList();
   }
 

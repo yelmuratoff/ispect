@@ -17,9 +17,52 @@ void main() {
       interceptor = ISpectDioInterceptor(logger: logger);
     });
 
-    test('configure method should update logger settings', () {
-      interceptor.configure(printRequestData: true);
-      expect(interceptor.settings.printRequestData, true);
+    test('configure updates every shared capture setting', () {
+      interceptor.configure(
+        enabled: false,
+        enableRedaction: false,
+        captureMode: DiagnosticCaptureMode.strict,
+        resourceLimits: DiagnosticResourceLimits.constrained,
+        logRequests: false,
+        logResponses: false,
+        printRequestData: false,
+        printRequestHeaders: false,
+        printResponseData: false,
+        printResponseHeaders: false,
+        printResponseMessage: false,
+        printErrorData: false,
+        printErrorHeaders: false,
+        printErrorMessage: false,
+      );
+
+      final settings = interceptor.settings;
+      expect(settings.enabled, isFalse);
+      expect(settings.enableRedaction, isFalse);
+      expect(settings.captureMode, DiagnosticCaptureMode.strict);
+      expect(
+        settings.resourceLimits,
+        same(DiagnosticResourceLimits.constrained),
+      );
+      expect(settings.logRequests, isFalse);
+      expect(settings.logResponses, isFalse);
+      expect(settings.printRequestData, isFalse);
+      expect(settings.printRequestHeaders, isFalse);
+      expect(settings.printResponseData, isFalse);
+      expect(settings.printResponseHeaders, isFalse);
+      expect(settings.printResponseMessage, isFalse);
+      expect(settings.printErrorData, isFalse);
+      expect(settings.printErrorHeaders, isFalse);
+      expect(settings.printErrorMessage, isFalse);
+    });
+
+    test('configure can restore logger-owned resource limits', () {
+      interceptor
+        ..configure(
+          resourceLimits: DiagnosticResourceLimits.constrained,
+        )
+        ..configure(inheritResourceLimits: true);
+
+      expect(interceptor.settings.resourceLimits, isNull);
     });
 
     test('onRequest method should log http request', () {

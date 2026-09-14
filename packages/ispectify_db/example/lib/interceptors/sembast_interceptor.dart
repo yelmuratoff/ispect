@@ -1,6 +1,6 @@
 /// Ready-to-copy interceptor for **sembast** (document store).
 ///
-/// Implements [StoreRef] and [RecordRef] interfaces — drop-in replacements.
+/// Implements [StoreRef] and [RecordRef] interfaces - drop-in replacements.
 /// Instance methods shadow Sembast's extension methods, so all operations
 /// are automatically traced when using the typed wrapper.
 ///
@@ -48,7 +48,11 @@ extension ISpectSembastStoreExtension<K extends sembast.RecordKeyBase?,
     ISpectDbConfig config = const ISpectDbConfig(),
   }) =>
       ISpectSembastStore(
-          store: this, logger: logger, source: source, config: config);
+        store: this,
+        logger: logger,
+        source: source,
+        config: config,
+      );
 }
 
 // ---------------------------------------------------------------------------
@@ -138,10 +142,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
       );
 
   /// Count records in the store.
-  Future<int> count(
-    sembast.DatabaseClient db, {
-    sembast.Filter? filter,
-  }) =>
+  Future<int> count(sembast.DatabaseClient db, {sembast.Filter? filter}) =>
       _logger.dbTrace(
         source: _source,
         operation: 'count',
@@ -191,10 +192,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
       );
 
   /// Delete records matching a [finder].
-  Future<int> delete(
-    sembast.DatabaseClient db, {
-    sembast.Finder? finder,
-  }) =>
+  Future<int> delete(sembast.DatabaseClient db, {sembast.Finder? finder}) =>
       _logger.dbTrace(
         source: _source,
         operation: 'delete',
@@ -216,10 +214,7 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
   // --- Passthrough reads (delegated to avoid SembastStoreRef casts) ---------
 
   /// Find a single key.
-  Future<K?> findKey(
-    sembast.DatabaseClient db, {
-    sembast.Finder? finder,
-  }) =>
+  Future<K?> findKey(sembast.DatabaseClient db, {sembast.Finder? finder}) =>
       _store.findKey(db, finder: finder);
 
   /// Find multiple keys.
@@ -282,24 +277,15 @@ final class ISpectSembastStore<K extends sembast.RecordKeyBase?,
       _store.findFirstSync(db, finder: finder);
 
   /// Find a single key synchronously.
-  K? findKeySync(
-    sembast.DatabaseClient db, {
-    sembast.Finder? finder,
-  }) =>
+  K? findKeySync(sembast.DatabaseClient db, {sembast.Finder? finder}) =>
       _store.findKeySync(db, finder: finder);
 
   /// Find multiple keys synchronously.
-  List<K> findKeysSync(
-    sembast.DatabaseClient db, {
-    sembast.Finder? finder,
-  }) =>
+  List<K> findKeysSync(sembast.DatabaseClient db, {sembast.Finder? finder}) =>
       _store.findKeysSync(db, finder: finder);
 
   /// Count records synchronously.
-  int countSync(
-    sembast.DatabaseClient db, {
-    sembast.Filter? filter,
-  }) =>
+  int countSync(sembast.DatabaseClient db, {sembast.Filter? filter}) =>
       _store.countSync(db, filter: filter);
 
   // --- Transaction ----------------------------------------------------------

@@ -1,9 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:ispectify/src/history/serialization.dart';
 import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/models/data.dart';
+import 'package:ispectify/src/models/diagnostic_capture_mode.dart';
+import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/models/log_level.dart';
+import 'package:ispectify/src/redaction/constants/placeholders.dart';
 import 'package:ispectify/src/redaction/redaction_service.dart';
+import 'package:ispectify/src/redaction/redaction_toggle.dart';
 import 'package:ispectify/src/trace/trace_category.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_helpers.dart';
@@ -13,7 +19,7 @@ import 'package:ispectify/src/trace/trace_stream_transformer.dart';
 import 'package:ispectify/src/trace/trace_token.dart';
 import 'package:ispectify/src/utils/common_utils.dart';
 
-/// File-private zone key — prevents external code from reading/spoofing txnId.
+/// File-private zone key - prevents external code from reading/spoofing txnId.
 final _txnZoneKey = Object();
 
 extension ISpectTrace on ISpectLogger {
@@ -22,7 +28,8 @@ extension ISpectTrace on ISpectLogger {
   // These wrap [trace] / [traceAsync] with the enabled-check so that
   // domain extensions (auth, storage, push …) don't repeat the guard.
 
-  /// Convenience wrapper: checks `options.enabled`, then delegates to [trace].
+  /// Convenience wrapper: checks [ISpectLogger.isEnabled], then delegates to
+  /// [trace].
   void traceCategory({
     required ISpectTraceCategory category,
     required String source,
@@ -39,7 +46,7 @@ extension ISpectTrace on ISpectLogger {
     String? correlationId,
     String? consoleMessage,
   }) {
-    if (!options.enabled) return;
+    if (!isEnabled) return;
     trace(
       category: category,
       source: source,
@@ -58,7 +65,7 @@ extension ISpectTrace on ISpectLogger {
     );
   }
 
-  /// Convenience wrapper: checks `options.enabled`, then delegates to
+  /// Convenience wrapper: checks [ISpectLogger.isEnabled], then delegates to
   /// [traceAsync].
   Future<T> traceCategoryAsync<T>({
     required ISpectTraceCategory category,
@@ -71,7 +78,7 @@ extension ISpectTrace on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
   }) {
-    if (!options.enabled) return run();
+    if (!isEnabled) return run();
     return traceAsync(
       category: category,
       source: source,
@@ -106,9 +113,11 @@ extension ISpectTrace on ISpectLogger {
     LogLevel? logLevel,
     String? consoleMessage,
   }) {
-    if (!options.enabled) return;
+    if (!isEnabled) return;
 
     final cfg = config ?? const ISpectTraceConfig();
+    final resourceLimits = (cfg.resourceLimits ?? options.resourceLimits)
+      ..validate();
     final isError = error != null || success == false;
 
     if (!cfg.shouldLog(localSample: sample, isError: isError)) return;
@@ -116,63 +125,140 @@ extension ISpectTrace on ISpectLogger {
     final resolvedLogKey =
         logKey ?? category.pickLogKey(isError: isError, operation: operation);
 
-    safeTrace(this, () {
-      final safeTarget = cfg.redact && target != null
-          ? RedactionService.redactTarget(target, cfg.redactKeys)
-          : target;
+    safeTrace(
+      this,
+      () {
+        final redactor = _traceRedactor(cfg);
+        final captureMode = options.captureMode;
+        String prepareText(Object? value) => _tracePayloadText(
+              _prepareTracePayload(
+                value,
+                redactor,
+                captureMode,
+                resourceLimits,
+              ),
+              resourceLimits,
+            );
 
-      final message = consoleMessage ??
-          buildTraceMessage(
-            operation: operation,
-            source: source,
-            target: safeTarget,
-            key: key,
-            duration: duration,
-            success: !isError,
-          );
+        final scalars = _prepareTracePayload(
+          <String?>[
+            category.id,
+            source,
+            operation,
+            target,
+            key,
+            resolvedLogKey,
+          ],
+          redactor,
+          captureMode,
+          resourceLimits,
+        );
+        String? safeScalar(int index) {
+          if (scalars is! List || index >= scalars.length) {
+            return defaultPlaceholder;
+          }
+          final value = scalars[index];
+          return value == null
+              ? null
+              : _tracePayloadText(value, resourceLimits);
+        }
 
-      final safeMeta = cfg.redact
-          ? RedactionService.redactByKeys(meta, cfg.redactKeys)
-          : meta;
+        final safeCategoryId = safeScalar(0) ?? defaultPlaceholder;
+        final safeSource = safeScalar(1) ?? defaultPlaceholder;
+        final safeOperation = safeScalar(2) ?? defaultPlaceholder;
+        final safeTarget = target == null ? null : safeScalar(3);
+        final safeKey = key == null ? null : safeScalar(4);
+        final safeLogKey = safeScalar(5) ?? defaultPlaceholder;
 
-      final safeValue = cfg.redact
-          ? RedactionService.redactByKeys(value, cfg.redactKeys)
-          : value;
+        final message = consoleMessage != null
+            ? prepareText(consoleMessage)
+            : LogExportOutput.truncateUtf8(
+                buildTraceMessage(
+                  operation: safeOperation,
+                  source: safeSource,
+                  target: safeTarget,
+                  key: safeKey,
+                  duration: duration,
+                  success: !isError,
+                ),
+                maxBytes: resourceLimits.maxCapturedValueBytes,
+              );
 
-      final rawTxnId = Zone.current[_txnZoneKey];
-      final zoneTxnId = rawTxnId is String ? rawTxnId : null;
+        final safeMetaValue = _prepareTracePayload(
+          meta,
+          redactor,
+          captureMode,
+          resourceLimits,
+        );
+        final safeMeta = safeMetaValue is Map<String, Object?>
+            ? safeMetaValue
+            : safeMetaValue is Map
+                ? Map<String, Object?>.from(safeMetaValue)
+                : null;
 
-      final additionalData = <String, Object?>{
-        TraceKeys.category: category.id,
-        TraceKeys.source: source,
-        TraceKeys.operation: operation,
-        if (safeTarget != null) TraceKeys.target: safeTarget,
-        if (key != null) TraceKeys.key: key,
-        if (value != null)
-          TraceKeys.value: truncateValue(safeValue, cfg.maxValueLength),
-        if (duration != null) TraceKeys.durationMs: duration.inMilliseconds,
-        if (duration != null && cfg.slowThreshold != null)
-          TraceKeys.slow: duration > cfg.slowThreshold!,
-        TraceKeys.success: !isError,
-        if (error != null)
-          TraceKeys.error: cfg.redact
-              ? RedactionService.redactExportString('$error', cfg.redactKeys)
-              : '$error',
-        if (zoneTxnId != null) TraceKeys.transactionId: zoneTxnId,
-        if (correlationId != null) TraceKeys.correlationId: correlationId,
-        if (safeMeta != null) TraceKeys.meta: safeMeta,
-      };
+        final safeValue = _prepareTracePayload(
+          value,
+          redactor,
+          captureMode,
+          resourceLimits,
+        );
+        final safeErrorText = error == null ? null : prepareText(error);
+        final safeStackTrace = errorStackTrace == null
+            ? null
+            : StackTrace.fromString(
+                prepareText(errorStackTrace),
+              );
+        final safeCorrelationId = correlationId == null
+            ? null
+            : _tracePayloadText(
+                _prepareTracePayload(
+                  correlationId,
+                  redactor,
+                  captureMode,
+                  resourceLimits,
+                ),
+                resourceLimits,
+              );
 
-      return ISpectLogData(
-        message,
-        key: resolvedLogKey,
-        logLevel: logLevel ?? (isError ? LogLevel.error : LogLevel.info),
-        additionalData: additionalData,
-        exception: error is Exception ? error : null,
-        error: error is Error ? error : null,
-        stackTrace: isError && cfg.attachStackOnError ? errorStackTrace : null,
-      );
-    });
+        final rawTxnId = Zone.current[_txnZoneKey];
+        final zoneTxnId = rawTxnId is String ? rawTxnId : null;
+
+        final additionalData = <String, Object?>{
+          TraceKeys.category: safeCategoryId,
+          TraceKeys.source: safeSource,
+          TraceKeys.operation: safeOperation,
+          if (safeTarget != null) TraceKeys.target: safeTarget,
+          if (safeKey != null) TraceKeys.key: safeKey,
+          if (value != null)
+            TraceKeys.value: truncateValue(safeValue, cfg.maxValueLength),
+          if (duration != null) TraceKeys.durationMs: duration.inMilliseconds,
+          if (duration != null && cfg.slowThreshold != null)
+            TraceKeys.slow: duration > cfg.slowThreshold!,
+          TraceKeys.success: !isError,
+          if (safeErrorText != null) TraceKeys.error: safeErrorText,
+          if (zoneTxnId != null) TraceKeys.transactionId: zoneTxnId,
+          if (safeCorrelationId != null)
+            TraceKeys.correlationId: safeCorrelationId,
+          if (safeMeta != null) TraceKeys.meta: safeMeta,
+        };
+
+        return ISpectLogData(
+          message,
+          key: safeLogKey,
+          logLevel: logLevel ?? (isError ? LogLevel.error : LogLevel.info),
+          additionalData: additionalData,
+          exception:
+              error is Exception ? const _PreparedTraceException() : null,
+          error: error is Error ? _PreparedTraceError() : null,
+          stackTrace: isError && cfg.attachStackOnError ? safeStackTrace : null,
+          captureMode: DiagnosticCaptureMode.strict,
+          resourceLimits: resourceLimits,
+        );
+      },
+      // The snapshot already used cfg's resolved policy; a second pass would
+      // overwrite an explicit trace policy with the global default.
+      redact: false,
+    );
   }
 
   // ── Async wrapper with auto-timing ──────────────────────────────────
@@ -192,19 +278,23 @@ extension ISpectTrace on ISpectLogger {
     LogLevel? logLevel,
     String? correlationId,
   }) async {
-    if (!options.enabled) return run();
+    if (!isEnabled) return run();
 
+    final cfg = config ?? const ISpectTraceConfig();
     final sw = Stopwatch()..start();
     try {
       final result = await run();
       sw.stop();
 
+      if (!isEnabled) return result;
+      if (!cfg.shouldLog(localSample: sample, isError: false)) return result;
+
       Object? projected;
       if (projectResult != null) {
         try {
           projected = projectResult(result);
-        } catch (e, st) {
-          _logProjectionFailure('traceAsync', e, st);
+        } catch (_) {
+          _logProjectionFailure('traceAsync');
         }
       }
 
@@ -218,8 +308,8 @@ extension ISpectTrace on ISpectLogger {
         success: true,
         duration: sw.elapsed,
         meta: meta,
-        config: config,
-        sample: sample,
+        config: cfg,
+        sample: 1,
         logKey: logKey,
         correlationId: correlationId,
         logLevel: logLevel,
@@ -248,14 +338,13 @@ extension ISpectTrace on ISpectLogger {
     }
   }
 
-  /// A projection callback (`projectResult`/`projectEvent`) threw — the traced
+  /// A projection callback (`projectResult`/`projectEvent`) threw - the traced
   /// operation itself succeeded, so this is reported as a warning (not routed
   /// through the error handler) and never swallowed silently.
-  void _logProjectionFailure(String wrapper, Object error, StackTrace st) {
+  void _logProjectionFailure(String wrapper) {
     log(
-      '$wrapper: projection callback threw unexpectedly — $error',
+      '$wrapper: projection callback failed safely.',
       logLevel: LogLevel.warning,
-      stackTrace: st,
     );
   }
 
@@ -276,19 +365,23 @@ extension ISpectTrace on ISpectLogger {
     String? correlationId,
     LogLevel? logLevel,
   }) {
-    if (!options.enabled) return run();
+    if (!isEnabled) return run();
 
+    final cfg = config ?? const ISpectTraceConfig();
     final sw = Stopwatch()..start();
     try {
       final result = run();
       sw.stop();
 
+      if (!isEnabled) return result;
+      if (!cfg.shouldLog(localSample: sample, isError: false)) return result;
+
       Object? projected;
       if (projectResult != null) {
         try {
           projected = projectResult(result);
-        } catch (e, st) {
-          _logProjectionFailure('traceSync', e, st);
+        } catch (_) {
+          _logProjectionFailure('traceSync');
         }
       }
 
@@ -302,8 +395,8 @@ extension ISpectTrace on ISpectLogger {
         success: true,
         duration: sw.elapsed,
         meta: meta,
-        config: config,
-        sample: sample,
+        config: cfg,
+        sample: 1,
         logKey: logKey,
         correlationId: correlationId,
         logLevel: logLevel,
@@ -334,7 +427,7 @@ extension ISpectTrace on ISpectLogger {
 
   // ── Manual span (request → response) ────────────────────────────────
 
-  /// Returns `null` if logger is disabled — caller must check.
+  /// Returns `null` if logger is disabled - caller must check.
   ISpectTraceToken? traceStart({
     required ISpectTraceCategory category,
     required String source,
@@ -345,21 +438,45 @@ extension ISpectTrace on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
   }) {
-    if (!options.enabled) return null;
+    if (!isEnabled) return null;
+    final cfg = config ?? const ISpectTraceConfig();
+    final resourceLimits = (cfg.resourceLimits ?? options.resourceLimits)
+      ..validate();
+    final redactor = _traceRedactor(cfg);
+    final captureMode = options.captureMode;
+    String prepareText(Object? value) => _tracePayloadText(
+          _prepareTracePayload(
+            value,
+            redactor,
+            captureMode,
+            resourceLimits,
+          ),
+          resourceLimits,
+        );
+    final preparedMeta = _prepareTracePayload(
+      meta,
+      redactor,
+      captureMode,
+      resourceLimits,
+    );
     return ISpectTraceToken(
       stopwatch: Stopwatch()..start(),
       category: category,
-      source: source,
-      operation: operation,
-      target: target,
-      key: key,
-      meta: meta,
-      config: config,
-      correlationId: correlationId,
+      source: prepareText(source),
+      operation: prepareText(operation),
+      target: target == null ? null : prepareText(target),
+      key: key == null ? null : prepareText(key),
+      meta: preparedMeta is Map<String, Object?>
+          ? preparedMeta
+          : preparedMeta is Map
+              ? Map<String, Object?>.from(preparedMeta)
+              : null,
+      config: cfg,
+      correlationId: correlationId == null ? null : prepareText(correlationId),
     );
   }
 
-  /// Ends a manual span. [token] is nullable — if [traceStart] returned null
+  /// Ends a manual span. [token] is nullable - if [traceStart] returned null
   /// (logger disabled), this is a no-op.
   void traceEnd(
     ISpectTraceToken? token, {
@@ -371,6 +488,8 @@ extension ISpectTrace on ISpectLogger {
   }) {
     if (token == null) return;
     token.stopTiming();
+    if (!isEnabled) return;
+    final cfg = token.config ?? const ISpectTraceConfig();
     trace(
       category: token.category,
       source: token.source,
@@ -382,7 +501,12 @@ extension ISpectTrace on ISpectLogger {
       error: error,
       errorStackTrace: errorStackTrace,
       duration: token.elapsed,
-      meta: {...?token.meta, ...?meta},
+      meta: _mergeTraceMeta(
+        token.meta,
+        meta,
+        redactionActive: cfg.redact && ISpectRedaction.enabled,
+        resourceLimits: cfg.resourceLimits ?? options.resourceLimits,
+      ),
       config: token.config,
       correlationId: token.correlationId,
     );
@@ -403,9 +527,10 @@ extension ISpectTrace on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
   }) {
-    if (!options.enabled) return stream;
+    if (!isEnabled) return stream;
 
     final corrId = correlationId ?? generateTraceId();
+    final cfg = config ?? const ISpectTraceConfig();
 
     return stream.transform(
       TraceStreamTransformer<T>(
@@ -419,12 +544,14 @@ extension ISpectTrace on ISpectLogger {
           correlationId: corrId,
         ),
         onData: (data) {
+          if (!isEnabled) return;
+          if (!cfg.shouldLog(localSample: sample, isError: false)) return;
           Object? projected;
           if (projectEvent != null) {
             try {
               projected = projectEvent(data);
-            } catch (e, st) {
-              _logProjectionFailure('traceStream', e, st);
+            } catch (_) {
+              _logProjectionFailure('traceStream');
             }
           }
           trace(
@@ -434,8 +561,8 @@ extension ISpectTrace on ISpectLogger {
             target: target,
             value: projected,
             success: true,
-            sample: sample,
-            config: config,
+            sample: 1,
+            config: cfg,
             correlationId: corrId,
           );
         },
@@ -477,6 +604,8 @@ extension ISpectTrace on ISpectLogger {
     required Future<T> Function() run,
     bool logMarkers = false,
   }) async {
+    if (!isEnabled) return run();
+
     final txnId = generateTraceId();
     return runZoned(
       () async {
@@ -515,5 +644,98 @@ extension ISpectTrace on ISpectLogger {
       },
       zoneValues: {_txnZoneKey: txnId},
     );
+  }
+}
+
+RedactionService? _traceRedactor(ISpectTraceConfig config) {
+  if (!config.redact || !ISpectRedaction.enabled) return null;
+  final sensitiveKeys = identical(config.redactKeys, defaultSensitiveKeys)
+      ? null
+      : config.redactKeys;
+  return ISpectRedaction.resolveService(sensitiveKeys: sensitiveKeys);
+}
+
+Object? _prepareTracePayload(
+  Object? value,
+  RedactionService? redactor,
+  DiagnosticCaptureMode captureMode,
+  DiagnosticResourceLimits resourceLimits,
+) {
+  final redactionActive = redactor != null;
+  final prepared = LogExportOutput.boundJsonValue(
+    value,
+    preserveTypes: redactionActive,
+    replaceOversizedStrings: redactionActive,
+    allowCustomSerialization: captureMode == DiagnosticCaptureMode.balanced,
+    allowCustomStringification: captureMode == DiagnosticCaptureMode.balanced,
+    resourceLimits: resourceLimits,
+  );
+  if (!redactionActive) return prepared;
+  final redacted = redactor.redactForExport(
+    LogExportOutput.replaceTruncatedPrefixes(
+      prepared,
+      resourceLimits: resourceLimits,
+    ),
+    resourceLimits: resourceLimits,
+  );
+  return LogExportOutput.boundJsonValue(
+    redacted,
+    replaceOversizedStrings: true,
+    resourceLimits: resourceLimits,
+  );
+}
+
+final class _PreparedTraceException implements Exception {
+  const _PreparedTraceException();
+}
+
+final class _PreparedTraceError extends Error {}
+
+Map<String, Object?>? _mergeTraceMeta(
+  Map<String, Object?>? start,
+  Map<String, Object?>? end, {
+  required bool redactionActive,
+  required DiagnosticResourceLimits resourceLimits,
+}) {
+  if (start == null && end == null) return null;
+  final bounded = LogExportOutput.boundJsonValue(
+    <String, Object?>{
+      if (end != null) 'end': end,
+      if (start != null) 'start': start,
+    },
+    preserveTypes: redactionActive,
+    replaceOversizedStrings: redactionActive,
+    resourceLimits: resourceLimits,
+  );
+  if (bounded is! Map) return null;
+
+  final result = <String, Object?>{};
+  void addBounded(Object? value) {
+    if (value is Map<String, Object?>) {
+      result.addAll(value);
+    } else if (value is Map) {
+      result.addAll(Map<String, Object?>.from(value));
+    }
+  }
+
+  addBounded(bounded['start']);
+  addBounded(bounded['end']);
+  return result;
+}
+
+String _tracePayloadText(
+  Object? value,
+  DiagnosticResourceLimits resourceLimits,
+) {
+  if (value == null) return defaultPlaceholder;
+  if (value is String) return value;
+  if (value is bool || value is num) return value.toString();
+  try {
+    return LogExportOutput.truncateUtf8(
+      jsonEncode(value),
+      maxBytes: resourceLimits.maxCapturedValueBytes,
+    );
+  } catch (_) {
+    return defaultPlaceholder;
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/logger_settings.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -10,21 +11,18 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/act
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/compact_toggle_grid.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/limit_tile.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/log_type_filter_section.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/policy_profile_tile.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/toggle_spec.dart';
 
 class ISpectSettingsBottomSheet {
   const ISpectSettingsBottomSheet({
     required this.logger,
-    required this.options,
     required this.actions,
     required this.controller,
   });
 
   /// ISpectLogger implementation
   final ISpectLoggerNotifier logger;
-
-  /// Options for `ISpect`
-  final ISpectOptions options;
 
   /// Actions to display in the settings bottom sheet
   final List<ISpectActionItem> actions;
@@ -33,36 +31,33 @@ class ISpectSettingsBottomSheet {
   final ISpectViewController controller;
 
   Future<void> show(BuildContext context) => showISpectSheet(
-        context,
-        fitContent: false,
-        initialChildSize: 0.8,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        dialogWidth: MediaQuery.sizeOf(context).width * 0.8,
-        topOnlyRadius: true,
-        routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),
-        useRootNavigator: false,
-        builder: (context, scrollController) => _SettingsContent(
-          logger: logger,
-          options: options,
-          actions: actions,
-          controller: controller,
-          externalScrollController: scrollController,
-        ),
-      );
+    context,
+    fitContent: false,
+    initialChildSize: 0.8,
+    minChildSize: 0.3,
+    maxChildSize: 0.9,
+    dialogWidth: MediaQuery.sizeOf(context).width * 0.8,
+    topOnlyRadius: true,
+    routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),
+    useRootNavigator: false,
+    builder: (context, scrollController) => _SettingsContent(
+      logger: logger,
+      actions: actions,
+      controller: controller,
+      externalScrollController: scrollController,
+    ),
+  );
 }
 
 class _SettingsContent extends StatefulWidget {
   const _SettingsContent({
     required this.logger,
-    required this.options,
     required this.actions,
     required this.controller,
     this.externalScrollController,
   });
 
   final ISpectLoggerNotifier logger;
-  final ISpectOptions options;
   final List<ISpectActionItem> actions;
   final ISpectViewController controller;
   final ScrollController? externalScrollController;
@@ -85,25 +80,21 @@ class _SettingsContentState extends State<_SettingsContent> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      final initialSettings = widget.options.initialSettings;
-      if (initialSettings != null &&
-          widget.controller.settings != initialSettings) {
-        widget.controller.updateSettings(initialSettings);
-        _applySettingsToLogger(initialSettings);
-      } else {
-        final loggerOptions = widget.logger.value.options;
-        final existing = widget.controller.settings;
-        final currentSettings = existing.copyWith(
-          enabled: loggerOptions.enabled,
-          useConsoleLogs: loggerOptions.useConsoleLogs,
-          useHistory: loggerOptions.useHistory,
-          forwardErrorToConsole: loggerOptions.forwardErrorToConsole,
-          maxHistoryItems: loggerOptions.maxHistoryItems,
-          logTruncateLength: loggerOptions.logTruncateLength,
-        );
-        if (existing != currentSettings) {
-          widget.controller.updateSettings(currentSettings);
-        }
+      final loggerOptions = widget.logger.value.options;
+      final existing = widget.controller.settings;
+      final currentSettings = existing.copyWith(
+        enabled: loggerOptions.enabled,
+        useConsoleLogs: loggerOptions.useConsoleLogs,
+        useHistory: loggerOptions.useHistory,
+        forwardErrorToConsole: loggerOptions.forwardErrorToConsole,
+        maxHistoryItems: loggerOptions.maxHistoryItems,
+        logTruncateLength: loggerOptions.logTruncateLength,
+        captureMode: loggerOptions.captureMode,
+        resourceLimits: loggerOptions.resourceLimits,
+        processingPolicy: loggerOptions.processingPolicy,
+      );
+      if (existing != currentSettings) {
+        widget.controller.updateSettings(currentSettings);
       }
     });
   }
@@ -125,26 +116,7 @@ class _SettingsContentState extends State<_SettingsContent> {
   }
 
   void _applySettingsToLogger(ISpectSettingsState settings) {
-    final enabledTypes = settings.disabledLogTypes.isEmpty
-        ? <String>[]
-        : ISpectLogType.builtIn
-            .map((e) => e.key)
-            .where((key) => !settings.disabledLogTypes.contains(key))
-            .toList();
-
-    widget.logger.value.configure(
-      options: widget.logger.value.options.copyWith(
-        enabled: settings.enabled,
-        useConsoleLogs: settings.useConsoleLogs,
-        useHistory: settings.useHistory,
-        forwardErrorToConsole: settings.forwardErrorToConsole,
-        maxHistoryItems: settings.maxHistoryItems,
-        logTruncateLength: settings.logTruncateLength,
-      ),
-      filter: enabledTypes.isNotEmpty
-          ? ISpectFilter(logTypeKeys: enabledTypes)
-          : null,
-    );
+    applySettingsToLogger(widget.logger.value, settings);
     widget.logger.notify();
   }
 
@@ -171,10 +143,9 @@ class _SettingsContentState extends State<_SettingsContent> {
     );
   }
 
-  void _onDeselectAll() {
-    final allLogTypes = ISpectLogType.builtIn.map((e) => e.key).toSet();
+  void _onDeselectAll(Set<String> logTypeKeys) {
     _onSettingChanged(
-      widget.controller.settings.copyWith(disabledLogTypes: allLogTypes),
+      widget.controller.settings.copyWith(disabledLogTypes: logTypeKeys),
     );
   }
 
@@ -189,9 +160,7 @@ class _SettingsContentState extends State<_SettingsContent> {
       child: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          const SliverToBoxAdapter(
-            child: ISpectDragHandle(),
-          ),
+          const SliverToBoxAdapter(child: ISpectDragHandle()),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -212,9 +181,8 @@ class _SettingsContentState extends State<_SettingsContent> {
                   title: context.ispectL10n.enabled,
                   icon: Icons.power_settings_new_rounded,
                   enabled: currentSettings.enabled,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(enabled: v),
-                  ),
+                  onChanged: (v) =>
+                      _onSettingChanged(currentSettings.copyWith(enabled: v)),
                 ),
                 ToggleSpec(
                   title: context.ispectL10n.useConsoleLogs,
@@ -237,9 +205,7 @@ class _SettingsContentState extends State<_SettingsContent> {
               ],
             ),
           ),
-          const SliverToBoxAdapter(
-            child: ISpectSectionLabel(title: 'Display'),
-          ),
+          const SliverToBoxAdapter(child: ISpectSectionLabel(title: 'Display')),
           SliverToBoxAdapter(
             child: CompactToggleGrid(
               tiles: [
@@ -286,9 +252,7 @@ class _SettingsContentState extends State<_SettingsContent> {
               ],
             ),
           ),
-          const SliverToBoxAdapter(
-            child: ISpectSectionLabel(title: 'Tools'),
-          ),
+          const SliverToBoxAdapter(child: ISpectSectionLabel(title: 'Tools')),
           SliverToBoxAdapter(
             child: CompactToggleGrid(
               tiles: [
@@ -340,7 +304,8 @@ class _SettingsContentState extends State<_SettingsContent> {
                       title: 'Forward errors to dart:developer',
                       icon: Icons.bug_report_rounded,
                       enabled: currentSettings.forwardErrorToConsole,
-                      canEdit: currentSettings.enabled &&
+                      canEdit:
+                          currentSettings.enabled &&
                           currentSettings.useConsoleLogs,
                       onChanged: (v) => _onSettingChanged(
                         currentSettings.copyWith(forwardErrorToConsole: v),
@@ -371,15 +336,89 @@ class _SettingsContentState extends State<_SettingsContent> {
                       currentSettings.copyWith(logTruncateLength: v),
                     ),
                   ),
+                  const Gap(8),
+                  PolicyProfileTile<DiagnosticCaptureMode>(
+                    label: 'Capture mode',
+                    description: 'Useful values or maximum isolation',
+                    icon: Icons.shield_outlined,
+                    value: currentSettings.captureMode,
+                    options: const [
+                      PolicyProfileOption(
+                        label: 'Balanced',
+                        description: 'Guarded formatters with bounded output',
+                        value: DiagnosticCaptureMode.balanced,
+                      ),
+                      PolicyProfileOption(
+                        label: 'Strict',
+                        description: 'Never run application formatters',
+                        value: DiagnosticCaptureMode.strict,
+                      ),
+                    ],
+                    onChanged: (value) => _onSettingChanged(
+                      currentSettings.copyWith(captureMode: value),
+                    ),
+                  ),
+                  const Gap(8),
+                  PolicyProfileTile<DiagnosticResourceLimits>(
+                    label: 'Resource profile',
+                    description: 'Capture, memory, import and export limits',
+                    icon: Icons.memory_rounded,
+                    value: currentSettings.resourceLimits,
+                    options: const [
+                      PolicyProfileOption(
+                        label: 'Constrained',
+                        description: 'Lower memory use for long sessions',
+                        value: DiagnosticResourceLimits.constrained,
+                      ),
+                      PolicyProfileOption(
+                        label: 'Balanced',
+                        description: 'Useful diagnostics with bounded cost',
+                        value: DiagnosticResourceLimits.balanced,
+                      ),
+                      PolicyProfileOption(
+                        label: 'Extended',
+                        description: 'Larger controlled internal handoffs',
+                        value: DiagnosticResourceLimits.extended,
+                      ),
+                    ],
+                    onChanged: (value) => _onSettingChanged(
+                      currentSettings.copyWith(resourceLimits: value),
+                    ),
+                  ),
+                  const Gap(8),
+                  PolicyProfileTile<DiagnosticProcessingPolicy>(
+                    label: 'Processing profile',
+                    description: 'Responsiveness and batch throughput',
+                    icon: Icons.speed_rounded,
+                    value: currentSettings.processingPolicy,
+                    options: const [
+                      PolicyProfileOption(
+                        label: 'Responsive',
+                        description: 'Yield often to keep the UI fluid',
+                        value: DiagnosticProcessingPolicy.responsive,
+                      ),
+                      PolicyProfileOption(
+                        label: 'Balanced',
+                        description: 'General-purpose scheduling',
+                        value: DiagnosticProcessingPolicy.balanced,
+                      ),
+                      PolicyProfileOption(
+                        label: 'Throughput',
+                        description: 'Larger batches for faster handoffs',
+                        value: DiagnosticProcessingPolicy.throughput,
+                      ),
+                    ],
+                    onChanged: (value) => _onSettingChanged(
+                      currentSettings.copyWith(processingPolicy: value),
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
           if (widget.actions.isNotEmpty) ...[
             SliverToBoxAdapter(
-              child: ISpectSectionLabel(
-                title: context.ispectL10n.actions,
-              ),
+              child: ISpectSectionLabel(title: context.ispectL10n.actions),
             ),
             SliverToBoxAdapter(
               child: Padding(
@@ -413,9 +452,7 @@ class _SettingsContentState extends State<_SettingsContent> {
               onDeselectAll: _onDeselectAll,
             ),
           ),
-          const SliverToBoxAdapter(
-            child: Gap(32),
-          ),
+          const SliverToBoxAdapter(child: Gap(32)),
         ],
       ),
     );

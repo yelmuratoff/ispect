@@ -13,7 +13,7 @@ final class ISpectDateTimeFormatter {
   ///
   /// Format: `HH:MM:SS.mmm`
   ///
-  /// Milliseconds are appended as a decimal part of the timestamp — they
+  /// Milliseconds are appended as a decimal part of the timestamp - they
   /// represent the fractional second, not a duration. Real durations (e.g.
   /// elapsed time of a traced operation) are rendered separately by the
   /// trace helpers.

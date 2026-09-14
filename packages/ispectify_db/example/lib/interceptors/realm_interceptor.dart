@@ -1,6 +1,6 @@
 /// Ready-to-copy interceptor for **Realm**.
 ///
-/// Implements [Realm] — drop-in replacement. All public methods are overridden
+/// Implements [Realm] - drop-in replacement. All public methods are overridden
 /// so the base class never accesses internal FFI handles on this instance.
 ///
 /// ## Setup
@@ -237,9 +237,7 @@ final class ISpectRealm implements Realm {
   Transaction beginWrite() => _realm.beginWrite();
 
   @override
-  Future<Transaction> beginWriteAsync([
-    CancellationToken? cancellationToken,
-  ]) =>
+  Future<Transaction> beginWriteAsync([CancellationToken? cancellationToken]) =>
       _realm.beginWriteAsync(cancellationToken);
 
   @override

@@ -8,7 +8,7 @@ import 'package:ws/ws.dart';
 ///
 /// Bridges the `ws` interceptor chain plus its metrics and state streams to the
 /// provider-agnostic [WsDiagnostics]. Copy this file into your app and add a
-/// `ws` dependency — `ispectify_ws` itself no longer depends on `ws`.
+/// `ws` dependency - `ispectify_ws` itself no longer depends on `ws`.
 ///
 /// ```dart
 /// final interceptor = ISpectWSInterceptor(logger: ISpect.logger);

@@ -3,14 +3,15 @@ import 'package:meta/meta.dart';
 
 /// Environment/runtime metadata attached to exported log files.
 ///
-/// ISpect never collects these values itself — doing so would require
+/// ISpect never collects these values itself - doing so would require
 /// platform plugins (`package_info_plus`, `device_info_plus`) and break web
 /// builds. Instead the host app supplies them, since it already owns those
 /// sources (or build-time `--dart-define` constants). All fields are optional;
 /// [toMap] omits the `null` ones.
 ///
-/// Keep tokens, credentials, and PII out of these fields — the metadata block
-/// is written verbatim into shared/exported files and is not redacted.
+/// Keep tokens, credentials, and PII out of these fields. Outbound APIs redact
+/// metadata by default, but callers can explicitly disable global or
+/// per-export redaction for controlled local debugging.
 @immutable
 final class ISpectMetadata {
   const ISpectMetadata({
@@ -40,7 +41,10 @@ final class ISpectMetadata {
   /// Deployment environment (e.g. `production`, `staging`, `dev`).
   final String? environment;
 
-  /// Device model or identifier (e.g. `iPhone 15 Pro`, `Pixel 8`).
+  /// Hardware/product model only (e.g. `iPhone 15 Pro`, `Pixel 8`).
+  ///
+  /// Never provide a serial number, advertising ID, installation ID, or other
+  /// stable device identifier.
   final String? device;
 
   /// Operating system name (e.g. `iOS`, `Android`, `web`).

@@ -5,6 +5,7 @@ import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controlle
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/app_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_button.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/search_bar.dart';
+import 'package:ispectify/ispectify.dart';
 
 import '../helpers/pump_ispect.dart';
 
@@ -21,6 +22,7 @@ void main() {
     });
 
     tearDown(() {
+      controller.dispose();
       focusNode.dispose();
       titlesController.dispose();
     });
@@ -30,126 +32,119 @@ void main() {
       VoidCallback? onSettingsTap,
       int? filteredCount,
       int? totalCount,
-    }) =>
-        appShell(
-          CustomScrollView(
-            slivers: [
-              ISpectAppBar(
-                title: title,
-                titlesController: titlesController,
-                controller: controller,
-                titles: const ['info', 'error'],
-                uniqTitles: const ['info', 'error'],
-                onToggleTitle: (_, __) {},
-                focusNode: focusNode,
-                onSettingsTap: onSettingsTap,
-                filteredCount: filteredCount,
-                totalCount: totalCount,
-              ),
-              const SliverFillRemaining(),
-            ],
+    }) => appShell(
+      CustomScrollView(
+        slivers: [
+          ISpectAppBar(
+            title: title,
+            titlesController: titlesController,
+            controller: controller,
+            counts: const {'info': 1, 'error': 1},
+            uniqTitles: const ['info', 'error'],
+            onToggleTitle: (_, __) {},
+            focusNode: focusNode,
+            onSettingsTap: onSettingsTap,
+            filteredCount: filteredCount,
+            totalCount: totalCount,
           ),
-        );
-
-    testWidgets(
-      'Given an ISpectAppBar with title "ISpect", '
-      'When it is rendered, '
-      'Then the title text is displayed',
-      (tester) async {
-        await tester.pumpWidget(buildAppBar());
-        await tester.pumpAndSettle();
-
-        expect(find.text('ISpect'), findsOneWidget);
-      },
+          const SliverFillRemaining(),
+        ],
+      ),
     );
 
-    testWidgets(
-      'Given an ISpectAppBar title with or without a log counter, '
-      'When it is rendered, '
-      'Then the title keeps the compact font size',
-      (tester) async {
-        const title = '📅 Current: 21.07.2026';
+    testWidgets('Given an ISpectAppBar with title "ISpect", '
+        'When it is rendered, '
+        'Then the title text is displayed', (tester) async {
+      await tester.pumpWidget(buildAppBar());
+      await tester.pumpAndSettle();
 
-        await tester.pumpWidget(buildAppBar(title: title));
-        await tester.pumpAndSettle();
+      expect(find.text('ISpect'), findsOneWidget);
+    });
 
-        expect(tester.widget<Text>(find.text(title)).style?.fontSize, 18);
+    testWidgets('Given an ISpectAppBar title with or without a log counter, '
+        'When it is rendered, '
+        'Then the title keeps the compact font size', (tester) async {
+      const title = '📅 Current: 21.07.2026';
 
-        await tester.pumpWidget(
-          buildAppBar(title: title, totalCount: 2937),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(buildAppBar(title: title));
+      await tester.pumpAndSettle();
 
-        expect(tester.widget<Text>(find.text(title)).style?.fontSize, 18);
-      },
-    );
+      expect(tester.widget<Text>(find.text(title)).style?.fontSize, 18);
 
-    testWidgets(
-      'Given an ISpectAppBar, '
-      'When it is rendered, '
-      'Then a search bar is displayed',
-      (tester) async {
-        await tester.pumpWidget(buildAppBar());
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(buildAppBar(title: title, totalCount: 2937));
+      await tester.pumpAndSettle();
 
-        expect(find.byType(ISpectSearchBar), findsOneWidget);
-      },
-    );
+      expect(tester.widget<Text>(find.text(title)).style?.fontSize, 18);
+    });
 
-    testWidgets(
-      'Given an ISpectAppBar, '
-      'When it is rendered, '
-      'Then a filter button is displayed',
-      (tester) async {
-        await tester.pumpWidget(buildAppBar());
-        await tester.pumpAndSettle();
+    testWidgets('Given an ISpectAppBar, '
+        'When it is rendered, '
+        'Then a search bar is displayed', (tester) async {
+      await tester.pumpWidget(buildAppBar());
+      await tester.pumpAndSettle();
 
-        expect(find.byType(ISpectFilterButton), findsOneWidget);
-      },
-    );
+      expect(find.byType(ISpectSearchBar), findsOneWidget);
+    });
 
-    testWidgets(
-      'Given an ISpectAppBar with a search bar, '
-      'When text is entered into the search field, '
-      'Then the search controller text updates immediately',
-      (tester) async {
-        await tester.pumpWidget(buildAppBar());
-        await tester.pumpAndSettle();
+    testWidgets('Given an ISpectAppBar, '
+        'When it is rendered, '
+        'Then a filter button is displayed', (tester) async {
+      await tester.pumpWidget(buildAppBar());
+      await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(SearchBar), 'test');
-        await tester.pump();
+      expect(find.byType(ISpectFilterButton), findsOneWidget);
+    });
 
-        expect(controller.searchController.text, 'test');
+    testWidgets('Given an ISpectAppBar with a search bar, '
+        'When text is entered into the search field, '
+        'Then the search controller text updates immediately', (tester) async {
+      await tester.pumpWidget(buildAppBar());
+      await tester.pumpAndSettle();
 
-        // Settle all internal debounce timers.
-        await tester.pumpAndSettle(const Duration(seconds: 1));
-      },
-    );
+      await tester.enterText(find.byType(SearchBar), 'test');
+      await tester.pump();
 
-    testWidgets(
-      'Given an onSettingsTap callback is provided, '
-      'When the app bar is rendered, '
-      'Then the settings button appears',
-      (tester) async {
-        await tester.pumpWidget(
-          buildAppBar(onSettingsTap: () {}),
-        );
-        await tester.pumpAndSettle();
+      expect(controller.searchController.text, 'test');
 
-        expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
-      },
-    );
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+    });
 
-    testWidgets(
-      'Given no onSettingsTap callback, '
-      'When the app bar is rendered, '
-      'Then the settings button is hidden',
-      (tester) async {
-        await tester.pumpWidget(buildAppBar());
-        await tester.pumpAndSettle();
+    testWidgets('search uses the configured processing debounce once', (
+      tester,
+    ) async {
+      controller.dispose();
+      controller = ISpectViewController(
+        processingPolicy: DiagnosticProcessingPolicy.balanced.copyWith(
+          searchDebounce: const Duration(milliseconds: 100),
+        ),
+      );
+      await tester.pumpWidget(buildAppBar());
+      await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.settings_outlined), findsNothing);
-      },
-    );
+      await tester.enterText(find.byType(SearchBar), 'test');
+      await tester.pump(const Duration(milliseconds: 99));
+      expect(controller.filter.searchQuery, isNot('test'));
+
+      await tester.pump(const Duration(milliseconds: 1));
+      expect(controller.filter.searchQuery, 'test');
+    });
+
+    testWidgets('Given an onSettingsTap callback is provided, '
+        'When the app bar is rendered, '
+        'Then the settings button appears', (tester) async {
+      await tester.pumpWidget(buildAppBar(onSettingsTap: () {}));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
+    });
+
+    testWidgets('Given no onSettingsTap callback, '
+        'When the app bar is rendered, '
+        'Then the settings button is hidden', (tester) async {
+      await tester.pumpWidget(buildAppBar());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.settings_outlined), findsNothing);
+    });
   });
 }

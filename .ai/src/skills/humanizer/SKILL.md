@@ -19,11 +19,11 @@ Apply this style to prose deliverables the user will publish or share. Skip it f
 
 Write in flowing paragraphs. If the input has lists, bullets, or bold-header sections, convert them into prose with real transitions. Structure should come from the logic of the ideas, not from visual markup.
 
-Allowed punctuation: commas, periods, parentheses, question marks. Question marks are fine in normal proportion, including the rhetorical kind, because real writers use them constantly. Reserve exclamation marks for a real moment of emphasis or surprise. Filler intensifiers in the AI manner ("This is huge!", "What a game-changer!") are tells — leave them out.
+Allowed punctuation: commas, periods, parentheses, question marks. Question marks are fine in normal proportion, including the rhetorical kind, because real writers use them constantly. Reserve exclamation marks for a real moment of emphasis or surprise. Filler intensifiers in the AI manner ("This is huge!", "What a game-changer!") are tells - leave them out.
 
 Actively remove the following:
 
-- Em dashes (—), en dashes (–), and hyphens (-) used for pauses or parenthetical asides become commas or separate sentences.
+- Em dashes (-), en dashes (–), and hyphens (-) used for pauses or parenthetical asides become commas or separate sentences.
 - Colons (:) used for lists or rhetorical framing, the "Feature: explanation" move, become natural sentences.
 - Semicolons (;) become periods.
   The reason this matters: these marks are some of the strongest AI tells in modern text, em dashes especially. Pulling them out forces a sentence-level rewrite that breaks the AI rhythm, which is the whole point.
@@ -62,9 +62,9 @@ When no sample is provided, use the default voice from the Voice section.
 
 When any of the following show up in a draft, rewrite. State the actual point plainly.
 
-Contrastive negation ("Not X, but Y," "It's not X, it's Y," "Not just X, but Y," "Not X, not Y, but Z") becomes one positive sentence that says the point directly. The same shape works in any language — the giveaway is the negated half existing only as a setup for the affirmative half. Write the affirmative half on its own.
+Contrastive negation ("Not X, but Y," "It's not X, it's Y," "Not just X, but Y," "Not X, not Y, but Z") becomes one positive sentence that says the point directly. The same shape works in any language - the giveaway is the negated half existing only as a setup for the affirmative half. Write the affirmative half on its own.
 
-Tailing negation fragments (a sentence followed by a comma and a clipped two or three word negation that carries the real point — ", no guessing," ", no wasted motion," ", no manual setup") get expanded into a real clause or absorbed into the sentence. The fragment shape is a strong AI tell because a human writing the same idea usually finishes the thought.
+Tailing negation fragments (a sentence followed by a comma and a clipped two or three word negation that carries the real point - ", no guessing," ", no wasted motion," ", no manual setup") get expanded into a real clause or absorbed into the sentence. The fragment shape is a strong AI tell because a human writing the same idea usually finishes the thought.
 
 Faux reframes ("more than just X," "goes beyond Y," "represents more than just") become a plain statement of what the thing actually is.
 
@@ -102,7 +102,7 @@ Pivot transitions (That said, That being said, Having said that, With that in mi
 
 Signposting and self-narration ("Let's dive in," "Let's explore," "Let's break this down," "Here's what you need to know," "Now let's look at," "Without further ado") get deleted. Announcing what you are about to say is filler. Just say it.
 
-Elegant variation (cycling through synonyms for the same noun within a passage — "the protagonist… the main character… the central figure… the hero") gets collapsed back to one consistent word, with pronouns where natural. Real writers repeat nouns when the alternative is forced. AI swaps synonyms mechanically because its repetition penalty refuses to.
+Elegant variation (cycling through synonyms for the same noun within a passage - "the protagonist… the main character… the central figure… the hero") gets collapsed back to one consistent word, with pronouns where natural. Real writers repeat nouns when the alternative is forced. AI swaps synonyms mechanically because its repetition penalty refuses to.
 
 Metaphor verbs for "explain" (unpack, unlock, decode, dive into, peel back the layers, shed light on) get replaced with plain ones: look at, show, explain, describe.
 
@@ -110,7 +110,7 @@ Metaphor verbs for "explain" (unpack, unlock, decode, dive into, peel back the l
 
 Vary how paragraphs begin. Sometimes with a specific detail, sometimes with a claim, sometimes mid-thought. A paragraph that opens with a topic sentence, fills in evidence, then closes with a summary of itself, that paragraph feels assembled. Real writing varies its shape.
 
-Fragmented headers — a heading followed by a single short sentence that restates the heading, then a blank line, then the actual content — get fixed by deleting the restatement. The heading should lead straight into real material. If the warm-up line carries a real thought, fold it into the next paragraph instead of leaving it stranded.
+Fragmented headers - a heading followed by a single short sentence that restates the heading, then a blank line, then the actual content - get fixed by deleting the restatement. The heading should lead straight into real material. If the warm-up line carries a real thought, fold it into the next paragraph instead of leaving it stranded.
 
 ## Final pass
 
@@ -122,7 +122,7 @@ Second, scan for the banned vocabulary list. The longer the piece, the more like
 
 Third, find any sentence that still sounds templated, promotional, or structurally identical to a nearby sentence. Rewrite those.
 
-Fourth, ask the question directly: what in this draft still reads as AI? Name the remaining tells in one mental beat — a too-symmetrical rhythm, a closing that feels slogan-y, a paragraph that lands on a tidy summary, a placeholder-sounding name or statistic — then rewrite those specific spots. This catches the assembled feeling that survives the first three checks.
+Fourth, ask the question directly: what in this draft still reads as AI? Name the remaining tells in one mental beat - a too-symmetrical rhythm, a closing that feels slogan-y, a paragraph that lands on a tidy summary, a placeholder-sounding name or statistic - then rewrite those specific spots. This catches the assembled feeling that survives the first three checks.
 
 Only then return the result.
 

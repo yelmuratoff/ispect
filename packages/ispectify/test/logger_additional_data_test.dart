@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('ISpectLogger additional data & pen', () {
     test('info stores additional data in history', () {
-      final logger = ISpectLogger()
+      final logger = ISpectLogger.testing()
         ..info(
           'hello',
           additionalData: {'userId': 42},
@@ -16,7 +16,7 @@ void main() {
     });
 
     test('additionalData is unmodifiable from consumers', () {
-      final logger = ISpectLogger()
+      final logger = ISpectLogger.testing()
         ..debug(
           'immutable',
           additionalData: {'key': 'value'},
@@ -31,7 +31,7 @@ void main() {
     });
 
     test('custom pen propagates through convenience methods', () {
-      final logger = ISpectLogger();
+      final logger = ISpectLogger.testing();
       final pen = AnsiPen()..green();
 
       logger.warning(

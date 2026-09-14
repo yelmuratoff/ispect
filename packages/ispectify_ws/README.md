@@ -1,7 +1,7 @@
 <!--
-  GENERATED FILE — do not edit by hand.
+  GENERATED FILE - do not edit by hand.
   Source:     docs/readme/ispectify_ws.md
-  Regenerate: ./bash/build_readme.sh
+  Regenerate: dart run tool/bin/ispect_tool.dart readme
 -->
 
 <div align="center">
@@ -47,8 +47,7 @@
   </p>
 </div>
 
-
-`ispectify_ws` is the provider-agnostic WebSocket diagnostics layer for the [ISpect toolkit](#the-ispect-toolkit). It captures sent and received frames, connection-state transitions, and errors — for **any** WebSocket client — and redacts sensitive data before logging. The published package depends only on `ispectify`; you keep your own WebSocket client dependency.
+`ispectify_ws` is the provider-agnostic WebSocket diagnostics layer for the [ISpect toolkit](#the-ispect-toolkit). It captures sent and received frames, connection-state transitions, and errors - for **any** WebSocket client - and redacts sensitive data before logging. The published package depends only on `ispectify`; you keep your own WebSocket client dependency.
 
 - Frame-level capture for sent and received messages (`ws-sent` / `ws-received`).
 - Connection lifecycle logging via `ws-state` (connecting / open / closing / closed / reconnecting).
@@ -59,15 +58,16 @@
 
 ```yaml
 dependencies:
-  ispectify: ^6.1.7
-  ispectify_ws: ^6.1.7
+  ispect: ^7.0.0
+  ispectify: ^7.0.0
+  ispectify_ws: ^7.0.0
   # plus your WebSocket client, e.g.
   # ws: ^1.0.0  |  web_socket_channel: ^3.0.0  |  socket_io_client: ^3.0.0
 ```
 
 ## Quick start
 
-Bind any client to the `WsDiagnosticsSink` port. Metrics and state are optional — push whatever your client can report:
+Bind any client to the `WsDiagnosticsSink` port. Metrics and state are optional - push whatever your client can report:
 
 ```dart
 import 'package:ispect/ispect.dart';
@@ -89,7 +89,7 @@ channel.stream.listen(
 
 ## Ready-to-copy adapters
 
-The package example ships thin adapters that wire a concrete client to `WsDiagnostics` — copy the one you need into your app (and add that client to your own `pubspec.yaml`):
+The package example ships thin adapters that wire a concrete client to `WsDiagnostics` - copy the one you need into your app (and add that client to your own `pubspec.yaml`):
 
 | Client                                                              | Adapter                                                        |
 | ------------------------------------------------------------------- | -------------------------------------------------------------- |
@@ -97,60 +97,108 @@ The package example ships thin adapters that wire a concrete client to `WsDiagno
 | [`web_socket_channel`](https://pub.dev/packages/web_socket_channel) | `example/lib/interceptors/web_socket_channel_interceptor.dart` |
 | [`socket_io_client`](https://pub.dev/packages/socket_io_client)     | `example/lib/interceptors/socket_io_interceptor.dart`          |
 
-> Migrating from 5.x? `ISpectWSInterceptor` moved out of the published package into `example/lib/interceptors/ws_interceptor.dart`. Copy it in and add `ws` to your app — `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged. See `docs/DEPRECATIONS.md`.
+> Migrating from 5.x? `ISpectWSInterceptor` moved out of the published package into `example/lib/interceptors/ws_interceptor.dart`. Copy it in and add `ws` to your app - `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged. See `docs/DEPRECATIONS.md`.
 
 ## Settings
 
 ```dart
 const settings = ISpectWSInterceptorSettings(
   enabled: true,
+  logRequests: true,  // sent frames
+  logResponses: true, // received frames
   printSentData: true,
   printReceivedData: true,
+  printStateData: true,
   printReceivedMessage: true,
   printErrorData: true,
   printErrorMessage: true,
   enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 
 final diagnostics = WsDiagnostics(logger: ISpect.logger, settings: settings);
 ```
 
+Frame bodies, raw connection-state details, and errors are captured and
+redacted by default. Use
+`ISpectWSInterceptorSettingsBuilder.metadataOnly()` to retain frame lifecycle
+metadata without payloads, or the production preset to disable sent/received
+frame retention and keep redacted error diagnostics. `print*` fields shape
+retained records but do not re-enable a suppressed frame. Use the concrete
+settings `copyWith` or builder for retention controls. Builders provide
+matching `with*` and `without*` methods for bodies, headers, and messages.
+
+Balanced capture keeps typed frames and state objects useful through guarded,
+bounded formatting before redaction. Set `captureMode` to
+`DiagnosticCaptureMode.strict`, call `withStrictCapture()`, or use
+`metadataOnly()`/`production()` when application-defined formatters must never
+run.
+Use `withResourceLimits(...)` for a WebSocket-local budget, or
+`withInheritedResourceLimits()` to return to the logger policy.
+Pass `inheritResourceLimits: true` to `copyWith` to clear an existing local
+override. `NetworkInterceptorDefaults` is the shared source of truth used by
+direct settings construction and every network settings builder;
+`ISpectWSInterceptorDefaults` owns the WebSocket-only state and error-header
+defaults.
+
 ## Data redaction
 
 Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.
 
-The same redactor runs beyond the initial capture. Supported exports, clipboard helpers, cURL generation, and observer payloads all pass through the same pipeline before data leaves the debug session.
+The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
 
-Redaction works best paired with focused capture. Keep body and header logging off unless you actually need the payload, and register project-specific keys for the business identifiers only your application understands.
+Redaction works best paired with deliberate capture. Use the integration's `metadataOnly()` or compact preset when payload values are unnecessary, and register project-specific keys for the business identifiers only your application understands.
 
-### Custom keys and patterns
+The default `DiagnosticCaptureMode.balanced` keeps diagnostics useful by
+allowing guarded `toJson()` and `toString()` capture. The result is bounded
+immediately and redacted before it leaves the active pipeline. Select
+`DiagnosticCaptureMode.strict` when application-defined formatters must never
+run. Network `metadataOnly()` and `production()` presets, plus BLoC/Riverpod
+`compact`, select strict capture automatically. Persistence, export, and
+observer delivery do not re-run formatters after capture.
+
+### Global configuration
 
 ```dart
 import 'package:ispectify/ispectify.dart';
 
-final redactor = RedactionService(
+ISpectRedaction.configure(
+  service: RedactionService(
+    additionalSensitiveKeys: {
+      'x-custom-secret',
+      'internal_token',
+    },
+    additionalSensitiveKeyPatterns: [
+      RegExp(r'my_app_secret_\w+', caseSensitive: false),
+    ],
+    fullyMaskedKeys: {'filename'},
+    placeholder: '***',
+    visibleEdgeLength: 3,
+  ),
+);
+```
+
+`additionalSensitiveKeys` and `additionalSensitiveKeyPatterns` extend the built-in policy. Use `sensitiveKeys` or `sensitiveKeyPatterns` only when you intentionally want to replace the corresponding defaults:
+
+```dart
+final replacementPolicy = RedactionService(
   sensitiveKeys: {
-    ...defaultSensitiveKeys,
     'x-custom-secret',
     'internal_token',
   },
   sensitiveKeyPatterns: [
     RegExp(r'my_app_secret_\w+', caseSensitive: false),
   ],
-  // Keys where the value is replaced entirely instead of edge-masked.
-  fullyMaskedKeys: {'filename'},
-  placeholder: '***',
-  visibleEdgeLength: 3,
-  redactBinary: true,
-  redactBase64: true,
 );
 ```
 
-### Ignoring defaults
+Flutter apps can pass the same policy as `ISpect.run(redactionService: ...)`; `ISpect.dispose()` restores the policy that was active before that run. An explicit `RedactionService` supplied to one integration stays local and takes precedence over the global policy. Existing integrations without an explicit service pick up later global reconfiguration. The policy is scoped to the current Dart isolate.
+
+### Local exceptions
 
 ```dart
 final redactor = RedactionService(
-  // `?mobile=true` is a platform flag, not a phone number.
   ignoredKeys: {'mobile', 'platform_token'},
   ignoredValues: {'<test-token>', 'public-api-key'},
 );
@@ -158,10 +206,13 @@ final redactor = RedactionService(
 
 ### Disabling
 
-Each interceptor accepts `enableRedaction: false` on its settings object. See the per-package README for the exact settings type.
+`ISpectRedaction.configure(enabled: false)` is the global content-masking
+opt-out. For a local opt-out, pass `enableRedaction: false` to network,
+WebSocket, BLoC, or Riverpod settings, or `redact: false` to `ISpectDbConfig`
+and other trace configs. Size limits, private-storage checks, the selected
+capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
-
 
 ## The ISpect toolkit
 
@@ -178,7 +229,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

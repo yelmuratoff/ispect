@@ -1,24 +1,46 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/cache/filter_cache.dart';
 
-typedef LogTypeKeysResult = ({List<String> all, List<String> unique});
+typedef LogTypeKeysResult = ({Map<String, int> counts, List<String> unique});
 
 /// Handles all filtering-related state and operations.
 class FilterManager {
   FilterManager({
     ISpectFilter? initialFilter,
     void Function()? onChanged,
-    Duration debounceDuration = const Duration(milliseconds: 300),
-  })  : _filter = initialFilter ?? ISpectFilter(),
-        _onChanged = onChanged,
-        _debounceDuration = debounceDuration;
+    Duration? debounceDuration,
+    Set<String> excludedLogTypeKeys = const {},
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+    DiagnosticProcessingPolicy processingPolicy =
+        DiagnosticProcessingPolicy.balanced,
+  }) : _filter = (initialFilter ?? ISpectFilter(resourceLimits: resourceLimits))
+           .copyWith(excludedLogTypeKeys: excludedLogTypeKeys),
+       _excludedLogTypeKeys = {...excludedLogTypeKeys},
+       _onChanged = onChanged,
+       _resourceLimits = resourceLimits,
+       _processingPolicy = processingPolicy,
+       _debounceDuration = debounceDuration ?? processingPolicy.searchDebounce {
+    resourceLimits.validate();
+    processingPolicy.validate();
+  }
 
   ISpectFilter _filter;
+  Set<String> _excludedLogTypeKeys;
   final void Function()? _onChanged;
-  final Duration _debounceDuration;
+  Duration _debounceDuration;
+  DiagnosticResourceLimits _resourceLimits;
+  DiagnosticProcessingPolicy _processingPolicy;
+
+  DiagnosticResourceLimits get resourceLimits => _resourceLimits;
+  DiagnosticProcessingPolicy get processingPolicy => _processingPolicy;
+
+  /// Log-type keys hidden by the user's settings, vetoed on top of the
+  /// transient chip and search criteria.
+  Set<String> get excludedLogTypeKeys => _excludedLogTypeKeys;
 
   final _filterCache = FilterCache();
   int _dataGeneration = 0;
@@ -44,15 +66,56 @@ class FilterManager {
   String? _lastSearchMatchQuery;
   List<ISpectLogData>? _lastSearchMatchInput;
 
-  List<String>? _cachedAllKeys;
+  Map<String, int>? _cachedKeyCounts;
   List<String>? _cachedUniqueKeys;
   int _lastKeysGeneration = -1;
 
   ISpectFilter get filter => _filter;
 
   set filter(ISpectFilter val) {
-    if (_filter == val) return;
-    _filter = val;
+    final merged = val.copyWith(excludedLogTypeKeys: _excludedLogTypeKeys);
+    if (_filter == merged) return;
+    _filter = merged;
+    _invalidateFilterCache();
+    _notify();
+  }
+
+  bool isExcluded(String? logTypeKey) =>
+      logTypeKey != null && _excludedLogTypeKeys.contains(logTypeKey);
+
+  /// Applies the settings-level veto and drops the transient chip selection.
+  ///
+  /// The chip list is indexed by position, so changing which keys it offers
+  /// would leave the caller's selection pointing at the wrong chips. Both
+  /// sides reset together instead.
+  void updateExcludedLogTypeKeys(Set<String> keys) {
+    if (setEquals(_excludedLogTypeKeys, keys)) return;
+    _excludedLogTypeKeys = {...keys};
+    _filter = _filter.copyWith(
+      logTypeKeys: const <String>[],
+      excludedLogTypeKeys: _excludedLogTypeKeys,
+    );
+    _invalidateFilterCache();
+    _lastKeysGeneration = -1;
+    _notify();
+  }
+
+  void updatePolicies(
+    DiagnosticResourceLimits resourceLimits,
+    DiagnosticProcessingPolicy processingPolicy,
+  ) {
+    resourceLimits.validate();
+    processingPolicy.validate();
+    if (_resourceLimits == resourceLimits &&
+        _processingPolicy == processingPolicy) {
+      return;
+    }
+
+    _filterDebounce?.cancel();
+    _resourceLimits = resourceLimits;
+    _processingPolicy = processingPolicy;
+    _debounceDuration = processingPolicy.searchDebounce;
+    _filter = _filter.copyWith(resourceLimits: resourceLimits);
     _invalidateFilterCache();
     _notify();
   }
@@ -81,8 +144,9 @@ class FilterManager {
 
   void removeFilterType(Type type) {
     final currentTypes = _getCurrentTypes();
-    final updatedTypes =
-        currentTypes.where((t) => t != type).toList(growable: false);
+    final updatedTypes = currentTypes
+        .where((t) => t != type)
+        .toList(growable: false);
     if (updatedTypes.length == currentTypes.length) return;
     _updateFilter(types: updatedTypes);
   }
@@ -95,8 +159,9 @@ class FilterManager {
 
   void removeLogTypeKeyFilter(String key) {
     final currentKeys = _getCurrentLogTypeKeys();
-    final updatedKeys =
-        currentKeys.where((k) => k != key).toList(growable: false);
+    final updatedKeys = currentKeys
+        .where((k) => k != key)
+        .toList(growable: false);
     if (updatedKeys.length == currentKeys.length) return;
     _updateFilter(logTypeKeys: updatedKeys);
   }
@@ -117,11 +182,7 @@ class FilterManager {
   /// Clear all filters (log type keys, types, search query).
   void clearAllFilters() {
     _filterDebounce?.cancel();
-    _updateFilter(
-      logTypeKeys: <String>[],
-      types: <Type>[],
-      searchQuery: '',
-    );
+    _updateFilter(logTypeKeys: <String>[], types: <Type>[], searchQuery: '');
   }
 
   void clearLogTypeKeyFilters() {
@@ -142,8 +203,10 @@ class FilterManager {
   }) {
     final newFilter = ISpectFilter(
       logTypeKeys: logTypeKeys ?? _getCurrentLogTypeKeys(),
+      excludedLogTypeKeys: _excludedLogTypeKeys,
       types: types ?? _getCurrentTypes(),
       searchQuery: searchQuery ?? _getCurrentSearchQuery(),
+      resourceLimits: resourceLimits,
     );
     if (newFilter == _filter) return;
     _filter = newFilter;
@@ -158,11 +221,11 @@ class FilterManager {
 
   /// Applies only log type key/type filters (no search query).
   /// Returns a stable reference on cache hits for [identical] checks.
-  List<ISpectLogData> applyFiltersWithoutSearch(
-    List<ISpectLogData> logsData,
-  ) {
+  List<ISpectLogData> applyFiltersWithoutSearch(List<ISpectLogData> logsData) {
     if (logsData.isEmpty) return <ISpectLogData>[];
-    if (_filter.types.isEmpty && _filter.logTypeKeys.isEmpty) {
+    if (_filter.types.isEmpty &&
+        _filter.logTypeKeys.isEmpty &&
+        _excludedLogTypeKeys.isEmpty) {
       return logsData;
     }
     if (_noSearchResultGeneration == _outputGeneration &&
@@ -172,6 +235,8 @@ class FilterManager {
     final noSearchFilter = _cachedNoSearchFilter ??= ISpectFilter(
       types: _filter.types.toList(),
       logTypeKeys: _filter.logTypeKeys.toList(),
+      excludedLogTypeKeys: _excludedLogTypeKeys,
+      resourceLimits: resourceLimits,
     );
     final result = logsData.where(noSearchFilter.apply).toList(growable: false);
     _cachedNoSearchResult = UnmodifiableListView(result);
@@ -192,9 +257,10 @@ class FilterManager {
         identical(logsData, _lastSearchMatchInput)) {
       return _cachedSearchMatches;
     }
-    final searchFilter = SearchFilter(query);
-    _cachedSearchMatches =
-        logsData.where(searchFilter.apply).toList(growable: false);
+    final searchFilter = SearchFilter(query, resourceLimits: resourceLimits);
+    _cachedSearchMatches = logsData
+        .where(searchFilter.apply)
+        .toList(growable: false);
     _searchMatchesGeneration = _outputGeneration;
     _lastSearchMatchQuery = query;
     _lastSearchMatchInput = logsData;
@@ -213,30 +279,28 @@ class FilterManager {
 
   LogTypeKeysResult getLogTypeKeys(List<ISpectLogData> logsData) {
     if (_lastKeysGeneration == _dataGeneration) {
-      final cachedAll = _cachedAllKeys;
+      final cachedCounts = _cachedKeyCounts;
       final cachedUnique = _cachedUniqueKeys;
-      if (cachedAll != null && cachedUnique != null) {
-        return (all: cachedAll, unique: cachedUnique);
+      if (cachedCounts != null && cachedUnique != null) {
+        return (counts: cachedCounts, unique: cachedUnique);
       }
     }
 
-    final allKeys = <String>[];
-    final uniqueKeysSet = <String>{};
-
+    final counts = <String, int>{};
     for (final data in logsData) {
-      final key = data.key;
-      if (key == null) continue;
-      allKeys.add(key);
-      uniqueKeysSet.add(key);
+      final key = captureISpectLogWithoutPayload(data).key;
+      if (key == null || isExcluded(key)) continue;
+      counts[key] = (counts[key] ?? 0) + 1;
     }
 
-    final uniqueKeys = uniqueKeysSet.toList(growable: false);
+    final uniqueKeys = counts.keys.toList(growable: false);
+    final frozenCounts = Map<String, int>.unmodifiable(counts);
 
-    _cachedAllKeys = allKeys;
+    _cachedKeyCounts = frozenCounts;
     _cachedUniqueKeys = uniqueKeys;
     _lastKeysGeneration = _dataGeneration;
 
-    return (all: allKeys, unique: uniqueKeys);
+    return (counts: frozenCounts, unique: uniqueKeys);
   }
 
   void dispose() {

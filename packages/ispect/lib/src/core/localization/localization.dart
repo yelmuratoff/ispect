@@ -18,11 +18,11 @@ final class ISpectLocalization {
 
   /// List of localization delegates.
   static List<LocalizationsDelegate<void>> get localizationDelegates => [
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        _delegate,
-      ];
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    _delegate,
+  ];
 
   static ISpectLocalization? get current => _current;
 
@@ -72,7 +72,7 @@ bool debugCheckHasISpectAppLocalizations(BuildContext context) {
       throw FlutterError.fromParts(<DiagnosticsNode>[
         ErrorSummary('No ISpectGeneratedLocalization found.'),
         ErrorDescription(
-          '${context.widget.runtimeType} widgets require ISpectAppLocalizations '
+          'ISpect widgets require ISpectAppLocalizations '
           'to be provided by a Localizations widget ancestor.',
         ),
         ErrorDescription(

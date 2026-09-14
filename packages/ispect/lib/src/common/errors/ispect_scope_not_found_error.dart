@@ -7,7 +7,8 @@ final class ISpectScopeNotFoundError extends Error {
   ISpectScopeNotFoundError();
 
   @override
-  String toString() => 'ISpectScopeNotFoundError: '
+  String toString() =>
+      'ISpectScopeNotFoundError: '
       'ISpect.read(context) called with a context that does not contain an '
       'ISpectScopeController.\n'
       'Ensure that ISpectBuilder is an ancestor of the widget using this '

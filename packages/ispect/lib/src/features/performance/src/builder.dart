@@ -26,10 +26,11 @@ class ISpectPerformanceOverlayBuilder extends StatelessWidget {
     final useHost = context.ispectTheme.useHostColors;
     final dark = context.ispectIsDark;
 
-    final background = (useHost
-            ? colorScheme.surfaceContainerHighest
-            : ISpectDefaultPalette.card.pick(isDark: dark)!)
-        .withValues(alpha: 0.95);
+    final background =
+        (useHost
+                ? colorScheme.surfaceContainerHighest
+                : ISpectDefaultPalette.card.pick(isDark: dark)!)
+            .withValues(alpha: 0.95);
     final textColor = useHost
         ? colorScheme.onSurface
         : ISpectDefaultPalette.foreground.pick(isDark: dark)!;

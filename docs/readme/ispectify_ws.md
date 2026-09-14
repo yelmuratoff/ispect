@@ -1,6 +1,6 @@
 <!-- partial:header -->
 
-`ispectify_ws` is the provider-agnostic WebSocket diagnostics layer for the [ISpect toolkit](#the-ispect-toolkit). It captures sent and received frames, connection-state transitions, and errors — for **any** WebSocket client — and redacts sensitive data before logging. The published package depends only on `ispectify`; you keep your own WebSocket client dependency.
+`ispectify_ws` is the provider-agnostic WebSocket diagnostics layer for the [ISpect toolkit](#the-ispect-toolkit). It captures sent and received frames, connection-state transitions, and errors - for **any** WebSocket client - and redacts sensitive data before logging. The published package depends only on `ispectify`; you keep your own WebSocket client dependency.
 
 - Frame-level capture for sent and received messages (`ws-sent` / `ws-received`).
 - Connection lifecycle logging via `ws-state` (connecting / open / closing / closed / reconnecting).
@@ -11,6 +11,7 @@
 
 ```yaml
 dependencies:
+  ispect: ^{{version}}
   ispectify: ^{{version}}
   ispectify_ws: ^{{version}}
   # plus your WebSocket client, e.g.
@@ -19,7 +20,7 @@ dependencies:
 
 ## Quick start
 
-Bind any client to the `WsDiagnosticsSink` port. Metrics and state are optional — push whatever your client can report:
+Bind any client to the `WsDiagnosticsSink` port. Metrics and state are optional - push whatever your client can report:
 
 ```dart
 import 'package:ispect/ispect.dart';
@@ -41,7 +42,7 @@ channel.stream.listen(
 
 ## Ready-to-copy adapters
 
-The package example ships thin adapters that wire a concrete client to `WsDiagnostics` — copy the one you need into your app (and add that client to your own `pubspec.yaml`):
+The package example ships thin adapters that wire a concrete client to `WsDiagnostics` - copy the one you need into your app (and add that client to your own `pubspec.yaml`):
 
 | Client                                                              | Adapter                                                        |
 | ------------------------------------------------------------------- | -------------------------------------------------------------- |
@@ -49,23 +50,50 @@ The package example ships thin adapters that wire a concrete client to `WsDiagno
 | [`web_socket_channel`](https://pub.dev/packages/web_socket_channel) | `example/lib/interceptors/web_socket_channel_interceptor.dart` |
 | [`socket_io_client`](https://pub.dev/packages/socket_io_client)     | `example/lib/interceptors/socket_io_interceptor.dart`          |
 
-> Migrating from 5.x? `ISpectWSInterceptor` moved out of the published package into `example/lib/interceptors/ws_interceptor.dart`. Copy it in and add `ws` to your app — `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged. See `docs/DEPRECATIONS.md`.
+> Migrating from 5.x? `ISpectWSInterceptor` moved out of the published package into `example/lib/interceptors/ws_interceptor.dart`. Copy it in and add `ws` to your app - `ISpectWSInterceptorSettings` and the `ws-sent` / `ws-received` / `ws-error` keys are unchanged. See `docs/DEPRECATIONS.md`.
 
 ## Settings
 
 ```dart
 const settings = ISpectWSInterceptorSettings(
   enabled: true,
+  logRequests: true,  // sent frames
+  logResponses: true, // received frames
   printSentData: true,
   printReceivedData: true,
+  printStateData: true,
   printReceivedMessage: true,
   printErrorData: true,
   printErrorMessage: true,
   enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 
 final diagnostics = WsDiagnostics(logger: ISpect.logger, settings: settings);
 ```
+
+Frame bodies, raw connection-state details, and errors are captured and
+redacted by default. Use
+`ISpectWSInterceptorSettingsBuilder.metadataOnly()` to retain frame lifecycle
+metadata without payloads, or the production preset to disable sent/received
+frame retention and keep redacted error diagnostics. `print*` fields shape
+retained records but do not re-enable a suppressed frame. Use the concrete
+settings `copyWith` or builder for retention controls. Builders provide
+matching `with*` and `without*` methods for bodies, headers, and messages.
+
+Balanced capture keeps typed frames and state objects useful through guarded,
+bounded formatting before redaction. Set `captureMode` to
+`DiagnosticCaptureMode.strict`, call `withStrictCapture()`, or use
+`metadataOnly()`/`production()` when application-defined formatters must never
+run.
+Use `withResourceLimits(...)` for a WebSocket-local budget, or
+`withInheritedResourceLimits()` to return to the logger policy.
+Pass `inheritResourceLimits: true` to `copyWith` to clear an existing local
+override. `NetworkInterceptorDefaults` is the shared source of truth used by
+direct settings construction and every network settings builder;
+`ISpectWSInterceptorDefaults` owns the WebSocket-only state and error-header
+defaults.
 
 <!-- partial:redaction -->
 

@@ -19,7 +19,7 @@ class LRUCache<K, V> implements CacheService<K, V> {
   V? get(K key) {
     if (!_cache.containsKey(key)) return null;
     // containsKey check above guarantees the entry exists.
-    // `as V` is correct for generic V — works whether V is nullable or not.
+    // `as V` is correct for generic V - works whether V is nullable or not.
     final value = _cache.remove(key) as V;
     _cache[key] = value;
     return value;
@@ -55,7 +55,7 @@ class LRUCache<K, V> implements CacheService<K, V> {
 /// Specialized search cache service following SRP
 class SearchCacheService {
   SearchCacheService({int maxEntries = 100})
-      : _cache = LRUCache<String, List<int>>(maxEntries: maxEntries);
+    : _cache = LRUCache<String, List<int>>(maxEntries: maxEntries);
 
   final LRUCache<String, List<int>> _cache;
 
@@ -79,7 +79,7 @@ class SearchCacheService {
 /// Specialized node hierarchy cache service following SRP
 class NodeHierarchyCacheService {
   NodeHierarchyCacheService({int maxEntries = 1000})
-      : _cache = LRUCache<int, int>(maxEntries: maxEntries);
+    : _cache = LRUCache<int, int>(maxEntries: maxEntries);
 
   final LRUCache<int, int> _cache;
 

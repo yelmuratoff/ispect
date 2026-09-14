@@ -276,6 +276,9 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get printLogDesc => 'تم طباعة رسالة في وحدة التحكم';
 
   @override
+  String get previewTruncated => 'تم اختصار المعاينة';
+
+  @override
   String get projectDomain => 'نطاق المشروع';
 
   @override
@@ -571,6 +574,21 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'العودة إلى الشاشة الرئيسية';
+
+  @override
+  String get logs => 'السجلات';
+
+  @override
+  String get performance => 'الأداء';
+
+  @override
+  String get inspector => 'الفاحص';
+
+  @override
+  String get colorPicker => 'اللون';
+
+  @override
+  String get composer => 'المنشئ';
 
   @override
   String get navigationFlow => 'تدفق التنقل';
@@ -918,7 +936,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get tipSearchLogs =>
-      'البحث في السجلات بالنص — يبحث أيضاً في محتوى JSON الكامل';
+      'البحث في السجلات بالنص - يبحث أيضاً في محتوى JSON الكامل';
 
   @override
   String get tipLongPress => 'اضغط مطولاً على بطاقة السجل للإجراءات السريعة';
@@ -938,7 +956,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get tipShareSession =>
-      'شارك ملف السجلات لتقارير الأخطاء — يتم إخفاء البيانات تلقائيًا';
+      'شارك ملف السجلات لتقارير الأخطاء - يتم إخفاء البيانات تلقائيًا';
 
   @override
   String get tipReverseLogs => 'اضغط على الأسهم في الشريط لعكس ترتيب السجلات';

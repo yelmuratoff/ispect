@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/default_curl_redactor.dart';
+import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
@@ -10,41 +12,46 @@ import 'package:ispect/src/features/json_viewer/widgets/explorer.dart'
 import 'package:ispect/src/features/json_viewer/widgets/paints/dot_painter.dart';
 
 class CopyButton extends StatelessWidget {
-  const CopyButton({
-    required this.node,
-    required this.theme,
-    super.key,
-  });
+  const CopyButton({required this.node, required this.theme, super.key});
 
   final NodeViewModelState node;
   final JsonExplorerTheme theme;
 
   @override
   Widget build(BuildContext context) => Semantics(
-        button: true,
-        label: 'Copy ${node.key}',
-        child: InkWell(
-          excludeFromSemantics: true,
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
-          onTap: () {
-            final safeValue =
-                defaultCurlRedactor.redact(node.rawValue, keyName: node.key);
-            copyClipboard(
-              context,
-              value: '${node.key}: ${JsonTruncator.pretty(safeValue)}',
-              redact: true,
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(2),
-            child: Icon(
-              Icons.copy_rounded,
-              size: 14,
-              color: theme.rootKeyTextStyle.color?.withValues(alpha: 0.3),
-            ),
-          ),
+    button: true,
+    label: 'Copy ${node.key}',
+    child: InkWell(
+      excludeFromSemantics: true,
+      customBorder: ISpectSquircle.border(
+        radius: ISpectConstants.smallBorderRadius,
+      ),
+      onTap: () {
+        final safeValue = defaultCurlRedactor.redact(
+          node.rawValue,
+          keyName: node.key,
+        );
+        final limits =
+            ISpect.loggerIfInitialized?.options.resourceLimits ??
+            DiagnosticResourceLimits.balanced;
+        copyClipboard(
+          context,
+          value:
+              '${node.key}: ${JsonTruncator.pretty(safeValue, maxDepth: limits.maxTraversalDepth, maxIterableSize: limits.maxCollectionItems, maxStringLength: limits.maxViewerBytes)}',
+          redact: true,
+          resourceLimits: limits,
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(2),
+        child: Icon(
+          Icons.copy_rounded,
+          size: 14,
+          color: theme.rootKeyTextStyle.color?.withValues(alpha: 0.3),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class IndentationWidget extends StatelessWidget {
@@ -72,10 +79,7 @@ class IndentationWidget extends StatelessWidget {
           count: (indentation / 5).clamp(0, double.infinity),
           color: color,
         ),
-        size: Size(
-          indentation.toDouble(),
-          20,
-        ),
+        size: Size(indentation.toDouble(), 20),
       ),
     );
   }
@@ -92,20 +96,18 @@ class ArraySuffixWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Flexible(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Text(
-            '[$length]',
-            softWrap: false,
-            overflow: TextOverflow.clip,
-            style: style.copyWith(
-              color: JsonColors.arrayColorFor(
-                Theme.of(context).brightness,
-              ),
-            ),
-          ),
+    child: Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        '[$length]',
+        softWrap: false,
+        overflow: TextOverflow.clip,
+        style: style.copyWith(
+          color: JsonColors.arrayColorFor(Theme.of(context).brightness),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class MapSuffixWidget extends StatelessWidget {
@@ -115,20 +117,18 @@ class MapSuffixWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Flexible(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Text(
-            '{$length}',
-            softWrap: false,
-            overflow: TextOverflow.clip,
-            style: style.copyWith(
-              color: JsonColors.objectColorFor(
-                Theme.of(context).brightness,
-              ),
-            ),
-          ),
+    child: Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        '{$length}',
+        softWrap: false,
+        overflow: TextOverflow.clip,
+        style: style.copyWith(
+          color: JsonColors.objectColorFor(Theme.of(context).brightness),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 /// Text separator widget showing colon between key and value.
@@ -156,22 +156,20 @@ class ToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-        listenable: node,
-        builder: (context, child) =>
-            collapsableToggleBuilder?.call(context, node) ??
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              transitionBuilder: (child, animation) => ScaleTransition(
-                scale: animation,
-                child: child,
-              ),
-              child: Icon(
-                node.isCollapsed
-                    ? Icons.arrow_right_rounded
-                    : Icons.arrow_drop_down_rounded,
-                key: ValueKey(node.isCollapsed),
-                color: iconColor,
-              ),
-            ),
-      );
+    listenable: node,
+    builder: (context, child) =>
+        collapsableToggleBuilder?.call(context, node) ??
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          transitionBuilder: (child, animation) =>
+              ScaleTransition(scale: animation, child: child),
+          child: Icon(
+            node.isCollapsed
+                ? Icons.arrow_right_rounded
+                : Icons.arrow_drop_down_rounded,
+            key: ValueKey(node.isCollapsed),
+            color: iconColor,
+          ),
+        ),
+  );
 }

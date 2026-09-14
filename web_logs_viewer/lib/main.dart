@@ -85,11 +85,11 @@ class _MyAppState extends State<MyApp> {
               ),
             ),
             panelButtons: [
-              DraggablePanelButtonItem(
+              PanelActionButton(
                 icon: Icons.bug_report_outlined,
                 label: 'Demo Screen',
-                description: 'Open Demo Screen',
-                onTap: (_) {
+                tooltip: 'Open Demo Screen',
+                onPressed: () {
                   _observer.navigator?.push(
                     MaterialPageRoute(builder: (context) => DemoScreen()),
                   );

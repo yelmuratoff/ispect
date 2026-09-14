@@ -28,16 +28,16 @@ class SessionLogsScreen extends StatefulWidget {
   final ISpectMetadataProvider? metadataProvider;
 
   Future<void> push(BuildContext context) => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => this,
-          settings: RouteSettings(
-            name: 'ISpect Session Logs Screen',
-            arguments: sessionDate != null
-                ? {'date': sessionDate!.toIso8601String()}
-                : null,
-          ),
-        ),
-      );
+    MaterialPageRoute<void>(
+      builder: (_) => this,
+      settings: RouteSettings(
+        name: 'ISpect Session Logs Screen',
+        arguments: sessionDate != null
+            ? {'date': sessionDate!.toIso8601String()}
+            : null,
+      ),
+    ),
+  );
 
   @override
   State<SessionLogsScreen> createState() => _SessionLogsScreenState();
@@ -91,8 +91,6 @@ class _SessionLogsScreenState extends State<SessionLogsScreen> {
       logs = await fileLogHistory?.getLogsByDate(widget.sessionDate!);
     }
     if (!mounted) return;
-    setState(
-      () => _logs = List<ISpectLogData>.unmodifiable(logs ?? const []),
-    );
+    setState(() => _logs = List<ISpectLogData>.unmodifiable(logs ?? const []));
   }
 }

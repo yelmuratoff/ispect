@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('ISpectLogger clearHistory', () {
     test('clearHistory works when logging is disabled', () {
-      final logger = ISpectLogger()
+      final logger = ISpectLogger.testing()
 
         // Add some logs to history
         ..info('Test log 1')
@@ -48,7 +48,7 @@ void main() {
     });
 
     test('clearHistory preserves history functionality after re-enabling', () {
-      final logger = ISpectLogger()
+      final logger = ISpectLogger.testing()
 
         // Add logs and disable
         ..info('Test log 1')

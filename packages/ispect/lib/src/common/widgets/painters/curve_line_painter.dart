@@ -27,10 +27,7 @@ class CurveLinePainter extends CustomPainter {
   ///
   /// - `isInRightSide`: If `true`, the curve starts from the right; otherwise, it starts from the left.
   /// - `color`: The color used for the curve stroke.
-  const CurveLinePainter({
-    required this.isInRightSide,
-    required this.color,
-  });
+  const CurveLinePainter({required this.isInRightSide, required this.color});
 
   /// Determines the starting side of the curve.
   ///

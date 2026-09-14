@@ -4,7 +4,7 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db_example/interceptors/drift_interceptor.dart';
 import 'package:test/test.dart';
 
-/// No-op user — tables created via sqlite3 [setup] callback.
+/// No-op user - tables created via sqlite3 [setup] callback.
 final class _NoOpUser extends QueryExecutorUser {
   @override
   int get schemaVersion => 1;
@@ -58,10 +58,9 @@ void main() {
 
   group('runInsert', () {
     test('inserts and logs', () async {
-      final id = await executor.runInsert(
-        'INSERT INTO t (value) VALUES (?)',
-        ['X'],
-      );
+      final id = await executor.runInsert('INSERT INTO t (value) VALUES (?)', [
+        'X',
+      ]);
 
       expect(id, isPositive);
       expect(lastAdditional()['operation'], 'insert');

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/debug_report.dart';
+import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
@@ -15,31 +17,128 @@ import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
 import 'package:ispect/src/features/json_viewer/widgets/store_selector.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/search_bar.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 class JsonScreen extends StatefulWidget {
-  const JsonScreen({
-    required this.data,
-    this.truncatedData,
-    this.onClose,
-    this.correlatedLogData,
-    this.correlatedLogLabel,
-    this.correlationDuration,
+  /// Creates a viewer after eagerly detaching and bounding caller-owned data.
+  ///
+  /// This constructor is intentionally non-const so no caller-owned graph is
+  /// retained by the widget. Existing call sites should remove `const`.
+  factory JsonScreen({
+    required Map<String, dynamic> data,
+    Map<String, dynamic>? truncatedData,
+    Map<String, dynamic> Function()? truncatedDataBuilder,
+    VoidCallback? onClose,
+    Map<String, dynamic>? correlatedLogData,
+    String? correlatedLogLabel,
+    Duration? correlationDuration,
+    DiagnosticResourceLimits? resourceLimits,
+    DiagnosticProcessingPolicy? processingPolicy,
+    Key? key,
+  }) {
+    final limits =
+        (resourceLimits ??
+              ISpect.loggerIfInitialized?.options.resourceLimits ??
+              DiagnosticResourceLimits.balanced)
+          ..validate();
+    final scheduling =
+        (processingPolicy ??
+              ISpect.loggerIfInitialized?.options.processingPolicy ??
+              DiagnosticProcessingPolicy.balanced)
+          ..validate();
+    JsonInputSnapshot snapshot(Object? value) =>
+        JsonInputPreflight.snapshotForViewer(
+          value,
+          nestingDepthLimit: limits.maxTraversalDepth,
+          nodeLimit: limits.maxViewerNodes,
+          encodedByteLimit: limits.maxViewerBytes,
+        );
+
+    final dataSnapshot = snapshot(data);
+    final truncatedDataSnapshot = truncatedData == null
+        ? null
+        : identical(truncatedData, data)
+        ? dataSnapshot
+        : snapshot(truncatedData);
+    final correlatedLogDataSnapshot = correlatedLogData == null
+        ? null
+        : identical(correlatedLogData, data)
+        ? dataSnapshot
+        : identical(correlatedLogData, truncatedData)
+        ? truncatedDataSnapshot
+        : snapshot(correlatedLogData);
+
+    return JsonScreen._(
+      dataSnapshot: dataSnapshot,
+      truncatedDataSnapshot: truncatedDataSnapshot,
+      truncatedSnapshotBuilder: truncatedDataBuilder == null
+          ? null
+          : () => snapshot(truncatedDataBuilder()),
+      onClose: onClose,
+      correlatedLogDataSnapshot: correlatedLogDataSnapshot,
+      correlatedLogLabel: correlatedLogLabel,
+      correlationDuration: correlationDuration,
+      processingPolicy: scheduling,
+      key: key,
+    );
+  }
+
+  const JsonScreen._({
+    required JsonInputSnapshot dataSnapshot,
+    required JsonInputSnapshot? truncatedDataSnapshot,
+    required JsonInputSnapshot Function()? truncatedSnapshotBuilder,
+    required JsonInputSnapshot? correlatedLogDataSnapshot,
+    required this.onClose,
+    required this.correlatedLogLabel,
+    required this.correlationDuration,
+    required this.processingPolicy,
     super.key,
-  });
-  final Map<String, dynamic> data;
-  final Map<String, dynamic>? truncatedData;
+  }) : _dataSnapshot = dataSnapshot,
+       _truncatedDataSnapshot = truncatedDataSnapshot,
+       _truncatedSnapshotBuilder = truncatedSnapshotBuilder,
+       _correlatedLogDataSnapshot = correlatedLogDataSnapshot;
+
+  final JsonInputSnapshot _dataSnapshot;
+  final JsonInputSnapshot? _truncatedDataSnapshot;
+  final JsonInputSnapshot Function()? _truncatedSnapshotBuilder;
+  final JsonInputSnapshot? _correlatedLogDataSnapshot;
+  final DiagnosticProcessingPolicy processingPolicy;
+
+  /// Bounded JSON-compatible snapshot owned by this viewer.
+  Map<String, dynamic> get data => _mapFromSnapshot(_dataSnapshot);
+
+  /// Bounded snapshot used by sharing when provided.
+  ///
+  /// A builder-backed snapshot is produced on demand, so a viewer that is
+  /// never shared never pays for the truncated export.
+  Map<String, dynamic>? get truncatedData {
+    final snapshot =
+        _truncatedDataSnapshot ?? _truncatedSnapshotBuilder?.call();
+    return snapshot == null ? null : _mapFromSnapshot(snapshot);
+  }
+
   final VoidCallback? onClose;
 
   /// Optional correlated log data for cross-navigation (e.g. request ↔ response).
-  final Map<String, dynamic>? correlatedLogData;
+  Map<String, dynamic>? get correlatedLogData =>
+      _correlatedLogDataSnapshot == null
+      ? null
+      : _mapFromSnapshot(_correlatedLogDataSnapshot);
 
   /// Label for the navigation chip (e.g. "Request" or "Response").
   final String? correlatedLogLabel;
 
   /// Duration between request and response/error.
   final Duration? correlationDuration;
+
+  static Map<String, dynamic> _mapFromSnapshot(JsonInputSnapshot? snapshot) {
+    final value = snapshot?.value;
+    return value is Map<String, dynamic>
+        ? value
+        : Map<String, dynamic>.unmodifiable(<String, dynamic>{'data': value});
+  }
 
   void push(BuildContext context) {
     Navigator.of(context).push(
@@ -55,7 +154,7 @@ class JsonScreen extends StatefulWidget {
 }
 
 class _JsonScreenState extends State<JsonScreen> {
-  final _store = JsonExplorerStore();
+  late final JsonExplorerStore _store;
   final _searchController = TextEditingController();
   final _hasSearchText = ValueNotifier(false);
 
@@ -67,7 +166,8 @@ class _JsonScreenState extends State<JsonScreen> {
   @override
   void initState() {
     super.initState();
-    _store.buildNodes(widget.data);
+    _store = JsonExplorerStore(processingPolicy: widget.processingPolicy);
+    _store.buildNodes(widget._dataSnapshot);
   }
 
   @override
@@ -75,7 +175,7 @@ class _JsonScreenState extends State<JsonScreen> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.data['id'] != widget.data['id']) {
-      _store.buildNodes(widget.data);
+      _store.buildNodes(widget._dataSnapshot);
     }
   }
 
@@ -93,7 +193,7 @@ class _JsonScreenState extends State<JsonScreen> {
   void _onSearchChanged(String value) {
     _hasSearchText.value = value.isNotEmpty;
     _searchDebounceTimer?.cancel();
-    _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+    _searchDebounceTimer = Timer(widget.processingPolicy.searchDebounce, () {
       if (mounted && _store.mounted) {
         _store.search(value);
       }
@@ -214,12 +314,13 @@ class _JsonScreenState extends State<JsonScreen> {
                     ),
                   ),
                   JsonStoreSelector<
-                      ({
-                        int count,
-                        int focusedIndex,
-                        bool hasSearchTerm,
-                        bool isSearching,
-                      })>(
+                    ({
+                      int count,
+                      int focusedIndex,
+                      bool hasSearchTerm,
+                      bool isSearching,
+                    })
+                  >(
                     store: _store,
                     selector: (s) => (
                       count: s.searchResults.length,
@@ -239,11 +340,11 @@ class _JsonScreenState extends State<JsonScreen> {
                       return switch (count) {
                         0 => _NoResultsLabel(),
                         _ => _SearchNavigation(
-                            store: _store,
-                            scrollToSearchMatch: _scrollToSearchMatch,
-                            focusedIndex: focusedIndex + 1,
-                            totalCount: count,
-                          ),
+                          store: _store,
+                          scrollToSearchMatch: _scrollToSearchMatch,
+                          focusedIndex: focusedIndex + 1,
+                          totalCount: count,
+                        ),
                       };
                     },
                   ),
@@ -330,9 +431,11 @@ class _JsonScreenState extends State<JsonScreen> {
         return;
     }
 
-    for (var currentNode = searchResult.node.parent;
-        currentNode != null;
-        currentNode = currentNode.parent) {
+    for (
+      var currentNode = searchResult.node.parent;
+      currentNode != null;
+      currentNode = currentNode.parent
+    ) {
       final parentIndex = displayNodes.indexOf(currentNode);
       switch (parentIndex) {
         case -1:
@@ -378,8 +481,9 @@ class _SearchNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mutedColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.5);
+    final mutedColor = context.appTheme.colorScheme.onSurface.withValues(
+      alpha: 0.5,
+    );
 
     return Padding(
       padding: const EdgeInsets.only(left: 8),
@@ -391,12 +495,10 @@ class _SearchNavigation extends StatelessWidget {
             onPressed: () {
               store.focusPreviousSearchResult(loop: true);
               unawaited(
-                scrollToSearchMatch(store).catchError((Object error) {
-                  assert(() {
-                    debugPrint('scrollToSearchMatch failed: $error');
-                    return true;
-                  }());
-                }),
+                scrollToSearchMatch(store).catchError(
+                  (Object error) =>
+                      debugReportFailure('scrollToSearchMatch failed', error),
+                ),
               );
             },
           ),
@@ -416,12 +518,10 @@ class _SearchNavigation extends StatelessWidget {
             onPressed: () {
               store.focusNextSearchResult(loop: true);
               unawaited(
-                scrollToSearchMatch(store).catchError((Object error) {
-                  assert(() {
-                    debugPrint('scrollToSearchMatch failed: $error');
-                    return true;
-                  }());
-                }),
+                scrollToSearchMatch(store).catchError(
+                  (Object error) =>
+                      debugReportFailure('scrollToSearchMatch failed', error),
+                ),
               );
             },
           ),
@@ -436,55 +536,51 @@ class _SearchLoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color:
-                context.appTheme.colorScheme.onSurface.withValues(alpha: 0.4),
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(left: 12),
+    child: SizedBox(
+      width: 16,
+      height: 16,
+      child: CircularProgressIndicator(
+        strokeWidth: 2,
+        color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.4),
+      ),
+    ),
+  );
 }
 
 class _NoResultsLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(left: 8),
-        child: Text(
-          '0/0',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: context.appTheme.colorScheme.error.withValues(alpha: 0.7),
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(left: 8),
+    child: Text(
+      '0/0',
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: context.appTheme.colorScheme.error.withValues(alpha: 0.7),
+      ),
+    ),
+  );
 }
 
 class _NavButton extends StatelessWidget {
-  const _NavButton({
-    required this.icon,
-    required this.onPressed,
-  });
+  const _NavButton({required this.icon, required this.onPressed});
 
   final IconData icon;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        width: 28,
-        height: 28,
-        child: IconButton(
-          icon: Icon(icon, size: 20),
-          onPressed: onPressed,
-          padding: EdgeInsets.zero,
-          visualDensity: VisualDensity.compact,
-          color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.6),
-        ),
-      );
+    width: 28,
+    height: 28,
+    child: IconButton(
+      icon: Icon(icon, size: 20),
+      onPressed: onPressed,
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+      color: context.appTheme.colorScheme.onSurface.withValues(alpha: 0.6),
+    ),
+  );
 }
 
 /// Banner for navigating to a correlated request/response log.
@@ -507,7 +603,7 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
     final correlatedKey = correlatedLogData['key']?.toString();
     final targetColor =
         iSpect.theme.getTypeColor(context, key: correlatedKey) ??
-            context.ispectPrimaryColor;
+        context.ispectPrimaryColor;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -533,12 +629,12 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
                   radius: ISpectConstants.smallBorderRadius,
                 ),
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   child: Text(
-                    d.inMilliseconds < 1000
-                        ? '${d.inMilliseconds}ms'
-                        : '${(d.inMilliseconds / 1000).toStringAsFixed(1)}s',
+                    formatTransactionDuration(d),
                     style: TextStyle(
                       color: context.appTheme.textColor.withValues(alpha: 0.5),
                       fontSize: 10,

@@ -6,16 +6,37 @@ import 'package:test/test.dart';
 
 void main() {
   group('ISpectDioInterceptorSettingsBuilder', () {
-    test('default constructor creates moderate verbosity settings', () {
+    test('default constructor captures full redacted diagnostics', () {
       final settings = ISpectDioInterceptorSettingsBuilder().build();
 
       expect(settings.enabled, true);
       expect(settings.enableRedaction, true);
+      expect(settings.logRequests, true);
+      expect(settings.logResponses, true);
       expect(settings.printResponseData, true);
-      expect(settings.printResponseHeaders, false);
+      expect(settings.printResponseHeaders, true);
       expect(settings.printRequestData, true);
-      expect(settings.printRequestHeaders, false);
+      expect(settings.printRequestHeaders, true);
       expect(settings.printErrorData, true);
+      expect(settings.printErrorHeaders, true);
+      expect(settings.captureMode, DiagnosticCaptureMode.balanced);
+    });
+
+    test('metadataOnly() opts into payload minimization with redaction', () {
+      final settings =
+          ISpectDioInterceptorSettingsBuilder.metadataOnly().build();
+
+      expect(settings.enabled, true);
+      expect(settings.enableRedaction, true);
+      expect(settings.logRequests, true);
+      expect(settings.logResponses, true);
+      expect(settings.printResponseData, false);
+      expect(settings.printResponseHeaders, false);
+      expect(settings.printRequestData, false);
+      expect(settings.printRequestHeaders, false);
+      expect(settings.printErrorData, false);
+      expect(settings.printErrorHeaders, false);
+      expect(settings.captureMode, DiagnosticCaptureMode.strict);
     });
 
     test('development() creates verbose settings with redaction', () {
@@ -24,12 +45,15 @@ void main() {
 
       expect(settings.enabled, true);
       expect(settings.enableRedaction, true);
+      expect(settings.logRequests, true);
+      expect(settings.logResponses, true);
       expect(settings.printResponseHeaders, true);
       expect(settings.printRequestHeaders, true);
       expect(settings.printErrorHeaders, true);
       expect(settings.printResponseData, true);
       expect(settings.printRequestData, true);
       expect(settings.printErrorData, true);
+      expect(settings.captureMode, DiagnosticCaptureMode.balanced);
     });
 
     test('production() creates minimal settings with redaction', () {
@@ -37,11 +61,14 @@ void main() {
 
       expect(settings.enabled, true);
       expect(settings.enableRedaction, true);
+      expect(settings.logRequests, false);
+      expect(settings.logResponses, false);
       expect(settings.printRequestData, false);
       expect(settings.printResponseData, false);
-      expect(settings.printErrorData, true);
-      expect(settings.printErrorHeaders, true);
+      expect(settings.printErrorData, false);
+      expect(settings.printErrorHeaders, false);
       expect(settings.printErrorMessage, true);
+      expect(settings.captureMode, DiagnosticCaptureMode.strict);
     });
 
     test('staging() creates balanced settings with redaction', () {
@@ -49,8 +76,11 @@ void main() {
 
       expect(settings.enabled, true);
       expect(settings.enableRedaction, true);
+      expect(settings.logRequests, true);
+      expect(settings.logResponses, false);
       expect(settings.printRequestData, true);
       expect(settings.printErrorData, true);
+      expect(settings.captureMode, DiagnosticCaptureMode.balanced);
     });
 
     test('disabled() creates disabled settings', () {
@@ -73,6 +103,24 @@ void main() {
       expect(settings.enableRedaction, false);
     });
 
+    test('withStrictCapture() opts out of application formatters', () {
+      final settings =
+          ISpectDioInterceptorSettingsBuilder().withStrictCapture().build();
+
+      expect(settings.captureMode, DiagnosticCaptureMode.strict);
+    });
+
+    test('withResourceLimits() stores an adapter override', () {
+      final settings = ISpectDioInterceptorSettingsBuilder()
+          .withResourceLimits(DiagnosticResourceLimits.constrained)
+          .build();
+
+      expect(
+        settings.resourceLimits,
+        same(DiagnosticResourceLimits.constrained),
+      );
+    });
+
     test('withAllHeaders() enables all header printing', () {
       final settings =
           ISpectDioInterceptorSettingsBuilder().withAllHeaders().build();
@@ -91,6 +139,42 @@ void main() {
       expect(settings.printErrorData, true);
     });
 
+    test('individual opt-outs omit every optional payload field', () {
+      final settings = ISpectDioInterceptorSettingsBuilder()
+          .withoutRequestData()
+          .withoutRequestHeaders()
+          .withoutResponseData()
+          .withoutResponseHeaders()
+          .withoutResponseMessage()
+          .withoutErrorData()
+          .withoutErrorHeaders()
+          .withoutErrorMessage()
+          .build();
+
+      expect(settings.printRequestData, isFalse);
+      expect(settings.printRequestHeaders, isFalse);
+      expect(settings.printResponseData, isFalse);
+      expect(settings.printResponseHeaders, isFalse);
+      expect(settings.printResponseMessage, isFalse);
+      expect(settings.printErrorData, isFalse);
+      expect(settings.printErrorHeaders, isFalse);
+      expect(settings.printErrorMessage, isFalse);
+    });
+
+    test('bulk opt-outs omit all headers and data', () {
+      final settings = ISpectDioInterceptorSettingsBuilder()
+          .withoutAllHeaders()
+          .withoutAllData()
+          .build();
+
+      expect(settings.printRequestHeaders, isFalse);
+      expect(settings.printResponseHeaders, isFalse);
+      expect(settings.printErrorHeaders, isFalse);
+      expect(settings.printRequestData, isFalse);
+      expect(settings.printResponseData, isFalse);
+      expect(settings.printErrorData, isFalse);
+    });
+
     test('withErrorsOnly() disables request/response logging', () {
       final settings =
           ISpectDioInterceptorSettingsBuilder().withErrorsOnly().build();
@@ -99,6 +183,8 @@ void main() {
       expect(settings.printRequestHeaders, false);
       expect(settings.printResponseData, false);
       expect(settings.printResponseHeaders, false);
+      expect(settings.logRequests, false);
+      expect(settings.logResponses, false);
       expect(settings.printErrorData, true);
       expect(settings.printErrorHeaders, true);
     });
@@ -147,7 +233,7 @@ void main() {
 
       expect(settings.enableRedaction, true);
       expect(settings.printErrorData, true);
-      expect(settings.printRequestData, false); // overridden by withErrorsOnly
+      expect(settings.printRequestData, false);
     });
   });
 }

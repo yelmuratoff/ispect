@@ -13,9 +13,7 @@ final class ISpectFileUtils {
   static Future<File> writeImageToStorage(Uint8List feedbackScreenshot) async {
     final output = await platformDirectoryProvider.tempDirectory();
     if (output is! Directory) {
-      throw const FileSystemException(
-        'Failed to get temporary directory',
-      );
+      throw const FileSystemException('Failed to get temporary directory');
     }
     final screenshotFilePath =
         '${output.path}/feedback${feedbackScreenshot.hashCode}.png';

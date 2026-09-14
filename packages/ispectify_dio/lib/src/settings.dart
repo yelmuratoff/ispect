@@ -7,6 +7,10 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
   const ISpectDioInterceptorSettings({
     super.enabled,
     super.enableRedaction,
+    super.captureMode,
+    super.resourceLimits,
+    super.logRequests,
+    super.logResponses,
     super.printResponseData,
     super.printResponseHeaders,
     super.printResponseMessage,
@@ -18,11 +22,11 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
     super.requestPen,
     super.responsePen,
     super.errorPen,
-    @Deprecated('Use requestChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use requestChain instead. Will be removed in 8.0.0.')
     this.requestFilter,
-    @Deprecated('Use responseChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use responseChain instead. Will be removed in 8.0.0.')
     this.responseFilter,
-    @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use errorChain instead. Will be removed in 8.0.0.')
     this.errorFilter,
     this.requestChain,
     this.responseChain,
@@ -31,17 +35,17 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
 
   /// For request filtering.
   /// You can add your custom logic to log only specific HTTP requests.
-  @Deprecated('Use requestChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use requestChain instead. Will be removed in 8.0.0.')
   final bool Function(RequestOptions requestOptions)? requestFilter;
 
   /// For response filtering.
   /// You can add your custom logic to log only specific HTTP responses.
-  @Deprecated('Use responseChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use responseChain instead. Will be removed in 8.0.0.')
   final bool Function(Response<dynamic> response)? responseFilter;
 
   /// For error filtering.
   /// You can add your custom logic to log only specific Dio errors.
-  @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
+  @Deprecated('Use errorChain instead. Will be removed in 8.0.0.')
   final bool Function(DioException response)? errorFilter;
 
   /// Filter chain for requests. Takes priority over [requestFilter].
@@ -81,6 +85,11 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
   ISpectDioInterceptorSettings copyWith({
     bool? enabled,
     bool? enableRedaction,
+    DiagnosticCaptureMode? captureMode,
+    DiagnosticResourceLimits? resourceLimits,
+    bool inheritResourceLimits = false,
+    bool? logRequests,
+    bool? logResponses,
     bool? printResponseData,
     bool? printResponseHeaders,
     bool? printResponseMessage,
@@ -92,11 +101,11 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
     AnsiPen? requestPen,
     AnsiPen? responsePen,
     AnsiPen? errorPen,
-    @Deprecated('Use requestChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use requestChain instead. Will be removed in 8.0.0.')
     bool Function(RequestOptions requestOptions)? requestFilter,
-    @Deprecated('Use responseChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use responseChain instead. Will be removed in 8.0.0.')
     bool Function(Response<dynamic> response)? responseFilter,
-    @Deprecated('Use errorChain instead. Will be removed in 7.0.0.')
+    @Deprecated('Use errorChain instead. Will be removed in 8.0.0.')
     bool Function(DioException response)? errorFilter,
     NetworkFilterChain<RequestOptions>? requestChain,
     NetworkFilterChain<Response<dynamic>>? responseChain,
@@ -105,6 +114,12 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
       ISpectDioInterceptorSettings(
         enabled: enabled ?? this.enabled,
         enableRedaction: enableRedaction ?? this.enableRedaction,
+        captureMode: captureMode ?? this.captureMode,
+        resourceLimits: inheritResourceLimits
+            ? null
+            : resourceLimits ?? this.resourceLimits,
+        logRequests: logRequests ?? this.logRequests,
+        logResponses: logResponses ?? this.logResponses,
         printResponseData: printResponseData ?? this.printResponseData,
         printResponseHeaders: printResponseHeaders ?? this.printResponseHeaders,
         printResponseMessage: printResponseMessage ?? this.printResponseMessage,

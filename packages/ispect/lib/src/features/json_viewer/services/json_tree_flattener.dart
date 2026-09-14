@@ -4,12 +4,11 @@ import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 class JsonTreeFlattener {
   /// Flattens a hierarchical JSON tree into a list for efficient rendering
   static List<NodeViewModelState> flatten(Object? object) => switch (object) {
-        null => const <NodeViewModelState>[],
-        final List<NodeViewModelState> list => _flattenIterable(list),
-        final Map<String, NodeViewModelState> map =>
-          _flattenIterable(map.values),
-        _ => const <NodeViewModelState>[],
-      };
+    null => const <NodeViewModelState>[],
+    final List<NodeViewModelState> list => _flattenIterable(list),
+    final Map<String, NodeViewModelState> map => _flattenIterable(map.values),
+    _ => const <NodeViewModelState>[],
+  };
 
   static List<NodeViewModelState> _flattenIterable(
     Iterable<NodeViewModelState> nodes,

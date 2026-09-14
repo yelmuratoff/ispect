@@ -25,11 +25,7 @@ class ISpectNavigationFlowScreen extends StatefulWidget {
         builder: (_) => this,
         settings: RouteSettings(
           name: 'ISpect Navigation Flow Screen',
-          arguments: log != null
-              ? {
-                  'id': log?.traceCorrelationId,
-                }
-              : null,
+          arguments: log != null ? {'id': log?.traceCorrelationId} : null,
         ),
       ),
     );
@@ -55,59 +51,58 @@ class _ISpectNavigationFlowScreenState
       ISpectThemeScope(child: Builder(builder: _buildScaffold));
 
   Widget _buildScaffold(BuildContext context) => Scaffold(
-        backgroundColor: context.ispectThemeBackground,
-        appBar: ISpectFlatAppBar(
-          title: ISpectAppBarTitle(
-            child: Text(context.ispectL10n.navigationFlow),
-          ),
-          leading: const ISpectAppBarBackButton(),
-          actionsPadding: const EdgeInsets.only(right: 12),
-          actions: [
-            ISpectAppBarIconButton(
-              icon: Icons.more_horiz_rounded,
-              tooltip: context.ispectL10n.moreOptions,
-              onPressed: () {
-                ISpectNavigationFlowActionsSheet(
-                  items: _items,
-                  transition: null,
-                  log: widget.log,
-                ).show(context);
-              },
-            ),
-          ],
+    backgroundColor: context.ispectThemeBackground,
+    appBar: ISpectFlatAppBar(
+      title: ISpectAppBarTitle(child: Text(context.ispectL10n.navigationFlow)),
+      leading: const ISpectAppBarBackButton(),
+      actionsPadding: const EdgeInsets.only(right: 12),
+      actions: [
+        ISpectAppBarIconButton(
+          icon: Icons.more_horiz_rounded,
+          tooltip: context.ispectL10n.moreOptions,
+          onPressed: () {
+            ISpectNavigationFlowActionsSheet(
+              items: _items,
+              transition: null,
+              log: widget.log,
+            ).show(context);
+          },
         ),
-        body: _items.isEmpty
-            ? Center(
-                child: Text(
-                  context.ispectL10n.noNavigationTransitions,
-                  style: context.appTheme.textTheme.bodyLarge?.copyWith(
-                    color: context.appTheme.colorScheme.onSurface
-                        .withValues(alpha: 0.5),
-                  ),
-                ),
-              )
-            : context.screenSizeWhen<Widget>(
-                phone: () => _NavigationFlowList(
-                  items: _items,
-                  selectedTransitionId: widget.log?.traceCorrelationId,
-                  log: widget.log,
-                ),
-                tablet: () => _NavigationFlowGrid(
-                  items: _items,
-                  maxItemWidth: 200,
-                  aspectRatio: 1.5,
-                  selectedTransitionId: widget.log?.traceCorrelationId,
-                  log: widget.log,
-                ),
-                desktop: () => _NavigationFlowGrid(
-                  items: _items,
-                  maxItemWidth: 220,
-                  aspectRatio: 1.8,
-                  selectedTransitionId: widget.log?.traceCorrelationId,
-                  log: widget.log,
+      ],
+    ),
+    body: _items.isEmpty
+        ? Center(
+            child: Text(
+              context.ispectL10n.noNavigationTransitions,
+              style: context.appTheme.textTheme.bodyLarge?.copyWith(
+                color: context.appTheme.colorScheme.onSurface.withValues(
+                  alpha: 0.5,
                 ),
               ),
-      );
+            ),
+          )
+        : context.screenSizeWhen<Widget>(
+            phone: () => _NavigationFlowList(
+              items: _items,
+              selectedTransitionId: widget.log?.traceCorrelationId,
+              log: widget.log,
+            ),
+            tablet: () => _NavigationFlowGrid(
+              items: _items,
+              maxItemWidth: 200,
+              aspectRatio: 1.5,
+              selectedTransitionId: widget.log?.traceCorrelationId,
+              log: widget.log,
+            ),
+            desktop: () => _NavigationFlowGrid(
+              items: _items,
+              maxItemWidth: 220,
+              aspectRatio: 1.8,
+              selectedTransitionId: widget.log?.traceCorrelationId,
+              log: widget.log,
+            ),
+          ),
+  );
 }
 
 class _NavigationFlowList extends StatelessWidget {
@@ -123,20 +118,20 @@ class _NavigationFlowList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: items.length,
-        itemBuilder: (context, index) => ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 120),
-          child: NavigationTransitionCard(
-            transition: items[index],
-            index: index,
-            totalItems: items.length,
-            log: log,
-            selectedTransitionId: selectedTransitionId,
-            items: items,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.all(12),
+    itemCount: items.length,
+    itemBuilder: (context, index) => ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 120),
+      child: NavigationTransitionCard(
+        transition: items[index],
+        index: index,
+        totalItems: items.length,
+        log: log,
+        selectedTransitionId: selectedTransitionId,
+        items: items,
+      ),
+    ),
+  );
 }
 
 class _NavigationFlowGrid extends StatelessWidget {
@@ -156,25 +151,25 @@ class _NavigationFlowGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, constraints) => GridView.builder(
-          padding: const EdgeInsets.all(12),
-          itemCount: items.length,
-          // ignore: deprecated_member_use
-          cacheExtent: 400,
-          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: maxItemWidth,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: aspectRatio,
-          ),
-          itemBuilder: (context, index) => NavigationTransitionCard(
-            transition: items[index],
-            index: index,
-            totalItems: items.length,
-            log: log,
-            selectedTransitionId: selectedTransitionId,
-            items: items,
-          ),
-        ),
-      );
+    builder: (context, constraints) => GridView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: items.length,
+      // ignore: deprecated_member_use
+      cacheExtent: 400,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: maxItemWidth,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: aspectRatio,
+      ),
+      itemBuilder: (context, index) => NavigationTransitionCard(
+        transition: items[index],
+        index: index,
+        totalItems: items.length,
+        log: log,
+        selectedTransitionId: selectedTransitionId,
+        items: items,
+      ),
+    ),
+  );
 }

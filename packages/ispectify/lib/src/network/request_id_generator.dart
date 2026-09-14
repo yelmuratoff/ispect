@@ -8,7 +8,7 @@ import 'dart:math';
 /// - Counter: monotonically incrementing integer (global across all instances)
 ///
 /// The prefix is random rather than time-derived so two sessions started close
-/// together — where the counter also restarts at zero — do not collide. The
+/// together - where the counter also restarts at zero - do not collide. The
 /// counter is static so IDs stay unique even when multiple interceptors
 /// (e.g. Dio + http) each create their own generator.
 ///

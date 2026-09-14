@@ -6,12 +6,13 @@ import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 
 /// Detail view widget for displaying selected log data.
 ///
 /// When [correlatedLog] is provided, shows a banner allowing
 /// navigation to the correlated request/response.
-class LogDetailView extends StatelessWidget {
+class LogDetailView extends StatefulWidget {
   const LogDetailView({
     required this.activeData,
     this.onClose,
@@ -30,6 +31,8 @@ class LogDetailView extends StatelessWidget {
   final void Function(String id)? onShowRelated;
 
   void push(BuildContext context) {
+    var displayedData = activeData;
+    var pairedData = correlatedLog;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (routeContext) {
@@ -37,21 +40,31 @@ class LogDetailView extends StatelessWidget {
           return ISpectThemeScope(
             child: Scaffold(
               body: SafeArea(
-                child: LogDetailView(
-                  activeData: activeData,
-                  correlatedLog: correlatedLog,
-                  correlationDuration: correlationDuration,
-                  onNavigateToCorrelated: onNavigateToCorrelated,
-                  onClose: () {
-                    onClose?.call();
-                    Navigator.of(routeContext).pop();
-                  },
-                  onShowRelated: showRelated == null
-                      ? null
-                      : (id) {
-                          showRelated(id);
-                          Navigator.of(routeContext).pop();
-                        },
+                child: StatefulBuilder(
+                  builder: (context, setState) => LogDetailView(
+                    activeData: displayedData,
+                    correlatedLog: pairedData,
+                    correlationDuration: correlationDuration,
+                    onNavigateToCorrelated:
+                        onNavigateToCorrelated ??
+                        (pairedData == null
+                            ? null
+                            : () => setState(() {
+                                final previousData = displayedData;
+                                displayedData = pairedData!;
+                                pairedData = previousData;
+                              })),
+                    onClose: () {
+                      onClose?.call();
+                      Navigator.of(routeContext).pop();
+                    },
+                    onShowRelated: showRelated == null
+                        ? null
+                        : (id) {
+                            showRelated(id);
+                            Navigator.of(routeContext).pop();
+                          },
+                  ),
                 ),
               ),
             ),
@@ -63,40 +76,153 @@ class LogDetailView extends StatelessWidget {
   }
 
   @override
+  State<LogDetailView> createState() => _LogDetailViewState();
+}
+
+class _LogDetailViewState extends State<LogDetailView> {
+  late bool _redactionActive;
+  late RedactionService _redactionService;
+  late int _redactionRevision;
+  late String _correlatedMessage;
+  late ({String display, String raw})? _correlationId;
+  late ({String display, String raw})? _transactionId;
+  late bool _isViewingRequest;
+  late JsonScreen _jsonScreen;
+
+  DiagnosticResourceLimits get _resourceLimits =>
+      ISpect.loggerIfInitialized?.options.resourceLimits ??
+      DiagnosticResourceLimits.balanced;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshSnapshots();
+  }
+
+  @override
+  void didUpdateWidget(covariant LogDetailView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final currentRedactionService = ISpectRedaction.service;
+    if (!identical(oldWidget.activeData, widget.activeData) ||
+        !identical(oldWidget.correlatedLog, widget.correlatedLog) ||
+        _redactionActive != ISpectRedaction.enabled ||
+        !identical(_redactionService, currentRedactionService) ||
+        _redactionRevision != currentRedactionService.configurationRevision) {
+      _refreshSnapshots();
+    }
+  }
+
+  void _refreshSnapshots() {
+    _redactionActive = ISpectRedaction.enabled;
+    _redactionService = ISpectRedaction.service;
+    _redactionRevision = _redactionService.configurationRevision;
+    final activeData = captureISpectLogDataForEgress(widget.activeData);
+    final correlatedLog = widget.correlatedLog;
+    _correlatedMessage = correlatedLog == null
+        ? ''
+        : _viewerText(captureISpectLogDataForEgress(correlatedLog).message);
+    final correlationId = activeData.additionalData?[TraceKeys.correlationId];
+    final transactionId = activeData.additionalData?[TraceKeys.transactionId];
+    _correlationId = _viewerTraceId(
+      correlationId is String ? correlationId : null,
+    );
+    _transactionId = _viewerTraceId(
+      transactionId is String ? transactionId : null,
+    );
+    _isViewingRequest = activeData.key == ISpectLogType.httpRequest.key;
+    _jsonScreen = JsonScreen(
+      key: UniqueKey(),
+      data: _viewerSnapshot(),
+      truncatedDataBuilder: () => _viewerSnapshot(truncated: true),
+      onClose: _handleClose,
+    );
+  }
+
+  Map<String, dynamic> _viewerSnapshot({bool truncated = false}) {
+    final prepared = widget.activeData.toExportJson(
+      redactionActive: _redactionActive,
+      truncated: truncated,
+    );
+    if (!_redactionActive) return prepared;
+
+    try {
+      final redacted = _redactionService.redactEnvelopeForExport(
+        prepared,
+        rootValueKeys: const {'key'},
+        resourceLimits: _resourceLimits,
+      );
+      if (redacted is Map<String, Object?>) {
+        return Map<String, dynamic>.from(redacted);
+      }
+    } on Object {
+      return const <String, dynamic>{
+        'message': JsonValueNormalizer.unprintableValue,
+      };
+    }
+    return const <String, dynamic>{
+      'message': JsonValueNormalizer.unprintableValue,
+    };
+  }
+
+  ({String display, String raw})? _viewerTraceId(String? value) =>
+      value == null ? null : (display: _viewerText(value), raw: value);
+
+  String _viewerText(Object? value) {
+    if (value == null) return '';
+    try {
+      final prepared = _redactionActive
+          ? _redactionService.redactForExport(
+              value,
+              resourceLimits: _resourceLimits,
+            )
+          : LogExportOutput.boundJsonValue(
+              value,
+              resourceLimits: _resourceLimits,
+            );
+      return switch (prepared) {
+        final String text => text,
+        final bool value => value.toString(),
+        final num value => value.toString(),
+        _ => defaultPlaceholder,
+      };
+    } on Object {
+      return defaultPlaceholder;
+    }
+  }
+
+  void _handleClose() {
+    final callback = widget.onClose;
+    if (callback != null) {
+      callback();
+      return;
+    }
+    Navigator.of(context).pop();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final json = activeData.toJson();
-    final corrId =
-        activeData.additionalData?[TraceKeys.correlationId] as String?;
-    final txnId =
-        activeData.additionalData?[TraceKeys.transactionId] as String?;
-    final hasTraceCorrelation = (corrId != null || txnId != null) &&
-        !(correlatedLog != null && onNavigateToCorrelated != null);
+    final hasTraceCorrelation =
+        (_correlationId != null || _transactionId != null) &&
+        !(widget.correlatedLog != null &&
+            widget.onNavigateToCorrelated != null);
 
     return Column(
       children: [
-        if (correlatedLog != null && onNavigateToCorrelated != null)
+        if (widget.correlatedLog != null &&
+            widget.onNavigateToCorrelated != null)
           _CorrelationBanner(
-            activeData: activeData,
-            correlatedLog: correlatedLog!,
-            duration: correlationDuration,
-            onNavigate: onNavigateToCorrelated!,
+            isViewingRequest: _isViewingRequest,
+            correlatedMessage: _correlatedMessage,
+            duration: widget.correlationDuration,
+            onNavigate: widget.onNavigateToCorrelated!,
           ),
         if (hasTraceCorrelation)
           _TraceCorrelationBanner(
-            correlationId: corrId,
-            transactionId: txnId,
-            onShowRelated: onShowRelated,
+            correlationId: _correlationId,
+            transactionId: _transactionId,
+            onShowRelated: widget.onShowRelated,
           ),
-        Expanded(
-          child: RepaintBoundary(
-            child: JsonScreen(
-              key: ValueKey(activeData.id),
-              data: json,
-              truncatedData: activeData.toJson(truncated: true),
-              onClose: onClose,
-            ),
-          ),
-        ),
+        Expanded(child: RepaintBoundary(child: _jsonScreen)),
       ],
     );
   }
@@ -109,8 +235,8 @@ class _TraceCorrelationBanner extends StatelessWidget {
     this.onShowRelated,
   });
 
-  final String? correlationId;
-  final String? transactionId;
+  final ({String display, String raw})? correlationId;
+  final ({String display, String raw})? transactionId;
   final void Function(String id)? onShowRelated;
 
   static void _copyId(BuildContext context, String id) {
@@ -130,14 +256,14 @@ class _TraceCorrelationBanner extends StatelessWidget {
       chips.add(
         _IdChip(
           label: 'Corr',
-          value: correlationId!,
+          value: correlationId!.display,
           color: color,
           actionIcon: onShowRelated != null
               ? Icons.filter_list_rounded
               : Icons.copy_rounded,
           onTap: onShowRelated != null
-              ? () => onShowRelated!(correlationId!)
-              : () => _copyId(context, correlationId!),
+              ? () => onShowRelated!(correlationId!.raw)
+              : () => _copyId(context, correlationId!.display),
         ),
       );
     }
@@ -145,14 +271,14 @@ class _TraceCorrelationBanner extends StatelessWidget {
       chips.add(
         _IdChip(
           label: 'Txn',
-          value: transactionId!,
+          value: transactionId!.display,
           color: color,
           actionIcon: onShowRelated != null
               ? Icons.filter_list_rounded
               : Icons.copy_rounded,
           onTap: onShowRelated != null
-              ? () => onShowRelated!(transactionId!)
-              : () => _copyId(context, transactionId!),
+              ? () => onShowRelated!(transactionId!.raw)
+              : () => _copyId(context, transactionId!.display),
         ),
       );
     }
@@ -163,9 +289,7 @@ class _TraceCorrelationBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.06),
         border: Border(
-          bottom: BorderSide(
-            color: color.withValues(alpha: 0.15),
-          ),
+          bottom: BorderSide(color: color.withValues(alpha: 0.15)),
         ),
       ),
       child: Padding(
@@ -178,13 +302,7 @@ class _TraceCorrelationBanner extends StatelessWidget {
               color: color.withValues(alpha: 0.7),
             ),
             const Gap(6),
-            Expanded(
-              child: Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: chips,
-              ),
-            ),
+            Expanded(child: Wrap(spacing: 6, runSpacing: 4, children: chips)),
           ],
         ),
       ),
@@ -209,63 +327,58 @@ class _IdChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: MouseRegion(
-          cursor: onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
-          child: DecoratedBox(
-            decoration: ISpectSquircle.decoration(
-              color: color.withValues(alpha: 0.1),
-              radius: ISpectConstants.mediumBorderRadius,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      '$label: $value',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
+    onTap: onTap,
+    child: MouseRegion(
+      cursor: onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+      child: DecoratedBox(
+        decoration: ISpectSquircle.decoration(
+          color: color.withValues(alpha: 0.1),
+          radius: ISpectConstants.mediumBorderRadius,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  '$label: $value',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
-                  if (onTap != null) ...[
-                    const Gap(4),
-                    Icon(
-                      actionIcon,
-                      size: 11,
-                      color: color,
-                    ),
-                  ],
-                ],
+                ),
               ),
-            ),
+              if (onTap != null) ...[
+                const Gap(4),
+                Icon(actionIcon, size: 11, color: color),
+              ],
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class _CorrelationBanner extends StatelessWidget {
   const _CorrelationBanner({
-    required this.activeData,
-    required this.correlatedLog,
+    required this.isViewingRequest,
+    required this.correlatedMessage,
     required this.onNavigate,
     this.duration,
   });
 
-  final ISpectLogData activeData;
-  final ISpectLogData correlatedLog;
+  final bool isViewingRequest;
+  final String correlatedMessage;
   final Duration? duration;
   final VoidCallback onNavigate;
 
   @override
   Widget build(BuildContext context) {
-    final isViewingRequest = activeData.key == ISpectLogType.httpRequest.key;
     final l10n = ISpectLocalization.of(context);
     final theme = context.iSpect.theme;
 
@@ -273,16 +386,15 @@ class _CorrelationBanner extends StatelessWidget {
     final targetKey = isViewingRequest
         ? ISpectLogType.httpResponse.key
         : ISpectLogType.httpRequest.key;
-    final targetColor = theme.getTypeColor(context, key: targetKey) ??
+    final targetColor =
+        theme.getTypeColor(context, key: targetKey) ??
         context.ispectPrimaryColor;
 
     return DecoratedBox(
       decoration: BoxDecoration(
         color: targetColor.withValues(alpha: 0.06),
         border: Border(
-          bottom: BorderSide(
-            color: targetColor.withValues(alpha: 0.15),
-          ),
+          bottom: BorderSide(color: targetColor.withValues(alpha: 0.15)),
         ),
       ),
       child: Padding(
@@ -301,7 +413,7 @@ class _CorrelationBanner extends StatelessWidget {
             ],
             Expanded(
               child: Text(
-                correlatedLog.message ?? '',
+                correlatedMessage,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -330,9 +442,7 @@ class _DurationChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = duration.inMilliseconds < 1000
-        ? '${duration.inMilliseconds}ms'
-        : '${(duration.inMilliseconds / 1000).toStringAsFixed(1)}s';
+    final text = formatTransactionDuration(duration);
     return DecoratedBox(
       decoration: ISpectSquircle.decoration(
         color: context.appTheme.textColor.withValues(alpha: 0.08),
@@ -367,37 +477,33 @@ class _GoToButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: DecoratedBox(
-            decoration: ISpectSquircle.decoration(
-              color: color.withValues(alpha: 0.1),
-              radius: ISpectConstants.mediumBorderRadius,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Gap(4),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 12,
-                    color: color,
-                  ),
-                ],
+    onTap: onTap,
+    child: MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: DecoratedBox(
+        decoration: ISpectSquircle.decoration(
+          color: color.withValues(alpha: 0.1),
+          radius: ISpectConstants.mediumBorderRadius,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
+              const Gap(4),
+              Icon(Icons.arrow_forward_rounded, size: 12, color: color),
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 }

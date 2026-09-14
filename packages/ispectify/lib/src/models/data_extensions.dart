@@ -6,7 +6,7 @@ extension ISpectDataX on ISpectLogData {
   ///
   /// Preserves [ISpectLogData.id] by default so the copy stays equal to the
   /// original under the id-based `==`/`hashCode`; pass [id] to mint a new
-  /// identity. Always returns a base [ISpectLogData] — subtypes such as
+  /// identity. Always returns a base [ISpectLogData] - subtypes such as
   /// [ISpectLogException]/[ISpectLogError] are not reconstructed, since this is
   /// an extension method and cannot dispatch on the runtime type.
   ISpectLogData copyWith({
@@ -20,92 +20,138 @@ extension ISpectDataX on ISpectLogData {
     String? key,
     Map<String, dynamic>? additionalData,
     String? id,
-  }) =>
-      ISpectLogData(
-        message ?? this.message,
-        logLevel: logLevel ?? this.logLevel,
-        exception: exception ?? this.exception,
-        error: error ?? this.error,
-        stackTrace: stackTrace ?? this.stackTrace,
-        time: time ?? this.time,
-        pen: pen ?? this.pen,
-        key: key ?? this.key,
-        additionalData: additionalData ?? this.additionalData,
-        id: id ?? this.id,
-      );
+    DiagnosticCaptureMode? captureMode,
+    DiagnosticResourceLimits? resourceLimits,
+  }) {
+    final captured = captureISpectLogDataForEgress(this);
+    return ISpectLogData(
+      message ?? captured.message,
+      logLevel: logLevel ?? captured.logLevel,
+      exception: exception ?? captured.exception,
+      error: error ?? captured.error,
+      stackTrace: stackTrace ?? captured.stackTrace,
+      time: time ?? captured.time,
+      pen: pen ?? captured.pen,
+      key: key ?? captured.key,
+      additionalData: additionalData ?? captured.additionalData,
+      id: id ?? captured.id,
+      captureMode: captureMode ?? captured.captureMode,
+      resourceLimits: resourceLimits ?? captured.resourceLimits,
+    );
+  }
 
   /// Identity-preserving copy: equal to the original under `==`.
   ISpectLogData copy() => copyWith();
 
   /// Truncated summary for debugging/display.
-  String generateText() {
-    String truncate(String? value, int maxLength) {
-      if (value == null) return '';
-      return value.length > maxLength
-          ? '${value.substring(0, maxLength)}...'
-          : value;
+  String generateText({int? maxOutputBytes}) {
+    final captured = captureISpectLogDataForEgress(this);
+    final policyBudget = captured.resourceLimits.maxUiDiagnosticBytes;
+    final requestedBudget = maxOutputBytes ?? policyBudget;
+    if (requestedBudget < 0) {
+      throw RangeError.range(
+        requestedBudget,
+        0,
+        policyBudget,
+        'maxOutputBytes',
+      );
     }
+    final outputBudget =
+        requestedBudget < policyBudget ? requestedBudget : policyBudget;
+    String bounded(String? value) => LogExportOutput.truncateUtf8(
+          value ?? '',
+          maxBytes: outputBudget,
+        );
 
-    final formattedKey = truncate(key, 100);
-    final formattedMessage = truncate(message, 100);
-    final exceptionText = truncate(exception?.toString(), 500);
-    final errorText = truncate(error?.toString(), 500);
-    final stackTraceText = truncate(stackTrace?.toString(), 500);
-
-    return '''[Item with hashcode: $hashCode
-Time: $formattedTime
-Key: $formattedKey
-Message: $formattedMessage
-Exception: $exceptionText
-Error: $errorText
-StackTrace: $stackTraceText]''';
+    final output = '''[Item with hashcode: ${captured.id.hashCode}
+Time: ${ISpectDateTimeFormatter(captured.time).defaultFormat}
+Key: ${bounded(captured.key)}
+Message: ${bounded(_safeDiagnosticText(captured.message))}
+Exception: ${bounded(captured.exceptionText)}
+Error: ${bounded(captured.errorText)}
+StackTrace: ${bounded(captured.stackTraceText)}]''';
+    return LogExportOutput.truncateUtf8(
+      output,
+      maxBytes: outputBudget,
+    );
   }
 
   /// Stack trace text for log display. Returns `null` if unavailable.
   String? get stackTraceLogText {
-    if (isError && stackTrace != null && stackTrace.toString().isNotEmpty) {
-      return 'StackTrace:\n$stackTrace'.truncate();
-    }
-    return null;
+    final captured = captureISpectLogWithoutPayload(this);
+    final isError = captured.logLevel == LogLevel.error ||
+        captured.logLevel == LogLevel.critical ||
+        ISpectLogType.isErrorKey(captured.key) ||
+        maskedDiagnosticField(this, TraceKeys.success) == false;
+    final stackTraceText = captured.stackTraceText;
+    return isError && stackTraceText != null && stackTraceText.isNotEmpty
+        ? LogExportOutput.truncateUtf8(
+            'StackTrace:\n$stackTraceText',
+            maxBytes: captured.resourceLimits.maxUiDiagnosticBytes,
+          )
+        : null;
   }
 
   /// Error/exception message with special handling for HTTP and Flutter errors.
   String? get httpLogText {
-    var txt = exception?.toString();
+    final captured = captureISpectLogDataForEgress(this);
+    var txt = captured.exceptionText;
 
     if ((txt?.isNotEmpty ?? false) && txt!.contains('Source stack:')) {
       txt = 'Data: ${txt.split('Source stack:').first.replaceAll('\n', ' ')}';
     }
 
-    final text = isHttpLog ? textMessage : txt;
+    final text = _isHttpKey(captured.key)
+        ? NetworkLogRenderer.renderHeadline(this)
+        : txt;
 
-    return text.truncate();
+    return text == null
+        ? null
+        : LogExportOutput.truncateUtf8(
+            text,
+            maxBytes: captured.resourceLimits.maxUiDiagnosticBytes,
+          );
   }
 
-  bool get isHttpLog =>
-      key == ISpectLogType.httpRequest.key ||
-      key == ISpectLogType.httpResponse.key ||
-      key == ISpectLogType.httpError.key;
+  bool get isHttpLog => _isHttpKey(captureISpectLogWithoutPayload(this).key);
 
-  bool get isRouteLog => key == ISpectLogType.route.key;
+  bool get isRouteLog =>
+      captureISpectLogWithoutPayload(this).key == ISpectLogType.route.key;
 
   /// Generates a cURL command for HTTP logs, or `null` for non-HTTP entries.
   ///
-  /// **Headers and body are NOT redacted.** Prefer [curlCommandWith] and
-  /// pass a [RedactionService] when the result is exposed to users.
+  /// Headers, URL credentials/query secrets, and bodies are redacted by
+  /// default.
   String? get curlCommand => curlCommandWith();
 
-  /// Like [curlCommand], but routes headers and body through [redactor]
-  /// when one is provided.
-  String? curlCommandWith({RedactionService? redactor}) {
-    if (key == ISpectLogType.httpRequest.key) {
-      return CurlUtils.generateCurl(additionalData, redactor: redactor);
-    } else if (key == ISpectLogType.httpResponse.key ||
-        key == ISpectLogType.httpError.key) {
-      final requestOptions =
-          additionalData?['request-options'] as Map<String, dynamic>?;
+  /// Like [curlCommand], with an optional custom [redactor].
+  ///
+  /// Set [enableRedaction] to `false` only for controlled local debugging.
+  String? curlCommandWith({
+    RedactionService? redactor,
+    bool enableRedaction = true,
+  }) {
+    final captured = captureISpectLogDataForEgress(this);
+    if (captured.key == ISpectLogType.httpRequest.key) {
+      return CurlUtils.generateCurl(
+        captured.additionalData,
+        redactor: redactor,
+        enableRedaction: enableRedaction,
+        resourceLimits: captured.resourceLimits,
+      );
+    } else if (captured.key == ISpectLogType.httpResponse.key ||
+        captured.key == ISpectLogType.httpError.key) {
+      final requestOptionsValue = captured.additionalData?['request-options'];
+      final requestOptions = requestOptionsValue is Map<String, dynamic>
+          ? requestOptionsValue
+          : null;
       return requestOptions != null
-          ? CurlUtils.generateCurl(requestOptions, redactor: redactor)
+          ? CurlUtils.generateCurl(
+              requestOptions,
+              redactor: redactor,
+              enableRedaction: enableRedaction,
+              resourceLimits: captured.resourceLimits,
+            )
           : null;
     }
     return null;
@@ -113,9 +159,24 @@ StackTrace: $stackTraceText]''';
 
   /// Exception/error runtime type label, or `null` for non-error logs.
   String? get typeText {
-    if (this is! ISpectLogError && this is! ISpectLogException) {
-      return null;
-    }
-    return 'Type: ${exception?.runtimeType ?? error?.runtimeType ?? ''}';
+    if (this is ISpectLogException) return 'Type: Exception';
+    if (this is ISpectLogError) return 'Type: Error';
+    return null;
   }
+}
+
+bool _isHttpKey(String? key) =>
+    key == ISpectLogType.httpRequest.key ||
+    key == ISpectLogType.httpResponse.key ||
+    key == ISpectLogType.httpError.key;
+
+String? _safeDiagnosticText(Object? value) {
+  if (value == null) return null;
+  final bounded = LogExportOutput.boundJsonValue(value);
+  return switch (bounded) {
+    final String text => text,
+    final bool primitive => primitive.toString(),
+    final num primitive => primitive.toString(),
+    _ => JsonValueNormalizer.unprintableValue,
+  };
 }

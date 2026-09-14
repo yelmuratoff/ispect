@@ -22,18 +22,21 @@ extension ISpectLoggerGraphQL on ISpectLogger {
     ISpectTraceConfig? config,
     String? correlationId,
   }) {
+    if (!isEnabled) return run();
     final cfg = config ?? const ISpectTraceConfig();
     return traceCategoryAsync(
       category: graphqlCategory,
       source: source,
       operation: operation,
       target: operationName,
-      meta: {
-        if (document != null)
-          'document': truncateValue(document, cfg.maxValueLength) ?? '',
-        if (variables != null) 'variables': variables,
-        ...?meta,
-      },
+      meta: boundedTraceMeta(
+        fields: {
+          if (document != null)
+            'document': truncateValue(document, cfg.maxValueLength) ?? '',
+          if (variables != null) 'variables': variables,
+        },
+        overrides: meta,
+      ),
       run: run,
       projectResult: projectResult,
       config: cfg,

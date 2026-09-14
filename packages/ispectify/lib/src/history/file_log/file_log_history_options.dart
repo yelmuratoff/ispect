@@ -2,6 +2,7 @@ import 'package:ispectify/src/history/file_log/file_log_history_exception.dart';
 import 'package:ispectify/src/history/file_log/session_cleanup_strategy.dart';
 import 'package:meta/meta.dart';
 
+/// Resolves an existing app-private directory for rolling log persistence.
 typedef FileLogDirectoryProvider = Future<String> Function();
 typedef FileLogHistoryErrorHandler = void Function(
   FileLogHistoryException error,
@@ -27,6 +28,9 @@ final class FileLogHistoryOptions {
   final int maxBatchItems;
   final bool enableAutoSave;
   final SessionCleanupStrategy cleanupStrategy;
+
+  /// Receives a type-preserving error snapshot with paths, causes, and stack
+  /// traces sanitized while global redaction is enabled.
   final FileLogHistoryErrorHandler? onError;
 
   void validate() {

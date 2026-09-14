@@ -5,24 +5,24 @@ Write code that fits the project's existing patterns, surfaces failures explicit
 ## Scope of Changes
 
 - Touch only what the task requires. Adjacent code stays as-is until asked.
-- Three similar lines beat a premature abstraction — let real duplication drive helpers.
+- Three similar lines beat a premature abstraction - let real duplication drive helpers.
 - Delete dead code outright; git keeps the history.
 
 ## Errors
 
 - Raise the project's typed exceptions instead of raw strings.
-- Handle failures explicitly — either recover or let the exception propagate.
+- Handle failures explicitly - either recover or let the exception propagate.
 - Validate at system boundaries (user input, external APIs); trust internal calls.
 
 ## Tests
 
 - Cover business logic and error paths. Skip framework internals and trivial getters.
-- Keep tests deterministic — local fixtures only, with no real network, no randomness, no time-based sleeps.
+- Keep tests deterministic - local fixtures only, with no real network, no randomness, no time-based sleeps.
 - Name tests by the behaviour verified, not by the method called.
 
 ## Security
 
-- Load secrets, API keys, and credentials at runtime from the project's secret store — keep them out of source.
+- Load secrets, API keys, and credentials at runtime from the project's secret store - keep them out of source.
 - Keep tokens, passwords, and PII out of logs.
 - Store sensitive values through the project's secure storage primitive.
 

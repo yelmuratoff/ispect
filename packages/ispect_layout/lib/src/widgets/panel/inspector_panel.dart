@@ -96,7 +96,8 @@ class _InspectorPanelState extends State<InspectorPanel> {
   Widget _build(BuildContext context) {
     final mode = controller.modeNotifier.value;
 
-    final height = 16.0 +
+    final height =
+        16.0 +
         (controller.isWidgetInspectorEnabled ? 56.0 : 0.0) +
         (controller.isColorPickerEnabled ? 64.0 : 0.0) +
         (controller.isZoomEnabled ? 64.0 : 0.0);
@@ -124,11 +125,13 @@ class _InspectorPanelState extends State<InspectorPanel> {
                       ? InspectorMode.none
                       : InspectorMode.inspector,
                 ),
-                backgroundColor: (mode == InspectorMode.inspector ||
+                backgroundColor:
+                    (mode == InspectorMode.inspector ||
                         mode == InspectorMode.compareSelect)
                     ? _activeColor
                     : _surfaceColor,
-                foregroundColor: (mode == InspectorMode.inspector ||
+                foregroundColor:
+                    (mode == InspectorMode.inspector ||
                         mode == InspectorMode.compareSelect)
                     ? _onActiveColor
                     : _onSurfaceColor,
@@ -160,8 +163,9 @@ class _InspectorPanelState extends State<InspectorPanel> {
                       ? InspectorMode.none
                       : InspectorMode.zoom,
                 ),
-                backgroundColor:
-                    mode == InspectorMode.zoom ? _activeColor : _surfaceColor,
+                backgroundColor: mode == InspectorMode.zoom
+                    ? _activeColor
+                    : _surfaceColor,
                 foregroundColor: mode == InspectorMode.zoom
                     ? _onActiveColor
                     : _onSurfaceColor,

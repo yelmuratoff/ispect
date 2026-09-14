@@ -23,13 +23,14 @@ class LogTypeFilterSection extends StatelessWidget {
 
   /// Callback when a log type is toggled.
   final void Function(String logTypeKey, {required bool enabled})
-      onLogTypeToggled;
+  onLogTypeToggled;
 
   /// Callback to select all log types.
   final VoidCallback onSelectAll;
 
-  /// Callback to deselect all log types.
-  final VoidCallback onDeselectAll;
+  /// Callback to deselect every log type this section displays, given their
+  /// keys.
+  final void Function(Set<String> logTypeKeys) onDeselectAll;
 
   /// Returns true if all log types are enabled (no disabled types).
   bool get _isAllEnabled => disabledLogTypes.isEmpty;
@@ -39,7 +40,7 @@ class LogTypeFilterSection extends StatelessWidget {
     final theme = context.ispectTheme;
     final builtInDescriptions = ISpectConstants.defaultLogDescriptions(context);
 
-    // Merge custom types from theme — convert ISpectLogType → LogDescription
+    // Merge custom types from theme - convert ISpectLogType → LogDescription
     final customDescriptions = theme.customLogTypes.map(
       (t) => LogDescription(key: t.key, title: t.title),
     );
@@ -51,7 +52,9 @@ class LogTypeFilterSection extends StatelessWidget {
     final selectAllLabel = _isAllEnabled
         ? context.ispectL10n.deselectAll
         : context.ispectL10n.selectAll;
-    final onSelectAllTap = _isAllEnabled ? onDeselectAll : onSelectAll;
+    final onSelectAllTap = _isAllEnabled
+        ? () => onDeselectAll(logDescriptions.map((d) => d.key).toSet())
+        : onSelectAll;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -153,26 +156,26 @@ class _SelectAllLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-        button: true,
-        label: label,
-        onTap: onTap,
-        child: GestureDetector(
-          excludeFromSemantics: true,
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-            child: Text(
-              label,
-              style: context.appTheme.textTheme.labelSmall?.copyWith(
-                color: context.appTheme.textColor.withValues(alpha: 0.55),
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.4,
-              ),
-            ),
+    button: true,
+    label: label,
+    onTap: onTap,
+    child: GestureDetector(
+      excludeFromSemantics: true,
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Text(
+          label,
+          style: context.appTheme.textTheme.labelSmall?.copyWith(
+            color: context.appTheme.textColor.withValues(alpha: 0.55),
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.4,
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class _LogTypeGroup extends StatelessWidget {
@@ -187,7 +190,7 @@ class _LogTypeGroup extends StatelessWidget {
   final List<LogDescription> logTypes;
   final Set<String> disabledLogTypes;
   final void Function(String logTypeKey, {required bool enabled})
-      onLogTypeToggled;
+  onLogTypeToggled;
 
   @override
   Widget build(BuildContext context) {
@@ -218,10 +221,8 @@ class _LogTypeGroup extends StatelessWidget {
                   return _LogTypeChip(
                     logType: logType,
                     isEnabled: isEnabled,
-                    onToggled: () => onLogTypeToggled(
-                      logType.key,
-                      enabled: !isEnabled,
-                    ),
+                    onToggled: () =>
+                        onLogTypeToggled(logType.key, enabled: !isEnabled),
                   );
                 }).toList(),
               ),
@@ -246,12 +247,18 @@ class _LogTypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typeColor =
-        context.iSpect.theme.getTypeColor(context, key: logType.key);
-    final typeIcon =
-        context.iSpect.theme.getTypeIcon(context, key: logType.key);
-    final description =
-        context.iSpect.theme.getTypeDescription(context, key: logType.key);
+    final typeColor = context.iSpect.theme.getTypeColor(
+      context,
+      key: logType.key,
+    );
+    final typeIcon = context.iSpect.theme.getTypeIcon(
+      context,
+      key: logType.key,
+    );
+    final description = context.iSpect.theme.getTypeDescription(
+      context,
+      key: logType.key,
+    );
     final effectiveColor = isEnabled
         ? typeColor
         : context.appTheme.textColor.withValues(alpha: 0.25);
@@ -274,25 +281,23 @@ class _LogTypeChip extends StatelessWidget {
             decoration: ISpectSquircle.decoration(
               color: isEnabled
                   ? effectiveColor?.withValues(alpha: 0.12)
-                  : context.appTheme.colorScheme.onSurface
-                      .withValues(alpha: 0.04),
+                  : context.appTheme.colorScheme.onSurface.withValues(
+                      alpha: 0.04,
+                    ),
               radius: ISpectConstants.standardBorderRadius,
               side: BorderSide(
                 color: isEnabled
                     ? effectiveColor?.withValues(alpha: 0.3) ??
-                        Colors.transparent
-                    : context.appTheme.colorScheme.onSurface
-                        .withValues(alpha: 0.08),
+                          Colors.transparent
+                    : context.appTheme.colorScheme.onSurface.withValues(
+                        alpha: 0.08,
+                      ),
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  typeIcon,
-                  size: 14,
-                  color: effectiveColor,
-                ),
+                Icon(typeIcon, size: 14, color: effectiveColor),
                 const SizedBox(width: 4),
                 Text(
                   logType.displayTitle,
@@ -310,10 +315,7 @@ class _LogTypeChip extends StatelessWidget {
     );
 
     if (description != null) {
-      chip = Tooltip(
-        message: description,
-        child: chip,
-      );
+      chip = Tooltip(message: description, child: chip);
     }
 
     return chip;

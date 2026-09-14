@@ -20,7 +20,7 @@ final class ISpectDbToken {
 
   final Stopwatch _stopwatch;
 
-  /// Stops the internal stopwatch. Idempotent — safe to call multiple times.
+  /// Stops the internal stopwatch. Idempotent - safe to call multiple times.
   void stopTiming() => _stopwatch.stop();
 
   /// Elapsed duration since [dbStart] was called.

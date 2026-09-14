@@ -31,7 +31,7 @@ void main() {
       // kISpectEnabled is false in the test env: production builds must not
       // retain the client or expose request sending.
       expect(ISpect.senders, isEmpty);
-    });
+    }, skip: kISpectEnabled);
 
     test('unregisterSender on an empty registry is safe', () async {
       await ISpect.dispose();

@@ -8,14 +8,24 @@ on:
       - develop
     paths:
       - 'packages/*/pubspec.yaml'
+      - 'packages/*/example/pubspec.yaml'
+      - 'packages/*/CHANGELOG.md'
       - 'packages/*/README.md'
+      - 'README.md'
+      - 'web_logs_viewer/pubspec.yaml'
+      - 'web_logs_viewer/pubspec.lock'
       - 'version.config'
+      - 'llms.txt'
       - 'CHANGELOG.md'
       - 'ROADMAP.md'
       - 'SECURITY.md'
       - 'docs/readme/**'
       - 'docs/*.md'
-      - 'bash/build_readme.sh'
+      - 'tool/**'
+      - '.github/workflows/validate_versions.yml'
+
+permissions:
+  contents: read
 
 jobs:
   validate-versions:
@@ -23,59 +33,34 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
-      - name: Check Version Sync
-        id: check_versions
+      - name: Setup Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: "3.35.7"
+          channel: stable
+          cache: true
+
+      - name: Test Release Tooling (Dart)
+        run: |
+          cd tool
+          dart pub get
+          dart analyze --fatal-infos
+          dart test
+
+      - name: Check Repository State
         run: |
           set -euo pipefail
+          dart run tool/bin/ispect_tool.dart check
 
-          # Ensure script is executable
-          if [[ ! -x bash/check_version_sync.sh ]]; then
-            chmod +x bash/check_version_sync.sh
-          fi
-
-          echo "🔍 Checking version synchronization across packages..."
-          if ! ./bash/check_version_sync.sh; then
-            echo "❌ Version check failed. Please run './bash/update_versions.sh' to sync all package versions."
-            exit 1
-          fi
-          echo "✅ Version synchronization check passed!"
-
-      - name: Check README Sync
-        id: check_readme
+      - name: Check Web Viewer Lockfile
         run: |
           set -euo pipefail
-
-          if [[ ! -x bash/build_readme.sh ]]; then
-            chmod +x bash/build_readme.sh
-          fi
-
-          echo "🔍 Checking that generated READMEs match docs/readme/ sources..."
-          if ! ./bash/build_readme.sh --check; then
-            echo "❌ README drift detected. Please run './bash/build_readme.sh' and commit the result."
-            exit 1
-          fi
-          echo "✅ README sync check passed!"
-
-      - name: Check Dependencies Consistency
-        id: check_dependencies
-        run: |
-          set -euo pipefail
-
-          # Ensure script is executable
-          if [[ ! -x bash/check_dependencies.sh ]]; then
-            chmod +x bash/check_dependencies.sh
-          fi
-
-          echo "🔍 Checking dependency version consistency..."
-          if ! ./bash/check_dependencies.sh; then
-            echo "❌ Dependency version check failed. Please run './bash/update_versions.sh' to sync all package dependencies."
-            exit 1
-          fi
-          echo "✅ Dependency consistency check passed!"
+          cd web_logs_viewer
+          flutter pub get --enforce-lockfile
 
       - name: Validate CHANGELOG
         id: validate_changelog

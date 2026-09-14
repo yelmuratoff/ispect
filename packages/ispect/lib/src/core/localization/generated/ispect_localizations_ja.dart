@@ -274,6 +274,9 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get printLogDesc => 'コンソールにメッセージが出力されました';
 
   @override
+  String get previewTruncated => 'プレビューを省略しました';
+
+  @override
   String get projectDomain => 'プロジェクトドメイン';
 
   @override
@@ -569,6 +572,21 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'メイン画面に戻る';
+
+  @override
+  String get logs => 'ログ';
+
+  @override
+  String get performance => 'パフォーマンス';
+
+  @override
+  String get inspector => 'インスペクタ';
+
+  @override
+  String get colorPicker => '色';
+
+  @override
+  String get composer => 'コンポーザー';
 
   @override
   String get navigationFlow => 'ナビゲーションフロー';
@@ -910,7 +928,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get tips => 'ヒント';
 
   @override
-  String get tipSearchLogs => 'テキストでログを検索 — JSON本文全体も検索します';
+  String get tipSearchLogs => 'テキストでログを検索 - JSON本文全体も検索します';
 
   @override
   String get tipLongPress => 'ログカードを長押しでクイックアクション';
@@ -928,7 +946,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get tipNavigationFlow => '設定からナビゲーションフローを開いてルート履歴を可視化';
 
   @override
-  String get tipShareSession => 'バグ報告用にログファイルを共有 — データは自動的にマスクされます';
+  String get tipShareSession => 'バグ報告用にログファイルを共有 - データは自動的にマスクされます';
 
   @override
   String get tipReverseLogs => 'アプリバーの矢印をタップしてログの順序を反転';

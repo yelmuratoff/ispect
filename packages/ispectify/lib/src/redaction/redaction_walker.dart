@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'package:ispectify/src/redaction/constants/detection_patterns.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
+import 'package:ispectify/src/redaction/key_canonicalizer.dart';
+import 'package:ispectify/src/redaction/map_key.dart';
 import 'package:ispectify/src/redaction/redaction_config.dart';
 import 'package:ispectify/src/redaction/redaction_request.dart';
 import 'package:ispectify/src/redaction/redaction_stats.dart';
@@ -29,6 +31,9 @@ final class RedactionWalker {
 
   RedactionContext? _cachedContext;
 
+  /// Key classification and masking helpers bound to this walker's config.
+  RedactionContext get context => _cachedContext ??= _createContext();
+
   Map<String, Object?> redactHeaders(Map<String, Object?> headers) {
     final out = <String, Object?>{};
     headers.forEach((key, value) {
@@ -51,11 +56,17 @@ final class RedactionWalker {
       return config.placeholder;
     }
 
+    final ctx = _cachedContext ??= _createContext();
+    final binaryBytes = _binaryBytes(node);
+    if (binaryBytes != null && config.redactBinary) {
+      _trackStrategyHit(keyName);
+      return ctx.redactUint8List(binaryBytes);
+    }
+
     // Delegate leaf redaction to pluggable strategies. A strategy that throws
     // propagates by design: boundary callers (NetworkRedactionMixin.safeRedact
     // / processMapData) catch it, log a warning, and fail closed to a
-    // placeholder — so failures stay loud rather than being silently swallowed.
-    final ctx = _cachedContext ??= _createContext();
+    // placeholder - so failures stay loud rather than being silently swallowed.
     final strategyResult = strategy.tryRedact(
       node,
       keyName: keyName,
@@ -66,7 +77,12 @@ final class RedactionWalker {
       return strategyResult;
     }
 
-    // Structural traversal — strategies had no opinion, recurse into
+    // Typed binary must remain atomic when masking is deliberately disabled.
+    // Typed list views also implement List; traversing them here would
+    // materialize the entire buffer before an outbound byte budget can apply.
+    if (binaryBytes != null) return node;
+
+    // Structural traversal - strategies had no opinion, recurse into
     // containers or pass through leaf values unchanged.
     if (node is Map) return _redactMap(node, depth);
     if (node is List) return _redactList(node, keyName, depth);
@@ -74,7 +90,19 @@ final class RedactionWalker {
     return node;
   }
 
-  RedactionContext _createContext() => RedactionContext(
+  static Uint8List? _binaryBytes(Object? value) {
+    if (value is ByteBuffer) return value.asUint8List();
+    if (value is TypedData) {
+      return Uint8List.view(
+        value.buffer,
+        value.offsetInBytes,
+        value.lengthInBytes,
+      );
+    }
+    return null;
+  }
+
+  RedactionContext _createContext() => RedactionContext.cached(
         placeholder: config.placeholder,
         redactBinary: config.redactBinary,
         redactBase64: config.redactBase64,
@@ -105,26 +133,19 @@ final class RedactionWalker {
     stats.incrementPatternBased();
   }
 
-  // ---------------------------------------------------------------------------
   // Structural traversal
-  // ---------------------------------------------------------------------------
 
-  Map<Object?, Object?> _redactMap(Map<Object?, Object?> input, int depth) {
-    if (input is Map<String, Object?>) {
-      final result = <String, Object?>{};
-      input.forEach((key, value) {
-        result[key] = _redactNode(value, keyName: key, depth: depth + 1);
-      });
-      return result;
-    }
-
-    final result = <Object?, Object?>{};
+  Map<String, Object?> _redactMap(Map<Object?, Object?> input, int depth) {
+    final result = <String, Object?>{};
     input.forEach((key, value) {
-      result[key] = _redactNode(
-        value,
-        keyName: key?.toString(),
-        depth: depth + 1,
-      );
+      final normalizedKey = safeMapKey(key);
+      result[normalizedKey.value] = normalizedKey.isSafe
+          ? _redactNode(
+              value,
+              keyName: normalizedKey.value,
+              depth: depth + 1,
+            )
+          : config.placeholder;
     });
     return result;
   }
@@ -144,12 +165,20 @@ final class RedactionWalker {
           )
           .toList(growable: false);
 
-  // ---------------------------------------------------------------------------
   // String masking
-  // ---------------------------------------------------------------------------
 
   String _maskString(String value, {required String? keyName}) {
     if (value == config.placeholder) return value;
+
+    if (_isAuthorizationHeader(keyName)) {
+      final match = authorizationSchemeRegex.firstMatch(value);
+      if (match != null) {
+        final scheme = match.group(1) ?? '';
+        final separator = match.group(2) ?? ' ';
+        return '$scheme$separator${config.placeholder}';
+      }
+      return config.placeholder;
+    }
 
     final match = schemeRegex.firstMatch(value);
     if (match != null) {
@@ -158,7 +187,7 @@ final class RedactionWalker {
       return '$prefix${_maskEdges(remainder)}';
     }
 
-    if (keyName != null && keyName.toLowerCase() == cookieHeaderKey) {
+    if (_isCookieHeader(keyName)) {
       return value.split(';').map((part) {
         final trimmed = part.trim();
         final separatorIndex = trimmed.indexOf('=');
@@ -170,6 +199,25 @@ final class RedactionWalker {
     }
 
     return _maskEdges(value);
+  }
+
+  static bool _isAuthorizationHeader(String? keyName) => _hasTerminalKey(
+        keyName,
+        const {'authorization', 'proxy_authorization'},
+      );
+
+  static bool _isCookieHeader(String? keyName) => _hasTerminalKey(
+        keyName,
+        const {cookieHeaderKey, 'set_cookie'},
+      );
+
+  static bool _hasTerminalKey(String? keyName, Set<String> candidates) {
+    if (keyName == null) return false;
+    final canonical = canonicalizeKey(keyName);
+    return candidates.any(
+      (candidate) =>
+          canonical == candidate || canonical.endsWith('_$candidate'),
+    );
   }
 
   /// Masks a string keeping [visibleEdgeLength] characters on each side.
@@ -186,21 +234,21 @@ final class RedactionWalker {
     return '$start…$end (${config.placeholder})';
   }
 
-  // ---------------------------------------------------------------------------
   // Content detection heuristics
-  // ---------------------------------------------------------------------------
 
   bool _looksLikeAuthorizationValue(String value) {
-    if (jwtRegex.hasMatch(value)) return true;
-    if (schemeRegex.hasMatch(value)) return true;
-    return tokenPrefixRegex.hasMatch(value);
+    if (value.length >= 32 && jwtRegex.hasMatch(value)) return true;
+    if (value.length >= 5 && schemeRegex.hasMatch(value)) return true;
+    return value.length >= 3 && tokenPrefixRegex.hasMatch(value);
   }
 
   bool _isLikelyBase64(String value) {
-    final sanitized = value.replaceAll(whitespaceRegex, '');
+    if (value.length < 32) return false;
+    final sanitized = value.replaceAll(base64LineBreakRegex, '');
     if (sanitized.length < 32) return false;
     if (!base64Regex.hasMatch(sanitized)) return false;
     if (sanitized.length % 4 == 1) return false;
+    if (hexIdentifierRegex.hasMatch(sanitized)) return false;
 
     final sampleLength = sanitized.length > 256 ? 256 : sanitized.length;
     final sample = sanitized.substring(0, sampleLength);
@@ -266,37 +314,21 @@ final class RedactionWalker {
     return false;
   }
 
-  // ---------------------------------------------------------------------------
   // Placeholders & binary helpers
-  // ---------------------------------------------------------------------------
 
   String _binaryPlaceholder(int length) => ph.binaryPlaceholder(length);
 
   String _base64Placeholder(int length) => ph.base64Placeholder(length);
 
-  /// Replaces [data] with a same-length buffer containing a human-readable
-  /// placeholder followed by zero-padding.
+  /// Replaces [data] with a compact human-readable byte-count placeholder.
   ///
-  /// Preserving the original length ensures that downstream code relying on
-  /// fixed-size byte arrays (e.g. protocol frames, chunked transfer) does not
-  /// break when redaction is enabled.
-  Uint8List _redactUint8List(Uint8List data) {
-    final placeholder = _binaryPlaceholder(data.length);
-    final placeholderBytes = Uint8List.fromList(utf8.encode(placeholder));
-    final length = placeholderBytes.length > data.length
-        ? data.length
-        : placeholderBytes.length;
-    final result = Uint8List(data.length)
-      ..setRange(0, length, placeholderBytes.take(length));
-    for (var i = length; i < data.length; i++) {
-      result[i] = 0;
-    }
-    return result;
-  }
+  /// Diagnostics are outbound snapshots, not protocol buffers. Keeping the
+  /// original allocation size would let a large capture multiply memory use
+  /// during redaction, normalization, and JSON encoding.
+  Uint8List _redactUint8List(Uint8List data) =>
+      Uint8List.fromList(utf8.encode(_binaryPlaceholder(data.length)));
 
-  // ---------------------------------------------------------------------------
   // Ignore helpers (merge config-level and per-call overrides)
-  // ---------------------------------------------------------------------------
 
   bool _isIgnoredValue(String value) =>
       config.ignoredValues.contains(value) ||

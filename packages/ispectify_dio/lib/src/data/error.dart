@@ -17,45 +17,58 @@ class DioErrorData {
   ///
   /// No redaction is applied. Call [redact] on the result when redaction
   /// is required.
-  Map<String, dynamic> toJson() => {
-        // --- Error summary: what went wrong ---
-        NetworkJsonKeys.type: exception?.type,
-        NetworkJsonKeys.message: exception?.message,
-        NetworkJsonKeys.error: exception?.error,
-        NetworkJsonKeys.stackTrace: exception?.stackTrace,
+  Map<String, dynamic> toJson({
+    bool includeData = true,
+    bool includeHeaders = true,
+    bool includeMessage = true,
+    bool? includeRequestData,
+    bool? includeRequestHeaders,
+    bool redactionActive = false,
+    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
+  }) {
+    final shouldIncludeRequestData = includeRequestData ?? includeData;
+    final shouldIncludeRequestHeaders = includeRequestHeaders ?? includeHeaders;
 
-        // --- Response (if any) ---
-        NetworkJsonKeys.response: responseData.toJson(),
-
-        // --- Original request (reference) ---
-        NetworkJsonKeys.request: requestData.toJson(),
-      };
+    return {
+      NetworkJsonKeys.type: exception?.type,
+      if (includeMessage) NetworkJsonKeys.message: exception?.message,
+      if (includeMessage) NetworkJsonKeys.error: exception?.error,
+      if (includeMessage) NetworkJsonKeys.stackTrace: exception?.stackTrace,
+      NetworkJsonKeys.response: responseData.toJson(
+        includeData: includeData,
+        includeHeaders: includeHeaders,
+        includeMessage: includeMessage,
+        includeRequestData: shouldIncludeRequestData,
+        includeRequestHeaders: shouldIncludeRequestHeaders,
+        redactionActive: redactionActive,
+        captureMode: captureMode,
+      ),
+    };
+  }
 
   /// Applies in-place redaction to a map produced by [toJson].
   ///
-  /// Also redacts the embedded [NetworkJsonKeys.response] and
-  /// [NetworkJsonKeys.request] sub-maps.
+  /// Also redacts the embedded [NetworkJsonKeys.response] sub-map, which
+  /// carries the originating request.
   static void redact(
     Map<String, dynamic> map,
     RedactionService redactor, {
     Set<String>? ignoredValues,
     Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
   }) {
-    // Redact free-text fields
-    final msg = map[NetworkJsonKeys.message];
-    if (msg != null) {
-      map[NetworkJsonKeys.message] = redactor.redact(
-        msg,
+    for (final key in const [
+      NetworkJsonKeys.message,
+      NetworkJsonKeys.error,
+      NetworkJsonKeys.stackTrace,
+    ]) {
+      NetworkMapRedactor.redactFreeText(
+        map,
+        redactor,
+        key: key,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
-      );
-    }
-    final err = map[NetworkJsonKeys.error];
-    if (err != null) {
-      map[NetworkJsonKeys.error] = redactor.redact(
-        err,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
     }
 
@@ -66,15 +79,7 @@ class DioErrorData {
         redactor,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
-      );
-    }
-    if (map[NetworkJsonKeys.request]
-        case final Map<String, dynamic> requestMap) {
-      DioRequestData.redact(
-        requestMap,
-        redactor,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
+        resourceLimits: resourceLimits,
       );
     }
   }

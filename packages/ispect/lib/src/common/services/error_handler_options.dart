@@ -4,11 +4,11 @@
 /// These five flags control the runtime error-handling pipeline set up by
 /// [`ISpect.run`]; they do not control logger configuration.
 ///
-/// * `isFlutterPresentHandlingEnabled` — Whether Flutter present errors are handled.
-/// * `isPlatformDispatcherHandlingEnabled` — Whether PlatformDispatcher errors are handled.
-/// * `isFlutterErrorHandlingEnabled` — Whether Flutter framework errors are handled.
-/// * `isUncaughtErrorsHandlingEnabled` — Whether uncaught Dart errors are handled.
-/// * `isBlocHandlingEnabled` — Whether BLoC library events are logged.
+/// * `isFlutterPresentHandlingEnabled` - Whether Flutter present errors are handled.
+/// * `isPlatformDispatcherHandlingEnabled` - Whether PlatformDispatcher errors are handled.
+/// * `isFlutterErrorHandlingEnabled` - Whether Flutter framework errors are handled.
+/// * `isUncaughtErrorsHandlingEnabled` - Whether uncaught Dart errors are handled.
+/// * `isBlocHandlingEnabled` - Whether BLoC library events are logged.
 ///
 /// All handlers are enabled by default.
 final class ISpectErrorHandlerOptions {
@@ -27,8 +27,6 @@ final class ISpectErrorHandlerOptions {
 }
 
 /// Renamed to [ISpectErrorHandlerOptions] in 5.0.0 to disambiguate from
-/// [ISpectOptions] (UI configuration). Will be removed in 7.0.0.
-@Deprecated(
-  'Use ISpectErrorHandlerOptions instead. Will be removed in 7.0.0.',
-)
+/// [ISpectOptions] (UI configuration). Will be removed in 8.0.0.
+@Deprecated('Use ISpectErrorHandlerOptions instead. Will be removed in 8.0.0.')
 typedef ISpectLogOptions = ISpectErrorHandlerOptions;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/toggle_spec.dart';
 
 class CompactToggleGrid extends StatelessWidget {
@@ -63,18 +64,23 @@ class CompactToggleRow extends StatelessWidget {
         onTap: onTap,
         child: ISpectBorderedSurface(
           onTap: onTap,
-          backgroundColor:
-              enabled ? primaryColor.withValues(alpha: 0.1) : cardColor,
+          backgroundColor: enabled
+              ? primaryColor.withValues(alpha: 0.1)
+              : cardColor,
           borderColor: enabled ? primaryColor.withValues(alpha: 0.45) : null,
           borderWidth: enabled ? 1.2 : 1,
+          borderRadius: const BorderRadius.all(
+            Radius.circular(ISpectConstants.largeBorderRadius),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           child: Row(
             children: [
               Icon(
                 spec.icon,
                 size: 16,
-                color:
-                    enabled ? primaryColor : textColor.withValues(alpha: 0.55),
+                color: enabled
+                    ? primaryColor
+                    : textColor.withValues(alpha: 0.55),
               ),
               const Gap(8),
               Expanded(
@@ -114,10 +120,12 @@ class _CompactSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final trackOff =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.18);
-    final thumbOff =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.55);
+    final trackOff = context.appTheme.colorScheme.onSurface.withValues(
+      alpha: 0.18,
+    );
+    final thumbOff = context.appTheme.colorScheme.onSurface.withValues(
+      alpha: 0.55,
+    );
 
     return ExcludeSemantics(
       child: AnimatedContainer(

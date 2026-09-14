@@ -28,39 +28,29 @@ class ISpectShareSheet extends StatelessWidget {
     BuildContext context, {
     required List<Widget> Function(BuildContext sheetContext) actionsBuilder,
     IconData icon = Icons.ios_share_rounded,
-  }) =>
-      showISpectSheet(
-        context,
-        topOnlyRadius: true,
-        builder: (sheetContext, _) => ISpectShareSheet(
-          icon: icon,
-          actions: actionsBuilder(sheetContext),
-        ),
-      );
+  }) => showISpectSheet(
+    context,
+    topOnlyRadius: true,
+    builder: (sheetContext, _) =>
+        ISpectShareSheet(icon: icon, actions: actionsBuilder(sheetContext)),
+  );
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const ISpectDragHandle(),
-            const Gap(8),
-            ISpectBottomSheetHeader(
-              title: context.ispectL10n.share,
-              icon: icon,
-            ),
-            const Gap(16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: actions,
-              ),
-            ),
-          ],
+    padding: const EdgeInsets.only(bottom: 16),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const ISpectDragHandle(),
+        const Gap(8),
+        ISpectBottomSheetHeader(title: context.ispectL10n.share, icon: icon),
+        const Gap(16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Wrap(spacing: 8, runSpacing: 8, children: actions),
         ),
-      );
+      ],
+    ),
+  );
 }

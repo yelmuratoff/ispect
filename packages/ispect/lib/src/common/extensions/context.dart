@@ -11,7 +11,7 @@ extension ISpectContextExtension on BuildContext {
 
   bool get isDarkMode => appTheme.brightness == Brightness.dark;
 
-  /// ISpect's own effective brightness — dark by default, independent of the
+  /// ISpect's own effective brightness - dark by default, independent of the
   /// host app. Falls back to the host brightness when no scope is present, when
   /// [ISpectTheme.useHostColors] is set, or for [ISpectThemeMode.system].
   bool get ispectIsDark {
@@ -30,6 +30,25 @@ extension ISpectContextExtension on BuildContext {
   ISpectGeneratedLocalization get ispectL10n => ISpectLocalization.of(this);
 
   ISpectScopeModel get iSpect => ISpect.read(this);
+
+  /// Renders a log row's timestamp: a localized label relative to now when
+  /// [relative] is set, otherwise [absolute] as the caller already formats it.
+  ///
+  /// Entries older than a day fall back to the absolute capture time.
+  String formatLogTime(
+    DateTime? time, {
+    required bool relative,
+    required String absolute,
+  }) {
+    if (!relative || time == null) return absolute;
+    final l10n = ispectL10n;
+    return ISpectDateTimeFormatter(time).relativeFormat(
+      justNow: l10n.relativeJustNow,
+      secondsAgo: l10n.relativeSecondsAgo,
+      minutesAgo: l10n.relativeMinutesAgo,
+      hoursAgo: l10n.relativeHoursAgo,
+    );
+  }
 
   Color adjustColor(Color color) => ispectIsDark
       ? adjustColorBrightness(color, 0.9)
@@ -53,7 +72,7 @@ extension ISpectColorTokens on BuildContext {
       ispectTheme.background?.resolve(this) ??
       appTheme.colorScheme.surfaceContainerLowest;
 
-  /// Nullable variant of [ispectBackgroundColor] — returns the
+  /// Nullable variant of [ispectBackgroundColor] - returns the
   /// user-configured ISpect background or `null` when nothing is set.
   ///
   /// Use this for `Scaffold.backgroundColor` and screen-level surfaces where

@@ -2,6 +2,7 @@ import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
+import 'package:ispectify/src/trace/trace_helpers.dart';
 
 /// Trace helpers for object-storage / file-storage operations
 /// (S3, Firebase Storage, local fs, etc.).
@@ -22,23 +23,27 @@ extension ISpectLoggerStorage on ISpectLogger {
     Object? Function(T)? projectResult,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) =>
-      traceCategoryAsync(
-        category: storageCategory,
-        source: source,
-        operation: operation,
-        target: path,
-        meta: {
+  }) {
+    if (!isEnabled) return run();
+    return traceCategoryAsync(
+      category: storageCategory,
+      source: source,
+      operation: operation,
+      target: path,
+      meta: boundedTraceMeta(
+        fields: {
           if (bucket != null) 'bucket': bucket,
           if (sizeBytes != null) 'sizeBytes': sizeBytes,
           if (contentType != null) 'contentType': contentType,
-          ...?meta,
         },
-        run: run,
-        projectResult: projectResult,
-        config: config,
-        correlationId: correlationId,
-      );
+        overrides: meta,
+      ),
+      run: run,
+      projectResult: projectResult,
+      config: config,
+      correlationId: correlationId,
+    );
+  }
 
   /// Logs a one-shot storage event without awaiting a future.
   void storage({
@@ -54,22 +59,26 @@ extension ISpectLoggerStorage on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) =>
-      traceCategory(
-        category: storageCategory,
-        source: source,
-        operation: operation,
-        target: path,
-        success: success,
-        error: error,
-        duration: duration,
-        meta: {
+  }) {
+    if (!isEnabled) return;
+    traceCategory(
+      category: storageCategory,
+      source: source,
+      operation: operation,
+      target: path,
+      success: success,
+      error: error,
+      duration: duration,
+      meta: boundedTraceMeta(
+        fields: {
           if (bucket != null) 'bucket': bucket,
           if (sizeBytes != null) 'sizeBytes': sizeBytes,
           if (contentType != null) 'contentType': contentType,
-          ...?meta,
         },
-        config: config,
-        correlationId: correlationId,
-      );
+        overrides: meta,
+      ),
+      config: config,
+      correlationId: correlationId,
+    );
+  }
 }

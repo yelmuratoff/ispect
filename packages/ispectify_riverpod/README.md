@@ -1,7 +1,7 @@
 <!--
-  GENERATED FILE — do not edit by hand.
+  GENERATED FILE - do not edit by hand.
   Source:     docs/readme/ispectify_riverpod.md
-  Regenerate: ./bash/build_readme.sh
+  Regenerate: dart run tool/bin/ispect_tool.dart readme
 -->
 
 <div align="center">
@@ -47,10 +47,9 @@
   </p>
 </div>
 
-
 `ispectify_riverpod` plugs the [`riverpod`](https://pub.dev/packages/riverpod) and [`flutter_riverpod`](https://pub.dev/packages/flutter_riverpod) ecosystem into the [ISpect toolkit](#the-ispect-toolkit). One `ProviderObserver` forwards every provider add, update, dispose, and failure through the log pipeline, so the whole provider lifecycle shows up in the log viewer.
 
-- Adds, updates, disposes, and failures with provider values captured by default.
+- Adds, updates, disposes, and failures with full redacted values by default.
 - Per-provider filtering. Mute noisy providers without touching their code.
 - Zero configuration. Hand the observer to `ProviderScope` (or `ProviderContainer`) and you are done.
 
@@ -59,13 +58,15 @@
 ```yaml
 dependencies:
   flutter_riverpod: ^2.5.0
-  ispectify: ^6.1.7
-  ispectify_riverpod: ^6.1.7
+  ispect: ^7.0.0
+  ispectify: ^7.0.0
+  ispectify_riverpod: ^7.0.0
 ```
 
 ## Quick start
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_riverpod/ispectify_riverpod.dart';
@@ -84,7 +85,11 @@ The observer emits logs under the `riverpod-add`, `riverpod-update`, `riverpod-d
 
 ## Settings
 
-`ISpectRiverpodSettings` controls which lifecycle events are captured and whether raw provider values are written to trace meta. `printValues` defaults to `true` — ISpect is compile-time gated by `ISPECT_ENABLED` and never ships to production, so verbose value capture is the more useful trade.
+`ISpectRiverpodSettings` controls which lifecycle events are captured and
+whether provider values are written to trace meta. `printValues` defaults to
+`true`, so bounded provider values are retained after redaction. The `compact`
+preset replaces them with coarse structural labels such as `String`, `int`,
+`List`, or `Map`. Unnamed providers use the family label `Provider`.
 
 ```dart
 const settings = ISpectRiverpodSettings(
@@ -92,10 +97,16 @@ const settings = ISpectRiverpodSettings(
   printUpdates: true,
   printDisposes: true,
   printFails: true,
-  printValues: true,        // raw values in meta — default
-  enableRedaction: true,    // route values through RedactionService when set
+  printValues: true,
+  enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 ```
+
+Balanced capture retains guarded, bounded `toJson()` or `toString()` output
+before redaction. Set `captureMode: DiagnosticCaptureMode.strict` when
+application-defined formatters must never run.
 
 ### Presets
 
@@ -103,13 +114,22 @@ const settings = ISpectRiverpodSettings(
 // Logs disabled entirely.
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.silent);
 
-// Lifecycle creation, disposal, and failures — updates are muted.
+// Lifecycle creation, disposal, and failures - updates are muted.
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.minimal);
 
-// Reduces values to runtime types only. Use when provider state may carry PII
-// and you still want lifecycle visibility.
+// Reduces values to coarse structural labels. Use when provider state may
+// carry PII and you still want lifecycle visibility.
 ISpectRiverpodObserver(settings: ISpectRiverpodSettings.compact);
+
 ```
+
+`compact` uses strict capture automatically.
+Omit `resourceLimits` to inherit the logger policy; set it locally to tune
+provider-value and state-trace budgets for this observer.
+For an existing customized settings object,
+`copyWith(inheritResourceLimits: true)` restores logger-owned budgets and
+`copyWith(inheritRedactionService: true)` restores the global
+`ISpectRedaction.service`.
 
 ### Filtering noisy providers
 
@@ -129,38 +149,59 @@ ISpectRiverpodObserver(
 
 Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.
 
-The same redactor runs beyond the initial capture. Supported exports, clipboard helpers, cURL generation, and observer payloads all pass through the same pipeline before data leaves the debug session.
+The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
 
-Redaction works best paired with focused capture. Keep body and header logging off unless you actually need the payload, and register project-specific keys for the business identifiers only your application understands.
+Redaction works best paired with deliberate capture. Use the integration's `metadataOnly()` or compact preset when payload values are unnecessary, and register project-specific keys for the business identifiers only your application understands.
 
-### Custom keys and patterns
+The default `DiagnosticCaptureMode.balanced` keeps diagnostics useful by
+allowing guarded `toJson()` and `toString()` capture. The result is bounded
+immediately and redacted before it leaves the active pipeline. Select
+`DiagnosticCaptureMode.strict` when application-defined formatters must never
+run. Network `metadataOnly()` and `production()` presets, plus BLoC/Riverpod
+`compact`, select strict capture automatically. Persistence, export, and
+observer delivery do not re-run formatters after capture.
+
+### Global configuration
 
 ```dart
 import 'package:ispectify/ispectify.dart';
 
-final redactor = RedactionService(
+ISpectRedaction.configure(
+  service: RedactionService(
+    additionalSensitiveKeys: {
+      'x-custom-secret',
+      'internal_token',
+    },
+    additionalSensitiveKeyPatterns: [
+      RegExp(r'my_app_secret_\w+', caseSensitive: false),
+    ],
+    fullyMaskedKeys: {'filename'},
+    placeholder: '***',
+    visibleEdgeLength: 3,
+  ),
+);
+```
+
+`additionalSensitiveKeys` and `additionalSensitiveKeyPatterns` extend the built-in policy. Use `sensitiveKeys` or `sensitiveKeyPatterns` only when you intentionally want to replace the corresponding defaults:
+
+```dart
+final replacementPolicy = RedactionService(
   sensitiveKeys: {
-    ...defaultSensitiveKeys,
     'x-custom-secret',
     'internal_token',
   },
   sensitiveKeyPatterns: [
     RegExp(r'my_app_secret_\w+', caseSensitive: false),
   ],
-  // Keys where the value is replaced entirely instead of edge-masked.
-  fullyMaskedKeys: {'filename'},
-  placeholder: '***',
-  visibleEdgeLength: 3,
-  redactBinary: true,
-  redactBase64: true,
 );
 ```
 
-### Ignoring defaults
+Flutter apps can pass the same policy as `ISpect.run(redactionService: ...)`; `ISpect.dispose()` restores the policy that was active before that run. An explicit `RedactionService` supplied to one integration stays local and takes precedence over the global policy. Existing integrations without an explicit service pick up later global reconfiguration. The policy is scoped to the current Dart isolate.
+
+### Local exceptions
 
 ```dart
 final redactor = RedactionService(
-  // `?mobile=true` is a platform flag, not a phone number.
   ignoredKeys: {'mobile', 'platform_token'},
   ignoredValues: {'<test-token>', 'public-api-key'},
 );
@@ -168,10 +209,13 @@ final redactor = RedactionService(
 
 ### Disabling
 
-Each interceptor accepts `enableRedaction: false` on its settings object. See the per-package README for the exact settings type.
+`ISpectRedaction.configure(enabled: false)` is the global content-masking
+opt-out. For a local opt-out, pass `enableRedaction: false` to network,
+WebSocket, BLoC, or Riverpod settings, or `redact: false` to `ISpectDbConfig`
+and other trace configs. Size limits, private-storage checks, the selected
+capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
-
 
 Supply a custom `RedactionService` to mask sensitive provider state:
 
@@ -180,7 +224,7 @@ ISpectRiverpodObserver(
   logger: ISpect.logger,
   settings: ISpectRiverpodSettings(
     redactor: RedactionService(
-      sensitiveKeys: {...defaultSensitiveKeys, 'access-token'},
+      additionalSensitiveKeys: {'access-token'},
     ),
   ),
 );
@@ -201,7 +245,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

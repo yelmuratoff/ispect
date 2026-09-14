@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:ispectify/ispectify.dart';
 
@@ -33,14 +34,17 @@ final class HttpComposerController extends ChangeNotifier {
     required List<NetworkRequestSender> senders,
     ISpectComposerFilePicker? filePicker,
     NetworkReplayRequest? seed,
-  })  : _senders = senders,
-        _filePicker = filePicker {
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
+  }) : _senders = senders,
+       _filePicker = filePicker {
+    resourceLimits.validate();
     if (senders.isNotEmpty) _selectedSenderId = senders.first.id;
     if (seed != null) _applySeed(seed);
   }
 
   final List<NetworkRequestSender> _senders;
   final ISpectComposerFilePicker? _filePicker;
+  final DiagnosticResourceLimits resourceLimits;
 
   String _method = 'GET';
   String _url = '';
@@ -128,6 +132,9 @@ final class HttpComposerController extends ChangeNotifier {
     notifyListeners();
   }
 
+  static bool _isHttpScheme(Uri uri) =>
+      uri.isScheme('http') || uri.isScheme('https');
+
   /// Assembles the current state into a [NetworkReplayRequest].
   ///
   /// Returns `null` and sets [validationError] when the URL is missing/invalid
@@ -141,7 +148,7 @@ final class HttpComposerController extends ChangeNotifier {
       return null;
     }
     final parsed = Uri.tryParse(trimmedUrl);
-    if (parsed == null || !parsed.hasScheme) {
+    if (parsed == null || !_isHttpScheme(parsed)) {
       _validationError = ComposerValidation.urlInvalid;
       return null;
     }
@@ -155,7 +162,7 @@ final class HttpComposerController extends ChangeNotifier {
           body = null;
         } else {
           try {
-            body = JsonReplayBody(jsonDecode(_bodyText));
+            body = JsonReplayBody(JsonInputPreflight.decode(_bodyText));
           } on FormatException {
             _validationError = ComposerValidation.jsonInvalid;
             return null;
@@ -204,11 +211,18 @@ final class HttpComposerController extends ChangeNotifier {
     _result = null;
     notifyListeners();
 
-    final result = await sender.send(request);
-
-    _isSending = false;
-    _result = result;
-    notifyListeners();
+    try {
+      _result = (await sender.send(
+        request,
+      )).safeSnapshot(resourceLimits: resourceLimits);
+    } catch (error) {
+      _result = NetworkReplayResult(
+        error: error,
+      ).safeSnapshot(resourceLimits: resourceLimits);
+    } finally {
+      _isSending = false;
+      notifyListeners();
+    }
   }
 
   NetworkRequestSender? _resolveSender() {
@@ -228,13 +242,13 @@ final class HttpComposerController extends ChangeNotifier {
   }
 
   Uri _withoutQuery(Uri uri) => Uri(
-        scheme: uri.scheme,
-        userInfo: uri.userInfo.isEmpty ? null : uri.userInfo,
-        host: uri.host.isEmpty ? null : uri.host,
-        port: uri.hasPort ? uri.port : null,
-        path: uri.path,
-        fragment: uri.hasFragment ? uri.fragment : null,
-      );
+    scheme: uri.scheme,
+    userInfo: uri.userInfo.isEmpty ? null : uri.userInfo,
+    host: uri.host.isEmpty ? null : uri.host,
+    port: uri.hasPort ? uri.port : null,
+    path: uri.path,
+    fragment: uri.hasFragment ? uri.fragment : null,
+  );
 
   Map<String, String> _toMap(List<ComposerKeyValue> rows) {
     final map = <String, String>{};
@@ -262,7 +276,11 @@ final class HttpComposerController extends ChangeNotifier {
   static NetworkReplayRequest? seedFromLog(ISpectLogData log) {
     final map = _requestMapFromLog(log);
     if (map == null) return null;
-    return NetworkReplayRequestParser.fromRequestMap(map)?.request;
+    final captured = captureISpectLogDataForEgress(log);
+    return NetworkReplayRequestParser.fromRequestMap(
+      map,
+      resourceLimits: captured.resourceLimits,
+    )?.request;
   }
 
   static Map<String, dynamic>? _requestMapFromLog(ISpectLogData log) {
@@ -270,9 +288,15 @@ final class HttpComposerController extends ChangeNotifier {
     if (meta is! Map) return null;
     final requestData = meta[NetworkJsonKeys.requestData];
     if (requestData is Map) return Map<String, dynamic>.from(requestData);
-    final responseData = meta[NetworkJsonKeys.responseData];
-    if (responseData is Map) {
-      final nested = responseData[NetworkJsonKeys.request];
+    for (final key in const [
+      NetworkJsonKeys.responseData,
+      NetworkJsonKeys.errorData,
+    ]) {
+      final payload = meta[key];
+      if (payload is! Map) continue;
+      final nested =
+          payload[NetworkJsonKeys.request] ??
+          (payload[NetworkJsonKeys.response] as Map?)?[NetworkJsonKeys.request];
       if (nested is Map) return Map<String, dynamic>.from(nested);
     }
     return null;
@@ -309,8 +333,9 @@ final class HttpComposerController extends ChangeNotifier {
       case MultipartReplayBody(:final fields, :final files):
         _bodyKind = ComposerBodyKind.multipart;
         for (final field in fields) {
-          _multipartFields
-              .add(ComposerKeyValue(key: field.name, value: field.value));
+          _multipartFields.add(
+            ComposerKeyValue(key: field.name, value: field.value),
+          );
         }
         _multipartFiles.addAll(files);
     }

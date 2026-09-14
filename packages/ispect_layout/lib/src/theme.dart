@@ -58,18 +58,17 @@ class InspectorTheme {
     Color? chromeSurfaceColor,
     Color? chromeOnSurfaceColor,
     Color? chromeOnAccentColor,
-  }) =>
-      InspectorTheme(
-        selectedColor: selectedColor ?? this.selectedColor,
-        hoveredColor: hoveredColor ?? this.hoveredColor,
-        comparedColor: comparedColor ?? this.comparedColor,
-        containerColor: containerColor ?? this.containerColor,
-        compareLineColor: compareLineColor ?? this.compareLineColor,
-        chromeAccentColor: chromeAccentColor ?? this.chromeAccentColor,
-        chromeSurfaceColor: chromeSurfaceColor ?? this.chromeSurfaceColor,
-        chromeOnSurfaceColor: chromeOnSurfaceColor ?? this.chromeOnSurfaceColor,
-        chromeOnAccentColor: chromeOnAccentColor ?? this.chromeOnAccentColor,
-      );
+  }) => InspectorTheme(
+    selectedColor: selectedColor ?? this.selectedColor,
+    hoveredColor: hoveredColor ?? this.hoveredColor,
+    comparedColor: comparedColor ?? this.comparedColor,
+    containerColor: containerColor ?? this.containerColor,
+    compareLineColor: compareLineColor ?? this.compareLineColor,
+    chromeAccentColor: chromeAccentColor ?? this.chromeAccentColor,
+    chromeSurfaceColor: chromeSurfaceColor ?? this.chromeSurfaceColor,
+    chromeOnSurfaceColor: chromeOnSurfaceColor ?? this.chromeOnSurfaceColor,
+    chromeOnAccentColor: chromeOnAccentColor ?? this.chromeOnAccentColor,
+  );
 
   @override
   bool operator ==(Object other) =>
@@ -87,14 +86,14 @@ class InspectorTheme {
 
   @override
   int get hashCode => Object.hash(
-        selectedColor,
-        hoveredColor,
-        comparedColor,
-        containerColor,
-        compareLineColor,
-        chromeAccentColor,
-        chromeSurfaceColor,
-        chromeOnSurfaceColor,
-        chromeOnAccentColor,
-      );
+    selectedColor,
+    hoveredColor,
+    comparedColor,
+    containerColor,
+    compareLineColor,
+    chromeAccentColor,
+    chromeSurfaceColor,
+    chromeOnSurfaceColor,
+    chromeOnAccentColor,
+  );
 }

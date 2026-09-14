@@ -5,9 +5,9 @@ import 'package:ispectify/src/redaction/strategies/redaction_strategy.dart';
 
 /// Redacts values based on content patterns (tokens, JWTs, base64, binary).
 ///
-/// Handles both [String] content heuristics and raw [Uint8List] binary data.
-/// Returns `null` when no pattern matches, allowing other strategies or
-/// fallback traversal to proceed.
+/// Handles [String] content heuristics plus every [TypedData] view and
+/// [ByteBuffer] as binary data. Returns `null` when no pattern matches,
+/// allowing other strategies or fallback traversal to proceed.
 class PatternBasedRedaction implements RedactionStrategy {
   const PatternBasedRedaction();
 
@@ -17,9 +17,9 @@ class PatternBasedRedaction implements RedactionStrategy {
     required RedactionContext context,
     String? keyName,
   }) {
-    // Raw binary data.
-    if (node is Uint8List) {
-      return context.redactBinary ? context.redactUint8List(node) : null;
+    final binaryBytes = _binaryBytes(node);
+    if (binaryBytes != null) {
+      return context.redactBinary ? context.redactUint8List(binaryBytes) : null;
     }
 
     if (node is! String) return null;
@@ -42,4 +42,16 @@ class PatternBasedRedaction implements RedactionStrategy {
 
     return null;
   }
+}
+
+Uint8List? _binaryBytes(Object? value) {
+  if (value is ByteBuffer) return value.asUint8List();
+  if (value is TypedData) {
+    return Uint8List.view(
+      value.buffer,
+      value.offsetInBytes,
+      value.lengthInBytes,
+    );
+  }
+  return null;
 }

@@ -13,8 +13,15 @@ export 'src/logger/developer_output.dart';
 export 'src/logger/entry_formatter.dart';
 export 'src/logger/formatter.dart';
 export 'src/logger/logger.dart';
-export 'src/models/data.dart';
+export 'src/models/data.dart'
+    hide
+        capturedDiagnosticError,
+        capturedDiagnosticException,
+        capturedDiagnosticStackTrace;
 export 'src/models/data_extensions.dart';
+export 'src/models/diagnostic_capture_mode.dart';
+export 'src/models/diagnostic_processing_policy.dart';
+export 'src/models/diagnostic_resource_limits.dart';
 export 'src/models/error.dart';
 export 'src/models/exception.dart';
 export 'src/models/log_data_x.dart';
@@ -22,20 +29,24 @@ export 'src/models/log_type.dart';
 export 'src/models/metadata.dart';
 export 'src/models/models.dart';
 export 'src/network/base_interceptor.dart';
+export 'src/network/bounded_byte_body.dart';
 export 'src/network/curl_utils.dart';
 export 'src/network/filter/http_method_filter.dart';
 export 'src/network/filter/network_filter.dart';
 export 'src/network/filter/sampling_filter.dart';
 export 'src/network/filter/status_code_filter.dart';
 export 'src/network/filter/url_exclusion_filter.dart';
+export 'src/network/multipart_capture.dart';
 export 'src/network/network_interceptor_settings.dart';
 export 'src/network/network_interceptor_settings_builder.dart';
 export 'src/network/network_json_keys.dart';
 export 'src/network/network_log_options.dart';
+export 'src/network/network_log_payload.dart';
 export 'src/network/network_log_renderer.dart';
 export 'src/network/network_map_redactor.dart';
 export 'src/network/network_payload_sanitizer.dart';
 export 'src/network/network_transaction.dart';
+export 'src/network/network_uri_snapshot.dart';
 export 'src/network/replay/composer_picked_file.dart';
 export 'src/network/replay/network_replay_body.dart';
 export 'src/network/replay/network_replay_request.dart';
@@ -71,11 +82,13 @@ export 'src/trace/extensions/sse.dart';
 export 'src/trace/extensions/state.dart';
 export 'src/trace/extensions/storage.dart';
 export 'src/trace/extensions/ws.dart';
+export 'src/trace/state_trace_preparer.dart';
 export 'src/trace/trace_categories.dart';
 export 'src/trace/trace_category.dart';
 export 'src/trace/trace_category_ids.dart';
 export 'src/trace/trace_config.dart';
 export 'src/trace/trace_extension.dart';
+export 'src/trace/trace_helpers.dart' show guardDiagnostics;
 export 'src/trace/trace_keys.dart';
 export 'src/trace/trace_token.dart';
 export 'src/utils/common_utils.dart';
@@ -83,6 +96,8 @@ export 'src/utils/datetime_formatter.dart';
 export 'src/utils/error_handler.dart';
 export 'src/utils/json_truncator.dart';
 export 'src/utils/json_value_normalizer.dart';
+export 'src/utils/safe_object_description.dart'
+    show describeRuntimeType, safeValueTypeLabel;
 export 'src/utils/string_extension.dart';
 
 /// Compile-time constant to enable/disable ISpect via `--dart-define`.

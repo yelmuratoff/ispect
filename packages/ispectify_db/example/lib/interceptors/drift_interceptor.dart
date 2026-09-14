@@ -1,6 +1,6 @@
 /// Ready-to-copy interceptor for **drift** (formerly moor).
 ///
-/// Uses drift's native [QueryInterceptor] — the idiomatic way
+/// Uses drift's native [QueryInterceptor] - the idiomatic way
 /// to hook into all SQL operations.
 ///
 /// ## Setup
@@ -26,7 +26,7 @@ import 'package:ispectify_db/ispectify_db.dart';
 /// Native drift [QueryInterceptor] that logs all SQL operations
 /// via `ispectify_db`.
 ///
-/// Plug it in with `executor.interceptWith(...)` — no wrapping needed.
+/// Plug it in with `executor.interceptWith(...)` - no wrapping needed.
 /// Drift routes every query through the interceptor automatically.
 final class ISpectDriftInterceptor extends QueryInterceptor {
   ISpectDriftInterceptor({

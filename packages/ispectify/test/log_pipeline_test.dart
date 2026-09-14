@@ -5,6 +5,8 @@ import 'package:ispectify/src/logger/log_pipeline.dart';
 import 'package:test/test.dart';
 
 void main() {
+  tearDown(() => ISpectRedaction.enabled = true);
+
   group('LogPipeline', () {
     late StreamController<ISpectLogData> streamController;
     late ISpectLoggerOptions options;
@@ -33,9 +35,7 @@ void main() {
 
     test('_isDispatching guard rejects synchronous re-entry from history.add',
         () {
-      // Simulate a custom history that tries to dispatch back into the
-      // pipeline during its own add(). The guard must swallow the inner
-      // call so we do not recurse or end up with a duplicated log.
+      // Re-entry is swallowed to prevent recursion and duplicate delivery.
       final reentrant = _ReentrantHistory();
       pipeline = LogPipeline(
         streamController: streamController,
@@ -152,7 +152,80 @@ void main() {
         returnsNormally,
       );
     });
+
+    test('custom histories receive sanitized bounded snapshots by default', () {
+      const secret = 'CUSTOM-HISTORY-SECRET';
+      final customHistory = _RecordingHistory();
+      final logger = ISpectLogger.testing(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+        history: customHistory,
+      );
+      addTearDown(logger.dispose);
+
+      logger.logData(
+        ISpectLogData(
+          'GET /private?token=$secret',
+          additionalData: const {
+            'authorization': 'Bearer CUSTOM-HISTORY-SECRET',
+            'body': {'password': 'CUSTOM-HISTORY-SECRET'},
+          },
+        ),
+      );
+
+      expect(customHistory.history, hasLength(1));
+      expect(
+        customHistory.history.single.toJson().toString(),
+        isNot(contains(secret)),
+      );
+      expect(
+        customHistory.history.single.toJson().toString(),
+        contains(defaultPlaceholder),
+      );
+    });
+
+    test('explicit redaction opt-out keeps only bounded raw history data', () {
+      ISpectRedaction.enabled = false;
+      final customHistory = _RecordingHistory();
+      final logger = ISpectLogger.testing(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+        history: customHistory,
+      );
+      addTearDown(logger.dispose);
+      final oversized = 'CUSTOM-HISTORY-RAW-${'x' * (4 * 1024 * 1024)}';
+
+      logger.logData(
+        ISpectLogData(
+          'token=ordinary-raw-value',
+          additionalData: {'payload': oversized},
+        ),
+      );
+
+      final entry = customHistory.history.single;
+      final payload = entry.additionalData!['payload']! as String;
+      expect(entry.messageForSerialization, contains('ordinary-raw-value'));
+      expect(
+        LogExportOutput.utf8Length(payload),
+        lessThanOrEqualTo(LogExportOutput.maxPreparedValueBytes),
+      );
+      expect(payload, endsWith(LogExportOutput.truncatedMarker));
+    });
   });
+}
+
+final class _RecordingHistory implements ILogHistory {
+  final List<ISpectLogData> _history = <ISpectLogData>[];
+
+  @override
+  List<ISpectLogData> get history => List<ISpectLogData>.unmodifiable(_history);
+
+  @override
+  void add(ISpectLogData data) => _history.add(data);
+
+  @override
+  void clear() => _history.clear();
+
+  @override
+  void dispose() {}
 }
 
 class _ThrowingHistory implements ILogHistory {

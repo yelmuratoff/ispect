@@ -28,7 +28,7 @@ import 'package:ispectify_db/ispectify_db.dart';
 /// This class implements [FlutterSecureStorage], allowing it to be used
 /// as a drop-in replacement anywhere `FlutterSecureStorage` is expected.
 ///
-/// Redaction is **forced on** by default — values in secure storage
+/// Redaction is **forced on** by default - values in secure storage
 /// should never appear in logs. Override with `forceRedact: false`
 /// if you explicitly need to see values during development.
 final class ISpectSecureStorage implements FlutterSecureStorage {

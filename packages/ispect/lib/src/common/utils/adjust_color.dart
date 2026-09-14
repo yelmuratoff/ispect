@@ -27,12 +27,7 @@ Color adjustColorBrightness(Color color, double brightness) {
   final green = color.g * brightness;
   final blue = color.b * brightness;
 
-  return color.withValues(
-    alpha: color.a,
-    red: red,
-    green: green,
-    blue: blue,
-  );
+  return color.withValues(alpha: color.a, red: red, green: green, blue: blue);
 }
 
 /// Darkens a given `color` by the specified [darken] factor.
@@ -53,21 +48,13 @@ Color adjustColorBrightness(Color color, double brightness) {
 ///
 /// Throws an assertion error if `darken` is outside the valid range.
 Color adjustColorDarken(Color color, double darken) {
-  assert(
-    darken >= 0.0 && darken <= 1.0,
-    'Darken must be between 0.0 and 1.0',
-  );
+  assert(darken >= 0.0 && darken <= 1.0, 'Darken must be between 0.0 and 1.0');
 
   final red = color.r * (1.0 - darken);
   final green = color.g * (1.0 - darken);
   final blue = color.b * (1.0 - darken);
 
-  return color.withValues(
-    alpha: color.a,
-    red: red,
-    green: green,
-    blue: blue,
-  );
+  return color.withValues(alpha: color.a, red: red, green: green, blue: blue);
 }
 
 /// Adjusts the given `color` based on the [value] and [isDark] flag.
@@ -91,10 +78,7 @@ Color adjustColor({
   required double value,
   required bool isDark,
 }) {
-  assert(
-    value >= 0.0 && value <= 1.0,
-    'Value must be between 0.0 and 1.0',
-  );
+  assert(value >= 0.0 && value <= 1.0, 'Value must be between 0.0 and 1.0');
 
   return isDark
       ? adjustColorDarken(color, value)

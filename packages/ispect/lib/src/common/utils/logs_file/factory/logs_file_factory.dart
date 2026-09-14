@@ -12,6 +12,11 @@ import 'package:ispect/src/core/res/ispect_callbacks.dart';
 class LogsFileFactory {
   const LogsFileFactory._();
 
+  /// Removes expired native share artifacts left by prior app processes.
+  ///
+  /// This is a no-op on web and unsupported runtimes.
+  static Future<void> cleanupStaleShareFiles() => cleanupPlatformShareFiles();
+
   /// Creates a platform-appropriate logs file handler.
   ///
   /// **Returns:**
@@ -48,11 +53,7 @@ class LogsFileFactory {
     String fileType = 'json',
   }) async {
     final handler = create();
-    return handler.saveToDevice(
-      logs,
-      fileName: fileName,
-      fileType: fileType,
-    );
+    return handler.saveToDevice(logs, fileName: fileName, fileType: fileType);
   }
 
   /// Creates a log file and hands it to the platform's share mechanism.

@@ -6,6 +6,7 @@ import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/debug_report.dart';
 import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
@@ -35,53 +36,49 @@ class ISpectExportSheet extends StatelessWidget {
     required ExportController controller,
     required ExportContentBuilder contentBuilder,
     IconData icon = Icons.ios_share_rounded,
-  }) =>
-      showISpectSheet(
-        context,
-        topOnlyRadius: true,
-        builder: (sheetContext, _) => ISpectExportSheet(
-          controller: controller,
-          contentBuilder: contentBuilder,
-          icon: icon,
-        ),
-      );
+  }) => showISpectSheet(
+    context,
+    topOnlyRadius: true,
+    builder: (sheetContext, _) => ISpectExportSheet(
+      controller: controller,
+      contentBuilder: contentBuilder,
+      icon: icon,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-        listenable: controller,
-        builder: (context, _) => Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const ISpectDragHandle(),
-              const Gap(8),
-              ISpectBottomSheetHeader(
-                title: context.ispectL10n.share,
-                icon: icon,
-              ),
-              const Gap(16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (controller.availableFormats.length > 1)
-                      _FormatChips(controller: controller),
-                    const Gap(8),
-                    _ActionButtons(
-                      controller: controller,
-                      contentBuilder: contentBuilder,
-                    ),
-                  ],
+    listenable: controller,
+    builder: (context, _) => Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const ISpectDragHandle(),
+          const Gap(8),
+          ISpectBottomSheetHeader(title: context.ispectL10n.share, icon: icon),
+          const Gap(16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (controller.availableFormats.length > 1)
+                  _FormatChips(controller: controller),
+                const Gap(8),
+                _ActionButtons(
+                  controller: controller,
+                  contentBuilder: contentBuilder,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 }
 
 // ── Format chips ──────────────────────────────────────────────────────────
@@ -93,8 +90,9 @@ class _FormatChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = context.ispectPrimaryColor;
-    final outlineColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.12);
+    final outlineColor = context.appTheme.colorScheme.onSurface.withValues(
+      alpha: 0.12,
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -111,8 +109,9 @@ class _FormatChips extends StatelessWidget {
                     format.label,
                     style: TextStyle(
                       color: isSelected ? primaryColor : null,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                     ),
                   ),
                   avatar: Icon(
@@ -214,12 +213,12 @@ class _ActionButtons extends StatelessWidget {
                           action = SnackBarAction(
                             label: capturedL10n.openPath,
                             onPressed: () {
-                              onOpenFile(path).catchError((Object error) {
-                                assert(() {
-                                  debugPrint('Failed to open file: $error');
-                                  return true;
-                                }());
-                              });
+                              onOpenFile(path).catchError(
+                                (Object error) => debugReportFailure(
+                                  'Failed to open file',
+                                  error,
+                                ),
+                              );
                             },
                           );
                         } else {

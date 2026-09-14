@@ -10,9 +10,9 @@ Captured diagnostics can contain sensitive data, so redaction and data minimizat
 
 ## Tech Stack
 
-- Dart SDK `>=3.6.0 <4.0.0`; Flutter packages target Flutter `>=3.22.0`, with CI pinned to Flutter `3.32.6`.
-- Pure Dart packages: `packages/ispectify`, `packages/ispectify_db`.
-- Flutter packages: `packages/ispect`, `packages/ispect_layout`, `packages/ispectify_dio`, `packages/ispectify_http`, `packages/ispectify_ws`, `packages/ispectify_bloc`.
+- Dart SDK `>=3.6.0 <4.0.0` for the `ispectify*` packages and `>=3.8.0 <4.0.0` for `ispect` and `ispect_layout`; `ispect` requires Flutter `>=3.35.0` and `ispect_layout` Flutter `>=3.32.0`. CI pins Flutter `3.35.7` and also runs `ispect_layout` on its `3.32.6` floor.
+- Pure Dart packages: `packages/ispectify`, `packages/ispectify_db`, `packages/ispectify_dio`, `packages/ispectify_http`, `packages/ispectify_ws`, `packages/ispectify_bloc`, `packages/ispectify_riverpod`.
+- Flutter packages: `packages/ispect`, `packages/ispect_layout`.
 - `web_logs_viewer` is a Flutter web demo using local path overrides to the packages.
 - No Melos workspace is configured; run `pub get`, analyzer, and tests inside affected package directories.
 
@@ -30,13 +30,15 @@ Captured diagnostics can contain sensitive data, so redaction and data minimizat
 - Dart package setup: `cd packages/ispectify && dart pub get`
 - Flutter package setup: `cd packages/ispect && flutter pub get`
 - Dart analyze: `cd packages/<package> && dart analyze --fatal-infos`
-- Dart tests: `cd packages/<package> && dart test --coverage=coverage`
+- Dart tests: `cd packages/<package> && flutter test --dart-define=ISPECT_ENABLED=true --coverage`
 - Flutter analyze: `cd packages/<package> && flutter analyze --fatal-infos`
-- Flutter tests: `cd packages/<package> && flutter test --coverage`
+- Flutter tests: `cd packages/<package> && flutter test --dart-define=ISPECT_ENABLED=true --coverage`
+- Disabled-build check (Dart): `cd packages/<package> && dart test --run-skipped test/production_safety_test.dart`
+- Disabled-build check (Flutter): `cd packages/<package> && flutter test --run-skipped test/production_safety_test.dart`
 - Web demo: `cd web_logs_viewer && flutter pub get && flutter analyze && flutter test`
 - Format changed Dart files: `dart format <paths>`
-- README drift check: `./bash/build_readme.sh --check`
-- Version/dependency checks: `./bash/check_version_sync.sh && ./bash/check_dependencies.sh`
+- README drift check: `dart run tool/bin/ispect_tool.dart readme --check`
+- Version/dependency checks: `dart run tool/bin/ispect_tool.dart version check && dart run tool/bin/ispect_tool.dart deps`
 
 ## Project Rules
 
@@ -49,8 +51,8 @@ Captured diagnostics can contain sensitive data, so redaction and data minimizat
 
 ## Do Not
 
-- Do not manually edit package versions or internal dependency constraints; use `version.config` and `bash/update_versions.sh`.
-- Do not edit generated READMEs under `packages/*/README.md` as the source of truth; change `docs/readme/*` and run `./bash/build_readme.sh`.
+- Do not manually edit package versions or internal dependency constraints; use `version.config` and `dart run tool/bin/ispect_tool.dart sync`.
+- Do not edit generated READMEs under `packages/*/README.md` as the source of truth; change `docs/readme/*` and run `dart run tool/bin/ispect_tool.dart readme`.
 - Do not pass `--dart-define=ISPECT_ENABLED=true` to public production release builds.
 - Do not introduce a monorepo tool, code generator, Redux, styled-components, or new state-management framework unless the task explicitly requires it.
 - Do not log tokens, cookies, credentials, PII, raw payloads, or database rows without redaction and a narrowly scoped debugging reason.

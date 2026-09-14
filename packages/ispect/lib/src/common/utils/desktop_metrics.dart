@@ -3,8 +3,10 @@ import 'package:ispect/src/common/utils/screen_size.dart';
 
 /// Centralized UI metrics for ISpect's compact desktop chrome.
 abstract final class ISpectDesktopMetrics {
-  static const VisualDensity buttonDensity =
-      VisualDensity(horizontal: -4, vertical: -4);
+  static const VisualDensity buttonDensity = VisualDensity(
+    horizontal: -4,
+    vertical: -4,
+  );
   static const double inputMinHeight = 30;
   static const double squareControlSize = 30;
   static const double toolbarHeight = 44;

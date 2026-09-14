@@ -15,10 +15,17 @@ void main() {
       expect(history.history.length, 0);
     });
 
-    test('maxHistoryItems = -1 should throw assertion error', () {
+    test('maxHistoryItems = -1 should throw at runtime', () {
       expect(
         () => ISpectLoggerOptions(maxHistoryItems: -1),
-        throwsA(isA<AssertionError>()),
+        throwsArgumentError,
+      );
+    });
+
+    test('negative console truncation should throw at runtime', () {
+      expect(
+        () => ISpectLoggerOptions(logTruncateLength: -1),
+        throwsArgumentError,
       );
     });
 
@@ -30,11 +37,10 @@ void main() {
 
       expect(history.history.length, 2);
 
-      // Add one more - should remove oldest
       history.add(ISpectLogData('Log 3', key: 'test3'));
       expect(history.history.length, 2);
-      expect(history.history.first.key, 'test2'); // Oldest should be removed
-      expect(history.history.last.key, 'test3'); // Newest should be kept
+      expect(history.history.first.key, 'test2');
+      expect(history.history.last.key, 'test3');
     });
 
     test('maxHistoryItems = 1 should keep only the latest item', () {
@@ -47,7 +53,7 @@ void main() {
 
       history.add(ISpectLogData('Log 2', key: 'test2'));
       expect(history.history.length, 1);
-      expect(history.history.first.key, 'test2'); // Only newest should remain
+      expect(history.history.first.key, 'test2');
     });
   });
 }

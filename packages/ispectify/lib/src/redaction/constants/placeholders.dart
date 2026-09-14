@@ -1,5 +1,5 @@
 /// The single placeholder substituted for every redacted value across all
-/// ispect packages — network, database, export, clipboard, and cURL.
+/// ispect packages - network, database, export, clipboard, and cURL.
 ///
 /// This is the single source of truth for the redaction mask; do not introduce
 /// alternative masks. The only deliberate variant is
@@ -13,14 +13,14 @@ const String defaultPlaceholder = '[REDACTED]';
 /// [defaultPlaceholder] mask.
 @Deprecated(
   'Use defaultPlaceholder; redaction now uses one unified mask. '
-  'Will be removed in 7.0.0.',
+  'Will be removed in 8.0.0.',
 )
 const String redactedMask = defaultPlaceholder;
 
 /// URI-safe form of [defaultPlaceholder] for redacted userInfo in URLs.
 ///
 /// `Uri.replace` throws a [FormatException] on the brackets in
-/// [defaultPlaceholder], so URL credentials use this bracketless variant —
+/// [defaultPlaceholder], so URL credentials use this bracketless variant -
 /// e.g. `https://REDACTED@host`.
 const String userInfoRedactedPlaceholder = 'REDACTED';
 

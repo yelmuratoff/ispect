@@ -3,8 +3,11 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+
 import 'inspector_state.dart';
+import 'ispect_layout_enabled.dart';
 import 'pixel_capture.dart';
 import 'shortcut_registry.dart';
 import 'theme.dart';
@@ -15,20 +18,21 @@ import 'widgets/inspector/box_info.dart';
 
 export 'inspector_state.dart';
 
-part 'inspector_controller_modes.dart';
-part 'inspector_controller_shortcuts.dart';
-part 'inspector_controller_pointer.dart';
 part 'inspector_controller_capture.dart';
+part 'inspector_controller_modes.dart';
+part 'inspector_controller_pointer.dart';
+part 'inspector_controller_shortcuts.dart';
 
 class InspectorController {
   InspectorController({
-    this.isEnabled = true,
+    bool isEnabled = true,
     this.isWidgetInspectorEnabled = true,
     this.isWidgetInspectAndCompareEnabled = true,
     this.isColorPickerEnabled = true,
     this.isColorSchemeHintEnabled = true,
     this.isZoomEnabled = true,
-    this.decimalPlaces = 1,
+    this.decimalPlaces = 2,
+    int maxRenderTreeClipboardCharacters = 10000,
     this.theme = InspectorTheme.defaults,
     this.widgetInspectorShortcuts,
     this.widgetInspectAndCompareShortcuts,
@@ -38,9 +42,14 @@ class InspectorController {
     this.widgetInspectAndCompareShortcutActivators,
     this.colorPickerShortcutActivators,
     this.zoomShortcutActivators,
-  }) : assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0') {
+  }) : isEnabled = kISpectLayoutEnabled && isEnabled,
+       maxRenderTreeClipboardCharacters =
+           _validateRenderTreeClipboardCharacters(
+             maxRenderTreeClipboardCharacters,
+           ),
+       assert(decimalPlaces >= 0, 'decimalPlaces must be >= 0') {
     // Keep the sealed `stateNotifier` in sync with the legacy granular
-    // notifiers. Legacy notifiers remain the mutation surface — internal
+    // notifiers. Legacy notifiers remain the mutation surface - internal
     // logic writes to them, and we recompute the union state here.
     for (final l in _allStateInputs) {
       l.addListener(_recomputeStateNotifier);
@@ -54,23 +63,31 @@ class InspectorController {
   final bool isColorSchemeHintEnabled;
   final bool isZoomEnabled;
   final int decimalPlaces;
+
+  /// Maximum final character count copied by the render-tree action.
+  final int maxRenderTreeClipboardCharacters;
+
   final InspectorTheme theme;
 
-  /// Deprecated. Use [widgetInspectorShortcutActivators] — it supports
+  static const int maxAllowedRenderTreeClipboardCharacters = 4 * 1024 * 1024;
+
+  /// Deprecated. Use [widgetInspectorShortcutActivators] - it supports
   /// multi-key chords and the full [ShortcutActivator] API. Will be removed
-  /// in 7.0.0.
+  /// in 8.0.0.
   @Deprecated(
-      'Use widgetInspectorShortcutActivators. Will be removed in 7.0.0.')
+    'Use widgetInspectorShortcutActivators. Will be removed in 8.0.0.',
+  )
   final List<LogicalKeyboardKey>? widgetInspectorShortcuts;
 
   @Deprecated(
-      'Use widgetInspectAndCompareShortcutActivators. Will be removed in 7.0.0.')
+    'Use widgetInspectAndCompareShortcutActivators. Will be removed in 8.0.0.',
+  )
   final List<LogicalKeyboardKey>? widgetInspectAndCompareShortcuts;
 
-  @Deprecated('Use colorPickerShortcutActivators. Will be removed in 7.0.0.')
+  @Deprecated('Use colorPickerShortcutActivators. Will be removed in 8.0.0.')
   final List<LogicalKeyboardKey>? colorPickerShortcuts;
 
-  @Deprecated('Use zoomShortcutActivators. Will be removed in 7.0.0.')
+  @Deprecated('Use zoomShortcutActivators. Will be removed in 8.0.0.')
   final List<LogicalKeyboardKey>? zoomShortcuts;
 
   final List<ShortcutActivator>? widgetInspectorShortcutActivators;
@@ -101,8 +118,9 @@ class InspectorController {
   /// Consolidated sealed-state view. Updated automatically whenever any of
   /// the legacy granular notifiers changes. Exists alongside the legacy
   /// notifiers for callers who prefer exhaustive `switch`.
-  final stateNotifier =
-      ValueNotifier<InspectorUiState>(const InspectorIdleState());
+  final stateNotifier = ValueNotifier<InspectorUiState>(
+    const InspectorIdleState(),
+  );
 
   late final List<Listenable> _allStateInputs = [
     modeNotifier,
@@ -120,7 +138,11 @@ class InspectorController {
 
   void _recomputeStateNotifier() {
     if (_isDisposed) return;
-    stateNotifier.value = _computeStateSnapshot();
+    if (_stateMutationDepth > 0) {
+      _stateRefreshPending = true;
+      return;
+    }
+    _publishStateSnapshot();
   }
 
   InspectorUiState _computeStateSnapshot() {
@@ -158,8 +180,30 @@ class InspectorController {
   ui.Image? _image;
   ui.Image? get image => _image;
   Offset? _pointerHoverPosition;
+  Offset? _pendingHover;
+  bool _hoverHandledThisFrame = false;
   bool _isDisposed = false;
+  int _stateMutationDepth = 0;
+  bool _stateRefreshPending = false;
   int _imageCaptureEpoch = 0;
+
+  void _batchStateUpdates(VoidCallback update) {
+    _stateMutationDepth++;
+    try {
+      update();
+    } finally {
+      _stateMutationDepth--;
+      if (_stateMutationDepth == 0 && _stateRefreshPending) {
+        _stateRefreshPending = false;
+        _publishStateSnapshot();
+      }
+    }
+  }
+
+  void _publishStateSnapshot() {
+    if (_isDisposed) return;
+    stateNotifier.value = _computeStateSnapshot();
+  }
 
   /// Shortcut configuration + accept/isPressed logic. Forwarding accessors
   /// live in `inspector_controller_shortcuts.dart`.
@@ -198,4 +242,17 @@ class InspectorController {
     zoomOverlayOffsetNotifier.dispose();
     stateNotifier.dispose();
   }
+}
+
+int _validateRenderTreeClipboardCharacters(int value) {
+  if (value < 1 ||
+      value > InspectorController.maxAllowedRenderTreeClipboardCharacters) {
+    throw ArgumentError.value(
+      value,
+      'maxRenderTreeClipboardCharacters',
+      'must be between 1 and '
+          '${InspectorController.maxAllowedRenderTreeClipboardCharacters}',
+    );
+  }
+  return value;
 }

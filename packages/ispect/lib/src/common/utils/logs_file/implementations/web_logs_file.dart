@@ -156,17 +156,13 @@ class WebLogsFile extends BaseLogsFile {
   static Blob _requireBlob(Object file) {
     final jsFile = file.jsify();
     if (jsFile == null || !jsFile.isA<Blob>()) {
-      throw ArgumentError('Expected Blob instance, got ${file.runtimeType}');
+      throw ArgumentError('Expected Blob instance.');
     }
     return jsFile as Blob;
   }
 
   /// Determines final filename for download
-  String _determineFinalFileName(
-    Blob blob,
-    String? fileName,
-    String fileType,
-  ) {
+  String _determineFinalFileName(Blob blob, String? fileName, String fileType) {
     if (fileName != null) {
       return _processCustomFileName(fileName, fileType);
     }

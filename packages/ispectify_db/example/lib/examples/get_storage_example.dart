@@ -30,7 +30,7 @@ Future<void> getStorageExample() async {
   await traced.write('tags', ['flutter', 'dart', 'ispect']);
 
   // Write only if absent
-  await traced.writeIfNull('user_theme', 'light'); // skipped — already exists
+  await traced.writeIfNull('user_theme', 'light'); // skipped - already exists
 
   // Memory-only write (no disk flush)
   traced.writeInMemory('temp_flag', true);

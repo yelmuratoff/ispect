@@ -40,8 +40,15 @@ ThemeData buildISpectThemeData({required bool dark}) {
     onError: Colors.white,
   );
 
-  final squircle =
-      WidgetStatePropertyAll<OutlinedBorder>(ISpectSquircle.border());
+  final cardShape = ISpectSquircle.border();
+  final smallShape = ISpectSquircle.border(
+    radius: ISpectConstants.standardBorderRadius,
+  );
+  final surfaceShape = ISpectSquircle.border(
+    radius: ISpectConstants.snackbarBorderRadius,
+  );
+  final squircle = WidgetStatePropertyAll<OutlinedBorder>(cardShape);
+  final smallSquircle = WidgetStatePropertyAll<OutlinedBorder>(smallShape);
 
   return ThemeData(
     useMaterial3: true,
@@ -65,15 +72,44 @@ ThemeData buildISpectThemeData({required bool dark}) {
         elevation: const WidgetStatePropertyAll(0),
       ),
     ),
-    textButtonTheme: TextButtonThemeData(
-      style: ButtonStyle(shape: squircle),
-    ),
+    textButtonTheme: TextButtonThemeData(style: ButtonStyle(shape: squircle)),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(shape: squircle),
     ),
-    chipTheme: ChipThemeData(
-      shape:
-          ISpectSquircle.border(radius: ISpectConstants.standardBorderRadius),
+    chipTheme: ChipThemeData(shape: smallShape),
+    iconButtonTheme: IconButtonThemeData(
+      style: ButtonStyle(shape: smallSquircle),
+    ),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(shape: smallSquircle),
+    ),
+    menuButtonTheme: MenuButtonThemeData(
+      style: ButtonStyle(shape: smallSquircle),
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(shape: cardShape),
+    cardTheme: CardThemeData(shape: cardShape),
+    listTileTheme: ListTileThemeData(shape: cardShape),
+    expansionTileTheme: ExpansionTileThemeData(
+      shape: cardShape,
+      collapsedShape: cardShape,
+    ),
+    popupMenuTheme: PopupMenuThemeData(shape: cardShape),
+    menuTheme: MenuThemeData(style: MenuStyle(shape: squircle)),
+    dropdownMenuTheme: DropdownMenuThemeData(
+      menuStyle: MenuStyle(shape: squircle),
+    ),
+    snackBarTheme: SnackBarThemeData(shape: cardShape),
+    dialogTheme: DialogThemeData(shape: surfaceShape),
+    bottomSheetTheme: BottomSheetThemeData(shape: surfaceShape),
+    searchBarTheme: SearchBarThemeData(shape: squircle),
+    searchViewTheme: SearchViewThemeData(shape: surfaceShape),
+    tooltipTheme: TooltipThemeData(
+      decoration: ISpectSquircle.decoration(
+        color: card,
+        radius: ISpectConstants.standardBorderRadius,
+        side: BorderSide(color: divider),
+      ),
+      textStyle: TextStyle(color: foreground, fontSize: 12),
     ),
   );
 }

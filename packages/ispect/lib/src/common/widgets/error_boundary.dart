@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/ispect.dart';
+import 'package:ispectify/ispectify.dart';
 
 /// A widget that catches errors thrown during [pluginBuilder] execution
 /// and displays a styled fallback instead of the default red error screen.
@@ -26,33 +29,41 @@ class SafePluginScreen extends StatefulWidget {
 }
 
 class _SafePluginScreenState extends State<SafePluginScreen> {
-  Object? _error;
-  StackTrace? _stackTrace;
+  String? _errorText;
+  String? _stackTraceText;
   UniqueKey _childKey = UniqueKey();
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) {
+    if (_errorText != null) {
       return _ISpectErrorFallback(
         pluginId: widget.pluginId,
-        error: _error!,
-        stackTrace: _stackTrace,
+        errorText: _errorText!,
+        stackTraceText: _stackTraceText,
         onRetry: _retry,
       );
     }
 
     try {
-      return KeyedSubtree(
-        key: _childKey,
-        child: widget.pluginBuilder(context),
-      );
+      return KeyedSubtree(key: _childKey, child: widget.pluginBuilder(context));
     } catch (error, stackTrace) {
-      // Schedule state update — we are inside build().
+      final resourceLimits =
+          ISpect.loggerIfInitialized?.options.resourceLimits ??
+          DiagnosticResourceLimits.balanced;
+      final errorText = ISpectSafeDiagnosticSnapshot.summary(
+        error,
+        resourceLimits: resourceLimits,
+      );
+      final stackTraceText = ISpectSafeDiagnosticSnapshot.text(
+        stackTrace,
+        resourceLimits: resourceLimits,
+      );
+      // Schedule state update - we are inside build().
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
-            _error = error;
-            _stackTrace = stackTrace;
+            _errorText = errorText;
+            _stackTraceText = stackTraceText;
           });
         }
       });
@@ -60,8 +71,8 @@ class _SafePluginScreenState extends State<SafePluginScreen> {
       // Return fallback immediately for this frame.
       return _ISpectErrorFallback(
         pluginId: widget.pluginId,
-        error: error,
-        stackTrace: stackTrace,
+        errorText: errorText,
+        stackTraceText: stackTraceText,
         onRetry: _retry,
       );
     }
@@ -69,8 +80,8 @@ class _SafePluginScreenState extends State<SafePluginScreen> {
 
   void _retry() {
     setState(() {
-      _error = null;
-      _stackTrace = null;
+      _errorText = null;
+      _stackTraceText = null;
       _childKey = UniqueKey();
     });
   }
@@ -78,30 +89,36 @@ class _SafePluginScreenState extends State<SafePluginScreen> {
 
 /// Minimal fallback widget shown when a plugin screen fails to render.
 ///
-/// Uses only basic Material widgets and [Theme.of] colors — never depends
+/// Uses only basic Material widgets and [Theme.of] colors - never depends
 /// on [ISpectTheme] to avoid recursive failures if ISpect itself is broken.
 class _ISpectErrorFallback extends StatelessWidget {
   const _ISpectErrorFallback({
     required this.pluginId,
-    required this.error,
+    required this.errorText,
     required this.onRetry,
-    this.stackTrace,
+    this.stackTraceText,
   });
 
   final String pluginId;
-  final Object error;
-  final StackTrace? stackTrace;
+  final String errorText;
+  final String? stackTraceText;
   final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final errorMessage = error.toString().split('\n').first;
+    final resourceLimits =
+        ISpect.loggerIfInitialized?.options.resourceLimits ??
+        DiagnosticResourceLimits.balanced;
+    final safePluginId = ISpectSafeDiagnosticSnapshot.summary(
+      pluginId,
+      resourceLimits: resourceLimits,
+    );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Plugin Error: $pluginId'),
+        title: Text('Plugin Error: $safePluginId'),
         leading: const BackButton(),
       ),
       body: SafeArea(
@@ -111,11 +128,7 @@ class _ISpectErrorFallback extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: colorScheme.error,
-                ),
+                Icon(Icons.error_outline, size: 64, color: colorScheme.error),
                 const SizedBox(height: 16),
                 Text(
                   'Failed to render plugin screen',
@@ -124,13 +137,15 @@ class _ISpectErrorFallback extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  errorMessage,
+                  errorText,
                   style: textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                if (kDebugMode && stackTrace != null) ...[
+                if (kDebugMode &&
+                    stackTraceText != null &&
+                    stackTraceText!.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   ExpansionTile(
                     title: const Text('Stack Trace'),
@@ -143,7 +158,7 @@ class _ISpectErrorFallback extends StatelessWidget {
                           radius: ISpectConstants.standardBorderRadius,
                         ),
                         child: SelectableText(
-                          stackTrace.toString(),
+                          stackTraceText!,
                           style: textTheme.bodySmall?.copyWith(
                             fontFamily: 'monospace',
                           ),

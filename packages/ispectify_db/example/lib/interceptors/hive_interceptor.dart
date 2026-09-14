@@ -1,6 +1,6 @@
 /// Ready-to-copy interceptor for **hive_ce** (Hive Community Edition) (typed boxes).
 ///
-/// Implements the full [Box] interface — drop-in replacement.
+/// Implements the full [Box] interface - drop-in replacement.
 ///
 /// ## Setup
 /// ```dart

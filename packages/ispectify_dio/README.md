@@ -1,7 +1,7 @@
 <!--
-  GENERATED FILE — do not edit by hand.
+  GENERATED FILE - do not edit by hand.
   Source:     docs/readme/ispectify_dio.md
-  Regenerate: ./bash/build_readme.sh
+  Regenerate: dart run tool/bin/ispect_tool.dart readme
 -->
 
 <div align="center">
@@ -47,7 +47,6 @@
   </p>
 </div>
 
-
 `ispectify_dio` is a [Dio](https://pub.dev/packages/dio) interceptor for the [ISpect toolkit](#the-ispect-toolkit). It captures requests and responses, pairs them into correlated transactions by a request ID, and redacts sensitive data before logging.
 
 - Request, response, and error capture with headers, body, status, and duration.
@@ -59,18 +58,21 @@
 
 ```yaml
 dependencies:
-  dio: ^5.0.0
-  ispectify: ^6.1.7
-  ispectify_dio: ^6.1.7
+  dio: ^5.8.0+1
+  ispect: ^7.0.0
+  ispectify: ^7.0.0
+  ispectify_dio: ^7.0.0
 ```
 
 ## Quick start
 
 ```dart
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 
+final logger = ISpectFlutter.init();
 final dio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
 
 ISpect.run(
@@ -80,12 +82,6 @@ ISpect.run(
     dio.interceptors.add(
       ISpectDioInterceptor(
         logger: logger,
-        settings: const ISpectDioInterceptorSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-          printRequestData: true,
-          printResponseData: true,
-        ),
       ),
     );
   },
@@ -94,77 +90,130 @@ ISpect.run(
 
 ## Settings
 
-`ISpectDioInterceptorSettings` controls which parts of each call are captured and whether they are redacted before logging. `enableRedaction` defaults to `true` on every constructor.
+`ISpectDioInterceptorSettings` captures headers, bodies, messages, and errors by default so the first diagnostic session is useful without extra configuration. Captured values are bounded and redacted before logging; `enableRedaction` defaults to `true` on every constructor.
 
 ```dart
 const settings = ISpectDioInterceptorSettings(
+  logRequests: true,
+  logResponses: true,
   printRequestHeaders: true,
   printRequestData: true,
-  printResponseHeaders: false,
+  printResponseHeaders: true,
   printResponseData: true,
   enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 ```
+
+Balanced capture lets typed request and response values contribute a guarded,
+bounded `toJson()` snapshot before redaction. Set
+`captureMode: DiagnosticCaptureMode.strict` when application-defined
+formatters must never run.
 
 ### Preset factories
 
 ```dart
-// Verbose. Full payloads, no redaction. Only for local development.
+// Verbose payload capture with redaction still enabled.
 final dev = ISpectDioInterceptorSettingsBuilder.development().build();
 
-// Redacted. Conservative defaults, body capture off.
+final hardened =
+    ISpectDioInterceptorSettingsBuilder.metadataOnly().build();
+
+// Redacted errors only. Routine request/response records are not retained.
 final prod = ISpectDioInterceptorSettingsBuilder.production().build();
 
 // Middle ground for staging environments.
 final staging = ISpectDioInterceptorSettingsBuilder.staging().build();
 ```
 
+`metadataOnly()` and `production()` select strict capture. `development()` and
+`staging()` keep balanced capture. A custom builder can switch explicitly with
+`withStrictCapture()` or `withBalancedCapture()`.
+Use `withResourceLimits(...)` for an interceptor-local budget, or
+`withInheritedResourceLimits()` to return to the logger policy.
+`NetworkInterceptorDefaults` is the shared source of truth used by direct
+settings construction and every network settings builder.
+
 ### Builder
 
 ```dart
 final settings = ISpectDioInterceptorSettingsBuilder()
-    .withRequestHeaders()
-    .withResponseHeaders()
+    .withoutResponses()
+    .withoutRequestHeaders()
+    .withoutRequestData()
     .withoutRedaction() // not recommended, see "Data redaction" below.
     .build();
 ```
+
+`logRequests` and `logResponses` decide whether routine records are retained.
+Body and header capture is on by default and passes through the active
+redaction policy. The `print*` fields can omit specific retained fields, while
+the `metadataOnly()` preset opts into stronger data minimization without
+disabling request/response visibility.
+Concrete settings `copyWith` methods and builders expose the retention
+controls. Pass `inheritResourceLimits: true` to `copyWith` to clear a local
+budget. An attached Dio interceptor can update the same shared fields at
+runtime with `configure(...)`, including `enabled`, retention, capture mode,
+resource limits, and individual payload fields.
 
 ## Data redaction
 
 Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.
 
-The same redactor runs beyond the initial capture. Supported exports, clipboard helpers, cURL generation, and observer payloads all pass through the same pipeline before data leaves the debug session.
+The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
 
-Redaction works best paired with focused capture. Keep body and header logging off unless you actually need the payload, and register project-specific keys for the business identifiers only your application understands.
+Redaction works best paired with deliberate capture. Use the integration's `metadataOnly()` or compact preset when payload values are unnecessary, and register project-specific keys for the business identifiers only your application understands.
 
-### Custom keys and patterns
+The default `DiagnosticCaptureMode.balanced` keeps diagnostics useful by
+allowing guarded `toJson()` and `toString()` capture. The result is bounded
+immediately and redacted before it leaves the active pipeline. Select
+`DiagnosticCaptureMode.strict` when application-defined formatters must never
+run. Network `metadataOnly()` and `production()` presets, plus BLoC/Riverpod
+`compact`, select strict capture automatically. Persistence, export, and
+observer delivery do not re-run formatters after capture.
+
+### Global configuration
 
 ```dart
 import 'package:ispectify/ispectify.dart';
 
-final redactor = RedactionService(
+ISpectRedaction.configure(
+  service: RedactionService(
+    additionalSensitiveKeys: {
+      'x-custom-secret',
+      'internal_token',
+    },
+    additionalSensitiveKeyPatterns: [
+      RegExp(r'my_app_secret_\w+', caseSensitive: false),
+    ],
+    fullyMaskedKeys: {'filename'},
+    placeholder: '***',
+    visibleEdgeLength: 3,
+  ),
+);
+```
+
+`additionalSensitiveKeys` and `additionalSensitiveKeyPatterns` extend the built-in policy. Use `sensitiveKeys` or `sensitiveKeyPatterns` only when you intentionally want to replace the corresponding defaults:
+
+```dart
+final replacementPolicy = RedactionService(
   sensitiveKeys: {
-    ...defaultSensitiveKeys,
     'x-custom-secret',
     'internal_token',
   },
   sensitiveKeyPatterns: [
     RegExp(r'my_app_secret_\w+', caseSensitive: false),
   ],
-  // Keys where the value is replaced entirely instead of edge-masked.
-  fullyMaskedKeys: {'filename'},
-  placeholder: '***',
-  visibleEdgeLength: 3,
-  redactBinary: true,
-  redactBase64: true,
 );
 ```
 
-### Ignoring defaults
+Flutter apps can pass the same policy as `ISpect.run(redactionService: ...)`; `ISpect.dispose()` restores the policy that was active before that run. An explicit `RedactionService` supplied to one integration stays local and takes precedence over the global policy. Existing integrations without an explicit service pick up later global reconfiguration. The policy is scoped to the current Dart isolate.
+
+### Local exceptions
 
 ```dart
 final redactor = RedactionService(
-  // `?mobile=true` is a platform flag, not a phone number.
   ignoredKeys: {'mobile', 'platform_token'},
   ignoredValues: {'<test-token>', 'public-api-key'},
 );
@@ -172,10 +221,13 @@ final redactor = RedactionService(
 
 ### Disabling
 
-Each interceptor accepts `enableRedaction: false` on its settings object. See the per-package README for the exact settings type.
+`ISpectRedaction.configure(enabled: false)` is the global content-masking
+opt-out. For a local opt-out, pass `enableRedaction: false` to network,
+WebSocket, BLoC, or Riverpod settings, or `redact: false` to `ISpectDbConfig`
+and other trace configs. Size limits, private-storage checks, the selected
+capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
-
 
 Disable redaction on a single interceptor instance (only for deterministic replay in test environments):
 
@@ -192,7 +244,7 @@ Supply a custom `RedactionService`:
 ISpectDioInterceptor(
   logger: logger,
   redactor: RedactionService(
-    sensitiveKeys: {...defaultSensitiveKeys, 'x-tenant-token'},
+    additionalSensitiveKeys: {'x-tenant-token'},
   ),
 );
 ```
@@ -212,7 +264,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

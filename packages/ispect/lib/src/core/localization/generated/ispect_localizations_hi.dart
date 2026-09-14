@@ -280,6 +280,9 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String get printLogDesc => 'कंसोल में संदेश प्रिंट किया गया';
 
   @override
+  String get previewTruncated => 'पूर्वावलोकन काट दिया गया';
+
+  @override
   String get projectDomain => 'प्रोजेक्ट डोमेन';
 
   @override
@@ -576,6 +579,21 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'मुख्य स्क्रीन पर वापस जाएँ';
+
+  @override
+  String get logs => 'लॉग';
+
+  @override
+  String get performance => 'प्रदर्शन';
+
+  @override
+  String get inspector => 'निरीक्षक';
+
+  @override
+  String get colorPicker => 'रंग';
+
+  @override
+  String get composer => 'कंपोज़र';
 
   @override
   String get navigationFlow => 'नेविगेशन फ्लो';
@@ -933,7 +951,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get tipSearchLogs =>
-      'टेक्स्ट से लॉग खोजें — पूरे JSON बॉडी में भी खोजता है';
+      'टेक्स्ट से लॉग खोजें - पूरे JSON बॉडी में भी खोजता है';
 
   @override
   String get tipLongPress => 'त्वरित कार्यों के लिए लॉग कार्ड को देर तक दबाएं';
@@ -956,7 +974,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get tipShareSession =>
-      'बग रिपोर्ट के लिए लॉग फ़ाइल साझा करें — डेटा स्वतः छिपाया जाता है';
+      'बग रिपोर्ट के लिए लॉग फ़ाइल साझा करें - डेटा स्वतः छिपाया जाता है';
 
   @override
   String get tipReverseLogs => 'लॉग क्रम पलटने के लिए ऐप बार में तीर दबाएँ';

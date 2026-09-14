@@ -5,7 +5,7 @@ import 'package:flutter/painting.dart';
 
 import 'widgets/inspector/box_info.dart';
 
-/// Consolidated inspector state — exposed as a single observable surface
+/// Consolidated inspector state - exposed as a single observable surface
 /// alongside the individual legacy [ValueNotifier]s on [InspectorController].
 ///
 /// Use this when you want `switch`-exhaustive handling for free:
@@ -22,13 +22,13 @@ import 'widgets/inspector/box_info.dart';
 /// ```
 ///
 /// The legacy notifiers (`currentRenderBoxNotifier`, `hoveredRenderBoxNotifier`,
-/// ...) remain the mutation surface — internal logic continues to write into
+/// ...) remain the mutation surface - internal logic continues to write into
 /// them, and the sealed state is recomputed on each change.
 sealed class InspectorUiState {
   const InspectorUiState();
 }
 
-/// Inspector is off — no selection, no overlays, no color picker, no zoom.
+/// Inspector is off - no selection, no overlays, no color picker, no zoom.
 class InspectorIdleState extends InspectorUiState {
   const InspectorIdleState();
 

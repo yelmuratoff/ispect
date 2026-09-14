@@ -11,8 +11,8 @@
 //   • Opt-in rolling file history with bounded disk retention.
 //   • Every ISpect.logger level (info/good/warning/error/debug/critical/…).
 //   • The standalone JSON viewer screen.
-//   • The HTTP composer ("mini-Postman") — wired through onPickComposerFile.
-//   • Environment metadata in exported logs — wired through metadataProvider.
+//   • The HTTP composer ("mini-Postman") - wired through onPickComposerFile.
+//   • Environment metadata in exported logs - wired through metadataProvider.
 //
 // For a deeper tour (custom themes, locales, Dio/HTTP/WS/DB interceptors,
 // Riverpod/Bloc observers, stress tests, compact network URLs, jank logging)
@@ -72,7 +72,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // Keep the observer in State so it survives rebuilds — it captures route
+  // Keep the observer in State so it survives rebuilds - it captures route
   // history for the ISpect panel and must not be re-created per build.
   final _ispectObserver = ISpectNavigatorObserver();
 
@@ -95,7 +95,6 @@ class _MyAppState extends State<MyApp> {
       ),
       builder: (_, child) => ISpectBuilder.wrap(
         child: child!,
-        // Set to false to hide the panel for non-admin users at runtime.
         // Compile-time gating already happens via kISpectEnabled.
         // isISpectEnabled: currentUser.isAdmin,
         //
@@ -134,20 +133,7 @@ class _MyAppState extends State<MyApp> {
             buildNumber: '1',
             environment: 'dev',
           ),
-          // Supplies a file for multipart bodies in the HTTP composer. A real
-          // app picks one here, e.g. with package:file_picker:
-          //
-          //   final result = await FilePicker.platform.pickFiles(withData: true);
-          //   if (result == null) return null; // user cancelled
-          //   final file = result.files.single;
-          //   return ComposerPickedFile(
-          //     filename: file.name,
-          //     bytes: file.bytes!,
-          //     contentType: lookupMimeType(file.name) ?? 'application/octet-stream',
-          //   );
-          //
-          // This stub returns in-memory bytes so the "attach file" control
-          // works without a native picker. Omit the callback to hide it.
+          // Omitting this callback hides the composer's attach-file control.
           onPickComposerFile: () async => ComposerPickedFile(
             filename: 'sample.txt',
             bytes: 'Hello from the ISpect HTTP composer'.codeUnits,
@@ -165,11 +151,7 @@ class _MyAppState extends State<MyApp> {
             // Returning null cancels without an error.
             return null;
           },
-          onSettingsChanged: (settings) {
-            // Here you can save changed settings to local storage
-            // e.g. prefs.setString('ispect', jsonEncode(settings.toJson()));
-          },
-          // Here you can attach saved settings from local storage
+          onSettingsChanged: (settings) {},
           initialSettings: null,
           // Add custom buttons to the action sheet (logs export, share, etc.).
           actionItems: [
@@ -182,20 +164,13 @@ class _MyAppState extends State<MyApp> {
           ],
           // Extra buttons on the bottom of the draggable panel.
           panelButtons: const [
-            // DraggablePanelButtonItem(icon: Icons.bug_report, label: 'Bug', onTap: ...),
+            // PanelActionButton(icon: Icons.bug_report, label: 'Bug', onPressed: ...),
           ],
           // Icon-only items on the draggable panel.
           panelItems: const [
-            // DraggablePanelItem(icon: Icons.cookie, onTap: ...),
+            // PanelAction(icon: Icons.cookie, onPressed: ...),
           ],
           // Replace the whole draggable panel (see ISpectPanelData / panelBuilder).
-          // panelBuilder: (context, data) => DraggablePanel(
-          //   controller: data.controller,
-          //   items: data.items,
-          //   buttons: data.buttons,
-          //   theme: data.theme,
-          //   child: data.child,
-          // ),
           //
           // Plug in custom inspector pages (see InspectorPlugin).
           plugins: const [],
@@ -218,12 +193,12 @@ class _HomePage extends StatelessWidget {
     final logger = ISpect.logger;
 
     // Adapter packages (add the one(s) you need to pubspec.yaml):
-    //   ispectify_dio    — Dio interceptor
-    //   ispectify_http   — package:http interceptor
-    //   ispectify_ws     — WebSocket logger
-    //   ispectify_bloc   — Bloc.observer = ISpectBlocObserver()
-    //   ispectify_riverpod — ProviderObserver = ISpectRiverpodObserver()
-    //   ispectify_db     — Database tracing (Hive, SharedPreferences, …)
+    //   ispectify_dio    - Dio interceptor
+    //   ispectify_http   - package:http interceptor
+    //   ispectify_ws     - WebSocket logger
+    //   ispectify_bloc   - Bloc.observer = ISpectBlocObserver()
+    //   ispectify_riverpod - ProviderObserver = ISpectRiverpodObserver()
+    //   ispectify_db     - Database tracing (Hive, SharedPreferences, …)
 
     return Scaffold(
       appBar: AppBar(title: const Text('ISpect Quick Start')),
@@ -323,8 +298,8 @@ class _HomePage extends StatelessWidget {
           const _SectionTitle('Inside the panel'),
           const Text(
             'Tap the floating ISpect button to open the panel:\n'
-            '• Logs — filter, search, export, import, share.\n'
-            '• HTTP composer (api icon) — replay or craft a request; the '
+            '• Logs - filter, search, export, import, share.\n'
+            '• HTTP composer (api icon) - replay or craft a request; the '
             '"attach file" control appears because onPickComposerFile is set.\n'
             '• Performance, widget inspector, color picker.',
           ),
@@ -361,7 +336,7 @@ class _HomePage extends StatelessWidget {
         }
       },
     };
-    const JsonScreen(data: sample).push(context);
+    JsonScreen(data: sample).push(context);
   }
 }
 

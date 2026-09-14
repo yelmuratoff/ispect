@@ -12,6 +12,7 @@ import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_context_menu.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_payload_preview.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
 
 part 'collapsed_body.dart';
@@ -28,6 +29,7 @@ class LogCard extends StatelessWidget {
     this.onShareTap,
     this.onShowRelated,
     this.searchMatchState = SearchMatchState.none,
+    this.useRelativeTime = false,
     super.key,
   });
 
@@ -41,6 +43,7 @@ class LogCard extends StatelessWidget {
   final ISpectNavigatorObserver? observer;
   final void Function(String id)? onShowRelated;
   final SearchMatchState searchMatchState;
+  final bool useRelativeTime;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +76,7 @@ class LogCard extends StatelessWidget {
                 onShareTap: onShareTap,
                 observer: observer,
                 onShowRelated: onShowRelated,
+                useRelativeTime: useRelativeTime,
               ),
               AnimatedSize(
                 duration: ISpectMotion.short,
@@ -98,6 +102,7 @@ class _LogCardHeader extends StatelessWidget {
     required this.isExpanded,
     required this.onTap,
     required this.observer,
+    required this.useRelativeTime,
     this.onShareTap,
     this.onShowRelated,
   });
@@ -110,14 +115,13 @@ class _LogCardHeader extends StatelessWidget {
   final VoidCallback? onShareTap;
   final ISpectNavigatorObserver? observer;
   final void Function(String id)? onShowRelated;
-
-  String get _message {
-    final msg = data.isHttpLog ? data.httpLogText : data.textMessage;
-    return msg ?? '';
-  }
+  final bool useRelativeTime;
 
   @override
   Widget build(BuildContext context) {
+    final httpLogText = data.httpLogText;
+    final message = data.isHttpLog ? httpLogText : data.textMessage;
+
     void openDetail() {
       LogDetailView(
         activeData: data,
@@ -130,24 +134,24 @@ class _LogCardHeader extends StatelessWidget {
         context: context,
         position: position,
         data: data,
-        message: _message,
         onShareTap: onShareTap,
         onOpenDetail: openDetail,
         onNavigationFlowTap: data.isRouteLog && observer != null
             ? () => ISpectNavigationFlowScreen(
-                  observer: observer!,
-                  log: data,
-                ).push(context)
+                observer: observer!,
+                log: data,
+              ).push(context)
             : null,
       );
     }
 
     return Semantics(
+      container: true,
+      explicitChildNodes: true,
       button: true,
-      expanded: isExpanded,
       label:
-          '${ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? "Log"}: $_message',
-      onTap: onTap,
+          '${ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? "Log"}: ${message ?? ""}',
+      onTap: openDetail,
       child: Material(
         type: MaterialType.transparency,
         child: GestureDetector(
@@ -155,7 +159,7 @@ class _LogCardHeader extends StatelessWidget {
           onLongPressStart: (details) => openMenu(details.globalPosition),
           child: InkWell(
             excludeFromSemantics: true,
-            onTap: onTap,
+            onTap: openDetail,
             borderRadius: const BorderRadius.only(
               topRight: Radius.circular(10),
               bottomRight: Radius.circular(10),
@@ -169,17 +173,24 @@ class _LogCardHeader extends StatelessWidget {
                 child: CollapsedBody(
                   icon: icon,
                   color: color,
-                  title: ISpectLogType.fromKey(data.key ?? '')?.displayTitle ??
+                  title:
+                      ISpectLogType.fromKey(data.key ?? '')?.displayTitle ??
                       data.key,
-                  dateTime: data.formattedTime,
+                  dateTime: context.formatLogTime(
+                    data.time,
+                    relative: useRelativeTime,
+                    absolute: data.formattedTime,
+                  ),
                   subtitle: _buildSubtitle(data),
-                  message: data.textMessage,
-                  errorMessage: data.httpLogText,
+                  message: message,
+                  errorMessage: httpLogText,
                   expanded: isExpanded,
                   statusCode: data.httpStatusCode,
-                  slowDurationMs:
-                      (data.traceSlow ?? false) ? data.traceDurationMs : null,
+                  slowDurationMs: (data.traceSlow ?? false)
+                      ? data.traceDurationMs
+                      : null,
                   onExpandTap: openDetail,
+                  onToggleExpanded: onTap,
                   onMenuTap: () => openMenu(Offset.zero),
                 ),
               ),
@@ -194,13 +205,16 @@ class _LogCardHeader extends StatelessWidget {
 /// Builds the subtitle line shown beneath the title row when a log card is
 /// expanded.
 String? _buildSubtitle(ISpectLogData data) {
-  final parts = <String>['#${_shortId(data.id)}'];
+  final captured = captureISpectLogDataForEgress(data);
+  final parts = <String>['#${_shortId(captured.id)}'];
 
   final source = data.traceSource;
   if (source != null && source.isNotEmpty) parts.add(source);
 
   final op = data.traceOperation;
-  final target = data.traceTarget;
+  final target = data.isHttpLog
+      ? NetworkLogRenderer.displayUrl(data)
+      : data.traceTarget;
   if (op != null && target != null) {
     parts.add('$op $target');
   } else if (op != null) {
@@ -212,20 +226,19 @@ String? _buildSubtitle(ISpectLogData data) {
   final ms = data.traceDurationMs;
   if (ms != null) parts.add(_formatTraceDuration(ms));
 
-  final raised = data.exception ?? data.error;
-  if (raised != null) {
-    final typeName = raised.runtimeType.toString();
-    if (typeName.isNotEmpty && typeName != 'Null') {
-      final clean = typeName.startsWith('_') ? typeName.substring(1) : typeName;
-      parts.add(clean);
-    }
+  if (captured.exception != null) {
+    parts.add('Exception');
+  } else if (captured.error != null) {
+    parts.add('Error');
   }
 
   if (parts.length == 1) {
-    final levelName = data.logLevel?.name;
+    final levelName = captured.logLevel?.name;
     if (levelName != null) {
       final title =
-          ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? '';
+          ISpectLogType.fromKey(captured.key ?? '')?.displayTitle ??
+          captured.key ??
+          '';
       if (title.toLowerCase() != levelName.toLowerCase()) {
         parts.add(levelName.toUpperCase());
       }
@@ -246,10 +259,7 @@ String _formatTraceDuration(int ms) {
 String _shortId(String id) => id.length <= 6 ? id : id.substring(id.length - 6);
 
 class _ExpandedContent extends StatelessWidget {
-  const _ExpandedContent({
-    required this.data,
-    required this.color,
-  });
+  const _ExpandedContent({required this.data, required this.color});
 
   final ISpectLogData data;
   final Color color;
@@ -261,10 +271,7 @@ class _ExpandedContent extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Divider(
-          height: 1,
-          color: color.withValues(alpha: 0.1),
-        ),
+        Divider(height: 1, color: color.withValues(alpha: 0.1)),
         Padding(
           padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
           child: Column(
@@ -301,51 +308,60 @@ class _LazyExpandedBody extends StatelessWidget {
   final bool hasStackTrace;
 
   @override
-  Widget build(BuildContext context) => _LogContentContainer(
-        hasStackTrace: hasStackTrace,
-        color: color,
-        child: _LogTextContent(
-          message: data.textMessage,
-          type: data.typeText,
-          errorMessage: data.httpLogText,
-          isHTTP: data.isHttpLog,
-          textStyle: TextStyle(
-            color: color,
-            fontSize: 12,
+  Widget build(BuildContext context) {
+    final captured = captureISpectLogDataForEgress(data);
+    final payload = data.isHttpLog ? NetworkLogRenderer.payload(data) : null;
+
+    return _LogContentContainer(
+      hasStackTrace: hasStackTrace,
+      color: color,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _LogTextContent(
+            message: data.textMessage,
+            type: data.typeText,
+            errorMessage: data.httpLogText,
+            isHTTP: data.isHttpLog,
+            textStyle: TextStyle(color: color, fontSize: 12),
           ),
-        ),
-      );
+          if (payload?.hasPreview ?? false) ...[
+            const Gap(8),
+            NetworkPayloadPreview(
+              payload: payload!,
+              color: color,
+              maxStringLength: captured.resourceLimits.maxUiDiagnosticBytes,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 class _LazyStackTraceBody extends StatelessWidget {
-  const _LazyStackTraceBody({
-    required this.color,
-    required this.stackTrace,
-  });
+  const _LazyStackTraceBody({required this.color, required this.stackTrace});
 
   final String stackTrace;
   final Color color;
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: SizedBox(
-          width: double.maxFinite,
-          child: DecoratedBox(
-            decoration: DecorationUtils.roundedBorder(color: color),
-            child: Padding(
-              padding: const EdgeInsets.all(6),
-              child: SelectableText(
-                stackTrace,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                ),
-              ),
-            ),
+    padding: const EdgeInsets.only(top: 8),
+    child: SizedBox(
+      width: double.maxFinite,
+      child: DecoratedBox(
+        decoration: DecorationUtils.roundedBorder(color: color),
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: SelectableText(
+            stackTrace,
+            style: TextStyle(color: color, fontSize: 12),
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 /// Container widget that handles decoration based on stack trace presence
@@ -362,17 +378,17 @@ class _LogContentContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        width: double.maxFinite,
-        child: DecoratedBox(
-          decoration: hasStackTrace
-              ? DecorationUtils.roundedBorder(color: color)
-              : const BoxDecoration(),
-          child: Padding(
-            padding: hasStackTrace ? const EdgeInsets.all(6) : EdgeInsets.zero,
-            child: child,
-          ),
-        ),
-      );
+    width: double.maxFinite,
+    child: DecoratedBox(
+      decoration: hasStackTrace
+          ? DecorationUtils.roundedBorder(color: color)
+          : const BoxDecoration(),
+      child: Padding(
+        padding: hasStackTrace ? const EdgeInsets.all(6) : EdgeInsets.zero,
+        child: child,
+      ),
+    ),
+  );
 }
 
 class _LogTextContent extends StatelessWidget {
@@ -392,18 +408,17 @@ class _LogTextContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Show message only if conditions are met
-          if (message != null && !isHTTP && errorMessage == null)
-            SelectableText(message!, style: textStyle),
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Show message only if conditions are met
+      if (message != null && !isHTTP && errorMessage == null)
+        SelectableText(message!, style: textStyle),
 
-          // Show type if available
-          if (type != null) SelectableText(type!, style: textStyle),
+      // Show type if available
+      if (type != null) SelectableText(type!, style: textStyle),
 
-          // Show error message if available
-          if (errorMessage != null)
-            SelectableText(errorMessage!, style: textStyle),
-        ],
-      );
+      // Show error message if available
+      if (errorMessage != null) SelectableText(errorMessage!, style: textStyle),
+    ],
+  );
 }

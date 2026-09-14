@@ -16,6 +16,36 @@ When the toolkit is on, overhead depends on what you capture:
 - High-volume BLoC and event streams need filters or sampling.
 - Long sessions need bounded history and exports limited to the relevant window.
 
+## What capture-time redaction costs
+
+Since 7.0.0 an entry is bounded when it is emitted, which severs the caller's
+object graph and caps memory. Masking runs when a consumer first reads the
+payload and is memoized on the entry, so entries nobody inspects never pay for
+it. History, the stream, observers, the console, and every export still share
+one guarantee. Indicative ratios from one macOS arm64 run of
+`./bash/run_benchmarks.sh`, useful for relative comparison rather than as an
+absolute budget:
+
+| case | µs/log |
+| --- | --- |
+| no consumer attached | 0.01 |
+| metadata-only, bounded history | 4.5 |
+| 1 KB payload, bounded history | ~30 |
+| 1 KB payload, bounded history and console | ~31 |
+
+Bounding the payload is what remains on the emit path, so the lever that matters
+is how much you capture, not how you format it. Choosing `strict` capture does
+not reduce it; capturing less does.
+
+Reach for one of these when a path is hot:
+
+- `ISpectDioInterceptorSettingsBuilder.metadataOnly()` and its http and
+  WebSocket counterparts, when you do not need bodies or headers.
+- `ISpectBlocSettings.compact` / `ISpectRiverpodSettings.compact` for chatty
+  state streams.
+- `DiagnosticResourceLimits.constrained` to shrink every budget at once.
+- A filter chain to drop noisy categories before they are captured.
+
 ## Controls
 
 - Start with the debug panel and metadata-only diagnostics.
@@ -23,6 +53,9 @@ When the toolkit is on, overhead depends on what you capture:
 - Filter or sample noisy categories.
 - Prefer a result projection over a full database row.
 - Keep the history bounded for long QA sessions.
+- Check `ISpectLogger.hasActiveConsumers` before a custom integration builds an
+  expensive diagnostic snapshot. Built-in adapters already do this. Treat the
+  value as a read-time snapshot because consumers can change before emission.
 
 ## Benchmarks
 
@@ -40,7 +73,7 @@ rate, OS, commit, and generated report.
 
 ## Reproducing measurements
 
-Use Flutter `3.32.6` for the CI-aligned Android series. An iOS series may use a
+Use Flutter `3.35.7` for the CI-aligned Android series. An iOS series may use a
 newer Flutter SDK required by the installed Xcode and generated iOS host, but
 must keep that SDK version fixed across every compared run. Record the Flutter
 SDK, machine, operating system, device, commit SHA, and date with every result.
@@ -51,14 +84,16 @@ workloads before warming up and measuring the device.
 
 ### Pure Dart hot paths
 
-The `ispectify` benchmark covers metadata-only and payload logging, disabled
-and bounded history, redaction of 1, 10, and 100 KB payloads, and JSON Lines
-exports of 100 and 1,000 entries. The same run measures `ispectify_db`
-`dbTraceSync` against a direct in-memory operation, plus `dio.*` and `http.*`
-request batches against fixed in-memory transports. The adapter suites compare
-the baseline client, metadata-only diagnostics, and body-enabled diagnostics.
-All pure Dart cases compile to AOT before running so that JIT warm-up does not
-distort the result.
+The `ispectify` benchmark covers metadata-only and payload logging, strict and
+redaction-disabled capture, disabled and bounded history, structural and
+export redaction of 1, 10, and 100 KB payloads, standalone bounded snapshots,
+and JSON Lines exports of 100 and 1,000 entries with redaction enabled and
+disabled. The same run measures `ispectify_db` `dbTraceSync` against a direct
+in-memory operation, plus `dio.*` and `http.*` request batches against fixed
+in-memory transports. The adapter suites compare the baseline client,
+metadata-only diagnostics, and body-enabled diagnostics while an active
+bounded history consumes the generated entries. All pure Dart cases compile
+to AOT before running so that JIT warm-up does not distort the result.
 
 ```bash
 ./bash/run_benchmarks.sh
@@ -123,6 +158,11 @@ p90, p99, and worst UI/raster durations, 16 ms frame-budget exceed counts,
 frame samples, GC counts, and layer/picture cache metrics. The accompanying
 `high-volume-metadata` records the event counts, refresh rate, physical size,
 and device-pixel ratio.
+
+Large pasted JSON and text, Markdown, or CSV exports run on a background
+isolate on native platforms. Flutter web yields before processing but remains
+single-isolate, so validate near-limit imports and exports separately in the
+target browser.
 
 Record the device model, OS, commit, and generated report alongside any
 published comparison. The 16 ms counters are a common comparison budget, not

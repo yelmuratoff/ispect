@@ -73,8 +73,9 @@ void main() {
   });
 
   group('resolveSvgPicture', () {
-    testWidgets('recovers an SvgPicture from the creator chain',
-        (tester) async {
+    testWidgets('recovers an SvgPicture from the creator chain', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const Directionality(
           textDirection: TextDirection.ltr,
@@ -93,8 +94,9 @@ void main() {
       expect(svg.runtimeType.toString(), 'SvgPicture');
     });
 
-    testWidgets('returns null when no SvgPicture is in the chain',
-        (tester) async {
+    testWidgets('returns null when no SvgPicture is in the chain', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const Directionality(
           textDirection: TextDirection.ltr,
@@ -113,7 +115,7 @@ void main() {
 
 /// Structural stand-in for flutter_svg's `SvgPicture`. [svgProps] and
 /// [resolveSvgPicture] match by runtime type *name* and read fields by duck
-/// typing — never by import — so a fake with the same name and field shape
+/// typing - never by import - so a fake with the same name and field shape
 /// exercises the real production code paths.
 class SvgPicture extends StatelessWidget {
   const SvgPicture({

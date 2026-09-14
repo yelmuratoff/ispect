@@ -2,42 +2,67 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 import 'package:ispectify/ispectify.dart';
 
-ISpectLogData _request({String? contentType, int? contentLength}) =>
-    ISpectLogData(
-      'request',
-      additionalData: {
-        TraceKeys.meta: {
-          NetworkJsonKeys.requestData: {
-            if (contentType != null) NetworkJsonKeys.contentType: contentType,
-            if (contentLength != null)
-              NetworkJsonKeys.contentLength: contentLength,
-          },
-        },
+ISpectLogData _request({
+  String? contentType,
+  int? contentLength,
+  Object? body,
+  String? url,
+  Map<String, Object?> queryParameters = const {},
+}) => ISpectLogData(
+  'request',
+  additionalData: {
+    if (url != null) TraceKeys.target: url,
+    TraceKeys.meta: {
+      NetworkJsonKeys.requestData: {
+        if (url != null) NetworkJsonKeys.url: url,
+        if (contentType != null) NetworkJsonKeys.contentType: contentType,
+        if (contentLength != null) NetworkJsonKeys.contentLength: contentLength,
+        if (body != null) NetworkJsonKeys.data: body,
+        if (queryParameters.isNotEmpty)
+          NetworkJsonKeys.queryParameters: queryParameters,
       },
-    );
+    },
+  },
+);
 
 ISpectLogData _response({
   int statusCode = 200,
   String? statusMessage = 'OK',
   int? contentLength,
-}) =>
-    ISpectLogData(
-      'response',
-      additionalData: {
-        TraceKeys.meta: {
-          NetworkJsonKeys.statusCode: statusCode,
-          NetworkJsonKeys.responseData: {
-            NetworkJsonKeys.statusCode: statusCode,
-            if (statusMessage != null)
-              NetworkJsonKeys.statusMessage: statusMessage,
-            if (contentLength != null)
-              NetworkJsonKeys.contentLength: contentLength,
-          },
-        },
+}) => ISpectLogData(
+  'response',
+  additionalData: {
+    TraceKeys.meta: {
+      NetworkJsonKeys.statusCode: statusCode,
+      NetworkJsonKeys.responseData: {
+        NetworkJsonKeys.statusCode: statusCode,
+        if (statusMessage != null) NetworkJsonKeys.statusMessage: statusMessage,
+        if (contentLength != null) NetworkJsonKeys.contentLength: contentLength,
       },
-    );
+    },
+  },
+);
 
 void main() {
+  tearDown(ISpectRedaction.reset);
+
+  group('transactionDisplayUrl', () {
+    test('appends query parameters from the captured redacted payload', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(
+          url: 'https://api.example.com/users',
+          queryParameters: const {'token': defaultPlaceholder},
+        ),
+      );
+
+      expect(
+        transactionDisplayUrl(tx),
+        'https://api.example.com/users?token=$defaultPlaceholder',
+      );
+    });
+  });
+
   group('transactionListUrl', () {
     test('strips scheme and host, keeping the path when compact', () {
       expect(
@@ -109,15 +134,17 @@ void main() {
       expect(transactionStatusSummary(tx), '2.0 KB');
     });
 
-    test('keeps an error reason phrase that the code alone does not convey',
-        () {
-      final tx = NetworkTransaction(
-        requestId: 'r',
-        request: _request(),
-        response: _response(statusCode: 404, statusMessage: 'Not Found'),
-      );
-      expect(transactionStatusSummary(tx), 'Not Found');
-    });
+    test(
+      'keeps an error reason phrase that the code alone does not convey',
+      () {
+        final tx = NetworkTransaction(
+          requestId: 'r',
+          request: _request(),
+          response: _response(statusCode: 404, statusMessage: 'Not Found'),
+        );
+        expect(transactionStatusSummary(tx), 'Not Found');
+      },
+    );
 
     test('keeps a non-standard reason on a 2xx response', () {
       final tx = NetworkTransaction(
@@ -197,6 +224,15 @@ void main() {
         request: _request(),
         error: _request(),
       );
+      expect(transactionHasInlineDetails(tx), isTrue);
+    });
+
+    test('is true when a pending request has a body preview', () {
+      final tx = NetworkTransaction(
+        requestId: 'r',
+        request: _request(body: const {'name': 'Ada'}),
+      );
+
       expect(transactionHasInlineDetails(tx), isTrue);
     });
   });

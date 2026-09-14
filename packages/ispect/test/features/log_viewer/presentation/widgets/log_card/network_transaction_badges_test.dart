@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
 
+import '../../../../../helpers/pump_ispect.dart';
+
 void main() {
   group('MethodBadge', () {
     const fallback = Color(0xFF4CAF50);
@@ -44,8 +46,11 @@ void main() {
     });
 
     testWidgets('uses the lighter dark palette on dark theme', (tester) async {
-      final color =
-          await pumpBadgeColor(tester, 'DELETE', brightness: Brightness.dark);
+      final color = await pumpBadgeColor(
+        tester,
+        'DELETE',
+        brightness: Brightness.dark,
+      );
       expect(color, JsonColors.methodColorFor('DELETE', Brightness.dark));
       expect(
         color,
@@ -60,9 +65,86 @@ void main() {
       );
     });
 
-    testWidgets('falls back to the provided color for unknown methods',
-        (tester) async {
+    testWidgets('falls back to the provided color for unknown methods', (
+      tester,
+    ) async {
       expect(await pumpBadgeColor(tester, 'HTTP'), fallback);
     });
+  });
+
+  testWidgets('transaction action controls use visible Material ripples', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      appShell(
+        Row(
+          children: [
+            DetailChip(label: 'Request', color: Colors.green, onTap: () {}),
+            SmallActionIcon(
+              icon: Icons.share_rounded,
+              color: Colors.green,
+              tooltip: 'Share',
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+
+    for (final control in [
+      find.byType(DetailChip),
+      find.byType(SmallActionIcon),
+    ]) {
+      expect(
+        find.descendant(of: control, matching: find.byType(Material)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: control, matching: find.byType(InkWell)),
+        findsOneWidget,
+      );
+    }
+  });
+
+  testWidgets('detail chip confines its ripple to the visual surface', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      appShell(
+        Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            height: kMinInteractiveDimension,
+            child: DetailChip(
+              label: 'Request',
+              color: Colors.green,
+              onTap: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final control = find.byType(DetailChip);
+    final inkWellFinder = find.descendant(
+      of: control,
+      matching: find.byType(InkWell),
+    );
+    final surfaceFinder = find.descendant(
+      of: control,
+      matching: find.byType(Ink),
+    );
+    final inkWell = tester.widget<InkWell>(inkWellFinder);
+    final tapSize = tester.getSize(inkWellFinder);
+    final surfaceSize = tester.getSize(surfaceFinder);
+    final clipBounds = inkWell.customBorder!
+        .getOuterPath(Offset.zero & tapSize)
+        .getBounds();
+
+    expect(clipBounds.size, within<Size>(distance: 0.1, from: surfaceSize));
+    expect(
+      clipBounds.center,
+      within<Offset>(distance: 0.1, from: (Offset.zero & tapSize).center),
+    );
   });
 }

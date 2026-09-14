@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// Describes a tappable action shown inside the ISpect inspector panel
 /// (e.g. in the custom-actions grid).
 ///
-/// Instances are compared by [title] + [icon] only — tap handlers and
+/// Instances are compared by [title] + [icon] only - tap handlers and
 /// descriptions don't contribute to equality.
 @immutable
 class ISpectActionItem {

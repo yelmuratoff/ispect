@@ -3,7 +3,7 @@ import 'package:ispectify/src/network/filter/network_filter.dart';
 /// Passes only events whose HTTP method is in [allowedMethods].
 ///
 /// Works with any event type [T] by extracting the method via
-/// [methodExtractor]. Method comparison is case-sensitive — callers should
+/// [methodExtractor]. Method comparison is case-sensitive - callers should
 /// normalise to uppercase if needed.
 class HttpMethodFilter<T> extends NetworkFilter<T> {
   const HttpMethodFilter({

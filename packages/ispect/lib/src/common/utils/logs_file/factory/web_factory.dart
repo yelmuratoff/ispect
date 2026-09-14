@@ -3,3 +3,5 @@ import 'package:ispect/src/common/utils/logs_file/implementations/web_logs_file.
 
 /// Web-specific factory implementation.
 BaseLogsFile createPlatformLogsFile() => WebLogsFile();
+
+Future<void> cleanupPlatformShareFiles() => Future<void>.value();

@@ -126,6 +126,66 @@ void main() {
     });
   });
 
+  group('ISpectFilter excluded log type keys', () {
+    test('rejects an excluded key and passes every other key', () {
+      final filter = ISpectFilter(excludedLogTypeKeys: const ['riverpod-add']);
+
+      expect(filter.apply(ISpectLogData('Added', key: 'riverpod-add')), false);
+      expect(filter.apply(ISpectLogData('Info', key: 'info')), true);
+      expect(filter.apply(ISpectLogData('Custom', key: 'my-custom')), true);
+    });
+
+    test('vetoes a key that the matching criteria also select', () {
+      final filter = ISpectFilter(
+        logTypeKeys: const ['info', 'debug'],
+        excludedLogTypeKeys: const ['info'],
+      );
+
+      expect(filter.apply(ISpectLogData('Info', key: 'info')), false);
+      expect(filter.apply(ISpectLogData('Debug', key: 'debug')), true);
+    });
+
+    test('vetoes a key that the search query would otherwise match', () {
+      final filter = ISpectFilter(
+        searchQuery: 'boom',
+        excludedLogTypeKeys: const ['bloc-error'],
+      );
+
+      expect(filter.apply(ISpectLogData('boom', key: 'bloc-error')), false);
+      expect(filter.apply(ISpectLogData('boom', key: 'error')), true);
+    });
+
+    test('passes a log with no key', () {
+      final filter = ISpectFilter(excludedLogTypeKeys: const ['info']);
+
+      expect(filter.apply(ISpectLogData('Keyless')), true);
+    });
+
+    test('an empty exclusion set leaves matching behaviour unchanged', () {
+      final filter = ISpectFilter(logTypeKeys: const ['info']);
+
+      expect(filter.apply(ISpectLogData('Info', key: 'info')), true);
+      expect(filter.apply(ISpectLogData('Debug', key: 'debug')), false);
+    });
+
+    test('copyWith carries exclusions over to the new instance', () {
+      final filter = ISpectFilter(excludedLogTypeKeys: const ['info'])
+          .copyWith(searchQuery: 'message');
+
+      expect(filter.excludedLogTypeKeys, {'info'});
+      expect(filter.apply(ISpectLogData('Info message', key: 'info')), false);
+      expect(filter.apply(ISpectLogData('Debug message', key: 'debug')), true);
+    });
+
+    test('copyWith replaces exclusions when a new set is supplied', () {
+      final filter = ISpectFilter(excludedLogTypeKeys: const ['info'])
+          .copyWith(excludedLogTypeKeys: const <String>{});
+
+      expect(filter.excludedLogTypeKeys, isEmpty);
+      expect(filter.apply(ISpectLogData('Info', key: 'info')), true);
+    });
+  });
+
   group('LogLevelRangeFilter', () {
     test('default filter allows all log levels', () {
       final filter = LogLevelRangeFilter();

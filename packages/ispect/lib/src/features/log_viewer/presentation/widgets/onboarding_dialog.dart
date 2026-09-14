@@ -12,12 +12,12 @@ import 'package:ispect/src/common/widgets/ispect_icon_badge.dart';
 class ISpectOnboardingDialog {
   /// Shows the tips sheet as an adaptive bottom-sheet/dialog.
   static Future<void> show(BuildContext context) => showISpectSheet<void>(
-        context,
-        topOnlyRadius: true,
-        routeSettings: const RouteSettings(name: 'ISpect Tips Sheet'),
-        builder: (sheetContext, _) =>
-            _OnboardingSheet(isDesktop: sheetContext.screenSize.isDesktop),
-      );
+    context,
+    topOnlyRadius: true,
+    routeSettings: const RouteSettings(name: 'ISpect Tips Sheet'),
+    builder: (sheetContext, _) =>
+        _OnboardingSheet(isDesktop: sheetContext.screenSize.isDesktop),
+  );
 }
 
 class _OnboardingSheet extends StatelessWidget {
@@ -32,7 +32,7 @@ class _OnboardingSheet extends StatelessWidget {
       _HintData(Icons.search_rounded, l10n.tipSearchLogs),
       _HintData(Icons.touch_app_rounded, l10n.tipLongPress),
       _HintData(Icons.filter_alt_rounded, l10n.tipFilter),
-      _HintData(Icons.open_in_full_rounded, l10n.tipExpand),
+      if (isDesktop) _HintData(Icons.open_in_full_rounded, l10n.tipExpand),
       _HintData(Icons.alt_route_rounded, l10n.tipNavigationFlow),
       _HintData(Icons.ios_share_rounded, l10n.tipShareSession),
       _HintData(Icons.import_export_rounded, l10n.tipReverseLogs),
@@ -56,10 +56,8 @@ class _OnboardingSheet extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: hints.length,
               separatorBuilder: (_, __) => const Gap(8),
-              itemBuilder: (_, index) => _HintRow(
-                icon: hints[index].icon,
-                text: hints[index].text,
-              ),
+              itemBuilder: (_, index) =>
+                  _HintRow(icon: hints[index].icon, text: hints[index].text),
             ),
           ),
           Padding(
@@ -92,21 +90,21 @@ class _HintRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ISpectBorderedSurface(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ISpectIconBadge(icon: icon, size: ISpectIconBadgeSize.small),
-            const Gap(10),
-            Expanded(
-              child: Text(
-                text,
-                style: context.appTheme.textTheme.bodyMedium?.copyWith(
-                  color: context.appTheme.textColor,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ISpectIconBadge(icon: icon, size: ISpectIconBadgeSize.small),
+        const Gap(10),
+        Expanded(
+          child: Text(
+            text,
+            style: context.appTheme.textTheme.bodyMedium?.copyWith(
+              color: context.appTheme.textColor,
+              fontWeight: FontWeight.w500,
             ),
-          ],
+          ),
         ),
-      );
+      ],
+    ),
+  );
 }

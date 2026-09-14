@@ -11,7 +11,8 @@
 
 ```yaml
 dependencies:
-  dio: ^5.0.0
+  dio: ^5.8.0+1
+  ispect: ^{{version}}
   ispectify: ^{{version}}
   ispectify_dio: ^{{version}}
 ```
@@ -20,9 +21,11 @@ dependencies:
 
 ```dart
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 
+final logger = ISpectFlutter.init();
 final dio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
 
 ISpect.run(
@@ -32,12 +35,6 @@ ISpect.run(
     dio.interceptors.add(
       ISpectDioInterceptor(
         logger: logger,
-        settings: const ISpectDioInterceptorSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-          printRequestData: true,
-          printResponseData: true,
-        ),
       ),
     );
   },
@@ -46,40 +43,72 @@ ISpect.run(
 
 ## Settings
 
-`ISpectDioInterceptorSettings` controls which parts of each call are captured and whether they are redacted before logging. `enableRedaction` defaults to `true` on every constructor.
+`ISpectDioInterceptorSettings` captures headers, bodies, messages, and errors by default so the first diagnostic session is useful without extra configuration. Captured values are bounded and redacted before logging; `enableRedaction` defaults to `true` on every constructor.
 
 ```dart
 const settings = ISpectDioInterceptorSettings(
+  logRequests: true,
+  logResponses: true,
   printRequestHeaders: true,
   printRequestData: true,
-  printResponseHeaders: false,
+  printResponseHeaders: true,
   printResponseData: true,
   enableRedaction: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
 );
 ```
+
+Balanced capture lets typed request and response values contribute a guarded,
+bounded `toJson()` snapshot before redaction. Set
+`captureMode: DiagnosticCaptureMode.strict` when application-defined
+formatters must never run.
 
 ### Preset factories
 
 ```dart
-// Verbose. Full payloads, no redaction. Only for local development.
+// Verbose payload capture with redaction still enabled.
 final dev = ISpectDioInterceptorSettingsBuilder.development().build();
 
-// Redacted. Conservative defaults, body capture off.
+final hardened =
+    ISpectDioInterceptorSettingsBuilder.metadataOnly().build();
+
+// Redacted errors only. Routine request/response records are not retained.
 final prod = ISpectDioInterceptorSettingsBuilder.production().build();
 
 // Middle ground for staging environments.
 final staging = ISpectDioInterceptorSettingsBuilder.staging().build();
 ```
 
+`metadataOnly()` and `production()` select strict capture. `development()` and
+`staging()` keep balanced capture. A custom builder can switch explicitly with
+`withStrictCapture()` or `withBalancedCapture()`.
+Use `withResourceLimits(...)` for an interceptor-local budget, or
+`withInheritedResourceLimits()` to return to the logger policy.
+`NetworkInterceptorDefaults` is the shared source of truth used by direct
+settings construction and every network settings builder.
+
 ### Builder
 
 ```dart
 final settings = ISpectDioInterceptorSettingsBuilder()
-    .withRequestHeaders()
-    .withResponseHeaders()
+    .withoutResponses()
+    .withoutRequestHeaders()
+    .withoutRequestData()
     .withoutRedaction() // not recommended, see "Data redaction" below.
     .build();
 ```
+
+`logRequests` and `logResponses` decide whether routine records are retained.
+Body and header capture is on by default and passes through the active
+redaction policy. The `print*` fields can omit specific retained fields, while
+the `metadataOnly()` preset opts into stronger data minimization without
+disabling request/response visibility.
+Concrete settings `copyWith` methods and builders expose the retention
+controls. Pass `inheritResourceLimits: true` to `copyWith` to clear a local
+budget. An attached Dio interceptor can update the same shared fields at
+runtime with `configure(...)`, including `enabled`, retention, capture mode,
+resource limits, and individual payload fields.
 
 <!-- partial:redaction -->
 
@@ -98,7 +127,7 @@ Supply a custom `RedactionService`:
 ISpectDioInterceptor(
   logger: logger,
   redactor: RedactionService(
-    sensitiveKeys: {...defaultSensitiveKeys, 'x-tenant-token'},
+    additionalSensitiveKeys: {'x-tenant-token'},
   ),
 );
 ```

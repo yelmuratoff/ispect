@@ -1,6 +1,6 @@
 /// Top-level keys in [ISpectLogData.additionalData] for trace envelope.
 ///
-/// Not to be confused with `NetworkJsonKeys` — those are used INSIDE `meta`
+/// Not to be confused with `NetworkJsonKeys` - those are used INSIDE `meta`
 /// for domain payload.
 abstract final class TraceKeys {
   static const category = 'category';

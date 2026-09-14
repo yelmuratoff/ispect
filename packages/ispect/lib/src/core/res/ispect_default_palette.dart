@@ -11,7 +11,7 @@ import 'package:ispect/src/core/res/ispect_theme.dart';
 abstract final class ISpectDefaultPalette {
   const ISpectDefaultPalette._();
 
-  /// Outermost surface — scaffolds, sheets, dialog scrims.
+  /// Outermost surface - scaffolds, sheets, dialog scrims.
   static const ISpectDynamicColor background = ISpectDynamicColor(
     dark: Color(0xFF0E0E11),
     light: Color(0xFFF6F6F8),
@@ -23,7 +23,7 @@ abstract final class ISpectDefaultPalette {
     light: Color(0xFFFFFFFF),
   );
 
-  /// Rows / list items — one tonal step *below* [card] so tiles read on top.
+  /// Rows / list items - one tonal step *below* [card] so tiles read on top.
   static const ISpectDynamicColor rowCard = ISpectDynamicColor(
     dark: Color(0xFF151518),
     light: Color(0xFFF1F1F4),
@@ -41,7 +41,7 @@ abstract final class ISpectDefaultPalette {
     light: Color(0xFFE2E2E6),
   );
 
-  /// Single accent — primary buttons, focus, selection, links.
+  /// Single accent - primary buttons, focus, selection, links.
   static const ISpectDynamicColor primary = ISpectDynamicColor(
     dark: Color(0xFF3B82F6),
     light: Color(0xFF2F6FE0),

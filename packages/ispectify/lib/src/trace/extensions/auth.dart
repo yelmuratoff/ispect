@@ -2,6 +2,7 @@ import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
+import 'package:ispectify/src/trace/trace_helpers.dart';
 
 /// Trace helpers for authentication flows (sign-in, sign-out, refresh, etc.).
 extension ISpectLoggerAuth on ISpectLogger {
@@ -19,21 +20,25 @@ extension ISpectLoggerAuth on ISpectLogger {
     Object? Function(T)? projectResult,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) =>
-      traceCategoryAsync(
-        category: authCategory,
-        source: source,
-        operation: operation,
-        meta: {
+  }) {
+    if (!isEnabled) return run();
+    return traceCategoryAsync(
+      category: authCategory,
+      source: source,
+      operation: operation,
+      meta: boundedTraceMeta(
+        fields: {
           if (userId != null) 'userId': userId,
           if (provider != null) 'provider': provider,
-          ...?meta,
         },
-        run: run,
-        projectResult: projectResult,
-        config: config,
-        correlationId: correlationId,
-      );
+        overrides: meta,
+      ),
+      run: run,
+      projectResult: projectResult,
+      config: config,
+      correlationId: correlationId,
+    );
+  }
 
   /// Logs a one-shot auth event without awaiting a future.
   ///
@@ -51,20 +56,24 @@ extension ISpectLoggerAuth on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) =>
-      traceCategory(
-        category: authCategory,
-        source: source,
-        operation: operation,
-        success: success,
-        error: error,
-        duration: duration,
-        meta: {
+  }) {
+    if (!isEnabled) return;
+    traceCategory(
+      category: authCategory,
+      source: source,
+      operation: operation,
+      success: success,
+      error: error,
+      duration: duration,
+      meta: boundedTraceMeta(
+        fields: {
           if (userId != null) 'userId': userId,
           if (provider != null) 'provider': provider,
-          ...?meta,
         },
-        config: config,
-        correlationId: correlationId,
-      );
+        overrides: meta,
+      ),
+      config: config,
+      correlationId: correlationId,
+    );
+  }
 }

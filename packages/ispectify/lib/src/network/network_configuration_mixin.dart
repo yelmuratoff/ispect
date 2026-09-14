@@ -1,4 +1,6 @@
 import 'package:ansicolor/ansicolor.dart';
+import 'package:ispectify/src/models/diagnostic_capture_mode.dart';
+import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/network/network_interceptor_settings.dart';
 
 /// Mixin providing runtime reconfiguration for network interceptors.
@@ -9,7 +11,7 @@ import 'package:ispectify/src/network/network_interceptor_settings.dart';
 mixin NetworkConfigurationMixin {
   /// The current settings exposed for runtime reconfiguration.
   ///
-  /// Returns `null` by default — override in interceptors that support
+  /// Returns `null` by default - override in interceptors that support
   /// [configure] (e.g. Dio, HTTP). WS and other read-only interceptors
   /// do not need to override this.
   BaseNetworkInterceptorSettings? get configurableSettings => null;
@@ -24,7 +26,16 @@ mixin NetworkConfigurationMixin {
   ///
   /// Only fields provided (non-null) are updated; omitted fields retain their
   /// current values. Has no effect when [configurableSettings] returns `null`.
+  ///
+  /// Set [inheritResourceLimits] to return resource-budget ownership to the
+  /// attached logger. It takes precedence over [resourceLimits].
   void configure({
+    bool? enabled,
+    DiagnosticCaptureMode? captureMode,
+    DiagnosticResourceLimits? resourceLimits,
+    bool inheritResourceLimits = false,
+    bool? logRequests,
+    bool? logResponses,
     bool? printResponseData,
     bool? printResponseHeaders,
     bool? printResponseMessage,
@@ -42,6 +53,12 @@ mixin NetworkConfigurationMixin {
     if (current == null) return;
     applyConfigurableSettings(
       current.copyWith(
+        enabled: enabled,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+        inheritResourceLimits: inheritResourceLimits,
+        logRequests: logRequests,
+        logResponses: logResponses,
         printResponseData: printResponseData,
         printResponseHeaders: printResponseHeaders,
         printResponseMessage: printResponseMessage,

@@ -46,13 +46,15 @@ class InspectorUtils {
     }
     if (filtered.isEmpty) return const <RenderBox>[];
 
-    filtered.sort(
-        (a, b) => _depthFromRoot(a, root).compareTo(_depthFromRoot(b, root)));
+    final depths = <RenderBox, int>{
+      for (final box in filtered) box: _depthFromRoot(box, root),
+    };
+    filtered.sort((a, b) => depths[a]!.compareTo(depths[b]!));
     return List<RenderBox>.unmodifiable(filtered);
   }
 
-  /// True when [box] is attached, sized, and its local bounds — after
-  /// inverse-mapping [globalPosition] through every ancestor transform —
+  /// True when [box] is attached, sized, and its local bounds - after
+  /// inverse-mapping [globalPosition] through every ancestor transform -
   /// contain that pointer. Conservatively false for non-invertible
   /// transforms (which would yield NaN/Infinity locals).
   static bool _boundsContain(RenderBox box, Offset globalPosition) {

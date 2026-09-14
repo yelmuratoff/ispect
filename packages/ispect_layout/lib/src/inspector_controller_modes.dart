@@ -28,6 +28,7 @@ extension InspectorControllerModes on InspectorController {
   /// via [stackKey]'s context if it's available, so the user gets visible
   /// feedback instead of silent no-op.
   void enterCompareMode() {
+    if (!isEnabled) return;
     if (currentRenderBoxNotifier.value == null) {
       final context = stackKey.currentContext;
       if (context != null) {
@@ -55,6 +56,7 @@ extension InspectorControllerModes on InspectorController {
   /// Color picker: surfaces the result snackbar with the locked colour.
   /// Zoom: nothing to commit, so this just exits the mode.
   void confirmCurrentSelection({required BuildContext context}) {
+    if (!isEnabled) return;
     final mode = modeNotifier.value;
     if (mode == InspectorMode.colorPicker) {
       final color = selectedColorStateNotifier.value;
@@ -75,6 +77,7 @@ extension InspectorControllerModes on InspectorController {
   }
 
   void setMode(InspectorMode mode, {BuildContext? context}) {
+    if (!isEnabled) return;
     if (mode == modeNotifier.value) return;
 
     switch (mode) {
@@ -102,9 +105,13 @@ extension InspectorControllerModes on InspectorController {
         break;
     }
 
-    _cleanupMode(modeNotifier.value, mode, context);
-    modeNotifier.value = mode;
-    _setupMode(mode);
+    _hoverHandledThisFrame = false;
+    _pendingHover = null;
+    _batchStateUpdates(() {
+      _cleanupMode(modeNotifier.value, mode, context);
+      modeNotifier.value = mode;
+      _setupMode(mode);
+    });
   }
 
   void _toggleMode(bool enable, InspectorMode targetMode) {
@@ -127,7 +134,10 @@ extension InspectorControllerModes on InspectorController {
   }
 
   void _cleanupMode(
-      InspectorMode oldMode, InspectorMode newMode, BuildContext? context) {
+    InspectorMode oldMode,
+    InspectorMode newMode,
+    BuildContext? context,
+  ) {
     switch (oldMode) {
       case InspectorMode.inspector:
       case InspectorMode.inspectAndCompare:
@@ -144,7 +154,7 @@ extension InspectorControllerModes on InspectorController {
         }
         break;
       case InspectorMode.colorPicker:
-        // Snackbar surfaces only via confirmCurrentSelection — closing the
+        // Snackbar surfaces only via confirmCurrentSelection - closing the
         // mode through cancel / panel toggle should not commit anything.
         _cleanupImage();
         selectedColorOffsetNotifier.value = null;

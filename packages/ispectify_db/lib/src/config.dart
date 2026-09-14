@@ -23,9 +23,11 @@ class ISpectDbConfig extends ISpectTraceConfig {
     super.maxValueLength,
     super.attachStackOnError,
     super.slowThreshold,
+    super.resourceLimits,
     this.maxStatementLength = 2000,
     this.maxArgsLength = 500,
     this.enableTransactionMarkers = false,
+    this.captureMode = DiagnosticCaptureMode.balanced,
   }) : assert(
           sampleRate == null || (sampleRate >= 0 && sampleRate <= 1),
           'sampleRate must be between 0.0 and 1.0 (inclusive)',
@@ -34,6 +36,9 @@ class ISpectDbConfig extends ISpectTraceConfig {
   final int maxStatementLength;
   final int maxArgsLength;
   final bool enableTransactionMarkers;
+
+  /// Controls whether guarded application formatters may run during capture.
+  final DiagnosticCaptureMode captureMode;
 
   @override
   String toString() => 'ISpectDbConfig('
@@ -44,6 +49,7 @@ class ISpectDbConfig extends ISpectTraceConfig {
       'maxArgsLength: $maxArgsLength, '
       'maxStatementLength: $maxStatementLength, '
       'attachStackOnError: $attachStackOnError, '
+      'captureMode: $captureMode, '
       'enableTransactionMarkers: $enableTransactionMarkers, '
       'slowThreshold: $slowThreshold)';
 
@@ -51,7 +57,8 @@ class ISpectDbConfig extends ISpectTraceConfig {
   ///
   /// Nullable fields ([sampleRate], [slowThreshold]) can be explicitly
   /// reset to `null` by passing `null`. Omitting them preserves the current
-  /// value.
+  /// value. Set [inheritResourceLimits] to `true` to clear a local resource
+  /// override and resume inheriting the logger policy.
   @override
   ISpectDbConfig copyWith({
     Object? sampleRate = _absent,
@@ -61,9 +68,12 @@ class ISpectDbConfig extends ISpectTraceConfig {
     int? maxValueLength,
     bool? attachStackOnError,
     Object? slowThreshold = _absent,
+    DiagnosticResourceLimits? resourceLimits,
+    bool inheritResourceLimits = false,
     int? maxStatementLength,
     int? maxArgsLength,
     bool? enableTransactionMarkers,
+    DiagnosticCaptureMode? captureMode,
   }) =>
       ISpectDbConfig(
         sampleRate:
@@ -76,9 +86,13 @@ class ISpectDbConfig extends ISpectTraceConfig {
         slowThreshold: slowThreshold == _absent
             ? this.slowThreshold
             : slowThreshold as Duration?,
+        resourceLimits: inheritResourceLimits
+            ? null
+            : resourceLimits ?? this.resourceLimits,
         maxStatementLength: maxStatementLength ?? this.maxStatementLength,
         maxArgsLength: maxArgsLength ?? this.maxArgsLength,
         enableTransactionMarkers:
             enableTransactionMarkers ?? this.enableTransactionMarkers,
+        captureMode: captureMode ?? this.captureMode,
       );
 }

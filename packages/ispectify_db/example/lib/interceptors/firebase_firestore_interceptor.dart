@@ -1,7 +1,7 @@
 /// Ready-to-copy interceptor for **cloud_firestore** (Firebase Firestore).
 ///
 /// Implements the full [CollectionReference] and [DocumentReference]
-/// interfaces — drop-in replacements.
+/// interfaces - drop-in replacements.
 ///
 /// ## Setup
 /// ```dart
@@ -30,7 +30,7 @@ import 'package:ispectify_db/ispectify_db.dart';
 ///
 /// Implements [CollectionReference], allowing it to be used as a drop-in
 /// replacement. Query-building methods ([where], [orderBy], …) delegate
-/// directly — only terminal operations ([get], [add]) are traced.
+/// directly - only terminal operations ([get], [add]) are traced.
 ///
 /// [doc] returns a traced [ISpectFirestoreDocument].
 final class ISpectFirestoreCollection<T extends Object?>

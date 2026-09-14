@@ -5,7 +5,7 @@ import 'package:ispectify/ispectify.dart';
 /// Manages desktop column sorting state.
 class SortingController extends ChangeNotifier {
   SortingController({required ValueGetter<bool> isLogOrderReversed})
-      : _isLogOrderReversed = isLogOrderReversed;
+    : _isLogOrderReversed = isLogOrderReversed;
 
   final ValueGetter<bool> _isLogOrderReversed;
 
@@ -57,14 +57,12 @@ class SortingController extends ChangeNotifier {
     List<ISpectLogData> filteredEntries,
     int index,
   ) {
-    final actualIndex =
-        isLogOrderReversed ? filteredEntries.length - 1 - index : index;
+    final actualIndex = isLogOrderReversed
+        ? filteredEntries.length - 1 - index
+        : index;
     if (actualIndex < 0 || actualIndex >= filteredEntries.length) {
       return null;
     }
-    return (
-      entry: filteredEntries[actualIndex],
-      actualIndex: actualIndex,
-    );
+    return (entry: filteredEntries[actualIndex], actualIndex: actualIndex);
   }
 }

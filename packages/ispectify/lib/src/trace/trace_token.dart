@@ -5,7 +5,7 @@ import 'package:ispectify/src/trace/trace_config.dart';
 ///
 /// Always call `traceEnd` after `traceStart`. If `traceEnd` is not called,
 /// the [Stopwatch] continues running until GC (bytes-level leak).
-/// `traceStart` returns `null` when logger is disabled — calling
+/// `traceStart` returns `null` when logger is disabled - calling
 /// `traceEnd(null)` is a no-op.
 final class ISpectTraceToken {
   ISpectTraceToken({

@@ -1,6 +1,6 @@
 /// Ready-to-copy interceptor for **sqflite** / **sqflite_common**.
 ///
-/// Implements the full [Database] interface — drop-in replacement.
+/// Implements the full [Database] interface - drop-in replacement.
 ///
 /// ## Setup
 /// ```dart
@@ -188,11 +188,7 @@ final class ISpectSqfliteDatabase implements Database {
       );
 
   @override
-  Future<int> delete(
-    String table, {
-    String? where,
-    List<Object?>? whereArgs,
-  }) =>
+  Future<int> delete(String table, {String? where, List<Object?>? whereArgs}) =>
       _logger.dbTrace(
         source: _source,
         operation: 'delete',
@@ -216,9 +212,7 @@ final class ISpectSqfliteDatabase implements Database {
       );
 
   @override
-  Future<T> readTransaction<T>(
-    Future<T> Function(Transaction txn) action,
-  ) =>
+  Future<T> readTransaction<T>(Future<T> Function(Transaction txn) action) =>
       _logger.dbTransaction(
         source: _source,
         run: () => _db.readTransaction(action),

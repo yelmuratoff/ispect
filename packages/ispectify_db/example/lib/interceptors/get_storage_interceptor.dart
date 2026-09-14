@@ -1,6 +1,6 @@
 /// Ready-to-copy interceptor for **get_storage**.
 ///
-/// Implements the full [GetStorage] interface — drop-in replacement.
+/// Implements the full [GetStorage] interface - drop-in replacement.
 ///
 /// ## Setup
 /// ```dart

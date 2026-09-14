@@ -23,10 +23,14 @@ const double _kCapMarkerHeight = 4;
 const double _kColumnDividerWidth = 1;
 const double _kCompactHeight = 24;
 const EdgeInsets _kStatsPadding = EdgeInsets.fromLTRB(4, 2, 4, 0);
-const EdgeInsets _kHeaderPadding =
-    EdgeInsets.symmetric(horizontal: 6, vertical: 1);
-const EdgeInsets _kCompactPadding =
-    EdgeInsets.symmetric(horizontal: 6, vertical: 4);
+const EdgeInsets _kHeaderPadding = EdgeInsets.symmetric(
+  horizontal: 6,
+  vertical: 1,
+);
+const EdgeInsets _kCompactPadding = EdgeInsets.symmetric(
+  horizontal: 6,
+  vertical: 4,
+);
 
 const String _kOverlaySemanticsLabel = 'Performance overlay';
 
@@ -46,13 +50,13 @@ const double _kFpsWarningRatio = 0.80;
 /// the reference point reflects "normal" steady-state usage, not boot.
 const Duration _kMemoryBaselineSettleWindow = Duration(seconds: 5);
 
-/// EWMA smoothing factor for the displayed RSS value — α≈0.3 gives roughly
+/// EWMA smoothing factor for the displayed RSS value - α≈0.3 gives roughly
 /// a 3-sample effective window, enough to swallow GC/allocator jiggle
 /// without lagging real growth by more than ~3 seconds.
 const double _kMemoryEwmaAlpha = 0.3;
 
 /// The default overlay is not color-blind safe. Opt in by passing each
-/// `colorBlind*` value into the matching overlay parameter — including
+/// `colorBlind*` value into the matching overlay parameter - including
 /// [colorBlindOverTarget], which the default `overTargetColor` does not pick
 /// up automatically.
 abstract final class ISpectPerformanceOverlayPalettes {
@@ -68,7 +72,7 @@ abstract final class ISpectPerformanceOverlayPalettes {
   static const colorBlindOverTarget = Color(0xFFD55E00);
 }
 
-/// Cross-platform performance overlay built on [FrameTiming] — works on web
+/// Cross-platform performance overlay built on [FrameTiming] - works on web
 /// and desktop where Flutter's native [PerformanceOverlay] does not.
 ///
 /// UI build and raster are each checked against the full frame target (not
@@ -76,7 +80,7 @@ abstract final class ISpectPerformanceOverlayPalettes {
 /// split in the Flutter docs is about input-to-display latency, not jank.
 ///
 /// As with Flutter's native overlay, the readings are only meaningful in
-/// profile mode — debug-mode asserts and JIT inflate frame work, so numbers
+/// profile mode - debug-mode asserts and JIT inflate frame work, so numbers
 /// there exist to spot trends, not to evaluate release-build performance.
 class ISpectPerformanceOverlay extends StatefulWidget {
   const ISpectPerformanceOverlay({
@@ -110,14 +114,14 @@ class ISpectPerformanceOverlay extends StatefulWidget {
     this.onJankBurst,
     this.jankBurstWindow = 3,
     this.jankBurstCooldown = const Duration(seconds: 1),
-  })  : assert(severeJankFactor >= 1.0, 'severeJankFactor must be >= 1'),
-        assert(sampleSize > 0, 'sampleSize must be > 0'),
-        assert(jankBurstWindow > 0, 'jankBurstWindow must be > 0'),
-        assert(memoryWarnRatio >= 1.0, 'memoryWarnRatio must be >= 1'),
-        assert(
-          memoryDangerRatio > memoryWarnRatio,
-          'memoryDangerRatio must exceed memoryWarnRatio',
-        );
+  }) : assert(severeJankFactor >= 1.0, 'severeJankFactor must be >= 1'),
+       assert(sampleSize > 0, 'sampleSize must be > 0'),
+       assert(jankBurstWindow > 0, 'jankBurstWindow must be > 0'),
+       assert(memoryWarnRatio >= 1.0, 'memoryWarnRatio must be >= 1'),
+       assert(
+         memoryDangerRatio > memoryWarnRatio,
+         'memoryDangerRatio must exceed memoryWarnRatio',
+       );
 
   final bool enabled;
 
@@ -138,7 +142,7 @@ class ISpectPerformanceOverlay extends StatefulWidget {
   /// Total frame budget; applied identically to UI, raster, and total. When
   /// `null`, derived from the active display's refresh rate. All three
   /// metrics share the same target because UI and raster pipeline across
-  /// frames — both threads independently get the full per-frame budget.
+  /// frames - both threads independently get the full per-frame budget.
   final Duration? targetFrameTime;
 
   /// Bars beyond this are visually capped and marked with a notch.
@@ -172,7 +176,7 @@ class ISpectPerformanceOverlay extends StatefulWidget {
   /// frame is dropped to filter warm-up noise (JIT compile, asset decode,
   /// shader cache miss), so this callback will not see it either.
   ///
-  /// Invoked synchronously from `SchedulerBinding.addTimingsCallback` — keep
+  /// Invoked synchronously from `SchedulerBinding.addTimingsCallback` - keep
   /// the body in microseconds or defer work to a post-frame callback /
   /// isolate. Exceptions are caught and routed through [ISpect.logger] so
   /// they do not poison the engine's timings dispatch.
@@ -204,7 +208,7 @@ class ISpectPerformanceOverlay extends StatefulWidget {
   final double memoryWarnRatio;
 
   /// RSS above `memoryDangerRatio × baseline` is rendered in
-  /// [overTargetColor]. Defaults to `2.0` — RSS doubling since the baseline
+  /// [overTargetColor]. Defaults to `2.0` - RSS doubling since the baseline
   /// usually signals a leak or unbounded cache.
   final double memoryDangerRatio;
 
@@ -212,7 +216,7 @@ class ISpectPerformanceOverlay extends StatefulWidget {
   final bool showAllTimeStats;
 
   /// Fires after [jankBurstWindow] consecutive over-target frames, throttled
-  /// by [jankBurstCooldown]. Runs on the engine's timings dispatch — keep
+  /// by [jankBurstCooldown]. Runs on the engine's timings dispatch - keep
   /// the body fast.
   final void Function(double currentFps)? onJankBurst;
 
@@ -521,8 +525,8 @@ class _OverlayBodyState extends State<_OverlayBody> {
     final newSamples = _skippedFirstSample
         ? frameTimings
         : frameTimings.length > 1
-            ? frameTimings.sublist(1)
-            : const <FrameTiming>[];
+        ? frameTimings.sublist(1)
+        : const <FrameTiming>[];
     _skippedFirstSample = true;
 
     if (newSamples.isEmpty) return;
@@ -567,7 +571,7 @@ class _OverlayBodyState extends State<_OverlayBody> {
     if (widget.showMemory) _pollMemoryIfDue();
 
     // Painter reads these inside the same frame this callback runs in,
-    // before the next engine dispatch can mutate them — defensive copies
+    // before the next engine dispatch can mutate them - defensive copies
     // would just churn the GC.
     _snapshot.value = _OverlaySnapshot(
       uiUs: _uiUs,
@@ -599,13 +603,13 @@ class _OverlayBodyState extends State<_OverlayBody> {
     _currentRssBytes = rss;
     // Smooth the *displayed* value with an EWMA so GC/allocator jiggle does
     // not flicker the colour tier. Peak and baseline observe this smoothed
-    // signal too — a brief allocation spike that GC immediately collects
+    // signal too - a brief allocation spike that GC immediately collects
     // should not pin peak.
     final previousSmoothed = _smoothedRssBytes;
     _smoothedRssBytes = previousSmoothed == null
         ? rss
         : (_kMemoryEwmaAlpha * rss + (1 - _kMemoryEwmaAlpha) * previousSmoothed)
-            .round();
+              .round();
     // Baseline: collect samples for `_kMemoryBaselineSettleWindow` after
     // warmup, then lock in the median. Median is robust to a single big
     // navigation that lands during the window.
@@ -677,11 +681,11 @@ class _OverlayBodyState extends State<_OverlayBody> {
   }
 
   void _logSevereJank(Iterable<FrameTiming> samples) {
-    final thresholdUs =
-        (widget.target.inMicroseconds * widget.severeJankFactor).round();
+    final thresholdUs = (widget.target.inMicroseconds * widget.severeJankFactor)
+        .round();
     final cooldownMs = widget.jankLogCooldown.inMilliseconds;
     for (final t in samples) {
-      // Use the heaviest thread's work — `totalSpan` includes scheduling
+      // Use the heaviest thread's work - `totalSpan` includes scheduling
       // wait time, which inflates in debug mode and idle UIs to false jank.
       final buildUs = t.buildDuration.inMicroseconds;
       final rasterUs = t.rasterDuration.inMicroseconds;
@@ -698,7 +702,7 @@ class _OverlayBodyState extends State<_OverlayBody> {
         ..reset()
         ..start();
       // No `stackTrace`: by the time `addTimingsCallback` fires the offending
-      // frame is done — the current stack is engine code, not the cause.
+      // frame is done - the current stack is engine code, not the cause.
       ISpect.logger.performanceJank(
         source: 'overlay',
         buildDuration: t.buildDuration,
@@ -746,57 +750,57 @@ class _OverlayBodyState extends State<_OverlayBody> {
 
   @override
   Widget build(BuildContext context) => Semantics(
-        container: true,
-        explicitChildNodes: true,
-        label: _kOverlaySemanticsLabel,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: IgnorePointer(
-                child: RepaintBoundary(
-                  child: CustomPaint(
-                    painter: _ChartPainter(
-                      snapshot: _snapshot,
-                      sampleSize: widget.sampleSize,
-                      target: widget.target,
-                      refreshRate: widget.refreshRate,
-                      barRangeMax: widget.barRangeMax,
-                      backgroundColor: widget.backgroundColor,
-                      textColor: widget.textColor,
-                      uiColor: widget.uiColor,
-                      rasterColor: widget.rasterColor,
-                      totalColor: widget.totalColor,
-                      overTargetColor: widget.overTargetColor,
-                      compact: widget.compact,
-                      showP90: widget.showP90,
-                      showMemory: widget.showMemory,
-                      memoryWarnRatio: widget.memoryWarnRatio,
-                      memoryDangerRatio: widget.memoryDangerRatio,
-                      showAllTimeStats: widget.showAllTimeStats,
-                      paused: widget.paused,
-                    ),
-                  ),
+    container: true,
+    explicitChildNodes: true,
+    label: _kOverlaySemanticsLabel,
+    child: Stack(
+      children: [
+        Positioned.fill(
+          child: IgnorePointer(
+            child: RepaintBoundary(
+              child: CustomPaint(
+                painter: _ChartPainter(
+                  snapshot: _snapshot,
+                  sampleSize: widget.sampleSize,
+                  target: widget.target,
+                  refreshRate: widget.refreshRate,
+                  barRangeMax: widget.barRangeMax,
+                  backgroundColor: widget.backgroundColor,
+                  textColor: widget.textColor,
+                  uiColor: widget.uiColor,
+                  rasterColor: widget.rasterColor,
+                  totalColor: widget.totalColor,
+                  overTargetColor: widget.overTargetColor,
+                  compact: widget.compact,
+                  showP90: widget.showP90,
+                  showMemory: widget.showMemory,
+                  memoryWarnRatio: widget.memoryWarnRatio,
+                  memoryDangerRatio: widget.memoryDangerRatio,
+                  showAllTimeStats: widget.showAllTimeStats,
+                  paused: widget.paused,
                 ),
               ),
             ),
-            if (widget.allowFreeze)
-              Positioned(
-                top: 1,
-                right: 1,
-                child: _FreezeButton(
-                  paused: widget.paused,
-                  onTap: widget.onTogglePause,
-                  onLongPress: _resetSessionStats,
-                  color: widget.textColor,
-                ),
-              ),
-          ],
+          ),
         ),
-      );
+        if (widget.allowFreeze)
+          Positioned(
+            top: 1,
+            right: 1,
+            child: _FreezeButton(
+              paused: widget.paused,
+              onTap: widget.onTogglePause,
+              onLongPress: _resetSessionStats,
+              color: widget.textColor,
+            ),
+          ),
+      ],
+    ),
+  );
 }
 
 /// One painter for the whole overlay so per-frame updates repaint a single
-/// render object instead of rebuilding a widget subtree — the listenable
+/// render object instead of rebuilding a widget subtree - the listenable
 /// passed to `super(repaint: ...)` drives invalidation directly from sample
 /// updates.
 class _ChartPainter extends CustomPainter {
@@ -819,10 +823,10 @@ class _ChartPainter extends CustomPainter {
     required this.memoryDangerRatio,
     required this.showAllTimeStats,
     required this.paused,
-  })  : _underBuffer = Float32List(sampleSize * 12),
-        _overBuffer = Float32List(sampleSize * 12),
-        _capBuffer = Float32List(sampleSize * 6),
-        super(repaint: snapshot);
+  }) : _underBuffer = Float32List(sampleSize * 12),
+       _overBuffer = Float32List(sampleSize * 12),
+       _capBuffer = Float32List(sampleSize * 6),
+       super(repaint: snapshot);
 
   final ValueListenable<_OverlaySnapshot> snapshot;
   final int sampleSize;
@@ -853,7 +857,7 @@ class _ChartPainter extends CustomPainter {
     ..color = backgroundColor.withValues(alpha: 0.7)
     ..style = PaintingStyle.fill;
 
-  // Pre-allocated triangle buffers — one bar contributes 6 vertices
+  // Pre-allocated triangle buffers - one bar contributes 6 vertices
   // (12 floats), a capped notch adds 3 vertices. Reused across paints so
   // the per-frame draw call never grows a List<double> or copies into a
   // fresh Float32List.
@@ -871,12 +875,15 @@ class _ChartPainter extends CustomPainter {
     maxLines: 1,
     ellipsis: '…',
   );
-  final TextPainter _uiStatsPainter =
-      TextPainter(textDirection: TextDirection.ltr);
-  final TextPainter _rasterStatsPainter =
-      TextPainter(textDirection: TextDirection.ltr);
-  final TextPainter _totalStatsPainter =
-      TextPainter(textDirection: TextDirection.ltr);
+  final TextPainter _uiStatsPainter = TextPainter(
+    textDirection: TextDirection.ltr,
+  );
+  final TextPainter _rasterStatsPainter = TextPainter(
+    textDirection: TextDirection.ltr,
+  );
+  final TextPainter _totalStatsPainter = TextPainter(
+    textDirection: TextDirection.ltr,
+  );
 
   late final TextStyle _statsStyle = TextStyle(
     color: textColor,
@@ -889,19 +896,26 @@ class _ChartPainter extends CustomPainter {
     fontSize: _kHeaderFontSize,
     fontFeatures: const [FontFeature.tabularFigures()],
   );
-  late final TextStyle _headerBoldStyle =
-      _headerStyle.copyWith(fontWeight: FontWeight.w700);
+  late final TextStyle _headerBoldStyle = _headerStyle.copyWith(
+    fontWeight: FontWeight.w700,
+  );
   late final TextStyle _headerPausedStyle = _headerStyle.copyWith(
     color: textColor,
     fontWeight: FontWeight.w700,
   );
   late final TextStyle _overTargetStyle = TextStyle(color: overTargetColor);
-  late final TextStyle _uiLabelStyle =
-      TextStyle(color: uiColor, fontWeight: FontWeight.w700);
-  late final TextStyle _rasterLabelStyle =
-      TextStyle(color: rasterColor, fontWeight: FontWeight.w700);
-  late final TextStyle _totalLabelStyle =
-      TextStyle(color: totalColor, fontWeight: FontWeight.w700);
+  late final TextStyle _uiLabelStyle = TextStyle(
+    color: uiColor,
+    fontWeight: FontWeight.w700,
+  );
+  late final TextStyle _rasterLabelStyle = TextStyle(
+    color: rasterColor,
+    fontWeight: FontWeight.w700,
+  );
+  late final TextStyle _totalLabelStyle = TextStyle(
+    color: totalColor,
+    fontWeight: FontWeight.w700,
+  );
   late final TextStyle _compactPausedStyle = TextStyle(
     color: textColor.withValues(alpha: 0.7),
     fontWeight: FontWeight.w700,
@@ -909,15 +923,18 @@ class _ChartPainter extends CustomPainter {
   // Lerp allocates; precompute the warn-tier colour and its dependent styles.
   late final Color _warnFpsColor =
       Color.lerp(textColor, overTargetColor, 0.55) ?? overTargetColor;
-  late final TextStyle _headerBoldWarnStyle =
-      _headerBoldStyle.copyWith(color: _warnFpsColor);
-  late final TextStyle _headerBoldDangerStyle =
-      _headerBoldStyle.copyWith(color: overTargetColor);
+  late final TextStyle _headerBoldWarnStyle = _headerBoldStyle.copyWith(
+    color: _warnFpsColor,
+  );
+  late final TextStyle _headerBoldDangerStyle = _headerBoldStyle.copyWith(
+    color: overTargetColor,
+  );
   late final TextStyle _warnStyle = TextStyle(color: _warnFpsColor);
 
   late final Color _gridColor = textColor.withValues(alpha: 0.4);
-  late final Color _gridColorSecondary =
-      textColor.withValues(alpha: textColor.a * 0.4 * 0.4);
+  late final Color _gridColorSecondary = textColor.withValues(
+    alpha: textColor.a * 0.4 * 0.4,
+  );
   late final Color _capMarkerColor = textColor.withValues(alpha: 0.85);
   late final Color _dividerColor = textColor.withValues(alpha: 0.2);
 
@@ -1049,8 +1066,10 @@ class _ChartPainter extends CustomPainter {
         if (paused) TextSpan(text: '  · PAUSED', style: _headerPausedStyle),
       ],
     );
-    final maxWidth =
-        (rect.width - _kHeaderPadding.horizontal).clamp(0.0, double.infinity);
+    final maxWidth = (rect.width - _kHeaderPadding.horizontal).clamp(
+      0.0,
+      double.infinity,
+    );
     _headerPainter.layout(maxWidth: maxWidth);
     final y = rect.top + (rect.height - _headerPainter.height) / 2;
     final origin = Offset(rect.left + _kHeaderPadding.left, y);
@@ -1062,11 +1081,7 @@ class _ChartPainter extends CustomPainter {
   static const double _kBackplateInflateY = 1;
   static const Radius _kBackplateRadius = Radius.circular(3);
 
-  void _paintTextBackplate(
-    Canvas canvas,
-    TextPainter painter,
-    Offset offset,
-  ) {
+  void _paintTextBackplate(Canvas canvas, TextPainter painter, Offset offset) {
     final rect = Rect.fromLTWH(
       offset.dx - _kBackplateInflateX,
       offset.dy - _kBackplateInflateY,
@@ -1108,17 +1123,16 @@ class _ChartPainter extends CustomPainter {
       String label,
       TextStyle labelStyle,
       PerformanceChartStats stats,
-    ) =>
+    ) => TextSpan(
+      children: [
+        TextSpan(text: label, style: labelStyle),
         TextSpan(
-          children: [
-            TextSpan(text: label, style: labelStyle),
-            TextSpan(
-              text: ' ${_formatMs(stats.avg)}/${_formatMs(stats.p99)}ms ',
-              style: stats.p99 > target ? _overTargetStyle : null,
-            ),
-            const TextSpan(text: '· '),
-          ],
-        );
+          text: ' ${_formatMs(stats.avg)}/${_formatMs(stats.p99)}ms ',
+          style: stats.p99 > target ? _overTargetStyle : null,
+        ),
+        const TextSpan(text: '· '),
+      ],
+    );
 
     _compactPainter.text = TextSpan(
       style: _statsStyle,
@@ -1145,8 +1159,10 @@ class _ChartPainter extends CustomPainter {
         if (paused) TextSpan(text: '  · PAUSED', style: _compactPausedStyle),
       ],
     );
-    final maxWidth =
-        (size.width - _kCompactPadding.horizontal).clamp(0.0, double.infinity);
+    final maxWidth = (size.width - _kCompactPadding.horizontal).clamp(
+      0.0,
+      double.infinity,
+    );
     _compactPainter.layout(maxWidth: maxWidth);
     final origin = Offset(_kCompactPadding.left, _kCompactPadding.top);
     _paintTextBackplate(canvas, _compactPainter, origin);
@@ -1208,8 +1224,14 @@ class _ChartPainter extends CustomPainter {
       final bottom = rect.bottom;
 
       if (us <= targetUs) {
-        underLen =
-            _writeBarQuad(_underBuffer, underLen, left, top, right, bottom);
+        underLen = _writeBarQuad(
+          _underBuffer,
+          underLen,
+          left,
+          top,
+          right,
+          bottom,
+        );
       } else {
         overLen = _writeBarQuad(_overBuffer, overLen, left, top, right, bottom);
       }
@@ -1342,8 +1364,10 @@ class _ChartPainter extends CustomPainter {
         ),
       ],
     );
-    final maxWidth =
-        (rect.width - _kStatsPadding.horizontal).clamp(0.0, double.infinity);
+    final maxWidth = (rect.width - _kStatsPadding.horizontal).clamp(
+      0.0,
+      double.infinity,
+    );
     statsPainter.layout(maxWidth: maxWidth);
     final origin = Offset(
       rect.left + _kStatsPadding.left,
@@ -1392,31 +1416,30 @@ class _FreezeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-        container: true,
-        button: true,
-        label:
-            paused ? 'Resume performance overlay' : 'Pause performance overlay',
-        onLongPressHint: 'Reset session stats',
-        child: SizedBox(
-          width: _kPauseButtonSize,
-          height: _kPauseButtonSize,
-          child: Material(
-            type: MaterialType.transparency,
-            child: InkResponse(
-              onTap: onTap,
-              onLongPress: onLongPress,
-              radius: _kPauseButtonSize,
-              child: Center(
-                child: Icon(
-                  paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                  size: 14,
-                  color: color,
-                ),
-              ),
+    container: true,
+    button: true,
+    label: paused ? 'Resume performance overlay' : 'Pause performance overlay',
+    onLongPressHint: 'Reset session stats',
+    child: SizedBox(
+      width: _kPauseButtonSize,
+      height: _kPauseButtonSize,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkResponse(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          radius: _kPauseButtonSize,
+          child: Center(
+            child: Icon(
+              paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+              size: 14,
+              color: color,
             ),
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 String _formatMs(Duration d) => (d.inMicroseconds / 1e3).toStringAsFixed(1);

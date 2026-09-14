@@ -121,7 +121,8 @@ class SearchHighlightController extends ChangeNotifier {
 
   void focusPreviousMatch() {
     if (_searchMatchIds.isEmpty) return;
-    _focusedMatchIndex = (_focusedMatchIndex - 1 + _searchMatchIds.length) %
+    _focusedMatchIndex =
+        (_focusedMatchIndex - 1 + _searchMatchIds.length) %
         _searchMatchIds.length;
     notifyListeners();
   }

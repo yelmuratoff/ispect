@@ -9,15 +9,21 @@ void main() {
     test('copyWith should create a new instance with the provided values', () {
       const originalSettings = ISpectDioInterceptorSettings();
       final updatedSettings = originalSettings.copyWith(
+        logRequests: false,
+        logResponses: false,
         printResponseData: false,
         printRequestHeaders: true,
         printErrorHeaders: false,
+        captureMode: DiagnosticCaptureMode.strict,
         requestPen: AnsiPen()..yellow(),
       );
 
+      expect(updatedSettings.logRequests, isFalse);
+      expect(updatedSettings.logResponses, isFalse);
       expect(updatedSettings.printResponseData, equals(false));
       expect(updatedSettings.printRequestHeaders, equals(true));
       expect(updatedSettings.printErrorHeaders, equals(false));
+      expect(updatedSettings.captureMode, DiagnosticCaptureMode.strict);
       expect(
         updatedSettings.requestPen,
         isNot(same(originalSettings.requestPen)),
@@ -94,6 +100,32 @@ void main() {
       expect(updatedEnabledSettings.enabled, equals(true));
       expect(updatedEnabledSettings.printErrorHeaders, equals(false));
       expect(updatedEnabledSettings.printRequestData, equals(false));
+    });
+
+    test('copyWith preserves and replaces adapter resource limits', () {
+      const original = ISpectDioInterceptorSettings(
+        resourceLimits: DiagnosticResourceLimits.constrained,
+      );
+
+      expect(
+        original.copyWith().resourceLimits,
+        same(DiagnosticResourceLimits.constrained),
+      );
+      expect(
+        original
+            .copyWith(resourceLimits: DiagnosticResourceLimits.extended)
+            .resourceLimits,
+        same(DiagnosticResourceLimits.extended),
+      );
+      expect(
+        original
+            .copyWith(
+              resourceLimits: DiagnosticResourceLimits.extended,
+              inheritResourceLimits: true,
+            )
+            .resourceLimits,
+        isNull,
+      );
     });
   });
 }

@@ -1,9 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/managers/filter_manager.dart';
 import 'package:ispect/src/common/managers/settings_manager.dart';
-import 'package:ispect/src/common/services/log_export_service.dart';
-import 'package:ispect/src/common/services/log_import_service.dart';
 import 'package:ispect/src/features/log_viewer/controllers/display_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/search_highlight_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/selection_controller.dart';
@@ -39,33 +38,48 @@ enum SearchMatchState {
 /// Facade over focused controllers, unified via [Listenable.merge].
 ///
 /// Each domain concern lives in its own [ChangeNotifier]:
-/// - [SelectionController] — active/detail log selection
-/// - [SearchHighlightController] — search match state and navigation
-/// - [SortingController] — column sort state
-/// - [DisplayController] — expand/collapse, order, grouping, timestamps
+/// - [SelectionController] - active/detail log selection
+/// - [SearchHighlightController] - search match state and navigation
+/// - [SortingController] - column sort state
+/// - [DisplayController] - expand/collapse, order, grouping, timestamps
 ///
 /// Consumers that need all updates use the facade directly as a [Listenable].
 /// Consumers that care about a single concern can listen to the specific
 /// sub-controller via [selection], [search], [sorting], or [display].
 class ISpectViewController implements Listenable {
   ISpectViewController({
-    ISpectShareCallback? onShare,
-    ISpectMetadataProvider? metadataProvider,
     ISpectSettingsState? initialSettings,
     ISpectSettingsChangedCallback? onSettingsChanged,
     bool groupHttpLogs = true,
-  })  : _exportService = LogExportService(
-          onShare: onShare,
-          metadataProvider: metadataProvider,
-        ),
-        _importService = const LogImportService() {
+    DiagnosticResourceLimits? resourceLimits,
+    DiagnosticProcessingPolicy? processingPolicy,
+  }) {
+    final resolvedResourceLimits =
+        resourceLimits ??
+        initialSettings?.resourceLimits ??
+        ISpect.loggerIfInitialized?.options.resourceLimits ??
+        DiagnosticResourceLimits.balanced;
+    final resolvedProcessingPolicy =
+        processingPolicy ??
+        initialSettings?.processingPolicy ??
+        ISpect.loggerIfInitialized?.options.processingPolicy ??
+        DiagnosticProcessingPolicy.balanced;
+    resolvedResourceLimits.validate();
+    resolvedProcessingPolicy.validate();
+    _resourceLimits = resolvedResourceLimits;
+    _processingPolicy = resolvedProcessingPolicy;
+
     _display = DisplayController(initialSettings: initialSettings);
     if (initialSettings == null) {
       _display.setInitialGroupHttpLogs(value: groupHttpLogs);
     }
 
     _filterManager = FilterManager(
-      initialFilter: ISpectFilter(),
+      initialFilter: ISpectFilter(resourceLimits: resolvedResourceLimits),
+      excludedLogTypeKeys:
+          initialSettings?.disabledLogTypes ?? const <String>{},
+      resourceLimits: resolvedResourceLimits,
+      processingPolicy: resolvedProcessingPolicy,
       onChanged: _onSubNotify,
     );
     _settingsManager = SettingsManager(
@@ -131,8 +145,11 @@ class ISpectViewController implements Listenable {
 
   late final FilterManager _filterManager;
   late final SettingsManager _settingsManager;
-  final LogExportService _exportService;
-  final LogImportService _importService;
+  late DiagnosticResourceLimits _resourceLimits;
+  late DiagnosticProcessingPolicy _processingPolicy;
+
+  DiagnosticResourceLimits get resourceLimits => _resourceLimits;
+  DiagnosticProcessingPolicy get processingPolicy => _processingPolicy;
 
   /// Notifier for filter/settings pipeline changes (no own state).
   final _pipelineNotifier = _SignalNotifier();
@@ -212,8 +229,7 @@ class ISpectViewController implements Listenable {
   ({ISpectLogData entry, int actualIndex})? getLogEntryAtIndex(
     List<ISpectLogData> filteredEntries,
     int index,
-  ) =>
-      _sorting.getLogEntryAtIndex(filteredEntries, index);
+  ) => _sorting.getLogEntryAtIndex(filteredEntries, index);
 
   // --- Display delegation ---
 
@@ -237,8 +253,31 @@ class ISpectViewController implements Listenable {
   ISpectSettingsState get settings => _settingsManager.settings;
 
   void updateSettings(ISpectSettingsState newSettings) {
+    _updateDiagnosticPolicies(
+      newSettings.resourceLimits,
+      newSettings.processingPolicy,
+    );
+    if (!setEquals(settings.disabledLogTypes, newSettings.disabledLogTypes)) {
+      _filterManager.updateExcludedLogTypeKeys(newSettings.disabledLogTypes);
+      _cachedLevelStats = null;
+    }
     _settingsManager.updateSettings(newSettings);
     _display.applyFromSettings(newSettings);
+  }
+
+  void _updateDiagnosticPolicies(
+    DiagnosticResourceLimits resourceLimits,
+    DiagnosticProcessingPolicy processingPolicy,
+  ) {
+    resourceLimits.validate();
+    processingPolicy.validate();
+    if (_resourceLimits == resourceLimits &&
+        _processingPolicy == processingPolicy) {
+      return;
+    }
+    _resourceLimits = resourceLimits;
+    _processingPolicy = processingPolicy;
+    _filterManager.updatePolicies(resourceLimits, processingPolicy);
   }
 
   // --- Filter delegation ---
@@ -273,9 +312,7 @@ class ISpectViewController implements Listenable {
   List<ISpectLogData> applyCurrentFilters(List<ISpectLogData> logsData) =>
       _filterManager.applyCurrentFilters(logsData);
 
-  List<ISpectLogData> applyFiltersWithoutSearch(
-    List<ISpectLogData> logsData,
-  ) =>
+  List<ISpectLogData> applyFiltersWithoutSearch(List<ISpectLogData> logsData) =>
       _filterManager.applyFiltersWithoutSearch(logsData);
 
   void onDataChanged() => _filterManager.onDataChanged();
@@ -287,15 +324,28 @@ class ISpectViewController implements Listenable {
 
   /// Returns counts of `error`/`critical` and `warning` entries in [logsData].
   ({int errors, int warnings}) getLevelStats(List<ISpectLogData> logsData) {
-    if (_cachedLevelStats != null &&
-        identical(_cachedLevelStatsInput, logsData) &&
+    final cached = _cachedLevelStats;
+    final previous = _cachedLevelStatsInput;
+    if (cached != null &&
+        identical(previous, logsData) &&
         _cachedLevelStatsLength == logsData.length) {
-      return _cachedLevelStats!;
+      return cached;
     }
+
     var errors = 0;
     var warnings = 0;
-    for (final log in logsData) {
-      final level = log.logLevel;
+    var start = 0;
+    if (cached != null &&
+        previous != null &&
+        _isAppendOnlyExtension(previous, logsData)) {
+      errors = cached.errors;
+      warnings = cached.warnings;
+      start = previous.length;
+    }
+    for (var index = start; index < logsData.length; index++) {
+      final captured = captureISpectLogWithoutPayload(logsData[index]);
+      if (_filterManager.isExcluded(captured.key)) continue;
+      final level = captured.logLevel;
       if (level == LogLevel.error || level == LogLevel.critical) {
         errors++;
       } else if (level == LogLevel.warning) {
@@ -309,6 +359,15 @@ class ISpectViewController implements Listenable {
     return result;
   }
 
+  static bool _isAppendOnlyExtension(
+    List<ISpectLogData> previous,
+    List<ISpectLogData> current,
+  ) {
+    if (previous.isEmpty || current.length < previous.length) return false;
+    return identical(previous.first, current.first) &&
+        identical(previous.last, current[previous.length - 1]);
+  }
+
   ({int errors, int warnings})? _cachedLevelStats;
   List<ISpectLogData>? _cachedLevelStatsInput;
   int _cachedLevelStatsLength = -1;
@@ -316,92 +375,12 @@ class ISpectViewController implements Listenable {
   void handleLogTypeKeyFilterToggle(String key, {required bool isSelected}) =>
       _filterManager.handleLogTypeKeyFilterToggle(key, isSelected: isSelected);
 
-  // --- Data operations (stateless delegation) ---
-
-  Future<void> shareLogsFile(String logs) async =>
-      _exportService.shareLogsFile(logs);
-
-  void copyLogEntryText(
-    BuildContext context,
-    ISpectLogData logEntry,
-    void Function(BuildContext, {required String value}) copyClipboard,
-  ) {
-    final redactor = RedactionService(sensitiveKeys: defaultSensitiveKeys);
-    final text =
-        (redactor.redact(logEntry.toJson(truncated: true)) ?? '').toString();
-    copyClipboard(context, value: text);
-  }
-
-  void copyAllLogsToClipboard(
-    BuildContext context,
-    List<ISpectLogData> logs,
-    void Function(
-      BuildContext, {
-      required String value,
-      String? title,
-      bool? showValue,
-    }) copyClipboard,
-    String title,
-  ) {
-    final redactor = RedactionService(sensitiveKeys: defaultSensitiveKeys);
-    final logsText = logs
-        .map(
-          (log) =>
-              (redactor.redact(log.toJson(truncated: true)) ?? '').toString(),
-        )
-        .join('\n');
-
-    copyClipboard(
-      context,
-      value: logsText,
-      title: title,
-      showValue: false,
-    );
-  }
+  // --- History ---
 
   void clearLogsHistory(VoidCallback clearHistory) {
     clearHistory();
     _pipelineNotifier.notify();
   }
-
-  Future<String> downloadLogsToDevice(
-    List<ISpectLogData> logs, {
-    String fileType = 'json',
-    Set<String>? redactKeys,
-  }) async {
-    final filteredLogs = applyCurrentFilters(logs);
-    return _exportService.saveFilteredLogsToDevice(
-      logs,
-      filteredLogs,
-      filter,
-      fileType: fileType,
-      redactKeys: redactKeys,
-    );
-  }
-
-  Future<void> shareLogsAsFile(
-    List<ISpectLogData> logs, {
-    String fileType = 'json',
-    Set<String>? redactKeys,
-  }) async {
-    final filteredLogs = applyCurrentFilters(logs);
-    await _exportService.shareFilteredLogsAsFile(
-      logs,
-      filteredLogs,
-      filter,
-      fileType: fileType,
-      redactKeys: redactKeys,
-    );
-  }
-
-  Future<void> shareAllLogsAsJsonFile(List<ISpectLogData> logs) async =>
-      _exportService.shareAllLogsAsJsonFile(logs);
-
-  Future<List<ISpectLogData>> importLogsFromJson(String jsonContent) async =>
-      _importService.importLogsFromJson(jsonContent);
-
-  bool validateLogsJsonContent(String jsonContent) =>
-      _importService.validateLogsJsonContent(jsonContent);
 
   // --- Lifecycle ---
 

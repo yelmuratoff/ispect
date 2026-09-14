@@ -125,8 +125,9 @@ class _SortableColumnHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor =
-        context.appTheme.colorScheme.onSurface.withValues(alpha: 0.7);
+    final activeColor = context.appTheme.colorScheme.onSurface.withValues(
+      alpha: 0.7,
+    );
 
     final sortHint = isActive
         ? (isAscending ? 'sorted ascending' : 'sorted descending')
@@ -137,8 +138,9 @@ class _SortableColumnHeader extends StatelessWidget {
       label: 'Sort by $label, $sortHint',
       onTap: onTap != null ? () => onTap!(columnIndex) : null,
       child: MouseRegion(
-        cursor:
-            onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        cursor: onTap != null
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
         child: GestureDetector(
           excludeFromSemantics: true,
           onTap: onTap != null ? () => onTap!(columnIndex) : null,
@@ -157,12 +159,13 @@ class _SortableColumnHeader extends StatelessWidget {
               Icon(
                 isActive
                     ? (isAscending
-                        ? Icons.arrow_upward_rounded
-                        : Icons.arrow_downward_rounded)
+                          ? Icons.arrow_upward_rounded
+                          : Icons.arrow_downward_rounded)
                     : Icons.unfold_more_rounded,
                 size: 12,
-                color:
-                    isActive ? activeColor : labelColor.withValues(alpha: 0.5),
+                color: isActive
+                    ? activeColor
+                    : labelColor.withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -195,8 +198,9 @@ class _SortableColumnHeader extends StatelessWidget {
                           height: 14,
                           decoration: BoxDecoration(
                             color: labelColor.withValues(alpha: 0.3),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(1)),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(1),
+                            ),
                           ),
                         ),
                       ),

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_ws/src/settings.dart';
 import 'package:ispectify_ws/src/ws_event.dart';
@@ -11,7 +13,7 @@ import 'package:ispectify_ws/src/ws_event.dart';
 /// `ws`-specific reads of the old interceptor (`metrics.lastUrl`,
 /// `metrics.toJson()`) become the optional [url] and [metrics] arguments.
 ///
-/// Depends only on `ispectify` — no WebSocket package is required.
+/// Depends only on `ispectify` - no WebSocket package is required.
 final class WsDiagnostics
     with NetworkLoggerMixin, NetworkRedactionMixin
     implements WsDiagnosticsSink {
@@ -21,14 +23,17 @@ final class WsDiagnostics
     this.source = defaultSource,
     RedactionService? redactor,
   })  : _logger = logger,
-        _redactor = redactor ?? RedactionService(),
-        _connectionId = generateTraceId();
+        _explicitRedactor = redactor {
+    settings.resourceLimits?.validate();
+  }
 
   /// Default source label used when no adapter-specific label is given.
   static const defaultSource = 'ws';
+  static const _frameCaptureFailure =
+      'ISpect WebSocket frame capture failed safely.';
 
   final ISpectLogger _logger;
-  final RedactionService _redactor;
+  final RedactionService? _explicitRedactor;
 
   /// Filtering, redaction toggle, and print toggles for emitted logs.
   final ISpectWSInterceptorSettings settings;
@@ -36,80 +41,179 @@ final class WsDiagnostics
   /// Source label attached to every emitted log (e.g. `ws`, `socket_io`).
   final String source;
 
-  String _connectionId;
+  String? _connectionId;
 
   @override
   ISpectLogger get logger => _logger;
 
   @override
-  RedactionService get redactor => _redactor;
+  RedactionService get redactor =>
+      ISpectRedaction.resolveService(service: _explicitRedactor);
+
+  bool get _captureEnabled => _logger.hasActiveConsumers && settings.enabled;
+  String get _correlationId => _connectionId ??= generateTraceId();
 
   @override
   bool get enableRedaction => settings.enableRedaction;
 
   @override
-  void newConnection() => _connectionId = generateTraceId();
+  DiagnosticCaptureMode get captureMode => settings.captureMode;
 
   @override
-  void onSent(Object data, {String? url, Map<String, Object?>? metrics}) =>
-      _emitFrame(data: data, isSend: true, rawUrl: url, metrics: metrics);
+  DiagnosticResourceLimits get resourceLimits =>
+      settings.resourceLimits ?? _logger.options.resourceLimits;
+
+  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
+        redact: false,
+        resourceLimits: resourceLimits,
+      );
 
   @override
-  void onReceived(Object data, {String? url, Map<String, Object?>? metrics}) =>
-      _emitFrame(data: data, isSend: false, rawUrl: url, metrics: metrics);
+  void newConnection() {
+    _connectionId = null;
+  }
 
   @override
-  void onStateChanged(WsConnectionState state, {String? url, Object? raw}) {
-    if (!settings.enabled) return;
+  void onSent(
+    Object data, {
+    String? url,
+    Map<String, Object?>? metrics,
+    String? messageId,
+  }) =>
+      guardDiagnostics(
+        _logger,
+        () => _emitFrame(
+          data: data,
+          isSend: true,
+          rawUrl: url,
+          metrics: metrics,
+          messageId: messageId,
+        ),
+        what: 'WebSocket send capture',
+      );
 
-    final useRedaction = settings.enableRedaction;
-    final normalizedUrl = _normalizeUrl(url, useRedaction).url;
+  @override
+  void onReceived(
+    Object data, {
+    String? url,
+    Map<String, Object?>? metrics,
+    String? messageId,
+  }) =>
+      guardDiagnostics(
+        _logger,
+        () => _emitFrame(
+          data: data,
+          isSend: false,
+          rawUrl: url,
+          metrics: metrics,
+          messageId: messageId,
+        ),
+        what: 'WebSocket receive capture',
+      );
+
+  @override
+  void onStateChanged(WsConnectionState state, {String? url, Object? raw}) =>
+      guardDiagnostics(
+        _logger,
+        () => _captureStateChange(state, url: url, raw: raw),
+        what: 'WebSocket state capture',
+      );
+
+  void _captureStateChange(
+    WsConnectionState state, {
+    required String? url,
+    required Object? raw,
+  }) {
+    if (!_captureEnabled) return;
+    if (!settings.logRequests && !settings.logResponses) return;
+
+    final correlationId = _correlationId;
+    final redactionActive = settings.isRedactionActive;
+    final safeSource = redactDiagnosticText(
+      source,
+      useRedaction: redactionActive,
+    );
+    final normalizedUrl = _normalizeUrl(url, redactionActive).url;
+    final safeRaw = raw == null || !settings.printStateData
+        ? null
+        : _safeDiagnosticText(raw, useRedaction: redactionActive);
 
     _logger.wsState(
-      source: source,
+      source: safeSource,
       state: state.name,
       target: normalizedUrl,
-      correlationId: _connectionId,
-      config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
+      correlationId: correlationId,
+      config: _traceConfig,
       consoleMessage: '→ state:${state.name} $normalizedUrl',
       meta: {
-        'url': normalizedUrl,
-        if (raw != null) 'raw': '$raw',
+        NetworkJsonKeys.url: normalizedUrl,
+        if (safeRaw != null) NetworkJsonKeys.raw: safeRaw,
       },
     );
   }
 
   @override
-  void onError(Object error, StackTrace stackTrace, {String? url}) {
-    if (!settings.enabled) return;
+  void onError(Object error, StackTrace stackTrace, {String? url}) =>
+      guardDiagnostics(
+        _logger,
+        () => _captureError(error, stackTrace, url: url),
+        what: 'WebSocket error capture',
+      );
 
-    final useRedaction = settings.enableRedaction;
-    final (url: normalizedUrl, path: path) = _normalizeUrl(url, useRedaction);
+  void _captureError(
+    Object error,
+    StackTrace stackTrace, {
+    required String? url,
+  }) {
+    if (!_captureEnabled) return;
+
+    final correlationId = _correlationId;
+    final redactionActive = settings.isRedactionActive;
+    final safeSource = redactDiagnosticText(
+      source,
+      useRedaction: redactionActive,
+    );
+    final (url: normalizedUrl, path: path) =
+        _normalizeUrl(url, redactionActive);
 
     final preview = ISpectLogData(
       'error $normalizedUrl',
       key: ISpectLogType.wsError.key,
       additionalData: {
         TraceKeys.category: wsCategory.id,
-        TraceKeys.source: source,
+        TraceKeys.source: safeSource,
         TraceKeys.operation: 'error',
         TraceKeys.target: normalizedUrl,
         TraceKeys.success: false,
-        TraceKeys.correlationId: _connectionId,
+        TraceKeys.correlationId: correlationId,
       },
+      resourceLimits: resourceLimits,
     );
 
     if (!settings.shouldProcessError(preview)) return;
+    if (!_captureEnabled) return;
 
-    _logger.wsReceive(
-      source: source,
+    final safeError = settings.printErrorMessage
+        ? _safeDiagnosticText(error, useRedaction: redactionActive)
+        : null;
+    final safeStackTrace = settings.printErrorData
+        ? StackTrace.fromString(
+            _safeDiagnosticText(stackTrace, useRedaction: redactionActive),
+          )
+        : null;
+
+    _logger.traceCategory(
+      category: wsCategory,
+      source: safeSource,
       operation: 'error',
       target: normalizedUrl,
-      error: error,
-      errorStackTrace: stackTrace,
-      correlationId: _connectionId,
-      config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
-      meta: {'url': normalizedUrl, 'path': path},
+      logKey: ISpectLogType.wsError.key,
+      success: false,
+      error: safeError,
+      errorStackTrace: safeStackTrace,
+      correlationId: correlationId,
+      config: _traceConfig,
+      meta: {NetworkJsonKeys.url: normalizedUrl, NetworkJsonKeys.path: path},
     );
   }
 
@@ -118,11 +222,19 @@ final class WsDiagnostics
     required bool isSend,
     required String? rawUrl,
     required Map<String, Object?>? metrics,
+    required String? messageId,
   }) {
-    if (!settings.enabled) return;
+    if (!_captureEnabled) return;
+    if (isSend && !settings.logRequests) return;
+    if (!isSend && !settings.logResponses) return;
 
-    final useRedaction = settings.enableRedaction;
-    final (url: url, path: path) = _normalizeUrl(rawUrl, useRedaction);
+    final correlationId = messageId ?? _correlationId;
+    final redactionActive = settings.isRedactionActive;
+    final safeSource = redactDiagnosticText(
+      source,
+      useRedaction: redactionActive,
+    );
+    final (url: url, path: path) = _normalizeUrl(rawUrl, redactionActive);
     final operation = isSend ? 'send' : 'receive';
     final logKey = wsCategory.pickLogKey(isError: false, operation: operation);
 
@@ -131,52 +243,57 @@ final class WsDiagnostics
       key: logKey,
       additionalData: {
         TraceKeys.category: wsCategory.id,
-        TraceKeys.source: source,
+        TraceKeys.source: safeSource,
         TraceKeys.operation: operation,
         TraceKeys.target: url,
         TraceKeys.success: true,
-        TraceKeys.correlationId: _connectionId,
+        TraceKeys.correlationId: correlationId,
       },
     );
 
     if (!_shouldLog(previewLog)) return;
+    if (!_captureEnabled) return;
 
     try {
-      final safeData = safeRedact(data, useRedaction: useRedaction);
-      final metricsMap = _processMetrics(metrics, useRedaction);
       final includeData =
           isSend ? settings.printSentData : settings.printReceivedData;
+      final safeData =
+          includeData ? safeRedact(data, useRedaction: redactionActive) : null;
+      final metricsMap = _processMetrics(metrics, redactionActive);
 
       final traceMeta = <String, Object?>{
-        if (includeData) 'data': safeData,
-        if (metricsMap != null) 'metrics': metricsMap,
-        'url': url,
-        'path': path,
+        if (includeData) NetworkJsonKeys.data: safeData,
+        if (metricsMap != null) NetworkJsonKeys.metrics: metricsMap,
+        NetworkJsonKeys.url: url,
+        NetworkJsonKeys.path: path,
         NetworkLogRenderer.renderHintsKey: {
           NetworkLogRenderer.hintPrintBody: includeData,
         },
       };
 
       final emit = isSend ? _logger.wsSend : _logger.wsReceive;
+      if (!_captureEnabled) return;
       emit(
-        source: source,
+        source: safeSource,
         operation: operation,
         target: url,
-        correlationId: _connectionId,
-        config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
+        correlationId: correlationId,
+        config: _traceConfig,
         meta: traceMeta,
       );
-    } catch (e, s) {
-      final emit = isSend ? _logger.wsSend : _logger.wsReceive;
-      emit(
-        source: source,
+    } on Object {
+      if (!_captureEnabled) return;
+      _logger.traceCategory(
+        category: wsCategory,
+        source: safeSource,
         operation: operation,
         target: url,
-        error: e,
-        errorStackTrace: s,
-        correlationId: _connectionId,
-        config: useRedaction ? null : NetworkRedactionMixin.noRedactConfig,
-        meta: {'url': url, 'path': path},
+        logKey: ISpectLogType.wsError.key,
+        success: false,
+        error: settings.printErrorMessage ? _frameCaptureFailure : null,
+        correlationId: correlationId,
+        config: _traceConfig,
+        meta: {NetworkJsonKeys.url: url, NetworkJsonKeys.path: path},
       );
     }
   }
@@ -207,5 +324,45 @@ final class WsDiagnostics
       return settings.shouldProcessError(log);
     }
     return true;
+  }
+
+  String _safeDiagnosticText(
+    Object value, {
+    required bool useRedaction,
+  }) {
+    try {
+      final prepared = LogExportOutput.boundJsonValue(
+        value,
+        maxBytes: resourceLimits.maxNetworkBodyBytes,
+        resourceLimits: resourceLimits,
+        preserveTypes: useRedaction,
+        replaceOversizedStrings: useRedaction,
+        allowCustomSerialization:
+            settings.captureMode == DiagnosticCaptureMode.balanced,
+        allowCustomStringification:
+            settings.captureMode == DiagnosticCaptureMode.balanced,
+      );
+      final redacted = useRedaction && prepared != null
+          ? NetworkMapRedactor.redactFreeTextValue(
+              prepared,
+              redactor,
+              resourceLimits: resourceLimits,
+            )
+          : prepared;
+      final bounded = LogExportOutput.boundJsonValue(
+        redacted,
+        maxBytes: resourceLimits.maxNetworkBodyBytes,
+        resourceLimits: resourceLimits,
+        replaceOversizedStrings: useRedaction,
+      );
+      if (bounded is String) return bounded;
+      if (bounded is bool || bounded is num) return bounded.toString();
+      return LogExportOutput.truncateUtf8(
+        jsonEncode(bounded),
+        maxBytes: resourceLimits.maxNetworkBodyBytes,
+      );
+    } on Object {
+      return redactionFailedPlaceholder;
+    }
   }
 }

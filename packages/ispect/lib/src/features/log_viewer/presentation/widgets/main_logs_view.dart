@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/services/network_transaction_service.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
 import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/logs_view_pipeline.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/desktop_status_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/empty_logs_widget.dart';
@@ -50,16 +50,7 @@ class MainLogsView extends StatefulWidget {
 
 class _MainLogsViewState extends State<MainLogsView> {
   late final LogsScreenController _controller;
-  final _transactionService = NetworkTransactionService();
-
-  Map<String, int> _idToVisualIndex = const {};
-  List<ISpectLogData>? _lastVisualIndexInput;
-  int _lastVisualIndexGeneration = -1;
-  bool _lastVisualIndexGrouped = false;
-  bool _lastVisualIndexReversed = false;
-
-  List<ISpectLogData>? _lastRawMatches;
-  List<ISpectLogData> _reversedMatchesCache = const [];
+  late final LogsViewPipeline _pipeline;
 
   void _focusSearchField() {
     if (!mounted) return;
@@ -79,6 +70,7 @@ class _MainLogsViewState extends State<MainLogsView> {
         if (mounted) setState(() {});
       },
     );
+    _pipeline = LogsViewPipeline(screen: _controller);
     HardwareKeyboard.instance.addHandler(_globalKeyHandler);
   }
 
@@ -102,7 +94,7 @@ class _MainLogsViewState extends State<MainLogsView> {
     final focusedId = widget.logsViewController.focusedMatchId;
     if (focusedId == null) return;
 
-    final visualIndex = _idToVisualIndex[focusedId];
+    final visualIndex = _pipeline.visualIndexOf(focusedId);
     if (visualIndex == null) return;
 
     try {
@@ -120,78 +112,34 @@ class _MainLogsViewState extends State<MainLogsView> {
 
   @override
   Widget build(BuildContext context) {
-    final isHighlightMode =
-        widget.logsViewController.searchMode == SearchMode.highlight;
-
-    final filteredLogEntries = isHighlightMode
-        ? widget.logsViewController.applyFiltersWithoutSearch(widget.logsData)
-        : widget.logsViewController.applyCurrentFilters(widget.logsData);
-
-    final levelStats = widget.logsViewController.getLevelStats(widget.logsData);
-
-    final sortedEntries = _controller.applySortingIfNeeded(filteredLogEntries);
-
-    final isReversed =
-        widget.logsViewController.sortColumn == LogSortColumn.time &&
-            widget.logsViewController.isLogOrderReversed;
-
-    final shouldGroupLogs = widget.logsViewController.groupHttpLogs &&
-        widget.logsViewController.filter.logTypeKeys.isEmpty;
-    final groupedEntries = shouldGroupLogs
-        ? _transactionService.getGroupedEntries(
-            sortedEntries,
-            widget.logsViewController.outputGeneration,
-          )
-        : null;
-
-    List<ISpectLogData>? matchesToCommit;
-    if (isHighlightMode) {
-      var matches = widget.logsViewController.findSearchMatches(sortedEntries);
-      if (isReversed && matches.isNotEmpty) {
-        if (!identical(matches, _lastRawMatches)) {
-          _reversedMatchesCache = matches.reversed.toList();
-          _lastRawMatches = matches;
-        }
-        matches = _reversedMatchesCache;
-      }
-      matchesToCommit = matches;
-
-      _updateSearchTargetVisualIndexes(
-        sortedEntries,
-        groupedEntries: groupedEntries?.entries,
-        isReversed: isReversed,
-      );
-    } else {
-      _clearSearchTargetVisualIndexes();
-    }
-    final logTypeKeys =
-        widget.logsViewController.getLogTypeKeys(widget.logsData);
+    final state = _pipeline.compute(widget.logsData);
 
     final options = ISpect.read(context).options;
     final isDesktop = context.screenSize.isDesktop;
-    final isFiltered = filteredLogEntries.length != widget.logsData.length;
-
-    final liveLogsLength = widget.logsData.length;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (matchesToCommit != null) {
-        widget.logsViewController.updateSearchMatches(matchesToCommit);
-      }
-      _controller.checkForNewLogs(
-        liveLogsLength,
-        isDesktop: isDesktop,
-        onMount: () {
-          if (mounted) _controller.scrollToNewest();
-        },
-      );
-    });
+    final matchesToCommit = state.searchMatches;
+    if (matchesToCommit != null ||
+        state.totalCount != _controller.lastLogCount) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (matchesToCommit != null) {
+          widget.logsViewController.updateSearchMatches(matchesToCommit);
+        }
+        _controller.checkForNewLogs(
+          state.totalCount,
+          isDesktop: isDesktop,
+          onMount: () {
+            if (mounted) _controller.scrollToNewest();
+          },
+        );
+      });
+    }
 
     // Sort column/direction as ints for the header
     final sortColumnIdx = widget.logsViewController.sortColumn.index;
     final sortDirIdx =
         widget.logsViewController.sortColumn == LogSortColumn.time
-            ? (widget.logsViewController.isLogOrderReversed ? 1 : 0)
-            : widget.logsViewController.sortDirection.index;
+        ? (widget.logsViewController.isLogOrderReversed ? 1 : 0)
+        : widget.logsViewController.sortDirection.index;
 
     Widget body = Stack(
       children: [
@@ -205,22 +153,23 @@ class _MainLogsViewState extends State<MainLogsView> {
                 focusNode: widget.searchFocusNode,
                 title: widget.appBarTitle,
                 titlesController: widget.titleFiltersController,
-                titles: logTypeKeys.all,
-                uniqTitles: logTypeKeys.unique,
+                counts: state.logTypeKeys.counts,
+                uniqTitles: state.logTypeKeys.unique,
                 controller: widget.logsViewController,
                 onSettingsTap: widget.onSettingsTap,
                 onToggleTitle: (key, selected) => widget.logsViewController
                     .handleLogTypeKeyFilterToggle(key, isSelected: selected),
-                backgroundColor:
-                    widget.iSpectTheme.theme.background?.resolve(context),
-                filteredCount: isHighlightMode
+                backgroundColor: widget.iSpectTheme.theme.background?.resolve(
+                  context,
+                ),
+                filteredCount: state.isHighlightMode
                     ? widget.logsViewController.searchMatchCount
-                    : filteredLogEntries.length,
-                totalCount: isHighlightMode
-                    ? filteredLogEntries.length
-                    : widget.logsData.length,
-                errorCount: levelStats.errors,
-                warningCount: levelStats.warnings,
+                    : state.filtered.length,
+                totalCount: state.isHighlightMode
+                    ? state.filtered.length
+                    : state.totalCount,
+                errorCount: state.levelStats.errors,
+                warningCount: state.levelStats.warnings,
                 onScrollToFocusedMatch: _scrollToFocusedMatch,
               ),
               if (isDesktop)
@@ -228,8 +177,10 @@ class _MainLogsViewState extends State<MainLogsView> {
                   pinned: true,
                   delegate: _StickyHeaderDelegate(
                     child: DesktopLogTableHeader(
-                      backgroundColor: widget.iSpectTheme.theme.background
-                              ?.resolve(context) ??
+                      backgroundColor:
+                          widget.iSpectTheme.theme.background?.resolve(
+                            context,
+                          ) ??
                           context.appTheme.scaffoldBackgroundColor,
                       sortColumn: sortColumnIdx,
                       sortDirection: sortDirIdx,
@@ -252,25 +203,18 @@ class _MainLogsViewState extends State<MainLogsView> {
                   ),
                 ),
               if (!isDesktop) const SliverGap(4),
-              if (sortedEntries.isEmpty)
-                const SliverToBoxAdapter(
-                  child: EmptyLogsWidget(),
-                ),
-              if (groupedEntries != null)
-                _buildGroupedList(
-                  groupedEntries.entries,
-                  isReversed,
-                  isDesktop,
-                  options,
-                )
+              if (state.sorted.isEmpty)
+                const SliverToBoxAdapter(child: EmptyLogsWidget()),
+              if (state.grouped case final grouped?)
+                _buildGroupedList(grouped, state.isReversed, isDesktop, options)
               else
-                _buildFlatList(sortedEntries, isDesktop, options),
+                _buildFlatList(state.sorted, isDesktop, options),
               // Extra space for status bar on desktop
               SliverGap(isDesktop ? 36 : 8),
             ],
           ),
         ),
-        // New logs indicator — near the newest-logs edge
+        // New logs indicator - near the newest-logs edge
         if (isDesktop)
           ValueListenableBuilder(
             valueListenable: _controller.hasNewLogs,
@@ -310,9 +254,9 @@ class _MainLogsViewState extends State<MainLogsView> {
             right: 0,
             bottom: 0,
             child: DesktopStatusBar(
-              filteredCount: filteredLogEntries.length,
-              totalCount: widget.logsData.length,
-              isFiltered: isFiltered,
+              filteredCount: state.filtered.length,
+              totalCount: state.totalCount,
+              isFiltered: state.isFiltered,
               selectedLog: widget.logsViewController.activeData,
               isLiveTailActive: _controller.isLiveTailActive,
               isLiveTailPaused: _controller.isLiveTailPaused,
@@ -330,12 +274,8 @@ class _MainLogsViewState extends State<MainLogsView> {
       body = Focus(
         focusNode: _controller.keyboardFocusNode,
         autofocus: true,
-        onKeyEvent: (node, event) => _controller.handleKeyEvent(
-          node,
-          event,
-          widget.logsData,
-          context,
-        ),
+        onKeyEvent: (node, event) =>
+            _controller.handleKeyEvent(node, event, widget.logsData, context),
         child: body,
       );
     }
@@ -360,17 +300,22 @@ class _MainLogsViewState extends State<MainLogsView> {
       key: key,
       logData: logEntry,
       itemIndex: index,
-      statusIcon:
-          widget.iSpectTheme.theme.getTypeIcon(context, key: logEntry.key),
+      statusIcon: widget.iSpectTheme.theme.getTypeIcon(
+        context,
+        key: logEntry.key,
+      ),
       statusColor:
           widget.iSpectTheme.theme.getTypeColor(context, key: logEntry.key) ??
-              Colors.grey,
+          Colors.grey,
       isExpanded: isSelected || widget.logsViewController.expandedLogs,
       searchMatchState: widget.logsViewController.matchStateFor(logEntry),
       observer: observer,
       onSharePressed: () => ISpectShareLogBottomSheet(
-        data: logEntry.toJson(),
-        truncatedData: logEntry.toJson(truncated: true),
+        data: logEntry.toExportJson(redactionActive: true),
+        truncatedData: logEntry.toExportJson(
+          redactionActive: true,
+          truncated: true,
+        ),
       ).show(context),
       onItemTapped: isDesktop
           ? () => widget.logsViewController.selectLog(logEntry)
@@ -387,159 +332,110 @@ class _MainLogsViewState extends State<MainLogsView> {
       useRelativeTime: widget.logsViewController.useRelativeTime,
       typeColumnWidth: _controller.typeColumnWidth,
       timeColumnWidth: _controller.timeColumnWidth,
+      logBuilder: options.logBuilder,
+      timeTicker: _controller.relativeTimeTick,
     );
   }
 
-  void _updateSearchTargetVisualIndexes(
-    List<ISpectLogData> sortedEntries, {
-    required List<Object>? groupedEntries,
-    required bool isReversed,
-  }) {
-    final generation = widget.logsViewController.outputGeneration;
-    final isGrouped = groupedEntries != null;
-    if (identical(sortedEntries, _lastVisualIndexInput) &&
-        generation == _lastVisualIndexGeneration &&
-        isGrouped == _lastVisualIndexGrouped &&
-        isReversed == _lastVisualIndexReversed) {
-      return;
-    }
-
-    final visualIndexes = <String, int>{};
-    if (groupedEntries case final entries?) {
-      for (var visualIndex = 0; visualIndex < entries.length; visualIndex++) {
-        final dataIndex =
-            isReversed ? entries.length - 1 - visualIndex : visualIndex;
-        final entry = entries[dataIndex];
-        if (entry is ISpectLogData) {
-          visualIndexes[entry.id] = visualIndex;
-        } else if (entry is NetworkTransaction) {
-          visualIndexes[entry.request.id] = visualIndex;
-          if (entry.response case final response?) {
-            visualIndexes[response.id] = visualIndex;
-          }
-          if (entry.error case final error?) {
-            visualIndexes[error.id] = visualIndex;
-          }
-        }
-      }
-    } else {
-      for (var visualIndex = 0;
-          visualIndex < sortedEntries.length;
-          visualIndex++) {
-        final entry =
-            _controller.getEntryAtVisualIndex(sortedEntries, visualIndex);
-        visualIndexes[entry.id] = visualIndex;
-      }
-    }
-
-    _idToVisualIndex = visualIndexes;
-    _lastVisualIndexInput = sortedEntries;
-    _lastVisualIndexGeneration = generation;
-    _lastVisualIndexGrouped = isGrouped;
-    _lastVisualIndexReversed = isReversed;
-  }
-
-  void _clearSearchTargetVisualIndexes() {
-    _idToVisualIndex = const {};
-    _lastVisualIndexInput = null;
-    _lastVisualIndexGeneration = -1;
-  }
+  int? _visualIndexForKey(Key key) =>
+      key is ValueKey<String> ? _pipeline.visualIndexOf(key.value) : null;
 
   Widget _buildFlatList(
     List<ISpectLogData> sortedEntries,
     bool isDesktop,
     ISpectOptions options,
-  ) =>
-      SuperSliverList.builder(
-        listController: _controller.listController,
-        itemCount: sortedEntries.length,
-        findChildIndexCallback: (key) {
-          if (key is! ValueKey<String>) return null;
-          final id = key.value;
-          for (var i = 0; i < sortedEntries.length; i++) {
-            if (sortedEntries[i].id == id) return i;
-          }
-          return null;
-        },
-        itemBuilder: (context, index) {
-          final logEntry =
-              _controller.getEntryAtVisualIndex(sortedEntries, index);
-          return _buildLogListItem(
-            context: context,
-            logEntry: logEntry,
-            index: index,
-            isDesktop: isDesktop,
-            options: options,
-            key: ValueKey(logEntry.id),
-          );
-        },
+  ) => SuperSliverList.builder(
+    listController: _controller.listController,
+    itemCount: sortedEntries.length,
+    findChildIndexCallback: _visualIndexForKey,
+    itemBuilder: (context, index) {
+      final logEntry = _controller.getEntryAtVisualIndex(sortedEntries, index);
+      return _buildLogListItem(
+        context: context,
+        logEntry: logEntry,
+        index: index,
+        isDesktop: isDesktop,
+        options: options,
+        key: ValueKey(logEntry.id),
       );
+    },
+  );
 
   Widget _buildGroupedList(
     List<Object> entries,
     bool isReversed,
     bool isDesktop,
     ISpectOptions options,
-  ) =>
-      SuperSliverList.builder(
-        listController: _controller.listController,
-        itemCount: entries.length,
-        itemBuilder: (context, index) {
-          final visualIndex = isReversed ? entries.length - 1 - index : index;
-          final entry = entries[visualIndex];
+  ) => SuperSliverList.builder(
+    listController: _controller.listController,
+    itemCount: entries.length,
+    findChildIndexCallback: _visualIndexForKey,
+    itemBuilder: (context, index) {
+      final visualIndex = isReversed ? entries.length - 1 - index : index;
+      final entry = entries[visualIndex];
 
-          if (entry is NetworkTransaction) {
-            return _buildTransactionCard(entry, isDesktop: isDesktop);
-          }
+      if (entry is NetworkTransaction) {
+        return _buildTransactionCard(entry, isDesktop: isDesktop);
+      }
 
-          final logEntry = entry as ISpectLogData;
-          return _buildLogListItem(
-            context: context,
-            logEntry: logEntry,
-            index: index,
-            isDesktop: isDesktop,
-            options: options,
-            key: ObjectKey(logEntry),
-          );
-        },
+      final logEntry = entry as ISpectLogData;
+      return _buildLogListItem(
+        context: context,
+        logEntry: logEntry,
+        index: index,
+        isDesktop: isDesktop,
+        options: options,
+        key: ValueKey(logEntry.id),
       );
+    },
+  );
 
   Widget _buildTransactionCard(
     NetworkTransaction entry, {
     required bool isDesktop,
   }) {
     final responseOrError = entry.response ?? entry.error;
-    return NetworkTransactionCard(
+    final useRelativeTime = widget.logsViewController.useRelativeTime;
+    final card = NetworkTransactionCard(
       key: ValueKey(entry.requestId),
       transaction: entry,
-      searchMatchState:
-          widget.logsViewController.matchStateForTransaction(entry),
+      searchMatchState: widget.logsViewController.matchStateForTransaction(
+        entry,
+      ),
       typeColumnWidth: _controller.typeColumnWidth,
       timeColumnWidth: _controller.timeColumnWidth,
       compactUrl: widget.logsViewController.compactNetworkUrls,
+      useRelativeTime: useRelativeTime,
       onTap: isDesktop
-          ? () => widget.logsViewController.selectLog(entry.request)
+          ? () => widget.logsViewController.selectLog(
+              responseOrError ?? entry.request,
+            )
           : null,
       onOpenRequestDetail: isDesktop
           ? () => widget.logsViewController.selectAndFollowDetail(entry.request)
           : () => LogDetailView(
-                activeData: entry.request,
-                correlatedLog: responseOrError,
-                correlationDuration: entry.duration,
-                onShowRelated: widget.logsViewController.searchByCorrelationId,
-              ).push(context),
+              activeData: entry.request,
+              correlatedLog: responseOrError,
+              correlationDuration: entry.duration,
+              onShowRelated: widget.logsViewController.searchByCorrelationId,
+            ).push(context),
       onOpenResponseDetail: responseOrError == null
           ? null
           : isDesktop
-              ? () => widget.logsViewController
-                  .selectAndFollowDetail(responseOrError)
-              : () => LogDetailView(
-                    activeData: responseOrError,
-                    correlatedLog: entry.request,
-                    correlationDuration: entry.duration,
-                    onShowRelated:
-                        widget.logsViewController.searchByCorrelationId,
-                  ).push(context),
+          ? () =>
+                widget.logsViewController.selectAndFollowDetail(responseOrError)
+          : () => LogDetailView(
+              activeData: responseOrError,
+              correlatedLog: entry.request,
+              correlationDuration: entry.duration,
+              onShowRelated: widget.logsViewController.searchByCorrelationId,
+            ).push(context),
+    );
+    if (!useRelativeTime) return card;
+    return ListenableBuilder(
+      key: ValueKey(entry.requestId),
+      listenable: _controller.relativeTimeTick,
+      builder: (context, _) => card,
     );
   }
 }
@@ -563,8 +459,7 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
     BuildContext context,
     double shrinkOffset,
     bool overlapsContent,
-  ) =>
-      SizedBox(height: _height, child: child);
+  ) => SizedBox(height: _height, child: child);
 
   @override
   bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) =>

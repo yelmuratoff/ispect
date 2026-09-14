@@ -9,44 +9,67 @@ final class DioFormDataSerializer {
   /// Serializes a [FormData] instance into a map with two keys:
   /// - `fields`: regular form fields with duplicate keys preserved as lists
   /// - `files`: file metadata (name, content type, length, headers)
-  static Map<String, dynamic> serialize(FormData formData) {
-    final fields = _collectFields(formData);
-    final files = _collectFiles(formData);
-
-    return {
-      NetworkJsonKeys.fields: fields,
-      NetworkJsonKeys.files: files,
-    };
+  static Map<String, dynamic> serialize(
+    FormData formData, {
+    bool redactionActive = false,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    resourceLimits.validate();
+    final rawFields = LogExportOutput.boundJsonValue(
+      formData.fields.map(
+        (entry) => <String, Object?>{
+          NetworkJsonKeys.fieldName: entry.key,
+          NetworkJsonKeys.data: entry.value,
+        },
+      ),
+      maxBytes: MultipartCapture.sectionBudget(resourceLimits),
+      resourceLimits: resourceLimits,
+      replaceOversizedStrings: redactionActive,
+    );
+    return MultipartCapture.envelope(
+      fields: _collectFields(rawFields),
+      files: formData.files.map(
+        (file) => <String, Object?>{
+          NetworkJsonKeys.fieldName: file.key,
+          NetworkJsonKeys.filename: file.value.filename,
+          NetworkJsonKeys.contentTypeValue: file.value.contentType?.toString(),
+          NetworkJsonKeys.length: file.value.length,
+          NetworkJsonKeys.headers: file.value.headers,
+        },
+      ),
+      redactionActive: redactionActive,
+      resourceLimits: resourceLimits,
+    );
   }
 
-  static Map<String, dynamic> _collectFields(FormData formData) {
+  static Map<String, dynamic> _collectFields(Object? rawFields) {
     final fields = <String, Object?>{};
-
-    for (final entry in formData.fields) {
-      final existing = fields[entry.key];
+    if (rawFields is! List<Object?>) return fields;
+    for (final item in rawFields) {
+      if (item is! Map<String, Object?>) {
+        fields[JsonValueNormalizer.traversalMarkerKey] =
+            JsonValueNormalizer.maxCollectionItemsReached;
+        break;
+      }
+      final key = item[NetworkJsonKeys.fieldName];
+      if (key is! String ||
+          key.contains(LogExportOutput.truncatedMarker) ||
+          key == JsonValueNormalizer.unprintableValue) {
+        fields[JsonValueNormalizer.traversalMarkerKey] =
+            LogExportOutput.truncatedMarker;
+        break;
+      }
+      final value = item[NetworkJsonKeys.data];
+      final existing = fields[key];
       if (existing == null) {
-        fields[entry.key] = entry.value;
+        fields[key] = value;
       } else if (existing is List<Object?>) {
-        existing.add(entry.value);
+        existing.add(value);
       } else {
-        fields[entry.key] = <Object?>[existing, entry.value];
+        fields[key] = <Object?>[existing, value];
       }
     }
 
     return fields;
   }
-
-  static List<Map<String, Object?>> _collectFiles(FormData formData) =>
-      formData.files
-          .map(
-            (file) => <String, Object?>{
-              NetworkJsonKeys.fieldName: file.key,
-              NetworkJsonKeys.filename: file.value.filename,
-              NetworkJsonKeys.contentTypeValue:
-                  file.value.contentType?.toString(),
-              NetworkJsonKeys.length: file.value.length,
-              NetworkJsonKeys.headers: file.value.headers,
-            },
-          )
-          .toList();
 }

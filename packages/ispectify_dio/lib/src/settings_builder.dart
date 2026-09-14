@@ -20,8 +20,12 @@ class ISpectDioInterceptorSettingsBuilder
         RequestOptions,
         Response<dynamic>,
         DioException> {
-  /// Creates a builder with default settings (moderate verbosity).
+  /// Creates a builder with full diagnostics and redaction enabled.
   ISpectDioInterceptorSettingsBuilder();
+
+  /// Metadata only: request and response envelopes without payloads or headers.
+  factory ISpectDioInterceptorSettingsBuilder.metadataOnly() =>
+      ISpectDioInterceptorSettingsBuilder()..applyMetadataOnlyDefaults();
 
   /// Development: verbose logging, redaction enabled.
   factory ISpectDioInterceptorSettingsBuilder.development() =>
@@ -43,6 +47,10 @@ class ISpectDioInterceptorSettingsBuilder
   ISpectDioInterceptorSettings build() => ISpectDioInterceptorSettings(
         enabled: enabled,
         enableRedaction: enableRedaction,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+        logRequests: logRequests,
+        logResponses: logResponses,
         printResponseData: printResponseData,
         printResponseHeaders: printResponseHeaders,
         printResponseMessage: printResponseMessage,

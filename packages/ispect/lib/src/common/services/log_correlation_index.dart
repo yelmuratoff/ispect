@@ -14,7 +14,7 @@ typedef LogCorrelation = ({ISpectLogData? log, Duration? duration});
 /// widget rebuild.
 class LogCorrelationIndex {
   LogCorrelationIndex({NetworkTransactionService? service})
-      : _service = service ?? NetworkTransactionService();
+    : _service = service ?? NetworkTransactionService();
 
   final NetworkTransactionService _service;
 

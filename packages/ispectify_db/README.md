@@ -1,7 +1,7 @@
 <!--
-  GENERATED FILE — do not edit by hand.
+  GENERATED FILE - do not edit by hand.
   Source:     docs/readme/ispectify_db.md
-  Regenerate: ./bash/build_readme.sh
+  Regenerate: dart run tool/bin/ispect_tool.dart readme
 -->
 
 <div align="center">
@@ -47,12 +47,11 @@
   </p>
 </div>
 
-
 `ispectify_db` adds passive database observability to the [ISpect toolkit](#the-ispect-toolkit). It traces SQL statements, ORM operations, and KV-store calls through a single `dbTrace` extension with timing, row counts, slow-query detection, and redaction.
 
 - Works with any driver. sqflite, drift, Isar, ObjectBox, shared_preferences, hive, and the rest. Wrap the call and the tracing is automatic.
 - Argument redaction by configured keys.
-- A slow-query threshold emits a separate log entry so perf outliers stand out.
+- A slow-query threshold flags perf outliers on the trace entry so they stand out.
 - Optional stack trace capture on errors, paid for only when an error happens.
 - Pure Dart. No Flutter binding required.
 
@@ -60,8 +59,9 @@
 
 ```yaml
 dependencies:
-  ispectify: ^6.1.7
-  ispectify_db: ^6.1.7
+  ispect: ^7.0.0
+  ispectify: ^7.0.0
+  ispectify_db: ^7.0.0
 ```
 
 ## Quick start
@@ -69,12 +69,15 @@ dependencies:
 Pass configuration at the traced call site:
 
 ```dart
+import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 
 const dbConfig = ISpectDbConfig(
   sampleRate: 1.0,
   redact: true,
   attachStackOnError: true,
+  captureMode: DiagnosticCaptureMode.balanced,
+  resourceLimits: DiagnosticResourceLimits.constrained,
   slowThreshold: Duration(milliseconds: 400),
 );
 ```
@@ -82,6 +85,7 @@ const dbConfig = ISpectDbConfig(
 Then wrap each storage call with `dbTrace`:
 
 ```dart
+import 'package:ispect/ispect.dart';
 import 'package:sqflite/sqflite.dart';
 
 final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
@@ -100,21 +104,100 @@ final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
 
 ## Configuration
 
-| Field                | Default      | What it does                                                                                                  |
-| -------------------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
-| `sampleRate`         | `1.0`        | Fraction of calls to log. `0.1` keeps 10% of them.                                                            |
-| `redact`             | `true`       | Mask sensitive keys in `args` and `statement`.                                                                |
-| `redactKeys`         | built-in set | Override the redaction key list.                                                                              |
-| `attachStackOnError` | `true`       | Capture and log a stack trace on failure.                                                                     |
-| `slowThreshold`      | `null`       | Re-emit durations above the threshold as a `db-slow-query` entry. (Renamed from `slowQueryThreshold` in 5.0.) |
+| Field                | Default       | What it does                                                                                                                       |
+| -------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `sampleRate`         | `null`        | Fraction of successful calls to log. `null` and `1.0` both keep all of them; `0.1` keeps 10%.                                      |
+| `redact`             | `true`        | Mask sensitive keys in `args` and `statement`.                                                                                     |
+| `redactKeys`         | built-in set  | Override the redaction key list.                                                                                                   |
+| `captureMode`        | `balanced`    | Allow guarded, bounded typed-value and error formatting; use `strict` to disable application formatters.                           |
+| `resourceLimits`     | logger policy | Override database scalar, diagnostic, metadata, traversal, and output budgets for this trace.                                      |
+| `attachStackOnError` | `false`       | Capture and log a stack trace on failure.                                                                                          |
+| `slowThreshold`      | `null`        | Adds a `slow` flag to the trace entry, `true` when the duration exceeds the threshold. (Renamed from `slowQueryThreshold` in 5.0.) |
 
 ```dart
 const dbConfig = ISpectDbConfig(
   redact: true,
-  redactKeys: ['password', 'token', 'secret'],
+  redactKeys: {'password', 'token', 'secret'},
   slowThreshold: Duration(milliseconds: 250),
 );
 ```
+
+`redactKeys` is an explicit local replacement for this trace. Omit it to use the current global `ISpectRedaction.service`.
+If a copied config already has local limits, use
+`dbConfig.copyWith(inheritResourceLimits: true)` to clear that override and
+resume following the logger policy.
+
+## Data redaction
+
+Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.
+
+The default policy is a single source of truth. Configure it once and core logs, traces, persistence, network and database adapters, BLoC and Riverpod observers, supported exports, clipboard helpers, and cURL generation resolve it when each diagnostic operation runs.
+
+Redaction works best paired with deliberate capture. Use the integration's `metadataOnly()` or compact preset when payload values are unnecessary, and register project-specific keys for the business identifiers only your application understands.
+
+The default `DiagnosticCaptureMode.balanced` keeps diagnostics useful by
+allowing guarded `toJson()` and `toString()` capture. The result is bounded
+immediately and redacted before it leaves the active pipeline. Select
+`DiagnosticCaptureMode.strict` when application-defined formatters must never
+run. Network `metadataOnly()` and `production()` presets, plus BLoC/Riverpod
+`compact`, select strict capture automatically. Persistence, export, and
+observer delivery do not re-run formatters after capture.
+
+### Global configuration
+
+```dart
+import 'package:ispectify/ispectify.dart';
+
+ISpectRedaction.configure(
+  service: RedactionService(
+    additionalSensitiveKeys: {
+      'x-custom-secret',
+      'internal_token',
+    },
+    additionalSensitiveKeyPatterns: [
+      RegExp(r'my_app_secret_\w+', caseSensitive: false),
+    ],
+    fullyMaskedKeys: {'filename'},
+    placeholder: '***',
+    visibleEdgeLength: 3,
+  ),
+);
+```
+
+`additionalSensitiveKeys` and `additionalSensitiveKeyPatterns` extend the built-in policy. Use `sensitiveKeys` or `sensitiveKeyPatterns` only when you intentionally want to replace the corresponding defaults:
+
+```dart
+final replacementPolicy = RedactionService(
+  sensitiveKeys: {
+    'x-custom-secret',
+    'internal_token',
+  },
+  sensitiveKeyPatterns: [
+    RegExp(r'my_app_secret_\w+', caseSensitive: false),
+  ],
+);
+```
+
+Flutter apps can pass the same policy as `ISpect.run(redactionService: ...)`; `ISpect.dispose()` restores the policy that was active before that run. An explicit `RedactionService` supplied to one integration stays local and takes precedence over the global policy. Existing integrations without an explicit service pick up later global reconfiguration. The policy is scoped to the current Dart isolate.
+
+### Local exceptions
+
+```dart
+final redactor = RedactionService(
+  ignoredKeys: {'mobile', 'platform_token'},
+  ignoredValues: {'<test-token>', 'public-api-key'},
+);
+```
+
+### Disabling
+
+`ISpectRedaction.configure(enabled: false)` is the global content-masking
+opt-out. For a local opt-out, pass `enableRedaction: false` to network,
+WebSocket, BLoC, or Riverpod settings, or `redact: false` to `ISpectDbConfig`
+and other trace configs. Size limits, private-storage checks, the selected
+capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
+
+Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.
 
 ## The ISpect toolkit
 
@@ -131,7 +214,6 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
-
 
 ## Contributing
 

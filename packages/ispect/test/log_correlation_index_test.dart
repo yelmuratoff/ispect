@@ -117,11 +117,7 @@ void main() {
 
     test('returns null for non-HTTP logs', () {
       final index = LogCorrelationIndex();
-      final plain = ISpectLogData(
-        'debug',
-        time: DateTime(2026),
-        key: 'debug',
-      );
+      final plain = ISpectLogData('debug', time: DateTime(2026), key: 'debug');
       expect(index.find(plain, const [], 1), isNull);
     });
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 
 /// Rounded card surface that reflects a [SearchMatchState]: subtle highlight
@@ -12,7 +13,9 @@ class ISpectSearchHighlightSurface extends StatelessWidget {
   const ISpectSearchHighlightSurface({
     required this.searchMatchState,
     required this.child,
-    this.borderRadius = const BorderRadius.all(Radius.circular(16)),
+    this.borderRadius = const BorderRadius.all(
+      Radius.circular(ISpectConstants.largeBorderRadius),
+    ),
     this.clipContent = true,
     super.key,
   });
@@ -59,9 +62,7 @@ class ISpectSearchHighlightSurface extends StatelessWidget {
         boxShadow = null;
     }
 
-    final shape = ContinuousRectangleBorder(
-      borderRadius: borderRadius * ISpectSquircle.scale,
-    );
+    final shape = ISpectSquircle.borderOf(borderRadius);
 
     return DecoratedBox(
       decoration: ShapeDecoration(
@@ -74,7 +75,10 @@ class ISpectSearchHighlightSurface extends StatelessWidget {
       // The inner left accent bar must follow the rounded corner, so the clip
       // uses the same squircle shape as the border rather than a cheaper rrect.
       child: clipContent
-          ? ClipPath(clipper: ShapeBorderClipper(shape: shape), child: child)
+          ? ClipPath(
+              clipper: ShapeBorderClipper(shape: shape),
+              child: child,
+            )
           : child,
     );
   }

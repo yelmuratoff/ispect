@@ -1,5 +1,87 @@
 # Changelog
 
+## 7.0.0
+
+### Breaking Changes
+
+- **Floating panel:** The diagnostics panel is a floating window built on `draggable_panel` 4.1.0; `panelItems`, `panelButtons`, `ISpectTheme.panelTheme`, and `panelBuilder` take the new panel types. See `docs/DEPRECATIONS.md` for the symbol map.
+- **Minimum SDK:** `ispect` requires Dart 3.8 and Flutter 3.35; `ispect_layout` requires Dart 3.8 and Flutter 3.32.
+- **`JsonScreen`** is no longer a `const` constructor.
+- **Custom log types:** Filter custom `ISpectLogData` subclasses by log key instead of `TypeFilter`.
+- **Redaction and settings overrides:** Subclasses overriding the `RedactionService` export and header methods, or `copyWith`/`configure` on network, trace, BLoC, and Riverpod settings, must accept the new optional parameters.
+- **Observer payloads:** Observers receive the redacted entry with exception, error, and stack trace as scrubbed text; `ISpect.run` error callbacks still receive the originals.
+- **`WsDiagnosticsSink`:** `onSent` and `onReceived` gained an optional `messageId` parameter, which pairs a frame with its reply and implementers must declare.
+- **Adapter error records:** http and Dio error responses store their payload under `error-data`, and the Dio error record no longer duplicates the request blob at top level.
+
+### Behavioral Changes
+
+- **Mobile log details:** Tap a log card to open its full details immediately; use the arrow to toggle the inline preview. HTTP cards open the response or error when available, with request/response switching inside the detail view.
+- **Squircle surfaces:** Every ISpect surface, including bordered tiles, shares one corner shape; mobile log and network cards use a smaller radius that matches the search field, and tooltips use ISpect's own colors.
+- **Panel resting state:** The panel is either parked at a screen edge or open, and parks whenever an ISpect screen opens. A caller-supplied `DraggablePanelController` keeps its own placement.
+- **Readable diagnostics by default:** Exceptions, stack traces, ordinary URLs, SQL identifiers, correlation ids, route paths, and bounded `toJson()` snapshots stay readable after redaction; non-secret keys such as `cache_key` are no longer masked.
+- **Capture mode:** `DiagnosticCaptureMode.balanced` is the default; choose `strict` when application `toJson()` and `toString()` must never run. The BLoC and Riverpod `compact` presets use strict capture.
+- **Header capture:** `printRequestHeaders` and `printResponseHeaders` default to `true` and are captured after redaction; use `metadataOnly()` to opt out.
+- **Lazy masking:** Payloads are masked when an entry is first read rather than when it is captured, so entries nobody inspects cost far less.
+- **Throwing `Uri` values:** A custom `Uri` whose accessors throw is omitted from the log instead of failing capture.
+- **Layout inspector precision:** Runtime measurements default to two decimal places; `decimalPlaces` still overrides.
+- **Native exports:** Persistent exports use the application's private support directory.
+
+### Security
+
+- **Unified redaction:** `ISpectRedaction.configure(...)` controls masking across logging, adapters, observers, persistence, and exports, and custom `DiagnosticResourceLimits` apply everywhere.
+- **Bounded diagnostic data:** Imports, exports, clipboard, cURL, observers, and stored logs are bounded and redacted by default; the `metadataOnly()` and `production()` network presets avoid application-defined formatters.
+- **URL path tokens:** Provider tokens and JWTs in a URL path segment are masked in history, streams, and observers, not only in exports.
+- **Cancel tokens:** Dio records whether a request carried a cancel token instead of the token object.
+- **Composer URL allowlist:** The HTTP composer accepts only `http` and `https` URLs.
+
+### Improvements
+
+- **Diagnostics never break the host:** A throwing filter or an internal failure in Dio, http, WebSocket, or database capture becomes a warning instead of an exception.
+- **Configurable budgets:** `ISpectLoggerOptions.captureMode`, `resourceLimits`, and `processingPolicy` persist through `ISpectSettingsState`, and the Settings sheet offers one-tap Capture, Resource, and Processing profiles.
+- **Runtime reconfiguration:** Dio and http can change capture settings at runtime, and lowering `maxHistoryItems` trims the retained entries.
+- **Faster hot paths:** Excluded log keys and logs with no consumer skip capture, and the log list and layout inspector redraw less often.
+- **Larger diagnostic handoff:** Larger payload, record, and export budgets; exports report actual and truncated counts, and imports report skipped records.
+- **Clearer network cards:** Larger body previews with explicit truncation cues, and header names stay visible with redacted values behind a compact disclosure.
+- **Panel header:** The open panel shows the `pageTitle` with a close control, and every action tile shows a localized caption.
+- **Filter sheet height:** On phones the filter sheet opens as tall as its content, so every log type is visible without dragging; past 85% of the screen it scrolls instead.
+- **Layout inspector coverage:** Selecting `Padding`, `ConstrainedBox`, `SizedBox`, `Align`, or `Center` shows their insets, constraints, and alignment, and `ShapeDecoration` surfaces its color, shape, radius, shadows, and gradient.
+
+### Bug Fixes
+
+- **Desktop HTTP selection:** Selecting a grouped transaction defaults to its response or error, falling back to the request while pending.
+- **Desktop HTTP rows:** Hover actions keep a compact, stable row height without shifting neighboring logs.
+- **Log action titles:** Actions headers preserve names such as HTTP Request and BLoC Create, including custom display titles.
+- **Grouped log actions:** Long-press a grouped HTTP card to open Actions. Expand/collapse buttons now use the same styling as Actions.
+- **Typography inspection:** Text size, line height, letter spacing, and word spacing preserve hundredths, so `0.25` no longer shows as `0.3`.
+- **Layout inspection:** Corrected RTL radii, fitted-box sizing, transformed padding and pivots, center-sliced image fit, color filters, flex/stack parent data, and missing clip or directional fields.
+- **Layout inspector in release:** Render-tree copy, `ClipRSuperellipse` and RTL `ClipRRect` radii, `Image.memory` labels, and blur, matrix, and composed image filters now match debug builds.
+- **Layout inspector on Flutter 3.40+:** Inspecting a widget under a `BackdropFilter` built with `filterConfig` no longer breaks the panel, and a disabled `BackdropFilter` is labeled as such.
+- **Apple file history:** Rolling history now initializes in iOS and macOS cache sandboxes.
+- **Linux exports:** Saving and sharing logs on Linux no longer fails with an unsafe-permissions error, and shared export folders stay private to the current user.
+- **Concurrent diagnostics:** Fixed BLoC event correlation and stale asynchronous log-viewer updates.
+- **Lifecycle:** Shutdown and forced reinitialization clean up logger state consistently, including on failure.
+- **Host error callbacks:** Flutter, platform, and zoned callbacks keep receiving the original error and stack trace.
+- **HTTP replay:** Malformed form data and sender failures no longer leave the composer broken.
+- **Query parameters:** Dio and http request URLs include redacted query parameters in console, grouped, and ungrouped views.
+- **Settings validation:** Invalid persisted capacities and inspector clipboard limits are rejected in release builds.
+- **Base64 detection:** Ordinary sentences are no longer replaced with a `[base64 ~NB]` placeholder.
+- **Named BLoC and Riverpod diagnostics:** Balanced capture reports the concrete class, such as `AuthCubit` or `counterProvider`, and drops the duplicated `[bloc]` prefix.
+- **Database console lines:** Traces name the table, show normalized SQL, and carry affected rows, item counts, size, and cache hits.
+- **Log type filters:** Toggles survive reopening the settings sheet, `Select All` and `Deselect All` take effect, custom log types are no longer suppressed, and disabling a type removes its entries from the viewer, chips, and counters immediately.
+- **Relative timestamps:** The `Relative time` toggle applies to mobile log cards and grouped HTTP rows.
+- **Grouped HTTP logs under filters:** Selecting `http-request`, `http-response`, or `http-error` in the filter sheet keeps HTTP logs grouped, and a transaction card stays whole when only one of its entries matches the active filter or search.
+- **Documentation:** Fixed the documented `ispectify_db` defaults for `attachStackOnError` and `sampleRate`, and removed the never-emitted `db-slow-query` entry.
+
+### Deprecations
+
+- **Scheduled for 8.0.0:** `RedactionService.redactTarget`, `redactWithStats`, `redactHeadersWithStats`, `ISpectLogData.header`, and the `static redact(...)` helpers on BLoC and Riverpod data classes; see `docs/DEPRECATIONS.md`.
+
+### CI
+
+- **Pinned Flutter baseline:** Required jobs run on Flutter 3.35.7, `ispect_layout` is also checked on its 3.32.6 floor, and the latest stable channel is an advisory signal.
+- **Production safety:** Every package verifies its APIs stay inert without `ISPECT_ENABLED`, and release AOT builds confirm ISpect code is stripped when the flag is omitted.
+- **Release checks:** Pull requests validate versions, generated READMEs, `llms.txt`, and the web viewer lockfile with the Dart release tooling.
+
 ## 6.1.7
 
 ### Bug Fixes
@@ -56,7 +138,7 @@
 
 ### Security
 
-- **URL fragment redaction:** sensitive values in a URL fragment — such as the OAuth `#access_token=…` redirect — are now masked in logs, error messages, and exports.
+- **URL fragment redaction:** sensitive values in a URL fragment - such as the OAuth `#access_token=…` redirect - are now masked in logs, error messages, and exports.
 - **Export credential scrubbing:** URL credentials and `Bearer`/`Basic`/`Token` values are now stripped from text, Markdown, CSV, and JSON Lines exports even when no redaction keys are supplied.
 - **Trace `value` redacted by default:** the `value` captured by `trace` and its async/sync/stream variants is now redacted alongside `meta` and `target`; opt out with `ISpectTraceConfig(redact: false)`.
 - **Wider export redaction:** CSV targets, exported stack traces, and the JSON Lines fallback are now redacted, and a failed JSON encode surfaces the error instead of being dropped.
@@ -69,7 +151,7 @@
 - **Web-safe log IDs:** log entry IDs stay correctly time-sortable on web builds.
 - **`copyWith` keeps identity:** `ISpectLogData.copyWith`/`copy` preserve the original `id` so copies compare equal and de-duplicate correctly; pass `id:` for a new one.
 - **Observer recursion:** a log emitted synchronously from inside an observer is dropped instead of recursing.
-- **WebSocket log keys:** `wsSend`/`wsReceive` always use `ws-sent`/`ws-received` — and error frames `ws-error` — regardless of the operation name.
+- **WebSocket log keys:** `wsSend`/`wsReceive` always use `ws-sent`/`ws-received` - and error frames `ws-error` - regardless of the operation name.
 - **Request ID collisions:** network request IDs no longer collide between separate app runs started close together.
 
 ### Improvements
@@ -90,7 +172,7 @@
 
 ### Improvements
 
-- **`dart:developer` console output:** Opt into DevTools-native structured logging with `ISpectBaseLogger(output: developerLogOutput)` — each entry becomes one `log()` call (boxed output stays intact) with the log level mapped through. The default `print`/console output is unchanged ([#85](https://github.com/yelmuratoff/ispect/issues/85)).
+- **`dart:developer` console output:** Opt into DevTools-native structured logging with `ISpectBaseLogger(output: developerLogOutput)` - each entry becomes one `log()` call (boxed output stays intact) with the log level mapped through. The default `print`/console output is unchanged ([#85](https://github.com/yelmuratoff/ispect/issues/85)).
 
 ## 6.0.4
 
@@ -108,18 +190,18 @@
 
 ### Security
 
-- **Redaction hardened across capture and export:** Sensitive keys are matched more broadly (camelCase and whitespace-trimmed forms), the default sensitive-key set is broadened, and credential/PII values are fully masked. Redaction now fails closed — a payload that can't be processed is masked rather than passed through.
+- **Redaction hardened across capture and export:** Sensitive keys are matched more broadly (camelCase and whitespace-trimmed forms), the default sensitive-key set is broadened, and credential/PII values are fully masked. Redaction now fails closed - a payload that can't be processed is masked rather than passed through.
 - **Diagnostics redacted everywhere they leave the app:** Network URLs (including in generated cURL), database values and error messages, BLoC/Riverpod console output, navigation route arguments, and every export path (JSON, text, Markdown, file share, and clipboard copy) are redacted by default.
-- **One-switch redaction control:** A single source of truth turns redaction on or off everywhere at once — `ISpectRedaction.enabled = false` (or `ISpect.run(redactionEnabled: false)`) disables masking across network, database, BLoC/Riverpod, navigation, and all export paths. On by default; disabling is a deliberate opt-out.
+- **One-switch redaction control:** A single source of truth turns redaction on or off everywhere at once - `ISpectRedaction.enabled = false` (or `ISpect.run(redactionEnabled: false)`) disables masking across network, database, BLoC/Riverpod, navigation, and all export paths. On by default; disabling is a deliberate opt-out.
 - **Inert in production builds:** When ISpect is compiled out (`ISPECT_ENABLED` omitted), observers stay silent and the global logger retains no history and writes nothing to the console, so diagnostics don't accumulate in release builds.
 
 ## 6.0.0
 
 ### Improvements
 
-- **Owned dark theme by default:** ISpect now ships its own flat dark design across all surfaces — logs, JSON viewer, composer, sheets, inspector, and the performance overlay — independent of the host app, with a paired light variant. Choose the mode via `ISpectTheme.themeMode`, or set `ISpectTheme.useHostColors: true` to inherit the host `ColorScheme` as before.
+- **Owned dark theme by default:** ISpect now ships its own flat dark design across all surfaces - logs, JSON viewer, composer, sheets, inspector, and the performance overlay - independent of the host app, with a paired light variant. Choose the mode via `ISpectTheme.themeMode`, or set `ISpectTheme.useHostColors: true` to inherit the host `ColorScheme` as before.
 - **Squircle surfaces:** Cards, buttons, fields, sheets, tiles, and the inspector overlay use continuous (squircle) corners for a smoother, more cohesive look.
-- **`ispectify_riverpod`:** New package — `ISpectRiverpodObserver` logs provider lifecycle under `riverpod-*` keys (closes [#80](https://github.com/yelmuratoff/ispect/issues/80)).
+- **`ispectify_riverpod`:** New package - `ISpectRiverpodObserver` logs provider lifecycle under `riverpod-*` keys (closes [#80](https://github.com/yelmuratoff/ispect/issues/80)).
 - **Provider-agnostic `ispectify_ws`:** WebSocket diagnostics now log any client (`ws`, `socket_io_client`, and `web_socket_channel` adapters ship in the example), plus a new `ws-state` log type for connection lifecycle.
 - **HTTP composer (mini-Postman):** Replay a captured request or compose a new one and send it through your own client via `ISpect.registerSender(...)`; the result lands back in the network logs. Redacted values are never resent.
 - **Compact network URLs:** Collapsed transactions show only the path and query; the full URL stays in the expanded view. On by default, toggle in Settings.
@@ -127,7 +209,7 @@
 - **Richer widget inspector:** Property chips for composite values (offset, border, gradient, shadow), image/SVG source and decode details, correct selection boxes for rotated and skewed widgets, and grouped `RichText` spans.
 - **`ISpectPerformanceOverlay` rebuilt:** Cross-platform (web + desktop) overlay with UI/raster/total bars, FPS, avg/p99 and jank stats, plus an opt-in `enableJankLogging` callback for severe frames.
 - **Draggable panel 3.0.0:** More reliable hide/reveal and a content-sized adaptive layout; customize it fully via `ISpectOptions.panelBuilder`.
-- **Export metadata:** `ISpectOptions.metadataProvider` embeds app/device details into exported and shared logs via the typed `ISpectMetadata` (host-supplied and not redacted — keep secrets and PII out).
+- **Export metadata:** `ISpectOptions.metadataProvider` embeds app/device details into exported and shared logs via the typed `ISpectMetadata` (host-supplied and not redacted - keep secrets and PII out).
 
 ### Behavioral Changes
 
@@ -162,7 +244,7 @@
 
 ### Bug Fixes
 
-- **Layout inspector — icon selection inside chips:** Material `ActionChip`, `Chip`, `FilterChip`, and `InputChip` previously routed every tap to the label slot, hiding the avatar `Icon` from the inspector path. Tapping the avatar now correctly selects it.
+- **Layout inspector - icon selection inside chips:** Material `ActionChip`, `Chip`, `FilterChip`, and `InputChip` previously routed every tap to the label slot, hiding the avatar `Icon` from the inspector path. Tapping the avatar now correctly selects it.
 
 ## 5.0.3
 
@@ -185,13 +267,13 @@
 ### Breaking Changes
 
 - **Unified `trace()` pipeline:** All logging now flows through one structured pipeline with consistent correlation across every layer.
-- **Flattened log data:** The old inheritance-based types are gone — typed subclasses (`NetworkRequestLog`, `DioResponseLog`, `BlocLifecycleLog`, …) are replaced by a metadata-driven `ISpectLogData`, with field accessors like `isNetwork` and `httpStatusCode` moved into extensions. See the migration guide below.
-- **`ISpectLogType` is now a `final class`** (no longer an enum): `ISpectLogType.values` becomes `ISpectLogType.builtIn` and exhaustive switches no longer apply, but custom types are first-class — write `const ISpectLogType('my-key', category: 'firebase')` directly.
-- **`ISpectLogData.id` is now a 26-character ULID** instead of a per-isolate int — globally unique, lexicographically sortable, and JSON round-trippable. Equality uses the id alone, which fixes deduplication of persisted history.
+- **Flattened log data:** The old inheritance-based types are gone - typed subclasses (`NetworkRequestLog`, `DioResponseLog`, `BlocLifecycleLog`, …) are replaced by a metadata-driven `ISpectLogData`, with field accessors like `isNetwork` and `httpStatusCode` moved into extensions. See the migration guide below.
+- **`ISpectLogType` is now a `final class`** (no longer an enum): `ISpectLogType.values` becomes `ISpectLogType.builtIn` and exhaustive switches no longer apply, but custom types are first-class - write `const ISpectLogType('my-key', category: 'firebase')` directly.
+- **`ISpectLogData.id` is now a 26-character ULID** instead of a per-isolate int - globally unique, lexicographically sortable, and JSON round-trippable. Equality uses the id alone, which fixes deduplication of persisted history.
 
 ### Added
 
-- **`ispect_layout`:** New standalone visual layout inspector — tap any widget to read its size, constraints, padding, decoration, text styles, transform, and clip shape, or compare two widgets for the pixel gap. Forked from [`inspector`](https://github.com/kekland/inspector) with expanded render-object coverage.
+- **`ispect_layout`:** New standalone visual layout inspector - tap any widget to read its size, constraints, padding, decoration, text styles, transform, and clip shape, or compare two widgets for the pixel gap. Forked from [`inspector`](https://github.com/kekland/inspector) with expanded render-object coverage.
 - **Plugin architecture for the panel:** Lifecycle hooks, custom screens, and action items, with `SafePluginScreen` and a global `ErrorWidget` override keeping third-party plugin failures from taking down the host UI.
 - **Custom `ISpectLogType` instances** with their own category, title, color, and icon, safely merged with the built-in entries.
 - **Database interceptor cookbook:** Drop-in interceptors and runnable examples for Hive, Isar, Drift, Sembast, ObjectBox, Realm, Firestore, Sqflite, SharedPreferences, GetStorage, and FlutterSecureStorage in `packages/ispectify_db/example`.
@@ -215,7 +297,7 @@
 
 - **Network redaction on by default:** All network interceptors redact PII out of the box, using an expanded sensitive-key set.
 - **`ISpectBlocObserver`** now auto-correlates events, transitions, and changes.
-- **Auto-wired navigator observer:** `ISpectNavigatorObserver.observers()` publishes the installed observer in `ISpectNavigatorObserver.current`, and `ISpectBuilder.wrap` falls back to it — the quick-start no longer needs the same observer shared between `MaterialApp.navigatorObservers` and `ISpectOptions.observer`. An explicit `ISpectOptions.observer` still wins.
+- **Auto-wired navigator observer:** `ISpectNavigatorObserver.observers()` publishes the installed observer in `ISpectNavigatorObserver.current`, and `ISpectBuilder.wrap` falls back to it - the quick-start no longer needs the same observer shared between `MaterialApp.navigatorObservers` and `ISpectOptions.observer`. An explicit `ISpectOptions.observer` still wins.
 - **Tips dialog** moved from an automatic popup to a dedicated app-bar icon.
 
 ### Deprecations
@@ -301,7 +383,7 @@ logger.analyticsEvent(source: 'firebase', event: 'purchase');
 
 ### New Features
 
-- **Zero-conditional API:** Factory methods handle the `kISpectEnabled` check internally — no `if/else` in your code. `ISpectBuilder.wrap()` returns the child when disabled, `ISpectNavigatorObserver.observers()` returns an empty list, and `ISpectLocalizations.delegates()` returns the base delegates.
+- **Zero-conditional API:** Factory methods handle the `kISpectEnabled` check internally - no `if/else` in your code. `ISpectBuilder.wrap()` returns the child when disabled, `ISpectNavigatorObserver.observers()` returns an empty list, and `ISpectLocalizations.delegates()` returns the base delegates.
 
   ```dart
   MaterialApp(

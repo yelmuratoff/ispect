@@ -7,7 +7,7 @@ import 'package:ispectify/src/trace/trace_extension.dart';
 /// Trace helpers for raw HTTP request / response / error events.
 ///
 /// These are typically emitted by interceptor packages (ispectify_dio,
-/// ispectify_http) — call them directly only when instrumenting a custom HTTP
+/// ispectify_http) - call them directly only when instrumenting a custom HTTP
 /// client.
 extension ISpectLoggerNetwork on ISpectLogger {
   /// Logs an outgoing HTTP request under [networkCategory].

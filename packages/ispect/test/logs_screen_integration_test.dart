@@ -2,7 +2,7 @@
 //
 // `LogsScreen` reads `ISpect.logger` (a flag-gated global), which cannot be
 // injected without the `ISPECT_ENABLED` compile flag. So this test targets
-// `ISpectLogsBuilder` — the same widget `LogsScreen` uses internally to
+// `ISpectLogsBuilder` - the same widget `LogsScreen` uses internally to
 // render log records. A network-style log emitted through the real
 // `ISpectLogger` trace API must trigger a rebuild that renders the log
 // entry in the widget tree.
@@ -70,40 +70,39 @@ void main() {
     },
   );
 
-  testWidgets(
-    'builder rebuilds for every subsequent log emission',
-    (tester) async {
-      final logger = ISpectLogger(
-        options: ISpectLoggerOptions(useConsoleLogs: false),
-      );
-      var builderInvocations = 0;
+  testWidgets('builder rebuilds for every subsequent log emission', (
+    tester,
+  ) async {
+    final logger = ISpectLogger(
+      options: ISpectLoggerOptions(useConsoleLogs: false),
+    );
+    var builderInvocations = 0;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ISpectLogsBuilder(
-              logger: logger,
-              builder: (context, data) {
-                builderInvocations++;
-                return Text('count=${data.length}');
-              },
-            ),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ISpectLogsBuilder(
+            logger: logger,
+            builder: (context, data) {
+              builderInvocations++;
+              return Text('count=${data.length}');
+            },
           ),
         ),
-      );
-      final initialInvocations = builderInvocations;
-      expect(find.text('count=0'), findsOneWidget);
+      ),
+    );
+    final initialInvocations = builderInvocations;
+    expect(find.text('count=0'), findsOneWidget);
 
-      logger
-        ..httpRequest(source: 'dio', operation: 'GET', target: '/a')
-        ..httpResponse(source: 'dio', operation: 'GET', target: '/a');
+    logger
+      ..httpRequest(source: 'dio', operation: 'GET', target: '/a')
+      ..httpResponse(source: 'dio', operation: 'GET', target: '/a');
 
-      await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-      expect(find.text('count=2'), findsOneWidget);
-      expect(builderInvocations, greaterThan(initialInvocations));
-    },
-  );
+    expect(find.text('count=2'), findsOneWidget);
+    expect(builderInvocations, greaterThan(initialInvocations));
+  });
 
   testWidgets(
     'clearing history through the view controller empties the rendered list',

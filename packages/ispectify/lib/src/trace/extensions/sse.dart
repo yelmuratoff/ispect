@@ -2,6 +2,7 @@ import 'package:ispectify/src/ispectify.dart';
 import 'package:ispectify/src/trace/trace_categories.dart';
 import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_extension.dart';
+import 'package:ispectify/src/trace/trace_helpers.dart';
 
 /// Trace helpers for Server-Sent Events (SSE) streams.
 extension ISpectLoggerSSE on ISpectLogger {
@@ -20,22 +21,26 @@ extension ISpectLoggerSSE on ISpectLogger {
     Map<String, Object?>? meta,
     ISpectTraceConfig? config,
     String? correlationId,
-  }) =>
-      traceCategory(
-        category: sseCategory,
-        source: source,
-        operation: operation,
-        target: url,
-        key: eventId,
-        error: error,
-        errorStackTrace: errorStackTrace,
-        success: error == null,
-        meta: {
+  }) {
+    if (!isEnabled) return;
+    traceCategory(
+      category: sseCategory,
+      source: source,
+      operation: operation,
+      target: url,
+      key: eventId,
+      error: error,
+      errorStackTrace: errorStackTrace,
+      success: error == null,
+      meta: boundedTraceMeta(
+        fields: {
           if (eventType != null) 'eventType': eventType,
           if (data != null) 'data': data,
-          ...?meta,
         },
-        correlationId: correlationId,
-        config: config,
-      );
+        overrides: meta,
+      ),
+      correlationId: correlationId,
+      config: config,
+    );
+  }
 }

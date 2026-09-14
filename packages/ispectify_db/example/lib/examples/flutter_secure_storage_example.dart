@@ -31,10 +31,7 @@ Future<void> secureStorageExample() async {
   }
 
   // All values are redacted by default (forceRedact: true).
-  final storage = ISpectSecureStorage(
-    delegate: delegate,
-    logger: logger,
-  );
+  final storage = ISpectSecureStorage(delegate: delegate, logger: logger);
 
   // Store auth tokens
   await storage.write(
@@ -50,7 +47,7 @@ Future<void> secureStorageExample() async {
   await storage.write(key: 'user_pin', value: '1234');
   await storage.write(key: 'user_biometric_key', value: 'f8f9e1...');
 
-  // Read back — value appears as *** in logs
+  // Read back - value appears as *** in logs
   await storage.read(key: 'auth_access_token');
 
   // Check existence

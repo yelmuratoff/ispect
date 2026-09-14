@@ -2,6 +2,20 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/history/file_log/bounded_log_buffer.dart';
 import 'package:test/test.dart';
 
+final class _HostileBufferedLogGetters extends ISpectLogData {
+  _HostileBufferedLogGetters(String id) : super('trusted', id: id);
+
+  final List<int> _getterCalls = [0];
+
+  int get getterCalls => _getterCalls.single;
+
+  @override
+  String get id {
+    _getterCalls[0]++;
+    throw StateError('FORGED_BUFFER_ID');
+  }
+}
+
 void main() {
   test('deduplicates by ID and evicts FIFO with a bounded index', () {
     final buffer = BoundedLogBuffer(
@@ -17,6 +31,24 @@ void main() {
     expect(buffer.add(second), isTrue);
     expect(buffer.add(third), isTrue);
     expect(buffer.history.map((log) => log.id), ['B', 'C']);
+  });
+
+  test('deduplication and eviction ignore hostile ID getter overrides', () {
+    final buffer = BoundedLogBuffer(
+      ISpectLoggerOptions(maxHistoryItems: 1),
+    );
+    final first = _HostileBufferedLogGetters('A');
+    final duplicate = _HostileBufferedLogGetters('A');
+    final second = _HostileBufferedLogGetters('B');
+
+    expect(buffer.add(first), isTrue);
+    expect(buffer.add(duplicate), isFalse);
+    expect(buffer.add(second), isTrue);
+    expect(buffer.history, hasLength(1));
+    expect(identical(buffer.history.single, second), isTrue);
+    expect(first.getterCalls, 0);
+    expect(duplicate.getterCalls, 0);
+    expect(second.getterCalls, 0);
   });
 
   test('returns an unmodifiable cached history view', () {

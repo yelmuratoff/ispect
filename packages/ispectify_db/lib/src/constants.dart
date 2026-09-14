@@ -21,8 +21,10 @@ abstract final class DbLogKeys {
   static const cacheHit = 'cacheHit';
   static const value = 'value';
   static const meta = 'meta';
+  static const userMeta = 'userMeta';
   static const transactionId = 'transactionId';
   static const error = 'error';
+  static const dbError = 'dbError';
 }
 
 /// Log key values used to categorize DB log entries.

@@ -20,8 +20,7 @@ mixin NodeHelperMixin {
   int countChildrenInIterable(
     Iterable<NodeViewModelState> children,
     int Function(NodeViewModelState) counter,
-  ) =>
-      children.fold(0, (sum, child) => sum + counter(child));
+  ) => children.fold(0, (sum, child) => sum + counter(child));
 }
 
 /// Interface for node expansion operations
@@ -101,8 +100,10 @@ class DefaultNodeExpansionService
 
     final nodeIndex = index + 1;
     final childrenCount = _countVisibleChildren(node) - 1;
-    final endIndex =
-        (nodeIndex + childrenCount).clamp(nodeIndex, displayNodes.length);
+    final endIndex = (nodeIndex + childrenCount).clamp(
+      nodeIndex,
+      displayNodes.length,
+    );
 
     displayNodes.removeRange(nodeIndex, endIndex);
     node.collapse();
@@ -191,8 +192,7 @@ class DefaultNodeAnalysisService
   int countVisibleChildrenCached(
     NodeViewModelState node,
     Map<int, int> cache,
-  ) =>
-      cache.putIfAbsent(node.hashCode, () => countVisibleChildren(node));
+  ) => cache.putIfAbsent(node.hashCode, () => countVisibleChildren(node));
 }
 
 /// Facade service that combines all node operations following Facade pattern
@@ -207,11 +207,10 @@ class JsonNodeService
     BulkNodeService? bulkService,
     NodeNavigationService? navigationService,
     NodeAnalysisService? analysisService,
-  })  : _expansionService = expansionService ?? DefaultNodeExpansionService(),
-        _bulkService = bulkService ?? DefaultBulkNodeService(),
-        _navigationService =
-            navigationService ?? DefaultNodeNavigationService(),
-        _analysisService = analysisService ?? DefaultNodeAnalysisService();
+  }) : _expansionService = expansionService ?? DefaultNodeExpansionService(),
+       _bulkService = bulkService ?? DefaultBulkNodeService(),
+       _navigationService = navigationService ?? DefaultNodeNavigationService(),
+       _analysisService = analysisService ?? DefaultNodeAnalysisService();
 
   // Singleton instance for static methods
   static final JsonNodeService _instance = JsonNodeService();
@@ -226,29 +225,25 @@ class JsonNodeService
   List<NodeViewModelState> expandNode(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
-  ) =>
-      _expansionService.expandNode(node, displayNodes);
+  ) => _expansionService.expandNode(node, displayNodes);
 
   @override
   List<NodeViewModelState> collapseNode(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
-  ) =>
-      _expansionService.collapseNode(node, displayNodes);
+  ) => _expansionService.collapseNode(node, displayNodes);
 
   // Delegate to bulk service
   @override
   List<NodeViewModelState> expandAll(
     UnmodifiableListView<NodeViewModelState> allNodes,
-  ) =>
-      _bulkService.expandAll(allNodes);
+  ) => _bulkService.expandAll(allNodes);
 
   @override
   List<NodeViewModelState> collapseAll(
     List<NodeViewModelState> displayNodes,
     UnmodifiableListView<NodeViewModelState> allNodes,
-  ) =>
-      _bulkService.collapseAll(displayNodes, allNodes);
+  ) => _bulkService.collapseAll(displayNodes, allNodes);
 
   // Delegate to navigation service
   @override
@@ -272,32 +267,27 @@ class JsonNodeService
   int countVisibleChildrenCached(
     NodeViewModelState node,
     Map<int, int> cache,
-  ) =>
-      _analysisService.countVisibleChildrenCached(node, cache);
+  ) => _analysisService.countVisibleChildrenCached(node, cache);
 
   // Static methods delegate to singleton instance to avoid duplication
   static List<NodeViewModelState> expandNodeStatic(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
-  ) =>
-      _instance.expandNode(node, displayNodes);
+  ) => _instance.expandNode(node, displayNodes);
 
   static List<NodeViewModelState> collapseNodeStatic(
     NodeViewModelState node,
     List<NodeViewModelState> displayNodes,
-  ) =>
-      _instance.collapseNode(node, displayNodes);
+  ) => _instance.collapseNode(node, displayNodes);
 
   static List<NodeViewModelState> expandAllStatic(
     UnmodifiableListView<NodeViewModelState> allNodes,
-  ) =>
-      _instance.expandAll(allNodes);
+  ) => _instance.expandAll(allNodes);
 
   static List<NodeViewModelState> collapseAllStatic(
     List<NodeViewModelState> displayNodes,
     UnmodifiableListView<NodeViewModelState> allNodes,
-  ) =>
-      _instance.collapseAll(displayNodes, allNodes);
+  ) => _instance.collapseAll(displayNodes, allNodes);
 
   static void expandParentNodesStatic(NodeViewModelState node) =>
       _instance.expandParentNodes(node);
@@ -314,6 +304,5 @@ class JsonNodeService
   static int countVisibleChildrenCachedStatic(
     NodeViewModelState node,
     Map<int, int> cache,
-  ) =>
-      _instance.countVisibleChildrenCached(node, cache);
+  ) => _instance.countVisibleChildrenCached(node, cache);
 }

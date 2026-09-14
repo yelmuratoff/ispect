@@ -26,9 +26,9 @@ extension ISpectScreenUtilExtension on BuildContext {
     required final ScreenSizeWhenResult Function() phone,
     required final ScreenSizeWhenResult Function() tablet,
     required final ScreenSizeWhenResult Function() desktop,
-  }) =>
-      ISpectScreenUtil.screenSizeOf(this)
-          .when(phone: phone, tablet: tablet, desktop: desktop);
+  }) => ISpectScreenUtil.screenSizeOf(
+    this,
+  ).when(phone: phone, tablet: tablet, desktop: desktop);
 
   /// The [screenSizeMaybeWhen] method is equivalent to [screenSizeWhen],
   /// but doesn't require all callbacks to be specified.
@@ -36,18 +36,14 @@ extension ISpectScreenUtilExtension on BuildContext {
   /// On the other hand, it adds an extra [orElse] required parameter,
   /// for fallback behavior.
   ScreenSizeWhenResult
-      screenSizeMaybeWhen<ScreenSizeWhenResult extends Object?>({
+  screenSizeMaybeWhen<ScreenSizeWhenResult extends Object?>({
     required final ScreenSizeWhenResult Function() orElse,
     final ScreenSizeWhenResult Function()? phone,
     final ScreenSizeWhenResult Function()? tablet,
     final ScreenSizeWhenResult Function()? desktop,
-  }) =>
-          ISpectScreenUtil.screenSizeOf(this).maybeWhen(
-            phone: phone,
-            tablet: tablet,
-            desktop: desktop,
-            orElse: orElse,
-          );
+  }) => ISpectScreenUtil.screenSizeOf(
+    this,
+  ).maybeWhen(phone: phone, tablet: tablet, desktop: desktop, orElse: orElse);
 }
 
 /// {@template screen_util}
@@ -146,17 +142,16 @@ sealed class ISpectScreenSize {
   /// On the other hand, it adds an extra [orElse] required parameter,
   /// for fallback behavior.
   ISpectScreenSizeWhenResult
-      maybeWhen<ISpectScreenSizeWhenResult extends Object?>({
+  maybeWhen<ISpectScreenSizeWhenResult extends Object?>({
     required final ISpectScreenSizeWhenResult Function() orElse,
     final ISpectScreenSizeWhenResult Function()? phone,
     final ISpectScreenSizeWhenResult Function()? tablet,
     final ISpectScreenSizeWhenResult Function()? desktop,
-  }) =>
-          when<ISpectScreenSizeWhenResult>(
-            phone: phone ?? orElse,
-            tablet: tablet ?? orElse,
-            desktop: desktop ?? orElse,
-          );
+  }) => when<ISpectScreenSizeWhenResult>(
+    phone: phone ?? orElse,
+    tablet: tablet ?? orElse,
+    desktop: desktop ?? orElse,
+  );
 
   @override
   String toString() => representation;
@@ -173,8 +168,7 @@ final class ISpectScreenSize$Phone extends ISpectScreenSize {
     required final ISpectScreenSizeWhenResult Function() phone,
     required final ISpectScreenSizeWhenResult Function() tablet,
     required final ISpectScreenSizeWhenResult Function() desktop,
-  }) =>
-      phone();
+  }) => phone();
 
   @override
   bool get isPhone => true;
@@ -204,8 +198,7 @@ final class ISpectScreenSize$Tablet extends ISpectScreenSize {
     required final ISpectScreenSizeWhenResult Function() phone,
     required final ISpectScreenSizeWhenResult Function() tablet,
     required final ISpectScreenSizeWhenResult Function() desktop,
-  }) =>
-      tablet();
+  }) => tablet();
 
   @override
   bool get isPhone => false;
@@ -235,8 +228,7 @@ final class ISpectScreenSize$Desktop extends ISpectScreenSize {
     required final ScreenSizeWhenResult Function() phone,
     required final ScreenSizeWhenResult Function() tablet,
     required final ScreenSizeWhenResult Function() desktop,
-  }) =>
-      desktop();
+  }) => desktop();
 
   @override
   bool get isPhone => false;

@@ -4,7 +4,7 @@ import 'package:ispectify/ispectify.dart';
 /// Sends composed/replayed requests through an app-owned [Dio] instance.
 ///
 /// Because the request travels through the same [dio] the app configured, its
-/// base options, auth interceptors, and retries apply — and the existing
+/// base options, auth interceptors, and retries apply - and the existing
 /// [ISpectDioInterceptor] captures it, so no separate unredacted log is made.
 /// Register one per client via the ISpect entry point.
 final class DioRequestSender implements NetworkRequestSender {

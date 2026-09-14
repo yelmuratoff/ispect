@@ -19,7 +19,7 @@ void main() {
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('get_storage_test_');
 
-    // Mock path_provider — GetStorage internally calls
+    // Mock path_provider - GetStorage internally calls
     // getApplicationDocumentsDirectory even when a custom path is provided.
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(

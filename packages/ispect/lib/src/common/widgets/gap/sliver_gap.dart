@@ -10,11 +10,8 @@ class SliverGap extends LeafRenderObjectWidget {
   /// Creates a sliver that takes a fixed [mainAxisExtent] of space.
   ///
   /// The [mainAxisExtent] must not be null and must be positive.
-  const SliverGap(
-    this.mainAxisExtent, {
-    super.key,
-    this.color,
-  }) : assert(mainAxisExtent >= 0 && mainAxisExtent < double.infinity);
+  const SliverGap(this.mainAxisExtent, {super.key, this.color})
+    : assert(mainAxisExtent >= 0 && mainAxisExtent < double.infinity);
 
   /// The amount of space this widget takes in the direction of the parent.
   ///
@@ -25,10 +22,8 @@ class SliverGap extends LeafRenderObjectWidget {
   final Color? color;
 
   @override
-  RenderObject createRenderObject(BuildContext context) => RenderSliverGap(
-        mainAxisExtent: mainAxisExtent,
-        color: color,
-      );
+  RenderObject createRenderObject(BuildContext context) =>
+      RenderSliverGap(mainAxisExtent: mainAxisExtent, color: color);
 
   @override
   void updateRenderObject(BuildContext context, RenderSliverGap renderObject) {
@@ -47,11 +42,9 @@ class SliverGap extends LeafRenderObjectWidget {
 }
 
 class RenderSliverGap extends RenderSliver {
-  RenderSliverGap({
-    required double mainAxisExtent,
-    Color? color,
-  })  : _mainAxisExtent = mainAxisExtent,
-        _color = color;
+  RenderSliverGap({required double mainAxisExtent, Color? color})
+    : _mainAxisExtent = mainAxisExtent,
+      _color = color;
 
   double get mainAxisExtent => _mainAxisExtent;
   double _mainAxisExtent;
@@ -92,7 +85,8 @@ class RenderSliverGap extends RenderSliver {
       cacheExtent: cacheExtent,
       maxPaintExtent: mainAxisExtent,
       hitTestExtent: paintExtent,
-      hasVisualOverflow: mainAxisExtent > constraints.remainingPaintExtent ||
+      hasVisualOverflow:
+          mainAxisExtent > constraints.remainingPaintExtent ||
           constraints.scrollOffset > 0.0,
     );
   }

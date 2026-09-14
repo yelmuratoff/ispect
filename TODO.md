@@ -10,8 +10,8 @@ This file is intentionally short. Public planning lives in [`ROADMAP.md`](ROADMA
 
 ## Release Checks
 
-- `./bash/build_readme.sh --check`
-- `./bash/check_version_sync.sh`
-- `./bash/check_dependencies.sh`
-- package-level `dart analyze` / `flutter analyze`
-- package-level `dart test` / `flutter test`
+- `dart run tool/bin/ispect_tool.dart check`
+- `dart run tool/bin/ispect_tool.dart deps`
+- `dart run tool/bin/ispect_tool.dart publish --dry-run`
+- package-level `dart analyze --fatal-infos` / `flutter analyze --fatal-infos`
+- package-level `flutter test --dart-define=ISPECT_ENABLED=true`, plus `production_safety_test.dart` without the define

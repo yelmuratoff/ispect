@@ -282,6 +282,9 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String get printLogDesc => 'Mensaje impreso en la consola';
 
   @override
+  String get previewTruncated => 'Vista previa truncada';
+
+  @override
   String get projectDomain => 'Dominio del proyecto';
 
   @override
@@ -580,6 +583,21 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'Volver a la pantalla principal';
+
+  @override
+  String get logs => 'Registros';
+
+  @override
+  String get performance => 'Rendimiento';
+
+  @override
+  String get inspector => 'Inspector';
+
+  @override
+  String get colorPicker => 'Color';
+
+  @override
+  String get composer => 'Compositor';
 
   @override
   String get navigationFlow => 'Flujo de navegación';
@@ -940,7 +958,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get tipSearchLogs =>
-      'Buscar logs por texto — también busca en el JSON completo';
+      'Buscar logs por texto - también busca en el JSON completo';
 
   @override
   String get tipLongPress =>
@@ -962,7 +980,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get tipShareSession =>
-      'Comparte el archivo de logs para reportes de errores — los datos se redactan automáticamente';
+      'Comparte el archivo de logs para reportes de errores - los datos se redactan automáticamente';
 
   @override
   String get tipReverseLogs =>

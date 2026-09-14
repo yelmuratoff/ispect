@@ -95,6 +95,51 @@ void main() {
       expect(seeded.history.map((e) => e.key), ['a', 'b']);
     });
 
+    test('seed list keeps only the newest maxHistoryItems entries', () {
+      final options = ISpectLoggerOptions(maxHistoryItems: 2);
+      final seeded = DefaultISpectLoggerHistory(
+        options,
+        history: [
+          ISpectLogData('one', key: 'a'),
+          ISpectLogData('two', key: 'b'),
+          ISpectLogData('three', key: 'c'),
+        ],
+      );
+
+      expect(seeded.history.map((e) => e.key), ['b', 'c']);
+
+      seeded.add(ISpectLogData('four', key: 'd'));
+      expect(seeded.history.map((e) => e.key), ['c', 'd']);
+    });
+
+    test('seed list is dropped when maxHistoryItems is 0', () {
+      final options = ISpectLoggerOptions(maxHistoryItems: 0);
+      final seeded = DefaultISpectLoggerHistory(
+        options,
+        history: [ISpectLogData('one', key: 'a')],
+      );
+
+      expect(seeded.history, isEmpty);
+    });
+
+    test('configure with a smaller maxHistoryItems trims retained entries', () {
+      final logger = ISpectLogger.testing(
+        options: ISpectLoggerOptions(useConsoleLogs: false, maxHistoryItems: 5),
+      );
+      addTearDown(logger.dispose);
+      for (var i = 0; i < 5; i++) {
+        logger.info('log $i');
+      }
+
+      logger.configure(
+        options: logger.options.copyWith(maxHistoryItems: 2),
+      );
+
+      expect(logger.history.map((e) => e.message), ['log 3', 'log 4']);
+      logger.info('log 5');
+      expect(logger.history.map((e) => e.message), ['log 4', 'log 5']);
+    });
+
     test('returned view is unmodifiable', () {
       final options = ISpectLoggerOptions(maxHistoryItems: 5);
       final history = DefaultISpectLoggerHistory(options)

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/components/property_extractors.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
+import 'package:ispect_layout/src/widgets/components/render_tree_dump.dart';
 import 'package:ispect_layout/src/widgets/inspector/box_info.dart';
 import 'package:ispect_layout/src/widgets/inspector/compare_distances.dart';
 import 'package:ispect_layout/src/widgets/inspector/render_box_extension.dart';
@@ -15,6 +16,7 @@ class BoxInfoPanelWidget extends StatefulWidget {
     super.key,
     required this.boxInfo,
     required this.decimalPlaces,
+    required this.maxRenderTreeClipboardCharacters,
     this.comparedBoxInfo,
     this.onCompare,
     this.isCompareActive = false,
@@ -23,6 +25,7 @@ class BoxInfoPanelWidget extends StatefulWidget {
 
   final BoxInfo boxInfo;
   final int decimalPlaces;
+  final int maxRenderTreeClipboardCharacters;
   final BoxInfo? comparedBoxInfo;
   final VoidCallback? onCompare;
   final bool isCompareActive;
@@ -63,16 +66,18 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
 
   @override
   Widget build(BuildContext context) => Theme(
-        data: _panelTheme,
-        child: Builder(builder: _buildPanel),
-      );
+    data: _panelTheme,
+    child: Builder(builder: _buildPanel),
+  );
 
   Widget _buildPanel(BuildContext context) {
     final theme = Theme.of(context);
     final target = widget.boxInfo.targetRenderBox;
-    final dividerColor =
-        theme.colorScheme.outlineVariant.withValues(alpha: 0.4);
-    final hasCompare = target.attached &&
+    final dividerColor = theme.colorScheme.outlineVariant.withValues(
+      alpha: 0.4,
+    );
+    final hasCompare =
+        target.attached &&
         widget.comparedBoxInfo?.targetRenderBox.attached == true;
     final breadcrumb = _buildBreadcrumb();
 
@@ -104,10 +109,12 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
                         _PanelTitleBar(
                           target: target,
                           decimalPlaces: widget.decimalPlaces,
+                          maxRenderTreeClipboardCharacters:
+                              widget.maxRenderTreeClipboardCharacters,
                           onCompare: widget.onCompare,
                           isCompareActive: widget.isCompareActive,
                         ),
-                        if (breadcrumb != null) breadcrumb,
+                        ?breadcrumb,
                       ],
                     ),
                   ),
@@ -125,8 +132,12 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
-                  children:
-                      _buildSections(context, target, dividerColor, hasCompare),
+                  children: _buildSections(
+                    context,
+                    target,
+                    dividerColor,
+                    hasCompare,
+                  ),
                 ),
               ),
             ),
@@ -137,25 +148,25 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
   }
 
   Widget _buildTrailing(ThemeData theme) => AnimatedRotation(
-        turns: _isExpanded ? 0.5 : 0.0,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
-        child: Container(
-          width: 28,
-          height: 28,
-          decoration: InspectorSquircle.decoration(
-            color: theme.colorScheme.surfaceContainerHighest,
-            radius: 8,
-          ),
-          child: Icon(
-            Icons.keyboard_arrow_down_rounded,
-            size: 18,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      );
+    turns: _isExpanded ? 0.5 : 0.0,
+    duration: const Duration(milliseconds: 250),
+    curve: Curves.easeInOut,
+    child: Container(
+      width: 28,
+      height: 28,
+      decoration: InspectorSquircle.decoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        radius: 8,
+      ),
+      child: Icon(
+        Icons.keyboard_arrow_down_rounded,
+        size: 18,
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+    ),
+  );
 
-  /// The breadcrumb only earns space when there is somewhere to navigate to —
+  /// The breadcrumb only earns space when there is somewhere to navigate to -
   /// a single meaningful entry means the chips would just echo the title.
   Widget? _buildBreadcrumb() {
     final onSelect = widget.onSelectFromPath;
@@ -182,18 +193,18 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
     out
       ..add(const _SectionHeader('layout'))
       ..add(
-        _MainRow(
-          boxInfo: widget.boxInfo,
-          decimalPlaces: widget.decimalPlaces,
-        ),
+        _MainRow(boxInfo: widget.boxInfo, decimalPlaces: widget.decimalPlaces),
       )
       ..add(const SizedBox(height: 8))
       ..add(
         PropSection(
-          props: constraintsProps(
-            target.constraints,
-            decimalPlaces: widget.decimalPlaces,
-          ),
+          props: [
+            ...constraintsProps(
+              target.constraints,
+              decimalPlaces: widget.decimalPlaces,
+            ),
+            ...parentDataProps(target, decimalPlaces: widget.decimalPlaces),
+          ],
         ),
       );
 
@@ -211,7 +222,26 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
     }
 
     if (target is RenderParagraph) {
-      out.addAll(_paragraphSections(context, target, dividerColor));
+      out.addAll(
+        _textSections(
+          context,
+          text: target.text,
+          textProps: paragraphProps(
+            target,
+            decimalPlaces: widget.decimalPlaces,
+          ),
+          dividerColor: dividerColor,
+        ),
+      );
+    } else if (target is RenderEditable && target.text != null) {
+      out.addAll(
+        _textSections(
+          context,
+          text: target.text!,
+          textProps: editableProps(target),
+          dividerColor: dividerColor,
+        ),
+      );
     } else {
       final tProps = typeProps(target, decimalPlaces: widget.decimalPlaces);
       if (tProps.isNotEmpty) {
@@ -243,16 +273,16 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
     return out;
   }
 
-  List<Widget> _paragraphSections(
-    BuildContext context,
-    RenderParagraph target,
-    Color dividerColor,
-  ) {
+  List<Widget> _textSections(
+    BuildContext context, {
+    required InlineSpan text,
+    required List<PropSpec> textProps,
+    required Color dividerColor,
+  }) {
     final theme = Theme.of(context);
     final chipBg = theme.colorScheme.surfaceContainerLow;
-    final iconGlyphs = describeAsIconGlyphs(target.text);
-    final pProps = paragraphProps(target, decimalPlaces: widget.decimalPlaces);
-    final spanSections = extractSpanStyleGroups(target.text)
+    final iconGlyphs = describeAsIconGlyphs(text);
+    final spanSections = extractSpanStyleGroups(text)
         .map(
           (g) => (
             props: spanProps(g.style, decimalPlaces: widget.decimalPlaces),
@@ -269,14 +299,14 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
         ..add(Divider(height: 20.0, color: dividerColor))
         ..add(const _SectionHeader('icon'))
         ..add(_IconGlyphPreview(glyphs: iconGlyphs, chipBg: chipBg));
-      if (pProps.isNotEmpty) {
+      if (textProps.isNotEmpty) {
         out
           ..add(const SizedBox(height: 6))
-          ..add(PropSection(props: pProps));
+          ..add(PropSection(props: textProps));
       }
     } else {
-      final preview = previewText(target.text);
-      if (preview.isNotEmpty || pProps.isNotEmpty) {
+      final preview = previewText(text);
+      if (preview.isNotEmpty || textProps.isNotEmpty) {
         out
           ..add(Divider(height: 20.0, color: dividerColor))
           ..add(const _SectionHeader('text'));
@@ -289,17 +319,18 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
               expandChild: true,
               child: Text(
                 '"$preview"',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(fontStyle: FontStyle.italic),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           );
-          if (pProps.isNotEmpty) out.add(const SizedBox(height: 6));
+          if (textProps.isNotEmpty) out.add(const SizedBox(height: 6));
         }
-        if (pProps.isNotEmpty) {
-          out.add(PropSection(props: pProps));
+        if (textProps.isNotEmpty) {
+          out.add(PropSection(props: textProps));
         }
       }
     }
@@ -326,8 +357,9 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
                   fontSize: 10,
-                  color: theme.colorScheme.onSurfaceVariant
-                      .withValues(alpha: 0.55),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.55,
+                  ),
                 ),
               ),
             ),
@@ -349,14 +381,9 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
         const _SectionHeader('wrapper'),
         Padding(
           padding: const EdgeInsets.only(bottom: 6),
-          child: Text(
-            _describeIdentity(box),
-            style: theme.textTheme.bodySmall,
-          ),
+          child: Text(_describeIdentity(box), style: theme.textTheme.bodySmall),
         ),
-        PropSection(
-          props: typeProps(box, decimalPlaces: widget.decimalPlaces),
-        ),
+        PropSection(props: typeProps(box, decimalPlaces: widget.decimalPlaces)),
       ],
     ];
   }
@@ -375,16 +402,28 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
         ),
       ];
     }
-    if (widget.boxInfo.decoratedBoxForDisplay?.decoration
-        case final BoxDecoration d) {
-      return decorationProps(d, decimalPlaces: widget.decimalPlaces);
-    }
-    return [];
+    final decoratedBox = widget.boxInfo.decoratedBoxForDisplay;
+    if (decoratedBox == null) return const [];
+    final textDirection =
+        decoratedBox.configuration.textDirection ?? TextDirection.ltr;
+    return switch (decoratedBox.decoration) {
+      final BoxDecoration d => decorationProps(
+        d,
+        decimalPlaces: widget.decimalPlaces,
+        textDirection: textDirection,
+      ),
+      final ShapeDecoration d => shapeDecorationProps(
+        d,
+        decimalPlaces: widget.decimalPlaces,
+        textDirection: textDirection,
+      ),
+      _ => const [],
+    };
   }
 
   /// Walks the parent chain, collecting render boxes that share the target's
   /// paint size and carry type-specific props. Stops at the first size
-  /// mismatch — wrappers further up apply to a different bounding box, so
+  /// mismatch - wrappers further up apply to a different bounding box, so
   /// surfacing them here would mislead about what the displayed size
   /// actually represents.
   List<RenderBox> _wrappersWithTypeProps() {
@@ -411,12 +450,14 @@ class _PanelTitleBar extends StatelessWidget {
   const _PanelTitleBar({
     required this.target,
     required this.decimalPlaces,
+    required this.maxRenderTreeClipboardCharacters,
     required this.onCompare,
     required this.isCompareActive,
   });
 
   final RenderBox target;
   final int decimalPlaces;
+  final int maxRenderTreeClipboardCharacters;
   final VoidCallback? onCompare;
   final bool isCompareActive;
 
@@ -447,8 +488,9 @@ class _PanelTitleBar extends StatelessWidget {
                     ' #${shortHash(target)}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 10,
-                      color: theme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.45),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.45,
+                      ),
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
@@ -511,15 +553,20 @@ class _PanelTitleBar extends StatelessWidget {
     return name.startsWith('Render') ? name.substring(6) : name;
   }
 
-  static const int _maxClipboardChars = 10000;
-
   Future<void> _copyRenderTreeToClipboard(
     BuildContext context,
     RenderBox target,
   ) async {
-    final full = target.toStringDeep();
-    final truncated = full.length > _maxClipboardChars
-        ? '${full.substring(0, _maxClipboardChars)}\n… (${full.length - _maxClipboardChars} more chars)'
+    final deep = target.toStringDeep();
+    final full = deep.isEmpty
+        ? describeRenderTree(target, decimalPlaces: decimalPlaces)
+        : deep;
+    final limit = maxRenderTreeClipboardCharacters;
+    const marker = '\n…';
+    final truncated = full.length > limit
+        ? limit <= marker.length
+              ? marker.substring(0, limit)
+              : '${full.substring(0, limit - marker.length)}$marker'
         : full;
 
     await Clipboard.setData(ClipboardData(text: truncated));
@@ -532,8 +579,8 @@ class _PanelTitleBar extends StatelessWidget {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            full.length > _maxClipboardChars
-                ? 'Copied render tree ($_maxClipboardChars / ${full.length} chars)'
+            full.length > limit
+                ? 'Copied render tree ($limit / ${full.length} chars)'
                 : 'Copied render tree (${full.length} chars)',
           ),
         ),
@@ -592,8 +639,9 @@ class _ComparedRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final originalWidth = boxInfo.targetRenderBox.size.width;
-    final scale =
-        originalWidth > 0 ? boxInfo.targetRect.width / originalWidth : 1.0;
+    final scale = originalWidth > 0
+        ? boxInfo.targetRect.width / originalWidth
+        : 1.0;
     final distances = computeCompareDistances(
       boxInfo.targetRect,
       comparedBoxInfo.targetRect,
@@ -617,7 +665,7 @@ class _ComparedRow extends StatelessWidget {
 /// Renders the inspected icon glyph next to its `U+XXXX` code point.
 ///
 /// Release builds with `--tree-shake-icons` (default) may render a glyph
-/// the host app never references statically as tofu — the adjacent code
+/// the host app never references statically as tofu - the adjacent code
 /// point keeps the row readable. Build with `--no-tree-shake-icons` if
 /// faithful glyph rendering matters in release.
 class _IconGlyphPreview extends StatelessWidget {
@@ -651,7 +699,8 @@ class _IconGlyphPreview extends StatelessWidget {
             child: Text(
               glyphs.codePointsLabel,
               style: theme.textTheme.bodySmall?.copyWith(
-                  fontFeatures: const [FontFeature.tabularFigures()]),
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -685,13 +734,13 @@ class _PaddingBoxModel extends StatelessWidget {
         formatInspectorDouble(v, decimalPlaces: decimalPlaces);
 
     Widget cell(String label, double v) => Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 2,
-          children: [
-            Text(label, style: labelStyle),
-            Text(f(v), style: valueStyle),
-          ],
-        );
+      mainAxisSize: MainAxisSize.min,
+      spacing: 2,
+      children: [
+        Text(label, style: labelStyle),
+        Text(f(v), style: valueStyle),
+      ],
+    );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -806,28 +855,29 @@ class _HitTestBreadcrumbState extends State<_HitTestBreadcrumb> {
     _chipKeys.removeWhere((box, _) => !inPath.contains(box));
 
     final theme = Theme.of(context);
-    final separatorColor =
-        theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6);
+    final separatorColor = theme.colorScheme.onSurfaceVariant.withValues(
+      alpha: 0.6,
+    );
 
     final children = <Widget>[];
     for (var i = 0; i < widget.path.length; i++) {
       if (i > 0) {
-        children.add(Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2.0),
-          child: Icon(
-            Icons.chevron_right,
-            size: 14.0,
-            color: separatorColor,
+        children.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+            child: Icon(Icons.chevron_right, size: 14.0, color: separatorColor),
           ),
-        ));
+        );
       }
       final box = widget.path[i];
-      children.add(_BreadcrumbChip(
-        key: _keyFor(box),
-        box: box,
-        isSelected: identical(box, widget.currentTarget),
-        onTap: () => widget.onSelect(box),
-      ));
+      children.add(
+        _BreadcrumbChip(
+          key: _keyFor(box),
+          box: box,
+          isSelected: identical(box, widget.currentTarget),
+          onTap: () => widget.onSelect(box),
+        ),
+      );
     }
 
     return Padding(

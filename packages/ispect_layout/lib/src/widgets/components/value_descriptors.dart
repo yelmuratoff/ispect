@@ -6,6 +6,13 @@ import 'package:ispect_layout/src/number_format.dart';
 
 String _fmt(double v, int decimalPlaces) =>
     formatInspectorDouble(v, decimalPlaces: decimalPlaces);
+final _trailingDecimalZeroes = RegExp(r'\.?0+$');
+
+String _fmtCompact(double value, int decimalPlaces) {
+  final formatted = _fmt(value, decimalPlaces);
+  final compact = formatted.replaceFirst(_trailingDecimalZeroes, '');
+  return compact == '-0' ? '0' : compact;
+}
 
 // ─── Geometry formatters ─────────────────────────────────────────────────────
 
@@ -16,12 +23,13 @@ String formatRadius(Radius r, {int decimalPlaces = 1}) => r.x == r.y
 
 /// Formats a [BorderRadiusGeometry], collapsing uniform values and showing
 /// elliptical `(x×y)` radii only when x != y. Returns `null` when the radius
-/// is zero — callers should skip the chip.
+/// is zero - callers should skip the chip.
 ({String label, String value})? formatBorderRadius(
   BorderRadiusGeometry geometry, {
   int decimalPlaces = 1,
+  TextDirection textDirection = TextDirection.ltr,
 }) {
-  final r = geometry.resolve(TextDirection.ltr);
+  final r = geometry.resolve(textDirection);
   if (r == BorderRadius.zero) return null;
   final corners = [r.topLeft, r.topRight, r.bottomRight, r.bottomLeft];
   if (corners.every((c) => c == corners.first)) {
@@ -43,6 +51,7 @@ BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
   if (shape is RoundedRectangleBorder) return shape.borderRadius;
   if (shape is BeveledRectangleBorder) return shape.borderRadius;
   if (shape is ContinuousRectangleBorder) return shape.borderRadius;
+  if (shape is RoundedSuperellipseBorder) return shape.borderRadius;
   return null;
 }
 
@@ -51,19 +60,19 @@ BorderRadiusGeometry? extractShapeBorderRadius(ShapeBorder shape) {
 // Flutter's AOT release build strips `toString()` overrides on several
 // painting / dart:ui types (FontWeight, TextDecoration, AlignmentGeometry,
 // SystemTextScaler, ImageFilter, ColorFilter, …), falling back to
-// `Instance of '<TypeName>'`. The helpers below read public fields or peek
-// at private discriminators so labels stay readable.
+// `Instance of '<TypeName>'`. The helpers below prefer public fields and use
+// narrowly scoped fallbacks when Flutter exposes no structured public API.
 //
 // Anything depending on Flutter internals is validated once in debug via
-// [_assertReleaseSafeContracts] — Flutter renames or shape changes fire an
+// [_assertReleaseSafeContracts] - Flutter renames or shape changes fire an
 // assert at first use naming the broken function.
 
 /// Default `Object.toString()` output starts with this prefix (Dart spec);
 /// detecting it tells us a `toString()` override was stripped by AOT.
 const _kStrippedToStringPrefix = "Instance of '";
 
-String describeAlignment(AlignmentGeometry alignment) {
-  String fmt(double v) => v.toStringAsFixed(1);
+String describeAlignment(AlignmentGeometry alignment, {int decimalPlaces = 2}) {
+  String fmt(double v) => _fmtCompact(v, decimalPlaces);
   if (alignment is Alignment) {
     return switch ((alignment.x, alignment.y)) {
       (-1.0, -1.0) => 'topLeft',
@@ -121,33 +130,106 @@ String describeTextScaler(TextScaler scaler) {
 /// [ImageFilter] subclasses (`_GaussianBlurImageFilter` etc. in
 /// `dart:ui/painting.dart`) are library-private. Kind is identified by
 /// comparing `runtimeType` against factory-constructed sentinels; parameter
-/// fields (`sigmaX`, `radiusX`, `innerFilter`, …) are public on the
-/// private classes and read via `dynamic`.
+/// fields (`sigmaX`, `radiusX`, `data`, `innerFilter`, …) are public on the
+/// private classes and read via `dynamic`. Structured fields are preferred
+/// over `toString()` so debug and release builds describe a filter the same
+/// way; `toString()` is consulted only for kinds without a sentinel.
 String describeImageFilter(ImageFilter filter) {
   assert(_assertReleaseSafeContracts());
+  final kind = _ImageFilterKind.lookup(filter.runtimeType);
+  if (kind != null) {
+    final structured = _describeKnownImageFilter(filter, kind);
+    if (structured != null) return structured;
+  }
   final raw = filter.toString();
   if (!raw.startsWith(_kStrippedToStringPrefix)) {
-    return raw.replaceFirst('ImageFilter.', '').replaceAllMapped(
-          RegExp(r',\s*(TileMode\.\w+|unspecified)\)$'),
-          (_) => ')',
-        );
+    return raw.replaceFirst('ImageFilter.', '');
   }
-  final kind = _ImageFilterKind.lookup(filter.runtimeType);
-  if (kind == null) return 'ImageFilter';
+  return kind == null ? 'ImageFilter' : 'ImageFilter.${kind.name}';
+}
+
+String? _describeKnownImageFilter(ImageFilter filter, _ImageFilterKind kind) {
   try {
     final dyn = filter as dynamic;
     String d(Object? v) => (v as double).toStringAsFixed(1);
     return switch (kind) {
-      _ImageFilterKind.blur => 'blur(${d(dyn.sigmaX)}, ${d(dyn.sigmaY)})',
+      _ImageFilterKind.blur => _describeBlur(
+        sigmaX: dyn.sigmaX as double,
+        sigmaY: dyn.sigmaY as double,
+        tileMode: dyn.tileMode as TileMode?,
+      ),
       _ImageFilterKind.dilate => 'dilate(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
       _ImageFilterKind.erode => 'erode(${d(dyn.radiusX)}, ${d(dyn.radiusY)})',
-      _ImageFilterKind.matrix => 'matrix',
+      _ImageFilterKind.matrix => _describeMatrixFilter(
+        dyn.data as Float64List,
+        dyn.filterQuality as FilterQuality,
+      ),
       _ImageFilterKind.compose =>
         'compose(${describeImageFilter(dyn.innerFilter as ImageFilter)} '
             '→ ${describeImageFilter(dyn.outerFilter as ImageFilter)})',
     };
-  } catch (_) {
-    return 'ImageFilter.${kind.name}';
+  } on Object {
+    return null;
+  }
+}
+
+String _describeBlur({
+  required double sigmaX,
+  required double sigmaY,
+  required TileMode? tileMode,
+  bool bounded = false,
+}) {
+  final parts = <String>[
+    sigmaX.toStringAsFixed(1),
+    sigmaY.toStringAsFixed(1),
+    if (tileMode != null) tileMode.name,
+    if (bounded) 'bounded',
+  ];
+  return 'blur(${parts.join(', ')})';
+}
+
+String _describeMatrixFilter(Float64List data, FilterQuality quality) {
+  final values = data.map((v) => v.toStringAsFixed(1)).join(', ');
+  return quality == FilterQuality.medium
+      ? 'matrix([$values])'
+      : 'matrix([$values], ${quality.name})';
+}
+
+/// Describes a Flutter `ImageFilterConfig` (Flutter 3.40+) without naming
+/// the type, so this package still compiles against Flutter 3.32. Its
+/// subclasses are private; the public fields (`filter`, `sigmaX`, `sigmaY`,
+/// `tileMode`, `bounded`, `outer`, `inner`) are read via `dynamic`, and an
+/// unrecognised shape degrades to the runtime type name.
+String describeImageFilterConfig(Object config) {
+  final dyn = config as dynamic;
+  final direct = _read(() => dyn.filter as ImageFilter?);
+  if (direct != null) return describeImageFilter(direct);
+
+  final sigmaX = _read(() => dyn.sigmaX as double);
+  final sigmaY = _read(() => dyn.sigmaY as double);
+  if (sigmaX != null && sigmaY != null) {
+    return _describeBlur(
+      sigmaX: sigmaX,
+      sigmaY: sigmaY,
+      tileMode: _read<TileMode?>(() => dyn.tileMode as TileMode?),
+      bounded: _read(() => dyn.bounded as bool) ?? false,
+    );
+  }
+
+  final outer = _read(() => dyn.outer as Object);
+  final inner = _read(() => dyn.inner as Object);
+  if (outer != null && inner != null) {
+    return 'compose(${describeImageFilterConfig(inner)} '
+        '→ ${describeImageFilterConfig(outer)})';
+  }
+  return config.runtimeType.toString();
+}
+
+T? _read<T>(T Function() read) {
+  try {
+    return read();
+  } on Object {
+    return null;
   }
 }
 
@@ -159,18 +241,12 @@ enum _ImageFilterKind {
   compose;
 
   static final Map<Type, _ImageFilterKind> _byType = () {
-    final identity4x4 = Float64List.fromList(<double>[
-      1, 0, 0, 0, //
-      0, 1, 0, 0, //
-      0, 0, 1, 0, //
-      0, 0, 0, 1, //
-    ]);
     final blurFilter = ImageFilter.blur();
     return {
       blurFilter.runtimeType: blur,
       ImageFilter.dilate().runtimeType: dilate,
       ImageFilter.erode().runtimeType: erode,
-      ImageFilter.matrix(identity4x4).runtimeType: matrix,
+      ImageFilter.matrix(_identity4x4).runtimeType: matrix,
       ImageFilter.compose(outer: blurFilter, inner: blurFilter).runtimeType:
           compose,
     };
@@ -178,6 +254,12 @@ enum _ImageFilterKind {
 
   static _ImageFilterKind? lookup(Type t) => _byType[t];
 }
+
+final Float64List _identity4x4 = Float64List(16)
+  ..[0] = 1
+  ..[5] = 1
+  ..[10] = 1
+  ..[15] = 1;
 
 /// Best-effort short description of an [ImageProvider]: URL for network
 /// images, asset name for bundled assets, file path for files; falls back
@@ -195,16 +277,13 @@ String describeImageProvider(ImageProvider provider) {
   return provider.runtimeType.toString();
 }
 
-/// [ColorFilter] is a single class discriminated by private fields
-/// (`_type` / `_color` / `_blendMode` / `_matrix` in `dart:ui/painting.dart`).
-/// Resolves through three strategies in order, each returning `null` to
-/// delegate down: official `toString()` (debug-only), `==` against parameter-
-/// less gamma sentinels, then `dynamic` field probing.
+/// Uses Flutter's readable debug representation when available and stable
+/// equality for the two parameterless gamma filters. Other filters fall back
+/// to their public type name in AOT builds, where structured fields are not
+/// exposed.
 String describeColorFilter(ColorFilter f) {
-  assert(_assertReleaseSafeContracts());
   return _describeColorFilterFromToString(f) ??
       _describeColorFilterFromSentinel(f) ??
-      _describeColorFilterFromFields(f) ??
       'ColorFilter';
 }
 
@@ -224,23 +303,6 @@ const _srgbToLinearGamma = ColorFilter.srgbToLinearGamma();
 String? _describeColorFilterFromSentinel(ColorFilter f) {
   if (f == _linearToSrgbGamma) return 'linearToSrgbGamma';
   if (f == _srgbToLinearGamma) return 'srgbToLinearGamma';
-  return null;
-}
-
-String? _describeColorFilterFromFields(ColorFilter f) {
-  try {
-    final dyn = f as dynamic;
-    final color = dyn._color as Color?;
-    final blend = dyn._blendMode as BlendMode?;
-    if (color != null && blend != null) {
-      final hex = color.toARGB32().toRadixString(16).padLeft(8, '0');
-      return 'mode · ${blend.name} · #$hex';
-    }
-    if (dyn._matrix != null) return 'matrix';
-  } catch (_) {
-    // Field renamed upstream — debug assert in [_assertReleaseSafeContracts]
-    // surfaces this; release silently degrades to 'ColorFilter'.
-  }
   return null;
 }
 
@@ -316,15 +378,12 @@ String previewText(InlineSpan span) {
       : '${raw.substring(0, _kPreviewDisplayCap)}…';
 }
 
-/// A paragraph that paints icon glyphs — Private-Use-Area code points
+/// A paragraph that paints icon glyphs - Private-Use-Area code points
 /// rendered with an icon font (`MaterialIcons`, `CupertinoIcons`, custom
 /// packs). Recognised so the inspector can show the actual glyph instead
 /// of tofu under the default text preview.
 class IconGlyphPreview {
-  const IconGlyphPreview({
-    required this.codePoints,
-    required this.fontFamily,
-  });
+  const IconGlyphPreview({required this.codePoints, required this.fontFamily});
 
   final List<int> codePoints;
 
@@ -351,7 +410,7 @@ bool _isIconFontFamily(String? family) {
 }
 
 /// Returns an [IconGlyphPreview] when [span] is composed entirely of icon
-/// glyphs, otherwise `null`. Recognition is intentionally conservative —
+/// glyphs, otherwise `null`. Recognition is intentionally conservative -
 /// a single non-icon character or non-icon font family anywhere in the
 /// tree disqualifies the span, so plain text never gets misread as an
 /// icon.
@@ -408,38 +467,63 @@ bool _assertReleaseSafeContracts() {
   if (_contractsValidated) return true;
   _contractsValidated = true;
 
-  // Source: dart:ui/painting.dart, `class ColorFilter`.
-  const modeFilter = ColorFilter.mode(Color(0xFF010203), BlendMode.srcIn);
-  final dynColor = modeFilter as dynamic;
-  assert(
-    dynColor._color is Color && dynColor._blendMode is BlendMode,
-    'ColorFilter._color/_blendMode renamed in Flutter; '
-    'update _describeColorFilterFromFields in value_descriptors.dart',
-  );
-
   // Source: dart:ui/painting.dart, `_GaussianBlurImageFilter` etc.
-  final blur = ImageFilter.blur(sigmaX: 1, sigmaY: 2);
+  final blur = ImageFilter.blur(
+    sigmaX: 1,
+    sigmaY: 2,
+    tileMode: TileMode.mirror,
+  );
   final dynBlur = blur as dynamic;
   assert(
-    dynBlur.sigmaX == 1.0 && dynBlur.sigmaY == 2.0,
-    'ImageFilter.blur sigmaX/sigmaY renamed in Flutter; '
+    _holds(
+      () =>
+          dynBlur.sigmaX == 1.0 &&
+          dynBlur.sigmaY == 2.0 &&
+          dynBlur.tileMode == TileMode.mirror,
+    ),
+    'ImageFilter.blur sigmaX/sigmaY/tileMode renamed in Flutter; '
     'update the blur branch of describeImageFilter',
+  );
+  final matrix = ImageFilter.matrix(
+    _identity4x4,
+    filterQuality: FilterQuality.high,
+  );
+  final dynMatrix = matrix as dynamic;
+  assert(
+    _holds(
+      () =>
+          dynMatrix.data is Float64List &&
+          dynMatrix.filterQuality == FilterQuality.high,
+    ),
+    'ImageFilter.matrix data/filterQuality renamed in Flutter; '
+    'update the matrix branch of describeImageFilter',
   );
   final dilate = ImageFilter.dilate(radiusX: 3, radiusY: 4);
   final dynDilate = dilate as dynamic;
   assert(
-    dynDilate.radiusX == 3.0 && dynDilate.radiusY == 4.0,
+    _holds(() => dynDilate.radiusX == 3.0 && dynDilate.radiusY == 4.0),
     'ImageFilter.dilate/erode radiusX/radiusY renamed in Flutter; '
     'update the dilate/erode branches of describeImageFilter',
   );
   final compose = ImageFilter.compose(outer: blur, inner: dilate);
   final dynCompose = compose as dynamic;
   assert(
-    dynCompose.innerFilter is ImageFilter &&
-        dynCompose.outerFilter is ImageFilter,
+    _holds(
+      () =>
+          dynCompose.innerFilter is ImageFilter &&
+          dynCompose.outerFilter is ImageFilter,
+    ),
     'ImageFilter.compose innerFilter/outerFilter renamed in Flutter; '
     'update the compose branch of describeImageFilter',
   );
 
   return true;
+}
+
+bool _holds(bool Function() contract) {
+  try {
+    return contract();
+  } on Object {
+    return false;
+  }
 }

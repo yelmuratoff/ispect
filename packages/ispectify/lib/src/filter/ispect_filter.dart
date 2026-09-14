@@ -2,25 +2,41 @@ import 'package:ispectify/ispectify.dart';
 
 /// Composite filter combining log-type-key, runtime type, and search criteria.
 ///
-/// All criteria are combined with logical OR: a log passes if **any** active
-/// criterion matches.
+/// The matching criteria are combined with logical OR: a log passes if **any**
+/// active criterion matches. [excludedLogTypeKeys] is a veto instead - a log
+/// whose key is excluded is rejected regardless of the other criteria.
 class ISpectFilter implements Filter<ISpectLogData> {
   ISpectFilter({
     Iterable<Type> types = const [],
     Iterable<String> logTypeKeys = const [],
+    Iterable<String> excludedLogTypeKeys = const [],
     String? searchQuery,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
   })  : _types = {...types},
         _logTypeKeys = {...logTypeKeys.where((key) => key.isNotEmpty)},
+        _excludedLogTypeKeys = {
+          ...excludedLogTypeKeys.where((key) => key.isNotEmpty),
+        },
         _searchQuery = searchQuery?.trim(),
-        _searchFilter = _toSearchFilter(searchQuery?.trim());
+        _searchFilter = _toSearchFilter(
+          searchQuery?.trim(),
+          resourceLimits,
+        );
 
-  static SearchFilter? _toSearchFilter(String? trimmed) =>
-      (trimmed != null && trimmed.isNotEmpty) ? SearchFilter(trimmed) : null;
+  static SearchFilter? _toSearchFilter(
+    String? trimmed,
+    DiagnosticResourceLimits resourceLimits,
+  ) =>
+      (trimmed != null && trimmed.isNotEmpty)
+          ? SearchFilter(trimmed, resourceLimits: resourceLimits)
+          : null;
 
   final Set<Type> _types;
   final Set<String> _logTypeKeys;
+  final Set<String> _excludedLogTypeKeys;
   final String? _searchQuery;
   final SearchFilter? _searchFilter;
+  final DiagnosticResourceLimits resourceLimits;
 
   /// Active filters materialized as a list (cached).
   late final List<Filter<ISpectLogData>> filters =
@@ -36,14 +52,26 @@ class ISpectFilter implements Filter<ISpectLogData> {
   /// Read-only access to the configured log keys.
   late final Set<String> logTypeKeys = Set.unmodifiable(_logTypeKeys);
 
+  /// Read-only access to the vetoed log keys.
+  late final Set<String> excludedLogTypeKeys =
+      Set.unmodifiable(_excludedLogTypeKeys);
+
   /// The configured search query, if any.
   String? get searchQuery => _searchQuery;
 
   late final bool _isEmpty =
       _types.isEmpty && _logTypeKeys.isEmpty && _searchFilter == null;
 
+  /// Whether an entry with [key] is rejected before any other criterion runs.
+  bool vetoesKey(String? key) =>
+      key != null && _excludedLogTypeKeys.contains(key);
+
   @override
   bool apply(ISpectLogData item) {
+    if (_excludedLogTypeKeys.isNotEmpty &&
+        vetoesKey(captureISpectLogWithoutPayload(item).key)) {
+      return false;
+    }
     if (_isEmpty) return true;
     for (final filter in filters) {
       if (filter.apply(item)) return true;
@@ -56,11 +84,15 @@ class ISpectFilter implements Filter<ISpectLogData> {
   ISpectFilter copyWith({
     List<Type>? types,
     List<String>? logTypeKeys,
+    Iterable<String>? excludedLogTypeKeys,
     String? searchQuery,
+    DiagnosticResourceLimits? resourceLimits,
   }) =>
       ISpectFilter(
         types: types ?? _types,
         logTypeKeys: logTypeKeys ?? _logTypeKeys,
+        excludedLogTypeKeys: excludedLogTypeKeys ?? _excludedLogTypeKeys,
         searchQuery: searchQuery ?? _searchQuery,
+        resourceLimits: resourceLimits ?? this.resourceLimits,
       );
 }

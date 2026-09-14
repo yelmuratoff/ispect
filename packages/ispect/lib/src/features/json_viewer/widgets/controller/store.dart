@@ -3,24 +3,36 @@ import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
 
+import 'package:ispect/src/common/utils/debug_report.dart';
+import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/services/json_cache_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_node_builder.dart';
 import 'package:ispect/src/features/json_viewer/services/json_node_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_search_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_tree_flattener.dart';
+import 'package:ispectify/ispectify.dart';
 
 /// Handles the data and manages the state of a json explorer.
 ///
 /// This class has been refactored to use separate services for better
 /// separation of concerns and improved maintainability.
 class JsonExplorerStore extends ChangeNotifier {
+  JsonExplorerStore({
+    this.processingPolicy = DiagnosticProcessingPolicy.balanced,
+  }) {
+    processingPolicy.validate();
+  }
+
+  final DiagnosticProcessingPolicy processingPolicy;
+
   List<NodeViewModelState> _displayNodes = [];
   UnmodifiableListView<NodeViewModelState> _allNodes = UnmodifiableListView([]);
 
   final List<SearchResult> _searchResults = <SearchResult>[];
   String _searchTerm = '';
   var _focusedSearchResultIndex = 0;
+  int _buildGeneration = 0;
   int _searchGeneration = 0;
   bool _isSearching = false;
   NodeViewModelState? _selectedNode;
@@ -127,19 +139,14 @@ class JsonExplorerStore extends ChangeNotifier {
 
     if (_searchTerm == normalizedTerm) return;
 
+    final generation = _invalidateSearch(clearTerm: false);
     _searchTerm = normalizedTerm;
-    _focusedSearchResultIndex = 0;
-    _searchResults.clear();
 
     if (normalizedTerm.isEmpty) {
-      _isSearching = false;
       notifyListeners();
       return;
     }
 
-    _currentSearchOperation?.cancel();
-    _currentSearchOperation = null;
-    final generation = ++_searchGeneration;
     _isSearching = true;
     notifyListeners();
     unawaited(
@@ -148,10 +155,7 @@ class JsonExplorerStore extends ChangeNotifier {
           _isSearching = false;
           notifyListeners();
         }
-        assert(() {
-          debugPrint('JsonExplorerStore: search failed: $error');
-          return true;
-        }());
+        debugReportFailure('JsonExplorerStore: search failed', error);
       }),
     );
   }
@@ -184,36 +188,42 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Uses the given `jsonObject` to build the [displayNodes] list.
   Future<void> buildNodes(
-    Object? jsonObject, {
+    JsonInputSnapshot snapshot, {
     bool areAllCollapsed = false,
   }) async {
+    if (!mounted) return;
+
+    final generation = ++_buildGeneration;
     _hierarchyCacheService.clear();
 
-    // Cancel any ongoing search
-    _currentSearchOperation?.cancel();
-    _searchResults.clear();
-    _searchTerm = '';
-    _focusedSearchResultIndex = 0;
+    final invalidatedSearchGeneration = _invalidateSearch();
 
     // For large JSON objects, process asynchronously
-    final isLargeJson = (jsonObject is Map && jsonObject.length > 1000) ||
-        (jsonObject is List && jsonObject.length > 1000);
+    final jsonObject = snapshot.value;
+    final threshold = processingPolicy.viewerBuildYieldThreshold;
+    final isLargeJson =
+        (jsonObject is Map && jsonObject.length > threshold) ||
+        (jsonObject is List && jsonObject.length > threshold);
 
     if (isLargeJson) {
       // Give UI thread a chance to update before heavy processing
-      await Future<void>.delayed(const Duration(milliseconds: 5));
-      if (!mounted) return;
+      await Future<void>.delayed(processingPolicy.viewerBuildYieldDelay);
+      if (!mounted || generation != _buildGeneration) return;
     }
 
-    final builtNodes = JsonNodeBuilder.buildViewModelNodes(jsonObject);
+    final builtNodes = JsonNodeBuilder.buildSnapshotViewModelNodes(snapshot);
     final flatList = JsonTreeFlattener.flatten(builtNodes);
+
+    if (!mounted || generation != _buildGeneration) return;
+    if (_searchGeneration != invalidatedSearchGeneration) {
+      _invalidateSearch();
+    }
 
     _allNodes = UnmodifiableListView(flatList);
     _displayNodes = List<NodeViewModelState>.of(flatList);
 
-    // Initialize services
     _nodeService = JsonNodeService();
-    _searchService = JsonSearchService();
+    _searchService = JsonSearchService(processingPolicy: processingPolicy);
 
     if (!mounted) return;
 
@@ -227,9 +237,8 @@ class JsonExplorerStore extends ChangeNotifier {
   @override
   void dispose() {
     _hierarchyCacheService.clear();
-
-    // Cancel any ongoing search
-    _currentSearchOperation?.cancel();
+    _invalidateSearch();
+    _buildGeneration++;
     _mounted = false;
 
     // Dispose all nodes to free up resources
@@ -242,7 +251,13 @@ class JsonExplorerStore extends ChangeNotifier {
 
   Future<void> _doSearch(int generation) async {
     final searchService = _searchService;
-    if (searchService == null) return;
+    if (searchService == null) {
+      if (mounted && generation == _searchGeneration) {
+        _isSearching = false;
+        notifyListeners();
+      }
+      return;
+    }
 
     _searchResults.clear();
 
@@ -260,8 +275,10 @@ class JsonExplorerStore extends ChangeNotifier {
 
     _searchResults.addAll(results.cast<SearchResult>());
     if (_searchResults.isNotEmpty) {
-      _focusedSearchResultIndex =
-          _focusedSearchResultIndex.clamp(0, _searchResults.length - 1);
+      _focusedSearchResultIndex = _focusedSearchResultIndex.clamp(
+        0,
+        _searchResults.length - 1,
+      );
     } else {
       _focusedSearchResultIndex = 0;
     }
@@ -273,6 +290,17 @@ class JsonExplorerStore extends ChangeNotifier {
     _isSearching = false;
     expandSearchResults();
     notifyListeners();
+  }
+
+  int _invalidateSearch({bool clearTerm = true}) {
+    _currentSearchOperation?.cancel();
+    _currentSearchOperation = null;
+    final generation = ++_searchGeneration;
+    _isSearching = false;
+    _searchResults.clear();
+    _focusedSearchResultIndex = 0;
+    if (clearTerm) _searchTerm = '';
+    return generation;
   }
 
   /// Expands all the parent nodes of each search result.

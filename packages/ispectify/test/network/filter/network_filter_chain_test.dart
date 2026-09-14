@@ -56,7 +56,7 @@ void main() {
       expect(chain.apply(1), isFalse);
     });
 
-    test('AND semantics — all must pass', () {
+    test('AND semantics - all must pass', () {
       const chain = NetworkFilterChain<int>([
         _EvenFilter(),
         _ThresholdFilter(5),
@@ -69,7 +69,7 @@ void main() {
       expect(chain.apply(7), isFalse);
     });
 
-    test('short-circuit — stops at first false', () {
+    test('short-circuit - stops at first false', () {
       var secondCalled = false;
 
       final chain = NetworkFilterChain<int>([
@@ -111,7 +111,7 @@ void main() {
       expect(chain.length, 1);
     });
 
-    test('any combinator — OR semantics', () {
+    test('any combinator - OR semantics', () {
       final orFilter = NetworkFilterChain.any<int>([
         const _EvenFilter(),
         const _ThresholdFilter(100),

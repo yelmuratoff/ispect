@@ -4,20 +4,21 @@
 
 - Run `dart pub get` or `flutter pub get` inside the package being changed.
 - Keep local `dependency_overrides` between monorepo packages; they are intentional for development.
-- Keep internal package dependency constraints aligned with `version.config` through `./bash/update_versions.sh`.
-- Use `./bash/check_dependencies.sh` after dependency or version changes.
+- Keep internal package dependency constraints aligned with `version.config` through `dart run tool/bin/ispect_tool.dart sync`.
+- Use `dart run tool/bin/ispect_tool.dart deps` after dependency or version changes.
 
 ## Adding Dependencies
 
-- Prefer existing dependencies: `collection`, `meta`, `ansicolor`, `web`, `dio`, `http`, `http_interceptor`, `ws`, BLoC, and Flutter SDK libraries where already present.
+- Prefer existing dependencies: `collection`, `meta`, `ansicolor`, `web`, `dio`, `http`, `http_interceptor`, BLoC, and Flutter SDK libraries where already present.
 - Add a new dependency only to the package that uses it, not to the root workspace.
-- For publishable packages, avoid `any` constraints; `publish.sh` treats them as a preflight issue.
+- Keep `ispectify_ws` free of WebSocket client dependencies; `ws` belongs to `packages/ispectify_ws/example` only.
+- For publishable packages, avoid `any` constraints; `dart run tool/bin/ispect_tool.dart publish` rejects them in preflight.
 
 ## Versioning
 
 - `version.config` is the version source of truth.
 - Do not manually edit package `version:` lines or internal `^<version>` constraints.
-- Use `./bash/update_versions.sh --dry-run` before broad version sync changes.
+- Use `dart run tool/bin/ispect_tool.dart sync --dry-run` before broad version sync changes.
 
 ## Anti-Patterns
 

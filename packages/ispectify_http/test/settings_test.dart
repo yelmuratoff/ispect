@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
-import 'package:ispectify_http/src/settings.dart';
+import 'package:ispectify_http/ispectify_http.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -9,15 +9,21 @@ void main() {
     test('copyWith should create a new instance with the provided values', () {
       const originalSettings = ISpectHttpInterceptorSettings();
       final updatedSettings = originalSettings.copyWith(
+        logRequests: false,
+        logResponses: false,
         printResponseData: false,
         printRequestHeaders: true,
         printErrorHeaders: false,
+        captureMode: DiagnosticCaptureMode.strict,
         requestPen: AnsiPen()..yellow(),
       );
 
+      expect(updatedSettings.logRequests, isFalse);
+      expect(updatedSettings.logResponses, isFalse);
       expect(updatedSettings.printResponseData, equals(false));
       expect(updatedSettings.printRequestHeaders, equals(true));
       expect(updatedSettings.printErrorHeaders, equals(false));
+      expect(updatedSettings.captureMode, DiagnosticCaptureMode.strict);
       expect(
         updatedSettings.requestPen,
         isNot(same(originalSettings.requestPen)),
@@ -82,6 +88,63 @@ void main() {
 
       expect(settings.errorFilter!(errorResponse), equals(true));
       expect(settings.errorFilter!(clientErrorResponse), equals(false));
+    });
+
+    test('copyWith preserves and replaces adapter resource limits', () {
+      const original = ISpectHttpInterceptorSettings(
+        resourceLimits: DiagnosticResourceLimits.constrained,
+      );
+
+      expect(
+        original.copyWith().resourceLimits,
+        same(DiagnosticResourceLimits.constrained),
+      );
+      expect(
+        original
+            .copyWith(resourceLimits: DiagnosticResourceLimits.extended)
+            .resourceLimits,
+        same(DiagnosticResourceLimits.extended),
+      );
+      expect(
+        original
+            .copyWith(
+              resourceLimits: DiagnosticResourceLimits.extended,
+              inheritResourceLimits: true,
+            )
+            .resourceLimits,
+        isNull,
+      );
+    });
+
+    test('interceptor configure updates the shared capture contract', () {
+      final interceptor = ISpectHttpInterceptor()
+        ..configure(
+          enabled: false,
+          captureMode: DiagnosticCaptureMode.strict,
+          resourceLimits: DiagnosticResourceLimits.constrained,
+          logRequests: false,
+          logResponses: false,
+          printRequestData: false,
+          printRequestHeaders: false,
+        );
+
+      expect(interceptor.settings.enabled, isFalse);
+      expect(
+        interceptor.settings.captureMode,
+        DiagnosticCaptureMode.strict,
+      );
+      expect(
+        interceptor.settings.resourceLimits,
+        same(DiagnosticResourceLimits.constrained),
+      );
+      expect(interceptor.settings.logRequests, isFalse);
+      expect(interceptor.settings.logResponses, isFalse);
+      expect(interceptor.settings.printRequestData, isFalse);
+      expect(interceptor.settings.printRequestHeaders, isFalse);
+
+      interceptor.configure(inheritResourceLimits: true);
+
+      expect(interceptor.settings.resourceLimits, isNull);
     });
   });
 }

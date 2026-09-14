@@ -12,11 +12,10 @@ import 'package:ispect/src/common/extensions/context.dart';
 ///
 /// **Redaction.** Pass `redact: true` for values that may contain sensitive
 /// data (HTTP bodies, headers, full log JSON). The string is then run through
-/// [RedactionService.redactExportString] using [redactKeys] — URL credentials,
-/// `Bearer`/`Basic`/`Token` prefixes, query params and JSON fields whose keys
-/// match any of [redactKeys] are replaced with `[REDACTED]`. When [redact] is `false`
-/// (the default) the value is copied verbatim; use this only for safe values
-/// (paths, IDs, already-redacted curl strings).
+/// the resolved [RedactionService]. An explicit [redactionService] takes
+/// precedence over [redactKeys], which take precedence over the global policy.
+/// When [redact] is `false` (the default) the bounded value is copied verbatim;
+/// use this only for safe values (paths, IDs, already-redacted curl strings).
 ///
 /// ### Example:
 /// ```dart
@@ -37,8 +36,6 @@ import 'package:ispect/src/common/extensions/context.dart';
 /// );
 /// ```
 
-const int _maxClipboardLength = 100000;
-
 void copyClipboard(
   BuildContext? context, {
   required String value,
@@ -46,52 +43,81 @@ void copyClipboard(
   bool showValue = true,
   bool redact = false,
   Set<String>? redactKeys,
+  RedactionService? redactionService,
+  DiagnosticResourceLimits? resourceLimits,
   ISpectGeneratedLocalization? l10n,
   ScaffoldMessengerState? messenger,
 }) {
+  final limits =
+      (resourceLimits ??
+            ISpect.loggerIfInitialized?.options.resourceLimits ??
+            DiagnosticResourceLimits.balanced)
+        ..validate();
+  final prepared = LogExportOutput.boundJsonValue(
+    value,
+    resourceLimits: limits,
+    maxBytes: limits.maxClipboardBytes,
+    replaceOversizedStrings: redact,
+  );
+  final boundedInput = prepared is String
+      ? prepared
+      : LogExportOutput.truncatedMarker;
   final sanitized = redact
-      ? RedactionService.redactExportString(
-          value,
-          redactKeys ?? defaultSensitiveKeys,
+      ? _redactClipboardValue(
+          boundedInput,
+          redactionService: redactionService,
+          redactKeys: redactKeys,
+          resourceLimits: limits,
         )
-      : value;
-
-  final String truncatedValue;
-  if (sanitized.length > _maxClipboardLength) {
-    // Avoid splitting a surrogate pair at the truncation boundary.
-    var end = _maxClipboardLength;
-    if (end > 0 &&
-        sanitized.codeUnitAt(end - 1) >= 0xD800 &&
-        sanitized.codeUnitAt(end - 1) <= 0xDBFF) {
-      end--;
-    }
-    truncatedValue = '${sanitized.substring(0, end)}\n... [truncated]';
-  } else {
-    truncatedValue = sanitized;
-  }
+      : boundedInput;
+  final truncatedValue = LogExportOutput.truncateUtf8(
+    sanitized,
+    maxBytes: limits.maxClipboardBytes,
+    marker: '\n... [truncated]',
+  );
 
   final capturedL10n = l10n ?? context?.ispectL10n;
-  final capturedMessenger = messenger ??
+  final capturedMessenger =
+      messenger ??
       (context != null ? ScaffoldMessenger.maybeOf(context) : null);
 
   unawaited(
-    Clipboard.setData(ClipboardData(text: truncatedValue)).then((_) {
-      ISpectToaster.showCopiedToast(
-        null,
-        value: truncatedValue,
-        title: title,
-        showValue: showValue,
-        messenger: capturedMessenger,
-        l10n: capturedL10n,
-      );
-    }).catchError((Object _) {
-      if (capturedMessenger != null) {
-        ISpectToaster.showErrorToast(
-          null,
-          title: 'Failed to copy to clipboard',
-          messenger: capturedMessenger,
-        );
-      }
-    }),
+    Clipboard.setData(ClipboardData(text: truncatedValue))
+        .then((_) {
+          ISpectToaster.showCopiedToast(
+            null,
+            value: truncatedValue,
+            title: title,
+            showValue: showValue,
+            messenger: capturedMessenger,
+            l10n: capturedL10n,
+          );
+        })
+        .catchError((Object _) {
+          if (capturedMessenger != null) {
+            ISpectToaster.showErrorToast(
+              null,
+              title: 'Failed to copy to clipboard',
+              messenger: capturedMessenger,
+            );
+          }
+        }),
   );
+}
+
+String _redactClipboardValue(
+  String value, {
+  required RedactionService? redactionService,
+  required Set<String>? redactKeys,
+  required DiagnosticResourceLimits resourceLimits,
+}) {
+  try {
+    final redacted = ISpectRedaction.resolveService(
+      service: redactionService,
+      sensitiveKeys: redactKeys,
+    ).redactForExport(value, resourceLimits: resourceLimits);
+    return redacted is String ? redacted : defaultPlaceholder;
+  } on Object {
+    return defaultPlaceholder;
+  }
 }

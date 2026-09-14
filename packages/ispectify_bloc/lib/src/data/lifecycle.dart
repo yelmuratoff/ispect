@@ -1,16 +1,33 @@
 import 'package:bloc/bloc.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_bloc/src/data/bloc_json_keys.dart';
+import 'package:ispectify_bloc/src/safe_type_label.dart';
 
 /// Snapshot of a BLoC / Cubit lifecycle invocation (`onCreate`, `onClose`).
 ///
 /// Both events share the same meta shape, so a single data class covers them.
 class BlocLifecycleData {
-  BlocLifecycleData({required this.bloc});
+  BlocLifecycleData({
+    required this.bloc,
+    this.captureMode = DiagnosticCaptureMode.balanced,
+    this.resourceLimits = DiagnosticResourceLimits.balanced,
+  });
 
   final BlocBase<dynamic> bloc;
 
-  String get blocType => bloc.runtimeType.toString();
+  /// Capture policy applied to type labels.
+  /// Mirrors `ISpectBlocSettings.captureMode`.
+  final DiagnosticCaptureMode captureMode;
+
+  /// Budgets applied to type labels.
+  /// Mirrors `ISpectBlocSettings.resourceLimits`.
+  final DiagnosticResourceLimits resourceLimits;
+
+  String get blocType => safeBlocTypeLabel(
+        bloc,
+        captureMode: captureMode,
+        resourceLimits: resourceLimits,
+      );
 
   /// Returns a raw, JSON-compatible map of the lifecycle event.
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -18,6 +35,10 @@ class BlocLifecycleData {
       };
 
   /// Applies in-place redaction to a map produced by [toJson].
+  @Deprecated(
+    'Observers prepare payloads through StateTracePreparer. '
+    'Will be removed in 8.0.0.',
+  )
   static void redact(Map<String, dynamic> map, RedactionService redactor) {
     map.updateAll(
       (key, value) => redactor.redact(value, keyName: key),

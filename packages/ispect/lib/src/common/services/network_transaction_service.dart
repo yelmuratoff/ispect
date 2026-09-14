@@ -1,10 +1,9 @@
+import 'dart:collection';
+
 import 'package:ispectify/ispectify.dart';
 
 class GroupedLogEntries {
-  const GroupedLogEntries({
-    required this.entries,
-    required this.transactions,
-  });
+  const GroupedLogEntries({required this.entries, required this.transactions});
 
   final List<Object> entries;
   final Map<String, NetworkTransaction> transactions;
@@ -77,53 +76,62 @@ const httpTransactionMatcher = TransactionMatcher(
 );
 
 class NetworkTransactionService {
-  NetworkTransactionService({
-    this.matcher = httpTransactionMatcher,
-  });
+  NetworkTransactionService({this.matcher = httpTransactionMatcher});
 
   final TransactionMatcher matcher;
 
-  Map<String, NetworkTransaction>? _cachedTransactions;
-  List<Object>? _cachedEntries;
+  GroupedLogEntries? _cached;
+  List<ISpectLogData>? _cachedLogs;
+  List<ISpectLogData>? _cachedSource;
   int _generation = -1;
 
+  /// Folds [logs] into rows where correlated HTTP entries collapse into one
+  /// [NetworkTransaction], keeping the order of [logs].
+  ///
+  /// Transactions are assembled from [source] when it is given, so a row
+  /// stays whole when [logs] is a filtered subset of it: a response that
+  /// passed the filter still sits next to its request.
   GroupedLogEntries getGroupedEntries(
     List<ISpectLogData> logs,
-    int generation,
-  ) {
-    if (_generation == generation &&
-        _cachedTransactions != null &&
-        _cachedEntries != null) {
-      return GroupedLogEntries(
-        entries: _cachedEntries!,
-        transactions: _cachedTransactions!,
-      );
+    int generation, {
+    List<ISpectLogData>? source,
+  }) {
+    final pool = source ?? logs;
+    final cached = _cached;
+    if (cached != null &&
+        _generation == generation &&
+        identical(logs, _cachedLogs) &&
+        identical(pool, _cachedSource)) {
+      return cached;
     }
 
-    final result = _buildGroupedEntries(logs);
-    _cachedTransactions = result.transactions;
-    _cachedEntries = result.entries;
+    final result = _buildGroupedEntries(logs, pool);
+    _cached = result;
+    _cachedLogs = logs;
+    _cachedSource = pool;
     _generation = generation;
     return result;
   }
 
   void invalidate() {
-    _cachedTransactions = null;
-    _cachedEntries = null;
+    _cached = null;
+    _cachedLogs = null;
+    _cachedSource = null;
     _generation = -1;
   }
 
-  GroupedLogEntries _buildGroupedEntries(List<ISpectLogData> logs) {
+  GroupedLogEntries _buildGroupedEntries(
+    List<ISpectLogData> logs,
+    List<ISpectLogData> source,
+  ) {
     final transactions = <String, NetworkTransaction>{};
-    final groupedLogIndices = <int>{};
-    final corrIdByIndex = <int, String>{};
+    final correlationIds = HashMap<ISpectLogData, String>.identity();
 
-    for (var i = 0; i < logs.length; i++) {
-      final log = logs[i];
+    for (final log in source) {
       final corrId = matcher.extractCorrelationId(log);
       if (corrId == null) continue;
 
-      corrIdByIndex[i] = corrId;
+      correlationIds[log] = corrId;
 
       switch (matcher.roleOf(log)) {
         case LogRole.request:
@@ -156,30 +164,21 @@ class NetworkTransactionService {
             );
           }
       }
-      groupedLogIndices.add(i);
     }
 
-    final insertedTransactions = <String>{};
+    final inserted = <String>{};
     final entries = <Object>[];
 
-    for (var i = 0; i < logs.length; i++) {
-      if (groupedLogIndices.contains(i)) {
-        final corrId = corrIdByIndex[i];
-        if (corrId != null && !insertedTransactions.contains(corrId)) {
-          final tx = transactions[corrId];
-          if (tx != null) {
-            entries.add(tx);
-            insertedTransactions.add(corrId);
-          }
-        }
-      } else {
-        entries.add(logs[i]);
+    for (final log in logs) {
+      final corrId = correlationIds[log];
+      final tx = corrId == null ? null : transactions[corrId];
+      if (tx == null) {
+        entries.add(log);
+      } else if (inserted.add(tx.requestId)) {
+        entries.add(tx);
       }
     }
 
-    return GroupedLogEntries(
-      entries: entries,
-      transactions: transactions,
-    );
+    return GroupedLogEntries(entries: entries, transactions: transactions);
   }
 }

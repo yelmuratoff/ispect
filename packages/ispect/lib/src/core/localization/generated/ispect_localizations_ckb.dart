@@ -279,6 +279,9 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
   String get printLogDesc => 'پەیام چاپ کرا لە کۆنسۆڵ';
 
   @override
+  String get previewTruncated => 'پێشبینینەکە کورت کراوەتەوە';
+
+  @override
   String get projectDomain => 'دۆمەینی پڕۆژە';
 
   @override
@@ -574,6 +577,21 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
 
   @override
   String get backToMainScreen => 'گەڕانەوە بۆ شاشەی سەرەکی';
+
+  @override
+  String get logs => 'تۆمارەکان';
+
+  @override
+  String get performance => 'کارایی';
+
+  @override
+  String get inspector => 'پشکنەر';
+
+  @override
+  String get colorPicker => 'ڕەنگ';
+
+  @override
+  String get composer => 'دروستکەر';
 
   @override
   String get navigationFlow => 'ڕەوتی گەشتکردن';
@@ -929,7 +947,7 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
 
   @override
   String get tipSearchLogs =>
-      'گەڕان لە تۆمارەکان بە دەق — لە ناوەڕۆکی تەواوی JSON ـیش دەگەڕێت';
+      'گەڕان لە تۆمارەکان بە دەق - لە ناوەڕۆکی تەواوی JSON ـیش دەگەڕێت';
 
   @override
   String get tipLongPress =>
@@ -952,7 +970,7 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
 
   @override
   String get tipShareSession =>
-      'فایلی تۆمار هاوبەش بکە بۆ ڕاپۆرتی هەڵە — داتا بە شێوەی خۆکار دەشاردرێتەوە';
+      'فایلی تۆمار هاوبەش بکە بۆ ڕاپۆرتی هەڵە - داتا بە شێوەی خۆکار دەشاردرێتەوە';
 
   @override
   String get tipReverseLogs =>

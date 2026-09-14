@@ -2,7 +2,8 @@
 
 ## Dart Style
 
-- Keep analyzer strictness clean: `strict-casts`, `strict-inference`, `strict-raw-types`, `avoid_dynamic_calls`, and `always_declare_return_types` are enabled.
+- Keep analyzer strictness clean: `ispect` and the seven `ispectify*` packages enable `strict-casts`, `strict-inference`, `strict-raw-types`, `avoid_dynamic_calls`, and `always_declare_return_types` in their own `analysis_options.yaml`.
+- `ispect_layout` only includes `package:flutter_lints/flutter.yaml`; keep it clean under those lints without assuming the stricter set there.
 - Prefer explicit return types on functions and getters.
 - Prefer `final` locals and immutable constructor parameters unless mutation is part of the API.
 - Use `const` constructors and literals where the existing widget/model code supports them.

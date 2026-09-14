@@ -1,6 +1,6 @@
 /// Ready-to-copy interceptor for **ObjectBox**.
 ///
-/// Implements [Box] — drop-in replacement. Although [Box] is a concrete class,
+/// Implements [Box] - drop-in replacement. Although [Box] is a concrete class,
 /// it has no Dart 3 modifiers (`final`/`sealed`/`base`), so `implements` works.
 ///
 /// ## Setup
@@ -23,7 +23,7 @@ import 'package:objectbox/objectbox.dart';
 
 /// Wraps an ObjectBox [Box] with `ispectify_db` logging.
 ///
-/// Implements the full [Box] interface — can be used anywhere `Box<T>` is
+/// Implements the full [Box] interface - can be used anywhere `Box<T>` is
 /// expected. CRUD operations are traced; query building ([query]) and
 /// deprecated methods delegate without logging.
 ///
@@ -185,8 +185,10 @@ final class ISpectObjectBox<T> implements Box<T> {
       );
 
   @override
-  Future<List<int>> putManyAsync(List<T> objects,
-          {PutMode mode = PutMode.put}) =>
+  Future<List<int>> putManyAsync(
+    List<T> objects, {
+    PutMode mode = PutMode.put,
+  }) =>
       _logger.dbTrace(
         source: _source,
         operation: 'putManyAsync',
@@ -198,8 +200,10 @@ final class ISpectObjectBox<T> implements Box<T> {
       );
 
   @override
-  Future<List<T>> putAndGetManyAsync(List<T> objects,
-          {PutMode mode = PutMode.put}) =>
+  Future<List<T>> putAndGetManyAsync(
+    List<T> objects, {
+    PutMode mode = PutMode.put,
+  }) =>
       _logger.dbTrace(
         source: _source,
         operation: 'putAndGetManyAsync',

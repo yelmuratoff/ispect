@@ -1,8 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
 
 class _RecordingSender implements NetworkRequestSender {
+  _RecordingSender({this.result = const NetworkReplayResult(statusCode: 200)});
+
+  final NetworkReplayResult result;
   NetworkReplayRequest? lastRequest;
 
   @override
@@ -14,18 +18,32 @@ class _RecordingSender implements NetworkRequestSender {
   @override
   Future<NetworkReplayResult> send(NetworkReplayRequest request) async {
     lastRequest = request;
-    return const NetworkReplayResult(statusCode: 200);
+    return result;
+  }
+}
+
+final class _ThrowingSender implements NetworkRequestSender {
+  @override
+  String get id => 'throwing';
+
+  @override
+  String get label => 'Throwing';
+
+  @override
+  Future<NetworkReplayResult> send(NetworkReplayRequest request) {
+    throw StateError('sender failed');
   }
 }
 
 HttpComposerController _controller({
   List<NetworkRequestSender>? senders,
   NetworkReplayRequest? seed,
-}) =>
-    HttpComposerController(
-      senders: senders ?? [_RecordingSender()],
-      seed: seed,
-    );
+  DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+}) => HttpComposerController(
+  senders: senders ?? [_RecordingSender()],
+  seed: seed,
+  resourceLimits: resourceLimits,
+);
 
 void main() {
   group('HttpComposerController.buildReplayRequest', () {
@@ -78,11 +96,38 @@ void main() {
       expect(controller.validationError, ComposerValidation.urlInvalid);
     });
 
+    for (final url in const [
+      'file:///etc/passwd',
+      'content://com.example/secrets',
+      'javascript:alert(1)',
+    ]) {
+      test('rejects the non-http url $url', () {
+        final controller = _controller()..setUrl(url);
+
+        expect(controller.buildReplayRequest(), isNull);
+        expect(controller.validationError, ComposerValidation.urlInvalid);
+      });
+    }
+
     test('reports invalid JSON instead of building a request', () {
       final controller = _controller()
         ..setUrl('https://api.test')
         ..setBodyKind(ComposerBodyKind.json)
         ..setBodyText('{not json}');
+
+      expect(controller.buildReplayRequest(), isNull);
+      expect(controller.validationError, ComposerValidation.jsonInvalid);
+    });
+
+    test('rejects JSON beyond the safe nesting limit before parsing', () {
+      const depth = JsonInputPreflight.maxNestingDepth + 1;
+      final controller = _controller()
+        ..setUrl('https://api.test')
+        ..setBodyKind(ComposerBodyKind.json)
+        ..setBodyText(
+          '${List.filled(depth, '[').join()}0'
+          '${List.filled(depth, ']').join()}',
+        );
 
       expect(controller.buildReplayRequest(), isNull);
       expect(controller.validationError, ComposerValidation.jsonInvalid);
@@ -118,15 +163,87 @@ void main() {
       expect(controller.isSending, isFalse);
     });
 
-    test('does nothing and flags an error when no client is registered',
-        () async {
-      final controller = _controller(senders: [])..setUrl('https://api.test');
+    test(
+      'does nothing and flags an error when no client is registered',
+      () async {
+        final controller = _controller(senders: [])..setUrl('https://api.test');
+
+        await controller.send();
+
+        expect(controller.result, isNull);
+        expect(controller.validationError, ComposerValidation.noClient);
+      },
+    );
+
+    test('retains a detached bounded snapshot of the sender result', () async {
+      final headers = <String, String>{'x-request-id': 'req-1'};
+      final body = <String, Object?>{
+        'message': 'safe',
+        'items': <Object?>[1, 2],
+      };
+      final sender = _RecordingSender(
+        result: NetworkReplayResult(
+          statusCode: 200,
+          headers: headers,
+          body: body,
+        ),
+      );
+      final controller = _controller(senders: [sender])
+        ..setUrl('https://api.test/ping');
 
       await controller.send();
+      headers['x-request-id'] = 'mutated';
+      body['message'] = 'mutated';
+      (body['items']! as List<Object?>).add(3);
 
-      expect(controller.result, isNull);
-      expect(controller.validationError, ComposerValidation.noClient);
+      final result = controller.result!;
+      expect(result.headers, <String, String>{'x-request-id': 'req-1'});
+      expect(result.body, <String, Object?>{
+        'message': 'safe',
+        'items': <Object?>[1, 2],
+      });
+      expect(result.headers, isNot(same(headers)));
+      expect(result.body, isNot(same(body)));
     });
+
+    test(
+      'applies the configured resource limits to response snapshots',
+      () async {
+        final body = List<String>.filled(10000, 'safe-value').join('|');
+        final sender = _RecordingSender(
+          result: NetworkReplayResult(body: body),
+        );
+        final controller = _controller(
+          senders: [sender],
+          resourceLimits: DiagnosticResourceLimits.constrained,
+        )..setUrl('https://api.test/ping');
+
+        await controller.send();
+
+        final resultBody = controller.result!.body! as String;
+        expect(
+          LogExportOutput.utf8Length(resultBody),
+          lessThanOrEqualTo(
+            DiagnosticResourceLimits.constrained.maxCapturedValueBytes,
+          ),
+        );
+        expect(resultBody, isNot(body));
+      },
+    );
+
+    test(
+      'resets sending state and captures an unexpected sender failure',
+      () async {
+        final controller = _controller(senders: [_ThrowingSender()])
+          ..setUrl('https://api.test/ping');
+
+        await controller.send();
+
+        expect(controller.isSending, isFalse);
+        expect(controller.result, isNotNull);
+        expect(controller.result!.isError, isTrue);
+      },
+    );
   });
 
   group('HttpComposerController seed', () {
@@ -147,26 +264,26 @@ void main() {
       expect(controller.bodyText, contains('"a": 1'));
     });
 
-    test('splits seeded query parameters into editable rows and a clean url',
-        () {
-      final controller = _controller(
-        seed: NetworkReplayRequest(
-          method: 'GET',
-          uri: Uri.parse('https://api.test/search?q=phone&page=2'),
-        ),
-      );
+    test(
+      'splits seeded query parameters into editable rows and a clean url',
+      () {
+        final controller = _controller(
+          seed: NetworkReplayRequest(
+            method: 'GET',
+            uri: Uri.parse('https://api.test/search?q=phone&page=2'),
+          ),
+        );
 
-      expect(controller.url, 'https://api.test/search');
-      expect(
-        {
-          for (final row in controller.queryParams) row.key: row.value,
-        },
-        {'q': 'phone', 'page': '2'},
-      );
+        expect(controller.url, 'https://api.test/search');
+        expect(
+          {for (final row in controller.queryParams) row.key: row.value},
+          {'q': 'phone', 'page': '2'},
+        );
 
-      final request = controller.buildReplayRequest();
-      expect(request!.uri.queryParameters, {'q': 'phone', 'page': '2'});
-    });
+        final request = controller.buildReplayRequest();
+        expect(request!.uri.queryParameters, {'q': 'phone', 'page': '2'});
+      },
+    );
   });
 
   group('HttpComposerController.seedFromLog', () {
@@ -214,6 +331,28 @@ void main() {
 
       expect(seed?.method, 'GET');
       expect(seed?.uri.toString(), 'https://api.test/ping');
+    });
+
+    test('drops a malformed form body without throwing', () {
+      final log = ISpectLogData(
+        'http',
+        key: ISpectLogType.httpRequest.key,
+        additionalData: const {
+          TraceKeys.meta: {
+            'request-data': {
+              NetworkJsonKeys.method: 'POST',
+              NetworkJsonKeys.url: 'https://api.test/form',
+              NetworkJsonKeys.contentType: 'application/x-www-form-urlencoded',
+              NetworkJsonKeys.body: 'safe=value&secret=%ZZ',
+            },
+          },
+        },
+      );
+
+      final seed = HttpComposerController.seedFromLog(log);
+
+      expect(seed, isNotNull);
+      expect(seed!.body, isNull);
     });
 
     test('returns null when the log carries no request data', () {

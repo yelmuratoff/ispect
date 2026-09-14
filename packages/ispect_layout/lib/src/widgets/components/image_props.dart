@@ -17,7 +17,7 @@ const _kImageAncestorWalkLimit = 16;
 /// Recovers the [ImageProvider] that produced a [RenderImage]. Release-safe.
 ///
 /// A [RenderImage]'s owning widget is the [RawImage] leaf, which holds the
-/// decoded `ui.Image` but not the [ImageProvider] — that lives on the [Image]
+/// decoded `ui.Image` but not the [ImageProvider] - that lives on the [Image]
 /// widget that built the [RawImage]. So the owning element is located via
 /// [elementForRenderObject], then it and a bounded number of its ancestors are
 /// checked for the nearest [Image].
@@ -43,16 +43,23 @@ ImageProvider? resolveImageProvider(RenderImage target) {
 
 /// Human-readable source of a [RenderImage]: the URL, asset name, or file path.
 ///
-/// Prefers [RenderImage.debugImageLabel] — the [Image] widget forwards the
+/// Prefers [RenderImage.debugImageLabel] - the [Image] widget forwards the
 /// provider's label here unconditionally, so it is the cheapest path when the
 /// image has decoded. Falls back to resolving the provider from the element
 /// tree. Returns `null` when neither is available (e.g. an undecoded image).
+///
+/// [MemoryImage] builds its label with `describeIdentity`, which collapses to
+/// `<optimized out>` in profile and release; the provider is preferred there.
 String? imageSourceLabel(RenderImage target) {
   final label = target.debugImageLabel;
-  if (label != null && label.isNotEmpty) return label;
+  final hasLabel = label != null && label.isNotEmpty;
+  if (hasLabel && !label.contains(_kOptimizedOutMarker)) return label;
   final provider = resolveImageProvider(target);
-  return provider == null ? null : describeImageProvider(provider);
+  if (provider != null) return describeImageProvider(provider);
+  return hasLabel ? label : null;
 }
+
+const _kOptimizedOutMarker = '<optimized out>';
 
 String _formatBytes(int bytes) {
   if (bytes < 1024) return '$bytes B';
@@ -70,7 +77,7 @@ String _rectLabel(Rect r, int decimalPlaces) =>
     'L${_fmt(r.left, decimalPlaces)} T${_fmt(r.top, decimalPlaces)} '
     'R${_fmt(r.right, decimalPlaces)} B${_fmt(r.bottom, decimalPlaces)}';
 
-/// Inspector props for a [RenderImage] — `Image.network` / `.asset` /
+/// Inspector props for a [RenderImage] - `Image.network` / `.asset` /
 /// `.memory` / `.file` and any other raster image. Defaults are suppressed so
 /// only intentional overrides surface.
 List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
@@ -78,11 +85,7 @@ List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
   final rawImage = target.image;
   return [
     if (source != null)
-      (
-        icon: Icons.image,
-        subtitle: 'source',
-        child: EllipsizedText(source),
-      ),
+      (icon: Icons.image, subtitle: 'source', child: EllipsizedText(source)),
     if (rawImage != null)
       (
         icon: Icons.photo_size_select_large,
@@ -90,15 +93,13 @@ List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
         child: Text(_rawPixelLabel(rawImage.width, rawImage.height)),
       ),
     if (target.fit != null)
-      (
-        icon: Icons.fit_screen,
-        subtitle: 'fit',
-        child: Text(target.fit!.name),
-      ),
+      (icon: Icons.fit_screen, subtitle: 'fit', child: Text(target.fit!.name)),
     (
       icon: Icons.crop_free,
       subtitle: 'alignment',
-      child: EllipsizedText(describeAlignment(target.alignment)),
+      child: EllipsizedText(
+        describeAlignment(target.alignment, decimalPlaces: decimalPlaces),
+      ),
     ),
     if (target.width != null)
       (
@@ -126,11 +127,7 @@ List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
         child: Text(target.filterQuality.name),
       ),
     if (target.repeat != ImageRepeat.noRepeat)
-      (
-        icon: Icons.repeat,
-        subtitle: 'repeat',
-        child: Text(target.repeat.name),
-      ),
+      (icon: Icons.repeat, subtitle: 'repeat', child: Text(target.repeat.name)),
     if (target.centerSlice != null)
       (
         icon: Icons.crop_din,
@@ -162,10 +159,6 @@ List<PropSpec> imageProps(RenderImage target, {int decimalPlaces = 1}) {
         child: const Text('on'),
       ),
     if (target.isAntiAlias)
-      (
-        icon: Icons.deblur,
-        subtitle: 'anti-alias',
-        child: const Text('on'),
-      ),
+      (icon: Icons.deblur, subtitle: 'anti-alias', child: const Text('on')),
   ];
 }

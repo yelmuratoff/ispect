@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/logger_settings.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/error_boundary.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
@@ -23,7 +24,7 @@ import 'package:ispect_layout/ispect_layout.dart' as pkg_inspector;
 ///
 /// ## Safe Usage
 ///
-/// Prefer the [ISpectBuilder.wrap] factory — it short-circuits before
+/// Prefer the [ISpectBuilder.wrap] factory - it short-circuits before
 /// constructing the widget when `kISpectEnabled` is `false`, which lets the
 /// Dart compiler tree-shake the ISpect widget tree out of release builds.
 /// The public constructor is kept for backwards compatibility but defers
@@ -54,7 +55,7 @@ class ISpectBuilder extends StatefulWidget {
     'Use ISpectBuilder.wrap. The wrap factory short-circuits before '
     'constructing the widget when kISpectEnabled is false, preserving '
     'tree-shaking in release builds. The constructor will be made private '
-    'in 7.0.0.',
+    'in 8.0.0.',
   )
   const ISpectBuilder({
     required this.child,
@@ -116,21 +117,29 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   late final DraggablePanelController _panelController;
 
   /// Navigator that hosts ISpect's own screens, decoupled from the host router.
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  late final GlobalKey<NavigatorState> _navigatorKey;
 
   /// Drives pointer passthrough: `false` keeps the navigator transparent and
   /// non-interactive so the app below stays usable while no ISpect route is open.
-  final ValueNotifier<bool> _hasOverlayRoute = ValueNotifier<bool>(false);
+  late final ValueNotifier<bool> _hasOverlayRoute;
+  bool _isInitialized = false;
   int _overlayDepth = 0;
-
-  ErrorWidgetBuilder? _originalErrorWidgetBuilder;
 
   @override
   void initState() {
     super.initState();
+    if (!kISpectEnabled) return;
+
     model = ISpectScopeModel();
     _logPageController = ISpectLogPageController();
-    _panelController = widget.controller ?? DraggablePanelController();
+    _panelController =
+        widget.controller ??
+        DraggablePanelController(
+          initialPlacement: const PanelPlacement.stashed(PanelEdge.end),
+        );
+    _navigatorKey = GlobalKey<NavigatorState>();
+    _hasOverlayRoute = ValueNotifier<bool>(false);
+    _isInitialized = true;
 
     model
       ..isISpectEnabled = widget.isISpectEnabled
@@ -151,43 +160,19 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     for (final plugin in widget.options?.plugins ?? <InspectorPlugin>[]) {
       plugin.onInit();
     }
-
-    // Override ErrorWidget.builder to show a styled fallback for ISpect routes
-    _originalErrorWidgetBuilder = ErrorWidget.builder;
-    ErrorWidget.builder = _buildErrorWidget;
   }
 
   void _applyInitialSettings() {
     final initialSettings = widget.options?.initialSettings;
-    if (initialSettings != null) {
-      final enabledTypes = initialSettings.disabledLogTypes.isEmpty
-          ? <String>[]
-          : ISpectLogType.builtIn
-              .map((e) => e.key)
-              .where((key) => !initialSettings.disabledLogTypes.contains(key))
-              .toList();
-
-      ISpect.logger.configure(
-        options: ISpect.logger.options.copyWith(
-          enabled: initialSettings.enabled,
-          useConsoleLogs: initialSettings.useConsoleLogs,
-          useHistory: initialSettings.useHistory,
-          forwardErrorToConsole: initialSettings.forwardErrorToConsole,
-          maxHistoryItems: initialSettings.maxHistoryItems,
-          logTruncateLength: initialSettings.logTruncateLength,
-        ),
-        filter: enabledTypes.isNotEmpty
-            ? ISpectFilter(logTypeKeys: enabledTypes)
-            : null,
-      );
-    }
+    if (initialSettings == null) return;
+    applySettingsToLogger(ISpect.logger, initialSettings);
   }
 
   @override
   void dispose() {
-    // Restore original ErrorWidget.builder
-    if (_originalErrorWidgetBuilder != null) {
-      ErrorWidget.builder = _originalErrorWidgetBuilder!;
+    if (!_isInitialized) {
+      super.dispose();
+      return;
     }
 
     // Dispose plugins
@@ -203,9 +188,6 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     model.dispose();
     super.dispose();
   }
-
-  Widget _buildErrorWidget(FlutterErrorDetails details) =>
-      _ISpectRenderErrorFallback(details: details);
 
   @override
   Widget build(BuildContext context) {
@@ -242,10 +224,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
           child: currentChild,
         );
 
-        return ISpectScopeController(
-          model: model,
-          child: currentChild,
-        );
+        return ISpectScopeController(model: model, child: currentChild);
       },
     );
   }
@@ -270,70 +249,88 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         final data = ISpectPanelData(
           controller: _panelController,
           theme: theme.panelTheme ?? _buildDefaultPanelTheme(context),
+          actionTheme:
+              theme.panelActionTheme ?? _buildDefaultActionTheme(context),
           buttons: options.panelButtons,
           child: child,
-          items: [
+          actions: [
             if (settings.isLogPageEnabled)
-              DraggablePanelItem(
+              PanelAction(
                 icon: _logPageController.inLoggerPage
                     ? Icons.undo_rounded
                     : Icons.reorder_rounded,
-                enableBadge: _logPageController.inLoggerPage,
-                onTap: (_) => _launchInfospect(context, options),
-                description: _logPageController.inLoggerPage
+                badge: _logPageController.inLoggerPage
+                    ? const PanelBadge.dot()
+                    : null,
+                onPressed: () => _launchInfospect(context, options),
+                label: _logPageController.inLoggerPage
+                    ? context.ispectL10n.back
+                    : context.ispectL10n.logs,
+                tooltip: _logPageController.inLoggerPage
                     ? context.ispectL10n.backToMainScreen
                     : context.ispectL10n.openLogViewer,
               ),
             if (settings.isPerformanceEnabled)
-              DraggablePanelItem(
+              PanelAction(
                 icon: Icons.monitor_heart_outlined,
-                enableBadge: iSpect.isPerformanceTrackingEnabled,
-                onTap: (_) => iSpect.togglePerformanceTracking(),
-                description: context.ispectL10n.togglePerformanceTracking,
+                badge: iSpect.isPerformanceTrackingEnabled
+                    ? const PanelBadge.dot()
+                    : null,
+                onPressed: iSpect.togglePerformanceTracking,
+                label: context.ispectL10n.performance,
+                tooltip: context.ispectL10n.togglePerformanceTracking,
               ),
             if (settings.isInspectorEnabled)
-              DraggablePanelItem(
+              PanelAction(
                 icon: Icons.format_shapes_rounded,
-                enableBadge: controller.modeNotifier.value ==
-                    pkg_inspector.InspectorMode.inspector,
-                onTap: (_) => controller.setMode(
+                badge:
+                    controller.modeNotifier.value ==
+                        pkg_inspector.InspectorMode.inspector
+                    ? const PanelBadge.dot()
+                    : null,
+                onPressed: () => controller.setMode(
                   controller.modeNotifier.value ==
                           pkg_inspector.InspectorMode.inspector
                       ? pkg_inspector.InspectorMode.none
                       : pkg_inspector.InspectorMode.inspector,
                 ),
-                description: context.ispectL10n.inspectWidgets,
+                label: context.ispectL10n.inspector,
+                tooltip: context.ispectL10n.inspectWidgets,
               ),
             if (settings.isColorPickerEnabled)
-              DraggablePanelItem(
+              PanelAction(
                 icon: Icons.colorize_rounded,
-                enableBadge: controller.modeNotifier.value ==
-                    pkg_inspector.InspectorMode.colorPicker,
-                onTap: (ctx) => controller.setMode(
+                badge:
+                    controller.modeNotifier.value ==
+                        pkg_inspector.InspectorMode.colorPicker
+                    ? const PanelBadge.dot()
+                    : null,
+                onPressed: () => controller.setMode(
                   controller.modeNotifier.value ==
                           pkg_inspector.InspectorMode.colorPicker
                       ? pkg_inspector.InspectorMode.none
                       : pkg_inspector.InspectorMode.colorPicker,
-                  context: ctx,
+                  context: context,
                 ),
-                description: context.ispectL10n.zoomPickColor,
+                label: context.ispectL10n.colorPicker,
+                tooltip: context.ispectL10n.zoomPickColor,
               ),
             if (ISpect.senders.isNotEmpty)
-              DraggablePanelItem(
+              PanelAction(
                 icon: Icons.api_rounded,
-                enableBadge: false,
-                onTap: (ctx) => _launchComposer(ctx, options),
-                description: context.ispectL10n.composerTitle,
+                onPressed: () => _launchComposer(context, options),
+                label: context.ispectL10n.composer,
+                tooltip: context.ispectL10n.composerTitle,
               ),
             ...options.panelItems,
             // Plugin-generated panel items
             for (final plugin in options.plugins)
-              DraggablePanelItem(
+              PanelAction(
                 icon: plugin.icon,
-                enableBadge: plugin.enableBadge,
-                description: plugin.description ?? plugin.title,
-                onTap: (context) =>
-                    _launchPluginScreen(context, plugin, options),
+                badge: plugin.enableBadge ? const PanelBadge.dot() : null,
+                label: plugin.title,
+                tooltip: plugin.description ?? plugin.title,
+                onPressed: () => _launchPluginScreen(context, plugin, options),
               ),
           ],
         );
@@ -341,54 +338,123 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         final panelBuilder = options.panelBuilder;
         if (panelBuilder != null) return panelBuilder(context, data);
 
-        return DraggablePanel(
+        return DraggableActionPanel(
           theme: data.theme,
+          actionTheme: data.actionTheme,
           controller: data.controller,
-          items: data.items,
+          actions: data.actions,
           buttons: data.buttons,
+          title: iSpect.theme.pageTitle,
+          onClose: data.controller.stash,
+          behavior: const PanelBehavior(collapsible: false),
           child: data.child,
         );
       },
     );
   }
 
-  DraggablePanelTheme _buildDefaultPanelTheme(BuildContext context) {
+  DraggablePanelThemeData _buildDefaultPanelTheme(BuildContext context) {
     final theme = context.ispectTheme;
 
-    // Host-colors mode keeps the pre-6.0 behaviour: leave unset colours null so
-    // DraggablePanel falls back to its own defaults.
+    // draggable_panel resolves a null token from the ambient ColorScheme.
     if (theme.useHostColors) {
-      return DraggablePanelTheme(
-        draggableButtonColor: theme.card?.resolve(context),
-        panelBackgroundColor: theme.background?.resolve(context),
-        panelItemColor: theme.card?.resolve(context),
-        foregroundColor: theme.foreground?.resolve(context),
-        panelBorder: switch (theme.divider?.resolve(context)) {
-          final color? => Border.all(color: color),
-          null => null,
-        },
+      return _panelShell(theme.divider?.resolve(context)).copyWith(
+        surfaceColor: theme.background?.resolve(context),
+        handleColor: theme.foreground?.resolve(context),
       );
     }
 
-    final dark = context.ispectIsDark;
-    Color owned(ISpectDynamicColor? override, ISpectDynamicColor fallback) =>
-        override?.resolve(context) ?? fallback.pick(isDark: dark)!;
-
-    return DraggablePanelTheme(
-      draggableButtonColor: owned(theme.card, ISpectDefaultPalette.card),
-      panelBackgroundColor:
-          owned(theme.background, ISpectDefaultPalette.background),
-      panelItemColor: owned(theme.card, ISpectDefaultPalette.card),
-      foregroundColor: owned(theme.foreground, ISpectDefaultPalette.foreground),
-      panelBorder: Border.all(
-        color: owned(theme.divider, ISpectDefaultPalette.divider),
+    return _panelShell(
+      _ownedColor(context, theme.divider, ISpectDefaultPalette.divider),
+    ).copyWith(
+      surfaceColor: _ownedColor(
+        context,
+        theme.background,
+        ISpectDefaultPalette.background,
+      ),
+      handleColor: _ownedColor(
+        context,
+        theme.foreground,
+        ISpectDefaultPalette.foreground,
       ),
     );
   }
 
+  DraggableActionPanelThemeData _buildDefaultActionTheme(BuildContext context) {
+    final theme = context.ispectTheme;
+    final materialTheme = Theme.of(context);
+    final useHost = theme.useHostColors;
+
+    final background = useHost
+        ? theme.card?.resolve(context)
+        : _ownedColor(context, theme.card, ISpectDefaultPalette.card);
+    final foreground = useHost
+        ? theme.foreground?.resolve(context)
+        : _ownedColor(
+            context,
+            theme.foreground,
+            ISpectDefaultPalette.foreground,
+          );
+
+    return _actionShapes.copyWith(
+      actionBackgroundColor: background,
+      actionForegroundColor: foreground,
+      collapsedIconColor: foreground,
+      headerStyle: materialTheme.textTheme.titleSmall?.copyWith(
+        color: foreground,
+      ),
+      closeButtonStyle:
+          DraggableActionPanelThemeData.defaults(
+            materialTheme.colorScheme,
+          ).closeButtonStyle?.copyWith(
+            foregroundColor: foreground == null
+                ? null
+                : WidgetStatePropertyAll(foreground),
+            shape: WidgetStatePropertyAll(_gridShape),
+          ),
+    );
+  }
+
+  /// The panel shell ISpect owns regardless of palette: squircle corners on
+  /// every face, and a parked panel that recedes.
+  ///
+  DraggablePanelThemeData _panelShell(Color? border) {
+    final shape = _panelShape(border, ISpectConstants.panelBorderRadius);
+    return DraggablePanelThemeData(
+      collapsedShape: shape,
+      stashedShape: shape,
+      shape: shape,
+      stashedOpacity: ISpectConstants.stashedPanelOpacity,
+    );
+  }
+
+  /// The grid's own corners, a step down from the panel's.
+  OutlinedBorder get _gridShape => ISpectSquircle.border();
+
+  DraggableActionPanelThemeData get _actionShapes =>
+      DraggableActionPanelThemeData(
+        actionShape: _gridShape,
+        buttonStyle: ButtonStyle(shape: WidgetStatePropertyAll(_gridShape)),
+      );
+
+  Color _ownedColor(
+    BuildContext context,
+    ISpectDynamicColor? override,
+    ISpectDynamicColor fallback,
+  ) =>
+      override?.resolve(context) ??
+      fallback.pick(isDark: context.ispectIsDark)!;
+
+  ShapeBorder _panelShape(Color? border, double radius) =>
+      ISpectSquircle.border(
+        radius: radius,
+        side: border == null ? BorderSide.none : BorderSide(color: border),
+      );
+
   void _enterOverlay() {
     _overlayDepth++;
     _hasOverlayRoute.value = true;
+    _panelController.collapse();
   }
 
   void _exitOverlay() {
@@ -469,10 +535,8 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
     final iSpect = ISpect.read(context);
     final iSpectScreen = MaterialPageRoute<dynamic>(
-      builder: (_) => LogsScreen(
-        options: options,
-        appBarTitle: iSpect.theme.pageTitle,
-      ),
+      builder: (_) =>
+          LogsScreen(options: options, appBarTitle: iSpect.theme.pageTitle),
       settings: const RouteSettings(name: 'ISpect Screen'),
     );
 
@@ -518,10 +582,8 @@ class _ISpectNavigationHost extends StatelessWidget {
     Widget overlay = HeroControllerScope.none(
       child: ValueListenableBuilder<bool>(
         valueListenable: hasOverlayRoute,
-        builder: (context, hasRoute, navigator) => IgnorePointer(
-          ignoring: !hasRoute,
-          child: navigator,
-        ),
+        builder: (context, hasRoute, navigator) =>
+            IgnorePointer(ignoring: !hasRoute, child: navigator),
         child: Navigator(
           key: navigatorKey,
           onGenerateInitialRoutes: (_, __) => [
@@ -557,79 +619,6 @@ class _ISpectNavigationHost extends StatelessWidget {
         child,
         Positioned.fill(child: overlay),
       ],
-    );
-  }
-}
-
-/// Minimal fallback widget for layout/paint errors caught by
-/// [ErrorWidget.builder] on ISpect routes.
-///
-/// Uses only base Material widgets and [Theme.of] colors to avoid
-/// recursive failures if ISpect theming is broken.
-class _ISpectRenderErrorFallback extends StatelessWidget {
-  const _ISpectRenderErrorFallback({required this.details});
-
-  final FlutterErrorDetails details;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final errorMessage = details.exceptionAsString().split('\n').first;
-
-    return Material(
-      color: colorScheme.surface,
-      child: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: colorScheme.error,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Render error',
-                  style: textTheme.titleLarge,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  errorMessage,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                if (kDebugMode && details.stack != null) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: ISpectSquircle.decoration(
-                      color: colorScheme.surfaceContainerHighest,
-                      radius: ISpectConstants.standardBorderRadius,
-                    ),
-                    constraints: const BoxConstraints(maxHeight: 200),
-                    child: SingleChildScrollView(
-                      child: SelectableText(
-                        details.stack.toString(),
-                        style: textTheme.bodySmall?.copyWith(
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

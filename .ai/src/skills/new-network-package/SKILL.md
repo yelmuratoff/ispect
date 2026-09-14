@@ -5,258 +5,212 @@ description: Scaffold a new network interceptor package (e.g. Chopper, Retrofit)
 
 # New Network Package Skill
 
-Scaffold and implement a new `ispectify_<client>` package that integrates a third-party HTTP client with the ISpect logging toolkit.
+Scaffold and implement a new `ispectify_<client>` package that integrates a third-party HTTP client with the ISpect logging toolkit. `packages/ispectify_dio` and `packages/ispectify_http` are the reference adapters - open both before writing code and copy their shape, not this summary.
 
 ## When to Use
 
 - User asks to add support for a new HTTP client (Chopper, Retrofit, etc.)
 - User says "/new-network-package"
+- Not for WebSocket or database capture: those belong to `ispectify_ws` and `ispectify_db`.
 
-## Architecture
+## Package Layout
 
-Every network interceptor package follows the same structure built on shared abstractions from `ispectify`:
+Mirror the reference adapters:
 
 ```
 packages/ispectify_<client>/
   lib/
-    ispectify_<client>.dart              # Public barrel export
+    ispectify_<client>.dart            # Explicit exports of the public API
     src/
-      interceptor.dart                   # Main interceptor class
-      settings.dart                      # Settings (extends BaseNetworkInterceptorSettings)
-      settings_builder.dart              # Builder (extends BaseNetworkInterceptorSettingsBuilder)
+      interceptor.dart                 # ISpect<Client>Interceptor
+      settings.dart                    # ISpect<Client>InterceptorSettings
+      settings_builder.dart            # ISpect<Client>InterceptorSettingsBuilder
       data/
-        _data.dart                       # Barrel export for data classes
-        request.dart                     # <Client>RequestData — toJson() for request metadata
-        response.dart                    # <Client>ResponseData — toJson() for response metadata
-        error.dart                       # <Client>ErrorData — toJson() for error metadata (if applicable)
-      models/
-        _models.dart                     # Barrel export for log models
-        request.dart                     # <Client>RequestLog extends NetworkRequestLog
-        response.dart                    # <Client>ResponseLog extends NetworkResponseLog
-        error.dart                       # <Client>ErrorLog extends NetworkErrorLog
-      utils/                             # Optional: serializers for opaque types (FormData, Multipart, etc.)
+        _data.dart                     # Exports request/response(/error) data
+        request.dart                   # <Client>RequestData
+        response.dart                  # <Client>ResponseData
+        error.dart                     # <Client>ErrorData, only if the client has an error type
+      replay/<client>_request_sender.dart  # Optional NetworkRequestSender
+      utils/                           # Optional serializers (form data, multipart)
   test/
-    interceptor_test.dart
-    settings_test.dart
-    settings_builder_test.dart
+    production_safety_test.dart        # Required
+    ...                                # See Step 5
+  example/                             # Minimal usage
   pubspec.yaml
   analysis_options.yaml
-  README.md
+  CHANGELOG.md
+  README.md                            # Generated - see Step 6
   LICENSE
 ```
 
-## Shared Base from ispectify (DO NOT duplicate)
+## Shared Base in ispectify
 
-These are already in `ispectify` — import and extend, never reimplement:
+Import these from `package:ispectify/ispectify.dart`; never reimplement them:
 
-| What | Purpose |
-|------|---------|
-| `NetworkJsonKeys` | All JSON key constants (`method`, `url`, `headers`, `data`, `status-code`, etc.) |
-| `NetworkMapRedactor` | Redaction pipeline: `redactUrl()`, `redactHeaders()`, `redactData()`, `redactMapField()`, `redactPathFields()`, `redactRedirects()`, `redactMultipart()` |
-| `BaseNetworkInterceptor` | Mixin with `safeLog()`, `shouldProcess()`, `redactUrlAndPath()`, `bodyAsMap()`, `payload` (NetworkPayloadSanitizer) |
-| `BaseNetworkInterceptorSettings` | Abstract settings: `enabled`, `enableRedaction`, `print*` flags, `AnsiPen` colors |
-| `BaseNetworkInterceptorSettingsBuilder<B>` | Fluent builder with `.development()`, `.production()`, `.staging()`, `.disabled()` presets |
-| `NetworkRequestLog` / `NetworkResponseLog` / `NetworkErrorLog` | Base log classes |
-| `NetworkPayloadSanitizer` | `decodeJsonGracefully()`, `toStringKeyMap()`, `ensureMap()`, header normalization |
-| `RedactionService` | Pluggable redaction with key-based, pattern-based, and composite strategies |
-| `RequestIdGenerator` | Unique request ID generation for request-response correlation |
+| API | Source | Use |
+| --- | --- | --- |
+| `NetworkLoggerMixin`, `NetworkRedactionMixin`, `NetworkConfigurationMixin`, `BaseNetworkInterceptor` | `lib/src/network/*_mixin.dart`, `base_interceptor.dart` | Interceptor mixins; `BaseNetworkInterceptor` is `on` the other three |
+| `BaseNetworkInterceptorSettings` | `network_interceptor_settings.dart` | Shared flags, `isRedactionActive`, abstract `copyWith` |
+| `BaseNetworkInterceptorSettingsBuilder<B, TReq, TRes, TErr>` | `network_interceptor_settings_builder.dart` | Fluent `with*`/`without*` methods and `apply*Defaults()` preset helpers |
+| `NetworkFilterChain<T>`, `NetworkFilter<T>` | `lib/src/network/filter/` | Request/response/error filtering |
+| `NetworkJsonKeys` | `network_json_keys.dart` | Every metadata key |
+| `NetworkMapRedactor` | `network_map_redactor.dart` | Static in-place redaction (`redactUrl`, `redactHeaders`, `redactData`, `redactMapField`, `redactPathFields`, `redactMethod`, `redactFreeText`, `redactFreeTextValue`, `redactRedirects`, `redactMultipart`) |
+| `NetworkPayloadSanitizer`, `NetworkUriSnapshot` | `network_payload_sanitizer.dart`, `network_uri_snapshot.dart` | Bounded body/header normalization and URL capture |
+| `NetworkLogRenderer` | `network_log_renderer.dart` | `renderHintsKey` and `hint*` keys in log meta |
+| `NetworkRequestSender` | `lib/src/network/replay/` | Optional replay integration |
+| `ISpectLoggerNetwork` (`httpRequest`, `httpResponse`, `httpError`) | `lib/src/trace/extensions/network.dart` | The only log calls an adapter makes |
+| `guardDiagnostics`, `generateTraceId` | `lib/src/trace/trace_helpers.dart`, `lib/src/utils/common_utils.dart` | Failure isolation and correlation IDs |
 
-## Steps to Implement
+If the adapter needs something reusable that is missing here, add it to `ispectify` with tests rather than to the new package.
 
-### Step 1: Scaffold the package
+## Steps
 
-1. Create directory `packages/ispectify_<client>/`.
-2. Create `pubspec.yaml`:
-   - Name: `ispectify_<client>`
-   - Version: read from `version.config` (single source of truth)
-   - Dependencies: `ispectify` (use `dependency_overrides` for local dev), the HTTP client package
-   - Dev dependencies: `test`, `mocktail` (or equivalent)
-3. Create `analysis_options.yaml` — include the root analysis options.
-4. Add `dependency_overrides` pointing to local `../ispectify` path.
+### Step 1: Scaffold
+
+1. Copy `packages/ispectify_dio/pubspec.yaml` and adapt it:
+   - `name`, `description`, homepage/repository/issue_tracker as in the siblings.
+   - `environment: sdk: ">=3.6.0 <4.0.0"`.
+   - `dependencies`: `ispectify` plus the client package, with real constraints (no `any`).
+   - `dependency_overrides: ispectify: path: ../ispectify`.
+   - `dev_dependencies`: `lints` and `test` with the siblings' constraints.
+   - Copy `version:` and the `ispectify` constraint from a sibling, then run `dart run tool/bin/ispect_tool.dart sync --dry-run` and `sync`; `version_sync.dart` discovers every directory under `packages/`, and `version.config` stays the source of truth.
+2. Copy `packages/ispectify_dio/analysis_options.yaml` verbatim - each package carries its own full config; there is no root include.
+3. Copy `LICENSE` and `.gitignore` from a sibling; create `CHANGELOG.md` (`ispect_tool changelog` skips packages without one).
+4. `cd packages/ispectify_<client> && dart pub get`.
 
 ### Step 2: Settings
 
-**`settings.dart`** — extend `BaseNetworkInterceptorSettings`:
+`settings.dart` - `class ISpect<Client>InterceptorSettings extends BaseNetworkInterceptorSettings`:
 
-```dart
-class ISpect<Client>InterceptorSettings extends BaseNetworkInterceptorSettings {
-  const ISpect<Client>InterceptorSettings({
-    // All base params forwarded to super
-    super.enabled,
-    super.enableRedaction,
-    super.printRequestData,
-    super.printRequestHeaders,
-    super.printResponseData,
-    super.printResponseHeaders,
-    super.printResponseMessage,
-    super.printErrorData,
-    super.printErrorHeaders,
-    super.printErrorMessage,
-    super.requestPen,
-    super.responsePen,
-    super.errorPen,
-    // Client-specific filters:
-    this.requestFilter,
-    this.responseFilter,
-    this.errorFilter,
-  });
+- `const` constructor forwarding every base field as `super.*` (`enabled`, `enableRedaction`, `captureMode`, `resourceLimits`, `logRequests`, `logResponses`, `print*`, `*Pen`).
+- Filter fields as `NetworkFilterChain<TReq>? requestChain`, `NetworkFilterChain<TRes>? responseChain`, `NetworkFilterChain<TErr>? errorChain`. Skip the deprecated `requestFilter`/`responseFilter`/`errorFilter` callbacks the older adapters still carry for compatibility.
+- Named predicates `bool shouldProcessRequest(TReq)`, `shouldProcessResponse(TRes)`, `shouldProcessError(TErr)` that return `chain?.apply(value) ?? true`.
+- `@override copyWith(...)` covering every base parameter (including `inheritResourceLimits`) plus the chains, returning the concrete type.
 
-  final bool Function(<ClientRequest>)? requestFilter;
-  final bool Function(<ClientResponse>)? responseFilter;
-  final bool Function(<ClientError>)? errorFilter;
+### Step 3: Settings builder
 
-  // copyWith() — forward all fields
-}
-```
-
-**`settings_builder.dart`** — extend `BaseNetworkInterceptorSettingsBuilder<Self>`:
+`settings_builder.dart`:
 
 ```dart
 class ISpect<Client>InterceptorSettingsBuilder
-    extends BaseNetworkInterceptorSettingsBuilder<ISpect<Client>InterceptorSettingsBuilder> {
+    extends BaseNetworkInterceptorSettingsBuilder<
+        ISpect<Client>InterceptorSettingsBuilder, TReq, TRes, TErr> {
+  ISpect<Client>InterceptorSettingsBuilder();
 
-  // Factory constructors: .development(), .production(), .staging(), .disabled()
-  // Client-specific filter methods: withRequestFilter(), withResponseFilter(), withErrorFilter()
-  // build() → ISpect<Client>InterceptorSettings
+  factory ISpect<Client>InterceptorSettingsBuilder.metadataOnly() =>
+      ISpect<Client>InterceptorSettingsBuilder()..applyMetadataOnlyDefaults();
+  // .development(), .production(), .staging() call the matching apply*Defaults();
+  // .disabled() sets `..enabled = false`.
+
+  @override
+  ISpect<Client>InterceptorSettings build() => ISpect<Client>InterceptorSettings(/* every field */);
 }
 ```
 
-### Step 3: Data classes
+Presets live on the concrete builder as factories; the base class only provides the `apply*Defaults()` helpers.
 
-**`data/request.dart`** — `<Client>RequestData`:
+### Step 4: Data classes and interceptor
 
-```dart
-class <Client>RequestData {
-  <Client>RequestData(this.request);
-  final <ClientRequest> request;
+Data classes (`data/*.dart`), following `DioRequestData`/`HttpRequestData`:
 
-  Map<String, dynamic> toJson({
-    RedactionService? redactor,
-    Set<String>? ignoredValues,
-    Set<String>? ignoredKeys,
-  }) {
-    final map = <String, dynamic>{
-      // --- Identity ---
-      NetworkJsonKeys.method: request.method,
-      NetworkJsonKeys.url: request.url.toString(),
-      // ... map all fields using NetworkJsonKeys
+- Constructor takes the client object plus `DiagnosticResourceLimits`; build a `NetworkUriSnapshot` for the URL.
+- `Map<String, dynamic> toJson({bool includeData, bool includeHeaders, bool redactionActive, DiagnosticCaptureMode captureMode, ...})` returns raw, bounded metadata keyed by `NetworkJsonKeys`. Response data nests the request map under `NetworkJsonKeys.request`; error data nests the response map under `NetworkJsonKeys.response`.
+- `static void redact(Map<String, dynamic> map, RedactionService redactor, {Set<String>? ignoredValues, Set<String>? ignoredKeys, DiagnosticResourceLimits resourceLimits})` applies `NetworkMapRedactor.*` in place.
 
-      // --- Payload ---
-      NetworkJsonKeys.headers: ...,
-      NetworkJsonKeys.data: ...,
-    };
-
-    if (redactor == null) return map;
-
-    // Use shared redaction pipeline:
-    NetworkMapRedactor.redactUrl(map, redactor);
-    NetworkMapRedactor.redactHeaders(map, redactor, ignoredValues: ignoredValues, ignoredKeys: ignoredKeys);
-    NetworkMapRedactor.redactData(map, redactor, ignoredValues: ignoredValues, ignoredKeys: ignoredKeys);
-
-    return map;
-  }
-}
-```
-
-Apply the same pattern for `ResponseData` and `ErrorData`.
-
-**Field ordering convention** (consistent across all packages):
-
-For requests: Identity → Payload → Timing → Behaviour → Meta
-For responses: Status → Identity → Payload → Redirects → Meta → Request (nested, last)
-For errors: Error summary → Response → Request (nested, last)
-
-### Step 4: Log models
-
-Extend base network log classes:
+Interceptor (`interceptor.dart`):
 
 ```dart
-class <Client>RequestLog extends NetworkRequestLog {
-  <Client>RequestLog(
-    super.message, {
-    required super.method,
-    required super.url,
-    required super.path,
-    required <Client>InterceptorSettings settings,
-    required <Client>RequestData requestData,
-    super.requestId,
-    super.body,
-    RedactionService? redactor,
-    Map<String, String>? headers,
-  }) : super(
-          settings: settings,
-          headers: headers?.map(MapEntry.new),
-          metadata: requestData.toJson(redactor: redactor),
-        );
-}
-```
-
-### Step 5: Interceptor
-
-```dart
-final class ISpect<Client>Interceptor with BaseNetworkInterceptor {
+class ISpect<Client>Interceptor /* extends or implements the client's hook */
+    with
+        NetworkLoggerMixin,
+        NetworkRedactionMixin,
+        NetworkConfigurationMixin,
+        BaseNetworkInterceptor {
   ISpect<Client>Interceptor({
-    required ISpectLogger logger,
-    ISpect<Client>InterceptorSettings? settings,
+    ISpectLogger? logger,
+    ISpect<Client>InterceptorSettings settings = const ISpect<Client>InterceptorSettings(),
     RedactionService? redactor,
   });
-
-  // Use mixin helpers:
-  // - safeLog(() => buildLog(...)) — prevents log failures from breaking HTTP pipeline
-  // - shouldProcess(settings.enabled, filter, value) — consolidated enable + filter check
-  // - redactUrlAndPath(url, redactor) — returns (redactedUrl, redactedPath)
-  // - payload.body(), payload.headersMap(), payload.ensureMap() — payload normalization
-
-  // configure() method — runtime reconfiguration with enableRedaction param
 }
 ```
 
-### Step 6: Tests
+Implement the mixin contract as both references do:
 
-Cover:
-- Request/response/error logging
-- Filter application (request/response/error filters)
-- Disabled state (no logging)
-- Redaction on/off
-- Settings builder presets
-- `configure()` runtime changes
-- Data class `toJson()` structure
-- FormData/Multipart serialization (if applicable)
+- `ISpectLogger get logger`, `bool get enableRedaction`, `DiagnosticCaptureMode get captureMode`, `DiagnosticResourceLimits get resourceLimits` (`settings.resourceLimits ?? logger.options.resourceLimits`).
+- `RedactionService get redactor => ISpectRedaction.resolveService(service: _explicitRedactor)` - resolve on every access so global redaction changes apply.
+- `configurableSettings` and `applyConfigurableSettings` so the inherited `configure(...)` works; call `resourceLimits?.validate()` in the constructor and on apply.
 
-### Step 7: Integration
+Each hook (request, response, error):
 
-1. Add `dependency_overrides` in the new package's `pubspec.yaml` for local dev.
-2. Add the package to the publish order in `bash/publish.sh`.
-3. Add test commands to `.github/workflows/test.yml`.
-4. Add version validation to `.github/workflows/validate_versions.yml`.
-5. Update `bash/update_versions.sh` to include the new package.
-6. Update root `CLAUDE.md` monorepo structure section.
+1. Forward to the client first or last exactly as its pipeline requires, and wrap capture in `guardDiagnostics(_logger, () => _captureX(value), what: '<Client> request capture')`.
+2. Gate on `_logger.hasActiveConsumers && settings.enabled` (plus `logRequests`/`logResponses`) before any inspection, then on `settings.shouldProcess*`; re-check the gate before each expensive step.
+3. Correlate request and response with `generateTraceId()`, stored where the client carries it (Dio `options.extra[NetworkJsonKeys.ispectRequestId]`, http an `Expando`), and time with a monotonic `Stopwatch`.
+4. Use `settings.isRedactionActive`; redact the method with `redactDiagnosticText`, the URL with `redactUrl` only when the snapshot `isTrusted`, and payload maps with `<Client>*Data.redact`. Redact error objects and stack traces with `NetworkMapRedactor.redactFreeTextValue`.
+5. Log through the trace extension only:
+
+```dart
+_logger.httpRequest(
+  source: '<client>',
+  operation: operation,
+  target: url,
+  correlationId: requestId,
+  config: ISpectTraceConfig(redact: false, resourceLimits: resourceLimits),
+  meta: {
+    NetworkJsonKeys.requestId: requestId,
+    NetworkJsonKeys.requestData: requestDataJson,
+    NetworkLogRenderer.renderHintsKey: {
+      NetworkLogRenderer.hintPrintBody: settings.printRequestData,
+      NetworkLogRenderer.hintPrintHeaders: settings.printRequestHeaders,
+    },
+  },
+);
+```
+
+`httpResponse` adds `duration` and `NetworkJsonKeys.statusCode`/`responseData`; `httpError` adds `error`, `errorStackTrace`, and `NetworkJsonKeys.errorData`. Keep the `http-request`/`http-response`/`http-error` keys - add no new log type.
+
+Export `interceptor.dart`, `settings.dart`, `settings_builder.dart` (and the replay sender or data classes only if consumers need them) from `lib/ispectify_<client>.dart`.
+
+### Step 5: Tests
+
+Use `package:test`, a real `ISpectLogger(options: ISpectLoggerOptions(useConsoleLogs: false))`, and assertions on `logger.history`. Fake the client at its own transport seam (as `HttpClientAdapter` for Dio, `MockClient` for http) - no network, no mocking package. Match the reference test files:
+
+- `production_safety_test.dart` - with `skip: kISpectEnabled ? '...' : false`, proves the omitted flag bypasses capture, filters, and redaction.
+- `logger_test.dart` / `<client>_logging_test.dart` - request, response, error metadata and correlation.
+- `logger_disabled_test.dart` - disabled settings, disabled/disposed logger, no consumers.
+- `interceptor_guard_test.dart` - a throwing filter or redactor never breaks the host request.
+- `redaction_policy_test.dart`, `security_regression_test.dart` - default redaction, explicit and global redactor, opt-out.
+- `settings_test.dart`, `settings_builder_test.dart` - `copyWith`, presets, chains.
+- `integration_test.dart`, plus `replay/` if a sender exists.
+
+### Step 6: Integration
+
+1. CI: add the package to the `test-flutter` matrix in `.github/workflows/test.yml` (where the adapters run) and to the `disabled-api-behavior` matrix in `.github/workflows/production_safety.yml`.
+2. Release tooling: add it to `publishOrder` in `tool/lib/src/core/publish.dart` (after `ispectify`, before `ispect`) and a `ReadmeTarget` in `tool/lib/src/core/readme_builder.dart`.
+3. Docs: create `docs/readme/ispectify_<client>.md` modelled on `docs/readme/ispectify_dio.md`, add a row to `docs/readme/_partials/install_matrix.md`, then run `dart run tool/bin/ispect_tool.dart readme`.
+4. Add the user-facing entry to root `CHANGELOG.md`.
+5. Agent docs: add the package to the pure Dart list in `.ai/src/AGENTS.md`, the adapter line in `.ai/src/rules/architecture.md`, the package lists in `.ai/src/commands/check-package.md` and `.ai/src/skills/package-quality-check/SKILL.md`, then run `agentsync sync`. Never edit the generated `CLAUDE.md` or `AGENTS.md`.
 
 ## Key Rules
 
-1. **NEVER hardcode JSON key strings** — always use `NetworkJsonKeys.*`.
-2. **NEVER reimplement redaction** — use `NetworkMapRedactor.*` methods.
-3. **NEVER duplicate settings/builder logic** — extend the base classes.
-4. **Log models must pass `metadata`** via `requestData.toJson()` to enable JSON export.
-5. **`configure()` must include `enableRedaction`** parameter.
-6. **`redactHeaders()` returns the result** — if you need type conversion (e.g. `Map<String, String>`), do it in your data class, not in the shared utility.
-7. **Interceptor must not throw** — wrap all log-building in `safeLog()`.
-8. **Field ordering must follow the convention** — see Step 3.
-9. **Version comes from `version.config`** — never hardcode in `pubspec.yaml`.
+1. Use `NetworkJsonKeys.*` for every metadata key.
+2. Redact only through `NetworkMapRedactor` and the mixin helpers; keep redaction on by default.
+3. Extend the base settings and builder; do not duplicate their fields or fluent methods.
+4. Log only through `httpRequest`/`httpResponse`/`httpError`.
+5. Capture never throws into the host client: every hook runs inside `guardDiagnostics`.
+6. Check `hasActiveConsumers` and `settings.enabled` before touching payloads so disabled builds do no work.
+7. Leave versions and internal constraints to `ispect_tool sync`.
 
 ## Checklist
 
-Before marking complete, verify:
-
-- [ ] `dart analyze --fatal-infos` / `flutter analyze --fatal-infos` — zero issues
-- [ ] All tests pass
-- [ ] Zero hardcoded JSON key strings (grep for quoted strings in data/ files)
-- [ ] Redaction uses `NetworkMapRedactor` exclusively
-- [ ] Settings extends `BaseNetworkInterceptorSettings`
-- [ ] Builder extends `BaseNetworkInterceptorSettingsBuilder<Self>`
-- [ ] Interceptor uses `BaseNetworkInterceptor` mixin
-- [ ] Log models extend `NetworkRequestLog` / `NetworkResponseLog` / `NetworkErrorLog`
-- [ ] `metadata` passed to log constructors
-- [ ] `configure()` includes `enableRedaction`
-- [ ] Package added to version management scripts
-- [ ] Package added to CI workflows
+- [ ] `dart analyze --fatal-infos` - zero issues
+- [ ] `flutter test --dart-define=ISPECT_ENABLED=true --coverage` passes
+- [ ] `dart test --run-skipped test/production_safety_test.dart` passes without the define
+- [ ] `dart format` on changed Dart files
+- [ ] No hardcoded metadata key strings in `lib/src/data/`
+- [ ] Interceptor mixes in `NetworkLoggerMixin, NetworkRedactionMixin, NetworkConfigurationMixin, BaseNetworkInterceptor`
+- [ ] Builder extends `BaseNetworkInterceptorSettingsBuilder<Self, TReq, TRes, TErr>` with factory presets
+- [ ] `dart run tool/bin/ispect_tool.dart sync`, `version check`, and `deps` pass
+- [ ] `test.yml` and `production_safety.yml` matrices updated
+- [ ] `publishOrder` and `ReadmeTarget` added; `dart run tool/bin/ispect_tool.dart readme --check` passes
+- [ ] Root `CHANGELOG.md` updated
+- [ ] `.ai/src/` package lists updated and `agentsync sync` run

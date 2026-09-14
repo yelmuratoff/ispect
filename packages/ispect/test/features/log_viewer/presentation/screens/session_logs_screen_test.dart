@@ -1,4 +1,6 @@
+import 'dart:collection';
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,6 +22,42 @@ final class _AuthenticateWithTokensAuthEvent {
   @override
   String toString() =>
       'AuthenticateWithTokensAuthEvent(Bearer embedded-secret-token)';
+}
+
+final class _ReadTrackingLogs extends ListBase<ISpectLogData> {
+  _ReadTrackingLogs(this._logs);
+
+  final List<ISpectLogData> _logs;
+  int recordReads = 0;
+
+  @override
+  int get length => _logs.length;
+
+  @override
+  set length(int value) => throw UnsupportedError('immutable');
+
+  @override
+  ISpectLogData operator [](int index) {
+    recordReads++;
+    return _logs[index];
+  }
+
+  @override
+  void operator []=(int index, ISpectLogData value) =>
+      throw UnsupportedError('immutable');
+}
+
+final class _UnsendableRedactionStrategy implements RedactionStrategy {
+  const _UnsendableRedactionStrategy(this.port);
+
+  final ReceivePort port;
+
+  @override
+  Object? tryRedact(
+    Object? node, {
+    required RedactionContext context,
+    String? keyName,
+  }) => keyName == 'project_private' ? '[CUSTOM MASK]' : null;
 }
 
 void main() {
@@ -54,8 +92,9 @@ void main() {
     },
   );
 
-  testWidgets('clear history action clears the independent snapshot',
-      (tester) async {
+  testWidgets('clear history action clears the independent snapshot', (
+    tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(800, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -79,12 +118,21 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
     final clearHistory = find.text('Clear history');
+    final settingsScrollable = find.byType(Scrollable).last;
     await tester.scrollUntilVisible(
       clearHistory,
       200,
-      scrollable: find.byType(Scrollable).last,
+      scrollable: settingsScrollable,
     );
-    await tester.tap(clearHistory);
+    final position = tester.state<ScrollableState>(settingsScrollable).position;
+    position.jumpTo(
+      (position.pixels - 200).clamp(
+        position.minScrollExtent,
+        position.maxScrollExtent,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(clearHistory.hitTestable());
     await tester.pump();
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -108,42 +156,99 @@ void main() {
     expect(content, contains('shared snapshot entry'));
   });
 
-  test('JSON export stringifies non-encodable diagnostic values', () async {
-    final content = await buildLogsExportContent(
-      ExportFormat.json,
-      logs: [
-        ISpectLogData(
-          'Dio-style diagnostic entry',
-          id: 'NON-ENCODABLE-SNAPSHOT',
-          additionalData: {
-            'timeout': const Duration(seconds: 1),
-            'endpoint': Uri.parse('https://example.com/logs'),
-            TraceKeys.meta: const {
-              'event': _CheckStatusAuthEvent(),
-              'tokenEvent': _AuthenticateWithTokensAuthEvent(),
-              'authorization': 'Bearer secret-token',
-              'metrics': {1: double.nan},
+  test(
+    'JSON export uses balanced snapshots for non-encodable values',
+    () async {
+      final content = await buildLogsExportContent(
+        ExportFormat.json,
+        logs: [
+          ISpectLogData(
+            'Dio-style diagnostic entry',
+            id: 'NON-ENCODABLE-SNAPSHOT',
+            additionalData: {
+              'timeout': const Duration(seconds: 1),
+              'endpoint': Uri.parse('https://example.com/logs'),
+              TraceKeys.meta: const {
+                'event': _CheckStatusAuthEvent(),
+                'tokenEvent': _AuthenticateWithTokensAuthEvent(),
+                'authorization': 'Bearer secret-token',
+                'metrics': {1: double.nan},
+              },
             },
-          },
+          ),
+        ],
+        redactKeys: defaultSensitiveKeys,
+      );
+
+      final decoded = jsonDecode(content) as Map<String, dynamic>;
+      final logs = decoded['logs'] as List<dynamic>;
+      final log = logs.single as Map<String, dynamic>;
+      final additionalData = log['additional-data'] as Map<String, dynamic>;
+
+      expect(additionalData['timeout'], '0:00:01.000000');
+      expect(additionalData['endpoint'], 'https://example.com/logs');
+      final blocMetadata =
+          additionalData[TraceKeys.meta] as Map<String, dynamic>;
+      expect(blocMetadata['event'], contains('CheckStatusAuthEvent'));
+      expect(
+        blocMetadata['tokenEvent'],
+        isNot(contains('embedded-secret-token')),
+      );
+      expect(blocMetadata['authorization'], isNot(contains('secret-token')));
+      expect(blocMetadata['metrics'], {
+        JsonValueNormalizer.traversalMarkerKey:
+            JsonValueNormalizer.unprintableValue,
+      });
+    },
+  );
+
+  for (final format in const [
+    ExportFormat.text,
+    ExportFormat.markdown,
+    ExportFormat.csv,
+  ]) {
+    test('large ${format.label} export defers record reads', () async {
+      final logs = _ReadTrackingLogs(
+        List<ISpectLogData>.generate(
+          64,
+          (index) => ISpectLogData(
+            'background export $index',
+            id: 'BACKGROUND-$index',
+          ),
         ),
-      ],
-      redactKeys: defaultSensitiveKeys,
-    );
+      );
 
-    final decoded = jsonDecode(content) as Map<String, dynamic>;
-    final logs = decoded['logs'] as List<dynamic>;
-    final log = logs.single as Map<String, dynamic>;
-    final additionalData = log['additional-data'] as Map<String, dynamic>;
+      final operation = buildLogsExportContent(format, logs: logs);
 
-    expect(additionalData['timeout'], '0:00:01.000000');
-    expect(additionalData['endpoint'], 'https://example.com/logs');
-    final blocMetadata = additionalData[TraceKeys.meta] as Map<String, dynamic>;
-    expect(blocMetadata['event'], "Instance of '_CheckStatusAuthEvent'");
-    expect(
-      blocMetadata['tokenEvent'],
-      isNot(contains('embedded-secret-token')),
-    );
-    expect(blocMetadata['authorization'], isNot(contains('secret-token')));
-    expect(blocMetadata['metrics'], {'1': 'NaN'});
-  });
+      expect(logs.recordReads, 0);
+      final content = await operation;
+      expect(content, contains('background export 0'));
+    });
+  }
+
+  test(
+    'large export preserves an isolate-incompatible custom redactor',
+    () async {
+      final port = ReceivePort();
+      addTearDown(port.close);
+      final logs = List<ISpectLogData>.generate(
+        64,
+        (index) => ISpectLogData(
+          'custom policy $index',
+          additionalData: {'project_private': 'visible raw value $index'},
+        ),
+      );
+
+      final content = await buildLogsExportContent(
+        ExportFormat.text,
+        logs: logs,
+        redactionService: RedactionService(
+          strategy: _UnsendableRedactionStrategy(port),
+        ),
+      );
+
+      expect(content, contains('[CUSTOM MASK]'));
+      expect(content, isNot(contains('visible raw value')));
+    },
+  );
 }
