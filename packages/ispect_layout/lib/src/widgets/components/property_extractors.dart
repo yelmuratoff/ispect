@@ -486,9 +486,7 @@ List<PropSpec> stackProps(RenderStack target, {int decimalPlaces = 1}) => [
       subtitle: 'text direction',
       child: Text(target.textDirection!.name),
     ),
-  if (_clipBehaviorProp(target.clipBehavior, defaultValue: Clip.hardEdge)
-      case final c?)
-    c,
+  ?_clipBehaviorProp(target.clipBehavior, defaultValue: Clip.hardEdge),
 ];
 
 List<PropSpec> wrapProps(RenderWrap target, {int decimalPlaces = 1}) => [
@@ -539,7 +537,7 @@ List<PropSpec> wrapProps(RenderWrap target, {int decimalPlaces = 1}) => [
       subtitle: 'vertical dir',
       child: Text(target.verticalDirection.name),
     ),
-  if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+  ?_clipBehaviorProp(target.clipBehavior),
 ];
 
 List<PropSpec> _roundedClipProps(
@@ -565,7 +563,7 @@ List<PropSpec> _roundedClipProps(
           textDirection: direction,
         ),
       ),
-    if (_clipBehaviorProp(clipBehavior) case final c?) c,
+    ?_clipBehaviorProp(clipBehavior),
   ];
 }
 
@@ -591,18 +589,18 @@ List<PropSpec> clipRSuperellipseProps(
 
 List<PropSpec> clipRectProps(RenderClipRect target) => [
   ..._clipperProps(target.clipper),
-  if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+  ?_clipBehaviorProp(target.clipBehavior),
 ];
 
 List<PropSpec> clipOvalProps(RenderClipOval target) => [
   ..._clipperProps(target.clipper),
-  if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+  ?_clipBehaviorProp(target.clipBehavior),
 ];
 
 List<PropSpec> clipPathProps(RenderClipPath target, {int decimalPlaces = 1}) =>
     [
       ..._clipperProps(target.clipper, decimalPlaces: decimalPlaces),
-      if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+      ?_clipBehaviorProp(target.clipBehavior),
     ];
 
 List<PropSpec> customPaintProps(RenderCustomPaint target) => [
@@ -666,7 +664,7 @@ List<PropSpec> flexProps(RenderFlex target, {int decimalPlaces = 1}) => [
       subtitle: 'text baseline',
       child: Text(target.textBaseline!.name),
     ),
-  if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+  ?_clipBehaviorProp(target.clipBehavior),
 ];
 
 List<PropSpec> opacityProps(RenderOpacity target, {int decimalPlaces = 1}) => [
@@ -719,7 +717,7 @@ List<PropSpec> physicalShapeProps(
     decimalPlaces: decimalPlaces,
   ),
   ..._clipperProps(target.clipper, decimalPlaces: decimalPlaces),
-  if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+  ?_clipBehaviorProp(target.clipBehavior),
 ];
 
 List<PropSpec> physicalModelProps(
@@ -750,7 +748,7 @@ List<PropSpec> physicalModelProps(
         decimalPlaces: decimalPlaces,
       ),
     ),
-  if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+  ?_clipBehaviorProp(target.clipBehavior),
 ];
 
 List<PropSpec> fittedBoxProps(
@@ -766,7 +764,7 @@ List<PropSpec> fittedBoxProps(
         describeAlignment(target.alignment, decimalPlaces: decimalPlaces),
       ),
     ),
-  if (_clipBehaviorProp(target.clipBehavior) case final c?) c,
+  ?_clipBehaviorProp(target.clipBehavior),
 ];
 
 List<PropSpec> aspectRatioProps(

@@ -114,7 +114,7 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
                           onCompare: widget.onCompare,
                           isCompareActive: widget.isCompareActive,
                         ),
-                        if (breadcrumb != null) breadcrumb,
+                        ?breadcrumb,
                       ],
                     ),
                   ),

@@ -132,7 +132,7 @@ Widget _buildNavigationStackBody() {
                     // barrier blocks render boxes from the route underneath.
                     opaque: false,
                     barrierColor: const Color(0x99000000),
-                    pageBuilder: (_, __, ___) => Align(
+                    pageBuilder: (_, _, _) => Align(
                       alignment: Alignment.topRight,
                       child: Container(
                         key: _page2ContainerKey,
