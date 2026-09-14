@@ -4,7 +4,7 @@
 
 ### Breaking Changes
 
-- **Floating panel:** The diagnostics panel is now a floating window built on `draggable_panel` 4.0.0. `panelItems` takes `PanelAction`, `panelButtons` takes `PanelActionButton`, `ISpectTheme.panelTheme` takes `DraggablePanelThemeData` next to the new `panelActionTheme`, and `panelBuilder` receives `ISpectPanelData.actions`. See `docs/DEPRECATIONS.md` for the symbol map.
+- **Floating panel:** The diagnostics panel is now a floating window built on `draggable_panel` 4.1.0. `panelItems` takes `PanelAction`, `panelButtons` takes `PanelActionButton`, `ISpectTheme.panelTheme` takes `DraggablePanelThemeData` next to the new `panelActionTheme`, and `panelBuilder` receives `ISpectPanelData.actions`. See `docs/DEPRECATIONS.md` for the symbol map.
 - **Minimum SDK:** `ispect` requires Flutter 3.35; `ispect_layout` requires Dart 3.8 and Flutter 3.32.
 - **`JsonScreen`** is no longer a `const` constructor.
 - **Custom log types:** Filter custom `ISpectLogData` subclasses by log key instead of `TypeFilter`.
