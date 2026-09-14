@@ -6,6 +6,8 @@ import 'package:ispectify/src/history/file_log/rolling_file_log_history_io.dart'
     as file_io;
 import 'package:test/test.dart';
 
+import '../../helpers/private_temp_directory.dart';
+
 final class _HostileFileErrorOutput {
   int toStringCalls = 0;
 
@@ -86,7 +88,7 @@ void main() {
   tearDown(() => ISpectRedaction.enabled = true);
 
   test('rejects a missing provider without creating it', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final missing = Directory(
       '${root.path}${Platform.pathSeparator}missing',
@@ -132,8 +134,7 @@ void main() {
       markTestSkipped('POSIX permission bits are unavailable on Windows');
       return;
     }
-    final privateRoot =
-        await Directory.systemTemp.createTemp('ispect-security-');
+    final privateRoot = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => privateRoot.delete(recursive: true));
     final privateChmod = await Process.run('chmod', ['0700', privateRoot.path]);
     expect(privateChmod.exitCode, 0);
@@ -165,7 +166,7 @@ void main() {
       markTestSkipped('POSIX permission bits are unavailable on Windows');
       return;
     }
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final chmod = await Process.run('chmod', ['0755', root.path]);
     expect(chmod.exitCode, 0);
@@ -192,7 +193,7 @@ void main() {
       markTestSkipped('POSIX permission bits are unavailable on Windows');
       return;
     }
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final chmod = await Process.run('chmod', ['0777', root.path]);
     expect(chmod.exitCode, 0);
@@ -215,7 +216,7 @@ void main() {
       markTestSkipped('POSIX permission bits are unavailable on Windows');
       return;
     }
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final history = file_io.RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -266,7 +267,7 @@ void main() {
   });
 
   test('rejects a symbolic-link provider directory', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final target = Directory(
       '${root.path}${Platform.pathSeparator}target',
@@ -297,7 +298,7 @@ void main() {
       markTestSkipped('POSIX permission bits are unavailable on Windows');
       return;
     }
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final managed = Directory(
       '${root.path}${Platform.pathSeparator}ispect_logs',
@@ -319,7 +320,7 @@ void main() {
   });
 
   test('rejects a path outside the managed root', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final outside = File('${root.path}${Platform.pathSeparator}outside.jsonl');
     await outside.writeAsString('{}\n');
@@ -337,7 +338,7 @@ void main() {
   });
 
   test('rejects a symlink that escapes the managed root', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final outside = File('${root.path}${Platform.pathSeparator}outside.jsonl');
     await outside.writeAsString('{}\n');
@@ -368,7 +369,7 @@ void main() {
   });
 
   test('rejects an unmanaged file even when it is inside the root', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final history = file_io.RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -389,7 +390,7 @@ void main() {
   });
 
   test('reads legacy arrays, merges segments, and deduplicates IDs', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final date = DateTime(2026, 7, 10, 9);
     final history = RollingFileLogHistory.testing(
@@ -425,7 +426,7 @@ void main() {
   });
 
   test('bounds imports before parsing and deduplicates accepted IDs', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -456,8 +457,7 @@ void main() {
       () async {
     const secret = 'RAW-IMPORT-SECRET';
     Future<file_io.RollingFileLogHistory> createHistory(String suffix) async {
-      final root =
-          await Directory.systemTemp.createTemp('ispect-import-$suffix-');
+      final root = await createPrivateTempDirectory('ispect-import-$suffix-');
       addTearDown(() => root.delete(recursive: true));
       final history = file_io.RollingFileLogHistory.testing(
         ISpectLoggerOptions(useConsoleLogs: false),
@@ -505,7 +505,7 @@ void main() {
   test('does not retain malformed import source in the reported cause',
       () async {
     const marker = 'MALFORMED_IMPORT_INPUT_MARKER';
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -533,7 +533,7 @@ void main() {
   });
 
   test('rejects a managed child symlink before read or mutation', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final date = DateTime(2026, 7, 10, 9);
     final outside = File(
@@ -596,7 +596,7 @@ void main() {
 
   test('rejects a linked closed segment before retention can archive it',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final currentDate = DateTime.now();
     final outside = File(
@@ -643,7 +643,7 @@ void main() {
 
   test('rejects a managed date-directory symlink before read or mutation',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final date = DateTime(2026, 7, 10, 9);
     final outsideDirectory = Directory(
@@ -702,7 +702,7 @@ void main() {
 
   test('replaces an untrusted session ID on live logs before and after flush',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -733,7 +733,7 @@ void main() {
   });
 
   test('session scrubbing ignores hostile live-log getter overrides', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final history = file_io.RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -759,7 +759,7 @@ void main() {
   test('replaces a tampered stored session ID before active-redaction reads',
       () async {
     const secret = 'Bearer STORED_SESSION_SECRET';
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -797,7 +797,7 @@ void main() {
 
   test('file error reporting never formats custom redactor output', () async {
     final hostile = _HostileFileErrorOutput();
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -823,7 +823,7 @@ void main() {
 
   test('rejects a JSONL line before materializing maxFileSize plus one',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -848,7 +848,7 @@ void main() {
 
   test('rejects a segment swapped to a symlink immediately before read',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final outside = File('${root.path}${Platform.pathSeparator}outside-read');
     const outsideContents = 'outside-read-must-not-be-consumed';
@@ -883,7 +883,7 @@ void main() {
 
   test('rejects a segment swapped to a symlink immediately before append',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final outside = File('${root.path}${Platform.pathSeparator}outside-append');
     const outsideContents = 'outside-append-must-not-change';
@@ -921,7 +921,7 @@ void main() {
 
   test('exclusive archive temporary never writes through a raced symlink',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-security-');
+    final root = await createPrivateTempDirectory('ispect-security-');
     addTearDown(() => root.delete(recursive: true));
     final outside = File('${root.path}${Platform.pathSeparator}outside-temp');
     const outsideContents = 'outside-temp-must-not-change';

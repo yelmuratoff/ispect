@@ -6,9 +6,11 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/history/file_log/file_log_codec.dart';
 import 'package:test/test.dart';
 
+import '../../helpers/private_temp_directory.dart';
+
 void main() {
   test('serializes concurrent saves without writing an ID twice', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final initialization = Completer<void>();
     final history = RollingFileLogHistory.testing(
@@ -33,7 +35,7 @@ void main() {
   });
 
   test('auto-save transitions replace the one pending timer', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final timers = <_TestTimer>[];
     final history = RollingFileLogHistory.testing(
@@ -66,7 +68,7 @@ void main() {
 
   test('imports original dates under a distinct shared import session',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -103,7 +105,7 @@ void main() {
   test('round trips an export above 1000 records at the configured cap',
       () async {
     const recordCount = 1200;
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final loggerOptions = ISpectLoggerOptions(
       useConsoleLogs: false,
@@ -138,7 +140,7 @@ void main() {
   });
 
   test('loading a date does not enqueue persisted entries again', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final date = DateTime(2026, 7, 10, 9);
     final writer = RollingFileLogHistory.testing(
@@ -163,7 +165,7 @@ void main() {
   });
 
   test('repairs an incomplete tail before appending the next record', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final date = DateTime(2026, 7, 10, 9);
     final history = RollingFileLogHistory.testing(
@@ -188,7 +190,7 @@ void main() {
   });
 
   test('restores a batch after a transient initialization failure', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     var calls = 0;
     final date = DateTime(2026, 7, 10, 9);
@@ -215,7 +217,7 @@ void main() {
 
   test('maxBatchItems replaces the trailing timer with an immediate flush',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final timers = <_TestTimer>[];
     final date = DateTime(2026, 7, 10, 9);
@@ -252,7 +254,7 @@ void main() {
 
   test('pending overflow reports bounded data loss without payload content',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     var unavailable = true;
     final errors = <FileLogHistoryException>[];
@@ -291,7 +293,7 @@ void main() {
   });
 
   test('restored failed batch stays within the pending limit', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final providerStarted = Completer<void>();
     final releaseProvider = Completer<void>();
@@ -333,7 +335,7 @@ void main() {
   });
 
   test('export replaces an untrusted imported session ID', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -361,7 +363,7 @@ void main() {
   });
 
   test('clear cancels the pending auto-save timer', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     var providerCalls = 0;
     late _TestTimer timer;
@@ -388,7 +390,7 @@ void main() {
 
   test('skips malformed complete lines and ignores one incomplete tail',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final errors = <FileLogHistoryException>[];
     final date = DateTime(2026, 7, 10, 9);
@@ -415,7 +417,7 @@ void main() {
 
   test('sanitizes storage paths before reporting file-history errors',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final errors = <FileLogHistoryException>[];
     final date = DateTime(2026, 7, 10, 9);
@@ -446,7 +448,7 @@ void main() {
 
   test('reports a gzip expansion beyond one segment as a typed limit error',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final errors = <FileLogHistoryException>[];
     final date = DateTime(2026, 7, 10, 9);
@@ -477,7 +479,7 @@ void main() {
 
   test('reports an oversized compressed artifact as a typed limit error',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final errors = <FileLogHistoryException>[];
     final date = DateTime(2026, 7, 10, 9);
@@ -509,7 +511,7 @@ void main() {
   });
 
   test('background auto-save reports failure and retains its batch', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     var unavailable = true;
     final reported = Completer<FileLogHistoryException>();
@@ -541,7 +543,7 @@ void main() {
   });
 
   test('fallback reports a typed sanitized background failure', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final reported =
         Completer<({String message, Object? error, StackTrace? stackTrace})>();
@@ -581,7 +583,7 @@ void main() {
 
   test('reads a newline-dense segment without materializing a line list',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final date = DateTime(2026, 7, 10, 9);
     final history = RollingFileLogHistory.testing(
@@ -607,7 +609,7 @@ void main() {
   });
 
   test('caps cumulative expansion across multiple gzip archives', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final errors = <FileLogHistoryException>[];
     final date = DateTime(2026, 7, 10, 9);
@@ -653,7 +655,7 @@ void main() {
 
   test('public reads stay comprehensive while load retains the newest tail',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final date = DateTime(2026, 7, 10, 9);
     final options = ISpectLoggerOptions(
@@ -700,7 +702,7 @@ void main() {
   });
 
   test('export fails before retaining records beyond maxTotalSize', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-recovery-');
+    final root = await createPrivateTempDirectory('ispect-recovery-');
     addTearDown(() => root.delete(recursive: true));
     final payload =
         List<String>.generate(100, (index) => 'value-$index').join(',');

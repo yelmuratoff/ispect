@@ -1,8 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
+
+import 'helpers/private_temp_directory.dart';
 
 void main() {
   group('ISpectLogger.dispose', () {
@@ -32,7 +33,7 @@ void main() {
     });
 
     test('flushes pending file history before releasing it', () async {
-      final root = await Directory.systemTemp.createTemp('ispect-dispose-');
+      final root = await createPrivateTempDirectory('ispect-dispose-');
       addTearDown(() => root.delete(recursive: true));
       final date = DateTime(2026, 7, 10, 9);
       final options = ISpectLoggerOptions(useConsoleLogs: false);

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:ispectify/ispectify.dart';
 import 'package:test/test.dart';
 
+import '../../helpers/private_temp_directory.dart';
+
 final class _StoredCustomLog extends ISpectLogData {
   _StoredCustomLog(super.message, {super.additionalData});
 
@@ -29,7 +31,7 @@ void main() {
   test(
     'compile-time disabled constructor has no side effects',
     () async {
-      final root = await Directory.systemTemp.createTemp('ispect-history-');
+      final root = await createPrivateTempDirectory('ispect-history-');
       addTearDown(() => root.delete(recursive: true));
       var providerCalls = 0;
       final history = RollingFileLogHistory(
@@ -52,7 +54,7 @@ void main() {
   );
 
   test('writes redacted unique records and reads the day in order', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-history-');
+    final root = await createPrivateTempDirectory('ispect-history-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -93,7 +95,7 @@ void main() {
 
   test('live history retains built-in kinds and downgrades custom subtypes',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-history-');
+    final root = await createPrivateTempDirectory('ispect-history-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -139,7 +141,7 @@ void main() {
 
   test('rotates before appending a complete line past the byte limit',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-history-');
+    final root = await createPrivateTempDirectory('ispect-history-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),

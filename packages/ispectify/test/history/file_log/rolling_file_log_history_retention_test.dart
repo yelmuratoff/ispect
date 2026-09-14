@@ -7,10 +7,12 @@ import 'package:ispectify/src/history/file_log/rolling_file_log_history_io.dart'
     as file_io;
 import 'package:test/test.dart';
 
+import '../../helpers/private_temp_directory.dart';
+
 void main() {
   test('applies retention on first access before any new record is written',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final seed = file_io.RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -48,7 +50,7 @@ void main() {
   });
 
   test('keeps only the newest configured number of dates', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final history = file_io.RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -78,7 +80,7 @@ void main() {
   });
 
   test('deleteBySize uses age to break equal-size ties', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final history = file_io.RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -122,7 +124,7 @@ void main() {
 
   test('archiveOldest gzip-compresses a closed segment and reads it back',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final codec = FileLogCodec(redactor: RedactionService());
     final today = DateTime.now();
@@ -228,7 +230,7 @@ void main() {
   });
 
   test('statistics include configured bounds, archives, and entries', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -263,7 +265,7 @@ void main() {
   });
 
   test('clearAllFileStorage preserves siblings of the managed root', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final sibling = File('${root.path}${Platform.pathSeparator}keep.txt');
     await sibling.writeAsString('keep');
@@ -286,7 +288,7 @@ void main() {
   });
 
   test('ignores date directories without managed history artifacts', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -309,7 +311,7 @@ void main() {
 
   test('many flushes are not capped by the in-memory history setting',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final date = DateTime(2026, 7, 10, 9);
     final history = RollingFileLogHistory.testing(
@@ -338,7 +340,7 @@ void main() {
 
   test('archive rejects an oversized source and leaves it recoverable',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -372,7 +374,7 @@ void main() {
   });
 
   test('archive bounds compressed output and cleans its temporary', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final history = file_io.RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -415,7 +417,7 @@ void main() {
 
   test('archives incompressible input near the configured upper boundary',
       () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     const maxFileSize = 64 * 1024;
     final history = RollingFileLogHistory.testing(
@@ -450,7 +452,7 @@ void main() {
   });
 
   test('recovers a completed archive left beside its source', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
@@ -485,7 +487,7 @@ void main() {
   });
 
   test('retention cleans legacy predictable archive temporaries', () async {
-    final root = await Directory.systemTemp.createTemp('ispect-retention-');
+    final root = await createPrivateTempDirectory('ispect-retention-');
     addTearDown(() => root.delete(recursive: true));
     final history = RollingFileLogHistory.testing(
       ISpectLoggerOptions(useConsoleLogs: false),
