@@ -24,7 +24,11 @@ final logger = ISpectLogger();
 
 logger.info('Application started');
 logger.warning('Cache miss, falling back to network');
-logger.error('Payment gateway returned 502', exception, stackTrace);
+logger.error(
+  'Payment gateway returned 502',
+  exception: exception,
+  stackTrace: stackTrace,
+);
 ```
 
 ISpect is compile-time gated. Enable diagnostics explicitly when running or
@@ -125,7 +129,7 @@ Streaming-only, with no in-memory history. Use this when every event is forwarde
 
 ```dart
 final logger = ISpectLogger(
-  options: const ISpectLoggerOptions(useHistory: false),
+  options: ISpectLoggerOptions(useHistory: false),
 );
 ```
 
@@ -133,7 +137,7 @@ Filter by log-type key. Suppress noisy categories without changing call sites:
 
 ```dart
 final logger = ISpectLogger(
-  filter: ISpectFilter(logTypeKeys: {'analytics', 'route'}),
+  filter: ISpectFilter(excludedLogTypeKeys: {'analytics', 'route'}),
 );
 ```
 
@@ -142,7 +146,7 @@ Filter by level. Drop `debug` and `verbose`, keep `info` and above:
 ```dart
 final logger = ISpectLogger(
   logger: ISpectBaseLogger(
-    filter: LogLevelRangeFilter(minLevel: LogLevel.info),
+    filter: LogLevelRangeFilter(maxLevel: LogLevel.info),
   ),
 );
 ```

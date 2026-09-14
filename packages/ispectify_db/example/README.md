@@ -5,31 +5,45 @@ Flutter/Dart storage solutions.
 
 ## Quick start
 
+This is a Flutter project that depends on the real storage packages
+(`sqflite_common`, `drift`, `hive_ce`, `sembast`, `isar_community`,
+`objectbox`, `realm`, `cloud_firestore`, `shared_preferences`,
+`flutter_secure_storage`, `get_storage`). Dependency resolution currently
+needs the CI-pinned Flutter 3.32.x; newer SDKs conflict with `realm`'s
+`analyzer` constraint.
+
 ```bash
 cd packages/ispectify_db/example
-dart pub get
+flutter pub get
+dart run build_runner build -d
 
-# Run any example
-dart run lib/examples/sqflite_example.dart
-dart run lib/examples/hive_example.dart
+# Launch the example app and run any example from the list
+flutter run -d macos --dart-define=ISPECT_ENABLED=true
 
 # Run all tests
-dart test
+flutter test --dart-define=ISPECT_ENABLED=true
 ```
+
+Without `ISPECT_ENABLED=true` the logger is inert and the tests that assert on
+log history fail.
 
 ## Interceptors
 
-Copy the interceptor file into your project, replace the stub types at
-the top with real package imports, and you're done.
+Copy the interceptor file into your project, add the storage package it
+imports, and you're done. Each interceptor implements (or, for drift,
+extends) the real package type, so it is a drop-in replacement.
 
 | File | Package | Category |
 |------|---------|----------|
-| [sqflite_interceptor.dart](lib/interceptors/sqflite_interceptor.dart) | sqflite | SQL |
-| [drift_interceptor.dart](lib/interceptors/drift_interceptor.dart) | drift | SQL (generated) |
-| [hive_interceptor.dart](lib/interceptors/hive_interceptor.dart) | hive | Key-Value (typed) |
+| [sqflite_interceptor.dart](lib/interceptors/sqflite_interceptor.dart) | sqflite / sqflite_common | SQL |
+| [drift_interceptor.dart](lib/interceptors/drift_interceptor.dart) | drift | SQL (query interceptor) |
+| [hive_interceptor.dart](lib/interceptors/hive_interceptor.dart) | hive_ce | Key-Value (typed) |
 | [shared_preferences_interceptor.dart](lib/interceptors/shared_preferences_interceptor.dart) | shared_preferences | Key-Value (simple) |
 | [flutter_secure_storage_interceptor.dart](lib/interceptors/flutter_secure_storage_interceptor.dart) | flutter_secure_storage | Key-Value (secure) |
-| [isar_interceptor.dart](lib/interceptors/isar_interceptor.dart) | isar | NoSQL (collections) |
+| [get_storage_interceptor.dart](lib/interceptors/get_storage_interceptor.dart) | get_storage | Key-Value |
+| [isar_interceptor.dart](lib/interceptors/isar_interceptor.dart) | isar_community | NoSQL (collections) |
+| [objectbox_interceptor.dart](lib/interceptors/objectbox_interceptor.dart) | objectbox | NoSQL (boxes) |
+| [realm_interceptor.dart](lib/interceptors/realm_interceptor.dart) | realm | Object database |
 | [sembast_interceptor.dart](lib/interceptors/sembast_interceptor.dart) | sembast | Document store |
 | [firebase_firestore_interceptor.dart](lib/interceptors/firebase_firestore_interceptor.dart) | cloud_firestore | Cloud NoSQL |
 
@@ -64,31 +78,41 @@ final traced = ISpectSqfliteDatabase(
 
 ## Examples
 
-Each example file is a runnable `main()` that demonstrates realistic
-usage with simulated storage (no real dependencies needed):
+Each example file exposes an async function that runs realistic operations
+against the real package, using in-memory databases, temporary directories,
+or `fake_cloud_firestore` where possible. [`lib/main.dart`](lib/main.dart)
+lists them all in a Flutter app with a "Run All Examples" button:
 
 | File | Storage |
 |------|---------|
 | [sqflite_example.dart](lib/examples/sqflite_example.dart) | SQL queries, inserts, transactions |
 | [drift_example.dart](lib/examples/drift_example.dart) | Select, insert, batch, custom SQL |
+| [drift_codegen_example.dart](lib/examples/drift_codegen_example.dart) | Generated database and typed queries |
 | [hive_example.dart](lib/examples/hive_example.dart) | Typed box CRUD, bulk ops |
 | [shared_preferences_example.dart](lib/examples/shared_preferences_example.dart) | All typed getters/setters |
 | [flutter_secure_storage_example.dart](lib/examples/flutter_secure_storage_example.dart) | Tokens, redacted values |
+| [get_storage_example.dart](lib/examples/get_storage_example.dart) | Writes, reads, key listing, deletes |
 | [isar_example.dart](lib/examples/isar_example.dart) | Collection CRUD, bulk ops |
+| [objectbox_example.dart](lib/examples/objectbox_example.dart) | Sync and async puts/gets, counts |
+| [realm_example.dart](lib/examples/realm_example.dart) | Write transactions, reads, updates, deletes |
 | [sembast_example.dart](lib/examples/sembast_example.dart) | Records, queries, transactions |
 | [firebase_firestore_example.dart](lib/examples/firebase_firestore_example.dart) | Documents, collections, merge |
 
+The drift, Isar, and ObjectBox models need generated code that is not
+committed; rerun `dart run build_runner build -d` after changing a model.
+
 ## Tests
 
-Every interceptor has a dedicated test file with full coverage:
+Every interceptor has a dedicated test file:
 
 ```bash
-dart test                           # all tests
-dart test test/interceptors/        # interceptor tests only
+flutter test --dart-define=ISPECT_ENABLED=true                     # all tests
+flutter test --dart-define=ISPECT_ENABLED=true test/interceptors/  # interceptor tests only
 ```
 
-Each test file uses a fake implementation of the storage interface to
-verify that the interceptor:
+Tests run against the real packages: in-memory databases, temporary
+directories, `fake_cloud_firestore`, and mocked platform channels for the
+Flutter plugins. They verify that the interceptor:
 - Delegates all calls to the underlying storage
 - Logs the correct source, operation, keys, and metadata
 - Handles errors properly
@@ -97,7 +121,6 @@ verify that the interceptor:
 ## Design
 
 - **No hardcoded values**: `source` is configurable via constructor
-- **Interface-based**: stub types mirror real package APIs exactly
-- **Extensible**: add new operations by implementing the interface
-- **Pure Dart**: no Flutter dependency, all examples run with `dart run`
-- **Test-friendly**: fakes implement the same interface as real packages
+- **Drop-in**: interceptors implement the real package interfaces
+- **Extensible**: add new operations by delegating and tracing them the same way
+- **Real drivers**: examples and tests exercise the actual storage packages

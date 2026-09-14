@@ -11,7 +11,8 @@
 
 ```yaml
 dependencies:
-  dio: ^5.0.0
+  dio: ^5.8.0+1
+  ispect: ^{{version}}
   ispectify: ^{{version}}
   ispectify_dio: ^{{version}}
 ```
@@ -20,9 +21,11 @@ dependencies:
 
 ```dart
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 
+final logger = ISpectFlutter.init();
 final dio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
 
 ISpect.run(

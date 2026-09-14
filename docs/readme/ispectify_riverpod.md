@@ -11,6 +11,7 @@
 ```yaml
 dependencies:
   flutter_riverpod: ^2.5.0
+  ispect: ^{{version}}
   ispectify: ^{{version}}
   ispectify_riverpod: ^{{version}}
 ```
@@ -18,6 +19,7 @@ dependencies:
 ## Quick start
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_riverpod/ispectify_riverpod.dart';

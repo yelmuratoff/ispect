@@ -10,8 +10,9 @@
 
 ```yaml
 dependencies:
-  http: ^1.0.0
-  http_interceptor: ^2.0.0
+  http: ^1.5.0
+  http_interceptor: ^3.0.0
+  ispect: ^{{version}}
   ispectify: ^{{version}}
   ispectify_http: ^{{version}}
 ```
@@ -19,22 +20,22 @@ dependencies:
 ## Quick start
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_http/ispectify_http.dart';
 
-final client = http_interceptor.InterceptedClient.build(interceptors: []);
+final logger = ISpectFlutter.init();
+
+final client = http_interceptor.InterceptedClient.build(
+  interceptors: [
+    if (kISpectEnabled) ISpectHttpInterceptor(logger: logger),
+  ],
+);
 
 ISpect.run(
   () => runApp(const MyApp()),
   logger: logger,
-  onInit: () {
-    client.interceptors.add(
-      ISpectHttpInterceptor(
-        logger: logger,
-      ),
-    );
-  },
 );
 ```
 

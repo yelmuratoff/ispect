@@ -18,6 +18,8 @@ navigation diagnostics.
 
 ```yaml
 dependencies:
+  flutter_localizations:
+    sdk: flutter
   ispect: ^{{version}}
 ```
 
@@ -341,7 +343,7 @@ stable version before pinning a production integration.
 What you can verify from the repository today:
 
 - Repository metadata and generated documentation currently target `{{version}}`.
-- SDK baseline is Dart `>=3.6.0 <4.0.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
+- SDK baseline is Dart `>=3.6.0 <4.0.0` for the pure Dart packages. `ispect` requires Dart `>=3.8.0` and Flutter `>=3.35.0`; `ispect_layout` requires Dart `>=3.8.0` and Flutter `>=3.32.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
 - The `production_safety` workflow runs disabled direct-API tests for every package and compares disabled/enabled release AOT probes using exact implementation sentinels.
 - Core diagnostics and supported integrations resolve one configurable default `RedactionService`; explicit integration services remain local overrides.
 - Deprecations come with replacements and removal targets in `docs/DEPRECATIONS.md`.
@@ -371,7 +373,7 @@ for the measurement method and controls.
 
 ## Repository
 
-This is a monorepo. Every package above plus the standalone web log viewer lives in the same tree, with shared scripts for versioning, publishing, and doc sync. See [`bash/README.md`](https://github.com/yelmuratoff/ispect/blob/main/bash/README.md) for the automation stack and [`docs/VERSION_MANAGEMENT.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/VERSION_MANAGEMENT.md) for the release workflow.
+This is a monorepo. Every package above plus the standalone web log viewer lives in the same tree, with shared scripts for versioning, publishing, and doc sync. See [`tool/README.md`](https://github.com/yelmuratoff/ispect/blob/main/tool/README.md) for the automation stack and [`docs/VERSION_MANAGEMENT.md`](https://github.com/yelmuratoff/ispect/blob/main/docs/VERSION_MANAGEMENT.md) for the release workflow.
 
 ## Documentation workflow
 

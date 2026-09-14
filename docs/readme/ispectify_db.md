@@ -12,6 +12,7 @@
 
 ```yaml
 dependencies:
+  ispect: ^{{version}}
   ispectify: ^{{version}}
   ispectify_db: ^{{version}}
 ```
@@ -21,6 +22,7 @@ dependencies:
 Pass configuration at the traced call site:
 
 ```dart
+import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/ispectify_db.dart';
 
 const dbConfig = ISpectDbConfig(
@@ -36,6 +38,7 @@ const dbConfig = ISpectDbConfig(
 Then wrap each storage call with `dbTrace`:
 
 ```dart
+import 'package:ispect/ispect.dart';
 import 'package:sqflite/sqflite.dart';
 
 final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
@@ -67,7 +70,7 @@ final rows = await ISpect.logger.dbTrace<List<Map<String, Object?>>>(
 ```dart
 const dbConfig = ISpectDbConfig(
   redact: true,
-  redactKeys: ['password', 'token', 'secret'],
+  redactKeys: {'password', 'token', 'secret'},
   slowThreshold: Duration(milliseconds: 250),
 );
 ```

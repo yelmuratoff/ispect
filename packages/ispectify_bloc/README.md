@@ -57,7 +57,8 @@
 
 ```yaml
 dependencies:
-  flutter_bloc: ^8.0.0
+  flutter_bloc: ^9.1.0
+  ispect: ^7.0.0-rc.13
   ispectify: ^7.0.0-rc.13
   ispectify_bloc: ^7.0.0-rc.13
 ```
@@ -65,6 +66,7 @@ dependencies:
 ## Quick start
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
@@ -207,8 +209,9 @@ final redactor = RedactionService(
 ### Disabling
 
 `ISpectRedaction.configure(enabled: false)` is the global content-masking
-opt-out. Each interceptor also accepts `enableRedaction: false` on its settings
-object for a local opt-out. Size limits, private-storage checks, the selected
+opt-out. For a local opt-out, pass `enableRedaction: false` to network,
+WebSocket, BLoC, or Riverpod settings, or `redact: false` to `ISpectDbConfig`
+and other trace configs. Size limits, private-storage checks, the selected
 capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.

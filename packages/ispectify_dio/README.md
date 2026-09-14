@@ -58,7 +58,8 @@
 
 ```yaml
 dependencies:
-  dio: ^5.0.0
+  dio: ^5.8.0+1
+  ispect: ^7.0.0-rc.13
   ispectify: ^7.0.0-rc.13
   ispectify_dio: ^7.0.0-rc.13
 ```
@@ -67,9 +68,11 @@ dependencies:
 
 ```dart
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 
+final logger = ISpectFlutter.init();
 final dio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
 
 ISpect.run(
@@ -219,8 +222,9 @@ final redactor = RedactionService(
 ### Disabling
 
 `ISpectRedaction.configure(enabled: false)` is the global content-masking
-opt-out. Each interceptor also accepts `enableRedaction: false` on its settings
-object for a local opt-out. Size limits, private-storage checks, the selected
+opt-out. For a local opt-out, pass `enableRedaction: false` to network,
+WebSocket, BLoC, or Riverpod settings, or `redact: false` to `ISpectDbConfig`
+and other trace configs. Size limits, private-storage checks, the selected
 capture mode, and the compile-time `ISPECT_ENABLED` gate remain enforced.
 
 Only disable redaction in isolated local or deterministic test environments. Exported sessions and observer events should be handled according to the data they contain.

@@ -10,7 +10,8 @@
 
 ```yaml
 dependencies:
-  flutter_bloc: ^8.0.0
+  flutter_bloc: ^9.1.0
+  ispect: ^{{version}}
   ispectify: ^{{version}}
   ispectify_bloc: ^{{version}}
 ```
@@ -18,6 +19,7 @@ dependencies:
 ## Quick start
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';

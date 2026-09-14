@@ -11,6 +11,7 @@
 
 ```yaml
 dependencies:
+  ispect: ^{{version}}
   ispectify: ^{{version}}
   ispectify_ws: ^{{version}}
   # plus your WebSocket client, e.g.
