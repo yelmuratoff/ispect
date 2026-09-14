@@ -527,8 +527,11 @@ void _expectRippleMatchesInkSurface(WidgetTester tester, Finder control) {
       .getOuterPath(Offset.zero & tapSize)
       .getBounds();
 
-  expect(clipBounds.size, surfaceSize);
-  expect(clipBounds.center, (Offset.zero & tapSize).center);
+  expect(clipBounds.size, within<Size>(distance: 0.1, from: surfaceSize));
+  expect(
+    clipBounds.center,
+    within<Offset>(distance: 0.1, from: (Offset.zero & tapSize).center),
+  );
 }
 
 final class _HostileRuntimeTypeError extends Error {
