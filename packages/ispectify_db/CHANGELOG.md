@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.1.0-dev.1
+
+### Bug Fixes
+
+- **Grouped search matches:** Search counts a grouped HTTP card once, so next/previous no longer stops twice on the same request.
+
 ## 7.0.0
 
 ### Breaking Changes

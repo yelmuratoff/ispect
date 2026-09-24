@@ -67,7 +67,7 @@ navigation diagnostics.
 dependencies:
   flutter_localizations:
     sdk: flutter
-  ispect: ^7.0.0
+  ispect: ^7.1.0-dev.1
 ```
 
 ```dart
@@ -394,7 +394,7 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 
 ## Release channel
 
-The version declared in `version.config` (currently `7.0.0`) is the
+The version declared in `version.config` (currently `7.1.0-dev.1`) is the
 repository version used by package metadata and generated documentation. It
 may be a stable release or a prerelease; check pub.dev for the latest published
 stable version before pinning a production integration.
@@ -403,7 +403,7 @@ stable version before pinning a production integration.
 
 What you can verify from the repository today:
 
-- Repository metadata and generated documentation currently target `7.0.0`.
+- Repository metadata and generated documentation currently target `7.1.0-dev.1`.
 - SDK baseline is Dart `>=3.6.0 <4.0.0` for the pure Dart packages. `ispect` requires Dart `>=3.8.0` and Flutter `>=3.35.0`; `ispect_layout` requires Dart `>=3.8.0` and Flutter `>=3.32.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
 - The `production_safety` workflow runs disabled direct-API tests for every package and compares disabled/enabled release AOT probes using exact implementation sentinels.
 - Core diagnostics and supported integrations resolve one configurable default `RedactionService`; explicit integration services remain local overrides.

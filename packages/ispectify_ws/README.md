@@ -58,9 +58,9 @@
 
 ```yaml
 dependencies:
-  ispect: ^7.0.0
-  ispectify: ^7.0.0
-  ispectify_ws: ^7.0.0
+  ispect: ^7.1.0-dev.1
+  ispectify: ^7.1.0-dev.1
+  ispectify_ws: ^7.1.0-dev.1
   # plus your WebSocket client, e.g.
   # ws: ^1.0.0  |  web_socket_channel: ^3.0.0  |  socket_io_client: ^3.0.0
 ```

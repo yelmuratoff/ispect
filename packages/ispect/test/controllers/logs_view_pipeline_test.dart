@@ -193,6 +193,37 @@ void main() {
     expect(identical(state.searchMatches, again.searchMatches), isTrue);
   });
 
+  test('highlight mode counts a grouped transaction as one match', () {
+    view.searchByCorrelationId('request-');
+    final logs = [
+      plain('N', message: 'request-free note'),
+      ...transaction(1),
+      plain('O', message: 'other'),
+      ...transaction(2),
+    ];
+
+    final state = pipeline.compute(logs);
+
+    expect(state.grouped, hasLength(4));
+    expect(ids(state.searchMatches!), ['REQUEST-2', 'REQUEST-1', 'N']);
+
+    final again = pipeline.compute(logs);
+    expect(identical(state.searchMatches, again.searchMatches), isTrue);
+  });
+
+  test('toggling grouping recounts matches for the same snapshot', () {
+    view.searchByCorrelationId('request-');
+    final logs = [...transaction(1), ...transaction(2)];
+
+    expect(pipeline.compute(logs).searchMatches, hasLength(2));
+
+    view.toggleGroupHttpLogs();
+    expect(pipeline.compute(logs).searchMatches, hasLength(4));
+
+    view.toggleGroupHttpLogs();
+    expect(pipeline.compute(logs).searchMatches, hasLength(2));
+  });
+
   test('filter mode narrows the list to matches and reports no highlights', () {
     view
       ..toggleGroupHttpLogs()
