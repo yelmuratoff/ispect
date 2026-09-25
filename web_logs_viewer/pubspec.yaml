@@ -39,7 +39,7 @@ dependencies:
 
   iconsax_plus: ^1.0.0
 
-  file_picker: ^10.3.3
+  file_picker: ^11.0.3
   super_drag_and_drop: ^0.9.1
   collection: ^1.19.1
   dio: ^5.8.0+1
