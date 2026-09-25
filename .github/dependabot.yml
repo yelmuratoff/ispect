@@ -62,3 +62,6 @@ updates:
     directory: "/web_logs_viewer"
     schedule:
       interval: "weekly"
+    groups:
+      web-logs-viewer:
+        patterns: ["*"]
