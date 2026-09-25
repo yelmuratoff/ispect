@@ -49,6 +49,9 @@ updates:
     directory: "/packages/ispectify_riverpod"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "riverpod"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "pub"
     directory: "/packages/ispectify_ws"
