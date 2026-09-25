@@ -224,7 +224,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
 
   Future<void> _showFilePicker() async {
     try {
-      final FilePickerResult? result = await FilePicker.platform.pickFiles(
+      final FilePickerResult? result = await FilePicker.pickFiles(
         allowMultiple: true,
         type: FileType.custom,
         allowedExtensions: ['txt', 'json'],
