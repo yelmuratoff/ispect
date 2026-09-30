@@ -30,6 +30,12 @@ base class ExtendedLoggerFormatter implements ILoggerFormatter {
 
     if (!settings.enableColors) return text;
 
-    return text.split('\n').map(details.pen.write).join('\n');
+    final originalAnsiColorDisabled = ansiColorDisabled;
+    try {
+      ansiColorDisabled = false;
+      return text.split('\n').map(details.pen.write).join('\n');
+    } finally {
+      ansiColorDisabled = originalAnsiColorDisabled;
+    }
   }
 }

@@ -1,4 +1,7 @@
 import 'package:ansicolor/ansicolor.dart';
+import 'package:ispectify/src/logger/console_color_support_io.dart'
+    if (dart.library.js_interop) 'package:ispectify/src/logger/console_color_support_web.dart'
+    as platform;
 import 'package:ispectify/src/logger/console_utils.dart';
 import 'package:ispectify/src/logger/entry_formatter.dart';
 import 'package:ispectify/src/models/log_level.dart';
@@ -15,7 +18,8 @@ final class ConsoleSettings {
   /// - `level`: Minimum log level to be recorded (default: `LogLevel.verbose`).
   /// - `lineSymbol`: The symbol used for log separators (default: `'─'`).
   /// - `maxLineWidth`: Maximum width for log lines (default: `110`).
-  /// - `enableColors`: Enables ANSI colors in console output (default: `true`).
+  /// - `enableColors`: Enables ANSI colors. Defaults to terminal detection on
+  ///   IO and `false` on web; an explicit `true` forces colors.
   /// - `fullTimestamp`: When `true`, console timestamps include the full
   ///   ISO-8601 date with timezone; when `false`, only `HH:MM:SS.mmm`
   ///   (default: `false`).
@@ -35,11 +39,12 @@ final class ConsoleSettings {
     this.level = LogLevel.verbose,
     this.lineSymbol = '─',
     this.maxLineWidth = 110,
-    this.enableColors = true,
+    bool? enableColors,
     this.fullTimestamp = false,
     this.truncateTraceIds = true,
     this.formatter = const HumanLogEntryFormatter(),
   })  : assert(maxLineWidth > 0, 'maxLineWidth must be positive'),
+        enableColors = enableColors ?? platform.defaultConsoleColors,
         colors = Map<LogLevel, AnsiPen>.unmodifiable({
           ...ConsoleUtils.ansiColors,
           if (colors != null) ...colors,

@@ -235,7 +235,7 @@ balanced mode persists the already-bounded diagnostic text snapshot.
 
 ## Console output
 
-Console entries use a compact, single-line format by default. Switch to a boxed format - each entry framed for visual separation in a busy console - by setting `ConsoleSettings.formatter`:
+Console entries use a compact, single-line format by default. Newlines in messages and network bodies appear as `\n`, so line-based search shows the displayed entry together. The built-in entry formatters escape terminal control characters in diagnostic text before optional ANSI coloring. Console entries remain subject to `ISpectLoggerOptions.logTruncateLength` (10,000 characters by default). Switch to a multi-line boxed format - each entry framed for visual separation in a busy console - by setting `ConsoleSettings.formatter`:
 
 ```dart
 final logger = ISpectLogger(
@@ -251,7 +251,7 @@ final logger = ISpectLogger(
 └──────────────────────────────────────────────
 ```
 
-The boxed formatter renders the same fields as the default (so redaction and network bodies carry over), and the border glyph and width follow `ConsoleSettings.lineSymbol` / `maxLineWidth`. Implement `ILogEntryFormatter` for a fully custom layout; the default is the compact `HumanLogEntryFormatter`.
+The boxed formatter renders the same fields as the default (so redaction and network bodies carry over), and the border glyph and width follow `ConsoleSettings.lineSymbol` / `maxLineWidth`. Implement `ILogEntryFormatter` for a fully custom layout; the default is the compact `HumanLogEntryFormatter`. Each entry is sent to the console in one call, including multi-line boxed entries.
 
 By default, entries are written with `print` (browser console on web). To route them through `dart:developer` instead - so they appear in the DevTools logging view with structured metadata - pass the `developerLogOutput` sink:
 
@@ -264,7 +264,9 @@ final logger = ISpectLogger(
 );
 ```
 
-Each entry becomes a single `log()` call, so multi-line boxed output stays intact, and the log level is mapped through. Messages arrive colored when `ConsoleSettings.enableColors` is on; if your log viewer shows ANSI codes as raw escape sequences, pair it with `enableColors: false`. Flutter apps initialized via `ISpect.run` / `ISpectFlutter.init()` already use a platform-adaptive output (`dart:developer` on iOS/macOS, `print` elsewhere); `developerLogOutput` is for code that wires `ISpectBaseLogger` directly, or any custom `LoggerOutput`.
+Each entry becomes a single `log()` call, so multi-line boxed output stays intact, and the log level is mapped through. ANSI colors default to terminal detection on Dart IO and are off in the browser console. Pass `enableColors: true` to force colors or `false` for plain text; the logger preserves the process-wide `ansicolor` setting. Flutter apps initialized via `ISpect.run` / `ISpectFlutter.init()` already use a platform-adaptive output (`dart:developer` on iOS/macOS, `print` elsewhere); `developerLogOutput` is for code that wires `ISpectBaseLogger` directly, or any custom `LoggerOutput`.
+
+For copyable correlation IDs and timestamps that remain clear across dates, use `ConsoleSettings(fullTimestamp: true, truncateTraceIds: false)`. For machine-readable history, use `LogExporter.toJsonLines(logger.history)` rather than parsing the human console format.
 
 ## Tracing
 

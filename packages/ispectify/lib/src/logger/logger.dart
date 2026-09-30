@@ -30,9 +30,7 @@ class ISpectBaseLogger {
     LoggerOutput? output,
   })  : settings = settings ?? ConsoleSettings(),
         _filter = filter,
-        _output = output ?? outputLog {
-    ansiColorDisabled = false;
-  }
+        _output = output ?? outputLog;
 
   final ConsoleSettings settings;
   final ILoggerFormatter formatter;

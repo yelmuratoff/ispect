@@ -1,0 +1,1 @@
+const bool defaultConsoleColors = false;

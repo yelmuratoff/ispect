@@ -4,6 +4,8 @@
 
 ### Bug Fixes
 
+- **Console output:** ANSI colors follow terminal support by default, and the built-in entry formatters escape terminal control characters in diagnostic text.
+- **Console search:** Default log entries keep request details on one searchable line, while boxed entries stay grouped as a single console event.
 - **Grouped search matches:** Search counts a grouped HTTP card once, so next/previous no longer stops twice on the same request.
 
 ## 7.0.0
