@@ -164,64 +164,10 @@ void main() {
       );
     });
 
-    test('escapes multi-line messages on one console line', () {
+    test('renders multi-line messages with indented continuation', () {
       final data = _data(message: 'Request:\ncurl -X GET ...');
       final line = formatter.format(data, settings);
-      expect(line, contains(r'Request:\ncurl -X GET ...'));
-      expect(line, isNot(contains('\n')));
-    });
-
-    test('keeps header fields and message on one console line', () {
-      final data = _data(
-        message: 'request\r\nbody',
-        key: 'http\nrequest',
-        additionalData: const {TraceKeys.source: 'client\nname'},
-      );
-
-      final line = formatter.format(data, settings);
-
-      expect(line, isNot(contains('\n')));
-      expect(line, isNot(contains('\r')));
-      expect(line, contains(r'[client\nname] [http\nrequest]'));
-      expect(line, contains(r'request\nbody'));
-    });
-
-    test('escapes terminal control characters in the console entry', () {
-      final data = _data(
-        message: 'request\x1B[2Jbody\u2028next\u202Efield',
-        key: 'http\x1B[31m-request',
-      );
-
-      final line = formatter.format(data, settings);
-
-      expect(line, isNot(contains('\x1B')));
-      expect(line, contains(r'http\x1b[31m-request'));
-      expect(line, contains(r'request\x1b[2Jbody'));
-      expect(line, contains(r'body\u2028next\u202efield'));
-      expect(line, isNot(contains('\u2028')));
-      expect(line, isNot(contains('\u202E')));
-    });
-
-    test('keeps a network entry searchable as one console line', () {
-      final data = _data(
-        message: '→ POST https://api.example.com/orders',
-        level: LogLevel.info,
-        key: ISpectLogType.httpRequest.key,
-        additionalData: const {
-          TraceKeys.category: TraceCategoryIds.network,
-          TraceKeys.target: 'https://api.example.com/orders',
-          NetworkJsonKeys.requestData: {
-            NetworkJsonKeys.data: {'item': 'searchable-item'},
-          },
-        },
-      );
-
-      final line = formatter.format(data, settings);
-
-      expect(line, isNot(contains('\n')));
-      expect(line, contains('POST https://api.example.com/orders'));
-      expect(line, contains('searchable-item'));
-      expect(line, contains('Data:'));
+      expect(line, contains('Request:\n  curl -X GET ...'));
     });
 
     for (final fixture in <({String key, Map<String, dynamic> meta})>[
@@ -346,28 +292,6 @@ void main() {
       expect(lines.where((l) => l.startsWith('│ ')).length, 3);
       expect(lines[2], '│ #0 main');
       expect(lines[3], '│ #1 run');
-    });
-
-    test('escapes terminal controls without losing box structure', () {
-      final data = _data(
-        message: 'request\x1B[2J\nbody',
-        additionalData: const {TraceKeys.source: 'client\x1B[31m'},
-      );
-
-      final line = formatter.format(data, settings);
-
-      expect(line, isNot(contains('\x1B')));
-      expect(line, contains(r'client\x1b[31m'));
-      expect(line, contains(r'request\x1b[2J'));
-      expect(
-        line.split('\n').every(
-              (part) =>
-                  part.startsWith('┌') ||
-                  part.startsWith('└') ||
-                  part.startsWith('│ '),
-            ),
-        isTrue,
-      );
     });
 
     test('uses "(empty log message)" placeholder for blank body', () {

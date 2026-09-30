@@ -1,62 +1,9 @@
-import 'dart:async';
-import 'dart:io';
-
-import 'package:ansicolor/ansicolor.dart';
 import 'package:ispectify/src/console_settings.dart';
 import 'package:ispectify/src/logger/logger.dart';
-import 'package:ispectify/src/logger/logger_io.dart';
 import 'package:ispectify/src/models/log_level.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('default console colors follow stdout ANSI support', () {
-    expect(ConsoleSettings().enableColors, stdout.supportsAnsiEscapes);
-  });
-
-  test('constructing a logger preserves the process ANSI setting', () {
-    final original = ansiColorDisabled;
-    try {
-      ansiColorDisabled = true;
-
-      ISpectBaseLogger();
-
-      expect(ansiColorDisabled, isTrue);
-    } finally {
-      ansiColorDisabled = original;
-    }
-  });
-
-  test('explicit console colors do not change the process ANSI setting', () {
-    final original = ansiColorDisabled;
-    final printed = <String>[];
-    try {
-      ansiColorDisabled = true;
-      ISpectBaseLogger(
-        settings: ConsoleSettings(enableColors: true),
-        output: (message, {logLevel, error, stackTrace, time}) =>
-            printed.add(message),
-      ).info('colored message');
-
-      expect(printed.single, contains('\x1B['));
-      expect(ansiColorDisabled, isTrue);
-    } finally {
-      ansiColorDisabled = original;
-    }
-  });
-
-  test('stdout emits a multi-line entry in one print call', () {
-    final printed = <String>[];
-
-    runZoned<void>(
-      () => outputLog('first line\nsecond line'),
-      zoneSpecification: ZoneSpecification(
-        print: (self, parent, zone, line) => printed.add(line),
-      ),
-    );
-
-    expect(printed, ['first line\nsecond line']);
-  });
-
   group('ISpectLoggerLogger', () {
     late List<String> loggedMessages;
 

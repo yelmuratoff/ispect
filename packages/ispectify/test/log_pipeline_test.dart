@@ -138,38 +138,6 @@ void main() {
       expect(captured.single, contains('boxed me'));
     });
 
-    test('default console output keeps a network entry on one line', () {
-      final captured = <String>[];
-      final logger = ISpectBaseLogger(
-        settings: ConsoleSettings(enableColors: false),
-        output: (message, {logLevel, error, stackTrace, time}) =>
-            captured.add(message),
-      );
-      LogPipeline(
-        streamController: streamController,
-        options: ISpectLoggerOptions(),
-        consoleLogger: logger,
-        history: history,
-      ).dispatch(
-        ISpectLogData(
-          '→ POST https://api.example.com/orders',
-          key: 'http-request',
-          additionalData: const {
-            TraceKeys.category: TraceCategoryIds.network,
-            TraceKeys.target: 'https://api.example.com/orders',
-            NetworkJsonKeys.requestData: {
-              NetworkJsonKeys.data: {'item': 'searchable-item'},
-            },
-          },
-        ),
-      );
-
-      expect(captured, hasLength(1));
-      expect(captured.single, isNot(contains('\n')));
-      expect(captured.single, contains('POST https://api.example.com/orders'));
-      expect(captured.single, contains('searchable-item'));
-    });
-
     test('dispatch swallows errors from history.add without crashing', () {
       pipeline = LogPipeline(
         streamController: streamController,

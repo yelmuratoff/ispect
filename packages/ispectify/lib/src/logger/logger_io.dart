@@ -2,7 +2,7 @@ import 'package:ispectify/src/models/log_level.dart';
 
 // ignore_for_file: avoid_print
 
-/// Prints [message] as one stdout event.
+/// Prints each line of [message] to stdout.
 void outputLog(
   String message, {
   LogLevel? logLevel,
@@ -10,4 +10,4 @@ void outputLog(
   StackTrace? stackTrace,
   DateTime? time,
 }) =>
-    print(message);
+    message.split('\n').forEach(print);

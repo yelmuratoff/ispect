@@ -33,7 +33,7 @@ const Set<String> _levelKeyNames = <String>{
 String? _levelFromKey(String? key) =>
     key != null && _levelKeyNames.contains(key) ? key : null;
 
-/// Human-readable, single-line console output.
+/// Human-readable, grep-friendly console output.
 ///
 /// Layout: `LEVEL   [source] [category] | time | tid=… cid=… dur=…ms | message`
 ///
@@ -50,10 +50,19 @@ base class HumanLogEntryFormatter implements ILogEntryFormatter {
     if (body.isEmpty) {
       buffer.write('(empty log message)');
     } else {
-      buffer.write(body);
+      final lines = body.split('\n');
+      if (lines.length == 1) {
+        buffer.write(lines.single);
+      } else {
+        for (final line in lines) {
+          buffer
+            ..write('\n  ')
+            ..write(line);
+        }
+      }
     }
 
-    return _escapeConsoleText(buffer.toString());
+    return buffer.toString();
   }
 }
 
@@ -93,11 +102,11 @@ base class BoxedLogEntryFormatter implements ILogEntryFormatter {
     final buffer = StringBuffer('┌$border')
       ..write('\n│ ')
       ..write(header)
-      ..write(_escapeConsoleText(lines.first));
+      ..write(lines.first);
     for (final line in lines.skip(1)) {
       buffer
         ..write('\n│ ')
-        ..write(_escapeConsoleText(line));
+        ..write(line);
     }
     buffer.write('\n└$border');
 
@@ -131,25 +140,8 @@ String _buildHeader(ISpectLogData data, ConsoleSettings settings) {
   final metadata = _buildMetadata(fields, settings);
   final metadataSection = metadata.isEmpty ? '' : ' $metadata |';
 
-  return _escapeConsoleText(
-    '$paddedLevel$sourceLabel$categoryLabel | $timestamp |$metadataSection ',
-  );
+  return '$paddedLevel$sourceLabel$categoryLabel | $timestamp |$metadataSection ';
 }
-
-final RegExp _consoleControls =
-    RegExp(r'[\x00-\x1F\x7F-\x9F\u200E\u200F\u2028-\u202E\u2066-\u2069]');
-
-String _escapeConsoleText(String value) =>
-    value.replaceAll('\r\n', '\n').replaceAllMapped(_consoleControls, (match) {
-      final code = match.group(0)!.codeUnitAt(0);
-      return switch (code) {
-        0x09 => r'\t',
-        0x0A => r'\n',
-        0x0D => r'\r',
-        _ when code <= 0xFF => '\\x${code.toRadixString(16).padLeft(2, '0')}',
-        _ => '\\u${code.toRadixString(16).padLeft(4, '0')}',
-      };
-    });
 
 /// Builds the entry body shared by all formatters: the full text message
 /// (message + error + exception + stack trace) plus the network body block
