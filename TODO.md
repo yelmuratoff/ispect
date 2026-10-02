@@ -8,6 +8,10 @@ This file is intentionally short. Public planning lives in [`ROADMAP.md`](ROADMA
 - Repeat the physical-iOS startup and high-volume measurements with Simulator, unrelated builds, and other sustained CPU/I/O workloads stopped; treat the 2026-07-17 pass as provisional.
 - Add adoption notes or case studies to `docs/USE_CASES.md` only when they are real and attributable, with concrete numbers.
 
+## Completed
+
+- [x] Add consumer setup skills to all nine published packages under `packages/<pkg>/skills/<pkg-with-hyphens>-setup/SKILL.md`, scaffolded from each package with `dart run skills@ create`. Keep them included in package archives and separate from contributor skills; consumers install them with `dart run skills@ get`. See [Dart package skills](https://dart.dev/ai/package-skills).
+
 ## Release Checks
 
 - `dart run tool/bin/ispect_tool.dart check`

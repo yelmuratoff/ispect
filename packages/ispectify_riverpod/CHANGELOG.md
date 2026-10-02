@@ -2,6 +2,10 @@
 
 ## 7.1.0-dev.2
 
+### Improvements
+
+- **AI package skills:** All nine packages include setup guidance for coding agents, installable with `dart run skills@ get`.
+
 ### Bug Fixes
 
 - **Grouped search matches:** Search counts a grouped HTTP card once, so next/previous no longer stops twice on the same request.
