@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.1.0-dev.4
+
+### Bug Fixes
+
+- **Parked panel:** The panel parked at a screen edge no longer shows a lighter shape under its handle.
+
 ## 7.1.0-dev.3
 
 ### Improvements
