@@ -425,6 +425,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       stashedShape: shape,
       shape: shape,
       stashedOpacity: ISpectConstants.stashedPanelOpacity,
+      stashedElevation: 0,
     );
   }
 
