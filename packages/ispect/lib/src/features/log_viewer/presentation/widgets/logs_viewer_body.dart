@@ -4,7 +4,6 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/services/log_correlation_index.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/resizable_split_view.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/main_logs_view.dart';
@@ -20,7 +19,6 @@ class LogsViewerBody extends StatefulWidget {
     required this.logsData,
     required this.controller,
     required this.iSpectTheme,
-    required this.titleFiltersController,
     required this.searchFocusNode,
     required this.logsScrollController,
     super.key,
@@ -31,7 +29,6 @@ class LogsViewerBody extends StatefulWidget {
   final List<ISpectLogData> logsData;
   final ISpectViewController controller;
   final ISpectScopeModel iSpectTheme;
-  final GroupButtonController titleFiltersController;
   final FocusNode searchFocusNode;
   final ScrollController logsScrollController;
   final String? appBarTitle;
@@ -93,13 +90,11 @@ class _LogsViewerBodyState extends State<LogsViewerBody> {
           key: _logsViewKey,
           logsData: widget.logsData,
           iSpectTheme: widget.iSpectTheme,
-          titleFiltersController: widget.titleFiltersController,
           searchFocusNode: widget.searchFocusNode,
           logsScrollController: widget.logsScrollController,
           logsViewController: controller,
           appBarTitle: widget.appBarTitle,
           onSettingsTap: widget.onSettingsTap,
-          hasDetailPanel: showDetailPanel,
         );
 
         if (!showDetailPanel) {

@@ -49,6 +49,7 @@ void main() {
     final controller = ExportController(
       availableFormats: const [ExportFormat.json],
       onShare: (_) async {},
+      feedbackDuration: Duration.zero,
     );
     addTearDown(controller.dispose);
 
@@ -72,6 +73,7 @@ void main() {
     final controller = ExportController(
       availableFormats: const [ExportFormat.json],
       onShare: (_) async {},
+      feedbackDuration: Duration.zero,
     );
     addTearDown(controller.dispose);
     final failure = _ThrowingExportFailure();
@@ -114,6 +116,7 @@ void main() {
     final controller = ExportController(
       availableFormats: const [ExportFormat.json],
       resourceLimits: limits,
+      feedbackDuration: Duration.zero,
     );
     addTearDown(controller.dispose);
 
@@ -130,4 +133,23 @@ void main() {
       lessThanOrEqualTo(limits.maxExportDocumentBytes),
     );
   });
+
+  test(
+    'an export finishing after dispose completes without notifying',
+    () async {
+      final controller = ExportController(
+        availableFormats: const [ExportFormat.json],
+        onShare: (_) async {},
+        feedbackDuration: Duration.zero,
+      );
+
+      final pending = controller.share(
+        (_, {required action, redactKeys}) async => '{"k":"v"}',
+      );
+      controller.dispose();
+
+      await expectLater(pending, completes);
+      await Future<void>.delayed(Duration.zero);
+    },
+  );
 }

@@ -12,9 +12,12 @@ class OverlayPainter extends CustomPainter {
     required this.accentColor,
     this.containerColor,
     this.showContainerRenderBox = true,
-  });
+  }) : _targetRect = boxInfo.targetRenderBox.attached
+           ? boxInfo.targetRectShifted
+           : null;
 
   final BoxInfo boxInfo;
+  final Rect? _targetRect;
   final OverlayRole role;
   final Color accentColor;
   final Color? containerColor;
@@ -170,6 +173,7 @@ class OverlayPainter extends CustomPainter {
   @override
   bool shouldRepaint(OverlayPainter oldDelegate) =>
       oldDelegate.boxInfo != boxInfo ||
+      oldDelegate._targetRect != _targetRect ||
       oldDelegate.role != role ||
       oldDelegate.accentColor != accentColor ||
       oldDelegate.containerColor != containerColor ||

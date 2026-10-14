@@ -34,7 +34,10 @@ class JsonColorsUtils {
     final result = switch (keyName) {
       'key' => theme.getTypeColor(context, key: value.toString()),
       'title' => theme.getTypeColor(context, key: value.toString()),
-      'method' => JsonColors.methodColors[value.toString()],
+      NetworkJsonKeys.method => JsonColors.methodColorFor(
+        value.toString(),
+        brightness,
+      ),
       'base-url' ||
       'url' ||
       'uri' ||
@@ -42,7 +45,7 @@ class JsonColorsUtils {
       'location' ||
       'path' ||
       'Authorization' => JsonColors.stringColorFor(brightness),
-      'status_code' => JsonColors.statusColor(
+      NetworkJsonKeys.statusCode || 'status_code' => JsonColors.statusColor(
         value is int ? value : int.tryParse(value.toString()),
       ),
       'exception' => theme.getTypeColor(context, key: 'exception'),

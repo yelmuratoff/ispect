@@ -58,9 +58,9 @@
 ```yaml
 dependencies:
   flutter_bloc: ^9.1.0
-  ispect: ^7.1.0-dev.4
-  ispectify: ^7.1.0-dev.4
-  ispectify_bloc: ^7.1.0-dev.4
+  ispect: ^7.1.0-dev.5
+  ispectify: ^7.1.0-dev.5
+  ispectify_bloc: ^7.1.0-dev.5
 ```
 
 ## Quick start
@@ -112,7 +112,8 @@ application-defined formatters must never run.
 // Logs disabled entirely.
 ISpectBlocObserver(settings: ISpectBlocSettings.silent);
 
-// Skip per-change / per-completion noise - keeps creations, transitions, errors.
+// Skip per-change / per-completion noise - keeps events, transitions,
+// creations, closings, errors.
 ISpectBlocObserver(settings: ISpectBlocSettings.minimal);
 
 ISpectBlocObserver(settings: ISpectBlocSettings.compact);

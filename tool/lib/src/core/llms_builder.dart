@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'exceptions.dart';
+import 'pubspec.dart';
+import 'repo_paths.dart';
 import 'version_config.dart';
 
 const String _outputPath = 'llms.txt';
@@ -86,16 +88,13 @@ final class LlmsBuilder {
       ..add('## Packages')
       ..add('');
 
-    final packageDirs = _packageDirectories();
+    final packageDirs = packageDirectories(repoRoot);
     for (final directory in packageDirs) {
       final pubspec = File(p.join(directory, 'pubspec.yaml'));
       if (!pubspec.existsSync()) {
         continue;
       }
-      final name = _pubspecField(pubspec, 'name');
-      if (name.isEmpty) {
-        continue;
-      }
+      final name = Pubspec.read(pubspec, repoRoot: repoRoot).name;
       final description = _pubspecField(pubspec, 'description');
       lines.add('- [$name](${_relative(directory)}/README.md): $description');
     }
@@ -106,11 +105,11 @@ final class LlmsBuilder {
       ..add('');
 
     for (final directory in packageDirs) {
-      final name =
-          _pubspecField(File(p.join(directory, 'pubspec.yaml')), 'name');
-      if (name.isEmpty) {
+      final pubspec = File(p.join(directory, 'pubspec.yaml'));
+      if (!pubspec.existsSync()) {
         continue;
       }
+      final name = Pubspec.read(pubspec, repoRoot: repoRoot).name;
       final entry = _exampleEntry(directory);
       if (entry == null) {
         continue;
@@ -197,19 +196,6 @@ final class LlmsBuilder {
       lines.add('- [${prettyInterceptorName(file)}](${_relative(file)})');
     }
     lines.add('');
-  }
-
-  List<String> _packageDirectories() {
-    final packages = Directory(p.join(repoRoot, 'packages'));
-    if (!packages.existsSync()) {
-      return const [];
-    }
-    return packages
-        .listSync()
-        .whereType<Directory>()
-        .map((directory) => directory.path)
-        .toList()
-      ..sort();
   }
 
   String? _exampleEntry(String packageDir) {

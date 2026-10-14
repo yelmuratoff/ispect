@@ -274,6 +274,46 @@ void main() {
       expect(parsed.bodyRedacted, isTrue);
     });
 
+    test('keeps a text body that contains a literal percent sign', () {
+      final parsed = NetworkReplayRequestParser.fromRequestMap({
+        NetworkJsonKeys.method: 'POST',
+        NetworkJsonKeys.url: 'https://api.example.com/promo',
+        NetworkJsonKeys.contentType: 'text/plain',
+        NetworkJsonKeys.body: '50% off today',
+      });
+
+      expect(parsed, isNotNull);
+      expect(parsed!.bodyRedacted, isFalse);
+      expect((parsed.request.body! as TextReplayBody).text, '50% off today');
+    });
+
+    test('keeps a JSON body whose value contains a literal percent sign', () {
+      final parsed = NetworkReplayRequestParser.fromRequestMap({
+        NetworkJsonKeys.method: 'POST',
+        NetworkJsonKeys.url: 'https://api.example.com/promo',
+        NetworkJsonKeys.body: {'note': '50% off'},
+      });
+
+      expect(parsed, isNotNull);
+      expect(parsed!.bodyRedacted, isFalse);
+      expect((parsed.request.body! as JsonReplayBody).value, {
+        'note': '50% off',
+      });
+    });
+
+    test('still drops a text body hiding an encoded redaction marker', () {
+      final parsed = NetworkReplayRequestParser.fromRequestMap({
+        NetworkJsonKeys.method: 'POST',
+        NetworkJsonKeys.url: 'https://api.example.com/promo',
+        NetworkJsonKeys.contentType: 'text/plain',
+        NetworkJsonKeys.body: '50% off %5BREDACTED%5D',
+      });
+
+      expect(parsed, isNotNull);
+      expect(parsed!.request.body, isNull);
+      expect(parsed.bodyRedacted, isTrue);
+    });
+
     test('restores multipart text fields', () {
       final parsed = NetworkReplayRequestParser.fromRequestMap({
         NetworkJsonKeys.method: 'POST',

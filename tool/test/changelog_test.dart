@@ -89,14 +89,40 @@ void main() {
       );
     });
 
-    test('rejects a version whose heading carries a suffix', () {
+    test('extracts the section under a dated heading', () {
       _write(
         p.join(repo, 'CHANGELOG.md'),
-        '# Changelog\n\n## 2.0.0 - 2026-01-01\n\n- Dated.\n',
+        '# Changelog\n\n## 2.0.0 - 2026-01-01\n\n- Dated.\n\n## 1.9.0\n',
+      );
+
+      final reader = propagator();
+      expect(
+        reader.extractSection(reader.latestVersion()),
+        '## 2.0.0 - 2026-01-01\n\n- Dated.',
+      );
+    });
+
+    test('does not read a prerelease heading as its release version', () {
+      _write(
+        p.join(repo, 'CHANGELOG.md'),
+        '# Changelog\n\n## 7.1.0-dev.4\n\n- Dev.\n\n## 7.1.0\n\n- Final.\n',
+      );
+
+      expect(propagator().extractSection('7.1.0'), '## 7.1.0\n\n- Final.');
+      expect(
+        propagator().extractSection('7.1.0-dev.4'),
+        '## 7.1.0-dev.4\n\n- Dev.',
+      );
+    });
+
+    test('rejects a version that only prefixes a prerelease heading', () {
+      _write(
+        p.join(repo, 'CHANGELOG.md'),
+        '# Changelog\n\n## 7.1.0-dev.4\n\n- Dev.\n',
       );
 
       expect(
-        () => propagator().extractSection('2.0.0'),
+        () => propagator().extractSection('7.1.0'),
         throwsA(isA<ChangelogException>()),
       );
     });
@@ -167,6 +193,49 @@ void main() {
             .readAsStringSync(),
         afterFirst,
       );
+    });
+
+    test('appends a stable section to a package holding only its prerelease',
+        () {
+      _write(
+        p.join(repo, 'packages', 'ispectify', 'CHANGELOG.md'),
+        '# Ispectify changelog\n\n## 2.0.0-dev.4\n\n- Prerelease.\n',
+      );
+
+      final result = propagator().run();
+
+      expect(result.appended, contains('packages/ispectify/CHANGELOG.md'));
+      expect(
+        File(p.join(repo, 'packages', 'ispectify', 'CHANGELOG.md'))
+            .readAsStringSync(),
+        contains('## 2.0.0\n\n- Second major line.'),
+      );
+    });
+
+    test('does not mistake a dev.10 section for dev.1', () {
+      _write(
+        p.join(repo, 'CHANGELOG.md'),
+        '# Changelog\n\n## 2.0.0-dev.1\n\n- First prerelease.\n',
+      );
+      _write(
+        p.join(repo, 'packages', 'ispectify', 'CHANGELOG.md'),
+        '# Ispectify changelog\n\n## 2.0.0-dev.10\n\n- Tenth.\n',
+      );
+
+      final result = propagator().run();
+
+      expect(result.appended, contains('packages/ispectify/CHANGELOG.md'));
+    });
+
+    test('treats a dated heading as the section already present', () {
+      _write(
+        p.join(repo, 'packages', 'ispectify', 'CHANGELOG.md'),
+        '# Ispectify changelog\n\n## 2.0.0 - 2026-01-01\n\n- Dated.\n',
+      );
+
+      final result = propagator().run();
+
+      expect(result.skipped, contains('packages/ispectify/CHANGELOG.md'));
     });
 
     test('propagates an explicitly requested older version', () {
@@ -281,7 +350,7 @@ void main() {
       );
     });
 
-    test('a full copy without a confirmation writes nothing', () {
+    test('a full copy without a confirmation aborts with exit 1', () {
       final before = File(p.join(repo, 'packages', 'ispect', 'CHANGELOG.md'))
           .readAsStringSync();
 
@@ -293,7 +362,7 @@ void main() {
         err: StringBuffer(),
       );
 
-      expect(exitCode, 0);
+      expect(exitCode, 1);
       expect(out.toString(), contains('Aborted'));
       expect(
         File(p.join(repo, 'packages', 'ispect', 'CHANGELOG.md'))

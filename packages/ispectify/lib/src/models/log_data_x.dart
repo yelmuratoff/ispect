@@ -1,4 +1,5 @@
 import 'package:ispectify/src/models/data.dart';
+import 'package:ispectify/src/network/network_json_keys.dart';
 import 'package:ispectify/src/trace/trace_category_ids.dart';
 import 'package:ispectify/src/trace/trace_keys.dart';
 
@@ -79,17 +80,29 @@ extension ISpectLogDataX on ISpectLogData {
   // ── Network convenience (from nested meta) ─────────────────────────
 
   int? get httpStatusCode {
-    final v = traceMeta?['statusCode'];
+    final meta = traceMeta;
+    final v = meta?[NetworkJsonKeys.statusCode] ?? meta?['statusCode'];
     return v is int ? v : null;
   }
 
   String? get requestId {
-    final v = traceMeta?['requestId'];
+    final meta = traceMeta;
+    final v = meta?[NetworkJsonKeys.requestId] ?? meta?['requestId'];
     return v is String ? v : null;
   }
 
   Map<String, dynamic>? get httpHeaders {
-    final v = traceMeta?['headers'];
+    final meta = traceMeta;
+    if (meta == null) return null;
+    final errorData = meta[NetworkJsonKeys.errorData];
+    final v = meta[NetworkJsonKeys.headers] ??
+        _headersOf(meta[NetworkJsonKeys.requestData]) ??
+        _headersOf(meta[NetworkJsonKeys.responseData]) ??
+        _headersOf(
+          errorData is Map<String, dynamic>
+              ? errorData[NetworkJsonKeys.response]
+              : null,
+        );
     return v is Map<String, dynamic> ? v : null;
   }
 
@@ -132,12 +145,14 @@ extension ISpectLogDataX on ISpectLogData {
   // ── State convenience ──────────────────────────────────────────────
 
   String? get blocType {
-    final v = traceMeta?['blocType'];
+    final meta = traceMeta;
+    final v = meta?['bloc-type'] ?? meta?['blocType'];
     return v is String ? v : null;
   }
 
   String? get eventType {
-    final v = traceMeta?['eventType'];
+    final meta = traceMeta;
+    final v = meta?['eventType'] ?? meta?['event-type'];
     return v is String ? v : null;
   }
 
@@ -174,3 +189,6 @@ extension ISpectLogDataX on ISpectLogData {
   Map<String, dynamic>? get _capturedAdditionalData =>
       captureISpectLogDataForEgress(this).additionalData;
 }
+
+Object? _headersOf(Object? data) =>
+    data is Map<String, dynamic> ? data[NetworkJsonKeys.headers] : null;

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/services/error_handler_options.dart';
+import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// Installs and owns the app-level error/log handlers (`FlutterError`,
@@ -271,35 +272,11 @@ final class ErrorHandlerService {
     );
   }
 
-  String _sanitizeText(String value) => _safeDiagnosticText(value);
-
-  String _safeDiagnosticText(Object value) {
-    final redactionActive = ISpectRedaction.enabled;
-    final prepared = _prepareDiagnosticValue(
-      value,
-      replaceOversizedStrings: redactionActive,
-    );
-    return redactionActive
-        ? _redactPreparedDiagnostic(prepared)
-        : _diagnosticSnapshotText(prepared);
-  }
-
-  String _redactPreparedDiagnostic(Object? prepared) {
-    try {
-      final redacted = ISpectRedaction.service.redactForExport(
-        prepared,
-        resourceLimits: logger.options.resourceLimits,
-      );
-      final bounded = LogExportOutput.boundJsonValue(
-        redacted,
-        resourceLimits: logger.options.resourceLimits,
-        replaceOversizedStrings: true,
-      );
-      return _diagnosticSnapshotText(bounded);
-    } on Object {
-      return defaultPlaceholder;
-    }
-  }
+  String _sanitizeText(String value) => ISpectSafeDiagnosticSnapshot.text(
+    value,
+    resourceLimits: logger.options.resourceLimits,
+    maxBytes: logger.options.resourceLimits.maxCapturedValueBytes,
+  );
 
   String _diagnosticSnapshotText(Object? value) {
     if (value == null) return defaultPlaceholder;

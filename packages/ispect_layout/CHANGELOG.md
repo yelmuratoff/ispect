@@ -1,5 +1,51 @@
 # Changelog
 
+## 7.1.0-dev.5
+
+### Security
+
+- **Credential keys without separators:** `accesstoken`, `clientsecret`, `jsessionid`, `PHPSESSID`, Azure SAS `sig`, and similar keys are masked in maps, query strings, and exports.
+- **`?key=` API keys:** Masked in URLs and generated cURL commands, not only in free text.
+- **Re-redaction after policy changes:** Exports re-mask entries captured before `unignoreKey`, instead of reusing the earlier text.
+- **Email path segments:** Email-shaped URL path segments are masked in exported text.
+- **Postal and card fields:** Postal code, ZIP, street address, and card expiry are fully masked.
+- **SQL literals:** Normalized statements no longer leak a literal after a backslash-terminated string or a PostgreSQL `#` operator.
+
+### Behavioral Changes
+
+- **Readable status fields:** Booleans and metadata next to secrets (`email_verified`, `has_password`, `mfa_enabled`, `token_expires_in`) stay visible, and REST paths such as `/users/42` are no longer masked as filesystem paths.
+- **Ignored keys in free text:** `ignoredKeys` also apply to messages and other free text.
+- **Redaction failures:** A failing custom redaction strategy yields `<redaction-failed>` and a warning, and a trace whose value cannot be redacted is still recorded with that value masked.
+- **Trace levels:** Traces default to the level their log type declares, so performance jank logs as a warning.
+- **Log type titles:** Cards and the desktop status bar show the log type title (for example "HTTP Request") and custom type titles instead of the raw key.
+- **Hide this type:** Hiding a log type no longer hides types that appear later, and tapping a hidden type's chip shows it again without narrowing the list.
+
+### Bug Fixes
+
+- **http response bodies:** Bodies are captured through `InterceptedClient` as the caller reads them, without delaying the response, consuming the request timeout, or losing the post-redirect URL.
+- **Search:** Queries such as "error" or "time" no longer match every log, and refining a highlight query updates the matches and counts.
+- **Convenience getters:** `httpStatusCode`, `requestId`, `httpHeaders`, `blocType`, and `eventType` read the keys the adapters write.
+- **Database tracing:** Sampling applies once and errors follow `errorSampleRate`; `maxStatementLength` applies with redaction on; entries inside `dbTransaction` carry its transaction ID as `correlationId`; `db()` shows the table and statement in the console.
+- **File history:** Reading logs while auto-save runs, an oversized record, a failing retention pass, or a umask of `002` no longer break history.
+- **Restored settings:** Older settings snapshots keep tools, logging, and history enabled instead of turning them off.
+- **Desktop keyboard navigation:** Arrow keys follow the rendered rows, including grouped HTTP transactions.
+- **Route correlation:** A pop shares the correlation ID of the push it closes.
+- **Layout inspector:** Taps no longer reach the app after a multi-touch, panel-entered modes survive unrelated key releases, and the hovered outline follows scrolling content.
+- **Right-to-left apps:** The performance overlay no longer forces left-to-right layout on the host app.
+- **HTTP composer:** Closing during a request no longer throws, and repeated query keys survive edit-and-resend.
+- **Plugins:** A host rebuild no longer re-runs a plugin's `onInit` and `onDispose`.
+- **Release tooling:** `release-prep` restores every file when a step throws, and changelog propagation tells `7.1.0` apart from `7.1.0-dev.4`.
+
+### Improvements
+
+- **Localization:** Settings, log viewer, desktop table, composer, JSON viewer, and error screens are translated in every supported locale, with plural-aware counts.
+- **Session history:** Loading and clearing failures show an error state with Retry instead of an empty list.
+- **Shared capture policy:** BLoC, Riverpod, Dio, http, and WebSocket adapters share one capture and redaction policy.
+
+### Deprecations
+
+- **Scheduled for 8.0.0:** Unused helpers on BLoC and Riverpod settings, `DbLogKeys` and `DbTxnOps` constants, `ISpectDbTxn.runInTransactionZone`, `NetworkLoggerMixin.shouldProcess`, `RedactionService.redactExportString`, `InspectorMode.inspectAndCompare`, and others; see `docs/DEPRECATIONS.md`.
+
 ## 7.1.0-dev.4
 
 ### Bug Fixes

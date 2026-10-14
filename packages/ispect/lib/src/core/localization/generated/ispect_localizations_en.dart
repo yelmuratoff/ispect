@@ -1113,4 +1113,278 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get composerEditAndResend => 'Edit & resend';
+
+  @override
+  String get settingsDisplay => 'Display';
+
+  @override
+  String get relativeTime => 'Relative time';
+
+  @override
+  String get absoluteTime => 'Absolute time';
+
+  @override
+  String get compactUrls => 'Compact URLs';
+
+  @override
+  String get settingsTools => 'Tools';
+
+  @override
+  String get settingsAdvanced => 'Advanced';
+
+  @override
+  String get forwardErrorsToDeveloperLog => 'Forward errors to dart:developer';
+
+  @override
+  String get historyCapacity => 'History capacity';
+
+  @override
+  String get historyCapacityDesc => 'Logs kept in memory';
+
+  @override
+  String get consoleTruncate => 'Console truncate';
+
+  @override
+  String get consoleTruncateDesc => 'Max chars per console line';
+
+  @override
+  String get captureMode => 'Capture mode';
+
+  @override
+  String get captureModeDesc => 'Useful values or maximum isolation';
+
+  @override
+  String get captureModeBalancedDesc =>
+      'Guarded formatters with bounded output';
+
+  @override
+  String get captureModeStrict => 'Strict';
+
+  @override
+  String get captureModeStrictDesc => 'Never run application formatters';
+
+  @override
+  String get profileBalanced => 'Balanced';
+
+  @override
+  String get resourceProfile => 'Resource profile';
+
+  @override
+  String get resourceProfileDesc => 'Capture, memory, import and export limits';
+
+  @override
+  String get resourceProfileConstrained => 'Constrained';
+
+  @override
+  String get resourceProfileConstrainedDesc =>
+      'Lower memory use for long sessions';
+
+  @override
+  String get resourceProfileBalancedDesc =>
+      'Useful diagnostics with bounded cost';
+
+  @override
+  String get resourceProfileExtended => 'Extended';
+
+  @override
+  String get resourceProfileExtendedDesc =>
+      'Larger controlled internal handoffs';
+
+  @override
+  String get processingProfile => 'Processing profile';
+
+  @override
+  String get processingProfileDesc => 'Responsiveness and batch throughput';
+
+  @override
+  String get processingProfileResponsive => 'Responsive';
+
+  @override
+  String get processingProfileResponsiveDesc =>
+      'Yield often to keep the UI fluid';
+
+  @override
+  String get processingProfileBalancedDesc => 'General-purpose scheduling';
+
+  @override
+  String get processingProfileThroughput => 'Throughput';
+
+  @override
+  String get processingProfileThroughputDesc =>
+      'Larger batches for faster handoffs';
+
+  @override
+  String get limitInvalidValue => 'Enter a non-negative integer';
+
+  @override
+  String get limitZeroDisables => '0 disables this limit';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String logCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count logs',
+      one: '$count log',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String warningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count warnings',
+      one: '$count warning',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count errors',
+      one: '$count error',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filteredLogCount(int filtered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$filtered / $total logs',
+      one: '$filtered / $total log',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contentProcessingError => 'Content processing error';
+
+  @override
+  String get failedToLoadLogContent => 'Failed to load log content';
+
+  @override
+  String get unknownContentProcessingError =>
+      'Unknown error occurred while processing content';
+
+  @override
+  String get correlationIdShort => 'Corr';
+
+  @override
+  String get transactionIdShort => 'Txn';
+
+  @override
+  String get columnType => 'Type';
+
+  @override
+  String get columnTime => 'Time';
+
+  @override
+  String get columnMessage => 'Message';
+
+  @override
+  String sortColumnAscending(String column) {
+    return 'Sort by $column, sorted ascending';
+  }
+
+  @override
+  String sortColumnDescending(String column) {
+    return 'Sort by $column, sorted descending';
+  }
+
+  @override
+  String sortColumnUnsorted(String column) {
+    return 'Sort by $column, not sorted';
+  }
+
+  @override
+  String resizeColumn(String column) {
+    return 'Resize $column column';
+  }
+
+  @override
+  String get resumeLiveTail => 'Resume live tail';
+
+  @override
+  String get pauseLiveTail => 'Pause live tail';
+
+  @override
+  String get liveTailLive => 'LIVE';
+
+  @override
+  String get liveTailPaused => 'PAUSED';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String filterByType(String type) {
+    return 'Filter by type $type';
+  }
+
+  @override
+  String httpStatus(int code) {
+    return 'HTTP status $code';
+  }
+
+  @override
+  String get composerBodyNone => 'None';
+
+  @override
+  String get composerBodyText => 'Text';
+
+  @override
+  String get composerBodyForm => 'Form';
+
+  @override
+  String get composerBodyMultipart => 'Multipart';
+
+  @override
+  String get jsonViewer => 'JSON Viewer';
+
+  @override
+  String get detail => 'Detail';
+
+  @override
+  String copyKey(String key) {
+    return 'Copy $key';
+  }
+
+  @override
+  String get copyToClipboardFailed => 'Failed to copy to clipboard';
+
+  @override
+  String pluginErrorTitle(String pluginId) {
+    return 'Plugin Error: $pluginId';
+  }
+
+  @override
+  String get pluginRenderFailed => 'Failed to render plugin screen';
+
+  @override
+  String get stackTrace => 'Stack Trace';
+
+  @override
+  String get resizeDivider => 'Resize divider';
+
+  @override
+  String get sessionLogsLoadFailed => 'Failed to load session logs';
+
+  @override
+  String get dailySessionsLoadFailed => 'Failed to load sessions';
+
+  @override
+  String get dailySessionsClearFailed => 'Failed to clear sessions';
+
+  @override
+  String get exception => 'Exception';
 }

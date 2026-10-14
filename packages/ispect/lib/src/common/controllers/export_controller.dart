@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/logs_file/logs_file.dart';
+import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:ispect/src/ispect.dart';
 import 'package:ispectify/ispectify.dart';
@@ -20,7 +23,9 @@ class ExportController extends ChangeNotifier {
     required this.availableFormats,
     this.onShare,
     DiagnosticResourceLimits? resourceLimits,
+    Duration feedbackDuration = const Duration(seconds: 2),
   }) : _selectedFormat = availableFormats.first,
+       _feedbackDuration = feedbackDuration,
        _resourceLimits =
            resourceLimits ??
            ISpect.loggerIfInitialized?.options.resourceLimits ??
@@ -33,6 +38,8 @@ class ExportController extends ChangeNotifier {
   final List<ExportFormat> availableFormats;
   final ISpectShareCallback? onShare;
   final DiagnosticResourceLimits _resourceLimits;
+  final Duration _feedbackDuration;
+  bool _isDisposed = false;
 
   bool get canShare => onShare != null;
 
@@ -88,19 +95,29 @@ class ExportController extends ChangeNotifier {
   }
 
   /// Copies the content to the system clipboard.
-  Future<void> copy(
-    BuildContext context,
-    ExportContentBuilder contentBuilder,
-  ) async {
-    await _run(ExportAction.copy, contentBuilder, (content) async {
-      if (!context.mounted) return;
-      copyClipboard(
-        context,
-        value: content,
-        showValue: false,
-        resourceLimits: _resourceLimits,
-      );
-    });
+  ///
+  /// [messenger] receives the copied or clipboard-failure toast once the
+  /// clipboard write settles. Returns [ExportState.error] when building the
+  /// content failed, so the caller can surface it.
+  Future<ExportState> copy(
+    ExportContentBuilder contentBuilder, {
+    ScaffoldMessengerState? messenger,
+    ISpectGeneratedLocalization? l10n,
+  }) => _run(ExportAction.copy, contentBuilder, (content) async {
+    copyClipboard(
+      null,
+      value: content,
+      showValue: false,
+      resourceLimits: _resourceLimits,
+      messenger: messenger,
+      l10n: l10n,
+    );
+  });
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
   }
 
   // ── Internals ─────────────────────────────────────────────────────────
@@ -108,14 +125,18 @@ class ExportController extends ChangeNotifier {
   String get _fileName =>
       'ispect_export_${DateTime.now().millisecondsSinceEpoch}';
 
-  Future<void> _run(
+  void _notify() {
+    if (!_isDisposed) notifyListeners();
+  }
+
+  Future<ExportState> _run(
     ExportAction action,
     ExportContentBuilder contentBuilder,
     Future<void> Function(String content) execute,
   ) async {
-    if (_state == ExportState.exporting) return;
+    if (_state == ExportState.exporting) return _state;
     _state = ExportState.exporting;
-    notifyListeners();
+    _notify();
     // Yield to let the UI rebuild and show loading indicator.
     await Future<void>.delayed(Duration.zero);
     try {
@@ -126,8 +147,8 @@ class ExportController extends ChangeNotifier {
       final content = _boundContent(builtContent);
       if (content.isEmpty) {
         _state = ExportState.idle;
-        notifyListeners();
-        return;
+        _notify();
+        return _state;
       }
       await execute(content);
       _state = ExportState.done;
@@ -140,31 +161,27 @@ class ExportController extends ChangeNotifier {
       );
       _state = ExportState.error;
     }
-    notifyListeners();
+    final outcome = _state;
+    _notify();
+    unawaited(_resetAfterFeedback());
+    return outcome;
+  }
 
-    // Reset to idle after a short delay so the UI can show feedback.
-    await Future<void>.delayed(const Duration(seconds: 2));
+  // Reset to idle after a short delay so the UI can show feedback.
+  Future<void> _resetAfterFeedback() async {
+    await Future<void>.delayed(_feedbackDuration);
     if (_state != ExportState.exporting) {
       _state = ExportState.idle;
-      notifyListeners();
+      _notify();
     }
   }
 
   String _safeFailureText(Object value) {
     try {
-      final prepared = LogExportOutput.boundJsonValue(
+      final bounded = ISpectSafeDiagnosticSnapshot.boundedValue(
         value,
+        redactor: ISpectRedaction.service,
         resourceLimits: _resourceLimits,
-        replaceOversizedStrings: true,
-      );
-      final redacted = ISpectRedaction.service.redactForExport(
-        prepared,
-        resourceLimits: _resourceLimits,
-      );
-      final bounded = LogExportOutput.boundJsonValue(
-        redacted,
-        resourceLimits: _resourceLimits,
-        replaceOversizedStrings: true,
       );
       return switch (bounded) {
         null => defaultPlaceholder,

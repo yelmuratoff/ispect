@@ -45,7 +45,6 @@ abstract final class LogExporter {
     for (final log in capped) {
       final record = _jsonLine(
         log,
-        redactKeys: null,
         redactionService: effectiveRedactionService,
         enableRedaction: enableRedaction,
         resourceLimits: limits,
@@ -188,7 +187,6 @@ abstract final class LogExporter {
       final ad = captured.additionalData;
       String scrub(Object? value) => _redactText(
             value,
-            null,
             redactionService: effectiveRedactionService,
             enableRedaction: enableRedaction,
             resourceLimits: limits,
@@ -232,7 +230,6 @@ abstract final class LogExporter {
     required bool enableRedaction,
     required DiagnosticResourceLimits resourceLimits,
     String linePrefix = '',
-    Set<String>? redactKeys,
     RedactionService? redactionService,
   }) {
     if (metadata == null) return;
@@ -243,7 +240,6 @@ abstract final class LogExporter {
         redactionActive: redactionActive,
         resourceLimits: resourceLimits,
       ),
-      redactKeys: redactKeys,
       redactionService: redactionService,
       enableRedaction: enableRedaction,
       resourceLimits: resourceLimits,
@@ -252,7 +248,6 @@ abstract final class LogExporter {
     for (final entry in prepared.entries) {
       final value = _redactText(
         entry.value,
-        null,
         redactionService: null,
         enableRedaction: false,
         resourceLimits: resourceLimits,
@@ -267,28 +262,36 @@ abstract final class LogExporter {
   }
 
   static String _markdownMetadataText(String value) {
-    final escaped = value
-        .replaceAll(RegExp(r'[\r\n\u2028\u2029]+'), ' ')
-        .replaceAll(r'\', r'\\')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('@', '&#64;')
-        .replaceAll('`', '&#96;')
-        .replaceAll('|', r'\|')
-        .replaceAll('!', r'\!')
-        .replaceAll('[', r'\[')
-        .replaceAll(']', r'\]')
-        .replaceAll('(', r'\(')
-        .replaceAll(')', r'\)');
-    return escaped
-        .replaceAll(r'\[REDACTED\]', defaultPlaceholder)
-        .replaceAll('&lt;redaction-failed&gt;', redactionFailedPlaceholder)
-        .replaceAll(
-          '&lt;export-output-truncated&gt;',
-          LogExportOutput.truncatedMarker,
-        );
+    var text = _escapeMarkdownMetadata(value);
+    for (final marker in _markdownMarkers) {
+      text = text.replaceAll(marker.escaped, marker.text);
+    }
+    return text;
   }
+
+  static final List<({String text, String escaped})> _markdownMarkers = [
+    for (final marker in const [
+      defaultPlaceholder,
+      redactionFailedPlaceholder,
+      LogExportOutput.truncatedMarker,
+    ])
+      (text: marker, escaped: _escapeMarkdownMetadata(marker)),
+  ];
+
+  static String _escapeMarkdownMetadata(String value) => value
+      .replaceAll(RegExp(r'[\r\n\u2028\u2029]+'), ' ')
+      .replaceAll(r'\', r'\\')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('@', '&#64;')
+      .replaceAll('`', '&#96;')
+      .replaceAll('|', r'\|')
+      .replaceAll('!', r'\!')
+      .replaceAll('[', r'\[')
+      .replaceAll(']', r'\]')
+      .replaceAll('(', r'\(')
+      .replaceAll(')', r'\)');
 
   static List<ISpectLogData> _cap(List<ISpectLogData> logs, int maxLogs) {
     if (logs.length <= maxLogs) return logs;
@@ -314,7 +317,6 @@ abstract final class LogExporter {
 
   static String _jsonLine(
     ISpectLogData log, {
-    required Set<String>? redactKeys,
     required RedactionService? redactionService,
     required bool enableRedaction,
     required DiagnosticResourceLimits resourceLimits,
@@ -322,7 +324,6 @@ abstract final class LogExporter {
     try {
       final redactionActive = enableRedaction && ISpectRedaction.enabled;
       final reuseCaptureRedaction = redactionActive &&
-          redactKeys == null &&
           redactionService != null &&
           isExportRedacted(
             log,
@@ -334,7 +335,6 @@ abstract final class LogExporter {
             ? log.toExportJson(redactionActive: false)
             : _prepareValue(
                 log.toExportJson(redactionActive: redactionActive),
-                redactKeys: redactKeys,
                 redactionService: redactionService,
                 enableRedaction: enableRedaction,
                 resourceLimits: resourceLimits,
@@ -371,7 +371,6 @@ abstract final class LogExporter {
 
   static Object? _prepareValue(
     Object? value, {
-    required Set<String>? redactKeys,
     required RedactionService? redactionService,
     required bool enableRedaction,
     required DiagnosticResourceLimits resourceLimits,
@@ -384,7 +383,7 @@ abstract final class LogExporter {
         resourceLimits: resourceLimits,
       );
     }
-    final redactor = _redactor(redactKeys, redactionService);
+    final redactor = _redactor(null, redactionService);
     return rootValueKeys == null || rootValueKeys.isEmpty
         ? redactor.redactForExport(
             value,
@@ -398,15 +397,13 @@ abstract final class LogExporter {
   }
 
   static String _redactText(
-    Object? value,
-    Set<String>? redactKeys, {
+    Object? value, {
     required RedactionService? redactionService,
     required bool enableRedaction,
     required DiagnosticResourceLimits resourceLimits,
   }) {
     final prepared = _prepareValue(
       value,
-      redactKeys: redactKeys,
       redactionService: redactionService,
       enableRedaction: enableRedaction,
       resourceLimits: resourceLimits,
@@ -437,30 +434,15 @@ abstract final class LogExporter {
     ISpectMetadata metadata, {
     required bool redactionActive,
     required DiagnosticResourceLimits resourceLimits,
-  }) {
-    final boundedExtra = LogExportOutput.boundJsonValue(
-      metadata.extra,
-      resourceLimits: resourceLimits,
-      preserveTypes: redactionActive,
-      replaceOversizedStrings: redactionActive,
-    );
-    final result = <String, Object?>{
-      if (metadata.appName != null) 'appName': metadata.appName,
-      if (metadata.appVersion != null) 'appVersion': metadata.appVersion,
-      if (metadata.buildNumber != null) 'buildNumber': metadata.buildNumber,
-      if (metadata.environment != null) 'environment': metadata.environment,
-      if (metadata.device != null) 'device': metadata.device,
-      if (metadata.os != null) 'os': metadata.os,
-      if (metadata.osVersion != null) 'osVersion': metadata.osVersion,
-      if (metadata.locale != null) 'locale': metadata.locale,
-    };
-    if (boundedExtra is Map<String, Object?>) {
-      for (final entry in boundedExtra.entries) {
-        result.putIfAbsent(entry.key, () => entry.value);
-      }
-    }
-    return result;
-  }
+  }) =>
+      metadata.exportFields(
+        LogExportOutput.boundJsonValue(
+          metadata.extra,
+          resourceLimits: resourceLimits,
+          preserveTypes: redactionActive,
+          replaceOversizedStrings: redactionActive,
+        ),
+      );
 
   /// Escapes one CSV field and neutralizes spreadsheet formulas.
   ///

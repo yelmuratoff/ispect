@@ -90,7 +90,7 @@ class ISpectShareAllLogsBottomSheet {
           metadata: metadata,
         );
       },
-    );
+    ).whenComplete(controller.dispose);
   }
 }
 

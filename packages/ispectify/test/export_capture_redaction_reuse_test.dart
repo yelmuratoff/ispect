@@ -263,6 +263,29 @@ void main() {
       expect(exported, isNot(contains('A-1001')));
     });
 
+    test('re-redacts after the same service un-ignores a key', () {
+      final service = RedactionService()..ignoreKey('email');
+      ISpectRedaction.configure(service: service);
+      final logger = _logger()
+        ..info(
+          'lookup',
+          additionalData: <String, dynamic>{'email': 'alice@example.com'},
+        );
+      addTearDown(logger.dispose);
+      expect(
+        logger.history.single.additionalData?['email'],
+        'alice@example.com',
+      );
+
+      service.unignoreKey('email');
+      final exported = LogExporter.toJsonLines(
+        logger.history,
+        redactionService: service,
+      );
+
+      expect(exported, isNot(contains('alice@example.com')));
+    });
+
     test('re-redacts when the caller supplies different redact keys', () {
       final logger = _logger()
         ..info(

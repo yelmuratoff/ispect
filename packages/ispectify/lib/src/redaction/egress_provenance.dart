@@ -5,9 +5,14 @@ import 'package:meta/meta.dart';
 
 @immutable
 final class _EgressRedaction {
-  const _EgressRedaction(this.service, this.resourceLimits);
+  const _EgressRedaction(
+    this.service,
+    this.configurationRevision,
+    this.resourceLimits,
+  );
 
   final RedactionService service;
+  final int configurationRevision;
   final DiagnosticResourceLimits resourceLimits;
 }
 
@@ -20,7 +25,11 @@ void markExportRedacted(
   RedactionService service,
   DiagnosticResourceLimits resourceLimits,
 ) {
-  _egressRedaction[data] = _EgressRedaction(service, resourceLimits);
+  _egressRedaction[data] = _EgressRedaction(
+    service,
+    service.configurationRevision,
+    resourceLimits,
+  );
 }
 
 // Compares the service by identity, not equality: RedactionService has no
@@ -34,5 +43,6 @@ bool isExportRedacted(
   final recorded = _egressRedaction[data];
   if (recorded == null) return false;
   return identical(recorded.service, service) &&
+      recorded.configurationRevision == service.configurationRevision &&
       recorded.resourceLimits == resourceLimits;
 }

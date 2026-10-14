@@ -236,13 +236,15 @@ abstract final class NetworkReplayRequestParser {
         ? map[NetworkJsonKeys.data]
         : map[NetworkJsonKeys.body];
     if (raw == null) return null;
+    final isFormEncoded = contentType != null &&
+        contentType.contains('application/x-www-form-urlencoded');
     final boundedRaw = LogExportOutput.boundJsonValue(
       raw,
       maxBytes: resourceLimits.maxNetworkBodyBytes,
       resourceLimits: resourceLimits,
       replaceOversizedStrings: true,
     );
-    if (_containsUnsafeMarker(boundedRaw)) {
+    if (_containsUnsafeMarker(boundedRaw, strictDecoding: isFormEncoded)) {
       onRedacted();
       return null;
     }
@@ -252,12 +254,11 @@ abstract final class NetworkReplayRequestParser {
     }
 
     final text = _primitiveText(boundedRaw);
-    if (text == null || _isUnsafeText(text)) {
+    if (text == null || _isUnsafeText(text, strictDecoding: isFormEncoded)) {
       onRedacted();
       return null;
     }
-    if (contentType != null &&
-        contentType.contains('application/x-www-form-urlencoded')) {
+    if (isFormEncoded) {
       try {
         return FormUrlEncodedReplayBody(Uri.splitQueryString(text));
       } on FormatException {
@@ -309,12 +310,23 @@ abstract final class NetworkReplayRequestParser {
         defaultSensitiveKeys.contains(underscored);
   }
 
-  static bool _containsUnsafeMarker(Object? value) {
-    if (value is String) return _isUnsafeText(value);
+  static bool _containsUnsafeMarker(
+    Object? value, {
+    bool strictDecoding = true,
+  }) {
+    if (value is String) {
+      return _isUnsafeText(value, strictDecoding: strictDecoding);
+    }
     if (value is Map) {
       for (final entry in value.entries) {
-        if (_containsUnsafeMarker(entry.key) ||
-            _containsUnsafeMarker(entry.value)) {
+        if (_containsUnsafeMarker(
+              entry.key,
+              strictDecoding: strictDecoding,
+            ) ||
+            _containsUnsafeMarker(
+              entry.value,
+              strictDecoding: strictDecoding,
+            )) {
           return true;
         }
       }
@@ -322,28 +334,45 @@ abstract final class NetworkReplayRequestParser {
     }
     if (value is Iterable) {
       for (final item in value) {
-        if (_containsUnsafeMarker(item)) return true;
+        if (_containsUnsafeMarker(item, strictDecoding: strictDecoding)) {
+          return true;
+        }
       }
     }
     return false;
   }
 
-  static bool _isUnsafeText(String value) {
+  static bool _isUnsafeText(String value, {bool strictDecoding = true}) {
     var candidate = value;
     for (var pass = 0; pass < 3; pass++) {
       if (_containsPlainUnsafeMarker(candidate)) return true;
+      final String decoded;
       try {
-        final decoded = Uri.decodeFull(candidate);
-        if (decoded == candidate) return false;
-        candidate = decoded;
-      } on FormatException {
-        return true;
-      } catch (_) {
-        return true;
+        decoded = Uri.decodeFull(candidate);
+      } on Object {
+        if (strictDecoding) return true;
+        return _containsPlainUnsafeMarker(_decodeAsciiEscapes(candidate));
       }
+      if (decoded == candidate) return false;
+      candidate = decoded;
     }
     return _containsPlainUnsafeMarker(candidate);
   }
+
+  static String _decodeAsciiEscapes(String value) {
+    var candidate = value;
+    for (var pass = 0; pass < 3; pass++) {
+      final decoded = candidate.replaceAllMapped(
+        _asciiPercentEscape,
+        (match) => String.fromCharCode(int.parse(match[1]!, radix: 16)),
+      );
+      if (decoded == candidate) break;
+      candidate = decoded;
+    }
+    return candidate;
+  }
+
+  static final RegExp _asciiPercentEscape = RegExp('%([2-7][0-9A-Fa-f])');
 
   static bool _containsPlainUnsafeMarker(String value) =>
       value.contains(defaultPlaceholder) ||

@@ -39,7 +39,7 @@ class ISpectShareLogBottomSheet {
           metadata: metadata,
         );
       },
-    );
+    ).whenComplete(controller.dispose);
   }
 
   @visibleForTesting

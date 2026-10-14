@@ -250,12 +250,13 @@ class _TraceCorrelationBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = context.appTheme.colorScheme.tertiary;
+    final l10n = context.ispectL10n;
     final chips = <Widget>[];
 
     if (correlationId != null) {
       chips.add(
         _IdChip(
-          label: 'Corr',
+          label: l10n.correlationIdShort,
           value: correlationId!.display,
           color: color,
           actionIcon: onShowRelated != null
@@ -270,7 +271,7 @@ class _TraceCorrelationBanner extends StatelessWidget {
     if (transactionId != null) {
       chips.add(
         _IdChip(
-          label: 'Txn',
+          label: l10n.transactionIdShort,
           value: transactionId!.display,
           color: color,
           actionIcon: onShowRelated != null

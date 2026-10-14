@@ -141,7 +141,7 @@ class _LimitEditorDialogState extends State<_LimitEditorDialog> {
   late final TextEditingController _controller = TextEditingController(
     text: widget.value.toString(),
   );
-  String? _error;
+  bool _hasInvalidValue = false;
 
   @override
   void dispose() {
@@ -154,64 +154,67 @@ class _LimitEditorDialogState extends State<_LimitEditorDialog> {
     _controller.selection = TextSelection.collapsed(
       offset: _controller.text.length,
     );
-    setState(() => _error = null);
+    setState(() => _hasInvalidValue = false);
   }
 
   void _submit() {
     final raw = _controller.text.trim();
     final parsed = int.tryParse(raw);
     if (parsed == null || parsed < 0) {
-      setState(() => _error = 'Enter a non-negative integer');
+      setState(() => _hasInvalidValue = true);
       return;
     }
     Navigator.of(context).pop(parsed);
   }
 
   @override
-  Widget build(BuildContext context) => ISpectAlertDialog(
-    titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-    contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-    actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-    title: ISpectDialogHeader(
-      title: widget.label,
-      subtitle: widget.description,
-      icon: widget.icon,
-    ),
-    content: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ISpectTextField(
-          controller: _controller,
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          hintText: '0 disables this limit',
-          errorText: _error,
-          onSubmitted: (_) => _submit(),
-        ),
-        const Gap(12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final preset in widget.presets)
-              _PresetChip(
-                label: widget.formatter(preset),
-                selected: preset == int.tryParse(_controller.text.trim()),
-                onTap: () => _selectPreset(preset),
-              ),
-          ],
-        ),
-      ],
-    ),
-    actions: [
-      TextButton(
-        onPressed: () => Navigator.of(context).pop(),
-        child: const Text('Cancel'),
+  Widget build(BuildContext context) {
+    final l10n = context.ispectL10n;
+    return ISpectAlertDialog(
+      titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      title: ISpectDialogHeader(
+        title: widget.label,
+        subtitle: widget.description,
+        icon: widget.icon,
       ),
-      FilledButton(onPressed: _submit, child: const Text('Apply')),
-    ],
-  );
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ISpectTextField(
+            controller: _controller,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            hintText: l10n.limitZeroDisables,
+            errorText: _hasInvalidValue ? l10n.limitInvalidValue : null,
+            onSubmitted: (_) => _submit(),
+          ),
+          const Gap(12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final preset in widget.presets)
+                _PresetChip(
+                  label: widget.formatter(preset),
+                  selected: preset == int.tryParse(_controller.text.trim()),
+                  onTap: () => _selectPreset(preset),
+                ),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(onPressed: _submit, child: Text(l10n.apply)),
+      ],
+    );
+  }
 }
 
 class _PresetChip extends StatelessWidget {

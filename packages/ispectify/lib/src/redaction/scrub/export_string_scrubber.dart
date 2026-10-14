@@ -1,8 +1,10 @@
+import 'package:ispectify/src/redaction/constants/credential_markers.dart';
 import 'package:ispectify/src/redaction/constants/key_defaults.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart' as ph;
 import 'package:ispectify/src/redaction/key_canonicalizer.dart';
 import 'package:ispectify/src/redaction/scrub/assignment_tokenizer.dart';
 import 'package:ispectify/src/redaction/scrub/code_units.dart';
+import 'package:ispectify/src/redaction/secret_metadata.dart';
 
 /// Regex- and scan-based redaction of free-form export text: URL
 /// credentials, authentication schemes, embedded tokens, filesystem paths,
@@ -17,6 +19,12 @@ abstract final class ExportStringScrubber {
 
   static final _urlCredentialPattern =
       RegExp(r'((?::)?//)([^:/@\s]+)(?::([^/@\s]*))?@');
+
+  static final _emailPathSegmentPattern = RegExp(
+    r'''(?<![/:])/[^/\s?#"'@():;,]+(?:@|%40)[A-Za-z][A-Za-z0-9-]*'''
+    r'(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}(?![A-Za-z0-9-])(?!\.[A-Za-z0-9])',
+    caseSensitive: false,
+  );
 
   static String scrub(
     String value,
@@ -50,7 +58,8 @@ abstract final class ExportStringScrubber {
         .replaceAllMapped(
           _exportTokenPattern,
           (m) => '${m[1]} $mask',
-        );
+        )
+        .replaceAll(_emailPathSegmentPattern, '/$mask');
 
     if (patterns == null) return scrubbed;
 
@@ -113,58 +122,38 @@ abstract final class ExportStringScrubber {
   }
 
   static bool _containsUnseparatedTokenMarker(String value) {
-    for (var index = 0; index <= value.length - 4; index++) {
-      final first = value.codeUnitAt(index) | 0x20;
-      if (first != 0x61) continue;
-      final second = value.codeUnitAt(index + 1) | 0x20;
-      final third = value.codeUnitAt(index + 2) | 0x20;
-      final fourth = value.codeUnitAt(index + 3) | 0x20;
-      if ((second == 0x69 && third == 0x7a && fourth == 0x61) ||
-          (second == 0x6b && third == 0x69 && fourth == 0x61)) {
-        return true;
-      }
+    for (final marker in _unseparatedTokenMarkers) {
+      if (_containsIgnoringAsciiCase(value, marker)) return true;
     }
     return false;
   }
 
-  static const _exportTokenMarkers = <String>[
-    'bearer ',
-    'basic ',
-    'token ',
-    'digest ',
-    'ntlm ',
-    'negotiate ',
-    'oauth ',
-    'hoba ',
-    'mutual ',
-    'scram-sha-',
-    'github_pat_',
-    'ghp_',
-    'gho_',
-    'ghu_',
-    'ghs_',
-    'ghr_',
-    'xoxb-',
-    'xoxa-',
-    'xoxp-',
-    'xoxr-',
-    'xoxs-',
-    'glpat-',
-    'sk-',
-    'gsk_',
-    'sk_live_',
-    'pk_live_',
-    'rk_live_',
-    'sk_test_',
-    'pk_test_',
-    'rk_test_',
-    'aiza',
-    'sbp_',
-    'npm_',
-    'pypi-',
-    'pat_',
-    'akia',
+  static bool _containsIgnoringAsciiCase(String value, String lowerMarker) {
+    final lastStart = value.length - lowerMarker.length;
+    for (var start = 0; start <= lastStart; start++) {
+      var offset = 0;
+      while (offset < lowerMarker.length &&
+          (value.codeUnitAt(start + offset) | 0x20) ==
+              lowerMarker.codeUnitAt(offset)) {
+        offset++;
+      }
+      if (offset == lowerMarker.length) return true;
+    }
+    return false;
+  }
+
+  static final List<String> _exportTokenMarkers = <String>[
+    for (final scheme in httpAuthSchemes) '${scheme.toLowerCase()} ',
+    scramAuthSchemePrefix.toLowerCase(),
+    for (final prefix in knownTokenPrefixes) prefix.toLowerCase(),
+    awsAccessKeyIdPrefix.toLowerCase(),
   ];
+
+  static final List<String> _unseparatedTokenMarkers = _exportTokenMarkers
+      .where((marker) => !marker.contains(_tokenMarkerSeparator))
+      .toList(growable: false);
+
+  static final _tokenMarkerSeparator = RegExp('[ _-]');
 
   static String _redactQuotedAbsolutePaths(String value, String mask) {
     final output = StringBuffer();
@@ -308,8 +297,7 @@ abstract final class ExportStringScrubber {
       ExportKeyPatterns(defaultSensitiveKeysLower);
 
   static final _exportTokenPattern = RegExp(
-    r'\b(Bearer|Basic|Token|Digest|NTLM|Negotiate|OAuth|HOBA|Mutual|'
-    r'SCRAM-SHA-\d+)\s+[^\s,;]+',
+    '\\b($httpAuthSchemeAlternation)\\s+[^\\s,;]+',
     caseSensitive: false,
   );
 
@@ -326,9 +314,8 @@ abstract final class ExportStringScrubber {
 
   static final _embeddedKnownTokenPattern = RegExp(
     '(^|[^A-Za-z0-9_-])'
-    '(?:(?:github_pat_|gh[pousr]_|xox[baprs]-|glpat-|sk-ant-|sk-|gsk_|'
-    '(?:sk|pk|rk)_(?:live|test)_|AIza|sbp_|npm_|pypi-|pat_)'
-    '[A-Za-z0-9._=-]{8,}|AKIA[A-Z0-9]{12,})',
+    '(?:(?:$knownTokenPrefixAlternation)'
+    '[A-Za-z0-9._=-]{8,}|$awsAccessKeyIdPrefix[A-Z0-9]{12,})',
   );
 
   static final _parameterAuthenticationPattern = RegExp(
@@ -341,11 +328,17 @@ abstract final class ExportStringScrubber {
     caseSensitive: false,
   );
 
-  static final _quotedPosixPathStartPattern = RegExp(
-    '/(?:Users|home|private|var|tmp|data|storage|sdcard|mnt|'
-    'opt|srv|etc|root|app|workspace)/',
-    caseSensitive: false,
-  );
+  static const _posixPathRoots = '/(?:Users/|'
+      r'''home/[^/\s"']+/|'''
+      'private/(?:var|tmp)/|'
+      'var/(?:mobile|folders|containers|db|lib|log|root|tmp|'
+      'www|run|cache|spool|backups)/|'
+      'data/(?:app|data|local|media|misc|system|user|user_de)/|'
+      'tmp/|storage/|sdcard/|mnt/|opt/|srv/|etc/|root/|'
+      r'''app/[^/\s"']+/|'''
+      'workspace/)';
+
+  static final _quotedPosixPathStartPattern = RegExp(_posixPathRoots);
 
   static final _quotedWindowsPathStartPattern = RegExp(r'[A-Za-z]:[\\/]');
 
@@ -355,13 +348,11 @@ abstract final class ExportStringScrubber {
 
   static final _unquotedAbsolutePathStartPattern = RegExp(
     r'(^|[\s(=\[])('
-    r'''file:(?://[^/\s]*)?/|'''
-    '/(?:Users|home|private|var|tmp|data|storage|sdcard|mnt|'
-    'opt|srv|etc|root|app|workspace)/|'
+    r'''[Ff][Ii][Ll][Ee]:(?://[^/\s]*)?/|'''
+    '$_posixPathRoots|'
     r'''[A-Za-z]:[\\/]|'''
     r'''\\\\[^\\/\s]+[\\/]'''
     ')',
-    caseSensitive: false,
     multiLine: true,
   );
 
@@ -391,11 +382,18 @@ final class ExportKeyPatterns {
   final RegExp jsonString;
   final RegExp jsonScalar;
 
-  bool matchesKey(String key) {
+  bool matchesKey(String key, String Function() assignedValue) {
     final lower = key.trim().toLowerCase();
     if (keysLower.contains(lower)) return true;
     final canonical = canonicalizeKey(key);
     if (canonicalKeysLower.contains(canonical)) return true;
+    if (!_containsKeySegments(canonical)) return false;
+    final qualifier = secretMetadataQualifier(canonical);
+    return qualifier == null ||
+        !isSecretMetadataValue(qualifier, assignedValue());
+  }
+
+  bool _containsKeySegments(String canonical) {
     final tokens =
         canonical.split('_').where((token) => token.isNotEmpty).toList();
     for (var start = 0; start < tokens.length; start++) {
@@ -403,7 +401,12 @@ final class ExportKeyPatterns {
       for (var end = start; end < tokens.length; end++) {
         if (candidate.isNotEmpty) candidate.write('_');
         candidate.write(tokens[end]);
-        if (canonicalKeysLower.contains(candidate.toString())) return true;
+        final value = candidate.toString();
+        if (end < tokens.length - 1 &&
+            trailingSegmentOnlyKeys.contains(value)) {
+          continue;
+        }
+        if (canonicalKeysLower.contains(value)) return true;
       }
     }
     return false;

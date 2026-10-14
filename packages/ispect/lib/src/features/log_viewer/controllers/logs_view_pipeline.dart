@@ -54,6 +54,13 @@ final class LogsViewState {
   final Map<String, int> idToVisualIndex;
 
   bool get isFiltered => filtered.length != totalCount;
+
+  int get rowCount => grouped?.length ?? sorted.length;
+
+  Object rowAt(int visualIndex) {
+    final rows = grouped ?? sorted;
+    return rows[isReversed ? rows.length - 1 - visualIndex : visualIndex];
+  }
 }
 
 /// Turns the raw history snapshot into a [LogsViewState].
@@ -92,8 +99,7 @@ final class LogsViewPipeline {
         ? _view.applyFiltersWithoutSearch(logs)
         : _view.applyCurrentFilters(logs);
     final sorted = _screen.applySortingIfNeeded(filtered);
-    final isReversed =
-        _view.sortColumn == LogSortColumn.time && _view.isLogOrderReversed;
+    final isReversed = _view.isNewestFirst;
     final grouped = _view.groupHttpLogs
         ? _transactionService
               .getGroupedEntries(sorted, _view.outputGeneration, source: logs)

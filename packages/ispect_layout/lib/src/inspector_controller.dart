@@ -150,6 +150,7 @@ class InspectorController {
       case InspectorMode.none:
         return const InspectorIdleState();
       case InspectorMode.inspector:
+      // ignore: deprecated_member_use_from_same_package
       case InspectorMode.inspectAndCompare:
       case InspectorMode.compareSelect:
         return InspectorInspectState(

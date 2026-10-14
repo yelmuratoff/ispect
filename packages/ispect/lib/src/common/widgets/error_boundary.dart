@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/ispect.dart';
 import 'package:ispectify/ispectify.dart';
@@ -108,6 +110,12 @@ class _ISpectErrorFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n =
+        Localizations.of<ISpectGeneratedLocalization>(
+          context,
+          ISpectGeneratedLocalization,
+        ) ??
+        ISpectGeneratedLocalizationEn();
     final resourceLimits =
         ISpect.loggerIfInitialized?.options.resourceLimits ??
         DiagnosticResourceLimits.balanced;
@@ -118,7 +126,7 @@ class _ISpectErrorFallback extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Plugin Error: $safePluginId'),
+        title: Text(l10n.pluginErrorTitle(safePluginId)),
         leading: const BackButton(),
       ),
       body: SafeArea(
@@ -131,7 +139,7 @@ class _ISpectErrorFallback extends StatelessWidget {
                 Icon(Icons.error_outline, size: 64, color: colorScheme.error),
                 const SizedBox(height: 16),
                 Text(
-                  'Failed to render plugin screen',
+                  l10n.pluginRenderFailed,
                   style: textTheme.titleLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -148,7 +156,7 @@ class _ISpectErrorFallback extends StatelessWidget {
                     stackTraceText!.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   ExpansionTile(
-                    title: const Text('Stack Trace'),
+                    title: Text(l10n.stackTrace),
                     children: [
                       Container(
                         width: double.infinity,
@@ -174,13 +182,13 @@ class _ISpectErrorFallback extends StatelessWidget {
                     OutlinedButton.icon(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.arrow_back),
-                      label: const Text('Back'),
+                      label: Text(l10n.back),
                     ),
                     const SizedBox(width: 12),
                     FilledButton.icon(
                       onPressed: onRetry,
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
+                      label: Text(l10n.retry),
                     ),
                   ],
                 ),

@@ -1,6 +1,8 @@
 import 'dart:collection';
 import 'dart:typed_data';
 
+import 'package:ispectify/src/utils/traversal_budget.dart';
+
 /// Converts arbitrary diagnostic values into structures accepted by JSON
 /// encoders while preserving maps and iterables.
 abstract final class JsonValueNormalizer {
@@ -82,7 +84,7 @@ abstract final class JsonValueNormalizer {
       preserveTypes: preserveTypes,
       allowCustomSerialization: customSerializationEnabled,
       ancestors: HashSet<Object>.identity(),
-      budget: _NormalizationBudget(maxNodes),
+      budget: TraversalBudget(maxNodes),
     );
   }
 
@@ -94,9 +96,9 @@ abstract final class JsonValueNormalizer {
     required bool preserveTypes,
     required bool allowCustomSerialization,
     required Set<Object> ancestors,
-    required _NormalizationBudget budget,
+    required TraversalBudget budget,
   }) {
-    if (!budget.takeNode()) return maxNodesReached;
+    if (!budget.take()) return maxNodesReached;
     if (value == null || value is bool || value is String) return value;
     if (value is num) {
       return value is double && !value.isFinite ? value.toString() : value;
@@ -180,7 +182,7 @@ abstract final class JsonValueNormalizer {
     required bool preserveTypes,
     required bool allowCustomSerialization,
     required Set<Object> ancestors,
-    required _NormalizationBudget budget,
+    required TraversalBudget budget,
   }) {
     final result = <String, Object?>{};
     final Iterator<dynamic> iterator;
@@ -255,7 +257,7 @@ abstract final class JsonValueNormalizer {
     required bool preserveTypes,
     required bool allowCustomSerialization,
     required Set<Object> ancestors,
-    required _NormalizationBudget budget,
+    required TraversalBudget budget,
   }) {
     final result = <Object?>[];
     final Iterator<dynamic> iterator;
@@ -352,20 +354,6 @@ abstract final class JsonValueNormalizer {
       suffix++;
     }
     result[key] = marker;
-  }
-}
-
-final class _NormalizationBudget {
-  _NormalizationBudget(this._remaining);
-
-  int _remaining;
-
-  bool get hasCapacity => _remaining > 0;
-
-  bool takeNode() {
-    if (_remaining <= 0) return false;
-    _remaining--;
-    return true;
   }
 }
 

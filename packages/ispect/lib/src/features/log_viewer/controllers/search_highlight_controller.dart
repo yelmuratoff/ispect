@@ -72,7 +72,6 @@ class SearchHighlightController extends ChangeNotifier {
     final newIds = matches.map((e) => e.id).toList(growable: false);
     if (listEquals(_searchMatchIds, newIds)) return;
 
-    final oldFocused = _focusedMatchIndex;
     _searchMatchIds = newIds;
     _searchMatchIdSet = newIds.toSet();
     if (newIds.isEmpty) {
@@ -80,12 +79,7 @@ class SearchHighlightController extends ChangeNotifier {
     } else if (_focusedMatchIndex < 0 || _focusedMatchIndex >= newIds.length) {
       _focusedMatchIndex = 0;
     }
-
-    if (_focusedMatchIndex != oldFocused) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
-      });
-    }
+    notifyListeners();
   }
 
   /// Returns the [SearchMatchState] for a given log entry.

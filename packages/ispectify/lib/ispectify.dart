@@ -82,6 +82,7 @@ export 'src/trace/extensions/sse.dart';
 export 'src/trace/extensions/state.dart';
 export 'src/trace/extensions/storage.dart';
 export 'src/trace/extensions/ws.dart';
+export 'src/trace/state_observer_policy.dart';
 export 'src/trace/state_trace_preparer.dart';
 export 'src/trace/trace_categories.dart';
 export 'src/trace/trace_category.dart';

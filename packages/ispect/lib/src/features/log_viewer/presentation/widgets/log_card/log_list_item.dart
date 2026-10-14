@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/desktop_log_row.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
 
@@ -38,7 +39,7 @@ class LogListItem extends StatelessWidget {
   final ISpectNavigatorObserver? observer;
   final VoidCallback? onOpenDetail;
   final void Function(String id)? onShowRelated;
-  final void Function(String type)? onTypeFilterTap;
+  final LogTypeFilterCallback? onTypeFilterTap;
   final bool useRelativeTime;
   final double typeColumnWidth;
   final double timeColumnWidth;

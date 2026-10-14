@@ -5,6 +5,8 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
 import 'exceptions.dart';
+import 'pubspec.dart';
+import 'repo_paths.dart';
 
 /// The pubspec sections that carry publishable version constraints.
 ///
@@ -109,23 +111,15 @@ final class DependencyCheck {
     );
   }
 
-  List<_Pubspec> _packagePubspecs() {
-    final packages = Directory(p.join(repoRoot, 'packages'));
-    if (!packages.existsSync()) {
-      return const [];
-    }
-    final directories = packages.listSync().whereType<Directory>().toList()
-      ..sort((a, b) => a.path.compareTo(b.path));
-    return [
-      for (final directory in directories)
-        if (_readOrNull(File(p.join(directory.path, 'pubspec.yaml')))
-            case final _Pubspec pubspec)
-          pubspec,
-    ];
-  }
+  List<Pubspec> _packagePubspecs() => [
+        for (final directory in packageDirectories(repoRoot))
+          if (_readOrNull(File(p.join(directory, 'pubspec.yaml')))
+              case final Pubspec pubspec)
+            pubspec,
+      ];
 
   List<DependencyInconsistency> _scan(
-    _Pubspec pubspec,
+    Pubspec pubspec,
     Version expected,
     Set<String> candidates,
   ) {
@@ -172,37 +166,8 @@ final class DependencyCheck {
     return null;
   }
 
-  /// Throws [PubspecException] when the file exists but does not parse.
-  _Pubspec? _readOrNull(File file) {
-    if (!file.existsSync()) {
-      return null;
-    }
-    final Object? document;
-    try {
-      document = loadYaml(file.readAsStringSync(), sourceUrl: file.uri);
-    } on YamlException catch (e) {
-      throw PubspecException('${file.path} is not valid YAML: ${e.message}');
-    }
-    if (document is! YamlMap) {
-      throw PubspecException('${file.path} is not a YAML mapping');
-    }
-    final name = document['name'];
-    return _Pubspec(
-      file: file,
-      document: document,
-      name: name is String ? name : p.relative(file.path, from: repoRoot),
-    );
-  }
-}
-
-final class _Pubspec {
-  const _Pubspec({
-    required this.file,
-    required this.document,
-    required this.name,
-  });
-
-  final File file;
-  final YamlMap document;
-  final String name;
+  /// Throws [PubspecException] when the file exists but does not parse, and
+  /// [ManifestException] when it declares no name.
+  Pubspec? _readOrNull(File file) =>
+      file.existsSync() ? Pubspec.read(file, repoRoot: repoRoot) : null;
 }

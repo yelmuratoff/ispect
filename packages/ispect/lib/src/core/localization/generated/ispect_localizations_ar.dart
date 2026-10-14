@@ -1098,4 +1098,292 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get composerEditAndResend => 'تعديل وإعادة الإرسال';
+
+  @override
+  String get settingsDisplay => 'العرض';
+
+  @override
+  String get relativeTime => 'الوقت النسبي';
+
+  @override
+  String get absoluteTime => 'الوقت المطلق';
+
+  @override
+  String get compactUrls => 'عناوين URL مختصرة';
+
+  @override
+  String get settingsTools => 'الأدوات';
+
+  @override
+  String get settingsAdvanced => 'متقدم';
+
+  @override
+  String get forwardErrorsToDeveloperLog => 'تمرير الأخطاء إلى dart:developer';
+
+  @override
+  String get historyCapacity => 'سعة السجل';
+
+  @override
+  String get historyCapacityDesc => 'السجلات المحفوظة في الذاكرة';
+
+  @override
+  String get consoleTruncate => 'اقتطاع وحدة التحكم';
+
+  @override
+  String get consoleTruncateDesc =>
+      'الحد الأقصى للأحرف في كل سطر من وحدة التحكم';
+
+  @override
+  String get captureMode => 'وضع الالتقاط';
+
+  @override
+  String get captureModeDesc => 'قيم مفيدة أو أقصى قدر من العزل';
+
+  @override
+  String get captureModeBalancedDesc => 'منسقات محمية بمخرجات محدودة';
+
+  @override
+  String get captureModeStrict => 'صارم';
+
+  @override
+  String get captureModeStrictDesc => 'عدم تشغيل منسقات التطبيق مطلقًا';
+
+  @override
+  String get profileBalanced => 'متوازن';
+
+  @override
+  String get resourceProfile => 'ملف الموارد';
+
+  @override
+  String get resourceProfileDesc =>
+      'حدود الالتقاط والذاكرة والاستيراد والتصدير';
+
+  @override
+  String get resourceProfileConstrained => 'مقيد';
+
+  @override
+  String get resourceProfileConstrainedDesc =>
+      'استهلاك أقل للذاكرة في الجلسات الطويلة';
+
+  @override
+  String get resourceProfileBalancedDesc => 'تشخيص مفيد بتكلفة محدودة';
+
+  @override
+  String get resourceProfileExtended => 'موسع';
+
+  @override
+  String get resourceProfileExtendedDesc => 'عمليات نقل داخلية أكبر ومضبوطة';
+
+  @override
+  String get processingProfile => 'ملف المعالجة';
+
+  @override
+  String get processingProfileDesc => 'سرعة الاستجابة وإنتاجية الدفعات';
+
+  @override
+  String get processingProfileResponsive => 'سريع الاستجابة';
+
+  @override
+  String get processingProfileResponsiveDesc =>
+      'التخلي عن التنفيذ كثيرًا للحفاظ على سلاسة الواجهة';
+
+  @override
+  String get processingProfileBalancedDesc => 'جدولة للأغراض العامة';
+
+  @override
+  String get processingProfileThroughput => 'إنتاجية عالية';
+
+  @override
+  String get processingProfileThroughputDesc => 'دفعات أكبر لنقل أسرع';
+
+  @override
+  String get limitInvalidValue => 'أدخل عددًا صحيحًا غير سالب';
+
+  @override
+  String get limitZeroDisables => 'القيمة 0 تعطّل هذا الحد';
+
+  @override
+  String get apply => 'تطبيق';
+
+  @override
+  String logCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count سجل',
+      many: '$count سجلًا',
+      few: '$count سجلات',
+      two: 'سجلان',
+      one: 'سجل واحد',
+      zero: '$count سجل',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String warningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تحذير',
+      many: '$count تحذيرًا',
+      few: '$count تحذيرات',
+      two: 'تحذيران',
+      one: 'تحذير واحد',
+      zero: '$count تحذير',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count خطأ',
+      many: '$count خطأً',
+      few: '$count أخطاء',
+      two: 'خطآن',
+      one: 'خطأ واحد',
+      zero: '$count خطأ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filteredLogCount(int filtered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$filtered / $total سجل',
+      many: '$filtered / $total سجلًا',
+      few: '$filtered / $total سجلات',
+      two: '$filtered / $total سجل',
+      one: '$filtered / $total سجل',
+      zero: '$filtered / $total سجل',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contentProcessingError => 'خطأ في معالجة المحتوى';
+
+  @override
+  String get failedToLoadLogContent => 'تعذر تحميل محتوى السجلات';
+
+  @override
+  String get unknownContentProcessingError =>
+      'حدث خطأ غير معروف أثناء معالجة المحتوى';
+
+  @override
+  String get correlationIdShort => 'الارتباط';
+
+  @override
+  String get transactionIdShort => 'المعاملة';
+
+  @override
+  String get columnType => 'النوع';
+
+  @override
+  String get columnTime => 'الوقت';
+
+  @override
+  String get columnMessage => 'الرسالة';
+
+  @override
+  String sortColumnAscending(String column) {
+    return 'الترتيب حسب $column، تصاعدي';
+  }
+
+  @override
+  String sortColumnDescending(String column) {
+    return 'الترتيب حسب $column، تنازلي';
+  }
+
+  @override
+  String sortColumnUnsorted(String column) {
+    return 'الترتيب حسب $column، غير مرتب';
+  }
+
+  @override
+  String resizeColumn(String column) {
+    return 'تغيير عرض عمود $column';
+  }
+
+  @override
+  String get resumeLiveTail => 'استئناف التتبع المباشر';
+
+  @override
+  String get pauseLiveTail => 'إيقاف التتبع المباشر مؤقتًا';
+
+  @override
+  String get liveTailLive => 'مباشر';
+
+  @override
+  String get liveTailPaused => 'متوقف مؤقتًا';
+
+  @override
+  String get open => 'فتح';
+
+  @override
+  String filterByType(String type) {
+    return 'التصفية حسب النوع $type';
+  }
+
+  @override
+  String httpStatus(int code) {
+    return 'حالة HTTP $code';
+  }
+
+  @override
+  String get composerBodyNone => 'لا شيء';
+
+  @override
+  String get composerBodyText => 'نص';
+
+  @override
+  String get composerBodyForm => 'نموذج';
+
+  @override
+  String get composerBodyMultipart => 'متعدد الأجزاء';
+
+  @override
+  String get jsonViewer => 'عارض JSON';
+
+  @override
+  String get detail => 'التفاصيل';
+
+  @override
+  String copyKey(String key) {
+    return 'نسخ $key';
+  }
+
+  @override
+  String get copyToClipboardFailed => 'تعذر النسخ إلى الحافظة';
+
+  @override
+  String pluginErrorTitle(String pluginId) {
+    return 'خطأ في الإضافة: $pluginId';
+  }
+
+  @override
+  String get pluginRenderFailed => 'تعذر عرض شاشة الإضافة';
+
+  @override
+  String get stackTrace => 'تتبع المكدس';
+
+  @override
+  String get resizeDivider => 'تغيير حجم الفاصل';
+
+  @override
+  String get sessionLogsLoadFailed => 'تعذر تحميل سجلات الجلسة';
+
+  @override
+  String get dailySessionsLoadFailed => 'تعذر تحميل الجلسات';
+
+  @override
+  String get dailySessionsClearFailed => 'تعذر مسح الجلسات';
+
+  @override
+  String get exception => 'استثناء';
 }

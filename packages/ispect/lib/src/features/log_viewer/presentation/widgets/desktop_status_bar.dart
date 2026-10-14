@@ -37,9 +37,14 @@ class DesktopStatusBar extends StatelessWidget {
     final borderColor = onSurface.withValues(alpha: 0.1);
     final labelColor = onSurface.withValues(alpha: 0.55);
 
+    final l10n = context.ispectL10n;
     final countText = isFiltered
-        ? '$filteredCount / $totalCount'
-        : '$totalCount';
+        ? l10n.filteredLogCount(filteredCount, totalCount)
+        : l10n.logCount(totalCount);
+    final selectedLogTitle = context.ispectTheme.getTypeTitle(
+      context,
+      key: selectedLog?.key,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -59,8 +64,8 @@ class DesktopStatusBar extends StatelessWidget {
                 if (isLiveTailActive || isLiveTailPaused) ...[
                   Tooltip(
                     message: isLiveTailPaused
-                        ? 'Resume live tail'
-                        : 'Pause live tail',
+                        ? l10n.resumeLiveTail
+                        : l10n.pauseLiveTail,
                     child: InkWell(
                       customBorder: ISpectSquircle.border(
                         radius: ISpectConstants.smallBorderRadius,
@@ -99,7 +104,9 @@ class DesktopStatusBar extends StatelessWidget {
                               ),
                             const Gap(6),
                             Text(
-                              isLiveTailPaused ? 'PAUSED' : 'LIVE',
+                              isLiveTailPaused
+                                  ? l10n.liveTailPaused
+                                  : l10n.liveTailLive,
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
@@ -118,39 +125,50 @@ class DesktopStatusBar extends StatelessWidget {
                 ],
                 Icon(Icons.list_alt_rounded, size: 14, color: labelColor),
                 const Gap(6),
-                Text(
-                  '$countText logs',
-                  style: TextStyle(fontSize: 12, color: labelColor),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          countText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 12, color: labelColor),
+                        ),
+                      ),
+                      if (selectedLog != null) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: SizedBox(
+                            height: 12,
+                            child: VerticalDivider(
+                              width: 1,
+                              thickness: 1,
+                              color: onSurface.withValues(alpha: 0.12),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            '${selectedLogTitle ?? ''} \u2014 '
+                            '${selectedLog!.formattedTime}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: onSurface.withValues(alpha: 0.45),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-                if (selectedLog != null) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: SizedBox(
-                      height: 12,
-                      child: VerticalDivider(
-                        width: 1,
-                        thickness: 1,
-                        color: onSurface.withValues(alpha: 0.12),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      '${selectedLog!.key ?? ''} \u2014 '
-                      '${selectedLog!.formattedTime}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: onSurface.withValues(alpha: 0.45),
-                      ),
-                    ),
-                  ),
-                ] else
-                  const Spacer(),
                 // Timestamp format toggle
                 Tooltip(
-                  message: useRelativeTime ? 'Absolute time' : 'Relative time',
+                  message: useRelativeTime
+                      ? l10n.absoluteTime
+                      : l10n.relativeTime,
                   child: InkWell(
                     customBorder: ISpectSquircle.border(
                       radius: ISpectConstants.smallBorderRadius,
@@ -176,39 +194,55 @@ class DesktopStatusBar extends StatelessWidget {
                 // Keyboard hints - hidden when there's not enough space
                 if (showAnyHints) ...[
                   const Gap(10),
-                  _KeyHint(
-                    badge: '\u2191\u2193',
-                    label: 'navigate',
-                    labelColor: labelColor,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: constraints.maxWidth / 2,
+                    ),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _KeyHint(
+                            badge: '\u2191\u2193',
+                            label: l10n.navigate.toLowerCase(),
+                            labelColor: labelColor,
+                          ),
+                          const Gap(12),
+                          _KeyHint(
+                            badge: '\u23CE',
+                            label: l10n.open.toLowerCase(),
+                            labelColor: labelColor,
+                          ),
+                          if (showAllHints) ...[
+                            const Gap(12),
+                            _KeyHint(
+                              badge:
+                                  Theme.of(context).platform ==
+                                      TargetPlatform.macOS
+                                  ? '\u2318C'
+                                  : 'Ctrl+C',
+                              label: l10n.copy.toLowerCase(),
+                              labelColor: labelColor,
+                            ),
+                            const Gap(12),
+                            _KeyHint(
+                              badge: '/',
+                              label: l10n.search.toLowerCase(),
+                              labelColor: labelColor,
+                            ),
+                            const Gap(12),
+                            _KeyHint(
+                              badge: 'Esc',
+                              label: l10n.close.toLowerCase(),
+                              labelColor: labelColor,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
-                  const Gap(12),
-                  _KeyHint(
-                    badge: '\u23CE',
-                    label: 'open',
-                    labelColor: labelColor,
-                  ),
-                  if (showAllHints) ...[
-                    const Gap(12),
-                    _KeyHint(
-                      badge: Theme.of(context).platform == TargetPlatform.macOS
-                          ? '\u2318C'
-                          : 'Ctrl+C',
-                      label: context.ispectL10n.copy.toLowerCase(),
-                      labelColor: labelColor,
-                    ),
-                    const Gap(12),
-                    _KeyHint(
-                      badge: '/',
-                      label: 'search',
-                      labelColor: labelColor,
-                    ),
-                    const Gap(12),
-                    _KeyHint(
-                      badge: 'Esc',
-                      label: 'close',
-                      labelColor: labelColor,
-                    ),
-                  ],
                 ],
               ],
             );

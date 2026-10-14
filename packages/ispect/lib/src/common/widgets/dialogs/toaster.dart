@@ -83,7 +83,6 @@ final class ISpectToaster {
     color: Colors.red,
     duration: duration,
     messenger: messenger,
-    l10n: l10n,
   );
 
   /// Displays an informational toast with a dark background.
@@ -114,7 +113,6 @@ final class ISpectToaster {
     duration: duration,
     action: action,
     messenger: messenger,
-    l10n: l10n,
   );
 
   /// Displays a success toast with a green background.
@@ -148,7 +146,6 @@ final class ISpectToaster {
     duration: duration,
     action: action,
     messenger: messenger,
-    l10n: l10n,
   );
 
   /// Displays a toast indicating that a value has been copied to the clipboard.
@@ -191,7 +188,6 @@ final class ISpectToaster {
     Duration? duration,
     SnackBarAction? action,
     ScaffoldMessengerState? messenger,
-    ISpectGeneratedLocalization? l10n,
   }) async {
     final m =
         messenger ?? (context != null ? ScaffoldMessenger.of(context) : null);

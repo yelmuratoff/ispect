@@ -1115,4 +1115,280 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
 
   @override
   String get composerEditAndResend => 'دەستکاری و دووبارە ناردن';
+
+  @override
+  String get settingsDisplay => 'پیشاندان';
+
+  @override
+  String get relativeTime => 'کاتی ڕێژەیی';
+
+  @override
+  String get absoluteTime => 'کاتی ڕەها';
+
+  @override
+  String get compactUrls => 'URLی کورت';
+
+  @override
+  String get settingsTools => 'ئامرازەکان';
+
+  @override
+  String get settingsAdvanced => 'پێشکەوتوو';
+
+  @override
+  String get forwardErrorsToDeveloperLog => 'ناردنی هەڵەکان بۆ dart:developer';
+
+  @override
+  String get historyCapacity => 'توانای مێژوو';
+
+  @override
+  String get historyCapacityDesc => 'ئەو تۆمارانەی لە بیرگەدا دەمێننەوە';
+
+  @override
+  String get consoleTruncate => 'کورتکردنەوەی کۆنسۆڵ';
+
+  @override
+  String get consoleTruncateDesc => 'زۆرترین پیت بۆ هەر هێڵێکی کۆنسۆڵ';
+
+  @override
+  String get captureMode => 'دۆخی گرتن';
+
+  @override
+  String get captureModeDesc => 'بەهای بەسوود یان زۆرترین جیاکردنەوە';
+
+  @override
+  String get captureModeBalancedDesc =>
+      'ڕێکخەرە پارێزراوەکان بە دەرچوونی سنووردار';
+
+  @override
+  String get captureModeStrict => 'توند';
+
+  @override
+  String get captureModeStrictDesc => 'هەرگیز ڕێکخەرەکانی ئەپ کار پێ مەکە';
+
+  @override
+  String get profileBalanced => 'هاوسەنگ';
+
+  @override
+  String get resourceProfile => 'پرۆفایلی سەرچاوەکان';
+
+  @override
+  String get resourceProfileDesc => 'سنووری گرتن، بیرگە، هاوردە و هەناردە';
+
+  @override
+  String get resourceProfileConstrained => 'سنووردار';
+
+  @override
+  String get resourceProfileConstrainedDesc =>
+      'بەکارهێنانی کەمتری بیرگە بۆ دانیشتنە درێژەکان';
+
+  @override
+  String get resourceProfileBalancedDesc =>
+      'دەستنیشانکردنی بەسوود بە تێچووی سنووردار';
+
+  @override
+  String get resourceProfileExtended => 'فراوانکراو';
+
+  @override
+  String get resourceProfileExtendedDesc =>
+      'گواستنەوەی ناوخۆیی گەورەتر و کۆنترۆڵکراو';
+
+  @override
+  String get processingProfile => 'پرۆفایلی پرۆسێسکردن';
+
+  @override
+  String get processingProfileDesc => 'خێرایی وەڵامدانەوە و توانای کۆمەڵە';
+
+  @override
+  String get processingProfileResponsive => 'وەڵامدەرەوە';
+
+  @override
+  String get processingProfileResponsiveDesc =>
+      'زۆرجار ڕێگە بدە بۆ ئەوەی ڕووکار نەرم بمێنێتەوە';
+
+  @override
+  String get processingProfileBalancedDesc => 'خشتەکردنی گشتی';
+
+  @override
+  String get processingProfileThroughput => 'توانای زۆر';
+
+  @override
+  String get processingProfileThroughputDesc =>
+      'کۆمەڵەی گەورەتر بۆ گواستنەوەی خێراتر';
+
+  @override
+  String get limitInvalidValue => 'ژمارەیەکی تەواوی نانەرێنی بنووسە';
+
+  @override
+  String get limitZeroDisables => '0 ئەم سنوورە ناچالاک دەکات';
+
+  @override
+  String get apply => 'جێبەجێکردن';
+
+  @override
+  String logCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تۆمار',
+      one: '$count تۆمار',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String warningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ئاگاداری',
+      one: '$count ئاگاداری',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count هەڵە',
+      one: '$count هەڵە',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filteredLogCount(int filtered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$filtered / $total تۆمار',
+      one: '$filtered / $total تۆمار',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contentProcessingError => 'هەڵەی پرۆسێسکردنی ناوەڕۆک';
+
+  @override
+  String get failedToLoadLogContent =>
+      'بارکردنی ناوەڕۆکی تۆمار سەرکەوتوو نەبوو';
+
+  @override
+  String get unknownContentProcessingError =>
+      'هەڵەیەکی نەناسراو لە کاتی پرۆسێسکردنی ناوەڕۆکدا ڕوویدا';
+
+  @override
+  String get correlationIdShort => 'پەیوەندی';
+
+  @override
+  String get transactionIdShort => 'مامەڵە';
+
+  @override
+  String get columnType => 'جۆر';
+
+  @override
+  String get columnTime => 'کات';
+
+  @override
+  String get columnMessage => 'پەیام';
+
+  @override
+  String sortColumnAscending(String column) {
+    return 'ڕیزکردن بەپێی $column، بەرزبوونەوە';
+  }
+
+  @override
+  String sortColumnDescending(String column) {
+    return 'ڕیزکردن بەپێی $column، دابەزین';
+  }
+
+  @override
+  String sortColumnUnsorted(String column) {
+    return 'ڕیزکردن بەپێی $column، ڕیزنەکراو';
+  }
+
+  @override
+  String resizeColumn(String column) {
+    return 'گۆڕینی پانی ستوونی $column';
+  }
+
+  @override
+  String get resumeLiveTail => 'بەردەوامبوونەوەی شوێنکەوتنی ڕاستەوخۆ';
+
+  @override
+  String get pauseLiveTail => 'ڕاگرتنی شوێنکەوتنی ڕاستەوخۆ';
+
+  @override
+  String get liveTailLive => 'ڕاستەوخۆ';
+
+  @override
+  String get liveTailPaused => 'ڕاگیراو';
+
+  @override
+  String get open => 'کردنەوە';
+
+  @override
+  String filterByType(String type) {
+    return 'فلتەرکردن بەپێی جۆری $type';
+  }
+
+  @override
+  String httpStatus(int code) {
+    return 'دۆخی HTTP $code';
+  }
+
+  @override
+  String get composerBodyNone => 'هیچ';
+
+  @override
+  String get composerBodyText => 'دەق';
+
+  @override
+  String get composerBodyForm => 'فۆرم';
+
+  @override
+  String get composerBodyMultipart => 'فرەبەش';
+
+  @override
+  String get jsonViewer => 'بینەری JSON';
+
+  @override
+  String get detail => 'وردەکاری';
+
+  @override
+  String copyKey(String key) {
+    return 'کۆپیکردنی $key';
+  }
+
+  @override
+  String get copyToClipboardFailed => 'کۆپیکردن بۆ کلیپبۆرد سەرکەوتوو نەبوو';
+
+  @override
+  String pluginErrorTitle(String pluginId) {
+    return 'هەڵەی پێوەکراو: $pluginId';
+  }
+
+  @override
+  String get pluginRenderFailed => 'پیشاندانی شاشەی پێوەکراو سەرکەوتوو نەبوو';
+
+  @override
+  String get stackTrace => 'شوێنپێی ستاک';
+
+  @override
+  String get resizeDivider => 'گۆڕینی قەبارەی جیاکەرەوە';
+
+  @override
+  String get sessionLogsLoadFailed =>
+      'بارکردنی تۆمارەکانی دانیشتن سەرکەوتوو نەبوو';
+
+  @override
+  String get dailySessionsLoadFailed => 'بارکردنی دانیشتنەکان سەرکەوتوو نەبوو';
+
+  @override
+  String get dailySessionsClearFailed => 'سڕینەوەی دانیشتنەکان سەرکەوتوو نەبوو';
+
+  @override
+  String get exception => 'دەرچوون';
 }

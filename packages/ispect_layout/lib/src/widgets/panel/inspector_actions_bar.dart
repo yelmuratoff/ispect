@@ -81,6 +81,7 @@ class _ActionsRow extends StatelessWidget {
       case InspectorMode.zoom:
         return 'Done';
       case InspectorMode.inspector:
+      // ignore: deprecated_member_use_from_same_package
       case InspectorMode.inspectAndCompare:
       case InspectorMode.compareSelect:
       case InspectorMode.none:

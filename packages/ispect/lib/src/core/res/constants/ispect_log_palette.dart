@@ -1,177 +1,177 @@
 part of 'ispect_constants.dart';
 
-const Map<String, Color> _kLightTypeColors = {
+final Map<String, Color> _kLightTypeColors = Map.unmodifiable({
   /// Base logs section
-  'error': Color.fromARGB(255, 192, 38, 38),
-  'critical': Color.fromARGB(255, 142, 22, 22),
-  'info': Color.fromARGB(255, 25, 118, 210),
-  'debug': Color.fromARGB(255, 97, 97, 97),
-  'verbose': Color.fromARGB(255, 117, 117, 117),
-  'warning': Color.fromARGB(255, 255, 160, 0),
-  'exception': Color.fromARGB(255, 211, 47, 47),
-  'good': Color.fromARGB(255, 56, 142, 60),
-  'print': Color.fromARGB(255, 25, 118, 210),
-  'provider': Color.fromARGB(255, 25, 118, 210),
-  'analytics': Color.fromARGB(255, 182, 177, 25),
+  ISpectLogType.error.key: const Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.critical.key: const Color.fromARGB(255, 142, 22, 22),
+  ISpectLogType.info.key: const Color.fromARGB(255, 25, 118, 210),
+  ISpectLogType.debug.key: const Color.fromARGB(255, 97, 97, 97),
+  ISpectLogType.verbose.key: const Color.fromARGB(255, 117, 117, 117),
+  ISpectLogType.warning.key: const Color.fromARGB(255, 255, 160, 0),
+  ISpectLogType.exception.key: const Color.fromARGB(255, 211, 47, 47),
+  ISpectLogType.good.key: const Color.fromARGB(255, 56, 142, 60),
+  ISpectLogType.print.key: const Color.fromARGB(255, 25, 118, 210),
+  ISpectLogType.provider.key: const Color.fromARGB(255, 25, 118, 210),
+  ISpectLogType.analytics.key: const Color.fromARGB(255, 182, 177, 25),
 
   /// Http section
-  'http-error': Color.fromARGB(255, 192, 38, 38),
-  'http-request': Color(0xFF9C27B0),
-  'http-response': Color(0xFF00C853),
+  ISpectLogType.httpError.key: const Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.httpRequest.key: const Color(0xFF9C27B0),
+  ISpectLogType.httpResponse.key: const Color(0xFF00C853),
 
   /// Bloc section
-  'bloc-event': Color.fromARGB(255, 25, 118, 210),
-  'bloc-transition': Color.fromARGB(255, 85, 139, 47),
-  'bloc-close': Color.fromARGB(255, 192, 38, 38),
-  'bloc-create': Color.fromARGB(255, 56, 142, 60),
-  'bloc-state': Color.fromARGB(255, 0, 105, 135),
-  'bloc-done': Color.fromARGB(255, 56, 142, 60),
-  'bloc-error': Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.blocEvent.key: const Color.fromARGB(255, 25, 118, 210),
+  ISpectLogType.blocTransition.key: const Color.fromARGB(255, 85, 139, 47),
+  ISpectLogType.blocClose.key: const Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.blocCreate.key: const Color.fromARGB(255, 56, 142, 60),
+  ISpectLogType.blocState.key: const Color.fromARGB(255, 0, 105, 135),
+  ISpectLogType.blocDone.key: const Color.fromARGB(255, 56, 142, 60),
+  ISpectLogType.blocError.key: const Color.fromARGB(255, 192, 38, 38),
 
-  'riverpod-add': Color.fromARGB(255, 56, 142, 60),
-  'riverpod-update': Color.fromARGB(255, 0, 105, 135),
-  'riverpod-dispose': Color(0xFFD50000),
-  'riverpod-fail': Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.riverpodAdd.key: const Color.fromARGB(255, 56, 142, 60),
+  ISpectLogType.riverpodUpdate.key: const Color.fromARGB(255, 0, 105, 135),
+  ISpectLogType.riverpodDispose.key: const Color(0xFFD50000),
+  ISpectLogType.riverpodFail.key: const Color.fromARGB(255, 192, 38, 38),
 
   /// Flutter section
-  'route': Color(0xFF8E24AA),
+  ISpectLogType.route.key: const Color(0xFF8E24AA),
 
   /// WebSocket
-  'ws-sent': Color.fromARGB(255, 162, 0, 190),
-  'ws-received': Color.fromARGB(255, 0, 158, 66),
-  'ws-error': Color.fromARGB(255, 192, 38, 38),
-  'ws-state': Color.fromARGB(255, 0, 131, 143),
+  ISpectLogType.wsSent.key: const Color.fromARGB(255, 162, 0, 190),
+  ISpectLogType.wsReceived.key: const Color.fromARGB(255, 0, 158, 66),
+  ISpectLogType.wsError.key: const Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.wsState.key: const Color.fromARGB(255, 0, 131, 143),
 
   /// Database
-  'db-query': Color.fromARGB(255, 25, 118, 210),
-  'db-result': Color.fromARGB(255, 56, 142, 60),
-  'db-error': Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.dbQuery.key: const Color.fromARGB(255, 25, 118, 210),
+  ISpectLogType.dbResult.key: const Color.fromARGB(255, 56, 142, 60),
+  ISpectLogType.dbError.key: const Color.fromARGB(255, 192, 38, 38),
 
   /// Auth
-  'auth-success': Color.fromARGB(255, 56, 142, 60),
-  'auth-error': Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.authSuccess.key: const Color.fromARGB(255, 56, 142, 60),
+  ISpectLogType.authError.key: const Color.fromARGB(255, 192, 38, 38),
 
   /// Storage
-  'storage-result': Color.fromARGB(255, 56, 142, 60),
-  'storage-query': Color.fromARGB(255, 25, 118, 210),
-  'storage-error': Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.storageResult.key: const Color.fromARGB(255, 56, 142, 60),
+  ISpectLogType.storageQuery.key: const Color.fromARGB(255, 25, 118, 210),
+  ISpectLogType.storageError.key: const Color.fromARGB(255, 192, 38, 38),
 
   /// Push
-  'push-received': Color.fromARGB(255, 245, 124, 0),
-  'push-sent': Color(0xFF9C27B0),
-  'push-error': Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.pushReceived.key: const Color.fromARGB(255, 245, 124, 0),
+  ISpectLogType.pushSent.key: const Color(0xFF9C27B0),
+  ISpectLogType.pushError.key: const Color.fromARGB(255, 192, 38, 38),
 
   /// Payment
-  'payment-success': Color.fromARGB(255, 56, 142, 60),
-  'payment-error': Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.paymentSuccess.key: const Color.fromARGB(255, 56, 142, 60),
+  ISpectLogType.paymentError.key: const Color.fromARGB(255, 192, 38, 38),
 
   /// State
-  'state-change': Color.fromARGB(255, 85, 139, 47),
-  'state-error': Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.stateChange.key: const Color.fromARGB(255, 85, 139, 47),
+  ISpectLogType.stateError.key: const Color.fromARGB(255, 192, 38, 38),
 
   /// SSE
-  'sse-received': Color.fromARGB(255, 0, 158, 66),
-  'sse-error': Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.sseReceived.key: const Color.fromARGB(255, 0, 158, 66),
+  ISpectLogType.sseError.key: const Color.fromARGB(255, 192, 38, 38),
 
   /// gRPC
-  'grpc-request': Color(0xFF9C27B0),
-  'grpc-response': Color(0xFF00C853),
-  'grpc-error': Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.grpcRequest.key: const Color(0xFF9C27B0),
+  ISpectLogType.grpcResponse.key: const Color(0xFF00C853),
+  ISpectLogType.grpcError.key: const Color.fromARGB(255, 192, 38, 38),
 
   /// GraphQL
-  'graphql-request': Color.fromARGB(255, 106, 27, 154),
-  'graphql-response': Color(0xFF00C853),
-  'graphql-error': Color.fromARGB(255, 192, 38, 38),
+  ISpectLogType.graphqlRequest.key: const Color.fromARGB(255, 106, 27, 154),
+  ISpectLogType.graphqlResponse.key: const Color(0xFF00C853),
+  ISpectLogType.graphqlError.key: const Color.fromARGB(255, 192, 38, 38),
 
   /// Performance
-  'performance-jank': Color.fromARGB(255, 255, 160, 0),
-  'performance-error': Color.fromARGB(255, 192, 38, 38),
-};
+  ISpectLogType.performanceJank.key: const Color.fromARGB(255, 255, 160, 0),
+  ISpectLogType.performanceError.key: const Color.fromARGB(255, 192, 38, 38),
+});
 
-const Map<String, Color> _kDarkTypeColors = {
+final Map<String, Color> _kDarkTypeColors = Map.unmodifiable({
   /// Base logs section
-  'error': Color.fromARGB(255, 239, 83, 80),
-  'critical': Color.fromARGB(255, 198, 40, 40),
-  'info': Color.fromARGB(255, 66, 165, 245),
-  'debug': Color.fromARGB(255, 158, 158, 158),
-  'verbose': Color.fromARGB(255, 189, 189, 189),
-  'warning': Color.fromARGB(255, 239, 108, 0),
-  'exception': Color.fromARGB(255, 239, 83, 80),
-  'good': Color.fromARGB(255, 120, 230, 129),
-  'print': Color.fromARGB(255, 66, 165, 245),
-  'provider': Color.fromARGB(255, 66, 165, 245),
-  'analytics': Color.fromARGB(255, 255, 255, 0),
+  ISpectLogType.error.key: const Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.critical.key: const Color.fromARGB(255, 198, 40, 40),
+  ISpectLogType.info.key: const Color.fromARGB(255, 66, 165, 245),
+  ISpectLogType.debug.key: const Color.fromARGB(255, 158, 158, 158),
+  ISpectLogType.verbose.key: const Color.fromARGB(255, 189, 189, 189),
+  ISpectLogType.warning.key: const Color.fromARGB(255, 239, 108, 0),
+  ISpectLogType.exception.key: const Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.good.key: const Color.fromARGB(255, 120, 230, 129),
+  ISpectLogType.print.key: const Color.fromARGB(255, 66, 165, 245),
+  ISpectLogType.provider.key: const Color.fromARGB(255, 66, 165, 245),
+  ISpectLogType.analytics.key: const Color.fromARGB(255, 255, 255, 0),
 
   /// Http section
-  'http-error': Color.fromARGB(255, 239, 83, 80),
-  'http-request': Color(0xFFF602C1),
-  'http-response': Color(0xFF26FF3C),
+  ISpectLogType.httpError.key: const Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.httpRequest.key: const Color(0xFFF602C1),
+  ISpectLogType.httpResponse.key: const Color(0xFF26FF3C),
 
   /// Bloc section
-  'bloc-event': Color(0xFF63FAFE),
-  'bloc-transition': Color(0xFF56FEA8),
-  'bloc-close': Color(0xFFFF005F),
-  'bloc-create': Color.fromARGB(255, 120, 230, 129),
-  'bloc-state': Color.fromARGB(255, 0, 125, 160),
-  'bloc-done': Color.fromARGB(255, 120, 230, 129),
-  'bloc-error': Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.blocEvent.key: const Color(0xFF63FAFE),
+  ISpectLogType.blocTransition.key: const Color(0xFF56FEA8),
+  ISpectLogType.blocClose.key: const Color(0xFFFF005F),
+  ISpectLogType.blocCreate.key: const Color.fromARGB(255, 120, 230, 129),
+  ISpectLogType.blocState.key: const Color.fromARGB(255, 0, 125, 160),
+  ISpectLogType.blocDone.key: const Color.fromARGB(255, 120, 230, 129),
+  ISpectLogType.blocError.key: const Color.fromARGB(255, 239, 83, 80),
 
-  'riverpod-add': Color.fromARGB(255, 120, 230, 129),
-  'riverpod-update': Color.fromARGB(255, 120, 180, 190),
-  'riverpod-dispose': Color(0xFFFF005F),
-  'riverpod-fail': Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.riverpodAdd.key: const Color.fromARGB(255, 120, 230, 129),
+  ISpectLogType.riverpodUpdate.key: const Color.fromARGB(255, 120, 180, 190),
+  ISpectLogType.riverpodDispose.key: const Color(0xFFFF005F),
+  ISpectLogType.riverpodFail.key: const Color.fromARGB(255, 239, 83, 80),
 
   /// Flutter section
-  'route': Color(0xFFAF5FFF),
+  ISpectLogType.route.key: const Color(0xFFAF5FFF),
 
   /// WebSocket
-  'ws-sent': Color(0xFFF602C1),
-  'ws-received': Color(0xFF26FF3C),
-  'ws-error': Color.fromARGB(255, 239, 83, 80),
-  'ws-state': Color(0xFF4DD0E1),
+  ISpectLogType.wsSent.key: const Color(0xFFF602C1),
+  ISpectLogType.wsReceived.key: const Color(0xFF26FF3C),
+  ISpectLogType.wsError.key: const Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.wsState.key: const Color(0xFF4DD0E1),
 
   /// Database
-  'db-query': Color.fromARGB(255, 66, 165, 245),
-  'db-result': Color.fromARGB(255, 120, 230, 129),
-  'db-error': Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.dbQuery.key: const Color.fromARGB(255, 66, 165, 245),
+  ISpectLogType.dbResult.key: const Color.fromARGB(255, 120, 230, 129),
+  ISpectLogType.dbError.key: const Color.fromARGB(255, 239, 83, 80),
 
   /// Auth
-  'auth-success': Color.fromARGB(255, 120, 230, 129),
-  'auth-error': Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.authSuccess.key: const Color.fromARGB(255, 120, 230, 129),
+  ISpectLogType.authError.key: const Color.fromARGB(255, 239, 83, 80),
 
   /// Storage
-  'storage-result': Color.fromARGB(255, 120, 230, 129),
-  'storage-query': Color.fromARGB(255, 66, 165, 245),
-  'storage-error': Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.storageResult.key: const Color.fromARGB(255, 120, 230, 129),
+  ISpectLogType.storageQuery.key: const Color.fromARGB(255, 66, 165, 245),
+  ISpectLogType.storageError.key: const Color.fromARGB(255, 239, 83, 80),
 
   /// Push
-  'push-received': Color.fromARGB(255, 255, 167, 38),
-  'push-sent': Color(0xFFF602C1),
-  'push-error': Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.pushReceived.key: const Color.fromARGB(255, 255, 167, 38),
+  ISpectLogType.pushSent.key: const Color(0xFFF602C1),
+  ISpectLogType.pushError.key: const Color.fromARGB(255, 239, 83, 80),
 
   /// Payment
-  'payment-success': Color.fromARGB(255, 120, 230, 129),
-  'payment-error': Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.paymentSuccess.key: const Color.fromARGB(255, 120, 230, 129),
+  ISpectLogType.paymentError.key: const Color.fromARGB(255, 239, 83, 80),
 
   /// State
-  'state-change': Color(0xFF56FEA8),
-  'state-error': Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.stateChange.key: const Color(0xFF56FEA8),
+  ISpectLogType.stateError.key: const Color.fromARGB(255, 239, 83, 80),
 
   /// SSE
-  'sse-received': Color(0xFF26FF3C),
-  'sse-error': Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.sseReceived.key: const Color(0xFF26FF3C),
+  ISpectLogType.sseError.key: const Color.fromARGB(255, 239, 83, 80),
 
   /// gRPC
-  'grpc-request': Color(0xFFF602C1),
-  'grpc-response': Color(0xFF26FF3C),
-  'grpc-error': Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.grpcRequest.key: const Color(0xFFF602C1),
+  ISpectLogType.grpcResponse.key: const Color(0xFF26FF3C),
+  ISpectLogType.grpcError.key: const Color.fromARGB(255, 239, 83, 80),
 
   /// GraphQL
-  'graphql-request': Color.fromARGB(255, 186, 104, 255),
-  'graphql-response': Color(0xFF26FF3C),
-  'graphql-error': Color.fromARGB(255, 239, 83, 80),
+  ISpectLogType.graphqlRequest.key: const Color.fromARGB(255, 186, 104, 255),
+  ISpectLogType.graphqlResponse.key: const Color(0xFF26FF3C),
+  ISpectLogType.graphqlError.key: const Color.fromARGB(255, 239, 83, 80),
 
   /// Performance
-  'performance-jank': Color.fromARGB(255, 255, 167, 38),
-  'performance-error': Color.fromARGB(255, 239, 83, 80),
-};
+  ISpectLogType.performanceJank.key: const Color.fromARGB(255, 255, 167, 38),
+  ISpectLogType.performanceError.key: const Color.fromARGB(255, 239, 83, 80),
+});

@@ -367,5 +367,165 @@
    "composerErrorUrlInvalid": "Enter a valid absolute URL",
    "composerErrorInvalidJson": "Body is not valid JSON",
    "composerErrorNoClient": "No client registered",
-   "composerEditAndResend": "Edit & resend"
+   "composerEditAndResend": "Edit & resend",
+   "settingsDisplay": "Display",
+   "relativeTime": "Relative time",
+   "absoluteTime": "Absolute time",
+   "compactUrls": "Compact URLs",
+   "settingsTools": "Tools",
+   "settingsAdvanced": "Advanced",
+   "forwardErrorsToDeveloperLog": "Forward errors to dart:developer",
+   "historyCapacity": "History capacity",
+   "historyCapacityDesc": "Logs kept in memory",
+   "consoleTruncate": "Console truncate",
+   "consoleTruncateDesc": "Max chars per console line",
+   "captureMode": "Capture mode",
+   "captureModeDesc": "Useful values or maximum isolation",
+   "captureModeBalancedDesc": "Guarded formatters with bounded output",
+   "captureModeStrict": "Strict",
+   "captureModeStrictDesc": "Never run application formatters",
+   "profileBalanced": "Balanced",
+   "resourceProfile": "Resource profile",
+   "resourceProfileDesc": "Capture, memory, import and export limits",
+   "resourceProfileConstrained": "Constrained",
+   "resourceProfileConstrainedDesc": "Lower memory use for long sessions",
+   "resourceProfileBalancedDesc": "Useful diagnostics with bounded cost",
+   "resourceProfileExtended": "Extended",
+   "resourceProfileExtendedDesc": "Larger controlled internal handoffs",
+   "processingProfile": "Processing profile",
+   "processingProfileDesc": "Responsiveness and batch throughput",
+   "processingProfileResponsive": "Responsive",
+   "processingProfileResponsiveDesc": "Yield often to keep the UI fluid",
+   "processingProfileBalancedDesc": "General-purpose scheduling",
+   "processingProfileThroughput": "Throughput",
+   "processingProfileThroughputDesc": "Larger batches for faster handoffs",
+   "limitInvalidValue": "Enter a non-negative integer",
+   "limitZeroDisables": "0 disables this limit",
+   "apply": "Apply",
+   "logCount": "{count, plural, one{{count} log} other{{count} logs}}",
+   "@logCount": {
+      "placeholders": {
+         "count": {
+            "type": "int"
+         }
+      }
+   },
+   "warningCount": "{count, plural, one{{count} warning} other{{count} warnings}}",
+   "@warningCount": {
+      "placeholders": {
+         "count": {
+            "type": "int"
+         }
+      }
+   },
+   "errorCount": "{count, plural, one{{count} error} other{{count} errors}}",
+   "@errorCount": {
+      "placeholders": {
+         "count": {
+            "type": "int"
+         }
+      }
+   },
+   "filteredLogCount": "{total, plural, one{{filtered} / {total} log} other{{filtered} / {total} logs}}",
+   "@filteredLogCount": {
+      "placeholders": {
+         "filtered": {
+            "type": "int"
+         },
+         "total": {
+            "type": "int"
+         }
+      }
+   },
+   "contentProcessingError": "Content processing error",
+   "failedToLoadLogContent": "Failed to load log content",
+   "unknownContentProcessingError": "Unknown error occurred while processing content",
+   "correlationIdShort": "Corr",
+   "transactionIdShort": "Txn",
+   "columnType": "Type",
+   "columnTime": "Time",
+   "columnMessage": "Message",
+   "sortColumnAscending": "Sort by {column}, sorted ascending",
+   "@sortColumnAscending": {
+      "placeholders": {
+         "column": {
+            "type": "String"
+         }
+      }
+   },
+   "sortColumnDescending": "Sort by {column}, sorted descending",
+   "@sortColumnDescending": {
+      "placeholders": {
+         "column": {
+            "type": "String"
+         }
+      }
+   },
+   "sortColumnUnsorted": "Sort by {column}, not sorted",
+   "@sortColumnUnsorted": {
+      "placeholders": {
+         "column": {
+            "type": "String"
+         }
+      }
+   },
+   "resizeColumn": "Resize {column} column",
+   "@resizeColumn": {
+      "placeholders": {
+         "column": {
+            "type": "String"
+         }
+      }
+   },
+   "resumeLiveTail": "Resume live tail",
+   "pauseLiveTail": "Pause live tail",
+   "liveTailLive": "LIVE",
+   "liveTailPaused": "PAUSED",
+   "open": "Open",
+   "filterByType": "Filter by type {type}",
+   "@filterByType": {
+      "placeholders": {
+         "type": {
+            "type": "String"
+         }
+      }
+   },
+   "httpStatus": "HTTP status {code}",
+   "@httpStatus": {
+      "placeholders": {
+         "code": {
+            "type": "int"
+         }
+      }
+   },
+   "composerBodyNone": "None",
+   "composerBodyText": "Text",
+   "composerBodyForm": "Form",
+   "composerBodyMultipart": "Multipart",
+   "jsonViewer": "JSON Viewer",
+   "detail": "Detail",
+   "copyKey": "Copy {key}",
+   "@copyKey": {
+      "placeholders": {
+         "key": {
+            "type": "String"
+         }
+      }
+   },
+   "copyToClipboardFailed": "Failed to copy to clipboard",
+   "pluginErrorTitle": "Plugin Error: {pluginId}",
+   "@pluginErrorTitle": {
+      "placeholders": {
+         "pluginId": {
+            "type": "String"
+         }
+      }
+   },
+   "pluginRenderFailed": "Failed to render plugin screen",
+   "stackTrace": "Stack Trace",
+   "resizeDivider": "Resize divider",
+   "sessionLogsLoadFailed": "Failed to load session logs",
+   "dailySessionsLoadFailed": "Failed to load sessions",
+   "dailySessionsClearFailed": "Failed to clear sessions",
+   "exception": "Exception"
 }

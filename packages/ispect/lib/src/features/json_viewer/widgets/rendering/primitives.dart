@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/default_curl_redactor.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
@@ -20,7 +21,7 @@ class CopyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    label: 'Copy ${node.key}',
+    label: context.ispectL10n.copyKey(node.key),
     child: InkWell(
       excludeFromSemantics: true,
       customBorder: ISpectSquircle.border(

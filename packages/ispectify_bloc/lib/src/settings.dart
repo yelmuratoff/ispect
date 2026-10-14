@@ -44,7 +44,8 @@ class ISpectBlocSettings {
   /// Turns off all logging.
   static const ISpectBlocSettings silent = ISpectBlocSettings(enabled: false);
 
-  /// Logs creation, transitions, and errors only.
+  /// Skips state changes and completions; still logs events, transitions,
+  /// creations, closings, and errors.
   static const ISpectBlocSettings minimal = ISpectBlocSettings(
     printChanges: false,
     printCompletions: false,
@@ -137,6 +138,10 @@ class ISpectBlocSettings {
   /// Returns a bounded copy using [captureMode]. When redaction is disabled,
   /// values remain unmasked but still cannot bypass outbound byte and
   /// traversal limits. A redaction failure returns an empty map.
+  @Deprecated(
+    'Use StateTracePreparer.prepareAdditionalData, which the observer already '
+    'applies. Will be removed in 8.0.0.',
+  )
   Map<String, dynamic>? redactAdditionalData(
     Map<String, dynamic>? data,
   ) {
@@ -153,6 +158,10 @@ class ISpectBlocSettings {
   /// Formats an event payload for display based on [printEventFullData].
   ///
   /// Returns the full object when verbose, otherwise its type label.
+  @Deprecated(
+    'The observer formats events from printEventFullData itself. '
+    'Will be removed in 8.0.0.',
+  )
   Object formatEvent(Object? event) => printEventFullData
       ? (event ?? 'null')
       : safeValueTypeLabel(

@@ -15,7 +15,7 @@ final class UrlRedactor {
   const UrlRedactor({
     required String Function() placeholder,
     required ExportKeyPatterns? Function() exportKeyPatterns,
-    required bool Function(String key) Function() keyMatcher,
+    required AssignmentMatcher Function() keyMatcher,
     required Object? Function(String value, String keyName) redactValue,
   })  : _placeholder = placeholder,
         _exportKeyPatterns = exportKeyPatterns,
@@ -24,7 +24,7 @@ final class UrlRedactor {
 
   final String Function() _placeholder;
   final ExportKeyPatterns? Function() _exportKeyPatterns;
-  final bool Function(String key) Function() _keyMatcher;
+  final AssignmentMatcher Function() _keyMatcher;
   final Object? Function(String value, String keyName) _redactValue;
 
   /// Redacts query-parameter values and userInfo credentials in a URL string.

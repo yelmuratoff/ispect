@@ -30,6 +30,10 @@ typedef BlocErrorCallback = void Function(
 
 typedef BlocLifecycleCallback = void Function(BlocBase<dynamic> bloc);
 
+/// Decides whether to skip logging for a bloc.
+///
+/// Receives the observed [BlocBase] instance as `candidate` and returns `true`
+/// to filter its events out.
 typedef BlocFilterPredicate = bool Function(Object? candidate);
 
 /// BLoC observer that logs lifecycle events via the unified trace API under
@@ -72,10 +76,16 @@ class ISpectBlocObserver extends BlocObserver {
   @visibleForTesting
   static bool? debugEnabledOverride;
 
-  bool get _ispectEnabled => kISpectEnabled && (debugEnabledOverride ?? true);
-  bool get _loggingEnabled =>
-      _ispectEnabled && _logger.isEnabled && settings.enabled;
-  bool get _captureEnabled => _loggingEnabled && _logger.hasActiveConsumers;
+  bool get _loggingEnabled => StateObserverPolicy.loggingEnabled(
+        logger: _logger,
+        settingsEnabled: settings.enabled,
+        debugEnabledOverride: debugEnabledOverride,
+      );
+  bool get _captureEnabled => StateObserverPolicy.captureEnabled(
+        logger: _logger,
+        settingsEnabled: settings.enabled,
+        debugEnabledOverride: debugEnabledOverride,
+      );
 
   static final _pendingEvents =
       Expando<_PendingEventCorrelations>('bloc_event_ids');
@@ -83,8 +93,8 @@ class ISpectBlocObserver extends BlocObserver {
   DiagnosticResourceLimits get _resourceLimits =>
       settings.resourceLimits ?? _logger.options.resourceLimits;
 
-  bool _isFiltered(Object? candidate) {
-    final predicateMatch = filterPredicate?.call(candidate) ?? false;
+  bool _isFiltered(BlocBase<dynamic> bloc) {
+    final predicateMatch = filterPredicate?.call(bloc) ?? false;
     if (!_loggingEnabled) {
       return true;
     }
@@ -94,54 +104,29 @@ class ISpectBlocObserver extends BlocObserver {
     if (filters.isEmpty) {
       return false;
     }
-    final candidateString = _filterText(candidate);
+    final candidateString = _filterText(bloc);
     if (candidateString.isEmpty) {
       return false;
     }
-    for (final pattern in filters) {
-      var matches = false;
-      try {
-        matches = candidateString.contains(pattern);
-      } catch (_) {}
-      if (!_loggingEnabled) return true;
-      if (matches) return true;
-    }
-    return false;
+    return StateObserverPolicy.matchesAnyPattern(
+      candidateString,
+      filters,
+      isEnabled: () => _loggingEnabled,
+    );
   }
 
-  String _filterText(Object? candidate) {
-    final value = switch (candidate) {
-      null => '',
-      final String value => value,
-      final BlocBase<dynamic> bloc => safeBlocTypeLabel(
+  String _filterText(BlocBase<dynamic> bloc) => LogExportOutput.truncateUtf8(
+        safeBlocTypeLabel(
           bloc,
           captureMode: settings.captureMode,
           resourceLimits: _resourceLimits,
         ),
-      _ => LogExportOutput.boundJsonValue(
-          candidate,
-          resourceLimits: _resourceLimits,
-          allowCustomSerialization:
-              settings.captureMode == DiagnosticCaptureMode.balanced,
-          allowCustomStringification:
-              settings.captureMode == DiagnosticCaptureMode.balanced,
-        ),
-    };
-    final text = switch (value) {
-      final String value => value,
-      final num value => value.toString(),
-      final bool value => value.toString(),
-      _ => JsonValueNormalizer.unprintableValue,
-    };
-    return LogExportOutput.truncateUtf8(
-      text,
-      maxBytes: _resourceLimits.maxStateTraceBytes,
-    );
-  }
+        maxBytes: _resourceLimits.maxStateTraceBytes,
+      );
 
   bool _shouldLog({
     required bool toggle,
-    required Object? candidate,
+    required BlocBase<dynamic> candidate,
     bool hasAdapterCallback = false,
   }) {
     if (!_loggingEnabled || !toggle) {
@@ -164,33 +149,16 @@ class ISpectBlocObserver extends BlocObserver {
 
   StateTracePreparer? _preparerCache;
 
-  StateTracePreparer get _preparer {
-    final redactor = settings.isRedactionActive
-        ? ISpectRedaction.resolveService(service: settings.redactor)
-        : null;
-    final limits = _resourceLimits;
-    final cached = _preparerCache;
-    if (cached != null &&
-        identical(cached.redactor, redactor) &&
-        identical(cached.resourceLimits, limits) &&
-        cached.captureMode == settings.captureMode) {
-      return cached;
-    }
-    return _preparerCache = StateTracePreparer(
-      redactor: redactor,
-      captureMode: settings.captureMode,
-      resourceLimits: limits,
-    );
-  }
-
-  // Every caller-controlled trace field is prepared by _preparer. A second
-  // generic pass would replace the configured redactor and repeat boundary
-  // traversal.
-  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
-        redact: false,
-        attachStackOnError: true,
+  StateTracePreparer get _preparer =>
+      _preparerCache = StateTracePreparer.resolve(
+        redactionActive: settings.isRedactionActive,
+        redactor: settings.redactor,
+        captureMode: settings.captureMode,
         resourceLimits: _resourceLimits,
+        cached: _preparerCache,
       );
+
+  ISpectTraceConfig get _traceConfig => _preparer.traceConfig;
 
   @override
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
@@ -503,12 +471,11 @@ class ISpectBlocObserver extends BlocObserver {
     final eventId = _pendingEvents[bloc]?.remove(event);
 
     if (!_captureEnabled) return;
-    final filtered = _isFiltered(bloc);
-    if (!_captureEnabled || filtered) return;
-
     final shouldLogCompletion = (settings.printCompletions && error == null) ||
         (settings.printErrors && error != null);
     if (!shouldLogCompletion) return;
+    final filtered = _isFiltered(bloc);
+    if (!_captureEnabled || filtered) return;
 
     final data = BlocDoneData(
       bloc: bloc,

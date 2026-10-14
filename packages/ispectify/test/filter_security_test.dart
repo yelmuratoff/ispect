@@ -201,4 +201,72 @@ void main() {
     expect(() => logger.info('safe'), returnsNormally);
     expect(logger.history, isEmpty);
   });
+
+  group('SearchFilter envelope', () {
+    test('does not match the synthetic envelope field names', () {
+      final data = ISpectLogData('ok', key: 'info');
+
+      for (final query in [
+        'error',
+        'time',
+        'key',
+        'message',
+        'stack-trace',
+        'additional-data',
+        'log-level',
+      ]) {
+        expect(SearchFilter(query).apply(data), isFalse, reason: query);
+      }
+    });
+
+    test('still matches payload keys and envelope values', () {
+      final data = ISpectLogData(
+        'ok',
+        key: 'info',
+        additionalData: const {'orderNumber': 7},
+      );
+
+      expect(SearchFilter('ordernumber').apply(data), isTrue);
+      expect(SearchFilter('info').apply(data), isTrue);
+      expect(SearchFilter('ok').apply(data), isTrue);
+    });
+  });
+
+  group('filters over redacted payloads', () {
+    ISpectLogData redactedTraceLog() {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      addTearDown(logger.dispose);
+      logger.logData(
+        ISpectLogData(
+          'auth',
+          key: 'trace-auth',
+          additionalData: const {
+            TraceKeys.category: 'auth',
+            TraceKeys.source: 'login',
+            TraceKeys.correlationId: 'corr-1',
+            TraceKeys.transactionId: 'tx-1',
+            'password': 'hunter2-secret',
+          },
+        ),
+      );
+      final data = logger.history.single;
+      expect(data.additionalData?['password'], isNot('hunter2-secret'));
+      return data;
+    }
+
+    test('key and trace-field filters match the redacted entry', () {
+      final data = redactedTraceLog();
+
+      expect(LogTypeKeyFilter(['trace-auth']).apply(data), isTrue);
+      expect(LogTypeKeyFilter(['other']).apply(data), isFalse);
+      expect(const CategoryFilter({'auth'}).apply(data), isTrue);
+      expect(const CategoryFilter({'db'}).apply(data), isFalse);
+      expect(const SourceFilter({'login'}).apply(data), isTrue);
+      expect(const CorrelationFilter('corr-1').apply(data), isTrue);
+      expect(const TransactionFilter('tx-1').apply(data), isTrue);
+      expect(const TransactionFilter('tx-2').apply(data), isFalse);
+    });
+  });
 }

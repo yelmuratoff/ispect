@@ -29,6 +29,9 @@ abstract interface class SearchProgressTracker {
 
 /// Concrete implementation for basic search match finding
 class DefaultSearchMatchFinder implements SearchMatchFinder {
+  RegExp? _pattern;
+  String? _patternTerm;
+
   @override
   List<SearchResult> findMatches(NodeViewModelState node, String searchTerm) {
     final results = <SearchResult>[];
@@ -50,18 +53,8 @@ class DefaultSearchMatchFinder implements SearchMatchFinder {
     List<SearchResult> results,
   ) {
     final nodeKey = node.key;
-    if (nodeKey.isNotEmpty) {
-      final keyLower = nodeKey.toLowerCase();
-      if (keyLower.contains(searchTerm)) {
-        _findAndAddMatches(
-          keyLower,
-          searchTerm,
-          node,
-          SearchMatchLocation.key,
-          results,
-        );
-      }
-    }
+    if (nodeKey.isEmpty) return;
+    _addMatches(nodeKey, searchTerm, node, SearchMatchLocation.key, results);
   }
 
   void _addValueMatches(
@@ -69,41 +62,30 @@ class DefaultSearchMatchFinder implements SearchMatchFinder {
     String searchTerm,
     List<SearchResult> results,
   ) {
-    final dynamic nodeValue = node.value;
-    if (nodeValue != null) {
-      final valueStr = nodeValue.toString();
-      if (valueStr.isNotEmpty) {
-        final valueLower = valueStr.toLowerCase();
-        if (valueLower.contains(searchTerm)) {
-          _findAndAddMatches(
-            valueLower,
-            searchTerm,
-            node,
-            SearchMatchLocation.value,
-            results,
-          );
-        }
-      }
-    }
+    final valueStr = node.value?.toString() ?? '';
+    if (valueStr.isEmpty) return;
+    _addMatches(valueStr, searchTerm, node, SearchMatchLocation.value, results);
   }
 
-  void _findAndAddMatches(
+  void _addMatches(
     String text,
-    String pattern,
+    String searchTerm,
     NodeViewModelState node,
     SearchMatchLocation location,
     List<SearchResult> results,
   ) {
-    var startIndex = 0;
-    while (true) {
-      final index = text.indexOf(pattern, startIndex);
-      if (index == -1) break;
-
+    for (final match in _patternFor(searchTerm).allMatches(text)) {
       results.add(
-        SearchResult(node, matchLocation: location, matchIndex: index),
+        SearchResult(node, matchLocation: location, matchIndex: match.start),
       );
-      startIndex = index + pattern.length;
     }
+  }
+
+  RegExp _patternFor(String searchTerm) {
+    final cached = _pattern;
+    if (cached != null && _patternTerm == searchTerm) return cached;
+    _patternTerm = searchTerm;
+    return _pattern = RegExp(RegExp.escape(searchTerm), caseSensitive: false);
   }
 }
 
@@ -320,7 +302,7 @@ class JsonSearchService {
     processingPolicy.validate();
   }
 
-  SearchStrategy? _strategy;
+  final SearchStrategy? _strategy;
   final SearchMatchFinder _matchFinder;
   final SearchProgressTracker? _progressTracker;
   final DiagnosticProcessingPolicy processingPolicy;
@@ -348,39 +330,5 @@ class JsonSearchService {
       isMounted: isMounted,
       onProgressUpdate: onProgressUpdate,
     );
-  }
-
-  /// Set a custom search strategy
-  // ignore: use_setters_to_change_properties
-  void setStrategy(SearchStrategy strategy) {
-    _strategy = strategy;
-  }
-
-  /// Debounce search operations to improve performance
-  static Timer? debounceSearchOperation(
-    String searchTerm,
-    DateTime? lastSearchTime,
-    int nodeCount,
-    VoidCallback onSearch, {
-    DiagnosticProcessingPolicy processingPolicy =
-        DiagnosticProcessingPolicy.balanced,
-  }) {
-    processingPolicy.validate();
-    final now = DateTime.now();
-    if (lastSearchTime != null) {
-      final timeSinceLastSearch = now.difference(lastSearchTime);
-      final adjustedDebounceTime =
-          nodeCount > processingPolicy.veryLargeSearchNodeThreshold &&
-              searchTerm.length < 3
-          ? processingPolicy.searchDebounce + const Duration(milliseconds: 50)
-          : processingPolicy.searchDebounce;
-
-      if (timeSinceLastSearch < adjustedDebounceTime) {
-        return Timer(adjustedDebounceTime - timeSinceLastSearch, onSearch);
-      }
-    }
-
-    onSearch();
-    return null;
   }
 }

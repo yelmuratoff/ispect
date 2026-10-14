@@ -39,8 +39,7 @@ extension InspectorControllerPointer on InspectorController {
         return;
       }
 
-      if (mode == InspectorMode.inspector ||
-          mode == InspectorMode.inspectAndCompare) {
+      if (mode.isInspecting) {
         if (pointerOffset == null) return;
         hoveredRenderBoxNotifier.value = null;
         comparedRenderBoxNotifier.value = null;
@@ -129,9 +128,8 @@ extension InspectorControllerPointer on InspectorController {
       return;
     }
 
-    if (mode == InspectorMode.inspector ||
-        mode == InspectorMode.inspectAndCompare ||
-        mode == InspectorMode.compareSelect) {
+    if (mode.isInspecting) {
+      // ignore: deprecated_member_use_from_same_package
       if (mode == InspectorMode.inspectAndCompare) {
         hoveredRenderBoxNotifier.value = null;
         final compare = _computeBoxInfoAt(pointerOffset);

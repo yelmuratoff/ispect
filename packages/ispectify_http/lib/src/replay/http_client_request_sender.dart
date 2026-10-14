@@ -35,7 +35,7 @@ final class HttpClientRequestSender implements NetworkRequestSender {
         body: NetworkPayloadSanitizer.decodeJsonGracefully(response.body),
         durationMs: stopwatch.elapsedMilliseconds,
       );
-    } on http.ClientException catch (e) {
+    } on Object catch (e) {
       return NetworkReplayResult(
         durationMs: stopwatch.elapsedMilliseconds,
         error: e,

@@ -41,6 +41,9 @@ class SearchFilter implements Filter<ISpectLogData> {
       },
       resourceLimits: resourceLimits,
     );
+    if (snapshot is Map<dynamic, dynamic>) {
+      return snapshot.values.any(_deepSearch);
+    }
     return _deepSearch(snapshot);
   }
 

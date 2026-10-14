@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:ispectify/src/redaction/constants/credential_markers.dart';
 import 'package:ispectify/src/redaction/key_canonicalizer.dart';
+import 'package:ispectify/src/redaction/secret_metadata.dart';
 
 /// Provides redaction helpers and configuration to strategies at call-time.
 ///
@@ -62,7 +64,7 @@ final class RedactionContext {
   final bool Function(String value) looksLikeAuthorizationValue;
   final bool Function(String value) isLikelyBase64;
   final bool Function(String value) isProbablyBinaryString;
-  final Map<String, ({bool fullyMasked, bool sensitive})>? _classificationCache;
+  final Map<String, _KeyClassification>? _classificationCache;
 
   /// Classifies [keyName] as fully-masked and/or sensitive in a single
   /// normalization pass, so the per-key hot path avoids repeating
@@ -71,8 +73,39 @@ final class RedactionContext {
   ///
   /// Matching is case-insensitive, whitespace-trimmed, camelCase-aware, and
   /// treats dotted or bracketed path segments like snake-case segments.
+  /// A metadata key such as `password_set` keeps the classification of its
+  /// sensitive stem because no value is available to check; use
+  /// [classifyEntry] to let non-secret metadata values through.
   ({bool fullyMasked, bool sensitive}) classifyKey(String? keyName) {
     if (keyName == null) return _noMatch;
+    final classification = _cachedClassification(keyName);
+    return (
+      fullyMasked: classification.fullyMasked,
+      sensitive: classification.sensitive,
+    );
+  }
+
+  /// Classifies [keyName] like [classifyKey], but keeps a metadata key such
+  /// as `password_set` or `token_type` sensitive unless [value] is non-secret
+  /// metadata: `null`, a boolean, a number, or a short scheme, version, or
+  /// timestamp string.
+  ({bool fullyMasked, bool sensitive}) classifyEntry(
+    String? keyName,
+    Object? value,
+  ) {
+    if (keyName == null) return _noMatch;
+    final classification = _cachedClassification(keyName);
+    final metadata = classification.metadata;
+    if (metadata != null && isSecretMetadataValue(metadata, value)) {
+      return _noMatch;
+    }
+    return (
+      fullyMasked: classification.fullyMasked,
+      sensitive: classification.sensitive,
+    );
+  }
+
+  _KeyClassification _cachedClassification(String keyName) {
     final cache = _classificationCache;
     final cached = cache?[keyName];
     if (cached != null) return cached;
@@ -83,10 +116,10 @@ final class RedactionContext {
     return classification;
   }
 
-  ({bool fullyMasked, bool sensitive}) _classifyKey(String keyName) {
+  _KeyClassification _classifyKey(String keyName) {
     final trimmed = keyName.trim();
     final lower = trimmed.toLowerCase();
-    if (isIgnoredKey(lower)) return _noMatch;
+    if (isIgnoredKey(lower)) return _noClassification;
     var fullyMasked = fullyMaskedKeyNamesLower.contains(lower);
     var sensitive = _matchesSensitive(lower);
     final needsCanonicalization = trimmed != lower ||
@@ -94,25 +127,29 @@ final class RedactionContext {
         trimmed.contains('-') ||
         trimmed.contains('[');
     if (!needsCanonicalization && !lower.contains('_')) {
-      return (fullyMasked: fullyMasked, sensitive: sensitive);
+      return (fullyMasked: fullyMasked, sensitive: sensitive, metadata: null);
     }
 
     final canonical = needsCanonicalization ? canonicalizeKey(trimmed) : lower;
-    if (_describesSecretMetadata(canonical) ||
-        _describesSecretMetadata(lower)) {
-      return _noMatch;
-    }
     if (canonical != lower) {
       fullyMasked = fullyMasked || fullyMaskedKeyNamesLower.contains(canonical);
       sensitive = sensitive || _matchesSensitive(canonical);
     }
-    if ((fullyMasked && sensitive) || !canonical.contains('_')) {
-      return (fullyMasked: fullyMasked, sensitive: sensitive);
+    final segments = (fullyMasked && sensitive) || !canonical.contains('_')
+        ? (fullyMasked: fullyMasked, sensitive: sensitive)
+        : _classifyCanonicalSegments(
+            canonical,
+            fullyMasked: fullyMasked,
+            sensitive: sensitive,
+          );
+    if (!segments.fullyMasked && !segments.sensitive) {
+      return _noClassification;
     }
-    return _classifyCanonicalSegments(
-      canonical,
-      fullyMasked: fullyMasked,
-      sensitive: sensitive,
+    return (
+      fullyMasked: segments.fullyMasked,
+      sensitive: segments.sensitive,
+      metadata: _secretMetadataQualifier(canonical) ??
+          _secretMetadataQualifier(lower),
     );
   }
 
@@ -123,10 +160,13 @@ final class RedactionContext {
   ///
   /// Cannot recover camelCase boundaries from an already-lowercased key, so
   /// prefer [isSensitiveKey] when the original-case key is available.
+  @Deprecated(
+    'Use isSensitiveKey, which classifies the original-case key. '
+    'Will be removed in 8.0.0.',
+  )
   bool isSensitiveKeyLower(String lowerKey) {
     final trimmed = lowerKey.trim();
     if (isIgnoredKey(trimmed)) return false;
-    if (_describesSecretMetadata(trimmed)) return false;
     return _matchesSensitive(trimmed);
   }
 
@@ -136,26 +176,17 @@ final class RedactionContext {
 
   static const ({bool fullyMasked, bool sensitive}) _noMatch =
       (fullyMasked: false, sensitive: false);
+  static const _KeyClassification _noClassification =
+      (fullyMasked: false, sensitive: false, metadata: null);
   static const int _maxClassificationCacheEntries = 256;
 
-  bool _describesSecretMetadata(String key) {
-    final separator = key.lastIndexOf('_');
-    if (separator < 0) return false;
-    if (!_secretMetadataQualifiers.contains(key.substring(separator + 1))) {
-      return false;
+  SecretMetadataQualifier? _secretMetadataQualifier(String key) {
+    if (sensitiveKeysLower.contains(key) ||
+        fullyMaskedKeyNamesLower.contains(key)) {
+      return null;
     }
-    return !sensitiveKeysLower.contains(key) &&
-        !fullyMaskedKeyNamesLower.contains(key);
+    return secretMetadataQualifier(key);
   }
-
-  static const Set<String> _secretMetadataQualifiers = <String>{
-    'count',
-    'format',
-    'length',
-    'scheme',
-    'size',
-    'type',
-  };
 
   bool _matchesSensitive(String lowerKey) {
     if (sensitiveKeysLower.contains(lowerKey)) return true;
@@ -182,6 +213,10 @@ final class RedactionContext {
         if (candidate.isNotEmpty) candidate.write('_');
         candidate.write(tokens[end]);
         final value = candidate.toString();
+        if (end < tokens.length - 1 &&
+            trailingSegmentOnlyKeys.contains(value)) {
+          continue;
+        }
         if (!hasFullyMaskedMatch && fullyMaskedKeyNamesLower.contains(value)) {
           hasFullyMaskedMatch = true;
         }
@@ -201,3 +236,9 @@ final class RedactionContext {
 
   /// Normalizes camelCase / PascalCase and dotted/bracketed boundaries to `_`.
 }
+
+typedef _KeyClassification = ({
+  bool fullyMasked,
+  bool sensitive,
+  SecretMetadataQualifier? metadata,
+});

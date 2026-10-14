@@ -40,7 +40,7 @@ class ISpectNavigationFlowActionsSheet {
           redactKeys: redactKeys,
         ),
       ),
-    );
+    ).whenComplete(controller.dispose);
   }
 
   @visibleForTesting

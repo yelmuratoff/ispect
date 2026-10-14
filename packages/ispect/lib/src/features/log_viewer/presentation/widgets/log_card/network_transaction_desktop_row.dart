@@ -104,7 +104,7 @@ class _NetworkTransactionDesktopRowState
               button: true,
               expanded: _expanded,
               label:
-                  '${tx.method ?? "HTTP"} $displayUrl - ${tx.statusCode ?? "pending"}',
+                  '${tx.method ?? "HTTP"} $displayUrl - ${tx.statusCode ?? context.ispectL10n.pending}',
               onTap: toggleExpanded,
               onLongPress: widget.onLongPress,
               child: Material(

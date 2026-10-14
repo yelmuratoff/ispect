@@ -8,9 +8,9 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_icon_badge.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
-import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
 import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
+import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
 import 'package:ispect/src/ispect.dart';
 import 'package:ispectify/ispectify.dart';
 
@@ -32,7 +32,7 @@ Future<void> showLogContextMenu({
   VoidCallback? onShareTap,
   VoidCallback? onOpenDetail,
   VoidCallback? onNavigationFlowTap,
-  void Function(String)? onTypeFilterTap,
+  LogTypeFilterCallback? onTypeFilterTap,
 }) async {
   final l10n = context.ispectL10n;
   final theme = context.iSpect.theme;
@@ -43,7 +43,7 @@ Future<void> showLogContextMenu({
       ISpect.senders.isNotEmpty &&
       HttpComposerController.seedFromLog(data) != null;
   final logKey = data.key;
-  final logTitle = _formatLogType(context, logKey);
+  final logTitle = theme.getTypeTitle(context, key: logKey) ?? l10n.actions;
   final logDescription = theme.getTypeDescription(context, key: logKey);
   final logIcon = theme.getTypeIcon(context, key: logKey);
   final logColor = theme.getTypeColor(context, key: logKey);
@@ -97,22 +97,11 @@ Future<void> showLogContextMenu({
       onNavigationFlowTap?.call();
     case LogContextAction.showOnlyType:
       final key = data.key;
-      if (key != null) onTypeFilterTap?.call('__show_only__$key');
+      if (key != null) onTypeFilterTap?.call(key, LogTypeFilterAction.showOnly);
     case LogContextAction.hideType:
       final key = data.key;
-      if (key != null) onTypeFilterTap?.call('__hide__$key');
+      if (key != null) onTypeFilterTap?.call(key, LogTypeFilterAction.hide);
   }
-}
-
-String _formatLogType(BuildContext context, String? key) {
-  if (key == null || key.isEmpty) return context.ispectL10n.actions;
-  for (final type in context.iSpect.theme.customLogTypes) {
-    if (type.key == key && type.title != null) return type.title!;
-  }
-  for (final description in ISpectConstants.defaultLogDescriptions(context)) {
-    if (description.key == key) return description.displayTitle;
-  }
-  return key[0].toUpperCase() + key.substring(1);
 }
 
 class _LogContextMenuSheet extends StatelessWidget {
@@ -205,7 +194,7 @@ class _LogContextMenuSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              const ISpectSectionLabel(title: 'Filter'),
+              ISpectSectionLabel(title: l10n.filters),
               _ActionTile(
                 icon: Icons.filter_alt_rounded,
                 label: l10n.showOnlyThisType,

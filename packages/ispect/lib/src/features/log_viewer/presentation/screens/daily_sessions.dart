@@ -8,6 +8,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/debug_report.dart';
+import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
@@ -39,6 +40,8 @@ class DailySessionsScreen extends StatefulWidget {
 class _DailySessionsScreenState extends State<DailySessionsScreen> {
   final List<DateTime> _dates = [];
   bool _isLoading = true;
+  bool _loadFailed = false;
+  int _loadEpoch = 0;
 
   @override
   void initState() {
@@ -73,6 +76,15 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     );
   }
 
+  void _retryLoad() {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+      _loadFailed = false;
+    });
+    unawaited(_loadSessions());
+  }
+
   Future<void> _loadSessions({bool isRefreshing = false}) async {
     final history = widget.history;
     if (history == null) {
@@ -80,13 +92,35 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
       return;
     }
 
-    final availableDates = await history.getAvailableLogDates();
+    final epoch = ++_loadEpoch;
+    final List<DateTime> availableDates;
+    try {
+      availableDates = await history.getAvailableLogDates();
+    } on Exception catch (error, stackTrace) {
+      if (epoch != _loadEpoch) return;
+      ISpect.logger.handle(
+        exception: error,
+        stackTrace: stackTrace,
+        message: 'Failed to list daily sessions',
+      );
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _loadFailed = true;
+        });
+      }
+      return;
+    }
+    if (epoch != _loadEpoch) return;
     _dates
       ..clear()
       ..addAll(availableDates.reversed);
 
     if (mounted) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _loadFailed = false;
+      });
 
       if (isRefreshing) {
         await ISpectToaster.showInfoToast(
@@ -143,6 +177,8 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     ),
     body: _isLoading
         ? const Center(child: CircularProgressIndicator.adaptive())
+        : _loadFailed
+        ? _SessionsLoadError(onRetry: _retryLoad)
         : _dates.isEmpty
         ? const Padding(
             padding: EdgeInsets.only(top: 16, left: 16),
@@ -175,7 +211,18 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
           ),
           TextButton(
             onPressed: () async {
-              await widget.history?.clearAllFileStorage();
+              try {
+                await widget.history?.clearAllFileStorage();
+              } on Exception catch (error, stackTrace) {
+                ISpect.logger.handle(
+                  exception: error,
+                  stackTrace: stackTrace,
+                  message: 'Failed to clear daily sessions',
+                );
+                if (context.mounted) Navigator.of(context).pop();
+                _showClearErrorToast();
+                return;
+              }
               if (context.mounted) {
                 Navigator.of(context).pop();
                 await _loadSessions(isRefreshing: true);
@@ -191,31 +238,64 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   Future<void> _navigateToSession(DateTime session) async {
     if (!mounted) return;
 
-    try {
-      await SessionLogsScreen(
-        sessionDate: session,
-        onShare: context.iSpect.options.onShare,
-        metadataProvider: context.iSpect.options.metadataProvider,
-      ).push(context);
-    } catch (e) {
-      if (mounted) {
-        _showErrorDialog('Failed to load logs: $e');
-      }
-    }
+    await SessionLogsScreen(
+      sessionDate: session,
+      onShare: context.iSpect.options.onShare,
+      metadataProvider: context.iSpect.options.metadataProvider,
+    ).push(context);
   }
 
-  void _showErrorDialog(String message) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => ISpectAlertDialog(
-        title: Text(context.ispectL10n.error),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(context.ispectL10n.ok),
-          ),
-        ],
+  void _showClearErrorToast() {
+    if (!mounted) return;
+    ISpectToaster.showErrorToast(
+      context,
+      title: context.ispectL10n.error,
+      message: context.ispectL10n.dailySessionsClearFailed,
+    );
+  }
+}
+
+class _SessionsLoadError extends StatelessWidget {
+  const _SessionsLoadError({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.appTheme.colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 56),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 36,
+              color: colorScheme.error,
+            ),
+            const Gap(12),
+            Text(
+              context.ispectL10n.error,
+              style: context.appTheme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const Gap(4),
+            Text(
+              context.ispectL10n.dailySessionsLoadFailed,
+              textAlign: TextAlign.center,
+              style: context.appTheme.textTheme.bodyMedium?.copyWith(
+                color: context.appTheme.textColor.withValues(alpha: 0.6),
+              ),
+            ),
+            const Gap(12),
+            OutlinedButton(
+              onPressed: onRetry,
+              child: Text(context.ispectL10n.retry),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -239,6 +319,7 @@ class _SessionListTile extends StatefulWidget {
 
 class _SessionListTileState extends State<_SessionListTile> {
   int? _fileSize;
+  bool _fileSizeFailed = false;
 
   @override
   void initState() {
@@ -247,11 +328,20 @@ class _SessionListTileState extends State<_SessionListTile> {
   }
 
   Future<void> _fetchFileSize() async {
-    final size = await widget.history.getDateFileSize(widget.session);
-    if (mounted) {
-      setState(() {
-        _fileSize = size;
-      });
+    try {
+      final size = await widget.history.getDateFileSize(widget.session);
+      if (mounted) {
+        setState(() {
+          _fileSize = size;
+        });
+      }
+    } on Exception catch (error, stackTrace) {
+      ISpect.logger.handle(
+        exception: error,
+        stackTrace: stackTrace,
+        message: 'Failed to read a daily session file size',
+      );
+      if (mounted) setState(() => _fileSizeFailed = true);
     }
   }
 
@@ -278,6 +368,8 @@ class _SessionListTileState extends State<_SessionListTile> {
               fontWeight: FontWeight.w300,
             ),
           )
+        : _fileSizeFailed
+        ? null
         : Text(
             '${context.ispectL10n.loading}...',
             style: const TextStyle(

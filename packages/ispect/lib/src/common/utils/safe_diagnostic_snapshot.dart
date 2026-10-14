@@ -7,27 +7,19 @@ abstract final class ISpectSafeDiagnosticSnapshot {
   static String text(
     Object? value, {
     DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+    int? maxBytes,
   }) {
     if (value == null) return '';
     resourceLimits.validate();
-    final maxBytes = resourceLimits.maxUiDiagnosticBytes;
+    final maxOutputBytes = resourceLimits.maxUiDiagnosticBytes;
     final redactor = ISpectRedaction.enabled ? ISpectRedaction.service : null;
     try {
-      final prepared = LogExportOutput.boundJsonValue(
+      final bounded = boundedValue(
         value,
-        maxBytes: maxBytes,
+        redactor: redactor,
         resourceLimits: resourceLimits,
+        maxBytes: maxBytes ?? maxOutputBytes,
         preserveTypes: redactor != null,
-        replaceOversizedStrings: redactor != null,
-      );
-      final scrubbed = redactor == null
-          ? prepared
-          : redactor.redactForExport(prepared, resourceLimits: resourceLimits);
-      final bounded = LogExportOutput.boundJsonValue(
-        scrubbed,
-        maxBytes: maxBytes,
-        resourceLimits: resourceLimits,
-        replaceOversizedStrings: redactor != null,
       );
       final rendered = switch (bounded) {
         null => '',
@@ -36,7 +28,7 @@ abstract final class ISpectSafeDiagnosticSnapshot {
         final num primitive => primitive.toString(),
         _ => jsonEncode(bounded),
       };
-      return LogExportOutput.truncateUtf8(rendered, maxBytes: maxBytes);
+      return LogExportOutput.truncateUtf8(rendered, maxBytes: maxOutputBytes);
     } on Object {
       return defaultPlaceholder;
     }
@@ -49,4 +41,29 @@ abstract final class ISpectSafeDiagnosticSnapshot {
     value,
     resourceLimits: resourceLimits,
   ).replaceAll(RegExp(r'[\r\n\u2028\u2029]+'), ' ').trim();
+
+  static Object? boundedValue(
+    Object? value, {
+    required RedactionService? redactor,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+    int? maxBytes,
+    bool preserveTypes = false,
+  }) {
+    final prepared = LogExportOutput.boundJsonValue(
+      value,
+      maxBytes: maxBytes,
+      resourceLimits: resourceLimits,
+      preserveTypes: preserveTypes,
+      replaceOversizedStrings: redactor != null,
+    );
+    final scrubbed = redactor == null
+        ? prepared
+        : redactor.redactForExport(prepared, resourceLimits: resourceLimits);
+    return LogExportOutput.boundJsonValue(
+      scrubbed,
+      maxBytes: maxBytes,
+      resourceLimits: resourceLimits,
+      replaceOversizedStrings: redactor != null,
+    );
+  }
 }

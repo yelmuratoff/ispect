@@ -61,8 +61,17 @@ class ZoomableColorPickerStyle {
   final double crosshairGap;
   final Color backgroundColor;
 
+  double get ringStackWidth => outerRingWidth + colorRingWidth + innerRingWidth;
+
+  double get hudAxialGap => _hudAxialSpacing + ringStackWidth;
+
+  double get hudLateralGap => _hudLateralSpacing + ringStackWidth;
+
   static const ZoomableColorPickerStyle defaults = ZoomableColorPickerStyle();
 }
+
+const double _hudAxialSpacing = 16;
+const double _hudLateralSpacing = 12;
 
 /// Where the HUD chip is rendered relative to the picker disc. The caller
 /// computes the best fit based on available screen space; the overlay just
@@ -168,10 +177,8 @@ class ZoomableColorPickerOverlay extends StatelessWidget {
   /// gap. The chip is centred along the side's cross-axis. Gap accounts for
   /// the rings drawn outside the canvas so the chip never overlaps them.
   Widget _hudPositioned({required Widget child}) {
-    final ringTotal =
-        style.outerRingWidth + style.colorRingWidth + style.innerRingWidth;
-    final gapAxial = 16.0 + ringTotal;
-    final gapLateral = 12.0 + ringTotal;
+    final gapAxial = style.hudAxialGap;
+    final gapLateral = style.hudLateralGap;
 
     switch (hudPlacement) {
       case HudPlacement.above:

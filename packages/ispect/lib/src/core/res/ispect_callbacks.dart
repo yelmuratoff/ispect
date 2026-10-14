@@ -140,6 +140,9 @@ final class ISpectSettingsState {
   final bool isInspectorEnabled;
   final bool isColorPickerEnabled;
 
+  @Deprecated(
+    'Check disabledLogTypes.isEmpty instead. Will be removed in 8.0.0.',
+  )
   bool get isAllLogTypesEnabled => disabledLogTypes.isEmpty;
 
   bool isLogTypeEnabled(String logTypeKey) =>
@@ -226,17 +229,23 @@ final class ISpectSettingsState {
     T cast<T>(String k) => map[k] is T
         ? map[k] as T
         : throw ArgumentError('Invalid $k: expected $T.');
+    const d = ISpectSettingsState(
+      enabled: true,
+      useConsoleLogs: true,
+      useHistory: true,
+    );
     final settings = ISpectSettingsState(
-      enabled: cast<bool?>('enabled') ?? false,
-      useConsoleLogs: cast<bool?>('use_console_logs') ?? false,
-      useHistory: cast<bool?>('use_history') ?? false,
-      forwardErrorToConsole: cast<bool?>('forward_error_to_console') ?? false,
+      enabled: cast<bool?>('enabled') ?? d.enabled,
+      useConsoleLogs: cast<bool?>('use_console_logs') ?? d.useConsoleLogs,
+      useHistory: cast<bool?>('use_history') ?? d.useHistory,
+      forwardErrorToConsole:
+          cast<bool?>('forward_error_to_console') ?? d.forwardErrorToConsole,
       maxHistoryItems: _requireNonNegative(
-        cast<int?>('max_history_items') ?? 0,
+        cast<int?>('max_history_items') ?? d.maxHistoryItems,
         'max_history_items',
       ),
       logTruncateLength: _requireNonNegative(
-        cast<int?>('log_truncate_length') ?? 0,
+        cast<int?>('log_truncate_length') ?? d.logTruncateLength,
         'log_truncate_length',
       ),
       captureMode: _captureModeFromMap(map['capture_mode']),
@@ -245,15 +254,21 @@ final class ISpectSettingsState {
       disabledLogTypes: Set<String>.from(
         cast<Iterable<dynamic>?>('disabled_log_types') ?? const <String>{},
       ),
-      expandedLogs: cast<bool?>('expanded_logs') ?? false,
-      isLogOrderReversed: cast<bool?>('is_log_order_reversed') ?? false,
-      groupHttpLogs: cast<bool?>('group_http_logs') ?? false,
-      useRelativeTime: cast<bool?>('use_relative_time') ?? false,
-      compactNetworkUrls: cast<bool?>('compact_network_urls') ?? true,
-      isLogPageEnabled: cast<bool?>('is_log_page_enabled') ?? false,
-      isPerformanceEnabled: cast<bool?>('is_performance_enabled') ?? false,
-      isInspectorEnabled: cast<bool?>('is_inspector_enabled') ?? false,
-      isColorPickerEnabled: cast<bool?>('is_color_picker_enabled') ?? false,
+      expandedLogs: cast<bool?>('expanded_logs') ?? d.expandedLogs,
+      isLogOrderReversed:
+          cast<bool?>('is_log_order_reversed') ?? d.isLogOrderReversed,
+      groupHttpLogs: cast<bool?>('group_http_logs') ?? d.groupHttpLogs,
+      useRelativeTime: cast<bool?>('use_relative_time') ?? d.useRelativeTime,
+      compactNetworkUrls:
+          cast<bool?>('compact_network_urls') ?? d.compactNetworkUrls,
+      isLogPageEnabled:
+          cast<bool?>('is_log_page_enabled') ?? d.isLogPageEnabled,
+      isPerformanceEnabled:
+          cast<bool?>('is_performance_enabled') ?? d.isPerformanceEnabled,
+      isInspectorEnabled:
+          cast<bool?>('is_inspector_enabled') ?? d.isInspectorEnabled,
+      isColorPickerEnabled:
+          cast<bool?>('is_color_picker_enabled') ?? d.isColorPickerEnabled,
     );
     settings.validate();
     return settings;
@@ -455,5 +470,9 @@ final class ISpectShareRequest {
   }
 
   @override
-  int get hashCode => Object.hash(subject, text, filePaths);
+  int get hashCode => Object.hash(
+    subject,
+    text,
+    const DeepCollectionEquality().hash(filePaths),
+  );
 }

@@ -81,14 +81,29 @@ class _SessionLogsScreenState extends State<SessionLogsScreen> {
 
   Future<void> _loadLogs() async {
     List<ISpectLogData>? logs;
-    if (widget.logs != null) {
-      logs = widget.logs;
-    } else if (widget.sessionPath != null) {
-      final fileLogHistory = ISpect.logger.fileLogHistory;
-      logs = await fileLogHistory?.getLogsBySession(widget.sessionPath!);
-    } else if (widget.sessionDate != null) {
-      final fileLogHistory = ISpect.logger.fileLogHistory;
-      logs = await fileLogHistory?.getLogsByDate(widget.sessionDate!);
+    try {
+      if (widget.logs != null) {
+        logs = widget.logs;
+      } else if (widget.sessionPath != null) {
+        final fileLogHistory = ISpect.logger.fileLogHistory;
+        logs = await fileLogHistory?.getLogsBySession(widget.sessionPath!);
+      } else if (widget.sessionDate != null) {
+        final fileLogHistory = ISpect.logger.fileLogHistory;
+        logs = await fileLogHistory?.getLogsByDate(widget.sessionDate!);
+      }
+    } on Exception catch (error, stackTrace) {
+      ISpect.logger.handle(
+        exception: error,
+        stackTrace: stackTrace,
+        message: 'Failed to load session logs',
+      );
+      if (!mounted) return;
+      await ISpectToaster.showErrorToast(
+        context,
+        title: context.ispectL10n.error,
+        message: context.ispectL10n.sessionLogsLoadFailed,
+      );
+      return;
     }
     if (!mounted) return;
     setState(() => _logs = List<ISpectLogData>.unmodifiable(logs ?? const []));

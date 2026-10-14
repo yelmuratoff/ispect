@@ -60,7 +60,7 @@ void main() {
 
       expect(clipboardText, isNotNull);
       expect(clipboardText, isNot(contains('p@ss123')));
-      expect(clipboardText, contains('"password": "[REDACTED]"'));
+      expect(clipboardText, '{"user":"alice","password":"[REDACTED]"}');
     });
 
     testWidgets('Given a URL with embedded credentials, '
@@ -192,6 +192,40 @@ void main() {
 
       expect(LogExportOutput.utf8Length(clipboardText!), lessThanOrEqualTo(64));
       expect(clipboardText, endsWith(LogExportOutput.truncatedMarker));
+    });
+  });
+
+  group('copyClipboard failure', () {
+    setUp(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            if (call.method == 'Clipboard.setData') {
+              throw PlatformException(code: 'clipboard-unavailable');
+            }
+            return null;
+          });
+    });
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    testWidgets('reports a failed clipboard write in the active locale', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        appShell(const SizedBox.shrink(), locale: const Locale('ru')),
+      );
+      final context = tester.element(find.byType(SizedBox));
+
+      copyClipboard(context, value: 'payload');
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Не удалось скопировать в буфер обмена'),
+        findsOneWidget,
+      );
     });
   });
 }

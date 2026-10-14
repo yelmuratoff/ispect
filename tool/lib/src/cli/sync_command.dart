@@ -8,7 +8,8 @@ import '../core/version_sync.dart';
 final class SyncCommand extends Command<int> {
   SyncCommand(this.repoRoot) {
     argParser
-      ..addFlag('dry-run', help: 'Show changes without modifying files.')
+      ..addFlag('dry-run',
+          negatable: false, help: 'Show changes without modifying files.')
       ..addOption(
         'bump',
         allowed: ['patch', 'minor', 'major'],

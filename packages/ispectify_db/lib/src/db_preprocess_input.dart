@@ -1,6 +1,9 @@
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_db/src/config.dart';
 
+bool resolveDbRedact(ISpectDbConfig cfg, {bool? redact}) =>
+    ISpectRedaction.enabled && (redact ?? cfg.redact);
+
 /// Bundles all parameters for DB meta preprocessing.
 ///
 /// Groups the 18 named parameters of `_preprocessDb` into a single object.
@@ -53,7 +56,7 @@ class DbPreprocessInput {
   final int? maxStatementLength;
 
   /// Whether redaction is enabled (global switch, override, then cfg default).
-  bool get shouldRedact => ISpectRedaction.enabled && (redact ?? cfg.redact);
+  bool get shouldRedact => resolveDbRedact(cfg, redact: redact);
 
   /// Sensitive keys to redact (override or cfg default).
   Iterable<String> get sensitiveKeys => redactKeys ?? cfg.redactKeys;

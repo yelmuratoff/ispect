@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/app_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_button.dart';
@@ -12,39 +11,33 @@ import '../helpers/pump_ispect.dart';
 void main() {
   group('ISpectAppBar', () {
     late ISpectViewController controller;
-    late GroupButtonController titlesController;
     late FocusNode focusNode;
 
     setUp(() {
       controller = ISpectViewController();
-      titlesController = GroupButtonController();
       focusNode = FocusNode();
     });
 
     tearDown(() {
       controller.dispose();
       focusNode.dispose();
-      titlesController.dispose();
     });
 
     Widget buildAppBar({
       String title = 'ISpect',
       VoidCallback? onSettingsTap,
-      int? filteredCount,
       int? totalCount,
     }) => appShell(
       CustomScrollView(
         slivers: [
           ISpectAppBar(
             title: title,
-            titlesController: titlesController,
             controller: controller,
             counts: const {'info': 1, 'error': 1},
             uniqTitles: const ['info', 'error'],
             onToggleTitle: (_, __) {},
             focusNode: focusNode,
             onSettingsTap: onSettingsTap,
-            filteredCount: filteredCount,
             totalCount: totalCount,
           ),
           const SliverFillRemaining(),
@@ -75,6 +68,22 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.widget<Text>(find.text(title)).style?.fontSize, 18);
+    });
+
+    testWidgets('the title is not announced as a button without a tap action', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildAppBar(totalCount: 3));
+      await tester.pumpAndSettle();
+
+      final titleSemantics = tester.widget<Semantics>(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics && widget.properties.label == 'ISpect',
+        ),
+      );
+      expect(titleSemantics.properties.button, isNot(isTrue));
+      expect(titleSemantics.properties.hint, isNull);
     });
 
     testWidgets('Given an ISpectAppBar, '

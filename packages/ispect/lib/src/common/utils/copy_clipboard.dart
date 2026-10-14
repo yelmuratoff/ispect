@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
 
 /// Copies the given `value` to the clipboard and displays a toast notification.
 ///
@@ -97,7 +98,8 @@ void copyClipboard(
           if (capturedMessenger != null) {
             ISpectToaster.showErrorToast(
               null,
-              title: 'Failed to copy to clipboard',
+              title: (capturedL10n ?? ISpectGeneratedLocalizationEn())
+                  .copyToClipboardFailed,
               messenger: capturedMessenger,
             );
           }

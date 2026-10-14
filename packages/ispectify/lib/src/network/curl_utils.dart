@@ -58,6 +58,7 @@ abstract final class CurlUtils {
           : NetworkMapRedactor.redactFreeTextValue(
               boundedMethod,
               effectiveRedactor,
+              resourceLimits: resourceLimits,
             );
       final redactedUri =
           effectiveRedactor == null ? uri : effectiveRedactor.redactUrl(uri);

@@ -12,7 +12,7 @@ abstract class _TraceFieldFilter implements Filter<ISpectLogData> {
 
   @override
   bool apply(ISpectLogData item) {
-    final value = captureISpectLogDataForEgress(item).additionalData?[_field];
+    final value = maskedDiagnosticField(item, _field);
     return value is String && _matches(value);
   }
 }

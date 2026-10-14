@@ -23,11 +23,9 @@ void main() {
       expect(filter.apply(3), isTrue);
     });
 
-    test('assert fires for sampleRate <= 0', () {
-      expect(
-        () => SamplingFilter<int>(sampleRate: 0),
-        throwsA(isA<AssertionError>()),
-      );
+    test('rejects a non-positive sampleRate with an ArgumentError', () {
+      expect(() => SamplingFilter<int>(sampleRate: 0), throwsArgumentError);
+      expect(() => SamplingFilter<int>(sampleRate: -2), throwsArgumentError);
     });
   });
 }

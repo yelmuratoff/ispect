@@ -444,6 +444,13 @@ class _BoxInfoPanelWidgetState extends State<BoxInfoPanelWidget> {
 String _describeIdentity(Object? object) =>
     '${object.runtimeType}#${shortHash(object)}';
 
+/// Renders `RenderFlex` as `Flex`, `RenderDecoratedBox` as `DecoratedBox`,
+/// and so on. Saves horizontal space in a deeply nested chain.
+String _shortTypeName(Object obj) {
+  final name = obj.runtimeType.toString();
+  return name.startsWith('Render') ? name.substring(6) : name;
+}
+
 // ─── Private widgets ─────────────────────────────────────────────────────────
 
 class _PanelTitleBar extends StatelessWidget {
@@ -546,11 +553,6 @@ class _PanelTitleBar extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  static String _shortTypeName(Object obj) {
-    final name = obj.runtimeType.toString();
-    return name.startsWith('Render') ? name.substring(6) : name;
   }
 
   Future<void> _copyRenderTreeToClipboard(
@@ -822,7 +824,9 @@ class _HitTestBreadcrumbState extends State<_HitTestBreadcrumb> {
   @override
   void didUpdateWidget(covariant _HitTestBreadcrumb oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _scheduleScrollToSelected();
+    if (!identical(oldWidget.currentTarget, widget.currentTarget)) {
+      _scheduleScrollToSelected();
+    }
   }
 
   @override
@@ -929,7 +933,7 @@ class _BreadcrumbChip extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
           child: Text(
-            _shortTypeLabel(box),
+            _shortTypeName(box),
             style: theme.textTheme.labelSmall?.copyWith(
               color: foreground,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -938,12 +942,5 @@ class _BreadcrumbChip extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Renders `RenderFlex` as `Flex`, `RenderDecoratedBox` as `DecoratedBox`,
-  /// and so on. Saves horizontal space in a deeply nested chain.
-  static String _shortTypeLabel(RenderBox box) {
-    final name = box.runtimeType.toString();
-    return name.startsWith('Render') ? name.substring(6) : name;
   }
 }

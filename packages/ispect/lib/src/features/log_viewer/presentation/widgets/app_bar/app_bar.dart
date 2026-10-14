@@ -8,7 +8,6 @@ import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_button.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_sheet.dart';
@@ -18,7 +17,6 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/onboarding_d
 class ISpectAppBar extends StatefulWidget {
   const ISpectAppBar({
     required this.title,
-    required this.titlesController,
     required this.controller,
     required this.counts,
     required this.uniqTitles,
@@ -26,7 +24,6 @@ class ISpectAppBar extends StatefulWidget {
     required this.focusNode,
     this.onSettingsTap,
     this.backgroundColor,
-    this.filteredCount,
     this.totalCount,
     this.errorCount,
     this.warningCount,
@@ -36,7 +33,6 @@ class ISpectAppBar extends StatefulWidget {
 
   final String? title;
 
-  final GroupButtonController titlesController;
   final ISpectViewController controller;
 
   final Map<String, int> counts;
@@ -50,7 +46,6 @@ class ISpectAppBar extends StatefulWidget {
 
   final Color? backgroundColor;
 
-  final int? filteredCount;
   final int? totalCount;
 
   /// Combined count of `error` and `critical` log levels for the live header
@@ -93,11 +88,9 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
     }
   }
 
-  bool get _hasActiveFilters =>
-      widget.titlesController.selectedIndexes.isNotEmpty;
-
   bool get _hasAnyActiveState =>
-      _hasActiveFilters || widget.controller.searchMode == SearchMode.filter;
+      widget.controller.activeLogTypeFilterCount > 0 ||
+      widget.controller.searchMode == SearchMode.filter;
 
   @override
   Widget build(BuildContext context) {
@@ -198,8 +191,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
                 const Gap(8),
                 ISpectFilterButton(
                   hasActiveState: _hasAnyActiveState,
-                  activeFilterCount:
-                      widget.titlesController.selectedIndexes.length,
+                  activeFilterCount: widget.controller.activeLogTypeFilterCount,
                   onPressed: () => _showFilterSheet(context),
                 ),
               ],
@@ -230,13 +222,9 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
         controller: widget.controller,
         counts: widget.counts,
         uniqTitles: widget.uniqTitles,
-        titlesController: widget.titlesController,
         onToggleTitle: widget.onToggleTitle,
         scrollController: scrollController,
-        onClearAllFilters: () {
-          widget.titlesController.unselectAll();
-          widget.controller.clearAllFilters();
-        },
+        onClearAllFilters: widget.controller.clearAllFilters,
       ),
     );
   }
@@ -262,9 +250,7 @@ class _AppBarTitle extends StatelessWidget {
         (errorCount ?? 0) > 0 ||
         (warningCount ?? 0) > 0;
     return Semantics(
-      button: true,
       label: title ?? 'ISpect',
-      hint: 'Open session history',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -307,19 +293,21 @@ class _AppBarCounter extends StatelessWidget {
     final errorColor = context.appTheme.colorScheme.error;
     const warningColor = Color(0xFFFFA000);
 
+    final l10n = context.ispectL10n;
+
     const accent = TextStyle(fontWeight: FontWeight.w700);
     final spans = <InlineSpan>[];
 
     final totalValue = total ?? 0;
     if (totalValue > 0) {
-      spans.add(TextSpan(text: '$totalValue logs'));
+      spans.add(TextSpan(text: l10n.logCount(totalValue)));
     }
     final warningValue = warnings ?? 0;
     if (warningValue > 0) {
       if (spans.isNotEmpty) spans.add(const TextSpan(text: ' · '));
       spans.add(
         TextSpan(
-          text: warningValue == 1 ? '1 warning' : '$warningValue warnings',
+          text: l10n.warningCount(warningValue),
           style: accent.copyWith(color: warningColor),
         ),
       );
@@ -329,7 +317,7 @@ class _AppBarCounter extends StatelessWidget {
       if (spans.isNotEmpty) spans.add(const TextSpan(text: ' · '));
       spans.add(
         TextSpan(
-          text: errorValue == 1 ? '1 error' : '$errorValue errors',
+          text: l10n.errorCount(errorValue),
           style: accent.copyWith(color: errorColor),
         ),
       );

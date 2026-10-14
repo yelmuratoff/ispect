@@ -1087,4 +1087,267 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get composerEditAndResend => '편집 후 다시 보내기';
+
+  @override
+  String get settingsDisplay => '표시';
+
+  @override
+  String get relativeTime => '상대 시간';
+
+  @override
+  String get absoluteTime => '절대 시간';
+
+  @override
+  String get compactUrls => 'URL 간략히 표시';
+
+  @override
+  String get settingsTools => '도구';
+
+  @override
+  String get settingsAdvanced => '고급';
+
+  @override
+  String get forwardErrorsToDeveloperLog => '오류를 dart:developer로 전달';
+
+  @override
+  String get historyCapacity => '기록 용량';
+
+  @override
+  String get historyCapacityDesc => '메모리에 보관할 로그 수';
+
+  @override
+  String get consoleTruncate => '콘솔 자르기';
+
+  @override
+  String get consoleTruncateDesc => '콘솔 한 줄당 최대 문자 수';
+
+  @override
+  String get captureMode => '캡처 모드';
+
+  @override
+  String get captureModeDesc => '유용한 값 또는 최대 격리';
+
+  @override
+  String get captureModeBalancedDesc => '출력이 제한된 보호된 포매터';
+
+  @override
+  String get captureModeStrict => '엄격';
+
+  @override
+  String get captureModeStrictDesc => '앱 포매터를 실행하지 않음';
+
+  @override
+  String get profileBalanced => '균형';
+
+  @override
+  String get resourceProfile => '리소스 프로필';
+
+  @override
+  String get resourceProfileDesc => '캡처, 메모리, 가져오기 및 내보내기 한도';
+
+  @override
+  String get resourceProfileConstrained => '절약';
+
+  @override
+  String get resourceProfileConstrainedDesc => '장시간 세션을 위해 메모리 사용량 절감';
+
+  @override
+  String get resourceProfileBalancedDesc => '비용을 제한한 유용한 진단';
+
+  @override
+  String get resourceProfileExtended => '확장';
+
+  @override
+  String get resourceProfileExtendedDesc => '제어된 범위에서 더 큰 내부 전달 허용';
+
+  @override
+  String get processingProfile => '처리 프로필';
+
+  @override
+  String get processingProfileDesc => '응답성과 배치 처리량';
+
+  @override
+  String get processingProfileResponsive => '응답성 우선';
+
+  @override
+  String get processingProfileResponsiveDesc => 'UI를 부드럽게 유지하도록 자주 양보';
+
+  @override
+  String get processingProfileBalancedDesc => '범용 스케줄링';
+
+  @override
+  String get processingProfileThroughput => '처리량 우선';
+
+  @override
+  String get processingProfileThroughputDesc => '더 빠른 전달을 위한 더 큰 배치';
+
+  @override
+  String get limitInvalidValue => '0 이상의 정수를 입력하세요';
+
+  @override
+  String get limitZeroDisables => '0이면 이 한도를 사용하지 않음';
+
+  @override
+  String get apply => '적용';
+
+  @override
+  String logCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '로그 $count개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String warningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '경고 $count개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '오류 $count개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filteredLogCount(int filtered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '로그 $filtered / $total개',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contentProcessingError => '콘텐츠 처리 오류';
+
+  @override
+  String get failedToLoadLogContent => '로그 내용을 불러오지 못했습니다';
+
+  @override
+  String get unknownContentProcessingError => '콘텐츠를 처리하는 중 알 수 없는 오류가 발생했습니다';
+
+  @override
+  String get correlationIdShort => '상관';
+
+  @override
+  String get transactionIdShort => '트랜잭션';
+
+  @override
+  String get columnType => '유형';
+
+  @override
+  String get columnTime => '시간';
+
+  @override
+  String get columnMessage => '메시지';
+
+  @override
+  String sortColumnAscending(String column) {
+    return '$column 기준 정렬, 오름차순';
+  }
+
+  @override
+  String sortColumnDescending(String column) {
+    return '$column 기준 정렬, 내림차순';
+  }
+
+  @override
+  String sortColumnUnsorted(String column) {
+    return '$column 기준 정렬, 정렬 안 됨';
+  }
+
+  @override
+  String resizeColumn(String column) {
+    return '$column 열 너비 조정';
+  }
+
+  @override
+  String get resumeLiveTail => '실시간 추적 재개';
+
+  @override
+  String get pauseLiveTail => '실시간 추적 일시중지';
+
+  @override
+  String get liveTailLive => '실시간';
+
+  @override
+  String get liveTailPaused => '일시중지됨';
+
+  @override
+  String get open => '열기';
+
+  @override
+  String filterByType(String type) {
+    return '$type 유형으로 필터링';
+  }
+
+  @override
+  String httpStatus(int code) {
+    return 'HTTP 상태 $code';
+  }
+
+  @override
+  String get composerBodyNone => '없음';
+
+  @override
+  String get composerBodyText => '텍스트';
+
+  @override
+  String get composerBodyForm => '폼';
+
+  @override
+  String get composerBodyMultipart => '멀티파트';
+
+  @override
+  String get jsonViewer => 'JSON 뷰어';
+
+  @override
+  String get detail => '상세';
+
+  @override
+  String copyKey(String key) {
+    return '$key 복사';
+  }
+
+  @override
+  String get copyToClipboardFailed => '클립보드에 복사하지 못했습니다';
+
+  @override
+  String pluginErrorTitle(String pluginId) {
+    return '플러그인 오류: $pluginId';
+  }
+
+  @override
+  String get pluginRenderFailed => '플러그인 화면을 표시하지 못했습니다';
+
+  @override
+  String get stackTrace => '스택 트레이스';
+
+  @override
+  String get resizeDivider => '구분선 크기 조정';
+
+  @override
+  String get sessionLogsLoadFailed => '세션 로그를 불러오지 못했습니다';
+
+  @override
+  String get dailySessionsLoadFailed => '세션을 불러오지 못했습니다';
+
+  @override
+  String get dailySessionsClearFailed => '세션을 지우지 못했습니다';
+
+  @override
+  String get exception => '예외';
 }

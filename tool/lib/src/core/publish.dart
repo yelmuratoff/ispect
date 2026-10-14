@@ -401,9 +401,9 @@ final class PublishRun {
             'Replace them with ^version ranges.');
         bad = true;
       }
-      if (_hasCommittedPodfileLock(package)) {
-        _error("'$package' contains a committed Podfile.lock. Remove it "
-            "(platform lockfiles shouldn't be published).");
+      final podfileLockProblem = _podfileLockProblem(package);
+      if (podfileLockProblem != null) {
+        _error(podfileLockProblem);
         bad = true;
       }
     }
@@ -417,18 +417,24 @@ final class PublishRun {
     return 0;
   }
 
-  bool _hasCommittedPodfileLock(String package) {
+  String? _podfileLockProblem(String package) {
     final listed = runner.run(
       'git',
       ['ls-files', '--', 'packages/$package/**/Podfile.lock'],
       workingDirectory: repoRoot,
     );
     if (!listed.succeeded) {
-      return false;
+      return "Could not check '$package' for a committed Podfile.lock: "
+          '${_stripTrailingNewlines(listed.output)}';
     }
-    return const LineSplitter()
+    final committed = const LineSplitter()
         .convert(listed.output)
         .any((line) => line.isNotEmpty);
+    if (!committed) {
+      return null;
+    }
+    return "'$package' contains a committed Podfile.lock. Remove it "
+        "(platform lockfiles shouldn't be published).";
   }
 
   int _runFormat() {

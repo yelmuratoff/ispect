@@ -1125,4 +1125,283 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get composerEditAndResend => 'Editar y reenviar';
+
+  @override
+  String get settingsDisplay => 'Visualización';
+
+  @override
+  String get relativeTime => 'Tiempo relativo';
+
+  @override
+  String get absoluteTime => 'Tiempo absoluto';
+
+  @override
+  String get compactUrls => 'URL compactas';
+
+  @override
+  String get settingsTools => 'Herramientas';
+
+  @override
+  String get settingsAdvanced => 'Avanzado';
+
+  @override
+  String get forwardErrorsToDeveloperLog => 'Reenviar errores a dart:developer';
+
+  @override
+  String get historyCapacity => 'Capacidad del historial';
+
+  @override
+  String get historyCapacityDesc => 'Registros guardados en memoria';
+
+  @override
+  String get consoleTruncate => 'Truncado de consola';
+
+  @override
+  String get consoleTruncateDesc => 'Máx. de caracteres por línea de consola';
+
+  @override
+  String get captureMode => 'Modo de captura';
+
+  @override
+  String get captureModeDesc => 'Valores útiles o aislamiento máximo';
+
+  @override
+  String get captureModeBalancedDesc =>
+      'Formateadores protegidos con salida limitada';
+
+  @override
+  String get captureModeStrict => 'Estricto';
+
+  @override
+  String get captureModeStrictDesc =>
+      'No ejecutar nunca los formateadores de la aplicación';
+
+  @override
+  String get profileBalanced => 'Equilibrado';
+
+  @override
+  String get resourceProfile => 'Perfil de recursos';
+
+  @override
+  String get resourceProfileDesc =>
+      'Límites de captura, memoria, importación y exportación';
+
+  @override
+  String get resourceProfileConstrained => 'Restringido';
+
+  @override
+  String get resourceProfileConstrainedDesc =>
+      'Menor uso de memoria para sesiones largas';
+
+  @override
+  String get resourceProfileBalancedDesc =>
+      'Diagnóstico útil con costo limitado';
+
+  @override
+  String get resourceProfileExtended => 'Ampliado';
+
+  @override
+  String get resourceProfileExtendedDesc =>
+      'Transferencias internas controladas más grandes';
+
+  @override
+  String get processingProfile => 'Perfil de procesamiento';
+
+  @override
+  String get processingProfileDesc =>
+      'Capacidad de respuesta y procesamiento por lotes';
+
+  @override
+  String get processingProfileResponsive => 'Reactivo';
+
+  @override
+  String get processingProfileResponsiveDesc =>
+      'Ceder a menudo para mantener la interfaz fluida';
+
+  @override
+  String get processingProfileBalancedDesc => 'Planificación de uso general';
+
+  @override
+  String get processingProfileThroughput => 'Alto volumen';
+
+  @override
+  String get processingProfileThroughputDesc =>
+      'Lotes más grandes para transferencias más rápidas';
+
+  @override
+  String get limitInvalidValue => 'Ingresa un número entero no negativo';
+
+  @override
+  String get limitZeroDisables => '0 desactiva este límite';
+
+  @override
+  String get apply => 'Aplicar';
+
+  @override
+  String logCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count registros',
+      one: '$count registro',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String warningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count advertencias',
+      one: '$count advertencia',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count errores',
+      one: '$count error',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filteredLogCount(int filtered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$filtered / $total registros',
+      one: '$filtered / $total registro',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contentProcessingError => 'Error al procesar el contenido';
+
+  @override
+  String get failedToLoadLogContent =>
+      'No se pudo cargar el contenido de los registros';
+
+  @override
+  String get unknownContentProcessingError =>
+      'Error desconocido al procesar el contenido';
+
+  @override
+  String get correlationIdShort => 'Corr';
+
+  @override
+  String get transactionIdShort => 'Trans';
+
+  @override
+  String get columnType => 'Tipo';
+
+  @override
+  String get columnTime => 'Hora';
+
+  @override
+  String get columnMessage => 'Mensaje';
+
+  @override
+  String sortColumnAscending(String column) {
+    return 'Ordenar por $column, orden ascendente';
+  }
+
+  @override
+  String sortColumnDescending(String column) {
+    return 'Ordenar por $column, orden descendente';
+  }
+
+  @override
+  String sortColumnUnsorted(String column) {
+    return 'Ordenar por $column, sin ordenar';
+  }
+
+  @override
+  String resizeColumn(String column) {
+    return 'Cambiar el ancho de la columna $column';
+  }
+
+  @override
+  String get resumeLiveTail => 'Reanudar seguimiento en vivo';
+
+  @override
+  String get pauseLiveTail => 'Pausar seguimiento en vivo';
+
+  @override
+  String get liveTailLive => 'EN VIVO';
+
+  @override
+  String get liveTailPaused => 'EN PAUSA';
+
+  @override
+  String get open => 'Abrir';
+
+  @override
+  String filterByType(String type) {
+    return 'Filtrar por tipo $type';
+  }
+
+  @override
+  String httpStatus(int code) {
+    return 'Estado HTTP $code';
+  }
+
+  @override
+  String get composerBodyNone => 'Ninguno';
+
+  @override
+  String get composerBodyText => 'Texto';
+
+  @override
+  String get composerBodyForm => 'Formulario';
+
+  @override
+  String get composerBodyMultipart => 'Multipart';
+
+  @override
+  String get jsonViewer => 'Visor JSON';
+
+  @override
+  String get detail => 'Detalle';
+
+  @override
+  String copyKey(String key) {
+    return 'Copiar $key';
+  }
+
+  @override
+  String get copyToClipboardFailed => 'No se pudo copiar al portapapeles';
+
+  @override
+  String pluginErrorTitle(String pluginId) {
+    return 'Error del plugin: $pluginId';
+  }
+
+  @override
+  String get pluginRenderFailed => 'No se pudo mostrar la pantalla del plugin';
+
+  @override
+  String get stackTrace => 'Traza de pila';
+
+  @override
+  String get resizeDivider => 'Redimensionar divisor';
+
+  @override
+  String get sessionLogsLoadFailed =>
+      'No se pudieron cargar los registros de la sesión';
+
+  @override
+  String get dailySessionsLoadFailed => 'No se pudieron cargar las sesiones';
+
+  @override
+  String get dailySessionsClearFailed => 'No se pudieron borrar las sesiones';
+
+  @override
+  String get exception => 'Excepción';
 }

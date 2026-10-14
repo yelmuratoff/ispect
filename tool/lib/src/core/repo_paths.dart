@@ -19,3 +19,19 @@ String? findRepoRoot(String start) {
     directory = parent;
   }
 }
+
+/// Paths of the directories under `packages/` in [repoRoot], sorted.
+///
+/// Returns an empty list when `packages/` does not exist.
+List<String> packageDirectories(String repoRoot) {
+  final packages = Directory(p.join(repoRoot, 'packages'));
+  if (!packages.existsSync()) {
+    return const [];
+  }
+  return packages
+      .listSync()
+      .whereType<Directory>()
+      .map((directory) => directory.path)
+      .toList()
+    ..sort();
+}

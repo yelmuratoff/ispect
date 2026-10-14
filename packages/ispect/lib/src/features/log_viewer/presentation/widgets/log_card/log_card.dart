@@ -121,6 +121,10 @@ class _LogCardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final httpLogText = data.httpLogText;
     final message = data.isHttpLog ? httpLogText : data.textMessage;
+    final title = context.ispectTheme.getTypeTitle(context, key: data.key);
+    final semanticsLabel = title == null
+        ? message ?? ''
+        : '$title: ${message ?? ''}';
 
     void openDetail() {
       LogDetailView(
@@ -149,8 +153,7 @@ class _LogCardHeader extends StatelessWidget {
       container: true,
       explicitChildNodes: true,
       button: true,
-      label:
-          '${ISpectLogType.fromKey(data.key ?? '')?.displayTitle ?? data.key ?? "Log"}: ${message ?? ""}',
+      label: semanticsLabel,
       onTap: openDetail,
       child: Material(
         type: MaterialType.transparency,
@@ -173,15 +176,17 @@ class _LogCardHeader extends StatelessWidget {
                 child: CollapsedBody(
                   icon: icon,
                   color: color,
-                  title:
-                      ISpectLogType.fromKey(data.key ?? '')?.displayTitle ??
-                      data.key,
+                  title: title,
                   dateTime: context.formatLogTime(
                     data.time,
                     relative: useRelativeTime,
                     absolute: data.formattedTime,
                   ),
-                  subtitle: _buildSubtitle(data),
+                  subtitle: _buildSubtitle(
+                    data,
+                    title: title,
+                    l10n: context.ispectL10n,
+                  ),
                   message: message,
                   errorMessage: httpLogText,
                   expanded: isExpanded,
@@ -204,7 +209,11 @@ class _LogCardHeader extends StatelessWidget {
 
 /// Builds the subtitle line shown beneath the title row when a log card is
 /// expanded.
-String? _buildSubtitle(ISpectLogData data) {
+String? _buildSubtitle(
+  ISpectLogData data, {
+  required String? title,
+  required ISpectGeneratedLocalization l10n,
+}) {
   final captured = captureISpectLogDataForEgress(data);
   final parts = <String>['#${_shortId(captured.id)}'];
 
@@ -227,19 +236,15 @@ String? _buildSubtitle(ISpectLogData data) {
   if (ms != null) parts.add(_formatTraceDuration(ms));
 
   if (captured.exception != null) {
-    parts.add('Exception');
+    parts.add(l10n.exception);
   } else if (captured.error != null) {
-    parts.add('Error');
+    parts.add(l10n.error);
   }
 
   if (parts.length == 1) {
     final levelName = captured.logLevel?.name;
     if (levelName != null) {
-      final title =
-          ISpectLogType.fromKey(captured.key ?? '')?.displayTitle ??
-          captured.key ??
-          '';
-      if (title.toLowerCase() != levelName.toLowerCase()) {
+      if ((title ?? '').toLowerCase() != levelName.toLowerCase()) {
         parts.add(levelName.toUpperCase());
       }
     }

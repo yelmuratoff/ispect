@@ -257,7 +257,25 @@ final class SegmentReader {
         operation: 'countDateEntries',
       );
       for (final file in files) {
-        final bytes = await _store.readArtifactBytes(file);
+        List<int> bytes;
+        try {
+          bytes = await _store.readArtifactBytes(file);
+        } on FileLogLimitException catch (error) {
+          _onError(error);
+          continue;
+        } on FileLogAccessException {
+          rethrow;
+        } catch (error, stackTrace) {
+          _onError(
+            FileLogFormatException(
+              operation: 'readSegment',
+              path: file.path,
+              cause: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          continue;
+        }
         decodedBytes += bytes.length;
         if (decodedBytes > _options.maxTotalSize) {
           throw FileLogLimitException(
@@ -269,7 +287,20 @@ final class SegmentReader {
             ? bytes.length
             : bytes.lastIndexOf(0x0A) + 1;
         if (completeLength == 0) continue;
-        final text = utf8.decoder.convert(bytes, 0, completeLength);
+        String text;
+        try {
+          text = utf8.decoder.convert(bytes, 0, completeLength);
+        } on FormatException catch (_, stackTrace) {
+          _onError(
+            FileLogFormatException(
+              operation: 'decodeSegmentUtf8',
+              path: file.path,
+              cause: const FormatException('Invalid file-log UTF-8'),
+              stackTrace: stackTrace,
+            ),
+          );
+          continue;
+        }
         var lineStart = 0;
         for (var index = 0; index <= text.length; index++) {
           if (index != text.length && text.codeUnitAt(index) != 0x0a) {
@@ -300,15 +331,33 @@ final class SegmentReader {
       if (decodedBytes + legacyLength > _options.maxTotalSize) {
         throw const FileLogLimitException(operation: 'countDateEntries');
       }
-      count += _codec
-          .decodeLegacyArray(
-            await _store.readLegacyText(legacy),
-            maxCharacters: _options.maxTotalSize,
-            maxEncodedBytes: _options.maxTotalSize,
-            maxNodes: _limits.readNodes,
-            maxRootCollectionItems: _limits.readRecords,
-          )
-          .length;
+      try {
+        count += _codec
+            .decodeLegacyArray(
+              await _store.readLegacyText(legacy),
+              maxCharacters: _limits.importCharacters,
+              maxEncodedBytes: _limits.importBytes,
+              maxDepth: _loggerOptions.resourceLimits.maxTraversalDepth,
+              maxNodes: _limits.readNodes,
+              maxCollectionItems:
+                  _loggerOptions.resourceLimits.maxCollectionItems,
+              maxRootCollectionItems: _limits.readRecords,
+            )
+            .length;
+      } on FileLogAccessException {
+        rethrow;
+      } on FileLogHistoryException catch (error) {
+        _onError(error);
+      } catch (error, stackTrace) {
+        _onError(
+          FileLogFormatException(
+            operation: 'readLegacy',
+            path: legacy.path,
+            cause: error,
+            stackTrace: stackTrace,
+          ),
+        );
+      }
       if (count > _limits.readRecords) {
         throw const FileLogLimitException(operation: 'countDateEntries');
       }

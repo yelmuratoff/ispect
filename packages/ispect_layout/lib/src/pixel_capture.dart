@@ -29,10 +29,15 @@ class PixelCapture {
     final boundary = context.findRenderObject()! as RenderRepaintBoundary;
     final pixelRatio = MediaQuery.of(context).devicePixelRatio;
     final image = await boundary.toImage(pixelRatio: pixelRatio);
-    final byteData = await image.toByteData(
-      format: ui.ImageByteFormat.rawStraightRgba,
-    );
-    return (image: image, byteData: byteData);
+    try {
+      final byteData = await image.toByteData(
+        format: ui.ImageByteFormat.rawStraightRgba,
+      );
+      return (image: image, byteData: byteData);
+    } catch (_) {
+      image.dispose();
+      rethrow;
+    }
   }
 
   /// Translates a global pointer offset into the captured image's pixel

@@ -171,279 +171,24 @@ class _SettingsContentState extends State<_SettingsContent> {
               ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: ISpectSectionLabel(title: context.ispectL10n.settings),
+          _GeneralSection(
+            settings: currentSettings,
+            onChanged: _onSettingChanged,
           ),
-          SliverToBoxAdapter(
-            child: CompactToggleGrid(
-              tiles: [
-                ToggleSpec(
-                  title: context.ispectL10n.enabled,
-                  icon: Icons.power_settings_new_rounded,
-                  enabled: currentSettings.enabled,
-                  onChanged: (v) =>
-                      _onSettingChanged(currentSettings.copyWith(enabled: v)),
-                ),
-                ToggleSpec(
-                  title: context.ispectL10n.useConsoleLogs,
-                  icon: Icons.terminal_rounded,
-                  enabled: currentSettings.useConsoleLogs,
-                  canEdit: currentSettings.enabled,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(useConsoleLogs: v),
-                  ),
-                ),
-                ToggleSpec(
-                  title: context.ispectL10n.useHistory,
-                  icon: Icons.history_rounded,
-                  enabled: currentSettings.useHistory,
-                  canEdit: currentSettings.enabled,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(useHistory: v),
-                  ),
-                ),
-              ],
-            ),
+          _DisplaySection(
+            settings: currentSettings,
+            onChanged: _onSettingChanged,
           ),
-          const SliverToBoxAdapter(child: ISpectSectionLabel(title: 'Display')),
-          SliverToBoxAdapter(
-            child: CompactToggleGrid(
-              tiles: [
-                ToggleSpec(
-                  title: 'Expand logs',
-                  icon: Icons.unfold_more_rounded,
-                  enabled: currentSettings.expandedLogs,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(expandedLogs: v),
-                  ),
-                ),
-                ToggleSpec(
-                  title: 'Newest first',
-                  icon: Icons.swap_vert_rounded,
-                  enabled: currentSettings.isLogOrderReversed,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(isLogOrderReversed: v),
-                  ),
-                ),
-                ToggleSpec(
-                  title: 'Group HTTP',
-                  icon: Icons.merge_type_rounded,
-                  enabled: currentSettings.groupHttpLogs,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(groupHttpLogs: v),
-                  ),
-                ),
-                ToggleSpec(
-                  title: 'Relative time',
-                  icon: Icons.schedule_rounded,
-                  enabled: currentSettings.useRelativeTime,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(useRelativeTime: v),
-                  ),
-                ),
-                ToggleSpec(
-                  title: 'Compact URLs',
-                  icon: Icons.link_off_rounded,
-                  enabled: currentSettings.compactNetworkUrls,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(compactNetworkUrls: v),
-                  ),
-                ),
-              ],
-            ),
+          _ToolsSection(
+            settings: currentSettings,
+            onChanged: _onSettingChanged,
           ),
-          const SliverToBoxAdapter(child: ISpectSectionLabel(title: 'Tools')),
-          SliverToBoxAdapter(
-            child: CompactToggleGrid(
-              tiles: [
-                ToggleSpec(
-                  title: 'Log viewer',
-                  icon: Icons.reorder_rounded,
-                  enabled: currentSettings.isLogPageEnabled,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(isLogPageEnabled: v),
-                  ),
-                ),
-                ToggleSpec(
-                  title: 'Performance',
-                  icon: Icons.monitor_heart_outlined,
-                  enabled: currentSettings.isPerformanceEnabled,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(isPerformanceEnabled: v),
-                  ),
-                ),
-                ToggleSpec(
-                  title: 'Inspector',
-                  icon: Icons.format_shapes_rounded,
-                  enabled: currentSettings.isInspectorEnabled,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(isInspectorEnabled: v),
-                  ),
-                ),
-                ToggleSpec(
-                  title: 'Color picker',
-                  icon: Icons.colorize_rounded,
-                  enabled: currentSettings.isColorPickerEnabled,
-                  onChanged: (v) => _onSettingChanged(
-                    currentSettings.copyWith(isColorPickerEnabled: v),
-                  ),
-                ),
-              ],
-            ),
+          _AdvancedSection(
+            settings: currentSettings,
+            onChanged: _onSettingChanged,
           ),
-          const SliverToBoxAdapter(
-            child: ISpectSectionLabel(title: 'Advanced'),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  CompactToggleRow(
-                    spec: ToggleSpec(
-                      title: 'Forward errors to dart:developer',
-                      icon: Icons.bug_report_rounded,
-                      enabled: currentSettings.forwardErrorToConsole,
-                      canEdit:
-                          currentSettings.enabled &&
-                          currentSettings.useConsoleLogs,
-                      onChanged: (v) => _onSettingChanged(
-                        currentSettings.copyWith(forwardErrorToConsole: v),
-                      ),
-                    ),
-                  ),
-                  const Gap(8),
-                  LimitTile(
-                    label: 'History capacity',
-                    description: 'Logs kept in memory',
-                    icon: Icons.history_toggle_off_rounded,
-                    value: currentSettings.maxHistoryItems,
-                    options: const [1000, 5000, 10000, 25000, 50000],
-                    formatter: formatCount,
-                    onChanged: (v) => _onSettingChanged(
-                      currentSettings.copyWith(maxHistoryItems: v),
-                    ),
-                  ),
-                  const Gap(8),
-                  LimitTile(
-                    label: 'Console truncate',
-                    description: 'Max chars per console line',
-                    icon: Icons.short_text_rounded,
-                    value: currentSettings.logTruncateLength,
-                    options: const [256, 1000, 4000, 10000, 40000],
-                    formatter: formatCount,
-                    onChanged: (v) => _onSettingChanged(
-                      currentSettings.copyWith(logTruncateLength: v),
-                    ),
-                  ),
-                  const Gap(8),
-                  PolicyProfileTile<DiagnosticCaptureMode>(
-                    label: 'Capture mode',
-                    description: 'Useful values or maximum isolation',
-                    icon: Icons.shield_outlined,
-                    value: currentSettings.captureMode,
-                    options: const [
-                      PolicyProfileOption(
-                        label: 'Balanced',
-                        description: 'Guarded formatters with bounded output',
-                        value: DiagnosticCaptureMode.balanced,
-                      ),
-                      PolicyProfileOption(
-                        label: 'Strict',
-                        description: 'Never run application formatters',
-                        value: DiagnosticCaptureMode.strict,
-                      ),
-                    ],
-                    onChanged: (value) => _onSettingChanged(
-                      currentSettings.copyWith(captureMode: value),
-                    ),
-                  ),
-                  const Gap(8),
-                  PolicyProfileTile<DiagnosticResourceLimits>(
-                    label: 'Resource profile',
-                    description: 'Capture, memory, import and export limits',
-                    icon: Icons.memory_rounded,
-                    value: currentSettings.resourceLimits,
-                    options: const [
-                      PolicyProfileOption(
-                        label: 'Constrained',
-                        description: 'Lower memory use for long sessions',
-                        value: DiagnosticResourceLimits.constrained,
-                      ),
-                      PolicyProfileOption(
-                        label: 'Balanced',
-                        description: 'Useful diagnostics with bounded cost',
-                        value: DiagnosticResourceLimits.balanced,
-                      ),
-                      PolicyProfileOption(
-                        label: 'Extended',
-                        description: 'Larger controlled internal handoffs',
-                        value: DiagnosticResourceLimits.extended,
-                      ),
-                    ],
-                    onChanged: (value) => _onSettingChanged(
-                      currentSettings.copyWith(resourceLimits: value),
-                    ),
-                  ),
-                  const Gap(8),
-                  PolicyProfileTile<DiagnosticProcessingPolicy>(
-                    label: 'Processing profile',
-                    description: 'Responsiveness and batch throughput',
-                    icon: Icons.speed_rounded,
-                    value: currentSettings.processingPolicy,
-                    options: const [
-                      PolicyProfileOption(
-                        label: 'Responsive',
-                        description: 'Yield often to keep the UI fluid',
-                        value: DiagnosticProcessingPolicy.responsive,
-                      ),
-                      PolicyProfileOption(
-                        label: 'Balanced',
-                        description: 'General-purpose scheduling',
-                        value: DiagnosticProcessingPolicy.balanced,
-                      ),
-                      PolicyProfileOption(
-                        label: 'Throughput',
-                        description: 'Larger batches for faster handoffs',
-                        value: DiagnosticProcessingPolicy.throughput,
-                      ),
-                    ],
-                    onChanged: (value) => _onSettingChanged(
-                      currentSettings.copyWith(processingPolicy: value),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (widget.actions.isNotEmpty) ...[
-            SliverToBoxAdapter(
-              child: ISpectSectionLabel(title: context.ispectL10n.actions),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    const spacing = 8.0;
-                    final tileWidth = (constraints.maxWidth - spacing) / 2;
-                    return Wrap(
-                      spacing: spacing,
-                      runSpacing: spacing,
-                      children: widget.actions
-                          .map(
-                            (action) => SizedBox(
-                              width: tileWidth,
-                              child: ActionTile(action: action),
-                            ),
-                          )
-                          .toList(),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
+          if (widget.actions.isNotEmpty)
+            _ActionsSection(actions: widget.actions),
           SliverToBoxAdapter(
             child: LogTypeFilterSection(
               disabledLogTypes: currentSettings.disabledLogTypes,
@@ -457,4 +202,331 @@ class _SettingsContentState extends State<_SettingsContent> {
       ),
     );
   }
+}
+
+class _GeneralSection extends StatelessWidget {
+  const _GeneralSection({required this.settings, required this.onChanged});
+
+  final ISpectSettingsState settings;
+  final ValueChanged<ISpectSettingsState> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.ispectL10n;
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(child: ISpectSectionLabel(title: l10n.settings)),
+        SliverToBoxAdapter(
+          child: CompactToggleGrid(
+            tiles: [
+              ToggleSpec(
+                title: l10n.enabled,
+                icon: Icons.power_settings_new_rounded,
+                enabled: settings.enabled,
+                onChanged: (v) => onChanged(settings.copyWith(enabled: v)),
+              ),
+              ToggleSpec(
+                title: l10n.useConsoleLogs,
+                icon: Icons.terminal_rounded,
+                enabled: settings.useConsoleLogs,
+                canEdit: settings.enabled,
+                onChanged: (v) =>
+                    onChanged(settings.copyWith(useConsoleLogs: v)),
+              ),
+              ToggleSpec(
+                title: l10n.useHistory,
+                icon: Icons.history_rounded,
+                enabled: settings.useHistory,
+                canEdit: settings.enabled,
+                onChanged: (v) => onChanged(settings.copyWith(useHistory: v)),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DisplaySection extends StatelessWidget {
+  const _DisplaySection({required this.settings, required this.onChanged});
+
+  final ISpectSettingsState settings;
+  final ValueChanged<ISpectSettingsState> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.ispectL10n;
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(
+          child: ISpectSectionLabel(title: l10n.settingsDisplay),
+        ),
+        SliverToBoxAdapter(
+          child: CompactToggleGrid(
+            tiles: [
+              ToggleSpec(
+                title: l10n.expandLogs,
+                icon: Icons.unfold_more_rounded,
+                enabled: settings.expandedLogs,
+                onChanged: (v) => onChanged(settings.copyWith(expandedLogs: v)),
+              ),
+              ToggleSpec(
+                title: l10n.reverseLogs,
+                icon: Icons.swap_vert_rounded,
+                enabled: settings.isLogOrderReversed,
+                onChanged: (v) =>
+                    onChanged(settings.copyWith(isLogOrderReversed: v)),
+              ),
+              ToggleSpec(
+                title: l10n.groupHttpLogs,
+                icon: Icons.merge_type_rounded,
+                enabled: settings.groupHttpLogs,
+                onChanged: (v) =>
+                    onChanged(settings.copyWith(groupHttpLogs: v)),
+              ),
+              ToggleSpec(
+                title: l10n.relativeTime,
+                icon: Icons.schedule_rounded,
+                enabled: settings.useRelativeTime,
+                onChanged: (v) =>
+                    onChanged(settings.copyWith(useRelativeTime: v)),
+              ),
+              ToggleSpec(
+                title: l10n.compactUrls,
+                icon: Icons.link_off_rounded,
+                enabled: settings.compactNetworkUrls,
+                onChanged: (v) =>
+                    onChanged(settings.copyWith(compactNetworkUrls: v)),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ToolsSection extends StatelessWidget {
+  const _ToolsSection({required this.settings, required this.onChanged});
+
+  final ISpectSettingsState settings;
+  final ValueChanged<ISpectSettingsState> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.ispectL10n;
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(
+          child: ISpectSectionLabel(title: l10n.settingsTools),
+        ),
+        SliverToBoxAdapter(
+          child: CompactToggleGrid(
+            tiles: [
+              ToggleSpec(
+                title: l10n.logViewer,
+                icon: Icons.reorder_rounded,
+                enabled: settings.isLogPageEnabled,
+                onChanged: (v) =>
+                    onChanged(settings.copyWith(isLogPageEnabled: v)),
+              ),
+              ToggleSpec(
+                title: l10n.performance,
+                icon: Icons.monitor_heart_outlined,
+                enabled: settings.isPerformanceEnabled,
+                onChanged: (v) =>
+                    onChanged(settings.copyWith(isPerformanceEnabled: v)),
+              ),
+              ToggleSpec(
+                title: l10n.inspector,
+                icon: Icons.format_shapes_rounded,
+                enabled: settings.isInspectorEnabled,
+                onChanged: (v) =>
+                    onChanged(settings.copyWith(isInspectorEnabled: v)),
+              ),
+              ToggleSpec(
+                title: l10n.colorPicker,
+                icon: Icons.colorize_rounded,
+                enabled: settings.isColorPickerEnabled,
+                onChanged: (v) =>
+                    onChanged(settings.copyWith(isColorPickerEnabled: v)),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AdvancedSection extends StatelessWidget {
+  const _AdvancedSection({required this.settings, required this.onChanged});
+
+  final ISpectSettingsState settings;
+  final ValueChanged<ISpectSettingsState> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.ispectL10n;
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(
+          child: ISpectSectionLabel(title: l10n.settingsAdvanced),
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                CompactToggleRow(
+                  spec: ToggleSpec(
+                    title: l10n.forwardErrorsToDeveloperLog,
+                    icon: Icons.bug_report_rounded,
+                    enabled: settings.forwardErrorToConsole,
+                    canEdit: settings.enabled && settings.useConsoleLogs,
+                    onChanged: (v) =>
+                        onChanged(settings.copyWith(forwardErrorToConsole: v)),
+                  ),
+                ),
+                const Gap(8),
+                LimitTile(
+                  label: l10n.historyCapacity,
+                  description: l10n.historyCapacityDesc,
+                  icon: Icons.history_toggle_off_rounded,
+                  value: settings.maxHistoryItems,
+                  options: const [1000, 5000, 10000, 25000, 50000],
+                  formatter: formatCount,
+                  onChanged: (v) =>
+                      onChanged(settings.copyWith(maxHistoryItems: v)),
+                ),
+                const Gap(8),
+                LimitTile(
+                  label: l10n.consoleTruncate,
+                  description: l10n.consoleTruncateDesc,
+                  icon: Icons.short_text_rounded,
+                  value: settings.logTruncateLength,
+                  options: const [256, 1000, 4000, 10000, 40000],
+                  formatter: formatCount,
+                  onChanged: (v) =>
+                      onChanged(settings.copyWith(logTruncateLength: v)),
+                ),
+                const Gap(8),
+                PolicyProfileTile<DiagnosticCaptureMode>(
+                  label: l10n.captureMode,
+                  description: l10n.captureModeDesc,
+                  icon: Icons.shield_outlined,
+                  value: settings.captureMode,
+                  options: [
+                    PolicyProfileOption(
+                      label: l10n.profileBalanced,
+                      description: l10n.captureModeBalancedDesc,
+                      value: DiagnosticCaptureMode.balanced,
+                    ),
+                    PolicyProfileOption(
+                      label: l10n.captureModeStrict,
+                      description: l10n.captureModeStrictDesc,
+                      value: DiagnosticCaptureMode.strict,
+                    ),
+                  ],
+                  onChanged: (value) =>
+                      onChanged(settings.copyWith(captureMode: value)),
+                ),
+                const Gap(8),
+                PolicyProfileTile<DiagnosticResourceLimits>(
+                  label: l10n.resourceProfile,
+                  description: l10n.resourceProfileDesc,
+                  icon: Icons.memory_rounded,
+                  value: settings.resourceLimits,
+                  options: [
+                    PolicyProfileOption(
+                      label: l10n.resourceProfileConstrained,
+                      description: l10n.resourceProfileConstrainedDesc,
+                      value: DiagnosticResourceLimits.constrained,
+                    ),
+                    PolicyProfileOption(
+                      label: l10n.profileBalanced,
+                      description: l10n.resourceProfileBalancedDesc,
+                      value: DiagnosticResourceLimits.balanced,
+                    ),
+                    PolicyProfileOption(
+                      label: l10n.resourceProfileExtended,
+                      description: l10n.resourceProfileExtendedDesc,
+                      value: DiagnosticResourceLimits.extended,
+                    ),
+                  ],
+                  onChanged: (value) =>
+                      onChanged(settings.copyWith(resourceLimits: value)),
+                ),
+                const Gap(8),
+                PolicyProfileTile<DiagnosticProcessingPolicy>(
+                  label: l10n.processingProfile,
+                  description: l10n.processingProfileDesc,
+                  icon: Icons.speed_rounded,
+                  value: settings.processingPolicy,
+                  options: [
+                    PolicyProfileOption(
+                      label: l10n.processingProfileResponsive,
+                      description: l10n.processingProfileResponsiveDesc,
+                      value: DiagnosticProcessingPolicy.responsive,
+                    ),
+                    PolicyProfileOption(
+                      label: l10n.profileBalanced,
+                      description: l10n.processingProfileBalancedDesc,
+                      value: DiagnosticProcessingPolicy.balanced,
+                    ),
+                    PolicyProfileOption(
+                      label: l10n.processingProfileThroughput,
+                      description: l10n.processingProfileThroughputDesc,
+                      value: DiagnosticProcessingPolicy.throughput,
+                    ),
+                  ],
+                  onChanged: (value) =>
+                      onChanged(settings.copyWith(processingPolicy: value)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActionsSection extends StatelessWidget {
+  const _ActionsSection({required this.actions});
+
+  final List<ISpectActionItem> actions;
+
+  @override
+  Widget build(BuildContext context) => SliverMainAxisGroup(
+    slivers: [
+      SliverToBoxAdapter(
+        child: ISpectSectionLabel(title: context.ispectL10n.actions),
+      ),
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              const spacing = 8.0;
+              final tileWidth = (constraints.maxWidth - spacing) / 2;
+              return Wrap(
+                spacing: spacing,
+                runSpacing: spacing,
+                children: actions
+                    .map(
+                      (action) => SizedBox(
+                        width: tileWidth,
+                        child: ActionTile(action: action),
+                      ),
+                    )
+                    .toList(),
+              );
+            },
+          ),
+        ),
+      ),
+    ],
+  );
 }

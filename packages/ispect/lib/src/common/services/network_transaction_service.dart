@@ -68,15 +68,16 @@ class TransactionMatcher {
 
 enum LogRole { request, response, error }
 
-const httpTransactionMatcher = TransactionMatcher(
-  categories: {TraceCategoryIds.network},
-  errorLogTypes: {'http-error'},
-  requestLogTypes: {'http-request'},
-  legacyKeyPrefixes: {'http-'},
+final httpTransactionMatcher = TransactionMatcher(
+  categories: const {TraceCategoryIds.network},
+  errorLogTypes: {ISpectLogType.httpError.key},
+  requestLogTypes: {ISpectLogType.httpRequest.key},
+  legacyKeyPrefixes: const {'http-'},
 );
 
 class NetworkTransactionService {
-  NetworkTransactionService({this.matcher = httpTransactionMatcher});
+  NetworkTransactionService({TransactionMatcher? matcher})
+    : matcher = matcher ?? httpTransactionMatcher;
 
   final TransactionMatcher matcher;
 

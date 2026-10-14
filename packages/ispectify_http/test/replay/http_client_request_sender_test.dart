@@ -95,6 +95,40 @@ void main() {
       expect(result.body, isNull);
     });
 
+    test('reports a malformed file content type via result.error', () async {
+      var sends = 0;
+      final client = MockClient((_) async {
+        sends++;
+        return http.Response('{}', 200);
+      });
+      final sender = HttpClientRequestSender(client);
+
+      final result = await sender.send(
+        NetworkReplayRequest(
+          method: 'POST',
+          uri: Uri.parse('https://api.test/upload'),
+          body: const MultipartReplayBody(
+            fields: [],
+            files: [
+              MultipartReplayFile(
+                field: 'file',
+                file: ComposerPickedFile(
+                  filename: 'a.txt',
+                  bytes: [104, 105],
+                  contentType: 'not a media type',
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      expect(sends, 0);
+      expect(result.statusCode, isNull);
+      expect(result.error, isA<FormatException>());
+      expect(result.durationMs, greaterThanOrEqualTo(0));
+    });
+
     test('encodes a JSON body with the json content-type', () async {
       late http.Request captured;
       final client = MockClient((request) async {

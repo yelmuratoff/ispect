@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/log_description.dart';
+import 'package:ispectify/ispectify.dart';
 
 part 'ispect_log_icons.dart';
 part 'ispect_log_palette.dart';
@@ -56,9 +57,9 @@ final class ISpectConstants {
 
   // ===== Log-type tables (defined in part files) =====
 
-  static const Map<String, IconData> typeIcons = _kTypeIcons;
-  static const Map<String, Color> lightTypeColors = _kLightTypeColors;
-  static const Map<String, Color> darkTypeColors = _kDarkTypeColors;
+  static final Map<String, IconData> typeIcons = _kTypeIcons;
+  static final Map<String, Color> lightTypeColors = _kLightTypeColors;
+  static final Map<String, Color> darkTypeColors = _kDarkTypeColors;
 
   static List<LogDescription> defaultLogDescriptions(BuildContext context) =>
       _buildDefaultLogDescriptions(context);

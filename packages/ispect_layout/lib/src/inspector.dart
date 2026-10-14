@@ -86,6 +86,7 @@ class Inspector extends StatefulWidget {
 class InspectorState extends State<Inspector> {
   bool _isPanelVisible = false;
   Size? _lastObservedSize;
+  InspectorMode? _heldShortcutMode;
 
   bool get isPanelVisible => _isPanelVisible;
 
@@ -110,12 +111,17 @@ class InspectorState extends State<Inspector> {
   // fit-test mirrors what _hudPositioned actually does in the overlay.
   static const double _hudWidth = 168;
   static const double _hudHeight = 32;
-  static const double _hudAxialGap = 16 + 20;
-  static const double _hudLateralGap = 12 + 20;
+  static final double _hudAxialGap =
+      ZoomableColorPickerStyle.defaults.hudAxialGap;
+  static final double _hudLateralGap =
+      ZoomableColorPickerStyle.defaults.hudLateralGap;
 
   // Vertical space at the bottom of the screen reserved for the floating
   // action bar (button + paddings); HUD-below should not overlap it.
   static const double _hudBottomReserved = 96;
+
+  static double _zoomSizeProgress(double zoomScale) =>
+      ((zoomScale - 2.0) / 10.0).clamp(0.0, 1.0);
   static const _enterInspectorIntent = _EnterInspectorIntent();
   static const _enterColorPickerIntent = _EnterColorPickerIntent();
   static const _toggleCompareIntent = _ToggleCompareIntent();
@@ -287,7 +293,7 @@ class InspectorState extends State<Inspector> {
             final overlaySize = ui.lerpDouble(
               _overlayMinSize,
               _overlayMaxSize,
-              ((zoomScale - 2.0) / 10.0).clamp(0, 1),
+              _zoomSizeProgress(zoomScale),
             )!;
 
             // Image can be null briefly after a window resize / orientation
@@ -345,9 +351,7 @@ class InspectorState extends State<Inspector> {
           ],
           builder: (context) {
             final mode = _controller.modeNotifier.value;
-            if (mode != InspectorMode.inspector &&
-                mode != InspectorMode.inspectAndCompare &&
-                mode != InspectorMode.compareSelect) {
+            if (!mode.isInspecting) {
               return const SizedBox.shrink();
             }
 
@@ -397,11 +401,7 @@ class InspectorState extends State<Inspector> {
             }
 
             final overlaySize = ui
-                .lerpDouble(
-                  128.0,
-                  256.0,
-                  ((zoomScale - 2.0) / 10.0).clamp(0, 1),
-                )!
+                .lerpDouble(128.0, 256.0, _zoomSizeProgress(zoomScale))!
                 .toDouble();
             final screenSize = MediaQuery.sizeOf(context);
             final left = (offset.dx - overlaySize / 2).clamp(
@@ -438,13 +438,19 @@ class InspectorState extends State<Inspector> {
         actions: {
           _EnterInspectorIntent: CallbackAction<_EnterInspectorIntent>(
             onInvoke: (_) {
-              _controller.handleInspectorShortcut(true);
+              _enterHeldShortcut(
+                InspectorMode.inspector,
+                () => _controller.handleInspectorShortcut(true),
+              );
               return null;
             },
           ),
           _EnterColorPickerIntent: CallbackAction<_EnterColorPickerIntent>(
             onInvoke: (_) {
-              _controller.handleColorPickerShortcut(true);
+              _enterHeldShortcut(
+                InspectorMode.colorPicker,
+                () => _controller.handleColorPickerShortcut(true),
+              );
               return null;
             },
           ),
@@ -456,7 +462,10 @@ class InspectorState extends State<Inspector> {
           ),
           _EnterZoomIntent: CallbackAction<_EnterZoomIntent>(
             onInvoke: (_) {
-              _controller.handleZoomShortcut(true);
+              _enterHeldShortcut(
+                InspectorMode.zoom,
+                () => _controller.handleZoomShortcut(true),
+              );
               return null;
             },
           ),
@@ -568,18 +577,7 @@ class InspectorState extends State<Inspector> {
       return KeyEventResult.ignored;
     }
 
-    if (_shouldReleaseInspectorShortcut(event, state)) {
-      _controller.handleInspectorShortcut(false);
-      return KeyEventResult.handled;
-    }
-
-    if (_shouldReleaseColorPickerShortcut(event, state)) {
-      _controller.handleColorPickerShortcut(false);
-      return KeyEventResult.handled;
-    }
-
-    if (_shouldReleaseZoomShortcut(event, state)) {
-      _controller.handleZoomShortcut(false);
+    if (event is KeyUpEvent && _releaseHeldShortcut(state)) {
       return KeyEventResult.handled;
     }
 
@@ -590,26 +588,40 @@ class InspectorState extends State<Inspector> {
     return KeyEventResult.ignored;
   }
 
-  bool _shouldReleaseInspectorShortcut(
-    KeyEvent event,
-    HardwareKeyboard state,
-  ) =>
-      event is KeyUpEvent &&
-      _controller.modeNotifier.value == InspectorMode.inspector &&
-      !_controller.isWidgetInspectorShortcutStillPressed(state);
+  void _enterHeldShortcut(InspectorMode mode, VoidCallback enter) {
+    final previousMode = _controller.modeNotifier.value;
+    enter();
+    final entered =
+        previousMode != mode && _controller.modeNotifier.value == mode;
+    _heldShortcutMode = entered ? mode : null;
+  }
 
-  bool _shouldReleaseColorPickerShortcut(
-    KeyEvent event,
-    HardwareKeyboard state,
-  ) =>
-      event is KeyUpEvent &&
-      _controller.modeNotifier.value == InspectorMode.colorPicker &&
-      !_controller.isColorPickerShortcutStillPressed(state);
+  bool _releaseHeldShortcut(HardwareKeyboard state) {
+    final heldMode = _heldShortcutMode;
+    if (heldMode == null || _isHeldShortcutPressed(heldMode, state)) {
+      return false;
+    }
+    _heldShortcutMode = null;
+    if (_controller.modeNotifier.value != heldMode) return false;
+    _controller.setMode(InspectorMode.none);
+    return true;
+  }
 
-  bool _shouldReleaseZoomShortcut(KeyEvent event, HardwareKeyboard state) =>
-      event is KeyUpEvent &&
-      _controller.modeNotifier.value == InspectorMode.zoom &&
-      !_controller.isZoomShortcutStillPressed(state);
+  bool _isHeldShortcutPressed(InspectorMode mode, HardwareKeyboard state) {
+    switch (mode) {
+      case InspectorMode.inspector:
+        return _controller.isWidgetInspectorShortcutStillPressed(state);
+      case InspectorMode.colorPicker:
+        return _controller.isColorPickerShortcutStillPressed(state);
+      case InspectorMode.zoom:
+        return _controller.isZoomShortcutStillPressed(state);
+      case InspectorMode.none:
+      // ignore: deprecated_member_use_from_same_package
+      case InspectorMode.inspectAndCompare:
+      case InspectorMode.compareSelect:
+        return false;
+    }
+  }
 
   bool _isRepeatFromShortcut(KeyEvent event, HardwareKeyboard state) =>
       event is KeyRepeatEvent &&
@@ -618,8 +630,7 @@ class InspectorState extends State<Inspector> {
           (_controller.modeNotifier.value == InspectorMode.colorPicker &&
               _controller.isColorPickerShortcutStillPressed(state)) ||
           (_controller.modeNotifier.value == InspectorMode.zoom &&
-              _controller.isZoomShortcutStillPressed(state)) ||
-          _controller.acceptsCompareShortcut(event, state));
+              _controller.isZoomShortcutStillPressed(state)));
 }
 
 class _EnterInspectorIntent extends Intent {

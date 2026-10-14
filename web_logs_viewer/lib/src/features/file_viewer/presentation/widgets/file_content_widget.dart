@@ -6,23 +6,22 @@ import 'package:ispect/ispect.dart';
 import '../../../../core/utils/utils.dart';
 
 class FileContentWidget extends StatelessWidget {
-  const FileContentWidget({
+  FileContentWidget({
     super.key,
     required this.content,
     required this.file,
     required this.displayName,
     required this.mimeType,
-  });
+  }) : contentSizeInBytes = utf8.encode(content).length;
 
   final String content;
   final dynamic file;
   final String displayName;
   final String mimeType;
+  final int contentSizeInBytes;
 
   @override
   Widget build(BuildContext context) {
-    final int? fileLength = _getFileLengthSafely(file);
-
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -52,10 +51,8 @@ class FileContentWidget extends StatelessWidget {
             Text('File Name: ${file.fileName}'),
             const SizedBox(height: 4),
           ],
-          if (fileLength != null) ...[
-            Text('File Size: ${formatFileSize(fileLength)}'),
-            const SizedBox(height: 8),
-          ],
+          Text('File Size: ${formatFileSize(contentSizeInBytes)}'),
+          const SizedBox(height: 8),
           const SizedBox(height: 32),
           FilledButton(
             onPressed: () {
@@ -81,8 +78,7 @@ class FileContentWidget extends StatelessWidget {
                       'display_name': displayName,
                       'mime_type': mimeType,
                       'file_name': file.fileName,
-                      if (fileLength != null)
-                        'size': formatFileSize(fileLength),
+                      'size': formatFileSize(contentSizeInBytes),
                       'content': data,
                     },
                   ),
@@ -94,16 +90,5 @@ class FileContentWidget extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  int? _getFileLengthSafely(dynamic file) {
-    try {
-      if (file.runtimeType.toString().contains('length')) {
-        return file.length as int?;
-      }
-    } catch (e, st) {
-      ISpect.logger.handle(exception: e, stackTrace: st);
-    }
-    return null;
   }
 }

@@ -49,6 +49,19 @@ void main() {
       );
     });
 
+    test('skips statement modifiers in front of the table name', () {
+      expect(
+        DbSqlDigest.tableOf('CREATE TABLE IF NOT EXISTS users (id INTEGER)'),
+        'users',
+      );
+      expect(DbSqlDigest.tableOf('DROP TABLE IF EXISTS sessions'), 'sessions');
+      expect(DbSqlDigest.tableOf('UPDATE OR IGNORE carts SET a = ?'), 'carts');
+      expect(
+        DbSqlDigest.tableOf('update or replace "orders" set a = ?'),
+        'orders',
+      );
+    });
+
     test('returns null when no table is present', () {
       expect(DbSqlDigest.tableOf('PRAGMA foreign_keys = ON'), isNull);
       expect(DbSqlDigest.tableOf(null), isNull);
@@ -192,6 +205,98 @@ void main() {
       final text = logger.history.single.textMessage;
       expect(text, isNot(contains('SQLCIPHER_SECRET')));
       expect(text, contains('PRAGMA key = [REDACTED]'));
+    });
+
+    test('db() names the inferred table and reports affected rows', () {
+      final logger = _logger();
+      addTearDown(logger.dispose);
+
+      logger.db(
+        source: 'sqflite',
+        operation: 'delete',
+        statement: "DELETE FROM sessions WHERE token = 'DB_SECRET'",
+        affected: 3,
+      );
+
+      final entry = logger.history.single;
+      expect(entry.textMessage, contains('delete sessions'));
+      expect(entry.textMessage, contains('Affected: 3'));
+      expect(entry.textMessage, isNot(contains('DB_SECRET')));
+      expect(entry.additionalData?[TraceKeys.target], 'sessions');
+    });
+
+    test('db() prefers an explicit table over the statement', () {
+      final logger = _logger();
+      addTearDown(logger.dispose);
+
+      logger.db(
+        source: 'sqflite',
+        operation: 'query',
+        table: 'accounts',
+        statement: 'SELECT * FROM users',
+        items: 2,
+      );
+
+      final text = logger.history.single.textMessage;
+      expect(text, contains('query accounts'));
+      expect(text, contains('Items: 2'));
+    });
+
+    test('dbEnd names the table and reports items', () {
+      final logger = _logger();
+      addTearDown(logger.dispose);
+
+      final token = logger.dbStart(
+        source: 'drift',
+        operation: 'select',
+        statement: 'SELECT * FROM carts WHERE id = ?',
+        args: <Object?>[1],
+      );
+      logger.dbEnd(token, items: 4);
+
+      final text = logger.history.single.textMessage;
+      expect(text, contains('select carts'));
+      expect(text, contains('Items: 4'));
+    });
+  });
+
+  group('ISpectDbCore.pickLogKey', () {
+    String emittedKey(String operation, {bool isError = false}) {
+      final logger = _logger();
+      addTearDown(logger.dispose);
+      logger.db(
+        source: 'sqflite',
+        operation: operation,
+        error: isError ? StateError('failed') : null,
+      );
+      return logger.history.single.key!;
+    }
+
+    for (final operation in ['select', 'query', 'read', 'fetch', 'SELECT']) {
+      test('matches the key db() emits for "$operation"', () {
+        expect(
+          ISpectDbCore.pickLogKey(isError: false, operation: operation),
+          emittedKey(operation),
+        );
+      });
+    }
+
+    test('keeps select as a query and read as a result', () {
+      expect(
+        ISpectDbCore.pickLogKey(isError: false, operation: 'select'),
+        DbLogCategory.query,
+      );
+      expect(
+        ISpectDbCore.pickLogKey(isError: false, operation: 'read'),
+        DbLogCategory.result,
+      );
+    });
+
+    test('matches the error key db() emits', () {
+      expect(
+        ISpectDbCore.pickLogKey(isError: true, operation: 'select'),
+        emittedKey('select', isError: true),
+      );
     });
   });
 }

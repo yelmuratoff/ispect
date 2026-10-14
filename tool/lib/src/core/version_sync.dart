@@ -6,6 +6,8 @@ import 'package:pub_semver/pub_semver.dart';
 
 import 'exceptions.dart';
 import 'next_version.dart';
+import 'pubspec.dart';
+import 'repo_paths.dart';
 import 'version_config.dart';
 
 const String _versionConfigPath = 'version.config';
@@ -61,10 +63,6 @@ final class VersionSync {
   /// is absent, empty, or not a semantic version.
   Version readVersion() {
     final config = VersionConfig(_file(_versionConfigPath));
-    if (!config.file.existsSync()) {
-      throw const VersionConfigException('$_versionConfigPath not found');
-    }
-
     final Version version;
     try {
       version = config.read();
@@ -74,14 +72,7 @@ final class VersionSync {
       );
     }
 
-    if (hasGluedCounter(version)) {
-      err
-        ..writeln('[WARN] $version glues its counter to the prerelease label, '
-            'so Pub compares that counter as text (dev11 sorts below dev8).')
-        ..writeln('[WARN] Further bumps stay monotonic by appending a numeric '
-            'identifier; to sort above an already published sibling the series '
-            'has to leave this label (rc.1) or the prerelease.');
-    }
+    writeGluedCounterWarning(err, version);
     return version;
   }
 
@@ -118,8 +109,8 @@ final class VersionSync {
   }) {
     out.writeln('[INFO] Target version: $target (dry-run=${dryRun ? 1 : 0})');
 
-    final packageDirectories = _packageDirectories();
-    final packageNames = _packageNames(packageDirectories);
+    final directories = packageDirectories(repoRoot);
+    final packageNames = _packageNames(directories);
     out.writeln('[INFO] Packages: ${packageNames.join(' ')}');
 
     final changedFiles = <String>[];
@@ -133,7 +124,7 @@ final class VersionSync {
       }
     }
 
-    for (final directory in packageDirectories) {
+    for (final directory in directories) {
       final pubspec = File(p.join(directory, 'pubspec.yaml'));
       if (!pubspec.existsSync()) {
         continue;
@@ -181,19 +172,6 @@ final class VersionSync {
     );
   }
 
-  List<String> _packageDirectories() {
-    final packages = Directory(p.join(repoRoot, 'packages'));
-    if (!packages.existsSync()) {
-      return const [];
-    }
-    return packages
-        .listSync()
-        .whereType<Directory>()
-        .map((directory) => directory.path)
-        .toList()
-      ..sort();
-  }
-
   List<String> _packageNames(List<String> directories) {
     final names = <String>[];
     for (final directory in directories) {
@@ -201,12 +179,7 @@ final class VersionSync {
       if (!pubspec.existsSync()) {
         continue;
       }
-      final name = _firstFieldValue(pubspec.readAsLinesSync(), 'name:');
-      if (name.isEmpty) {
-        final relative = _relative(pubspec);
-        throw ManifestException('Package name not found in $relative');
-      }
-      names.add(name);
+      names.add(Pubspec.read(pubspec, repoRoot: repoRoot).name);
     }
     if (names.isEmpty) {
       throw const ManifestException('No package pubspecs found');

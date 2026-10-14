@@ -30,8 +30,8 @@ class NetworkTransaction {
   /// Duration from request to response/error, or `null` if still pending.
   Duration? get duration {
     // v5: check trace durationMs first
-    final respDurationMs =
-        _metaInt(response, 'durationMs') ?? _metaInt(error, 'durationMs');
+    final respDurationMs = _metaInt(response, TraceKeys.durationMs) ??
+        _metaInt(error, TraceKeys.durationMs);
     if (respDurationMs != null) {
       return Duration(milliseconds: respDurationMs);
     }

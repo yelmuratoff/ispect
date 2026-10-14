@@ -37,6 +37,21 @@ abstract final class NetworkLogRenderer {
   /// Hint key: render status / error message line. Default `false`.
   static const hintPrintMessage = 'printMessage';
 
+  /// Builds the value stored under [renderHintsKey].
+  ///
+  /// A `null` [printHeaders] or [printMessage] omits that hint, so the
+  /// renderer falls back to its default.
+  static Map<String, bool> hintsFor({
+    required bool printBody,
+    bool? printHeaders,
+    bool? printMessage,
+  }) =>
+      {
+        hintPrintBody: printBody,
+        if (printHeaders != null) hintPrintHeaders: printHeaders,
+        if (printMessage != null) hintPrintMessage: printMessage,
+      };
+
   /// Whether [entry] is a network or WS log this renderer can format.
   ///
   /// Detection is by category, not by [ISpectLogData.key], so custom client

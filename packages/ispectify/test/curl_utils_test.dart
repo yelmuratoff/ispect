@@ -637,6 +637,38 @@ void main() {
         expect(curl.contains('" ;'), isFalse);
       });
     });
+
+    test('masks a bare key query parameter in the URL', () {
+      final curl = CurlUtils.generateCurl({
+        'method': 'GET',
+        'uri': 'https://x.io/geo?key=abcd1234secret',
+      });
+
+      expect(curl, isNotNull);
+      expect(curl, isNot(contains('abcd1234secret')));
+      expect(curl, contains('https://x.io/geo?key='));
+    });
+
+    test('bounds the redacted method by the caller resource limits', () {
+      const limits = DiagnosticResourceLimits(maxCapturedValueBytes: 1024);
+      final method = 'token=a ' * 120;
+
+      final curl = CurlUtils.generateCurl(
+        {'method': method, 'uri': 'https://example.com'},
+        resourceLimits: limits,
+      );
+
+      expect(curl, isNotNull);
+      final renderedMethod = curl!.substring(
+        "curl -X '".length,
+        curl.indexOf("' --url"),
+      );
+      expect(
+        renderedMethod.length,
+        lessThanOrEqualTo(limits.maxCapturedValueBytes),
+      );
+      expect(renderedMethod, isNot(contains('token=a')));
+    });
   });
 }
 

@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -216,6 +218,25 @@ final class _HostileStackTrace implements StackTrace {
   String toString() {
     toStringCalls++;
     throw StateError('tenantSecret=HOSTILE_STACK_SECRET');
+  }
+}
+
+final class _RecordingPattern implements Pattern {
+  _RecordingPattern(this._delegate);
+
+  final Pattern _delegate;
+  int calls = 0;
+
+  @override
+  Iterable<Match> allMatches(String string, [int start = 0]) {
+    calls++;
+    return _delegate.allMatches(string, start);
+  }
+
+  @override
+  Match? matchAsPrefix(String string, [int start = 0]) {
+    calls++;
+    return _delegate.matchAsPrefix(string, start);
   }
 }
 
@@ -590,6 +611,48 @@ void main() {
 
           expect(logger.byOperation('done'), isEmpty);
         });
+
+        test('logs a failed completion when only printCompletions is off', () {
+          ISpectBlocObserver(
+            logger: logger,
+            settings: const ISpectBlocSettings(printCompletions: false),
+          ).onDone(bloc, 'event', Exception('boom'), StackTrace.current);
+
+          final meta = logger
+              .byOperation('done')
+              .single
+              .additionalData?[TraceKeys.meta] as Map<String, dynamic>;
+          expect(meta[BlocJsonKeys.hasError], isTrue);
+        });
+
+        test('skips a failed completion when printErrors is off', () {
+          ISpectBlocObserver(
+            logger: logger,
+            settings: const ISpectBlocSettings(printErrors: false),
+          ).onDone(bloc, 'event', Exception('boom'), StackTrace.current);
+
+          expect(logger.byOperation('done'), isEmpty);
+        });
+
+        test('does not run filterPredicate for a completion it drops', () {
+          var predicateCalls = 0;
+          ISpectBlocObserver(
+            logger: logger,
+            settings: const ISpectBlocSettings(
+              printCompletions: false,
+              printErrors: false,
+            ),
+            filterPredicate: (_) {
+              predicateCalls++;
+              return false;
+            },
+          )
+            ..onDone(bloc, 'event')
+            ..onDone(bloc, 'event', Exception('boom'), StackTrace.current);
+
+          expect(predicateCalls, 0);
+          expect(logger.byOperation('done'), isEmpty);
+        });
       });
 
       group('event correlation', () {
@@ -838,13 +901,15 @@ void main() {
         });
 
         test('filterPredicate takes precedence', () {
+          final pattern = _RecordingPattern(RegExp('NonExistent'));
           ISpectBlocObserver(
             logger: logger,
-            filterPredicate: (candidate) =>
-                candidate.toString().contains('DummyBloc'),
+            filters: [pattern],
+            filterPredicate: (candidate) => candidate is DummyBloc,
           ).onCreate(bloc);
 
           expect(logger.byOperation('create'), isEmpty);
+          expect(pattern.calls, 0);
         });
 
         test('bloc pattern filtering suppresses errors without inspecting them',

@@ -124,6 +124,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   late final ValueNotifier<bool> _hasOverlayRoute;
   bool _isInitialized = false;
   int _overlayDepth = 0;
+  List<InspectorPlugin> _activePlugins = const [];
 
   @override
   void initState() {
@@ -141,13 +142,10 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     _hasOverlayRoute = ValueNotifier<bool>(false);
     _isInitialized = true;
 
+    _syncPlugins();
     model
       ..isISpectEnabled = widget.isISpectEnabled
-      ..options = (widget.options ?? model.options).copyWith(
-        observer: widget.options?.observer ?? ISpectNavigatorObserver.current,
-        onShare: widget.options?.onShare,
-        onOpenFile: widget.options?.onOpenFile,
-      )
+      ..options = _resolveOptions()
       ..theme = widget.theme ?? model.theme;
 
     final initialSettings = widget.options?.initialSettings;
@@ -156,10 +154,45 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     }
 
     _applyInitialSettings();
+  }
 
-    for (final plugin in widget.options?.plugins ?? <InspectorPlugin>[]) {
-      plugin.onInit();
+  @override
+  void didUpdateWidget(covariant ISpectBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_isInitialized) return;
+
+    _syncPlugins();
+    if (widget.isISpectEnabled != oldWidget.isISpectEnabled) {
+      model.isISpectEnabled = widget.isISpectEnabled;
     }
+    if (widget.options != oldWidget.options) {
+      model.options = _resolveOptions();
+    }
+    if (widget.theme != oldWidget.theme) {
+      model.theme = widget.theme ?? model.theme;
+    }
+  }
+
+  ISpectOptions _resolveOptions() => (widget.options ?? model.options).copyWith(
+    observer: widget.options?.observer ?? ISpectNavigatorObserver.current,
+    onShare: widget.options?.onShare,
+    onOpenFile: widget.options?.onOpenFile,
+    plugins: _activePlugins,
+  );
+
+  void _syncPlugins() {
+    final activeById = {for (final plugin in _activePlugins) plugin.id: plugin};
+    final next = <String, InspectorPlugin>{};
+    for (final plugin in widget.options?.plugins ?? const <InspectorPlugin>[]) {
+      next.putIfAbsent(plugin.id, () => activeById[plugin.id] ?? plugin);
+    }
+    for (final plugin in _activePlugins) {
+      if (!next.containsKey(plugin.id)) plugin.onDispose();
+    }
+    for (final plugin in next.values) {
+      if (!activeById.containsKey(plugin.id)) plugin.onInit();
+    }
+    _activePlugins = List<InspectorPlugin>.unmodifiable(next.values);
   }
 
   void _applyInitialSettings() {
@@ -175,8 +208,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       return;
     }
 
-    // Dispose plugins
-    for (final plugin in widget.options?.plugins ?? <InspectorPlugin>[]) {
+    for (final plugin in _activePlugins) {
       plugin.onDispose();
     }
 
@@ -318,7 +350,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
             if (ISpect.senders.isNotEmpty)
               PanelAction(
                 icon: Icons.api_rounded,
-                onPressed: () => _launchComposer(context, options),
+                onPressed: _launchComposer,
                 label: context.ispectL10n.composer,
                 tooltip: context.ispectL10n.composerTitle,
               ),
@@ -464,27 +496,13 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     if (mounted) _hasOverlayRoute.value = _overlayDepth > 0;
   }
 
-  Future<void> _launchComposer(
-    BuildContext context,
-    ISpectOptions options,
-  ) async {
+  Future<void> _launchComposer() async {
     final navigator = _navigatorKey.currentState;
     if (navigator == null) return;
 
-    final route = MaterialPageRoute<void>(
-      builder: (_) => ISpectScopeController(
-        model: model,
-        child: HttpComposerScreen(
-          senders: ISpect.senders,
-          onPickComposerFile: options.onPickComposerFile,
-        ),
-      ),
-      settings: const RouteSettings(name: 'ISpect HTTP Composer'),
-    );
-
     _enterOverlay();
     try {
-      await navigator.push(route);
+      await navigator.push(HttpComposerScreen.route(model: model));
     } finally {
       _exitOverlay();
     }

@@ -112,14 +112,6 @@ class DemoScreenState extends State<DemoScreen> {
       (
         label: 'Mock Nested List with Depth IDs',
         onPressed: () {
-          const int depth = 10000;
-
-          Map<String, dynamic> nested = {'id': depth, 'value': 'Item $depth'};
-
-          for (int i = depth - 1; i >= 0; i--) {
-            nested = {'id': i, 'value': 'Item $i', 'nested': nested};
-          }
-
           final List<Map<String, dynamic>> largeList = List.generate(
             10000,
             (index) => {'id': index, 'value': 'Item $index'},

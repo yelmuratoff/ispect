@@ -101,6 +101,7 @@ final class ManagedLogStore {
     }
     if (initialType == FileSystemEntityType.notFound) {
       await directory.create();
+      await _restrictCreatedDirectory(directory);
     }
     if (await FileSystemEntity.type(
           directory.path,
@@ -391,6 +392,19 @@ final class ManagedLogStore {
     }
   }
 
+  // Directory.create applies the process umask, which can leave group bits set.
+  Future<void> _restrictCreatedDirectory(Directory directory) async {
+    if (!Platform.isLinux && !Platform.isMacOS) return;
+    if ((await directory.stat()).mode & _groupOrWorldPermissionBits == 0) {
+      return;
+    }
+    try {
+      await Process.run('/bin/chmod', ['0700', directory.path]);
+    } on ProcessException {
+      return;
+    }
+  }
+
   Future<bool> _hasOwnerOnlyAncestor(Directory directory) async {
     var current = Directory(await directory.resolveSymbolicLinks()).parent;
     while (true) {
@@ -416,7 +430,9 @@ final class ManagedLogStore {
     );
     if (directory != null) return directory;
 
-    await Directory(path).create();
+    final created = Directory(path);
+    await created.create();
+    await _restrictCreatedDirectory(created);
     directory = await validatedDateDirectory(
       path,
       operation: operation,

@@ -207,6 +207,26 @@ rolling-history threat model. Apps exposed to it should keep the default
 in-memory history or place persistence behind a platform-native service that
 uses `openat`/`fstat` on POSIX and handle-based reparse-point checks on Windows.
 
+## Accepted residual risks
+
+These gaps are known and accepted. Each one trades a narrow exposure for
+diagnostic value or follows from a limit of an upstream API.
+
+- Free-text path masking recognizes `/home/<user>/` and `/app/<name>/` only
+  when another segment follows. A token that ends at `/home/<user>` or
+  `/app/<file>` stays visible, because it cannot be told apart from REST routes
+  such as `/home/feed` or `/app/settings`.
+- Free-text export masks every email-shaped URL path segment, so
+  `/users/alice@example.com` becomes `/users/[REDACTED]` even when the route
+  itself is what the reader needs.
+- `ispectify_db` strips a MySQL `#` comment only when it starts a line. A
+  mid-line `#` is normalized like the rest of the statement: quoted literals
+  and digit runs are still replaced, but bare words after it stay visible. Keep
+  values out of SQL comments.
+- `http_interceptor` 3 exposes no error hook, so `ispectify_http` cannot log a
+  transport failure (DNS, TLS, connection reset, timeout) that never produces a
+  response. Log those failures at the call site through `ISpect.logger`.
+
 ## Reporting security issues
 
 Do not open a public issue for a suspected security problem. Report it privately through GitHub: open [Report a vulnerability](https://github.com/yelmuratoff/ispect/security/advisories/new) on the repository's Security tab. Reproduce against the latest published version of the affected package where possible, and include:

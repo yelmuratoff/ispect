@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/managers/filter_manager.dart';
 import 'package:ispect/src/common/managers/settings_manager.dart';
+import 'package:ispect/src/common/utils/severity_bar.dart';
 import 'package:ispect/src/features/log_viewer/controllers/display_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/search_highlight_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/selection_controller.dart';
@@ -221,6 +222,9 @@ class ISpectViewController implements Listenable {
   LogSortDirection get sortDirection => _sorting.sortDirection;
   bool get isLogOrderReversed => _display.isLogOrderReversed;
 
+  bool get isNewestFirst =>
+      sortColumn == LogSortColumn.time && isLogOrderReversed;
+
   void toggleSort(LogSortColumn column) => _sorting.toggleSort(column);
 
   List<ISpectLogData> applySorting(List<ISpectLogData> entries) =>
@@ -304,8 +308,12 @@ class ISpectViewController implements Listenable {
 
   void setOnlyLogTypeKey(String key) => _filterManager.setOnlyLogTypeKey(key);
 
-  void excludeLogTypeKey(String key, List<String> allKeys) =>
-      _filterManager.excludeLogTypeKey(key, allKeys);
+  void hideLogTypeKey(String key) => _filterManager.hideLogTypeKey(key);
+
+  Set<String> get hiddenLogTypeKeys => _filterManager.hiddenLogTypeKeys;
+
+  int get activeLogTypeFilterCount =>
+      filter.logTypeKeys.length + hiddenLogTypeKeys.length;
 
   void clearAllFilters() => _filterManager.clearAllFilters();
 
@@ -322,7 +330,8 @@ class ISpectViewController implements Listenable {
   LogTypeKeysResult getLogTypeKeys(List<ISpectLogData> logsData) =>
       _filterManager.getLogTypeKeys(logsData);
 
-  /// Returns counts of `error`/`critical` and `warning` entries in [logsData].
+  /// Returns counts of [LogSeverity.error] and [LogSeverity.warning] entries
+  /// in [logsData].
   ({int errors, int warnings}) getLevelStats(List<ISpectLogData> logsData) {
     final cached = _cachedLevelStats;
     final previous = _cachedLevelStatsInput;
@@ -343,13 +352,17 @@ class ISpectViewController implements Listenable {
       start = previous.length;
     }
     for (var index = start; index < logsData.length; index++) {
-      final captured = captureISpectLogWithoutPayload(logsData[index]);
-      if (_filterManager.isExcluded(captured.key)) continue;
-      final level = captured.logLevel;
-      if (level == LogLevel.error || level == LogLevel.critical) {
-        errors++;
-      } else if (level == LogLevel.warning) {
-        warnings++;
+      final data = logsData[index];
+      if (_filterManager.isExcluded(captureISpectLogWithoutPayload(data).key)) {
+        continue;
+      }
+      switch (classifySeverity(data)) {
+        case LogSeverity.error:
+          errors++;
+        case LogSeverity.warning:
+          warnings++;
+        case LogSeverity.normal:
+          break;
       }
     }
     final result = (errors: errors, warnings: warnings);

@@ -4,8 +4,8 @@ import 'package:ispect/src/core/res/ispect_default_palette.dart';
 import 'package:ispect/src/features/performance/performance.dart';
 
 /// Wraps [child] with an [ISpectPerformanceOverlay] gated by
-/// [isPerformanceTrackingEnabled]. Pins the overlay to `TextDirection.ltr`
-/// so its placement is independent of the ambient directionality.
+/// [isPerformanceTrackingEnabled]. Keeps the host's ambient [Directionality]
+/// and only supplies `TextDirection.ltr` when none is inherited.
 class ISpectPerformanceOverlayBuilder extends StatelessWidget {
   const ISpectPerformanceOverlayBuilder({
     required this.child,
@@ -38,18 +38,17 @@ class ISpectPerformanceOverlayBuilder extends StatelessWidget {
         ? colorScheme.error
         : ISpectDefaultPalette.error.pick(isDark: dark)!;
 
-    return Directionality(
-      textDirection: TextDirection.ltr,
-      child: ISpectPerformanceOverlay(
-        enabled: isPerformanceTrackingEnabled,
-        alignment: Alignment.topCenter,
-        backgroundColor: background,
-        textColor: textColor,
-        overTargetColor: overTarget,
-        enableJankLogging: enableJankLogging,
-        severeJankFactor: severeJankFactor,
-        child: child,
-      ),
+    final overlay = ISpectPerformanceOverlay(
+      enabled: isPerformanceTrackingEnabled,
+      alignment: Alignment.topCenter,
+      backgroundColor: background,
+      textColor: textColor,
+      overTargetColor: overTarget,
+      enableJankLogging: enableJankLogging,
+      severeJankFactor: severeJankFactor,
+      child: child,
     );
+    if (Directionality.maybeOf(context) != null) return overlay;
+    return Directionality(textDirection: TextDirection.ltr, child: overlay);
   }
 }

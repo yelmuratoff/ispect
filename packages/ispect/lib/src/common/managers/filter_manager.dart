@@ -38,9 +38,13 @@ class FilterManager {
   DiagnosticResourceLimits get resourceLimits => _resourceLimits;
   DiagnosticProcessingPolicy get processingPolicy => _processingPolicy;
 
-  /// Log-type keys hidden by the user's settings, vetoed on top of the
-  /// transient chip and search criteria.
-  Set<String> get excludedLogTypeKeys => _excludedLogTypeKeys;
+  Set<String> _hiddenLogTypeKeys = const {};
+
+  Set<String> get hiddenLogTypeKeys => _hiddenLogTypeKeys;
+
+  Set<String> get _vetoedLogTypeKeys => _hiddenLogTypeKeys.isEmpty
+      ? _excludedLogTypeKeys
+      : {..._excludedLogTypeKeys, ..._hiddenLogTypeKeys};
 
   final _filterCache = FilterCache();
   int _dataGeneration = 0;
@@ -73,7 +77,7 @@ class FilterManager {
   ISpectFilter get filter => _filter;
 
   set filter(ISpectFilter val) {
-    final merged = val.copyWith(excludedLogTypeKeys: _excludedLogTypeKeys);
+    final merged = val.copyWith(excludedLogTypeKeys: _vetoedLogTypeKeys);
     if (_filter == merged) return;
     _filter = merged;
     _invalidateFilterCache();
@@ -83,17 +87,16 @@ class FilterManager {
   bool isExcluded(String? logTypeKey) =>
       logTypeKey != null && _excludedLogTypeKeys.contains(logTypeKey);
 
-  /// Applies the settings-level veto and drops the transient chip selection.
-  ///
-  /// The chip list is indexed by position, so changing which keys it offers
-  /// would leave the caller's selection pointing at the wrong chips. Both
-  /// sides reset together instead.
+  /// Applies the settings-level veto and drops newly excluded keys from the
+  /// transient chip selection.
   void updateExcludedLogTypeKeys(Set<String> keys) {
     if (setEquals(_excludedLogTypeKeys, keys)) return;
     _excludedLogTypeKeys = {...keys};
     _filter = _filter.copyWith(
-      logTypeKeys: const <String>[],
-      excludedLogTypeKeys: _excludedLogTypeKeys,
+      logTypeKeys: _getCurrentLogTypeKeys()
+          .where((k) => !keys.contains(k))
+          .toList(growable: false),
+      excludedLogTypeKeys: _vetoedLogTypeKeys,
     );
     _invalidateFilterCache();
     _lastKeysGeneration = -1;
@@ -152,6 +155,11 @@ class FilterManager {
   }
 
   void addLogTypeKeyFilter(String key) {
+    if (_hiddenLogTypeKeys.contains(key)) {
+      _hiddenLogTypeKeys = {..._hiddenLogTypeKeys}..remove(key);
+      _updateFilter();
+      return;
+    }
     final currentKeys = _getCurrentLogTypeKeys();
     if (currentKeys.contains(key)) return;
     _updateFilter(logTypeKeys: [...currentKeys, key]);
@@ -176,24 +184,31 @@ class FilterManager {
 
   /// Clear all log type key filters and set only the given key.
   void setOnlyLogTypeKey(String key) {
+    _hiddenLogTypeKeys = const {};
     _updateFilter(logTypeKeys: [key]);
   }
 
   /// Clear all filters (log type keys, types, search query).
   void clearAllFilters() {
     _filterDebounce?.cancel();
+    _hiddenLogTypeKeys = const {};
     _updateFilter(logTypeKeys: <String>[], types: <Type>[], searchQuery: '');
   }
 
   void clearLogTypeKeyFilters() {
-    if (_getCurrentLogTypeKeys().isEmpty) return;
+    if (_getCurrentLogTypeKeys().isEmpty && _hiddenLogTypeKeys.isEmpty) return;
+    _hiddenLogTypeKeys = const {};
     _updateFilter(logTypeKeys: <String>[]);
   }
 
-  /// Exclude a specific key: add all other keys except this one.
-  void excludeLogTypeKey(String key, List<String> allKeys) {
-    final filtered = allKeys.where((k) => k != key).toList(growable: false);
-    _updateFilter(logTypeKeys: filtered);
+  void hideLogTypeKey(String key) {
+    if (_hiddenLogTypeKeys.contains(key)) return;
+    _hiddenLogTypeKeys = {..._hiddenLogTypeKeys, key};
+    _updateFilter(
+      logTypeKeys: _getCurrentLogTypeKeys()
+          .where((k) => k != key)
+          .toList(growable: false),
+    );
   }
 
   void _updateFilter({
@@ -203,7 +218,7 @@ class FilterManager {
   }) {
     final newFilter = ISpectFilter(
       logTypeKeys: logTypeKeys ?? _getCurrentLogTypeKeys(),
-      excludedLogTypeKeys: _excludedLogTypeKeys,
+      excludedLogTypeKeys: _vetoedLogTypeKeys,
       types: types ?? _getCurrentTypes(),
       searchQuery: searchQuery ?? _getCurrentSearchQuery(),
       resourceLimits: resourceLimits,
@@ -225,7 +240,7 @@ class FilterManager {
     if (logsData.isEmpty) return <ISpectLogData>[];
     if (_filter.types.isEmpty &&
         _filter.logTypeKeys.isEmpty &&
-        _excludedLogTypeKeys.isEmpty) {
+        _filter.excludedLogTypeKeys.isEmpty) {
       return logsData;
     }
     if (_noSearchResultGeneration == _outputGeneration &&
@@ -235,7 +250,7 @@ class FilterManager {
     final noSearchFilter = _cachedNoSearchFilter ??= ISpectFilter(
       types: _filter.types.toList(),
       logTypeKeys: _filter.logTypeKeys.toList(),
-      excludedLogTypeKeys: _excludedLogTypeKeys,
+      excludedLogTypeKeys: _filter.excludedLogTypeKeys,
       resourceLimits: resourceLimits,
     );
     final result = logsData.where(noSearchFilter.apply).toList(growable: false);

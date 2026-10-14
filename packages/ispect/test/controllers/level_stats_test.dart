@@ -39,6 +39,22 @@ void main() {
       expect(controller.getLevelStats(second), (errors: 0, warnings: 1));
     });
 
+    test('counts entries the severity bar treats as errors or warnings', () {
+      final logs = [
+        ISpectLogData(
+          'failed trace',
+          key: ISpectLogType.info.key,
+          logLevel: LogLevel.info,
+          additionalData: const {TraceKeys.success: false},
+        ),
+        ISpectLogData('http failure', key: ISpectLogType.httpError.key),
+        ISpectLogData('warning key', key: ISpectLogType.warning.key),
+        _log('plain', LogLevel.info),
+      ];
+
+      expect(controller.getLevelStats(logs), (errors: 2, warnings: 1));
+    });
+
     test('rescans after an excluded log type changes the filter', () {
       final logs = [_log('a', LogLevel.error), _log('b', LogLevel.warning)];
 

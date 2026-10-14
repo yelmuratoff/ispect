@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
@@ -361,4 +363,186 @@ void main() {
       expect(HttpComposerController.seedFromLog(log), isNull);
     });
   });
+
+  group('HttpComposerController disposal', () {
+    test(
+      'completes an in-flight send after the controller is disposed',
+      () async {
+        final sender = _CompleterSender();
+        final controller = _controller(senders: [sender])
+          ..setUrl('https://api.test/ping');
+
+        final sending = controller.send();
+        controller.dispose();
+        sender.completer.complete(const NetworkReplayResult(statusCode: 200));
+
+        await expectLater(sending, completes);
+      },
+    );
+
+    test('ignores a file picked after the controller is disposed', () async {
+      final picked = Completer<ComposerPickedFile?>();
+      final controller = HttpComposerController(
+        senders: [_RecordingSender()],
+        filePicker: () => picked.future,
+      );
+
+      final attaching = controller.attachFile('file');
+      controller.dispose();
+      picked.complete(const ComposerPickedFile(filename: 'a.txt', bytes: [1]));
+
+      await expectLater(attaching, completes);
+    });
+  });
+
+  group('HttpComposerController repeated query keys', () {
+    test('seeds one row per value of a repeated query key', () {
+      final controller = _controller(
+        seed: NetworkReplayRequest(
+          method: 'GET',
+          uri: Uri.parse('https://api.test/items?id=1&id=2&page=3'),
+        ),
+      );
+
+      expect(
+        [for (final row in controller.queryParams) '${row.key}=${row.value}'],
+        ['id=1', 'id=2', 'page=3'],
+      );
+    });
+
+    test('sends every value of a repeated query key', () async {
+      final sender = _RecordingSender();
+      final controller = _controller(
+        senders: [sender],
+        seed: NetworkReplayRequest(
+          method: 'GET',
+          uri: Uri.parse('https://api.test/items?id=1&id=2'),
+        ),
+      );
+
+      await controller.send();
+
+      expect(sender.lastRequest!.uri.queryParametersAll, {
+        'id': ['1', '2'],
+      });
+    });
+
+    test('keeps repeated url query keys that no row overrides', () {
+      final controller = _controller()
+        ..setUrl('https://api.test/items?tag=a&tag=b')
+        ..addQueryParam()
+        ..updateQueryParam(0, key: 'page', value: '2');
+
+      final request = controller.buildReplayRequest();
+
+      expect(request!.uri.queryParametersAll, {
+        'tag': ['a', 'b'],
+        'page': ['2'],
+      });
+    });
+  });
+
+  group('HttpComposerController result presentation', () {
+    test('derives the json viewer data and preview once per result', () async {
+      final sender = _RecordingSender(
+        result: const NetworkReplayResult(
+          statusCode: 200,
+          body: {'name': 'Ada'},
+        ),
+      );
+      final controller = _controller(senders: [sender])
+        ..setUrl('https://api.test/users');
+
+      await controller.send();
+
+      final data = controller.resultJsonData;
+      expect(data, {'name': 'Ada'});
+      expect(controller.resultText, contains('"name": "Ada"'));
+      controller.setUrl('https://api.test/users?x=1');
+      expect(controller.resultJsonData, same(data));
+    });
+
+    test(
+      'previews the error of a transport failure without a status',
+      () async {
+        final controller = _controller(senders: [_ThrowingSender()])
+          ..setUrl('https://api.test/ping');
+
+        await controller.send();
+
+        expect(controller.resultJsonData, isNull);
+        expect(controller.resultText, isNotEmpty);
+      },
+    );
+
+    test('clears the derived result while a new send is in flight', () async {
+      final sender = _CompleterSender();
+      final controller = _controller(senders: [sender])
+        ..setUrl('https://api.test/ping');
+
+      final sending = controller.send();
+      expect(controller.resultJsonData, isNull);
+      expect(controller.resultText, isEmpty);
+      sender.completer.complete(
+        const NetworkReplayResult(statusCode: 200, body: <Object?>[1]),
+      );
+      await sending;
+
+      expect(controller.resultJsonData, {
+        'content': [1],
+      });
+    });
+  });
+
+  group('HttpComposerController row edits', () {
+    test('notifies listeners when a row is edited', () {
+      final controller = _controller()
+        ..addHeader()
+        ..addQueryParam()
+        ..addFormField()
+        ..addMultipartField();
+      var notifications = 0;
+      controller
+        ..addListener(() => notifications++)
+        ..updateHeader(0, key: 'Accept', value: 'json')
+        ..updateQueryParam(0, key: 'q')
+        ..updateFormField(0, value: 'v')
+        ..updateMultipartField(0, key: 'k');
+
+      expect(notifications, 4);
+      expect(controller.headers.single.key, 'Accept');
+      expect(controller.headers.single.value, 'json');
+      expect(controller.queryParams.single.key, 'q');
+      expect(controller.formFields.single.value, 'v');
+      expect(controller.multipartFields.single.key, 'k');
+    });
+
+    test('notifies listeners when buildReplayRequest changes validation', () {
+      final controller = _controller()..setUrl('');
+      var notifications = 0;
+      controller.addListener(() => notifications++);
+
+      expect(controller.buildReplayRequest(), isNull);
+      expect(controller.validationError, ComposerValidation.urlRequired);
+      expect(notifications, 1);
+
+      controller.buildReplayRequest();
+      expect(notifications, 1);
+    });
+  });
+}
+
+final class _CompleterSender implements NetworkRequestSender {
+  final Completer<NetworkReplayResult> completer =
+      Completer<NetworkReplayResult>();
+
+  @override
+  String get id => 'completer';
+
+  @override
+  String get label => 'Completer';
+
+  @override
+  Future<NetworkReplayResult> send(NetworkReplayRequest request) =>
+      completer.future;
 }

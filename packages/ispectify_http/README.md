@@ -59,9 +59,9 @@
 dependencies:
   http: ^1.5.0
   http_interceptor: ^3.0.0
-  ispect: ^7.1.0-dev.4
-  ispectify: ^7.1.0-dev.4
-  ispectify_http: ^7.1.0-dev.4
+  ispect: ^7.1.0-dev.5
+  ispectify: ^7.1.0-dev.5
+  ispectify_http: ^7.1.0-dev.5
 ```
 
 ## Quick start
@@ -135,6 +135,10 @@ concrete settings `copyWith` or builder for these retention controls; the
 attached interceptor's `configure(...)` method exposes the same shared capture
 fields at runtime. Pass `inheritResourceLimits: true` to either `copyWith` or
 `configure` to return resource-budget ownership to the logger.
+
+When response bodies are captured, the response entry is recorded once its
+body is read or cancelled, so a caller of `send()` that never consumes the
+stream gets no response entry.
 
 ## Data redaction
 

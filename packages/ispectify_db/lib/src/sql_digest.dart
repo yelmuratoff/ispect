@@ -131,8 +131,16 @@ final class DbSqlDigest {
 
   static final RegExp _identifierRe = RegExp(r'^[A-Za-z_][A-Za-z0-9_$]*$');
 
+  static const String _escapeKeyword = 'escape';
+  static final RegExp _escapeKeywordRe = RegExp(
+    r'(?:^|[^A-Za-z0-9_$])escape$',
+    caseSensitive: false,
+  );
+
   static final RegExp _tableRe = RegExp(
-    r'\b(from|into|update|table|join)\s+["`]?([A-Za-z_][A-Za-z0-9_$.]*)',
+    r'\b(from|into|update|table|join)\s+'
+    r'(?:(?:if\s+(?:not\s+)?exists|or\s+(?:rollback|abort|replace|fail|ignore))\s+)?'
+    r'["`]?([A-Za-z_][A-Za-z0-9_$.]*)',
     caseSensitive: false,
   );
 
@@ -147,9 +155,16 @@ final class DbSqlDigest {
         continue;
       }
       if (statement.codeUnitAt(index) == _hash) {
-        index = _skipLineComment(statement, index + 1);
-        sanitized.write(' ');
-        continue;
+        final lineEnd = _skipLineComment(statement, index + 1);
+        if (_hashCommentMayHideQuote(statement, index, lineEnd)) {
+          sanitized.write(' ?');
+          break;
+        }
+        if (_isHashLineComment(statement, index)) {
+          index = lineEnd;
+          sanitized.write(' ');
+          continue;
+        }
       }
       if (_startsWith(statement, index, '/*')) {
         index = _skipBlockComment(statement, index + 2);
@@ -234,16 +249,64 @@ final class DbSqlDigest {
     return cursor;
   }
 
+  // MySQL reads a quoted backslash as an escape; SQLite and PostgreSQL as a literal.
   static int _skipQuotedValue(
     String statement,
     int startIndex,
     int delimiter,
   ) {
+    final escapedEnd = _scanQuotedValue(
+      statement,
+      startIndex,
+      delimiter,
+      backslashEscapes: true,
+    );
+    final literalEnd = _scanQuotedValue(
+      statement,
+      startIndex,
+      delimiter,
+      backslashEscapes: false,
+    );
+    if (escapedEnd == literalEnd) return escapedEnd ?? statement.length;
+    if (escapedEnd == null && literalEnd != null) return literalEnd;
+    if (literalEnd != null &&
+        literalEnd == startIndex + 2 &&
+        statement.codeUnitAt(startIndex) == _backslash &&
+        _followsEscapeKeyword(statement, startIndex - 1)) {
+      return literalEnd;
+    }
+    return statement.length;
+  }
+
+  static bool _followsEscapeKeyword(String statement, int quoteIndex) {
+    var end = quoteIndex;
+    while (end > 0 && _isWhitespace(statement.codeUnitAt(end - 1))) {
+      end--;
+    }
+    final start = end - _escapeKeyword.length;
+    if (start < 0) return false;
+    return _escapeKeywordRe.hasMatch(
+      statement.substring(start == 0 ? 0 : start - 1, end),
+    );
+  }
+
+  static bool _isWhitespace(int codeUnit) =>
+      codeUnit == _space ||
+      codeUnit == _tab ||
+      codeUnit == _lineFeed ||
+      codeUnit == _carriageReturn;
+
+  static int? _scanQuotedValue(
+    String statement,
+    int startIndex,
+    int delimiter, {
+    required bool backslashEscapes,
+  }) {
     var cursor = startIndex;
     while (cursor < statement.length) {
       final codeUnit = statement.codeUnitAt(cursor);
-      if (codeUnit == _backslash) {
-        cursor += cursor + 1 < statement.length ? 2 : 1;
+      if (backslashEscapes && codeUnit == _backslash) {
+        cursor += 2;
         continue;
       }
       if (codeUnit == delimiter) {
@@ -256,7 +319,74 @@ final class DbSqlDigest {
       }
       cursor++;
     }
-    return cursor;
+    return null;
+  }
+
+  // MySQL reads `#` as a line comment; PostgreSQL as XOR, SQLite as a parameter.
+  static bool _isHashLineComment(String statement, int index) {
+    if (_isHashOperator(statement, index)) return false;
+    for (var cursor = index - 1; cursor >= 0; cursor--) {
+      final codeUnit = statement.codeUnitAt(cursor);
+      if (codeUnit == _lineFeed || codeUnit == _carriageReturn) return true;
+      if (codeUnit != _space && codeUnit != _tab) return false;
+    }
+    return true;
+  }
+
+  static bool _isHashOperator(String statement, int index) =>
+      _startsWith(statement, index, '#>') ||
+      _startsWith(statement, index, '#-');
+
+  static bool _hashCommentMayHideQuote(
+    String statement,
+    int index,
+    int lineEnd,
+  ) {
+    if (_isHashOperator(statement, index)) {
+      return _quoteRunsPastLine(statement, index + 2, lineEnd);
+    }
+    return _containsQuoteOpener(statement, index + 1, lineEnd);
+  }
+
+  static bool _quoteRunsPastLine(String statement, int start, int lineEnd) {
+    var cursor = start;
+    while (cursor < lineEnd) {
+      final codeUnit = statement.codeUnitAt(cursor);
+      if (codeUnit == _singleQuote ||
+          codeUnit == _doubleQuote ||
+          codeUnit == _backtick) {
+        cursor = _skipQuotedValue(statement, cursor + 1, codeUnit);
+        if (cursor > lineEnd) return true;
+        continue;
+      }
+      final dollarStart = _dollarQuoteStart.matchAsPrefix(statement, cursor);
+      if (dollarStart != null) {
+        final delimiter = dollarStart.group(0)!;
+        final closingIndex = statement.indexOf(delimiter, dollarStart.end);
+        if (closingIndex < 0) return true;
+        cursor = closingIndex + delimiter.length;
+        if (cursor > lineEnd) return true;
+        continue;
+      }
+      cursor++;
+    }
+    return false;
+  }
+
+  static bool _containsQuoteOpener(String statement, int start, int end) {
+    for (var cursor = start; cursor < end; cursor++) {
+      final codeUnit = statement.codeUnitAt(cursor);
+      if (codeUnit == _singleQuote ||
+          codeUnit == _doubleQuote ||
+          codeUnit == _backtick) {
+        return true;
+      }
+      if (codeUnit == _dollar &&
+          _dollarQuoteStart.matchAsPrefix(statement, cursor) != null) {
+        return true;
+      }
+    }
+    return false;
   }
 
   static bool _startsWith(String value, int index, String pattern) =>
@@ -268,6 +398,9 @@ final class DbSqlDigest {
   static const _backtick = 0x60;
   static const _backslash = 0x5c;
   static const _hash = 0x23;
+  static const _dollar = 0x24;
+  static const _space = 0x20;
+  static const _tab = 0x09;
   static const _lineFeed = 0x0a;
   static const _carriageReturn = 0x0d;
 }

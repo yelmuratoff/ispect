@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/utils/bounded_json_decoder.dart';
 import 'package:ispectify/src/utils/safe_object_description.dart';
+import 'package:ispectify/src/utils/traversal_budget.dart';
 
 final class EncodedLogRecord {
   const EncodedLogRecord({
@@ -350,7 +351,7 @@ final class FileLogCodec {
         collectionLimit:
             rootCollectionLimit ?? _resourceLimits.maxCollectionItems,
         ancestors: HashSet<Object>.identity(),
-        budget: _SnapshotBudget(_resourceLimits.maxTraversalNodes),
+        budget: TraversalBudget(_resourceLimits.maxTraversalNodes),
       );
 
   Object? _safePersistenceNode(
@@ -358,7 +359,7 @@ final class FileLogCodec {
     required int depth,
     required int collectionLimit,
     required Set<Object> ancestors,
-    required _SnapshotBudget budget,
+    required TraversalBudget budget,
   }) {
     if (!budget.take()) return JsonValueNormalizer.maxNodesReached;
     if (value == null || value is bool || value is String) return value;
@@ -746,19 +747,5 @@ final class _PreEncodeBudget {
   bool take(int bytes) {
     remaining -= bytes;
     return remaining >= 0;
-  }
-}
-
-final class _SnapshotBudget {
-  _SnapshotBudget(this.remaining);
-
-  int remaining;
-
-  bool get hasCapacity => remaining > 0;
-
-  bool take() {
-    if (remaining <= 0) return false;
-    remaining--;
-    return true;
   }
 }

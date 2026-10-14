@@ -143,6 +143,29 @@ abstract class BaseNetworkInterceptorSettings
   @override
   final AnsiPen? errorPen;
 
+  /// Render hints for a request entry, from [printRequestData] and
+  /// [printRequestHeaders].
+  Map<String, bool> get requestRenderHints => NetworkLogRenderer.hintsFor(
+        printBody: printRequestData,
+        printHeaders: printRequestHeaders,
+      );
+
+  /// Render hints for a successful response entry, from [printResponseData],
+  /// [printResponseHeaders], and [printResponseMessage].
+  Map<String, bool> get responseRenderHints => NetworkLogRenderer.hintsFor(
+        printBody: printResponseData,
+        printHeaders: printResponseHeaders,
+        printMessage: printResponseMessage,
+      );
+
+  /// Render hints for an error entry, from [printErrorData],
+  /// [printErrorHeaders], and [printErrorMessage].
+  Map<String, bool> get errorRenderHints => NetworkLogRenderer.hintsFor(
+        printBody: printErrorData,
+        printHeaders: printErrorHeaders,
+        printMessage: printErrorMessage,
+      );
+
   /// Creates a copy with the given fields replaced.
   ///
   /// Subclasses must override to preserve their own fields (e.g. filter

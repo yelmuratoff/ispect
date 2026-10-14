@@ -61,7 +61,7 @@ final class RetentionExecutor {
         );
         final date = DateTime.tryParse(name);
         if (date == null) continue;
-        final files = <File>[];
+        final files = <(File, ManagedFileKind)>[];
         await for (final child in directory!.list(followLinks: false)) {
           final kind = FileLogLayout.dateArtifactKind(
             FileLogLayout.basename(child.path),
@@ -79,25 +79,20 @@ final class RetentionExecutor {
             operation: 'scanArtifacts',
             allowedKinds: {kind},
           );
-          files.add(file!);
+          files.add((file!, kind));
         }
-        final liveSegments = files
-            .where(
-              (file) => FileLogLayout.segmentNamePattern
-                  .hasMatch(FileLogLayout.basename(file.path)),
-            )
-            .toList()
-          ..sort((left, right) => left.path.compareTo(right.path));
+        final liveSegments = [
+          for (final (file, kind) in files)
+            if (kind == ManagedFileKind.segment) file,
+        ]..sort((left, right) => left.path.compareTo(right.path));
         final activePath = name == FileLogLayout.dateName(DateTime.now()) &&
                 liveSegments.isNotEmpty
             ? liveSegments.last.path
             : null;
-        for (final file in files) {
-          final fileName = FileLogLayout.basename(file.path);
-          final isSegment = FileLogLayout.segmentNamePattern.hasMatch(fileName);
-          final isArchive = FileLogLayout.archiveNamePattern.hasMatch(fileName);
-          final isTemporary = fileName.endsWith('.tmp');
-          if (!isSegment && !isArchive && !isTemporary) continue;
+        for (final (file, kind) in files) {
+          final isSegment = kind == ManagedFileKind.segment;
+          final isArchive = kind == ManagedFileKind.archive;
+          final isTemporary = kind == ManagedFileKind.temporary;
           artifacts.add(
             FileLogArtifact(
               path: file.path,

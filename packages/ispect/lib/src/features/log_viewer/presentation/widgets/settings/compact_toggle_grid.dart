@@ -60,7 +60,7 @@ class CompactToggleRow extends StatelessWidget {
       opacity: disabled ? 0.45 : 1,
       child: Semantics(
         toggled: enabled,
-        label: '${spec.title} ${enabled ? "enabled" : "disabled"}',
+        label: spec.title,
         onTap: onTap,
         child: ISpectBorderedSurface(
           onTap: onTap,

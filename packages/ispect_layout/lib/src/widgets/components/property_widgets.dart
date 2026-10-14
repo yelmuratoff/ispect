@@ -42,12 +42,14 @@ class ColorHexChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hex = '#${colorToHexString(color, withAlpha: true)}';
+    final hex = colorToDisplayHex(color);
     return GestureDetector(
       onTap: () {
         Clipboard.setData(ClipboardData(text: hex));
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
+        final messenger = ScaffoldMessenger.maybeOf(context);
+        if (messenger == null) return;
+        messenger.clearSnackBars();
+        messenger.showSnackBar(
           SnackBar(
             content: Row(
               spacing: 8,

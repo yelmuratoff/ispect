@@ -29,6 +29,7 @@ class DesktopLogTableHeader extends StatelessWidget {
     final onSurface = context.appTheme.colorScheme.onSurface;
     final borderColor = context.ispectSubtleBorderColor;
     final labelColor = onSurface.withValues(alpha: 0.45);
+    final l10n = context.ispectL10n;
     const labelStyle = TextStyle(
       fontSize: 11,
       fontWeight: FontWeight.w600,
@@ -55,7 +56,7 @@ class DesktopLogTableHeader extends StatelessWidget {
                 const SizedBox(width: 24),
                 const Gap(8),
                 _SortableColumnHeader(
-                  label: 'TYPE',
+                  label: l10n.columnType,
                   width: scaled.typeWidth,
                   columnIndex: 0,
                   isActive: sortColumn == 0,
@@ -68,7 +69,7 @@ class DesktopLogTableHeader extends StatelessWidget {
                 const Gap(8),
                 if (!isCompact) ...[
                   _SortableColumnHeader(
-                    label: 'TIME',
+                    label: l10n.columnTime,
                     width: scaled.timeWidth,
                     columnIndex: 1,
                     isActive: sortColumn == 1,
@@ -82,7 +83,7 @@ class DesktopLogTableHeader extends StatelessWidget {
                 ],
                 Expanded(
                   child: _SortableColumnHeader(
-                    label: 'MESSAGE',
+                    label: l10n.columnMessage,
                     columnIndex: 2,
                     isActive: sortColumn == 2,
                     isAscending: sortDirection == 0,
@@ -129,13 +130,16 @@ class _SortableColumnHeader extends StatelessWidget {
       alpha: 0.7,
     );
 
-    final sortHint = isActive
-        ? (isAscending ? 'sorted ascending' : 'sorted descending')
-        : 'not sorted';
+    final l10n = context.ispectL10n;
+    final sortLabel = !isActive
+        ? l10n.sortColumnUnsorted(label)
+        : isAscending
+        ? l10n.sortColumnAscending(label)
+        : l10n.sortColumnDescending(label);
 
     Widget header = Semantics(
       button: true,
-      label: 'Sort by $label, $sortHint',
+      label: sortLabel,
       onTap: onTap != null ? () => onTap!(columnIndex) : null,
       child: MouseRegion(
         cursor: onTap != null
@@ -149,7 +153,7 @@ class _SortableColumnHeader extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  label,
+                  label.toUpperCase(),
                   style: labelStyle.copyWith(
                     color: isActive ? activeColor : labelColor,
                   ),
@@ -181,7 +185,7 @@ class _SortableColumnHeader extends StatelessWidget {
             Expanded(child: header),
             if (onResize != null)
               Semantics(
-                label: 'Resize $label column',
+                label: l10n.resizeColumn(label),
                 slider: true,
                 child: MouseRegion(
                   cursor: SystemMouseCursors.resizeColumn,

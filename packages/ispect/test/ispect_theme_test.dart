@@ -194,4 +194,92 @@ void main() {
       expect(theme.customLogTypes.first.level, equals(LogLevel.info));
     });
   });
+
+  group('ISpectTheme.getTypeTitle', () {
+    const theme = ISpectTheme(
+      customLogTypes: [
+        ISpectLogType('my-event', title: 'My Event'),
+        ISpectLogType('http-request', title: 'Outbound Call'),
+      ],
+    );
+
+    Future<BuildContext> pumpLocale(WidgetTester tester, Locale locale) async {
+      late BuildContext captured;
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: locale,
+          localizationsDelegates: ISpectLocalization.localizationDelegates,
+          supportedLocales: ISpectLocalization.supportedLocales,
+          home: Builder(
+            builder: (context) {
+              captured = context;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+      return captured;
+    }
+
+    testWidgets('resolves custom, built-in, and unknown keys per locale', (
+      tester,
+    ) async {
+      for (final locale in const [Locale('en'), Locale('ru')]) {
+        final context = await pumpLocale(tester, locale);
+
+        expect(theme.getTypeTitle(context, key: 'my-event'), 'My Event');
+        expect(
+          theme.getTypeTitle(context, key: 'http-request'),
+          'Outbound Call',
+        );
+        expect(theme.getTypeTitle(context, key: 'http-error'), 'HTTP Error');
+        expect(theme.getTypeTitle(context, key: 'unknown-key'), 'unknown-key');
+        expect(theme.getTypeTitle(context, key: ''), isNull);
+        expect(theme.getTypeTitle(context, key: null), isNull);
+      }
+    });
+
+    testWidgets('resolves titles again after the locale changes', (
+      tester,
+    ) async {
+      final english = await pumpLocale(tester, const Locale('en'));
+      final englishL10n = ISpectLocalization.of(english);
+      final englishDescription = theme.getTypeDescription(
+        english,
+        key: 'bloc-event',
+      );
+      expect(theme.getTypeTitle(english, key: 'bloc-event'), 'BLoC Event');
+
+      final russian = await pumpLocale(tester, const Locale('ru'));
+      expect(ISpectLocalization.of(russian), isNot(same(englishL10n)));
+      expect(theme.getTypeTitle(russian, key: 'bloc-event'), 'BLoC Event');
+      expect(
+        theme.getTypeDescription(russian, key: 'bloc-event'),
+        isNot(englishDescription),
+      );
+    });
+  });
+
+  group('ISpectTheme.merge', () {
+    const base = ISpectTheme(
+      pageTitle: 'Base',
+      themeMode: ISpectThemeMode.light,
+      useHostColors: true,
+      primary: ISpectDynamicColor(light: Colors.red, dark: Colors.red),
+    );
+
+    test('keeps colors the override leaves null', () {
+      final merged = base.merge(const ISpectTheme());
+
+      expect(merged.primary, base.primary);
+    });
+
+    test('takes defaulted scalars from the override', () {
+      final merged = base.merge(const ISpectTheme());
+
+      expect(merged.pageTitle, 'ISpect');
+      expect(merged.themeMode, ISpectThemeMode.dark);
+      expect(merged.useHostColors, isFalse);
+    });
+  });
 }

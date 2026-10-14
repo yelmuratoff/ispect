@@ -1,10 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/file_processing_result.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/daily_sessions.dart';
@@ -38,7 +36,6 @@ class LogsScreen extends StatefulWidget {
 }
 
 class _LogsScreenState extends State<LogsScreen> {
-  final _titleFiltersController = GroupButtonController();
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
   late final ISpectViewController _logsViewController;
@@ -49,7 +46,6 @@ class _LogsScreenState extends State<LogsScreen> {
   ISpectScopeModel? _scope;
   bool _scopeBootstrapped = false;
   bool _ownController = false;
-  Set<String> _lastDisabledLogTypes = const {};
 
   @override
   void initState() {
@@ -84,10 +80,6 @@ class _LogsScreenState extends State<LogsScreen> {
 
   void _mirrorSettingsToScope() {
     final next = _logsViewController.settings;
-    if (!setEquals(_lastDisabledLogTypes, next.disabledLogTypes)) {
-      _lastDisabledLogTypes = next.disabledLogTypes;
-      _titleFiltersController.unselectAll();
-    }
     final scope = _scope;
     if (scope == null) return;
     if (scope.settings != next) {
@@ -98,7 +90,6 @@ class _LogsScreenState extends State<LogsScreen> {
   @override
   void dispose() {
     _searchFocusNode.dispose();
-    _titleFiltersController.dispose();
     _logsViewController.removeListener(_mirrorSettingsToScope);
     if (_ownController) {
       _logsViewController.dispose();
@@ -117,7 +108,6 @@ class _LogsScreenState extends State<LogsScreen> {
       logsData: data,
       controller: _logsViewController,
       iSpectTheme: iSpect,
-      titleFiltersController: _titleFiltersController,
       searchFocusNode: _searchFocusNode,
       logsScrollController: _logsScrollController,
       appBarTitle: widget.appBarTitle,
@@ -299,7 +289,7 @@ class _LogsScreenState extends State<LogsScreen> {
       if (!mounted) {
         return;
       }
-      _showContentProcessingError('Failed to load log content');
+      _showContentProcessingError(context.ispectL10n.failedToLoadLogContent);
       return;
     }
 
@@ -330,8 +320,8 @@ class _LogsScreenState extends State<LogsScreen> {
     if (!mounted) return;
     ISpectToaster.showErrorToast(
       context,
-      title: 'Content Processing Error',
-      message: error ?? 'Unknown error occurred while processing content',
+      title: context.ispectL10n.contentProcessingError,
+      message: error ?? context.ispectL10n.unknownContentProcessingError,
     );
   }
 }

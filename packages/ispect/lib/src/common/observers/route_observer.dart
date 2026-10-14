@@ -14,6 +14,10 @@ import 'package:ispect/src/common/observers/transition.dart';
 /// Extension on `StringBuffer` to conditionally write a line.
 extension StringBufferExtension on StringBuffer {
   /// Writes `value` to the buffer if [condition] is true.
+  @Deprecated(
+    'Use `if (condition) buffer.writeln(value)` instead. '
+    'Will be removed in 8.0.0.',
+  )
   // ignore: avoid_positional_boolean_parameters
   void writelnIf(bool condition, String value) {
     if (condition) writeln(value);
@@ -281,6 +285,10 @@ class ISpectNavigatorObserver extends NavigatorObserver {
       final id = generateTraceId();
       _routeCorrelationIds[route] = id;
       return id;
+    }
+    if (type == TransitionType.pop && previousRoute != null) {
+      final id = _routeCorrelationIds[previousRoute];
+      if (id != null) return id;
     }
     // Pop/remove/replace: check both routes (args are swapped in didPop)
     if (route != null) {

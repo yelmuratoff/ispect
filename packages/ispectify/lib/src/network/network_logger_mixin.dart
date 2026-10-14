@@ -13,6 +13,10 @@ mixin NetworkLoggerMixin {
   ///
   /// Accepts both `Map<String, dynamic>` and wider `Map` types (e.g. from Dio
   /// response headers). Returns `null` when [value] is not a map at all.
+  @Deprecated(
+    'Use NetworkPayloadSanitizer.toStringKeyMap, which also bounds the copy. '
+    'Will be removed in 8.0.0.',
+  )
   static Map<String, dynamic>? asStringMap(Object? value) {
     if (value is Map<String, dynamic>) return value;
     if (value is Map) return value.map((k, v) => MapEntry(k.toString(), v));
@@ -21,9 +25,10 @@ mixin NetworkLoggerMixin {
 
   /// Returns `true` when the interceptor is [enabled] and the optional
   /// [filter] either is `null` or returns `true` for [value].
-  ///
-  /// Consolidates the `settings.enabled && (filter?.call(x) ?? true)` pattern
-  /// used across all network interceptors.
+  @Deprecated(
+    "Use the interceptor settings' shouldProcess* chain predicates. "
+    'Will be removed in 8.0.0.',
+  )
   bool shouldProcess<T>({
     required bool enabled,
     required bool Function(T)? filter,

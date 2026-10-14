@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_view_pipeline.dart';
@@ -10,7 +9,6 @@ void main() {
   late ISpectViewController view;
   late ScrollController scroll;
   late FocusNode focus;
-  late GroupButtonController titles;
   late LogsScreenController screen;
   late LogsViewPipeline pipeline;
 
@@ -18,12 +16,10 @@ void main() {
     view = ISpectViewController();
     scroll = ScrollController();
     focus = FocusNode();
-    titles = GroupButtonController();
     screen = LogsScreenController(
       logsViewController: view,
       logsScrollController: scroll,
       searchFocusNode: focus,
-      titleFiltersController: titles,
       onStateChanged: () {},
     );
     pipeline = LogsViewPipeline(screen: screen);
@@ -31,7 +27,6 @@ void main() {
 
   tearDown(() {
     screen.dispose();
-    titles.dispose();
     focus.dispose();
     scroll.dispose();
     view.dispose();

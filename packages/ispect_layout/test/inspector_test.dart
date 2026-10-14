@@ -395,6 +395,85 @@ void main() {
       expect(getButton().foregroundColor, Colors.white70);
     });
 
+    testWidgets(
+      'mode entered from the panel survives an unrelated key release',
+      (tester) async {
+        final hostKeyUps = <LogicalKeyboardKey>[];
+        await tester.pumpWidget(
+          MaterialApp(
+            builder: (context, child) => Focus(
+              onKeyEvent: (node, event) {
+                if (event is KeyUpEvent) hostKeyUps.add(event.logicalKey);
+                return KeyEventResult.ignored;
+              },
+              child: Inspector(child: child!),
+            ),
+            home: const Scaffold(body: SizedBox.expand()),
+          ),
+        );
+        final controller = tester
+            .state<InspectorState>(find.byType(Inspector))
+            .controller;
+
+        await tester.tap(find.byIcon(Icons.format_shapes));
+        await tester.pump();
+        expect(controller.modeNotifier.value, InspectorMode.inspector);
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.pump();
+
+        expect(controller.modeNotifier.value, InspectorMode.inspector);
+        expect(hostKeyUps, contains(LogicalKeyboardKey.shiftLeft));
+      },
+    );
+
+    testWidgets(
+      'mode entered from the panel survives a press and release of its '
+      'own shortcut',
+      (tester) async {
+        await tester.pumpWidget(_buildBody());
+        final controller = tester
+            .state<InspectorState>(find.byType(Inspector))
+            .controller;
+
+        await tester.tap(find.byIcon(Icons.format_shapes));
+        await tester.pump();
+        expect(controller.modeNotifier.value, InspectorMode.inspector);
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.keyW);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.keyW);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
+        await tester.pump();
+
+        expect(controller.modeNotifier.value, InspectorMode.inspector);
+      },
+    );
+
+    testWidgets(
+      'color picker entered by setMode survives a press and release of its '
+      'shortcut',
+      (tester) async {
+        await tester.pumpWidget(_buildBody());
+        final controller = tester
+            .state<InspectorState>(find.byType(Inspector))
+            .controller;
+
+        controller.setMode(InspectorMode.colorPicker);
+        await tester.pump();
+        expect(controller.modeNotifier.value, InspectorMode.colorPicker);
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.keyC);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.keyC);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
+        await tester.pump();
+
+        expect(controller.modeNotifier.value, InspectorMode.colorPicker);
+      },
+    );
+
     testWidgets('respects decimalPlaces from Inspector', (tester) async {
       await tester.pumpWidget(_buildPrecisionBody());
       await tester.tap(find.byIcon(Icons.format_shapes));

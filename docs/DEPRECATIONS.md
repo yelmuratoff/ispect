@@ -23,6 +23,24 @@ the next major release so a patch or minor release cannot break consumers.
 | `RedactionService.redactWithStats`, `RedactionService.redactHeadersWithStats` | `NetworkPayloadSanitizer.headersMapWithProvenance` / `bodyWithProvenance` | `8.0.0` | Redaction provenance is derived from the sanitizer pass that already runs. |
 | `ISpectLogData.header` | `HumanLogEntryFormatter` | `8.0.0` | The formatter is the single console line renderer; `header` lacked source, category, and correlation metadata. |
 | `static redact(...)` on `ispectify_bloc` and `ispectify_riverpod` data classes | `StateTracePreparer` | `8.0.0` | Observers prepare payloads through the shared preparer; the per-class helpers used weaker key-only masking. |
+| `dbReadOperations` (`ispectify_db`) | `dbCategory.secondaryOperations` | `8.0.0` | DB log keys are chosen by `dbCategory`; the constant listed a larger set that no emit path consulted. |
+| `ISpectBlocSettings.formatEvent`, `ISpectRiverpodSettings.formatValue` | `printEventFullData` / `printValues` | `8.0.0` | The observers format payloads themselves; the helpers had no caller. |
+| `ISpectBlocSettings.redactAdditionalData`, `ISpectRiverpodSettings.redactAdditionalData` | `StateTracePreparer.prepareAdditionalData` | `8.0.0` | The observers already prepare `additionalData` through the shared preparer. |
+| `DbLogKeys.source`, `operation`, `target`, `durationMs`, `slow`, `success`, `meta`, `transactionId`, `error` | The matching `TraceKeys` constants | `8.0.0` | DB entries are emitted through `trace()`, which writes these keys from `TraceKeys`. |
+| `DbTxnOps` | The operation of `traceTransaction(logMarkers: true)` entries | `8.0.0` | No emit path reads the class; transaction markers come from `ispectify`. |
+| `ISpectDbCore.redact`, `ISpectDbCore.redactIfNeeded` | `RedactionService.redactByKeys` | `8.0.0` | Thin wrappers with no caller in the toolkit. |
+| `dbTransaction(meta:)` | `meta` on the DB calls inside `run` | `8.0.0` | The parameter was accepted but never logged. |
+| `ISpectDbTxn.runInTransactionZone` | `ISpectLogger.dbTransaction` | `8.0.0` | `currentTransactionId()` already reads the trace transaction that `dbTransaction` opens. |
+| `HttpResponseData(preDecodedBody:)` | Omit the argument | `8.0.0` | The interceptor decodes `response.bodyBytes` itself and never passes a prepared body. |
+| `NetworkLoggerMixin.shouldProcess` | The settings' `shouldProcess*` chain predicates | `8.0.0` | No interceptor called it. |
+| `NetworkLoggerMixin.asStringMap`, `BaseNetworkInterceptor.asStringMap` | `NetworkPayloadSanitizer.toStringKeyMap` | `8.0.0` | The replacement bounds the copy; the old helper returned unbounded maps. |
+| `NetworkPayloadSanitizer.headersOrNull`, `ensureMap`, `stringKeyMap`, `nullIfEmpty` | `headersMap`, `toStringKeyMap`, or an `isEmpty` check | `8.0.0` | Unused convenience wrappers. |
+| `RedactionContext.isSensitiveKeyLower` | `RedactionContext.isSensitiveKey` | `8.0.0` | The lowercased variant skips camelCase and separator canonicalization, so it can disagree with `classifyKey`. |
+| `RedactionService.redactExportString` | `redactForExport` on a configured `RedactionService` | `8.0.0` | The static helper had no consumer; exports redact through the configured service. |
+| `StringBuffer.writelnIf` (`StringBufferExtension`) | `if (condition) buffer.writeln(value)` | `8.0.0` | Unused extension exported with the navigator observer. |
+| `ISpectSettingsState.isAllLogTypesEnabled` | `disabledLogTypes.isEmpty` | `8.0.0` | No caller in the toolkit. |
+| `LogsJsonService.shareLogsAsJsonFile`, `shareFilteredLogsAsJsonFile`, `saveFilteredLogsToDevice` | `exportToJson` or `formatFilteredContent` with `LogsFileFactory.shareFile` / `saveToDevice` | `8.0.0` | The share sheets compose those calls directly. |
+| `InspectorMode.inspectAndCompare` (`ispect_layout`) | `InspectorController.enterCompareMode()` (`InspectorMode.compareSelect`) | `8.0.0` | The compare shortcut and button use `compareSelect`; the hover-compare mode was reachable only through `setMode`. |
 
 ## Already removed
 

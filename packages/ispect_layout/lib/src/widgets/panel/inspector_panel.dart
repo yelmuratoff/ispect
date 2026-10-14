@@ -49,6 +49,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
     final mode = controller.modeNotifier.value;
     switch (mode) {
       case InspectorMode.inspector:
+      // ignore: deprecated_member_use_from_same_package
       case InspectorMode.inspectAndCompare:
         return Icons.format_shapes;
       case InspectorMode.compareSelect:
@@ -120,19 +121,14 @@ class _InspectorPanelState extends State<InspectorPanel> {
             if (controller.isWidgetInspectorEnabled)
               FloatingActionButton(
                 onPressed: () => controller.setMode(
-                  (mode == InspectorMode.inspector ||
-                          mode == InspectorMode.compareSelect)
+                  mode.isInspecting
                       ? InspectorMode.none
                       : InspectorMode.inspector,
                 ),
-                backgroundColor:
-                    (mode == InspectorMode.inspector ||
-                        mode == InspectorMode.compareSelect)
+                backgroundColor: mode.isInspecting
                     ? _activeColor
                     : _surfaceColor,
-                foregroundColor:
-                    (mode == InspectorMode.inspector ||
-                        mode == InspectorMode.compareSelect)
+                foregroundColor: mode.isInspecting
                     ? _onActiveColor
                     : _onSurfaceColor,
                 child: const Icon(Icons.format_shapes),

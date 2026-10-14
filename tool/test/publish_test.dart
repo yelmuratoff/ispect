@@ -23,6 +23,7 @@ final class FakeProcessRunner implements ProcessRunner {
     this.statusLinesAfterFormat,
     this.statusExitCode = 0,
     this.podfileLocks = const {},
+    this.lsFilesExitCode = 0,
     this.formatResult = _ok,
     this.pubGetResults = const {},
     this.dryRunResults = const {},
@@ -33,6 +34,7 @@ final class FakeProcessRunner implements ProcessRunner {
   final List<String>? statusLinesAfterFormat;
   final int statusExitCode;
   final Map<String, List<String>> podfileLocks;
+  final int lsFilesExitCode;
   final CommandResult formatResult;
   final Map<String, CommandResult> pubGetResults;
   final Map<String, CommandResult> dryRunResults;
@@ -76,6 +78,12 @@ final class FakeProcessRunner implements ProcessRunner {
       return CommandResult(exitCode: 0, output: _joined(lines));
     }
     if (executable == 'git' && arguments.first == 'ls-files') {
+      if (lsFilesExitCode != 0) {
+        return CommandResult(
+          exitCode: lsFilesExitCode,
+          output: 'fatal: not a git repository\n',
+        );
+      }
       final owner = arguments.last.split('/')[1];
       return CommandResult(
         exitCode: 0,
@@ -568,6 +576,22 @@ void main() {
         '[ERR] Preflight validation failed. Fix issues above before '
             'publishing.',
       ]);
+    });
+
+    test('a git that cannot list Podfile.lock files blocks the run', () async {
+      final result = await invoke(
+        fixture(),
+        const ['--dry-run', '--skip-pub-version-check'],
+        runner: FakeProcessRunner(lsFilesExitCode: 128),
+      );
+
+      expect(result.exitCode, 1);
+      expect(
+        result.err,
+        contains("[ERR] Could not check 'ispectify' for a committed "
+            'Podfile.lock: fatal: not a git repository'),
+      );
+      expect(result.out, isNot(contains('Preflight validation passed')));
     });
 
     test('the Podfile.lock pathspec covers nested example projects', () async {

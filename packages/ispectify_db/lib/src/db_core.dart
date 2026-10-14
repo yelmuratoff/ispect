@@ -32,18 +32,25 @@ final class ISpectDbCore {
   /// Redacts values in [data] whose keys match any of the provided [keys].
   ///
   /// Delegates to [RedactionService.redactByKeys].
+  @Deprecated(
+    'Use RedactionService.redactByKeys instead. Will be removed in 8.0.0.',
+  )
   static Object? redact(Object? data, Iterable<String> keys) =>
       RedactionService.redactByKeys(data, keys);
 
   /// Conditionally redacts [data] if [shouldRedact] is `true`, otherwise
   /// returns [data] unchanged. Returns `null` when [data] is `null`.
+  @Deprecated(
+    'Call RedactionService.redactByKeys when redaction applies. '
+    'Will be removed in 8.0.0.',
+  )
   static Object? redactIfNeeded(
     Object? data, {
     required bool shouldRedact,
     required Iterable<String> keys,
   }) {
     if (data == null) return null;
-    return shouldRedact ? redact(data, keys) : data;
+    return shouldRedact ? RedactionService.redactByKeys(data, keys) : data;
   }
 
   /// Redacts every positional argument in [args].
@@ -65,16 +72,14 @@ final class ISpectDbCore {
   /// Delegates to [cleanMap] from `ispectify`.
   static Map<String, Object?> clean(Map<String, Object?> m) => cleanMap(m);
 
-  /// Returns the log key based on [operation] type: [DbLogCategory.error],
-  /// [DbLogCategory.query], or [DbLogCategory.result].
+  /// Returns the log key [ISpectLoggerDb.db] emits for [operation]:
+  /// [DbLogCategory.error], [DbLogCategory.query], or [DbLogCategory.result].
+  ///
+  /// Delegates to [dbCategory], so [operation] is matched case-sensitively
+  /// against [ISpectTraceCategory.secondaryOperations].
   static String pickLogKey({
     required bool isError,
     required String operation,
-  }) {
-    if (isError) return DbLogCategory.error;
-    if (dbReadOperations.contains(operation.toLowerCase())) {
-      return DbLogCategory.query;
-    }
-    return DbLogCategory.result;
-  }
+  }) =>
+      dbCategory.pickLogKey(isError: isError, operation: operation);
 }

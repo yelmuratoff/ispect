@@ -1118,4 +1118,278 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get composerEditAndResend => 'संपादित करें और दोबारा भेजें';
+
+  @override
+  String get settingsDisplay => 'डिस्प्ले';
+
+  @override
+  String get relativeTime => 'सापेक्ष समय';
+
+  @override
+  String get absoluteTime => 'निरपेक्ष समय';
+
+  @override
+  String get compactUrls => 'संक्षिप्त URL';
+
+  @override
+  String get settingsTools => 'टूल्स';
+
+  @override
+  String get settingsAdvanced => 'उन्नत';
+
+  @override
+  String get forwardErrorsToDeveloperLog => 'त्रुटियाँ dart:developer को भेजें';
+
+  @override
+  String get historyCapacity => 'इतिहास क्षमता';
+
+  @override
+  String get historyCapacityDesc => 'मेमोरी में रखे जाने वाले लॉग';
+
+  @override
+  String get consoleTruncate => 'कंसोल काट-छाँट';
+
+  @override
+  String get consoleTruncateDesc => 'प्रति कंसोल पंक्ति अधिकतम वर्ण';
+
+  @override
+  String get captureMode => 'कैप्चर मोड';
+
+  @override
+  String get captureModeDesc => 'उपयोगी मान या अधिकतम अलगाव';
+
+  @override
+  String get captureModeBalancedDesc => 'सीमित आउटपुट वाले सुरक्षित फ़ॉर्मेटर';
+
+  @override
+  String get captureModeStrict => 'सख्त';
+
+  @override
+  String get captureModeStrictDesc => 'ऐप के फ़ॉर्मेटर कभी न चलाएँ';
+
+  @override
+  String get profileBalanced => 'संतुलित';
+
+  @override
+  String get resourceProfile => 'संसाधन प्रोफ़ाइल';
+
+  @override
+  String get resourceProfileDesc =>
+      'कैप्चर, मेमोरी, इम्पोर्ट और एक्सपोर्ट की सीमाएँ';
+
+  @override
+  String get resourceProfileConstrained => 'किफ़ायती';
+
+  @override
+  String get resourceProfileConstrainedDesc =>
+      'लंबे सत्रों के लिए कम मेमोरी उपयोग';
+
+  @override
+  String get resourceProfileBalancedDesc =>
+      'सीमित लागत पर उपयोगी डायग्नोस्टिक्स';
+
+  @override
+  String get resourceProfileExtended => 'विस्तारित';
+
+  @override
+  String get resourceProfileExtendedDesc =>
+      'नियंत्रित रूप से बड़े आंतरिक हस्तांतरण';
+
+  @override
+  String get processingProfile => 'प्रोसेसिंग प्रोफ़ाइल';
+
+  @override
+  String get processingProfileDesc => 'प्रतिक्रियाशीलता और बैच थ्रूपुट';
+
+  @override
+  String get processingProfileResponsive => 'प्रतिक्रियाशील';
+
+  @override
+  String get processingProfileResponsiveDesc =>
+      'UI को सुचारू रखने के लिए बार-बार नियंत्रण छोड़ें';
+
+  @override
+  String get processingProfileBalancedDesc => 'सामान्य-उद्देश्य शेड्यूलिंग';
+
+  @override
+  String get processingProfileThroughput => 'उच्च थ्रूपुट';
+
+  @override
+  String get processingProfileThroughputDesc =>
+      'तेज़ हस्तांतरण के लिए बड़े बैच';
+
+  @override
+  String get limitInvalidValue => 'एक गैर-ऋणात्मक पूर्णांक दर्ज करें';
+
+  @override
+  String get limitZeroDisables => '0 इस सीमा को बंद कर देता है';
+
+  @override
+  String get apply => 'लागू करें';
+
+  @override
+  String logCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count लॉग',
+      one: '$count लॉग',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String warningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count चेतावनियाँ',
+      one: '$count चेतावनी',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count त्रुटियाँ',
+      one: '$count त्रुटि',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filteredLogCount(int filtered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$filtered / $total लॉग',
+      one: '$filtered / $total लॉग',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contentProcessingError => 'सामग्री प्रोसेसिंग त्रुटि';
+
+  @override
+  String get failedToLoadLogContent => 'लॉग सामग्री लोड नहीं हो सकी';
+
+  @override
+  String get unknownContentProcessingError =>
+      'सामग्री प्रोसेस करते समय अज्ञात त्रुटि हुई';
+
+  @override
+  String get correlationIdShort => 'सहसंबंध';
+
+  @override
+  String get transactionIdShort => 'लेनदेन';
+
+  @override
+  String get columnType => 'प्रकार';
+
+  @override
+  String get columnTime => 'समय';
+
+  @override
+  String get columnMessage => 'संदेश';
+
+  @override
+  String sortColumnAscending(String column) {
+    return '$column के अनुसार क्रमबद्ध करें, आरोही क्रम';
+  }
+
+  @override
+  String sortColumnDescending(String column) {
+    return '$column के अनुसार क्रमबद्ध करें, अवरोही क्रम';
+  }
+
+  @override
+  String sortColumnUnsorted(String column) {
+    return '$column के अनुसार क्रमबद्ध करें, क्रमबद्ध नहीं';
+  }
+
+  @override
+  String resizeColumn(String column) {
+    return '$column कॉलम का आकार बदलें';
+  }
+
+  @override
+  String get resumeLiveTail => 'लाइव ट्रैकिंग फिर से शुरू करें';
+
+  @override
+  String get pauseLiveTail => 'लाइव ट्रैकिंग रोकें';
+
+  @override
+  String get liveTailLive => 'लाइव';
+
+  @override
+  String get liveTailPaused => 'रुका हुआ';
+
+  @override
+  String get open => 'खोलें';
+
+  @override
+  String filterByType(String type) {
+    return 'प्रकार $type से फ़िल्टर करें';
+  }
+
+  @override
+  String httpStatus(int code) {
+    return 'HTTP स्थिति $code';
+  }
+
+  @override
+  String get composerBodyNone => 'कोई नहीं';
+
+  @override
+  String get composerBodyText => 'टेक्स्ट';
+
+  @override
+  String get composerBodyForm => 'फ़ॉर्म';
+
+  @override
+  String get composerBodyMultipart => 'मल्टीपार्ट';
+
+  @override
+  String get jsonViewer => 'JSON व्यूअर';
+
+  @override
+  String get detail => 'विवरण';
+
+  @override
+  String copyKey(String key) {
+    return '$key कॉपी करें';
+  }
+
+  @override
+  String get copyToClipboardFailed => 'क्लिपबोर्ड पर कॉपी नहीं हो सका';
+
+  @override
+  String pluginErrorTitle(String pluginId) {
+    return 'प्लगइन त्रुटि: $pluginId';
+  }
+
+  @override
+  String get pluginRenderFailed => 'प्लगइन स्क्रीन प्रदर्शित नहीं हो सकी';
+
+  @override
+  String get stackTrace => 'स्टैक ट्रेस';
+
+  @override
+  String get resizeDivider => 'विभाजक का आकार बदलें';
+
+  @override
+  String get sessionLogsLoadFailed => 'सत्र के लॉग लोड नहीं हो सके';
+
+  @override
+  String get dailySessionsLoadFailed => 'सत्र लोड नहीं हो सके';
+
+  @override
+  String get dailySessionsClearFailed => 'सत्र साफ़ नहीं हो सके';
+
+  @override
+  String get exception => 'अपवाद';
 }

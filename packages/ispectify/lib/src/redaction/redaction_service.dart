@@ -112,8 +112,24 @@ class RedactionService {
       ignoredValues: null,
       ignoredKeys: null,
     ),
-    redactValue: (value, keyName) => redact(value, keyName: keyName),
+    redactValue: _redactUrlParameter,
   );
+
+  Object? _redactUrlParameter(String value, String keyName) {
+    final redacted = redact(value, keyName: keyName);
+    if (redacted != value ||
+        value.isEmpty ||
+        !ISpectRedaction.enabled ||
+        _config.ignoredValues.contains(value)) {
+      return redacted;
+    }
+    final normalized = keyName.trim().toLowerCase();
+    if (!_assignmentCredentialKeys.contains(normalized) ||
+        _isIgnoredKeyName(normalized, null)) {
+      return redacted;
+    }
+    return _config.placeholder;
+  }
 
   /// Monotonically increases whenever an ignore-list mutation method is
   /// invoked, allowing cached redacted views to detect policy updates.
@@ -481,7 +497,6 @@ class RedactionService {
             );
       final scrubbed = _scrubExportValue(
         exportReady,
-        _exportKeyPatterns,
         ignoredValues: ignoredValues,
         ignoredKeys: ignoredKeys,
       );
@@ -492,7 +507,7 @@ class RedactionService {
         replaceOversizedStrings: true,
       );
     } catch (_) {
-      return _config.placeholder;
+      return ph.redactionFailedPlaceholder;
     }
   }
 
@@ -536,8 +551,7 @@ class RedactionService {
   }
 
   Object? _scrubExportValue(
-    Object? value,
-    ExportKeyPatterns? patterns, {
+    Object? value, {
     required Set<String>? ignoredValues,
     required Set<String>? ignoredKeys,
   }) {
@@ -564,7 +578,7 @@ class RedactionService {
       );
       final redacted = ExportStringScrubber.scrub(
         queryRedacted,
-        patterns,
+        null,
         mask: _config.placeholder,
       );
       return redacted;
@@ -574,13 +588,11 @@ class RedactionService {
         for (final entry in value.entries)
           _scrubExportValue(
                 entry.key,
-                patterns,
                 ignoredValues: ignoredValues,
                 ignoredKeys: ignoredKeys,
               )?.toString() ??
               JsonValueNormalizer.unprintableValue: _scrubExportValue(
             entry.value,
-            patterns,
             ignoredValues: ignoredValues,
             ignoredKeys: ignoredKeys,
           ),
@@ -591,7 +603,6 @@ class RedactionService {
           .map(
             (entry) => _scrubExportValue(
               entry,
-              patterns,
               ignoredValues: ignoredValues,
               ignoredKeys: ignoredKeys,
             ),
@@ -613,7 +624,7 @@ class RedactionService {
     );
     final redacted = ExportStringScrubber.scrub(
       queryRedacted,
-      patterns,
+      null,
       mask: _config.placeholder,
     );
     return redacted;
@@ -633,29 +644,34 @@ class RedactionService {
         _config.placeholder,
       );
 
-  bool Function(String key) _configuredKeyMatcher({
+  AssignmentMatcher _configuredKeyMatcher({
     required Set<String>? ignoredValues,
     required Set<String>? ignoredKeys,
   }) {
-    if (!ISpectRedaction.enabled) return (_) => false;
+    if (!ISpectRedaction.enabled) return (_, __) => false;
     final context = _createWalker(
       RedactionRequest.fromOverrides(ignoredValues, ignoredKeys),
     ).context;
-    return (key) => _isConfiguredSensitiveKey(
+    return (key, assignedValue) => _isConfiguredSensitiveKey(
           key,
+          assignedValue,
           context: context,
           ignoredKeys: ignoredKeys,
         );
   }
 
   bool _isConfiguredSensitiveKey(
-    String key, {
+    String key,
+    String Function() assignedValue, {
     required RedactionContext context,
     required Set<String>? ignoredKeys,
   }) {
     try {
-      final classification = context.classifyKey(key);
-      if (classification.fullyMasked || classification.sensitive) return true;
+      final stem = context.classifyEntry(key, _opaqueAssignedValue);
+      if (stem.fullyMasked || stem.sensitive) {
+        final classification = context.classifyEntry(key, assignedValue());
+        return classification.fullyMasked || classification.sensitive;
+      }
       final normalized = key.trim().toLowerCase();
       if (!_assignmentCredentialKeys.contains(normalized)) return false;
       return !_isIgnoredKeyName(normalized, ignoredKeys);
@@ -667,6 +683,8 @@ class RedactionService {
   // Credential only as an assignment target: SQLCipher's `PRAGMA key = x`
   // and the `?key=` API-key parameter convention.
   static const Set<String> _assignmentCredentialKeys = <String>{'key'};
+
+  static const Object _opaqueAssignedValue = Object();
 
   bool _isIgnoredKeyName(String normalized, Set<String>? ignoredKeys) =>
       _config.ignoredKeyNamesLower.contains(normalized) ||
@@ -846,9 +864,10 @@ class RedactionService {
   /// URL credentials and authentication scheme tokens carry no key dependency
   /// and are always scrubbed. Key-based assignments, query parameters, and
   /// JSON patterns run only when [redactKeys] is non-empty.
-  ///
-  /// Used by toText(), toMarkdown(), LogExporter for exception.toString()
-  /// and error strings that may contain sensitive data.
+  @Deprecated(
+    'Use redactForExport on a configured RedactionService instead. '
+    'Will be removed in 8.0.0.',
+  )
   static String redactExportString(String value, Set<String>? redactKeys) {
     if (!ISpectRedaction.enabled) return value;
     return ExportStringScrubber.scrub(

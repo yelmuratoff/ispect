@@ -5,6 +5,7 @@ import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/logger/log_parts.dart';
 import 'package:ispectify/src/redaction/egress_provenance.dart';
 import 'package:ispectify/src/utils/safe_object_description.dart';
+import 'package:ispectify/src/utils/traversal_budget.dart';
 
 /// Shared byte limits for outbound log documents.
 ///
@@ -121,7 +122,7 @@ abstract final class LogExportOutput {
       value,
       resourceLimits: resourceLimits,
       depth: 0,
-      budget: _ReplacementBudget(resourceLimits.maxTraversalNodes),
+      budget: TraversalBudget(resourceLimits.maxTraversalNodes),
     );
   }
 
@@ -129,7 +130,7 @@ abstract final class LogExportOutput {
     Object? value, {
     required DiagnosticResourceLimits resourceLimits,
     required int depth,
-    required _ReplacementBudget budget,
+    required TraversalBudget budget,
   }) {
     if (!budget.take()) return JsonValueNormalizer.maxNodesReached;
     if (value is String) {
@@ -229,16 +230,6 @@ abstract final class LogExportOutput {
 
   static String _prefixWithinBytes(String value, int maxBytes) =>
       value.substring(0, _prefixEndWithinBytes(value, maxBytes));
-}
-
-final class _ReplacementBudget {
-  _ReplacementBudget(this.remaining);
-
-  int remaining;
-
-  bool get hasCapacity => remaining > 0;
-
-  bool take() => remaining-- > 0;
 }
 
 final class _BoundedJsonSnapshot {
@@ -536,18 +527,6 @@ final class _BoundedJsonSnapshot {
 
 /// Extension for ISpectLogData to add serialization support.
 extension ISpectLogDataSerialization on ISpectLogData {
-  /// Converts the log data into a JSON representation.
-  ///
-  /// Omits `null` values for a cleaner output. Recursively strips private
-  /// presentation hints (keys starting with `_`, by convention) such as the
-  /// network renderer's `_render-hints` - these are an internal contract
-  /// between log producers and the console renderer and have no place in
-  /// exported, shared, or persisted output.
-  ///
-  /// The snapshot is bounded and never invokes caller-supplied `toJson` or
-  /// `toString` implementations. [preserveTypes] is reserved for an in-memory
-  /// redaction pass before final JSON encoding and keeps typed binary values
-  /// recognizable by the redactor.
   bool _reusesCaptureRedaction({
     required Set<String>? redactKeys,
     required RedactionService? redactionService,
@@ -563,6 +542,18 @@ extension ISpectLogDataSerialization on ISpectLogData {
         resourceLimits: resourceLimits,
       );
 
+  /// Converts the log data into a JSON representation.
+  ///
+  /// Omits `null` values for a cleaner output. Recursively strips private
+  /// presentation hints (keys starting with `_`, by convention) such as the
+  /// network renderer's `_render-hints` - these are an internal contract
+  /// between log producers and the console renderer and have no place in
+  /// exported, shared, or persisted output.
+  ///
+  /// The snapshot is bounded and never invokes caller-supplied `toJson` or
+  /// `toString` implementations. [preserveTypes] is reserved for an in-memory
+  /// redaction pass before final JSON encoding and keeps typed binary values
+  /// recognizable by the redactor.
   Map<String, dynamic> toJson({
     bool truncated = false,
     bool preserveTypes = false,
@@ -1227,8 +1218,9 @@ Object? _stripPrivateValue(Object? value) {
 class ISpectLogDataJsonUtils {
   /// Creates ISpectLogData from JSON Map.
   ///
-  /// Throws [FormatException] if the JSON is missing required fields
-  /// (`message` or `time`).
+  /// Throws [FormatException] if [json] is not an object or lacks both the
+  /// `message` and `time` fields. A missing or unparseable `time` falls back
+  /// to [DateTime.now].
   ///
   /// **Lossy reconstruction:** Exception and Error are wrapped in lightweight
   /// string wrappers ([_StringException], [_StringError]) and StackTrace is
