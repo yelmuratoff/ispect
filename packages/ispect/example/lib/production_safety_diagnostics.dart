@@ -17,7 +17,9 @@ final _productionSafetyProvider = Provider<int>(
   name: 'production-safety-provider',
 );
 
-void main() {
+void main() => exerciseDiagnosticsApis();
+
+void exerciseDiagnosticsApis() {
   final logger = ISpectLogger(
     options: ISpectLoggerOptions(
       useConsoleLogs: false,

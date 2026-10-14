@@ -1,8 +1,6 @@
 include: package:lints/recommended.yaml
 
 analyzer:
-  exclude:
-    - aot_probe/**
   language:
     strict-casts: true
     strict-inference: true

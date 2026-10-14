@@ -99,8 +99,11 @@ void main() {
 
       expect(report.passed, isTrue);
       expect(runner.calls.first, ['pub', 'get']);
+      final compiles = runner.calls.skip(1).toList();
+      expect(compiles, hasLength(2));
+      expect(compiles, everyElement(contains(aotProbeTarget)));
       expect(
-        runner.calls.where((call) => call.contains('-DISPECT_ENABLED=true')),
+        compiles.where((call) => call.contains('-DISPECT_ENABLED=true')),
         hasLength(1),
       );
     });

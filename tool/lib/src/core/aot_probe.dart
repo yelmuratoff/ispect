@@ -20,9 +20,12 @@ const List<String> aotProbeSentinels = [
   'provider-name',
 ];
 
-/// Repository-relative directory of the program `ispect_tool aot-probe`
-/// compiles.
-const String aotProbeDirectory = 'tool/aot_probe';
+/// Repository-relative package that holds the probe program.
+const String aotProbeDirectory = 'packages/ispect/example';
+
+/// Package-relative path of the pure-Dart probe; the CI release probe calls
+/// the same function before it starts the Flutter app.
+const String aotProbeTarget = 'lib/production_safety_diagnostics.dart';
 
 /// What the sentinel scan found in the disabled and enabled snapshots.
 final class AotProbeReport {
@@ -83,7 +86,7 @@ AotProbeReport runAotProbe({
         'compile',
         'aot-snapshot',
         if (enabled) '-DISPECT_ENABLED=true',
-        'bin/probe.dart',
+        aotProbeTarget,
         '-o',
         output,
       ],
