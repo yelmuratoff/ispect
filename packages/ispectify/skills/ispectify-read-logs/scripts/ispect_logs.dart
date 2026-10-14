@@ -14,9 +14,8 @@ const _usage =
 Future<void> main(List<String> args) async {
   if (args.length < 2) return _fail(_usage, code: 64);
   final [rawUri, rawMethod, ...pairs] = args;
-  final method = rawMethod.startsWith('ext.')
-      ? rawMethod
-      : '$_prefix$rawMethod';
+  final method =
+      rawMethod.startsWith('ext.') ? rawMethod : '$_prefix$rawMethod';
   if (!method.startsWith(_prefix)) {
     return _fail('Only $_prefix* methods are allowed, got "$rawMethod".');
   }
