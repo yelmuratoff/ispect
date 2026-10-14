@@ -25,14 +25,6 @@ final class VersionRegressionException extends ToolException {
   final String current;
 }
 
-/// A package version does not match `version.config`.
-final class VersionSyncException extends ToolException {
-  const VersionSyncException(super.message, {required this.outOfSync});
-
-  /// Package names whose `version:` line disagrees with `version.config`.
-  final List<String> outOfSync;
-}
-
 /// A manifest or lockfile the tooling rewrites is missing or malformed.
 final class ManifestException extends ToolException {
   const ManifestException(super.message);

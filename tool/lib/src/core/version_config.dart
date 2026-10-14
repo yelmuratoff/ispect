@@ -95,19 +95,4 @@ final class PackageVersions {
     }
     return result;
   }
-
-  /// Throws [VersionSyncException] naming every package that disagrees.
-  void assertMatches(Version expected) {
-    final outOfSync = [
-      for (final entry in read().entries)
-        if (entry.value != expected.toString()) entry.key,
-    ];
-    if (outOfSync.isEmpty) {
-      return;
-    }
-    throw VersionSyncException(
-      '${outOfSync.length} package(s) do not match $expected',
-      outOfSync: outOfSync,
-    );
-  }
 }
