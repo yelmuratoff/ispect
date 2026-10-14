@@ -163,6 +163,7 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     super.onEvent(bloc, event);
+    if (!kISpectEnabled) return;
     if (!_traceEvent(bloc, event)) {
       _pendingEvents[bloc]?.add(event, null);
     }
@@ -297,6 +298,7 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
+    if (!kISpectEnabled) return;
     final eventId = _pendingEvents[bloc]?.takeNextChangeCorrelationId();
     if (!_shouldLog(
       toggle: settings.printChanges,
@@ -422,6 +424,7 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onClose(BlocBase<dynamic> bloc) {
     super.onClose(bloc);
+    if (!kISpectEnabled) return;
     _pendingEvents[bloc] = null;
     if (!_shouldLog(
       toggle: settings.printClosings,
@@ -462,6 +465,7 @@ class ISpectBlocObserver extends BlocObserver {
     StackTrace? stackTrace,
   ]) {
     super.onDone(bloc, event, error, stackTrace);
+    if (!kISpectEnabled) return;
 
     final eventId = _pendingEvents[bloc]?.remove(event);
 
