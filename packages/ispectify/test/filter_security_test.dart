@@ -219,14 +219,35 @@ void main() {
       }
     });
 
-    test('still matches payload keys and envelope values', () {
+    test('does not match adapter schema keys in a network record', () {
+      final data = ISpectLogData(
+        'GET /orders',
+        key: 'http-request',
+        additionalData: const {
+          'request-data': {
+            'connect-timeout': null,
+            'receive-data-when-status-error': true,
+            'data': {'orderNumber': 'A-7'},
+          },
+        },
+      );
+
+      expect(SearchFilter('error').apply(data), isFalse);
+      expect(SearchFilter('timeout').apply(data), isFalse);
+      expect(SearchFilter('ordernumber').apply(data), isFalse);
+    });
+
+    test('matches values at any depth', () {
       final data = ISpectLogData(
         'ok',
         key: 'info',
-        additionalData: const {'orderNumber': 7},
+        additionalData: const {
+          'order': {'number': 'A-7', 'paid': true},
+        },
       );
 
-      expect(SearchFilter('ordernumber').apply(data), isTrue);
+      expect(SearchFilter('a-7').apply(data), isTrue);
+      expect(SearchFilter('true').apply(data), isTrue);
       expect(SearchFilter('info').apply(data), isTrue);
       expect(SearchFilter('ok').apply(data), isTrue);
     });
