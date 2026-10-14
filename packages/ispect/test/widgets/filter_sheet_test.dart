@@ -30,8 +30,8 @@ void main() {
 
     bool? isChipToggled(WidgetTester tester, String key) => tester
         .widget<Semantics>(
-          find.ancestor(
-            of: find.text('1  $key'),
+          find.descendant(
+            of: find.byKey(ValueKey('log-type-chip-$key')),
             matching: find.byWidgetPredicate(
               (widget) =>
                   widget is Semantics && widget.properties.toggled != null,
@@ -46,7 +46,7 @@ void main() {
     ) async {
       controller.searchMode = SearchMode.filter;
       await tester.pumpWidget(sheet(const ['info', 'error']));
-      await tester.tap(find.text('1  error'));
+      await tester.tap(find.byKey(const ValueKey('log-type-chip-error')));
       await tester.pumpAndSettle();
       expect(isChipToggled(tester, 'error'), isTrue);
 
@@ -61,7 +61,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(sheet(const ['info', 'error']));
-      await tester.tap(find.text('1  error'));
+      await tester.tap(find.byKey(const ValueKey('log-type-chip-error')));
       await tester.pumpAndSettle();
 
       await tester.pumpWidget(sheet(const ['error', 'info']));

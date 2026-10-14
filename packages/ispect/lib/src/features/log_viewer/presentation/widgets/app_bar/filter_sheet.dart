@@ -199,6 +199,7 @@ class _LogTypeChipsWrap extends StatelessWidget {
         final typeIcon = theme.getTypeIcon(context, key: title);
 
         return _LogTypeChip(
+          key: ValueKey('log-type-chip-$title'),
           title: title ?? '',
           count: count,
           isSelected: selectedTitles.contains(title),
@@ -219,6 +220,7 @@ class _LogTypeChip extends StatelessWidget {
     required this.typeColor,
     required this.typeIcon,
     required this.onSelected,
+    super.key,
   });
 
   final String title;

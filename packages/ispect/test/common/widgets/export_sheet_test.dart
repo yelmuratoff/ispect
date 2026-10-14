@@ -5,10 +5,14 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/widgets/export_sheet.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations_ru.dart';
 
 import '../../helpers/pump_ispect.dart';
 
 void main() {
+  final en = ISpectGeneratedLocalizationEn();
+
   late String? clipboardText;
   late bool clipboardFails;
 
@@ -77,7 +81,7 @@ void main() {
     );
 
     expect(clipboardText, 'exported-body');
-    expect(find.textContaining('copied to clipboard'), findsOneWidget);
+    expect(find.textContaining(en.logItemCopied), findsOneWidget);
   });
 
   testWidgets('shows an error instead of a copied toast when building fails', (
@@ -90,8 +94,8 @@ void main() {
     );
 
     expect(clipboardText, isNull);
-    expect(find.textContaining('copied to clipboard'), findsNothing);
-    expect(find.text('Failed to copy to clipboard'), findsOneWidget);
+    expect(find.textContaining(en.logItemCopied), findsNothing);
+    expect(find.text(en.copyToClipboardFailed), findsOneWidget);
   });
 
   testWidgets('shows an error instead of a copied toast when the clipboard '
@@ -102,8 +106,8 @@ void main() {
       (_, {required action, redactKeys}) async => 'exported-body',
     );
 
-    expect(find.textContaining('copied to clipboard'), findsNothing);
-    expect(find.text('Failed to copy to clipboard'), findsOneWidget);
+    expect(find.textContaining(en.logItemCopied), findsNothing);
+    expect(find.text(en.copyToClipboardFailed), findsOneWidget);
   });
 
   testWidgets('reports a failed copy in the active locale', (tester) async {
@@ -114,6 +118,9 @@ void main() {
       locale: const Locale('ru'),
     );
 
-    expect(find.text('Не удалось скопировать в буфер обмена'), findsOneWidget);
+    expect(
+      find.text(ISpectGeneratedLocalizationRu().copyToClipboardFailed),
+      findsOneWidget,
+    );
   });
 }
