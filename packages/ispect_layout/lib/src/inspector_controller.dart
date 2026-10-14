@@ -33,7 +33,7 @@ class InspectorController {
     this.isZoomEnabled = true,
     this.decimalPlaces = 2,
     int maxRenderTreeClipboardCharacters = 10000,
-    this.theme = InspectorTheme.defaults,
+    InspectorTheme theme = InspectorTheme.defaults,
     this.widgetInspectorShortcuts,
     this.widgetInspectAndCompareShortcuts,
     this.colorPickerShortcuts,
@@ -43,6 +43,7 @@ class InspectorController {
     this.colorPickerShortcutActivators,
     this.zoomShortcutActivators,
   }) : isEnabled = kISpectLayoutEnabled && isEnabled,
+       themeNotifier = ValueNotifier<InspectorTheme>(theme),
        maxRenderTreeClipboardCharacters =
            _validateRenderTreeClipboardCharacters(
              maxRenderTreeClipboardCharacters,
@@ -67,7 +68,10 @@ class InspectorController {
   /// Maximum final character count copied by the render-tree action.
   final int maxRenderTreeClipboardCharacters;
 
-  final InspectorTheme theme;
+  final ValueNotifier<InspectorTheme> themeNotifier;
+
+  InspectorTheme get theme => themeNotifier.value;
+  set theme(InspectorTheme value) => themeNotifier.value = value;
 
   static const int maxAllowedRenderTreeClipboardCharacters = 4 * 1024 * 1024;
 
@@ -241,6 +245,7 @@ class InspectorController {
     zoomImageOffsetNotifier.dispose();
     zoomScaleNotifier.dispose();
     zoomOverlayOffsetNotifier.dispose();
+    themeNotifier.dispose();
     stateNotifier.dispose();
   }
 }

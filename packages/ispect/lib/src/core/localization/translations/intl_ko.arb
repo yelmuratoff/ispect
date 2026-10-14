@@ -380,6 +380,8 @@
     "contentProcessingError": "콘텐츠 처리 오류",
     "failedToLoadLogContent": "로그 내용을 불러오지 못했습니다",
     "unknownContentProcessingError": "콘텐츠를 처리하는 중 알 수 없는 오류가 발생했습니다",
+    "contentEmptyError": "콘텐츠가 비어 있습니다",
+    "contentExceedsSafeLimitsError": "콘텐츠가 안전한 가져오기 한도를 초과했습니다",
     "correlationIdShort": "상관",
     "transactionIdShort": "트랜잭션",
     "columnType": "유형",

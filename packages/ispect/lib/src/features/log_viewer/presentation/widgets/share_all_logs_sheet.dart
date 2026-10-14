@@ -4,6 +4,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/widgets/export_sheet.dart';
 
 final class _LogsExportRequest {
@@ -108,10 +109,7 @@ Future<String> buildLogsExportContent(
     service: redactionService,
     sensitiveKeys: redactKeys,
   );
-  final limits =
-      (ISpect.loggerIfInitialized?.options.resourceLimits ??
-            DiagnosticResourceLimits.balanced)
-        ..validate();
+  final limits = (ISpectResourceLimits.current)..validate();
   final scheduling =
       (ISpect.loggerIfInitialized?.options.processingPolicy ??
             DiagnosticProcessingPolicy.balanced)

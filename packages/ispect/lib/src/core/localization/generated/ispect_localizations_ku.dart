@@ -1277,6 +1277,13 @@ class ISpectGeneratedLocalizationKu extends ISpectGeneratedLocalization {
       'خەلەتیەکا نەناسکری د دەمێ پرۆسێسکرنا ناڤەڕۆکێ دا چێبوو';
 
   @override
+  String get contentEmptyError => 'ناڤەڕۆک ڤالایە';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'ناڤەڕۆک ژ سنوورێن ئێمنێن هاوردەکرنێ دەرباز دبیت';
+
+  @override
   String get correlationIdShort => 'پەیوەندی';
 
   @override

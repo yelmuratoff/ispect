@@ -1283,6 +1283,13 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
       'Мазмұнды өңдеу кезінде белгісіз қате орын алды';
 
   @override
+  String get contentEmptyError => 'Мазмұн бос';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'Мазмұн импорттың қауіпсіз шектеулерінен асып кетті';
+
+  @override
   String get correlationIdShort => 'Корр';
 
   @override

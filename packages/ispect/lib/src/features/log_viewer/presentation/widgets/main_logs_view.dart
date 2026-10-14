@@ -87,16 +87,20 @@ class _MainLogsViewState extends State<MainLogsView> {
     final state = _pipeline.compute(widget.logsData);
     _state = state;
     final matches = state.searchMatches;
-    if (matches == null && state.totalCount == _controller.lastLogCount) {
+    final matchesChanged =
+        matches != null &&
+        widget.logsViewController.needsSearchMatchUpdate(matches);
+    if (!matchesChanged && state.totalCount == _controller.lastLogCount) {
       return;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (matches != null) {
-        widget.logsViewController.updateSearchMatches(matches);
+      final latest = _state;
+      if (latest.searchMatches case final latestMatches?) {
+        widget.logsViewController.updateSearchMatches(latestMatches);
       }
       _controller.checkForNewLogs(
-        state.totalCount,
+        latest.totalCount,
         isDesktop: context.screenSize.isDesktop,
         onMount: () {
           if (mounted) _controller.scrollToNewest();
@@ -168,11 +172,9 @@ class _MainLogsViewState extends State<MainLogsView> {
                 backgroundColor: widget.iSpectTheme.theme.background?.resolve(
                   context,
                 ),
-                totalCount: state.isHighlightMode
-                    ? state.filtered.length
-                    : state.totalCount,
-                errorCount: state.levelStats.errors,
-                warningCount: state.levelStats.warnings,
+                totalCount: state.headerCounts.total,
+                errorCount: state.headerCounts.errors,
+                warningCount: state.headerCounts.warnings,
                 onScrollToFocusedMatch: _scrollToFocusedMatch,
               ),
               if (isDesktop)

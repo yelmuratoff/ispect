@@ -64,6 +64,7 @@ final class ISpectToaster {
   /// - `title`: The title of the error message.
   /// - `message`: (Optional) Additional details about the error.
   /// - `messenger`: (Optional) An explicit `ScaffoldMessengerState` to use.
+  /// - `l10n`: Deprecated and ignored; the toast has no default strings.
   ///
   /// ### Example:
   /// ```dart
@@ -75,6 +76,9 @@ final class ISpectToaster {
     String? message,
     Duration? duration,
     ScaffoldMessengerState? messenger,
+    @Deprecated(
+      'Ignored: the toast has no default strings. Will be removed in 8.0.0.',
+    )
     ISpectGeneratedLocalization? l10n,
   }) => _showToast(
     context,
@@ -91,7 +95,7 @@ final class ISpectToaster {
   /// - `title`: The title of the message.
   /// - `message`: (Optional) Additional details.
   /// - `messenger`: (Optional) An explicit `ScaffoldMessengerState` to use.
-  /// - `l10n`: (Optional) An explicit localizations object to use.
+  /// - `l10n`: Deprecated and ignored; the toast has no default strings.
   ///
   /// ### Example:
   /// ```dart
@@ -104,6 +108,9 @@ final class ISpectToaster {
     Duration? duration,
     SnackBarAction? action,
     ScaffoldMessengerState? messenger,
+    @Deprecated(
+      'Ignored: the toast has no default strings. Will be removed in 8.0.0.',
+    )
     ISpectGeneratedLocalization? l10n,
   }) => _showToast(
     context,
@@ -122,7 +129,7 @@ final class ISpectToaster {
   /// - `message`: (Optional) Additional details.
   /// - `trailing`: (Optional) A trailing widget (e.g., an icon or button).
   /// - `messenger`: (Optional) An explicit `ScaffoldMessengerState` to use.
-  /// - `l10n`: (Optional) An explicit localizations object to use.
+  /// - `l10n`: Deprecated and ignored; the toast has no default strings.
   ///
   /// ### Example:
   /// ```dart
@@ -136,6 +143,9 @@ final class ISpectToaster {
     Duration? duration,
     SnackBarAction? action,
     ScaffoldMessengerState? messenger,
+    @Deprecated(
+      'Ignored: the toast has no default strings. Will be removed in 8.0.0.',
+    )
     ISpectGeneratedLocalization? l10n,
   }) => _showToast(
     context,

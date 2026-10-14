@@ -497,8 +497,10 @@ class RedactionService {
             );
       final scrubbed = _scrubExportValue(
         exportReady,
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
+        _configuredKeyMatcher(
+          ignoredValues: ignoredValues,
+          ignoredKeys: ignoredKeys,
+        ),
       );
       return LogExportOutput.boundJsonValue(
         scrubbed,
@@ -550,11 +552,7 @@ class RedactionService {
     };
   }
 
-  Object? _scrubExportValue(
-    Object? value, {
-    required Set<String>? ignoredValues,
-    required Set<String>? ignoredKeys,
-  }) {
+  Object? _scrubExportValue(Object? value, AssignmentMatcher keyMatcher) {
     if (value == null || value is bool || value is num) return value;
     if (value is Type) return value;
     // Keep typed binary atomic when binary masking is disabled. Outbound
@@ -563,86 +561,41 @@ class RedactionService {
     if (value is TypedData || value is ByteBuffer) return value;
     if (value is String) {
       if (!ExportStringScrubber.requiresScrub(value)) return value;
-      final assignmentRedacted = _redactClassifiedAssignments(
-        redactUrlsInText(value),
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      );
-      final queryRedacted = AssignmentTokenizer.maskQueryParameters(
-        assignmentRedacted,
-        _configuredKeyMatcher(
-          ignoredValues: ignoredValues,
-          ignoredKeys: ignoredKeys,
-        ),
-        _config.placeholder,
-      );
-      final redacted = ExportStringScrubber.scrub(
-        queryRedacted,
-        null,
-        mask: _config.placeholder,
-      );
-      return redacted;
+      return _scrubExportText(value, keyMatcher);
     }
     if (value is Map<Object?, Object?>) {
       return <String, Object?>{
         for (final entry in value.entries)
-          _scrubExportValue(
-                entry.key,
-                ignoredValues: ignoredValues,
-                ignoredKeys: ignoredKeys,
-              )?.toString() ??
-              JsonValueNormalizer.unprintableValue: _scrubExportValue(
-            entry.value,
-            ignoredValues: ignoredValues,
-            ignoredKeys: ignoredKeys,
-          ),
+          _scrubExportValue(entry.key, keyMatcher)?.toString() ??
+                  JsonValueNormalizer.unprintableValue:
+              _scrubExportValue(entry.value, keyMatcher),
       };
     }
     if (value is Iterable<Object?>) {
       return value
-          .map(
-            (entry) => _scrubExportValue(
-              entry,
-              ignoredValues: ignoredValues,
-              ignoredKeys: ignoredKeys,
-            ),
-          )
+          .map((entry) => _scrubExportValue(entry, keyMatcher))
           .toList(growable: false);
     }
-    final assignmentRedacted = _redactClassifiedAssignments(
-      redactUrlsInText(value.toString()),
-      ignoredValues: ignoredValues,
-      ignoredKeys: ignoredKeys,
+    return _scrubExportText(value.toString(), keyMatcher);
+  }
+
+  String _scrubExportText(String value, AssignmentMatcher keyMatcher) {
+    final assignmentRedacted = AssignmentTokenizer.maskSensitiveAssignments(
+      redactUrlsInText(value),
+      keyMatcher,
+      _config.placeholder,
     );
     final queryRedacted = AssignmentTokenizer.maskQueryParameters(
       assignmentRedacted,
-      _configuredKeyMatcher(
-        ignoredValues: ignoredValues,
-        ignoredKeys: ignoredKeys,
-      ),
+      keyMatcher,
       _config.placeholder,
     );
-    final redacted = ExportStringScrubber.scrub(
+    return ExportStringScrubber.scrub(
       queryRedacted,
       null,
       mask: _config.placeholder,
     );
-    return redacted;
   }
-
-  String _redactClassifiedAssignments(
-    String value, {
-    required Set<String>? ignoredValues,
-    required Set<String>? ignoredKeys,
-  }) =>
-      AssignmentTokenizer.maskSensitiveAssignments(
-        value,
-        _configuredKeyMatcher(
-          ignoredValues: ignoredValues,
-          ignoredKeys: ignoredKeys,
-        ),
-        _config.placeholder,
-      );
 
   AssignmentMatcher _configuredKeyMatcher({
     required Set<String>? ignoredValues,

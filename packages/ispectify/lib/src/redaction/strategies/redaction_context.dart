@@ -233,8 +233,6 @@ final class RedactionContext {
       sensitive: hasSensitiveMatch,
     );
   }
-
-  /// Normalizes camelCase / PascalCase and dotted/bracketed boundaries to `_`.
 }
 
 typedef _KeyClassification = ({

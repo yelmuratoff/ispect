@@ -158,8 +158,8 @@ dependency_overrides:
     });
 
     test(
-        'reports a constraint that only dependency_overrides carries without '
-        'rewriting it', () {
+        'does not report a constraint that only dependency_overrides carries, '
+        'since it never rewrites one', () {
       write('packages/ispect/pubspec.yaml', '''
 name: ispect
 version: 1.2.3-dev.2
@@ -170,7 +170,107 @@ dependency_overrides:
       final result = syncTo('1.2.3-dev.2');
 
       expect(read('packages/ispect/pubspec.yaml'), contains('^0.0.1'));
-      expect(result.changedFiles, contains('packages/ispect/pubspec.yaml'));
+      expect(
+        result.changedFiles,
+        isNot(contains('packages/ispect/pubspec.yaml')),
+      );
+    });
+
+    test('rewrites exact, range, and hosted-map constraints to ^VERSION', () {
+      write('packages/ispect/example/pubspec.yaml', '''
+name: ispect_example
+dependencies:
+  ispect: 0.0.1
+  ispectify: ">=0.0.1 <1.0.0"
+dev_dependencies:
+  ispect_layout_free: ^0.0.1
+''');
+      write('web_logs_viewer/pubspec.yaml', '''
+name: web_logs_viewer
+dependencies:
+  ispect:
+    hosted: https://pub.dev
+    version: ^0.0.1
+  ispectify: {hosted: https://pub.dev, version: ^0.0.1}
+  collection: ^1.19.0
+dependency_overrides:
+  ispect:
+    version: ^0.0.1
+''');
+
+      final result = syncTo('1.2.3-dev.2');
+
+      expect(read('packages/ispect/example/pubspec.yaml'), '''
+name: ispect_example
+dependencies:
+  ispect: ^1.2.3-dev.2
+  ispectify: ^1.2.3-dev.2
+dev_dependencies:
+  ispect_layout_free: ^0.0.1
+''');
+      expect(read('web_logs_viewer/pubspec.yaml'), '''
+name: web_logs_viewer
+dependencies:
+  ispect:
+    hosted: https://pub.dev
+    version: ^1.2.3-dev.2
+  ispectify: {hosted: https://pub.dev, version: ^1.2.3-dev.2}
+  collection: ^1.19.0
+dependency_overrides:
+  ispect:
+    version: ^0.0.1
+''');
+      expect(result.changedFiles, contains('web_logs_viewer/pubspec.yaml'));
+    });
+
+    test('pins a bare internal entry, which pub reads as any', () {
+      write('packages/ispect/example/pubspec.yaml', '''
+name: ispect_example
+dependencies:
+  ispect:
+  ispectify:
+
+  collection: ^1.19.0
+dev_dependencies:
+  ispect_layout_free:
+''');
+
+      final result = syncTo('1.2.3-dev.2');
+
+      expect(read('packages/ispect/example/pubspec.yaml'), '''
+name: ispect_example
+dependencies:
+  ispect: ^1.2.3-dev.2
+  ispectify: ^1.2.3-dev.2
+
+  collection: ^1.19.0
+dev_dependencies:
+  ispect_layout_free:
+''');
+      expect(
+        result.changedFiles,
+        contains('packages/ispect/example/pubspec.yaml'),
+      );
+    });
+
+    test('leaves a path dependency and a current hosted map untouched', () {
+      const manifest = '''
+name: ispect_example
+dependencies:
+  ispect:
+    path: ..
+  ispectify:
+    version: "^1.2.3-dev.2"
+''';
+      write('packages/ispect/example/pubspec.yaml', manifest);
+
+      final result = syncTo('1.2.3-dev.2');
+
+      expect(read('packages/ispect/example/pubspec.yaml'), manifest);
+      expect(
+        result.changedFiles,
+        isNot(contains('packages/ispect/example/pubspec.yaml')),
+      );
     });
 
     test('drops a trailing comment from a rewritten constraint', () {

@@ -21,6 +21,12 @@
 - **Trace levels:** Traces default to the level their log type declares, so performance jank logs as a warning.
 - **Log type titles:** Cards and the desktop status bar show the log type title (for example "HTTP Request") and custom type titles instead of the raw key.
 - **Hide this type:** Hiding a log type no longer hides types that appear later, and tapping a hidden type's chip shows it again without narrowing the list.
+- **Host error handlers:** ISpect passes errors on to `FlutterError.onError` and `PlatformDispatcher.onError` handlers installed before it, such as crash reporters.
+- **Database keys:** Key-value keys stay readable in traces unless a part of them looks sensitive (credential names, session prefixes, emails, phone numbers, tokens, opaque IDs).
+- **Header counts:** The log, error, and warning counts in the header follow the active type filters.
+- **Settings sheet:** Reverse, group, and expand are offered only as Display toggles.
+- **Sheet builders:** `showISpectSheet` builders receive the sheet's own context.
+- **Color picker zoom:** The scroll wheel zooms the picker loupe, and every picker session starts at the default zoom.
 
 ### Bug Fixes
 
@@ -37,16 +43,24 @@
 - **HTTP composer:** Closing during a request no longer throws, and repeated query keys survive edit-and-resend.
 - **Plugins:** A host rebuild no longer re-runs a plugin's `onInit` and `onDispose`.
 - **Release tooling:** `release-prep` restores every file when a step throws, and changelog propagation tells `7.1.0` apart from `7.1.0-dev.4`.
+- **Idle errors:** Errors presented while the app is idle are logged without waiting for another frame.
+- **BLoC correlation:** Several observers on one bloc keep their own correlation IDs, and completions past the pending limit no longer take another event's ID.
+- **Layout inspector theme:** A new `theme` applies without remounting the inspector.
+- **Pasted logs:** Load and paste errors are localized, and large pastes keep the configured processing policy.
+- **Performance overlay:** Resetting before the first memory reading no longer throws.
+- **Observer failures:** The warning respects `useConsoleLogs: false` and names the error type.
 
 ### Improvements
 
 - **Localization:** Settings, log viewer, desktop table, composer, JSON viewer, and error screens are translated in every supported locale, with plural-aware counts.
 - **Session history:** Loading and clearing failures show an error state with Retry instead of an empty list.
 - **Shared capture policy:** BLoC, Riverpod, Dio, http, and WebSocket adapters share one capture and redaction policy.
+- **Less work per log:** Entries below the console level are no longer rendered (`ISpectBaseLogger.isEnabledFor`), file history resolves each day's segment once per save, and export scrubbing classifies keys once per call.
+- **Release tooling:** `deps` and `sync` handle exact, range, and map-form internal constraints; `publish` and `check-published` share one version gate and suggestion; `PUBLISH_FORCE` is documented.
 
 ### Deprecations
 
-- **Scheduled for 8.0.0:** Unused helpers on BLoC and Riverpod settings, `DbLogKeys` and `DbTxnOps` constants, `ISpectDbTxn.runInTransactionZone`, `NetworkLoggerMixin.shouldProcess`, `RedactionService.redactExportString`, `InspectorMode.inspectAndCompare`, and others; see `docs/DEPRECATIONS.md`.
+- **Scheduled for 8.0.0:** Unused helpers on BLoC and Riverpod settings, `DbLogKeys` and `DbTxnOps` constants, `ISpectDbTxn.runInTransactionZone`, `NetworkLoggerMixin.shouldProcess`, `RedactionService.redactExportString`, `InspectorMode.inspectAndCompare`, the `l10n` parameter of `ISpectToaster` toasts, and others; see `docs/DEPRECATIONS.md`.
 
 ## 7.1.0-dev.4
 

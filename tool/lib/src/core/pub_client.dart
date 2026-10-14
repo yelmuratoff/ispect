@@ -228,6 +228,21 @@ final class BlockedByPeak extends PublishGate {
   bool get allowed => false;
 }
 
+/// The host left the published history of the package unanswered, so the
+/// release cannot be judged and must not proceed.
+final class PublishedVersionsUnknown extends PublishGate {
+  const PublishedVersionsUnknown({
+    required super.package,
+    required super.target,
+    required this.error,
+  });
+
+  final PubApiException error;
+
+  @override
+  bool get allowed => false;
+}
+
 /// The lowest version the gate would let through, given [peaks] - the highest
 /// version each package already serves on the line being released.
 ///

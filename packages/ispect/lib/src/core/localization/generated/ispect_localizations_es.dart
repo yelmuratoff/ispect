@@ -1293,6 +1293,13 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
       'Error desconocido al procesar el contenido';
 
   @override
+  String get contentEmptyError => 'El contenido está vacío';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'El contenido supera los límites seguros de importación';
+
+  @override
   String get correlationIdShort => 'Corr';
 
   @override

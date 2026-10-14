@@ -109,11 +109,13 @@ extension InspectorControllerPointer on InspectorController {
 
   void onPointerScroll(PointerScrollEvent scrollEvent) {
     if (!isEnabled) return;
-    if (modeNotifier.value == InspectorMode.zoom) {
-      _setZoomScale(
-        zoomScaleNotifier.value + _zoomStep * -scrollEvent.scrollDelta.dy.sign,
-      );
+    final mode = modeNotifier.value;
+    if (mode != InspectorMode.zoom && mode != InspectorMode.colorPicker) {
+      return;
     }
+    _setZoomScale(
+      zoomScaleNotifier.value + _zoomStep * -scrollEvent.scrollDelta.dy.sign,
+    );
   }
 
   void _onPointerHover(Offset pointerOffset) {

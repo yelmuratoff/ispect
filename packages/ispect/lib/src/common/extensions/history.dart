@@ -1,4 +1,5 @@
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 
 /// Formats log history for human-readable diagnostic handoff.
 extension HistoryListFlutterText on List<ISpectLogData> {
@@ -10,7 +11,7 @@ extension HistoryListFlutterText on List<ISpectLogData> {
     if (isEmpty) return '';
     final limits =
         (resourceLimits ??
-              ISpect.loggerIfInitialized?.options.resourceLimits ??
+              ISpectResourceLimits.configured ??
               captureISpectLogDataForEgress(first).resourceLimits)
           ..validate();
     final sb = StringBuffer();

@@ -381,6 +381,8 @@
     "contentProcessingError": "Ошибка обработки содержимого",
     "failedToLoadLogContent": "Не удалось загрузить содержимое логов",
     "unknownContentProcessingError": "Неизвестная ошибка при обработке содержимого",
+    "contentEmptyError": "Содержимое пустое",
+    "contentExceedsSafeLimitsError": "Содержимое превышает безопасные лимиты импорта",
     "correlationIdShort": "Корр",
     "transactionIdShort": "Транз",
     "columnType": "Тип",

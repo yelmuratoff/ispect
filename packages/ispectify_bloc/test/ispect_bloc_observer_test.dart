@@ -678,6 +678,73 @@ void main() {
             equals(firstEventId),
           );
         });
+
+        test('observers sharing a bloc keep independent correlations', () {
+          final otherLogger = RecordingLogger();
+          addTearDown(otherLogger.dispose);
+          final first = ISpectBlocObserver(logger: logger);
+          final second = ISpectBlocObserver(logger: otherLogger);
+          const event = 'shared';
+
+          first.onEvent(bloc, event);
+          second.onEvent(bloc, event);
+          first.onDone(bloc, event);
+          second.onDone(bloc, event);
+
+          for (final recording in [logger, otherLogger]) {
+            final eventId = recording
+                .byOperation('event')
+                .single
+                .additionalData?[TraceKeys.correlationId];
+            expect(eventId, isA<String>());
+            expect(
+              recording
+                  .byOperation('done')
+                  .single
+                  .additionalData?[TraceKeys.correlationId],
+              equals(eventId),
+            );
+          }
+        });
+
+        test(
+            'untracked completion does not end overflow before a reused event '
+            'is tracked', () {
+          final observer = ISpectBlocObserver(
+            logger: logger,
+            settings: const ISpectBlocSettings(
+              resourceLimits: DiagnosticResourceLimits(
+                maxPendingCorrelations: 1,
+              ),
+            ),
+          );
+          const reused = 'reused';
+          final tracked = Object();
+          final untracked = Object();
+
+          observer
+            ..onEvent(bloc, tracked)
+            ..onEvent(bloc, reused);
+          logger.disable();
+          observer.onEvent(bloc, untracked);
+          logger.enable();
+          observer
+            ..onDone(bloc, untracked)
+            ..onDone(bloc, tracked)
+            ..onEvent(bloc, reused)
+            ..onDone(bloc, reused);
+
+          final reusedEventId = logger
+              .byOperation('event')
+              .last
+              .additionalData?[TraceKeys.correlationId];
+          final doneLogs = logger.byOperation('done');
+          expect(doneLogs, hasLength(3));
+          expect(
+            doneLogs.last.additionalData?[TraceKeys.correlationId],
+            isNot(equals(reusedEventId)),
+          );
+        });
       });
 
       group('expando cleanup', () {

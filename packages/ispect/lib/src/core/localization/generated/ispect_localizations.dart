@@ -2411,6 +2411,18 @@ abstract class ISpectGeneratedLocalization {
   /// **'Unknown error occurred while processing content'**
   String get unknownContentProcessingError;
 
+  /// No description provided for @contentEmptyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Content is empty'**
+  String get contentEmptyError;
+
+  /// No description provided for @contentExceedsSafeLimitsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Content exceeds the safe import limits'**
+  String get contentExceedsSafeLimitsError;
+
   /// No description provided for @correlationIdShort.
   ///
   /// In en, this message translates to:

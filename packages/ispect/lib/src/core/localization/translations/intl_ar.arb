@@ -380,6 +380,8 @@
    "contentProcessingError": "خطأ في معالجة المحتوى",
    "failedToLoadLogContent": "تعذر تحميل محتوى السجلات",
    "unknownContentProcessingError": "حدث خطأ غير معروف أثناء معالجة المحتوى",
+   "contentEmptyError": "المحتوى فارغ",
+   "contentExceedsSafeLimitsError": "المحتوى يتجاوز حدود الاستيراد الآمنة",
    "correlationIdShort": "الارتباط",
    "transactionIdShort": "المعاملة",
    "columnType": "النوع",

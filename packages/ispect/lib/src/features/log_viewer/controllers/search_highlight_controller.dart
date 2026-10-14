@@ -82,6 +82,9 @@ class SearchHighlightController extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool needsMatchUpdate(List<ISpectLogData> matches) =>
+      !identical(matches, _lastUpdateMatchesInput);
+
   /// Returns the [SearchMatchState] for a given log entry.
   SearchMatchState matchStateFor(ISpectLogData logEntry) {
     if (_searchMode != SearchMode.highlight) return SearchMatchState.none;

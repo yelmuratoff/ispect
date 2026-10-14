@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/log_tallies.dart';
 
 void main() {
   ISpectSettingsState settingsWith(Set<String> disabled) => ISpectSettingsState(
@@ -115,16 +116,24 @@ void main() {
   });
 
   group('derived viewer statistics', () {
+    List<String> chipKeys(
+      LogTypeKeyTally tally,
+      ISpectViewController controller,
+    ) => tally
+        .update(logs, excludedKeys: controller.settings.disabledLogTypes)
+        .unique;
+
     test('drops a disabled type from the filter chip list', () {
       final controller = ISpectViewController();
       addTearDown(controller.dispose);
+      final tally = LogTypeKeyTally();
 
-      expect(controller.getLogTypeKeys(logs).unique, hasLength(3));
+      expect(chipKeys(tally, controller), hasLength(3));
 
       controller.updateSettings(settingsWith({'riverpod-add'}));
 
       expect(
-        controller.getLogTypeKeys(logs).unique,
+        chipKeys(tally, controller),
         unorderedEquals(<String>['riverpod-update', 'http-request']),
       );
     });
@@ -132,13 +141,13 @@ void main() {
     test('restores a chip once its type is re-enabled', () {
       final controller = ISpectViewController();
       addTearDown(controller.dispose);
+      final tally = LogTypeKeyTally();
 
-      controller
-        ..updateSettings(settingsWith({'riverpod-add'}))
-        ..getLogTypeKeys(logs)
-        ..updateSettings(settingsWith(const {}));
+      controller.updateSettings(settingsWith({'riverpod-add'}));
+      chipKeys(tally, controller);
+      controller.updateSettings(settingsWith(const {}));
 
-      expect(controller.getLogTypeKeys(logs).unique, hasLength(3));
+      expect(chipKeys(tally, controller), hasLength(3));
     });
 
     test('stops counting errors and warnings of a disabled type', () {
@@ -153,12 +162,21 @@ void main() {
       ];
       final controller = ISpectViewController();
       addTearDown(controller.dispose);
+      final tally = LogHeaderTally();
 
-      expect(controller.getLevelStats(noisy), (errors: 2, warnings: 1));
+      expect(tally.update(noisy, filter: controller.filter), (
+        total: 3,
+        errors: 2,
+        warnings: 1,
+      ));
 
       controller.updateSettings(settingsWith({'riverpod-update'}));
 
-      expect(controller.getLevelStats(noisy), (errors: 1, warnings: 0));
+      expect(tally.update(noisy, filter: controller.filter), (
+        total: 1,
+        errors: 1,
+        warnings: 0,
+      ));
     });
 
     test('drops only the newly disabled type from the chip selection', () {

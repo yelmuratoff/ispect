@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -83,9 +84,7 @@ class _HttpComposerScreenState extends State<HttpComposerScreen> {
     senders: widget.senders,
     filePicker: widget.onPickComposerFile,
     seed: widget.seed,
-    resourceLimits:
-        ISpect.loggerIfInitialized?.options.resourceLimits ??
-        DiagnosticResourceLimits.balanced,
+    resourceLimits: ISpectResourceLimits.current,
   );
   late final TextEditingController _urlController = TextEditingController(
     text: _controller.url,

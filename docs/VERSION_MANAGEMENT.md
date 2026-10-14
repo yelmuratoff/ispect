@@ -131,7 +131,7 @@ The GitHub Actions workflows automate the rest.
 2. Keep user-facing notes in the root `CHANGELOG.md`.
 3. Keep README source changes under `docs/readme/**`.
 4. Install the pre-commit hook to catch version drift locally.
-5. Run `ispect_tool publish --dry-run` before any publish attempt.
+5. Run `ispect_tool publish --dry-run` before any publish attempt. `PUBLISH_FORCE` (any non-empty value) skips the per-package confirmation prompt of a real publish, so set it only when you mean to publish every package.
 6. Review the generated diff before committing or publishing.
 
 ## Pre-commit hook

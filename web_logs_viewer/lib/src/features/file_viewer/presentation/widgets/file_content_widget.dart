@@ -10,15 +10,16 @@ class FileContentWidget extends StatelessWidget {
     super.key,
     required this.content,
     required this.file,
-    required this.displayName,
-    required this.mimeType,
+    required this.inspection,
   }) : contentSizeInBytes = utf8.encode(content).length;
 
   final String content;
   final dynamic file;
-  final String displayName;
-  final String mimeType;
+  final FileInspection inspection;
   final int contentSizeInBytes;
+
+  String get displayName => inspection.type.displayName;
+  String get mimeType => inspection.type.mimeType;
 
   @override
   Widget build(BuildContext context) {
@@ -55,23 +56,19 @@ class FileContentWidget extends StatelessWidget {
           const SizedBox(height: 8),
           const SizedBox(height: 32),
           FilledButton(
-            onPressed: () {
-              dynamic data;
-              if (mimeType == 'application/json') {
-                try {
-                  data = jsonDecode(content);
-                } on FormatException catch (e) {
-                  ISpectToaster.showErrorToast(
-                    context,
-                    title: 'Invalid JSON',
-                    message: e.message,
-                  );
-                  return;
-                }
-              } else {
-                data = content;
+            onPressed: () async {
+              final jsonError = inspection.jsonError;
+              if (jsonError != null) {
+                ISpectToaster.showErrorToast(
+                  context,
+                  title: 'Invalid JSON',
+                  message: jsonError.message,
+                );
+                return;
               }
-              Navigator.of(context).push(
+              final data = await viewerContent(content, inspection);
+              if (!context.mounted) return;
+              await Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (context) => JsonScreen(
                     data: {

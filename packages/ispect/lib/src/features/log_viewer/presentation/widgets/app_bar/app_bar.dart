@@ -46,13 +46,18 @@ class ISpectAppBar extends StatefulWidget {
 
   final Color? backgroundColor;
 
+  /// Number of logs that pass the active log type filters; the search query
+  /// does not narrow it.
   final int? totalCount;
 
-  /// Combined count of `error` and `critical` log levels for the live header
-  /// counter. Pass `0` (not `null`) to indicate "computed, none found".
+  /// Number of logs counted in [totalCount] that the severity bar marks as
+  /// errors: `error` or `critical` level, an error log key, or a trace with
+  /// `success: false`. Pass `0` (not `null`) to indicate "computed, none
+  /// found".
   final int? errorCount;
 
-  /// Count of `warning` log level entries for the live header counter.
+  /// Number of logs counted in [totalCount] with `warning` level or the
+  /// warning log key.
   final int? warningCount;
 
   /// Called when the user taps ↑/↓ arrows to navigate search matches.

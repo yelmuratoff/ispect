@@ -241,7 +241,6 @@ class _ActionButtons extends StatelessWidget {
                             title: capturedL10n.logsFileSaved(fileName),
                             duration: const Duration(seconds: 6),
                             messenger: messenger,
-                            l10n: capturedL10n,
                             action: action,
                           ),
                         );

@@ -1276,6 +1276,13 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
       'حدث خطأ غير معروف أثناء معالجة المحتوى';
 
   @override
+  String get contentEmptyError => 'المحتوى فارغ';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'المحتوى يتجاوز حدود الاستيراد الآمنة';
+
+  @override
   String get correlationIdShort => 'الارتباط';
 
   @override

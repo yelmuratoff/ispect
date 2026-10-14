@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -99,8 +100,60 @@ final class _UnboundedExportIterator implements Iterator<int> {
   }
 }
 
+final class _CountingKeySet extends SetBase<String> {
+  _CountingKeySet(this._keys);
+
+  final Set<String> _keys;
+  int iterations = 0;
+
+  @override
+  Iterator<String> get iterator {
+    iterations++;
+    return _keys.iterator;
+  }
+
+  @override
+  int get length => _keys.length;
+
+  @override
+  bool contains(Object? element) => _keys.contains(element);
+
+  @override
+  String? lookup(Object? element) => _keys.lookup(element);
+
+  @override
+  bool add(String value) => _keys.add(value);
+
+  @override
+  bool remove(Object? value) => _keys.remove(value);
+
+  @override
+  Set<String> toSet() => _keys.toSet();
+}
+
 void main() {
   tearDown(ISpectRedaction.reset);
+
+  group('RedactionService export scrubbing', () {
+    test('builds the assignment key matcher once per export call', () {
+      const leafCount = 40;
+      final ignoredKeys = _CountingKeySet({'unrelated_key'});
+      final service = RedactionService();
+
+      final exported = service.redactForExport(
+        {
+          for (var index = 0; index < leafCount; index++)
+            'field$index': 'mode=fast$index&password=hunter$index',
+        },
+        ignoredKeys: ignoredKeys,
+      )! as Map<String, Object?>;
+
+      expect(ignoredKeys.iterations, lessThanOrEqualTo(4));
+      expect(exported, hasLength(leafCount));
+      expect(exported['field7'], contains('mode=fast7'));
+      expect(exported['field7'], isNot(contains('hunter7')));
+    });
+  });
 
   group('RedactionService', () {
     test('exposes ignore-list mutations through its configuration revision',

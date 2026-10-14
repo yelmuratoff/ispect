@@ -767,6 +767,54 @@ void main() {
     );
   });
 
+  test('a failed append commit leaves no bytes behind for the retry', () async {
+    final root = await createPrivateTempDirectory('ispect-recovery-');
+    addTearDown(() => root.delete(recursive: true));
+    File? appendFile;
+    var armed = false;
+    final date = DateTime(2026, 7, 10, 9);
+    final history = file_io.RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+      redactor: _EncodeRecordingRedactor(() {
+        final file = appendFile;
+        if (!armed || file == null) return;
+        armed = false;
+        file.renameSync(
+          '${file.parent.path}${Platform.pathSeparator}000005.jsonl',
+        );
+      }),
+      ioHook: (file, operation) {
+        if (operation == 'appendRecord') appendFile = file;
+      },
+    );
+    addTearDown(history.dispose);
+    history
+      ..add(ISpectLogData('first', id: 'A', time: date))
+      ..add(ISpectLogData('second', id: 'B', time: date));
+
+    armed = true;
+    await expectLater(
+      history.saveToDailyFile(),
+      throwsA(isA<FileLogHistoryException>()),
+    );
+    await history.saveToDailyFile();
+
+    expect(
+      (await history.getLogsByDate(date)).map((log) => log.id),
+      ['A', 'B'],
+    );
+    final lines = <String>[];
+    await for (final entity
+        in Directory(await history.getLogPathByDate(date)).list()) {
+      if (entity is File && entity.path.endsWith('.jsonl')) {
+        lines.addAll(await entity.readAsLines());
+      }
+    }
+    expect(lines.where((line) => line.isNotEmpty), hasLength(2));
+  });
+
   test('a flush requested during a read waits until the read completes',
       () async {
     final root = await createPrivateTempDirectory('ispect-recovery-');

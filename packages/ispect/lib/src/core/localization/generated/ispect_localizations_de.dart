@@ -1301,6 +1301,13 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
       'Unbekannter Fehler bei der Verarbeitung des Inhalts';
 
   @override
+  String get contentEmptyError => 'Der Inhalt ist leer';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'Der Inhalt überschreitet die sicheren Importlimits';
+
+  @override
   String get correlationIdShort => 'Korr';
 
   @override

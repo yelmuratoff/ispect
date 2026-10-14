@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/logs_file/logs_file.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
@@ -26,10 +27,7 @@ class ExportController extends ChangeNotifier {
     Duration feedbackDuration = const Duration(seconds: 2),
   }) : _selectedFormat = availableFormats.first,
        _feedbackDuration = feedbackDuration,
-       _resourceLimits =
-           resourceLimits ??
-           ISpect.loggerIfInitialized?.options.resourceLimits ??
-           DiagnosticResourceLimits.balanced {
+       _resourceLimits = resourceLimits ?? ISpectResourceLimits.current {
     _resourceLimits.validate();
   }
 

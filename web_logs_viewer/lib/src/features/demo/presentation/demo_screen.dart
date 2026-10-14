@@ -31,7 +31,17 @@ class DemoScreen extends StatefulWidget {
   State<DemoScreen> createState() => DemoScreenState();
 }
 
-typedef _ButtonConfig = ({String label, VoidCallback onPressed});
+final class _ButtonConfig {
+  const _ButtonConfig({
+    required this.label,
+    required this.onPressed,
+    this.rebuildsOnTestBloc = false,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+  final bool rebuildsOnTestBloc;
+}
 
 class DemoScreenState extends State<DemoScreen> {
   final TestBloc _testBloc = TestBloc();
@@ -47,7 +57,7 @@ class DemoScreenState extends State<DemoScreen> {
     ISpectScopeModel iSpect,
   ) {
     return <_ButtonConfig>[
-      (
+      _ButtonConfig(
         label: 'All logs',
         onPressed: () {
           ISpect.logger.critical('critical');
@@ -67,7 +77,7 @@ class DemoScreenState extends State<DemoScreen> {
           ISpect.logger.warning('warning');
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Show modal bottom sheet',
         onPressed: () {
           showModalBottomSheet(
@@ -87,7 +97,7 @@ class DemoScreenState extends State<DemoScreen> {
           );
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Mock Nested Map with Depth IDs',
         onPressed: () {
           const int depth = 5000;
@@ -109,7 +119,7 @@ class DemoScreenState extends State<DemoScreen> {
           }
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Mock Nested List with Depth IDs',
         onPressed: () {
           final List<Map<String, dynamic>> largeList = List.generate(
@@ -130,7 +140,7 @@ class DemoScreenState extends State<DemoScreen> {
           }
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Connect to WebSocket',
         onPressed: () {
           // Using a non-existent WebSocket URL to trigger a connection error.
@@ -171,7 +181,7 @@ class DemoScreenState extends State<DemoScreen> {
           });
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Mock Large JSON Response',
         onPressed: () {
           final List<Map<String, dynamic>> largeList = List.generate(
@@ -181,13 +191,14 @@ class DemoScreenState extends State<DemoScreen> {
           ISpect.logger.print(largeList.toString());
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Test Cubit',
+        rebuildsOnTestBloc: true,
         onPressed: () {
           _testBloc.load(data: 'Test data');
         },
       ),
-      (
+      _ButtonConfig(
         label: 'All Bloc logs',
         onPressed: () async {
           final testCubit = TestBloc();
@@ -197,7 +208,7 @@ class DemoScreenState extends State<DemoScreen> {
           testCubit.close();
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Get last log',
         onPressed: () async {
           final history = ISpect.logger.history;
@@ -209,7 +220,7 @@ class DemoScreenState extends State<DemoScreen> {
           ISpect.logger.info('Last log: ${lastLog.toJson()}');
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Get first log',
         onPressed: () async {
           final history = ISpect.logger.history;
@@ -221,7 +232,7 @@ class DemoScreenState extends State<DemoScreen> {
           ISpect.logger.info('First log: ${firstLog.toJson()}');
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Send HTTP request (http package)',
         onPressed: () async {
           await client.get(
@@ -229,7 +240,7 @@ class DemoScreenState extends State<DemoScreen> {
           );
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Send error HTTP request (http package)',
         onPressed: () async {
           await client.get(
@@ -237,13 +248,13 @@ class DemoScreenState extends State<DemoScreen> {
           );
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Toggle theme',
         onPressed: () {
           ThemeProvider.toggleTheme(context);
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Toggle ISpect',
         onPressed: () {
           ISpect.logger.track(
@@ -255,19 +266,19 @@ class DemoScreenState extends State<DemoScreen> {
           iSpect.toggleISpect();
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Send HTTP request',
         onPressed: () {
           dio.get<dynamic>('/posts/1');
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Send HTTP request with error',
         onPressed: () {
           dio.get<dynamic>('/post3s/1');
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Send HTTP request with Token',
         onPressed: () {
           dio.options.headers.addAll({
@@ -278,7 +289,7 @@ class DemoScreenState extends State<DemoScreen> {
           dio.options.headers.remove('Authorization');
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Send HTTP request with Token (http)',
         onPressed: () async {
           await client.get(
@@ -288,7 +299,7 @@ class DemoScreenState extends State<DemoScreen> {
           );
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Upload file to dummy server',
         onPressed: () {
           final FormData formData = FormData();
@@ -302,7 +313,7 @@ class DemoScreenState extends State<DemoScreen> {
           dummyDio.post<dynamic>('/api/v1/files/upload', data: formData);
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Upload file to dummy server (http)',
         onPressed: () {
           final List<int> bytes = [1, 2, 3]; // File data as bytes
@@ -325,14 +336,14 @@ class DemoScreenState extends State<DemoScreen> {
           client.send(request);
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Throw exception',
         onPressed: () {
           throw Exception('Test exception');
         },
       ),
 
-      (
+      _ButtonConfig(
         label: 'Log 10000 items',
         onPressed: () {
           for (int i = 0; i < 10000; i++) {
@@ -340,7 +351,7 @@ class DemoScreenState extends State<DemoScreen> {
           }
         },
       ),
-      (
+      _ButtonConfig(
         label: 'Logs File',
         onPressed: () async {
           await LogsFileExample.createAndHandleLogsFile();
@@ -382,7 +393,7 @@ class DemoScreenState extends State<DemoScreen> {
                 onPressed: config.onPressed,
                 child: Text(config.label),
               );
-              if (config.label == 'Test Cubit') {
+              if (config.rebuildsOnTestBloc) {
                 return [
                   BlocBuilder<TestBloc, TestState>(
                     bloc: _testBloc,

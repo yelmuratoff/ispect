@@ -409,6 +409,8 @@
     "contentProcessingError": "خەلەتیا پرۆسێسکرنا ناڤەڕۆکێ",
     "failedToLoadLogContent": "بارکرنا ناڤەڕۆکا توماران سەرنەکەفت",
     "unknownContentProcessingError": "خەلەتیەکا نەناسکری د دەمێ پرۆسێسکرنا ناڤەڕۆکێ دا چێبوو",
+    "contentEmptyError": "ناڤەڕۆک ڤالایە",
+    "contentExceedsSafeLimitsError": "ناڤەڕۆک ژ سنوورێن ئێمنێن هاوردەکرنێ دەرباز دبیت",
     "correlationIdShort": "پەیوەندی",
     "transactionIdShort": "مامەلە",
     "columnType": "جۆر",

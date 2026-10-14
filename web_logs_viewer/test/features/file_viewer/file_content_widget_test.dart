@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:web_logs_viewer/src/core/models/models.dart';
+import 'package:web_logs_viewer/src/core/utils/file_type_detector.dart';
 import 'package:web_logs_viewer/src/features/file_viewer/presentation/widgets/file_content_widget.dart';
 
 void main() {
@@ -12,8 +13,9 @@ void main() {
             body: FileContentWidget(
               content: 'héllo',
               file: const MockFile(content: 'héllo', fileName: 'notes.txt'),
-              displayName: 'Text',
-              mimeType: 'text/plain',
+              inspection: const FileInspection(
+                type: (displayName: 'Text', mimeType: 'text/plain'),
+              ),
             ),
           ),
         ),

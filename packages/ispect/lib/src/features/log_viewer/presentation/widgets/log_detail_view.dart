@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
@@ -89,9 +90,7 @@ class _LogDetailViewState extends State<LogDetailView> {
   late bool _isViewingRequest;
   late JsonScreen _jsonScreen;
 
-  DiagnosticResourceLimits get _resourceLimits =>
-      ISpect.loggerIfInitialized?.options.resourceLimits ??
-      DiagnosticResourceLimits.balanced;
+  DiagnosticResourceLimits get _resourceLimits => ISpectResourceLimits.current;
 
   @override
   void initState() {

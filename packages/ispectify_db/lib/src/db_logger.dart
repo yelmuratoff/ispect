@@ -12,6 +12,18 @@ import 'package:ispectify_db/src/sql_digest.dart';
 import 'package:ispectify_db/src/transaction.dart';
 
 const _dbProjectionNotProvided = _DbProjectionNotProvided();
+const _dbKeyProbe = 'value';
+final _dbKeyEmailPattern = RegExp(
+  r'[^\s@:/]+(?:@|%40)[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}',
+  caseSensitive: false,
+);
+final _dbKeySegmentDelimiters = RegExp(r'[:/|#.;,=?&\s]+');
+final _dbKeyOpaqueSegment = RegExp(r'^[A-Za-z0-9_-]{16,}$');
+final _dbKeyMixedRun = RegExp(
+  '(?=[A-Za-z0-9]*[A-Za-z])(?=[A-Za-z0-9]*[0-9])[A-Za-z0-9]{8,}',
+);
+final _dbKeyPhoneSegment = RegExp(r'^\+?\d{7,15}$');
+const _dbKeyCredentialNamespaces = {'auth', 'sid', 'session', 'sessions'};
 final _inertDbToken = ISpectDbToken(stopwatch: Stopwatch());
 
 /// Database logging extension on [ISpectLogger].
@@ -167,7 +179,6 @@ extension ISpectLoggerDb on ISpectLogger {
             statement,
             resourceLimits: resolvedConfig.resourceLimits!,
           ),
-      key: key,
       success: success ?? (error == null),
       preprocessed: preprocessed,
       duration: duration,
@@ -185,7 +196,6 @@ extension ISpectLoggerDb on ISpectLogger {
     required String source,
     required String operation,
     required String? target,
-    required String? key,
     required bool success,
     required _PreprocessedDbTrace preprocessed,
     required Duration? duration,
@@ -201,7 +211,7 @@ extension ISpectLoggerDb on ISpectLogger {
           resourceLimits: resourceLimits,
         );
     final safeTarget = bound(target);
-    final safeKey = bound(_safeDbKey(key, shouldRedact));
+    final safeKey = bound(preprocessed.key);
     trace(
       category: dbCategory,
       source: _boundDbText(
@@ -466,7 +476,6 @@ extension ISpectLoggerDb on ISpectLogger {
         source: source,
         operation: operation,
         target: resolvedTarget,
-        key: key,
         success: success,
         preprocessed: preprocessed,
         duration: elapsed,
@@ -671,11 +680,19 @@ extension ISpectLoggerDb on ISpectLogger {
       shouldRedact: shouldRedact,
       resourceLimits: resourceLimits,
     );
+    final redactor = _dbRedactor(input, sensitiveKeys);
+    final safeKey = _safeDbKey(
+      input.key,
+      redactor: redactor,
+      resourceLimits: resourceLimits,
+    );
     final boundedMeta = LogExportOutput.boundJsonValue(
       _buildDbMeta(
         input,
         diagnostics,
         sensitiveKeys: sensitiveKeys,
+        redactor: redactor,
+        safeKey: safeKey,
         rawErrorText: rawErrorText,
       ),
       maxBytes: resourceLimits.maxDatabaseMetadataBytes,
@@ -686,6 +703,7 @@ extension ISpectLoggerDb on ISpectLogger {
       meta: boundedMeta is Map<String, Object?>
           ? boundedMeta
           : const <String, Object?>{},
+      key: safeKey,
       error: rawErrorText,
       errorStackTrace: diagnostics.errorStackTraceText == null
           ? null
@@ -697,6 +715,8 @@ extension ISpectLoggerDb on ISpectLogger {
     DbPreprocessInput input,
     _BoundedDbDiagnostics diagnostics, {
     required Set<String> sensitiveKeys,
+    required RedactionService? redactor,
+    required String? safeKey,
     required String? rawErrorText,
   }) {
     final shouldRedact = input.shouldRedact;
@@ -705,7 +725,6 @@ extension ISpectLoggerDb on ISpectLogger {
       input.resolvedMaxArgsLength,
       resourceLimits,
     );
-    final redactor = _dbRedactor(input, sensitiveKeys);
     final boundedStatement = _boundNullableDbText(
       input.statement,
       shouldRedact: shouldRedact,
@@ -777,12 +796,7 @@ extension ISpectLoggerDb on ISpectLogger {
           shouldRedact: shouldRedact,
           resourceLimits: resourceLimits,
         ),
-      if (input.key != null)
-        DbLogKeys.key: _boundDbText(
-          _safeDbKey(input.key, shouldRedact)!,
-          shouldRedact: shouldRedact,
-          resourceLimits: resourceLimits,
-        ),
+      if (safeKey != null) DbLogKeys.key: safeKey,
       DbLogKeys.args: processedArgs,
       DbLogKeys.namedArgs: processedNamedArgs,
       if (input.affected != null) DbLogKeys.affected: input.affected,
@@ -813,8 +827,57 @@ extension ISpectLoggerDb on ISpectLogger {
     return truncated is String ? truncated : truncated?.toString();
   }
 
-  static String? _safeDbKey(String? key, bool shouldRedact) =>
-      key == null || !shouldRedact ? key : defaultPlaceholder;
+  static String? _safeDbKey(
+    String? key, {
+    required RedactionService? redactor,
+    required DiagnosticResourceLimits resourceLimits,
+  }) {
+    if (key == null) return null;
+    final bounded = _boundDbText(
+      key,
+      shouldRedact: redactor != null,
+      resourceLimits: resourceLimits,
+    );
+    if (redactor == null) return bounded;
+    if (_isSensitiveDbKeyName(bounded, redactor) ||
+        _dbKeyEmailPattern.hasMatch(bounded) ||
+        _hasSensitiveDbKeySegment(bounded, redactor)) {
+      return defaultPlaceholder;
+    }
+    final scrubbed = redactor.redactForExport(
+      bounded,
+      resourceLimits: resourceLimits,
+    );
+    return scrubbed == bounded ? bounded : defaultPlaceholder;
+  }
+
+  static bool _isSensitiveDbKeyName(String name, RedactionService redactor) {
+    final keyProbe = redactor.redact(<String, Object?>{name: _dbKeyProbe});
+    return keyProbe is! Map || keyProbe[name] != _dbKeyProbe;
+  }
+
+  static bool _hasSensitiveDbKeySegment(
+    String key,
+    RedactionService redactor,
+  ) {
+    final segments = key.split(_dbKeySegmentDelimiters);
+    if (segments.length < 2) return _isOpaqueOrPhoneDbKeySegment(key);
+    for (final segment in segments) {
+      if (segment.isEmpty) continue;
+      if (_dbKeyCredentialNamespaces.contains(segment.toLowerCase()) ||
+          _isOpaqueOrPhoneDbKeySegment(segment) ||
+          _isSensitiveDbKeyName(segment, redactor)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static bool _isOpaqueOrPhoneDbKeySegment(String segment) {
+    if (_dbKeyPhoneSegment.hasMatch(segment)) return true;
+    return _dbKeyOpaqueSegment.hasMatch(segment) &&
+        _dbKeyMixedRun.hasMatch(segment);
+  }
 
   static String _redactDbError(
     String error,
@@ -1093,11 +1156,13 @@ final class _BoundedDbDiagnostics {
 final class _PreprocessedDbTrace {
   const _PreprocessedDbTrace({
     required this.meta,
+    required this.key,
     required this.error,
     required this.errorStackTrace,
   });
 
   final Map<String, Object?> meta;
+  final String? key;
   final String? error;
   final StackTrace? errorStackTrace;
 }

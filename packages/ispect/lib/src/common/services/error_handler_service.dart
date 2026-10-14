@@ -11,6 +11,15 @@ import 'package:ispectify/ispectify.dart';
 /// `PlatformDispatcher`, guarded-zone, and `print`) and funnels every captured
 /// failure through [ISpectLogger.handle]. Host callbacks keep the original
 /// errors and stacks so application recovery and crash reporting still work.
+///
+/// `FlutterError.onError` and `PlatformDispatcher.onError` handlers already
+/// installed at setup are chained: each runs after ISpect logs the failure,
+/// and the `PlatformDispatcher` result is the previous handler's result, or
+/// `true` when there was none. A previous `FlutterError.onError` that only
+/// presents the error (the framework default) is skipped because ISpect
+/// already reports it; `FlutterError.presentError` stays replaced, but a
+/// chained handler that calls it reaches the original presenter without a
+/// second report. Chained handlers run even when an ISpect callback throws.
 final class ErrorHandlerService {
   ErrorHandlerService({required this.logger, required this.filters});
 
@@ -18,7 +27,9 @@ final class ErrorHandlerService {
   final List<String> filters;
 
   bool _isHandlingPrint = false;
+  bool _isForwardingToHost = false;
   bool _isDisposed = false;
+  FlutterExceptionHandler? _presenterAtSetup;
   late FlutterExceptionHandler _previousPresentError;
   FlutterExceptionHandler? _installedPresentError;
   FlutterExceptionHandler? _previousFlutterError;
@@ -37,6 +48,7 @@ final class ErrorHandlerService {
       throw StateError('Cannot configure a disposed ErrorHandlerService.');
     }
     logger.info('🚀 ISpect: Setting up error handling.');
+    _presenterAtSetup = FlutterError.presentError;
 
     if (options.isFlutterPresentHandlingEnabled) {
       _setupPresentErrorHandler(
@@ -76,7 +88,7 @@ final class ErrorHandlerService {
     final previous = FlutterError.presentError;
     late final FlutterExceptionHandler installed;
     installed = (details) {
-      if (_isDisposed) {
+      if (_isDisposed || _isForwardingToHost) {
         previous(details);
         return;
       }
@@ -97,7 +109,9 @@ final class ErrorHandlerService {
       }
 
       try {
-        WidgetsBinding.instance.addPostFrameCallback((_) => report());
+        WidgetsBinding.instance
+          ..addPostFrameCallback((_) => report())
+          ..ensureVisualUpdate();
       } catch (_) {
         report();
       }
@@ -118,15 +132,20 @@ final class ErrorHandlerService {
       if (_isDisposed) {
         return previous?.call(error, stack) ?? false;
       }
-      final snapshot = _captureDiagnostic(error, stack);
-      onPlatformDispatcherError?.call(error, stack);
-      _report(
-        snapshot: snapshot,
-        logMessage: 'Platform error caught',
-        onUncaughtError: onUncaughtError,
-        isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
-      );
-      return true;
+      late final bool handled;
+      try {
+        final snapshot = _captureDiagnostic(error, stack);
+        onPlatformDispatcherError?.call(error, stack);
+        _report(
+          snapshot: snapshot,
+          logMessage: 'Platform error caught',
+          onUncaughtError: onUncaughtError,
+          isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
+        );
+      } finally {
+        handled = previous?.call(error, stack) ?? true;
+      }
+      return handled;
     };
     _previousPlatformError = previous;
     _installedPlatformError = installed;
@@ -145,19 +164,43 @@ final class ErrorHandlerService {
         previous?.call(details);
         return;
       }
-      final snapshot = _captureDiagnostic(details.exception, details.stack);
-      onFlutterError?.call(details, details.stack);
-      _report(
-        snapshot: snapshot,
-        logMessage: 'Flutter error caught',
-        onUncaughtError: onUncaughtError,
-        isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
-      );
+      try {
+        final snapshot = _captureDiagnostic(details.exception, details.stack);
+        onFlutterError?.call(details, details.stack);
+        _report(
+          snapshot: snapshot,
+          logMessage: 'Flutter error caught',
+          onUncaughtError: onUncaughtError,
+          isUncaughtErrorsHandlingEnabled: isUncaughtErrorsHandlingEnabled,
+        );
+      } finally {
+        if (previous != null && !_isFrameworkPresenter(previous)) {
+          _forwardToHost(previous, details);
+        }
+      }
     };
     _previousFlutterError = previous;
     _installedFlutterError = installed;
     FlutterError.onError = installed;
   }
+
+  void _forwardToHost(
+    FlutterExceptionHandler handler,
+    FlutterErrorDetails details,
+  ) {
+    final wasForwarding = _isForwardingToHost;
+    _isForwardingToHost = true;
+    try {
+      handler(details);
+    } finally {
+      _isForwardingToHost = wasForwarding;
+    }
+  }
+
+  bool _isFrameworkPresenter(FlutterExceptionHandler handler) =>
+      identical(handler, FlutterError.dumpErrorToConsole) ||
+      identical(handler, _presenterAtSetup) ||
+      identical(handler, _installedPresentError);
 
   void handleZoneError(
     Object error,

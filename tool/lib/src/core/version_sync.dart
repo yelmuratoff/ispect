@@ -22,6 +22,10 @@ final RegExp _nestedPathValue = RegExp(r'^    path:\s*\S');
 final RegExp _nestedSourceKey = RegExp('^    source:');
 final RegExp _nestedVersionKey = RegExp('^    version:');
 final RegExp _fieldSeparator = RegExp(r'\s+');
+final RegExp _dependencyEntry = RegExp(r'^  ([A-Za-z0-9_]+):(.*)$');
+final RegExp _flowVersion =
+    RegExp(r'''version:\s*("[^"]*"|'[^']*'|[^,}]+?)\s*(?=[,}])''');
+final RegExp _trailingComment = RegExp(r'\s+#.*$');
 
 const String _usage = '''
 Sync the repository version across every package manifest.
@@ -348,49 +352,99 @@ final class VersionSync {
     List<String> changedFiles,
   ) {
     final relative = _relative(file);
-    var contents = file.readAsStringSync();
-    var updated = false;
+    final expected = '^$target';
+    final (:lines, :moved) = _pinInternalConstraints(
+      _splitLines(file.readAsStringSync()),
+      packageNames.toSet(),
+      expected,
+    );
+    if (moved.isEmpty) {
+      return;
+    }
 
     for (final packageName in packageNames) {
-      final prefix = '  $packageName: ^';
-      final expected = '$prefix$target';
-      final lines = _splitLines(contents);
-
-      if (!lines.any((line) => line.startsWith(prefix))) {
-        continue;
+      if (moved.contains(packageName)) {
+        out.writeln('[CHG] $relative -> $packageName $expected');
       }
-      if (lines.any((line) => line == expected)) {
-        continue;
-      }
-
-      out.writeln('[CHG] $relative -> $packageName ^$target');
-      updated = true;
-      if (dryRun) {
-        continue;
-      }
-
-      var inDependencies = false;
-      final rewritten = <String>[];
-      for (final line in lines) {
-        if (_topLevelKey.hasMatch(line)) {
-          inDependencies = false;
-        }
-        if (line.startsWith('dependencies:') ||
-            line.startsWith('dev_dependencies:')) {
-          inDependencies = true;
-        }
-        rewritten.add(
-          inDependencies && line.startsWith(prefix) ? expected : line,
-        );
-      }
-
-      contents = _joinAlwaysTerminated(rewritten);
-      _writeAtomically(file, contents);
     }
-
-    if (updated) {
-      changedFiles.add(relative);
+    if (!dryRun) {
+      _writeAtomically(file, _joinAlwaysTerminated(lines));
     }
+    changedFiles.add(relative);
+  }
+
+  /// Rewrites every constraint on an [internal] package inside `dependencies`
+  /// and `dev_dependencies` to [expected], whether written inline, as a
+  /// `{version: ...}` flow map, or as a block map with a `version:` key.
+  ({List<String> lines, Set<String> moved}) _pinInternalConstraints(
+    List<String> lines,
+    Set<String> internal,
+    String expected,
+  ) {
+    final moved = <String>{};
+    final rewritten = <String>[];
+    var inDependencies = false;
+    String? blockOwner;
+
+    for (final (index, line) in lines.indexed) {
+      if (_topLevelKey.hasMatch(line)) {
+        inDependencies = line.startsWith('dependencies:') ||
+            line.startsWith('dev_dependencies:');
+        blockOwner = null;
+        rewritten.add(line);
+        continue;
+      }
+      if (!inDependencies) {
+        rewritten.add(line);
+        continue;
+      }
+
+      final entry = _dependencyEntry.firstMatch(line);
+      if (entry != null) {
+        final name = entry.group(1)!;
+        final value = _scalarValue(entry.group(2)!);
+        final isInternal = internal.contains(name);
+        final isBare = value.isEmpty && !_hasNestedChild(lines, index + 1);
+        blockOwner = isInternal && value.isEmpty && !isBare ? name : null;
+
+        final pinned = switch (value) {
+          _ when !isInternal => line,
+          _ when isBare => '  $name: $expected',
+          _ when value.isEmpty => line,
+          _ when value.startsWith('{') =>
+            line.replaceFirst(_flowVersion, 'version: $expected'),
+          _ when value == expected => line,
+          _ => '  $name: $expected',
+        };
+        if (pinned != line) {
+          moved.add(name);
+        }
+        rewritten.add(pinned);
+        continue;
+      }
+
+      if (blockOwner != null && _nestedVersionKey.hasMatch(line)) {
+        final value = _scalarValue(line.substring(line.indexOf(':') + 1));
+        if (value != expected) {
+          moved.add(blockOwner);
+          rewritten.add('    version: $expected');
+          continue;
+        }
+      }
+      rewritten.add(line);
+    }
+    return (lines: rewritten, moved: moved);
+  }
+
+  bool _hasNestedChild(List<String> lines, int start) {
+    for (final line in lines.skip(start)) {
+      final trimmed = line.trimLeft();
+      if (trimmed.isEmpty || trimmed.startsWith('#')) {
+        continue;
+      }
+      return line.startsWith('   ');
+    }
+    return false;
   }
 
   void _writeAtomically(File file, String contents) {
@@ -514,4 +568,12 @@ String _firstFieldValue(List<String> lines, String key) {
     return fields.length > 1 ? fields[1] : '';
   }
   return '';
+}
+
+String _scalarValue(String raw) {
+  final value = raw.replaceFirst(_trailingComment, '').trim();
+  final quoted = value.length >= 2 &&
+      (value.startsWith('"') && value.endsWith('"') ||
+          value.startsWith("'") && value.endsWith("'"));
+  return quoted ? value.substring(1, value.length - 1) : value;
 }

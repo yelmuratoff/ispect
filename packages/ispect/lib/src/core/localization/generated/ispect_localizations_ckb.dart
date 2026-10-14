@@ -1280,6 +1280,13 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
       'هەڵەیەکی نەناسراو لە کاتی پرۆسێسکردنی ناوەڕۆکدا ڕوویدا';
 
   @override
+  String get contentEmptyError => 'ناوەڕۆک بەتاڵە';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'ناوەڕۆک لە سنوورە سەلامەتەکانی هاوردە تێدەپەڕێت';
+
+  @override
   String get correlationIdShort => 'پەیوەندی';
 
   @override

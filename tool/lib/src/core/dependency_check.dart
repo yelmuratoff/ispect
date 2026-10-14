@@ -21,7 +21,7 @@ enum PubspecSection {
   final String key;
 }
 
-/// One internal `^` constraint that disagrees with `version.config`.
+/// One internal constraint other than `^<version>` from `version.config`.
 final class DependencyInconsistency {
   const DependencyInconsistency({
     required this.pubspec,
@@ -42,7 +42,7 @@ final class DependencyInconsistency {
 
   final PubspecSection section;
 
-  /// The constraint as written, caret included.
+  /// The constraint as written: a caret, exact, or range constraint, or `any`.
   final String constraint;
 
   String describe(Version expected) => '$owner (${section.key}) depends on '
@@ -52,8 +52,10 @@ final class DependencyInconsistency {
   String toString() => '$pubspec:${section.key}:$dependency=$constraint';
 }
 
-/// Verifies that every internal `^` constraint between monorepo packages
-/// matches the version in `version.config`.
+/// Verifies that every internal version constraint between monorepo packages
+/// is exactly `^<version>` for the version in `version.config`.
+///
+/// A path, git, or sdk dependency declares no version and is skipped.
 ///
 /// Covers the package pubspecs under `packages/`, their `example/` projects,
 /// and the standalone `web_logs_viewer` project.
@@ -136,9 +138,8 @@ final class DependencyCheck {
         if (dependency is! String || !candidates.contains(dependency)) {
           continue;
         }
-        final constraint = _caretConstraint(entry.value);
-        if (constraint == null ||
-            constraint.substring(1) == expected.toString()) {
+        final constraint = _versionConstraint(entry.value);
+        if (constraint == null || constraint == '^$expected') {
           continue;
         }
         found.add(
@@ -155,16 +156,12 @@ final class DependencyCheck {
     return found;
   }
 
-  static String? _caretConstraint(Object? value) {
-    if (value is String) {
-      return value.startsWith('^') ? value : null;
-    }
-    if (value is YamlMap) {
-      final version = value['version'];
-      return version is String && version.startsWith('^') ? version : null;
-    }
-    return null;
-  }
+  static String? _versionConstraint(Object? value) => switch (value) {
+        YamlMap() when value.containsKey('version') => '${value['version']}',
+        YamlMap() => null,
+        null => 'any',
+        _ => '$value',
+      };
 
   /// Throws [PubspecException] when the file exists but does not parse, and
   /// [ManifestException] when it declares no name.

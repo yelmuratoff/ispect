@@ -1240,6 +1240,12 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get unknownContentProcessingError => '处理内容时发生未知错误';
 
   @override
+  String get contentEmptyError => '内容为空';
+
+  @override
+  String get contentExceedsSafeLimitsError => '内容超出安全导入限制';
+
+  @override
   String get correlationIdShort => '关联';
 
   @override

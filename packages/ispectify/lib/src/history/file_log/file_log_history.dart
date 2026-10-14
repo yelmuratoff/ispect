@@ -10,29 +10,32 @@ export 'session_statistics.dart';
 
 /// Extended [ILogHistory] with daily file-based persistence.
 ///
-/// Implementations organize logs into per-day JSON files, support
-/// auto-save, cleanup strategies, and import/export.
+/// Implementations write logs as JSON Lines into size-bounded segment files
+/// inside one directory per day, and support auto-save, cleanup strategies,
+/// and import/export.
 abstract class FileLogHistory implements ILogHistory {
-  /// Persists current history to a daily-organized file.
+  /// Appends entries added since the last save to the segment files of
+  /// their own dates. Entries already on disk are not written again.
   Future<void> saveToDailyFile();
 
-  /// Replaces current history with entries from [date].
-  /// Returns silently if the file does not exist.
+  /// Replaces current history with the entries persisted for [date].
+  /// Returns silently if nothing is stored for that date.
   Future<void> loadFromDate(DateTime date);
 
   /// Convenience for `loadFromDate(DateTime.now())`.
   Future<void> loadTodayHistory();
 
-  /// Serializes current history to a JSON string.
+  /// Serializes current history to a JSON array string.
   Future<String> exportToJson();
 
-  /// Appends entries parsed from [jsonString] to current history.
+  /// Appends entries parsed from [jsonString] to current history and queues
+  /// them for persistence under their original dates.
   Future<void> importFromJson(String jsonString);
 
   /// Removes all persisted log files.
   Future<void> clearAllFileStorage();
 
-  /// Removes the log file for [date].
+  /// Removes every persisted file for [date].
   Future<void> clearDateStorage(DateTime date);
 
   /// Path to the managed history directory.

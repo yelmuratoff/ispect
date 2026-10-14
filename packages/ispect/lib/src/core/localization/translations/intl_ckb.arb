@@ -409,6 +409,8 @@
    "contentProcessingError": "هەڵەی پرۆسێسکردنی ناوەڕۆک",
    "failedToLoadLogContent": "بارکردنی ناوەڕۆکی تۆمار سەرکەوتوو نەبوو",
    "unknownContentProcessingError": "هەڵەیەکی نەناسراو لە کاتی پرۆسێسکردنی ناوەڕۆکدا ڕوویدا",
+   "contentEmptyError": "ناوەڕۆک بەتاڵە",
+   "contentExceedsSafeLimitsError": "ناوەڕۆک لە سنوورە سەلامەتەکانی هاوردە تێدەپەڕێت",
    "correlationIdShort": "پەیوەندی",
    "transactionIdShort": "مامەڵە",
    "columnType": "جۆر",

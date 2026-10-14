@@ -1277,6 +1277,13 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
       'Unknown error occurred while processing content';
 
   @override
+  String get contentEmptyError => 'Content is empty';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'Content exceeds the safe import limits';
+
+  @override
   String get correlationIdShort => 'Corr';
 
   @override

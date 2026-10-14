@@ -208,6 +208,12 @@ void main() {
       expect(runner.commands, isEmpty);
     });
 
+    test('--help documents PUBLISH_FORCE', () async {
+      final result = await invoke(fixture(), const ['--help']);
+
+      expect(result.out, contains('PUBLISH_FORCE'));
+    });
+
     test('--only without a package name is refused', () async {
       final result = await invoke(fixture(), const ['--only']);
 
@@ -366,9 +372,12 @@ void main() {
       expect(result.exitCode, 1);
       expect(result.errorLines, [
         '[ERR] ispectify_ws 7.0.0-dev.1 is not ranked above the published '
-            '7.0.0-dev.2; consumers would keep resolving 7.0.0-dev.2',
+            '7.0.0-dev.2; consumers would keep resolving 7.0.0-dev.2 (Pub '
+            'does not order 7.0.0-dev.1 above 7.0.0-dev.2)',
         '[ERR] Published-version check failed. Pick a version the resolver '
             'orders above the peak of its release line.',
+        "[ERR] Lowest version that would pass: 7.0.0-dev.3 - run "
+            "'ispect_tool version bump 7.0.0-dev.3'",
       ]);
     });
 

@@ -5,6 +5,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/widgets/export_sheet.dart';
 
 class ISpectShareLogBottomSheet {
@@ -54,11 +55,7 @@ class ISpectShareLogBottomSheet {
     RedactionService? redactionService,
     DiagnosticResourceLimits? resourceLimits,
   }) {
-    final limits =
-        (resourceLimits ??
-              ISpect.loggerIfInitialized?.options.resourceLimits ??
-              DiagnosticResourceLimits.balanced)
-          ..validate();
+    final limits = (resourceLimits ?? ISpectResourceLimits.current)..validate();
     final source = action == ExportAction.copy ? truncatedData : data;
     final maxDepth = action == ExportAction.copy
         ? _minimum(10, limits.maxTraversalDepth)

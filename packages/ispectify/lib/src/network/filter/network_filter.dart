@@ -21,18 +21,22 @@ abstract class NetworkFilter<T> {
 ///
 /// Example:
 /// ```dart
-/// // Build a chain that logs only successful (2xx) GET/POST responses.
+/// // Log only successful (2xx) GET/POST Dio responses.
 /// final chain = NetworkFilterChain<Response<dynamic>>([
-///   const StatusCodeFilter.successOnly(),
-///   const HttpMethodFilter({'GET', 'POST'}),
+///   StatusCodeFilter(
+///     predicate: (code) => code >= 200 && code < 300,
+///     statusCodeExtractor: (response) => response.statusCode ?? 0,
+///   ),
+///   HttpMethodFilter(
+///     allowedMethods: const {'GET', 'POST'},
+///     methodExtractor: (response) => response.requestOptions.method,
+///   ),
 /// ]);
 ///
-/// if (chain.apply(response)) {
-///   logger.logNetworkResponse(response);
-/// }
+/// final shouldLog = chain.apply(response);
 ///
-/// // Extend an existing chain:
-/// final sampled = chain.add(const SamplingFilter(0.1));
+/// // Extend an existing chain to keep every 10th match:
+/// final sampled = chain.add(SamplingFilter(sampleRate: 10));
 /// ```
 class NetworkFilterChain<T> {
   /// Creates a chain from an ordered list of filters.

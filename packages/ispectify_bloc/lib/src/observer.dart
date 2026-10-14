@@ -87,8 +87,7 @@ class ISpectBlocObserver extends BlocObserver {
         debugEnabledOverride: debugEnabledOverride,
       );
 
-  static final _pendingEvents =
-      Expando<_PendingEventCorrelations>('bloc_event_ids');
+  final _pendingEvents = Expando<_PendingEventCorrelations>('bloc_event_ids');
 
   DiagnosticResourceLimits get _resourceLimits =>
       settings.resourceLimits ?? _logger.options.resourceLimits;
@@ -163,46 +162,40 @@ class ISpectBlocObserver extends BlocObserver {
   @override
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     super.onEvent(bloc, event);
+    if (!_traceEvent(bloc, event)) {
+      _pendingEvents[bloc]?.add(event, null);
+    }
+  }
+
+  bool _traceEvent(Bloc<dynamic, dynamic> bloc, Object? event) {
     if (!_loggingEnabled || !settings.printEvents) {
-      return;
+      return false;
     }
     if (!_captureEnabled && onBlocEvent == null) {
-      return;
+      return false;
     }
-    var correlations = _captureEnabled
-        ? _pendingEvents[bloc] ??= _PendingEventCorrelations(
-            capacity: _resourceLimits.maxPendingCorrelations,
-          )
-        : null;
+    if (_captureEnabled) {
+      _pendingEvents[bloc] ??= _PendingEventCorrelations(
+        capacity: _resourceLimits.maxPendingCorrelations,
+      );
+    }
     final filtered = _isFiltered(bloc);
-    if (!_loggingEnabled) {
-      return;
-    }
-    if (filtered) {
-      if (_captureEnabled) correlations?.add(event, null);
-      return;
+    if (!_loggingEnabled || filtered) {
+      return false;
     }
     final accepted = settings.eventFilter?.call(bloc, event) ?? true;
-    if (!_loggingEnabled) {
-      return;
-    }
-    if (!accepted) {
-      if (_captureEnabled) correlations?.add(event, null);
-      return;
+    if (!_loggingEnabled || !accepted) {
+      return false;
     }
     try {
       onBlocEvent?.call(bloc, event);
     } catch (callbackError) {
       _logCallbackError('onBlocEvent', callbackError);
     }
-    if (!_loggingEnabled) {
-      return;
+    if (!_loggingEnabled || !_captureEnabled) {
+      return false;
     }
-
-    if (!_captureEnabled) {
-      return;
-    }
-    correlations ??= _pendingEvents[bloc] ??= _PendingEventCorrelations(
+    final correlations = _pendingEvents[bloc] ??= _PendingEventCorrelations(
       capacity: _resourceLimits.maxPendingCorrelations,
     );
     final eventId = generateTraceId();
@@ -231,6 +224,7 @@ class ISpectBlocObserver extends BlocObserver {
             : 'event → $target (${data.eventType})',
       ),
     );
+    return true;
   }
 
   @override

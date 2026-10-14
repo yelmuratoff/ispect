@@ -1240,6 +1240,12 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get unknownContentProcessingError => '콘텐츠를 처리하는 중 알 수 없는 오류가 발생했습니다';
 
   @override
+  String get contentEmptyError => '콘텐츠가 비어 있습니다';
+
+  @override
+  String get contentExceedsSafeLimitsError => '콘텐츠가 안전한 가져오기 한도를 초과했습니다';
+
+  @override
   String get correlationIdShort => '상관';
 
   @override

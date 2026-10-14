@@ -4,6 +4,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/managers/filter_manager.dart';
 import 'package:ispect/src/common/services/network_transaction_service.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/log_tallies.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
 
 /// Everything the logs list needs to render one frame, derived from the raw
@@ -17,7 +18,7 @@ final class LogsViewState {
     required this.isReversed,
     required this.isHighlightMode,
     required this.searchMatches,
-    required this.levelStats,
+    required this.headerCounts,
     required this.logTypeKeys,
     required this.idToVisualIndex,
   });
@@ -46,7 +47,7 @@ final class LogsViewState {
   /// Matches in visual order, one per row, or null outside highlight mode.
   final List<ISpectLogData>? searchMatches;
 
-  final ({int errors, int warnings}) levelStats;
+  final LogHeaderCounts headerCounts;
   final LogTypeKeysResult logTypeKeys;
 
   /// Log id to the index of the row that displays it, for both flat and
@@ -77,6 +78,8 @@ final class LogsViewPipeline {
 
   final LogsScreenController _screen;
   final NetworkTransactionService _transactionService;
+  final _logTypeKeyTally = LogTypeKeyTally();
+  final _headerTally = LogHeaderTally();
 
   Map<String, int> _idToVisualIndex = const {};
   List<ISpectLogData>? _lastVisualIndexInput;
@@ -122,8 +125,11 @@ final class LogsViewPipeline {
               isGrouped: grouped != null,
             )
           : null,
-      levelStats: _view.getLevelStats(logs),
-      logTypeKeys: _view.getLogTypeKeys(logs),
+      headerCounts: _headerTally.update(logs, filter: _view.filter),
+      logTypeKeys: _logTypeKeyTally.update(
+        logs,
+        excludedKeys: _view.settings.disabledLogTypes,
+      ),
       idToVisualIndex: _idToVisualIndex,
     );
   }

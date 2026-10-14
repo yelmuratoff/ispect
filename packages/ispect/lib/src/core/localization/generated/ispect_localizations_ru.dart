@@ -1294,6 +1294,13 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
       'Неизвестная ошибка при обработке содержимого';
 
   @override
+  String get contentEmptyError => 'Содержимое пустое';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'Содержимое превышает безопасные лимиты импорта';
+
+  @override
   String get correlationIdShort => 'Корр';
 
   @override

@@ -380,6 +380,8 @@
     "contentProcessingError": "Мазмұнды өңдеу қатесі",
     "failedToLoadLogContent": "Лог мазмұнын жүктеу мүмкін болмады",
     "unknownContentProcessingError": "Мазмұнды өңдеу кезінде белгісіз қате орын алды",
+    "contentEmptyError": "Мазмұн бос",
+    "contentExceedsSafeLimitsError": "Мазмұн импорттың қауіпсіз шектеулерінен асып кетті",
     "correlationIdShort": "Корр",
     "transactionIdShort": "Транз",
     "columnType": "Түрі",

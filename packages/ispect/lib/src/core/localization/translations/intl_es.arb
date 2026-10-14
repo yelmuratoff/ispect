@@ -380,6 +380,8 @@
    "contentProcessingError": "Error al procesar el contenido",
    "failedToLoadLogContent": "No se pudo cargar el contenido de los registros",
    "unknownContentProcessingError": "Error desconocido al procesar el contenido",
+   "contentEmptyError": "El contenido está vacío",
+   "contentExceedsSafeLimitsError": "El contenido supera los límites seguros de importación",
    "correlationIdShort": "Corr",
    "transactionIdShort": "Trans",
    "columnType": "Tipo",

@@ -98,30 +98,6 @@ class InspectorState extends State<Inspector> {
   late InspectorController _controller;
   InspectorController get controller => _controller;
 
-  // Picker disc canvas size - image-only area; the visible disc is +40 px
-  // wider on each axis because the rings are painted outside the canvas.
-  // Tuned so the total visible disc lands roughly where the previous
-  // in-canvas-rings version was (overlay ~128–246).
-  static const double _overlayMinSize = 88;
-  static const double _overlayMaxSize = 206;
-  static const double _overlayOffsetY = 16;
-
-  // Approximate HUD chip footprint and the gap it sits at from the disc.
-  // Gap includes the +20 px ring stack drawn outside the disc canvas, so the
-  // fit-test mirrors what _hudPositioned actually does in the overlay.
-  static const double _hudWidth = 168;
-  static const double _hudHeight = 32;
-  static final double _hudAxialGap =
-      ZoomableColorPickerStyle.defaults.hudAxialGap;
-  static final double _hudLateralGap =
-      ZoomableColorPickerStyle.defaults.hudLateralGap;
-
-  // Vertical space at the bottom of the screen reserved for the floating
-  // action bar (button + paddings); HUD-below should not overlap it.
-  static const double _hudBottomReserved = 96;
-
-  static double _zoomSizeProgress(double zoomScale) =>
-      ((zoomScale - 2.0) / 10.0).clamp(0.0, 1.0);
   static const _enterInspectorIntent = _EnterInspectorIntent();
   static const _enterColorPickerIntent = _EnterColorPickerIntent();
   static const _toggleCompareIntent = _ToggleCompareIntent();
@@ -175,6 +151,8 @@ class InspectorState extends State<Inspector> {
                 widget.maxRenderTreeClipboardCharacters,
             theme: widget.theme ?? InspectorTheme.defaults,
           );
+    } else if (widget.controller == null && oldWidget.theme != widget.theme) {
+      _controller.theme = widget.theme ?? InspectorTheme.defaults;
     }
 
     if (widget.isPanelVisible != oldWidget.isPanelVisible) {
@@ -270,164 +248,9 @@ class InspectorState extends State<Inspector> {
             },
           ),
         ),
-        MultiValueListenableBuilder(
-          valueListenables: [
-            _controller.modeNotifier,
-            _controller.selectedColorOffsetNotifier,
-            _controller.selectedColorStateNotifier,
-            _controller.selectedColorImageOffsetNotifier,
-            _controller.byteDataStateNotifier,
-            _controller.zoomScaleNotifier,
-          ],
-          builder: (context) {
-            final mode = _controller.modeNotifier.value;
-            if (mode != InspectorMode.colorPicker) {
-              return const SizedBox.shrink();
-            }
-
-            final offset = _controller.selectedColorOffsetNotifier.value;
-            final color = _controller.selectedColorStateNotifier.value;
-            final image = _controller.image;
-            final zoomScale = _controller.zoomScaleNotifier.value;
-            final screenSize = MediaQuery.sizeOf(context);
-            final overlaySize = ui.lerpDouble(
-              _overlayMinSize,
-              _overlayMaxSize,
-              _zoomSizeProgress(zoomScale),
-            )!;
-
-            // Image can be null briefly after a window resize / orientation
-            // change while the snapshot is being re-captured. Bail until the
-            // next frame rather than dereferencing it.
-            if (offset == null || color == null || image == null) {
-              return const SizedBox.shrink();
-            }
-
-            final pickerLeft = offset.dx.clamp(
-              0.0,
-              screenSize.width - overlaySize,
-            );
-            final pickerTop = (offset.dy - overlaySize - _overlayOffsetY).clamp(
-              0.0,
-              screenSize.height - overlaySize,
-            );
-
-            // Pick the side of the disc where the HUD chip fully fits in
-            // the on-screen bounds (minus the bottom action-bar / safe area).
-            // Priority: above (default) → right → left → below - "below" is
-            // last because the user's finger lives there.
-            final placement = _resolveHudPlacement(
-              pickerLeft: pickerLeft,
-              pickerTop: pickerTop,
-              overlaySize: overlaySize,
-              screenSize: screenSize,
-              bottomReserved:
-                  MediaQuery.paddingOf(context).bottom + _hudBottomReserved,
-            );
-
-            return Positioned(
-              left: pickerLeft,
-              top: pickerTop,
-              child: ZoomableColorPickerOverlay(
-                color: color,
-                image: image,
-                imageOffset:
-                    _controller.selectedColorImageOffsetNotifier.value ??
-                    Offset.zero,
-                overlaySize: overlaySize,
-                zoomScale: zoomScale,
-                pixelRatio: MediaQuery.devicePixelRatioOf(context),
-                hudPlacement: placement,
-              ),
-            );
-          },
-        ),
-        MultiValueListenableBuilder(
-          valueListenables: [
-            _controller.modeNotifier,
-            _controller.currentRenderBoxNotifier,
-            _controller.hoveredRenderBoxNotifier,
-            _controller.comparedRenderBoxNotifier,
-          ],
-          builder: (context) {
-            final mode = _controller.modeNotifier.value;
-            if (!mode.isInspecting) {
-              return const SizedBox.shrink();
-            }
-
-            final isCompareActive = mode == InspectorMode.compareSelect;
-            final onCompare = _controller.isWidgetInspectAndCompareEnabled
-                ? (isCompareActive
-                      ? _controller.exitCompareMode
-                      : _controller.enterCompareMode)
-                : null;
-
-            return LayoutBuilder(
-              builder: (context, constraints) => InspectorOverlay(
-                size: constraints.biggest,
-                boxInfo: _controller.currentRenderBoxNotifier.value,
-                hoveredBoxInfo: _controller.hoveredRenderBoxNotifier.value,
-                comparedBoxInfo: _controller.comparedRenderBoxNotifier.value,
-                onCompare: onCompare,
-                isCompareActive: isCompareActive,
-                decimalPlaces: _controller.decimalPlaces,
-                maxRenderTreeClipboardCharacters:
-                    _controller.maxRenderTreeClipboardCharacters,
-                theme: _controller.theme,
-                onSelectFromPath: _controller.selectFromPath,
-              ),
-            );
-          },
-        ),
-        MultiValueListenableBuilder(
-          valueListenables: [
-            _controller.modeNotifier,
-            _controller.zoomImageOffsetNotifier,
-            _controller.zoomOverlayOffsetNotifier,
-            _controller.byteDataStateNotifier,
-            _controller.zoomScaleNotifier,
-          ],
-          builder: (context) {
-            final mode = _controller.modeNotifier.value;
-            if (mode != InspectorMode.zoom) return const SizedBox.shrink();
-
-            final offset = _controller.zoomOverlayOffsetNotifier.value;
-            final imageOffset = _controller.zoomImageOffsetNotifier.value;
-            final byteData = _controller.byteDataStateNotifier.value;
-            final zoomScale = _controller.zoomScaleNotifier.value;
-
-            if (offset == null || byteData == null || imageOffset == null) {
-              return const SizedBox.shrink();
-            }
-
-            final overlaySize = ui
-                .lerpDouble(128.0, 256.0, _zoomSizeProgress(zoomScale))!
-                .toDouble();
-            final screenSize = MediaQuery.sizeOf(context);
-            final left = (offset.dx - overlaySize / 2).clamp(
-              0.0,
-              screenSize.width - overlaySize,
-            );
-            final top = (offset.dy - overlaySize / 2).clamp(
-              0.0,
-              screenSize.height - overlaySize,
-            );
-
-            return Positioned(
-              left: left,
-              top: top,
-              child: IgnorePointer(
-                child: ZoomOverlayWidget(
-                  image: _controller.image!,
-                  imageOffset: imageOffset,
-                  overlaySize: overlaySize,
-                  zoomScale: zoomScale,
-                  pixelRatio: MediaQuery.of(context).devicePixelRatio,
-                ),
-              ),
-            );
-          },
-        ),
+        _ColorPickerLayer(controller: _controller),
+        _InspectLayer(controller: _controller),
+        _ZoomLayer(controller: _controller),
         InspectorActionsBar(controller: _controller),
       ],
     );
@@ -496,50 +319,6 @@ class InspectorState extends State<Inspector> {
           ),
       ],
     );
-  }
-
-  /// Picks the first placement (in priority order) where the HUD chip's full
-  /// bounding box is on-screen. Falls back to [HudPlacement.above] if no
-  /// side fits - the chip will clip, but at least one fixed side is chosen
-  /// (rather than disappearing) so the user can still nudge the picker.
-  HudPlacement _resolveHudPlacement({
-    required double pickerLeft,
-    required double pickerTop,
-    required double overlaySize,
-    required Size screenSize,
-    required double bottomReserved,
-  }) {
-    final bottomLimit = screenSize.height - bottomReserved;
-    final centerX = pickerLeft + overlaySize / 2;
-    final centerY = pickerTop + overlaySize / 2;
-
-    bool fitsHorizontally(double centerX) {
-      final left = centerX - _hudWidth / 2;
-      return left >= 0 && left + _hudWidth <= screenSize.width;
-    }
-
-    bool fitsVertically(double centerY) {
-      final top = centerY - _hudHeight / 2;
-      return top >= 0 && top + _hudHeight <= bottomLimit;
-    }
-
-    final fitsAbove =
-        pickerTop - _hudAxialGap - _hudHeight >= 0 && fitsHorizontally(centerX);
-    final fitsBelow =
-        pickerTop + overlaySize + _hudAxialGap + _hudHeight <= bottomLimit &&
-        fitsHorizontally(centerX);
-    final fitsRight =
-        pickerLeft + overlaySize + _hudLateralGap + _hudWidth <=
-            screenSize.width &&
-        fitsVertically(centerY);
-    final fitsLeft =
-        pickerLeft - _hudLateralGap - _hudWidth >= 0 && fitsVertically(centerY);
-
-    if (fitsAbove) return HudPlacement.above;
-    if (fitsRight) return HudPlacement.right;
-    if (fitsLeft) return HudPlacement.left;
-    if (fitsBelow) return HudPlacement.below;
-    return HudPlacement.above;
   }
 
   Map<ShortcutActivator, Intent> _buildShortcuts() {
@@ -631,6 +410,261 @@ class InspectorState extends State<Inspector> {
               _controller.isColorPickerShortcutStillPressed(state)) ||
           (_controller.modeNotifier.value == InspectorMode.zoom &&
               _controller.isZoomShortcutStillPressed(state)));
+}
+
+double _zoomSizeProgress(double zoomScale) =>
+    ((zoomScale - 2.0) / 10.0).clamp(0.0, 1.0);
+
+class _ColorPickerLayer extends StatelessWidget {
+  const _ColorPickerLayer({required this.controller});
+
+  final InspectorController controller;
+
+  // Picker disc canvas size - image-only area; the visible disc is +40 px
+  // wider on each axis because the rings are painted outside the canvas.
+  // Tuned so the total visible disc lands roughly where the previous
+  // in-canvas-rings version was (overlay ~128–246).
+  static const double _overlayMinSize = 88;
+  static const double _overlayMaxSize = 206;
+  static const double _overlayOffsetY = 16;
+
+  // Approximate HUD chip footprint and the gap it sits at from the disc.
+  // Gap includes the +20 px ring stack drawn outside the disc canvas, so the
+  // fit-test mirrors what _hudPositioned actually does in the overlay.
+  static const double _hudWidth = 168;
+  static const double _hudHeight = 32;
+  static final double _hudAxialGap =
+      ZoomableColorPickerStyle.defaults.hudAxialGap;
+  static final double _hudLateralGap =
+      ZoomableColorPickerStyle.defaults.hudLateralGap;
+
+  // Vertical space at the bottom of the screen reserved for the floating
+  // action bar (button + paddings); HUD-below should not overlap it.
+  static const double _hudBottomReserved = 96;
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiValueListenableBuilder(
+      valueListenables: [
+        controller.modeNotifier,
+        controller.selectedColorOffsetNotifier,
+        controller.selectedColorStateNotifier,
+        controller.selectedColorImageOffsetNotifier,
+        controller.byteDataStateNotifier,
+        controller.zoomScaleNotifier,
+      ],
+      builder: (context) {
+        final mode = controller.modeNotifier.value;
+        if (mode != InspectorMode.colorPicker) {
+          return const SizedBox.shrink();
+        }
+
+        final offset = controller.selectedColorOffsetNotifier.value;
+        final color = controller.selectedColorStateNotifier.value;
+        final image = controller.image;
+        final zoomScale = controller.zoomScaleNotifier.value;
+        final screenSize = MediaQuery.sizeOf(context);
+        final overlaySize = ui.lerpDouble(
+          _overlayMinSize,
+          _overlayMaxSize,
+          _zoomSizeProgress(zoomScale),
+        )!;
+
+        // Image can be null briefly after a window resize / orientation
+        // change while the snapshot is being re-captured. Bail until the
+        // next frame rather than dereferencing it.
+        if (offset == null || color == null || image == null) {
+          return const SizedBox.shrink();
+        }
+
+        final pickerLeft = offset.dx.clamp(0.0, screenSize.width - overlaySize);
+        final pickerTop = (offset.dy - overlaySize - _overlayOffsetY).clamp(
+          0.0,
+          screenSize.height - overlaySize,
+        );
+
+        // Pick the side of the disc where the HUD chip fully fits in
+        // the on-screen bounds (minus the bottom action-bar / safe area).
+        // Priority: above (default) → right → left → below - "below" is
+        // last because the user's finger lives there.
+        final placement = _resolveHudPlacement(
+          pickerLeft: pickerLeft,
+          pickerTop: pickerTop,
+          overlaySize: overlaySize,
+          screenSize: screenSize,
+          bottomReserved:
+              MediaQuery.paddingOf(context).bottom + _hudBottomReserved,
+        );
+
+        return Positioned(
+          left: pickerLeft,
+          top: pickerTop,
+          child: ZoomableColorPickerOverlay(
+            color: color,
+            image: image,
+            imageOffset:
+                controller.selectedColorImageOffsetNotifier.value ??
+                Offset.zero,
+            overlaySize: overlaySize,
+            zoomScale: zoomScale,
+            pixelRatio: MediaQuery.devicePixelRatioOf(context),
+            hudPlacement: placement,
+          ),
+        );
+      },
+    );
+  }
+
+  /// Picks the first placement (in priority order) where the HUD chip's full
+  /// bounding box is on-screen. Falls back to [HudPlacement.above] if no
+  /// side fits - the chip will clip, but at least one fixed side is chosen
+  /// (rather than disappearing) so the user can still nudge the picker.
+  static HudPlacement _resolveHudPlacement({
+    required double pickerLeft,
+    required double pickerTop,
+    required double overlaySize,
+    required Size screenSize,
+    required double bottomReserved,
+  }) {
+    final bottomLimit = screenSize.height - bottomReserved;
+    final centerX = pickerLeft + overlaySize / 2;
+    final centerY = pickerTop + overlaySize / 2;
+
+    bool fitsHorizontally(double centerX) {
+      final left = centerX - _hudWidth / 2;
+      return left >= 0 && left + _hudWidth <= screenSize.width;
+    }
+
+    bool fitsVertically(double centerY) {
+      final top = centerY - _hudHeight / 2;
+      return top >= 0 && top + _hudHeight <= bottomLimit;
+    }
+
+    final fitsAbove =
+        pickerTop - _hudAxialGap - _hudHeight >= 0 && fitsHorizontally(centerX);
+    final fitsBelow =
+        pickerTop + overlaySize + _hudAxialGap + _hudHeight <= bottomLimit &&
+        fitsHorizontally(centerX);
+    final fitsRight =
+        pickerLeft + overlaySize + _hudLateralGap + _hudWidth <=
+            screenSize.width &&
+        fitsVertically(centerY);
+    final fitsLeft =
+        pickerLeft - _hudLateralGap - _hudWidth >= 0 && fitsVertically(centerY);
+
+    if (fitsAbove) return HudPlacement.above;
+    if (fitsRight) return HudPlacement.right;
+    if (fitsLeft) return HudPlacement.left;
+    if (fitsBelow) return HudPlacement.below;
+    return HudPlacement.above;
+  }
+}
+
+class _InspectLayer extends StatelessWidget {
+  const _InspectLayer({required this.controller});
+
+  final InspectorController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiValueListenableBuilder(
+      valueListenables: [
+        controller.modeNotifier,
+        controller.currentRenderBoxNotifier,
+        controller.hoveredRenderBoxNotifier,
+        controller.comparedRenderBoxNotifier,
+        controller.themeNotifier,
+      ],
+      builder: (context) {
+        final mode = controller.modeNotifier.value;
+        if (!mode.isInspecting) {
+          return const SizedBox.shrink();
+        }
+
+        final isCompareActive = mode == InspectorMode.compareSelect;
+        final onCompare = controller.isWidgetInspectAndCompareEnabled
+            ? (isCompareActive
+                  ? controller.exitCompareMode
+                  : controller.enterCompareMode)
+            : null;
+
+        return LayoutBuilder(
+          builder: (context, constraints) => InspectorOverlay(
+            size: constraints.biggest,
+            boxInfo: controller.currentRenderBoxNotifier.value,
+            hoveredBoxInfo: controller.hoveredRenderBoxNotifier.value,
+            comparedBoxInfo: controller.comparedRenderBoxNotifier.value,
+            onCompare: onCompare,
+            isCompareActive: isCompareActive,
+            decimalPlaces: controller.decimalPlaces,
+            maxRenderTreeClipboardCharacters:
+                controller.maxRenderTreeClipboardCharacters,
+            theme: controller.theme,
+            onSelectFromPath: controller.selectFromPath,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ZoomLayer extends StatelessWidget {
+  const _ZoomLayer({required this.controller});
+
+  final InspectorController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiValueListenableBuilder(
+      valueListenables: [
+        controller.modeNotifier,
+        controller.zoomImageOffsetNotifier,
+        controller.zoomOverlayOffsetNotifier,
+        controller.byteDataStateNotifier,
+        controller.zoomScaleNotifier,
+      ],
+      builder: (context) {
+        final mode = controller.modeNotifier.value;
+        if (mode != InspectorMode.zoom) return const SizedBox.shrink();
+
+        final offset = controller.zoomOverlayOffsetNotifier.value;
+        final imageOffset = controller.zoomImageOffsetNotifier.value;
+        final byteData = controller.byteDataStateNotifier.value;
+        final zoomScale = controller.zoomScaleNotifier.value;
+
+        if (offset == null || byteData == null || imageOffset == null) {
+          return const SizedBox.shrink();
+        }
+
+        final overlaySize = ui
+            .lerpDouble(128.0, 256.0, _zoomSizeProgress(zoomScale))!
+            .toDouble();
+        final screenSize = MediaQuery.sizeOf(context);
+        final left = (offset.dx - overlaySize / 2).clamp(
+          0.0,
+          screenSize.width - overlaySize,
+        );
+        final top = (offset.dy - overlaySize / 2).clamp(
+          0.0,
+          screenSize.height - overlaySize,
+        );
+
+        return Positioned(
+          left: left,
+          top: top,
+          child: IgnorePointer(
+            child: ZoomOverlayWidget(
+              image: controller.image!,
+              imageOffset: imageOffset,
+              overlaySize: overlaySize,
+              zoomScale: zoomScale,
+              pixelRatio: MediaQuery.of(context).devicePixelRatio,
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _EnterInspectorIntent extends Intent {

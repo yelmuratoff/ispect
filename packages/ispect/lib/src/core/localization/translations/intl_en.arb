@@ -440,6 +440,8 @@
    "contentProcessingError": "Content processing error",
    "failedToLoadLogContent": "Failed to load log content",
    "unknownContentProcessingError": "Unknown error occurred while processing content",
+   "contentEmptyError": "Content is empty",
+   "contentExceedsSafeLimitsError": "Content exceeds the safe import limits",
    "correlationIdShort": "Corr",
    "transactionIdShort": "Txn",
    "columnType": "Type",

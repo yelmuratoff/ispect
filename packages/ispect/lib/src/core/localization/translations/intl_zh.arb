@@ -380,6 +380,8 @@
     "contentProcessingError": "内容处理错误",
     "failedToLoadLogContent": "无法加载日志内容",
     "unknownContentProcessingError": "处理内容时发生未知错误",
+    "contentEmptyError": "内容为空",
+    "contentExceedsSafeLimitsError": "内容超出安全导入限制",
     "correlationIdShort": "关联",
     "transactionIdShort": "事务",
     "columnType": "类型",

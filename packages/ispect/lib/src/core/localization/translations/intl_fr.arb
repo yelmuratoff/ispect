@@ -380,6 +380,8 @@
    "contentProcessingError": "Erreur de traitement du contenu",
    "failedToLoadLogContent": "Impossible de charger le contenu des journaux",
    "unknownContentProcessingError": "Erreur inconnue lors du traitement du contenu",
+   "contentEmptyError": "Le contenu est vide",
+   "contentExceedsSafeLimitsError": "Le contenu dépasse les limites d’import sécurisées",
    "correlationIdShort": "Corr",
    "transactionIdShort": "Trans",
    "columnType": "Type",

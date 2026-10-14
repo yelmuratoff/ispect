@@ -141,10 +141,7 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   List<ISpectActionItem> _buildSettingsActions(BuildContext context) => [
-    _buildReverseLogsAction(context),
-    _buildGroupHttpAction(context),
     _buildShareLogsAction(context),
-    _buildExpandLogsAction(context),
     _buildClearHistoryAction(context),
     if (widget.options.observer case final ISpectNavigatorObserver observer)
       _buildNavigationFlowAction(observer),
@@ -152,44 +149,6 @@ class _LogsScreenState extends State<LogsScreen> {
     _buildLogViewerAction(),
     ...widget.options.actionItems,
   ];
-
-  ISpectActionItem _buildGroupHttpAction(BuildContext context) {
-    final isGrouped = _logsViewController.groupHttpLogs;
-    return ISpectActionItem(
-      onTap: (_) => _logsViewController.toggleGroupHttpLogs(),
-      title: isGrouped
-          ? context.ispectL10n.ungroupHttpLogs
-          : context.ispectL10n.groupHttpLogs,
-      icon: isGrouped
-          ? Icons.account_tree_rounded
-          : Icons.account_tree_outlined,
-      description: isGrouped
-          ? context.ispectL10n.ungroupHttpLogsDesc
-          : context.ispectL10n.groupHttpLogsDesc,
-    );
-  }
-
-  ISpectActionItem _buildReverseLogsAction(BuildContext context) =>
-      ISpectActionItem(
-        onTap: (_) => _logsViewController.toggleLogOrder(),
-        title: context.ispectL10n.reverseLogs,
-        icon: Icons.swap_vert,
-        description: context.ispectL10n.reverseLogsDesc,
-      );
-
-  ISpectActionItem _buildExpandLogsAction(BuildContext context) =>
-      ISpectActionItem(
-        onTap: (_) => _logsViewController.toggleExpandedLogs(),
-        title: _logsViewController.expandedLogs
-            ? context.ispectL10n.collapseLogs
-            : context.ispectL10n.expandLogs,
-        icon: _logsViewController.expandedLogs
-            ? Icons.visibility_outlined
-            : Icons.visibility_off_outlined,
-        description: _logsViewController.expandedLogs
-            ? context.ispectL10n.collapseLogsDesc
-            : context.ispectL10n.expandLogsDesc,
-      );
 
   ISpectActionItem _buildClearHistoryAction(BuildContext context) =>
       ISpectActionItem(
@@ -308,13 +267,24 @@ class _LogsScreenState extends State<LogsScreen> {
     }
 
     switch (result) {
-      case final FileProcessingResult r when r.success:
-        await r.action(context);
-        return;
-      case final FileProcessingResult r:
-        _showContentProcessingError(r.error);
+      case final FileProcessingSuccess success:
+        JsonScreen(
+          data: success.viewerData,
+          resourceLimits: success.resourceLimits,
+          processingPolicy: success.processingPolicy,
+        ).push(context);
+      case FileProcessingFailure(:final error):
+        _showContentProcessingError(_localizedProcessingError(error));
     }
   }
+
+  String _localizedProcessingError(FileProcessingError error) =>
+      switch (error) {
+        FileProcessingError.emptyContent =>
+          context.ispectL10n.contentEmptyError,
+        FileProcessingError.exceedsSafeLimits =>
+          context.ispectL10n.contentExceedsSafeLimitsError,
+      };
 
   void _showContentProcessingError(String? error) {
     if (!mounted) return;

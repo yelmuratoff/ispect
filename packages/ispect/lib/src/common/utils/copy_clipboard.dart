@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
 
 /// Copies the given `value` to the clipboard and displays a toast notification.
@@ -49,11 +50,7 @@ void copyClipboard(
   ISpectGeneratedLocalization? l10n,
   ScaffoldMessengerState? messenger,
 }) {
-  final limits =
-      (resourceLimits ??
-            ISpect.loggerIfInitialized?.options.resourceLimits ??
-            DiagnosticResourceLimits.balanced)
-        ..validate();
+  final limits = (resourceLimits ?? ISpectResourceLimits.current)..validate();
   final prepared = LogExportOutput.boundJsonValue(
     value,
     resourceLimits: limits,

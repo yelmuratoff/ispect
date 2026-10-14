@@ -6,6 +6,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/utils/chunking.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:meta/meta.dart';
 
@@ -643,11 +644,7 @@ class LogsJsonService {
   }
 
   DiagnosticResourceLimits get _resourceLimits {
-    final limits =
-        (resourceLimits ??
-              ISpect.loggerIfInitialized?.options.resourceLimits ??
-              DiagnosticResourceLimits.balanced)
-          ..validate();
+    final limits = (resourceLimits ?? ISpectResourceLimits.current)..validate();
     return limits;
   }
 

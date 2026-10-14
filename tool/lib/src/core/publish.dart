@@ -25,7 +25,15 @@ Options:
   --auto                    Publish without asking; overridden by --dry-run
   --only <package>          Limit the run to one package; repeatable
   --verbose, -v             Print the full dry-run output of every package
-  --skip-pub-version-check  Do not ask the host what it already serves''';
+  --skip-pub-version-check  Do not ask the host what it already serves
+
+$publishEnvironmentHelp''';
+
+/// The environment variables a publish run reads, as printed in its help.
+const String publishEnvironmentHelp = '''
+Environment:
+  PUBLISH_FORCE             Any non-empty value publishes without the per-package
+                            prompt in the default mode; --dry-run still wins''';
 
 /// The packages this monorepo publishes, in dependency order.
 ///
@@ -142,6 +150,105 @@ final class StdinConfirmation implements PublishConfirmation {
 /// unpublished package answers with an empty list.
 typedef PublishedVersionsReader = Future<List<Version>> Function(
     String package);
+
+/// Judges releasing [target] for every package in [packages], in order.
+///
+/// A package the host leaves unanswered yields [PublishedVersionsUnknown]
+/// instead of stopping the walk, so one report names every blocked package.
+Future<List<PublishGate>> gateRelease({
+  required Iterable<String> packages,
+  required Version target,
+  required PublishedVersionsReader publishedVersions,
+}) async {
+  final gates = <PublishGate>[];
+  for (final package in packages) {
+    try {
+      gates.add(
+        publishGate(
+          package: package,
+          target: target,
+          published: await publishedVersions(package),
+        ),
+      );
+    } on PubApiException catch (error) {
+      gates.add(
+        PublishedVersionsUnknown(
+          package: package,
+          target: target,
+          error: error,
+        ),
+      );
+    }
+  }
+  return gates;
+}
+
+/// The lowest version every package in [gates] would let through, or null
+/// when no package has opened the release line yet.
+Version? lowestPublishableFor(Iterable<PublishGate> gates) =>
+    lowestPublishableAbove([
+      for (final gate in gates)
+        if (_peakOf(gate) case final Version peak) peak,
+    ]);
+
+Version? _peakOf(PublishGate gate) => switch (gate) {
+      AlreadyPublished(:final target) => target,
+      RisesAbovePeak(:final peak) || BlockedByPeak(:final peak) => peak,
+      PackageUnpublished() ||
+      ReleaseLineUnopened() ||
+      PublishedVersionsUnknown() =>
+        null,
+    };
+
+/// Writes one line per gate in [gates] and, when any is blocked, the lowest
+/// version that would pass; returns 1 when the release is blocked, else 0.
+int reportReleaseGates(
+  List<PublishGate> gates, {
+  required void Function(String message) info,
+  required void Function(String message) error,
+}) {
+  for (final gate in gates) {
+    final package = gate.package;
+    final target = gate.target;
+    switch (gate) {
+      case PackageUnpublished():
+        info('$package has no published versions yet');
+      case ReleaseLineUnopened():
+        info('$package opens the ${releaseLine(target)} line');
+      case AlreadyPublished():
+        error(
+          '$package $target is already published; bump the version before '
+          'releasing again',
+        );
+      case RisesAbovePeak(:final peak):
+        info('$package $target is ranked above the published $peak');
+      case BlockedByPeak(:final peak, :final reason):
+        error(
+          '$package $target is not ranked above the published $peak; '
+          'consumers would keep resolving $peak ($reason)',
+        );
+      case PublishedVersionsUnknown(error: final failure):
+        error(failure.message);
+        error('Could not read the published versions of $package');
+    }
+  }
+
+  if (gates.every((gate) => gate.allowed)) {
+    return 0;
+  }
+  error(
+    'Published-version check failed. Pick a version the resolver orders '
+    'above the peak of its release line.',
+  );
+  final suggestion = lowestPublishableFor(gates);
+  if (suggestion != null) {
+    error(
+      "Lowest version that would pass: $suggestion - run "
+      "'ispect_tool version bump $suggestion'",
+    );
+  }
+  return 1;
+}
 
 /// How one publish run treats the dry-run, the prompts, and the host.
 final class PublishOptions {
@@ -321,52 +428,12 @@ final class PublishRun {
       return 0;
     }
 
-    var blocked = false;
-    for (final package in packages) {
-      final List<Version> published;
-      try {
-        published = await publishedVersions(package);
-      } on PubApiException catch (e) {
-        _error(e.message);
-        _error('Could not read the published versions of $package');
-        blocked = true;
-        continue;
-      }
-
-      switch (publishGate(
-        package: package,
-        target: target,
-        published: published,
-      )) {
-        case PackageUnpublished():
-          _info('$package has no published versions yet');
-        case ReleaseLineUnopened():
-          _info('$package opens the ${releaseLine(target)} line');
-        case AlreadyPublished():
-          _error(
-            '$package $target is already published; bump the version before '
-            'releasing again',
-          );
-          blocked = true;
-        case RisesAbovePeak(:final peak):
-          _info('$package $target is ranked above the published $peak');
-        case BlockedByPeak(:final peak):
-          _error(
-            '$package $target is not ranked above the published $peak; '
-            'consumers would keep resolving $peak',
-          );
-          blocked = true;
-      }
-    }
-
-    if (blocked) {
-      _error(
-        'Published-version check failed. Pick a version the resolver orders '
-        'above the peak of its release line.',
-      );
-      return 1;
-    }
-    return 0;
+    final gates = await gateRelease(
+      packages: packages,
+      target: target,
+      publishedVersions: publishedVersions,
+    );
+    return reportReleaseGates(gates, info: _info, error: _error);
   }
 
   int _ensureCleanGit() {

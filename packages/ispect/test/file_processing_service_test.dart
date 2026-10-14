@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/file_format.dart';
+import 'package:ispect/src/features/log_viewer/domain/models/file_processing_result.dart';
 import 'package:ispect/src/features/log_viewer/services/file_processing_service.dart';
 import 'package:ispectify/ispectify.dart';
 
@@ -11,58 +12,67 @@ void main() {
     service = const FileProcessingService();
   });
 
+  FileProcessingSuccess expectSuccess(FileProcessingResult result) {
+    expect(result, isA<FileProcessingSuccess>());
+    return result as FileProcessingSuccess;
+  }
+
+  FileProcessingError? errorOf(FileProcessingResult result) => switch (result) {
+    FileProcessingFailure(:final error) => error,
+    FileProcessingSuccess() => null,
+  };
+
   group('FileProcessingService', () {
     test('detects JSON map content', () {
       const content = '{"name":"test","value":123}';
 
-      final result = service.processPastedContent(content);
+      final result = expectSuccess(service.processPastedContent(content));
 
-      expect(result.success, true);
       expect(result.format, FileFormat.json);
       expect(result.displayName, 'JSON');
       expect(result.mimeType, 'application/json');
       expect(result.content, content);
+      expect(result.viewerData, {'name': 'test', 'value': 123});
     });
 
     test('detects JSON array content', () {
       const content = '[{"name":"item1"},{"name":"item2"}]';
 
-      final result = service.processPastedContent(content);
+      final result = expectSuccess(service.processPastedContent(content));
 
-      expect(result.success, true);
       expect(result.format, FileFormat.json);
       expect(result.displayName, 'JSON');
       expect(result.mimeType, 'application/json');
+      expect(result.viewerData['data'], hasLength(2));
     });
 
     test('marks invalid JSON as JSON (Invalid)', () {
       const content = '{"name":"invalid",}';
 
-      final result = service.processPastedContent(content);
+      final result = expectSuccess(service.processPastedContent(content));
 
-      expect(result.success, true);
       expect(result.format, FileFormat.json);
       expect(result.displayName, 'JSON (Invalid)');
       expect(result.mimeType, 'application/json');
+      expect(result.viewerData, {'content': content});
     });
 
     test('treats plain text as text format', () {
       const content = 'This is plain text content.';
 
-      final result = service.processPastedContent(content);
+      final result = expectSuccess(service.processPastedContent(content));
 
-      expect(result.success, true);
       expect(result.format, FileFormat.text);
       expect(result.displayName, 'Text');
       expect(result.mimeType, 'text/plain');
       expect(result.content, content);
+      expect(result.viewerData, {'content': content});
     });
 
-    test('fails when content is empty', () {
+    test('fails with an empty-content error for whitespace', () {
       final result = service.processPastedContent('   ');
 
-      expect(result.success, false);
-      expect(result.error, 'Content is empty');
+      expect(errorOf(result), FileProcessingError.emptyContent);
     });
 
     test('rejects oversized JSON before decoding', () {
@@ -74,9 +84,8 @@ void main() {
 
       final result = service.processPastedContent(content);
 
-      expect(result.success, false);
+      expect(errorOf(result), FileProcessingError.exceedsSafeLimits);
       expect(result.format, FileFormat.json);
-      expect(result.error, contains('safe character limit'));
       expect(service.isValidJson(content), false);
     });
 
@@ -93,9 +102,8 @@ void main() {
 
       final result = service.processPastedContent(content);
 
-      expect(result.success, false);
+      expect(errorOf(result), FileProcessingError.exceedsSafeLimits);
       expect(result.format, FileFormat.json);
-      expect(result.error, contains('safe depth limit'));
       expect(service.isValidJson(content), false);
     });
 
@@ -108,9 +116,8 @@ void main() {
 
       final result = service.processPastedContent(content);
 
-      expect(result.success, false);
+      expect(errorOf(result), FileProcessingError.exceedsSafeLimits);
       expect(result.format, FileFormat.json);
-      expect(result.error, contains('safe node limit'));
       expect(service.isValidJson(content), false);
     });
 
@@ -126,16 +133,35 @@ void main() {
         return result;
       });
 
-      final result = await operation;
+      final result = expectSuccess(await operation);
       await queuedUiWork;
 
-      expect(result.success, true);
       expect(result.format, FileFormat.json);
       expect(result.displayName, 'JSON');
       expect(completionOrder, const ['ui', 'processed']);
     });
 
-    test('honors a local import character budget', () {
+    test(
+      'keeps the local scheduling policy on background processing',
+      () async {
+        const policy = DiagnosticProcessingPolicy(
+          backgroundProcessingThresholdBytes: 1024,
+        );
+        const local = FileProcessingService(processingPolicy: policy);
+        final content = '{"payload":"${'x' * 4096}"}';
+
+        final result = expectSuccess(
+          await local.processPastedContentAsync(content),
+        );
+
+        expect(
+          result.processingPolicy.backgroundProcessingThresholdBytes,
+          1024,
+        );
+      },
+    );
+
+    test('rejects content above a local import character budget', () {
       final constrained = FileProcessingService(
         resourceLimits: DiagnosticResourceLimits.balanced.copyWith(
           maxImportCharacters: 16,
@@ -144,8 +170,7 @@ void main() {
 
       final result = constrained.processPastedContent('{"value":"1234567890"}');
 
-      expect(result.success, false);
-      expect(result.error, contains('16'));
+      expect(errorOf(result), FileProcessingError.exceedsSafeLimits);
     });
 
     test('rejects an invalid local scheduling policy', () {
@@ -159,6 +184,34 @@ void main() {
         () => invalid.processPastedContentAsync('{}'),
         throwsArgumentError,
       );
+    });
+  });
+
+  group('FileProcessingSuccess.viewerData', () {
+    FileProcessingSuccess decoded(Object? value) => FileProcessingSuccess(
+      content: '',
+      displayName: 'JSON',
+      mimeType: 'application/json',
+      fileName: 'test.json',
+      format: FileFormat.json,
+      decodedJson: value,
+      hasDecodedJson: true,
+      resourceLimits: DiagnosticResourceLimits.balanced,
+      processingPolicy: DiagnosticProcessingPolicy.balanced,
+    );
+
+    test('shows a decoded object as the root', () {
+      expect(decoded(<String, dynamic>{'a': 1}).viewerData, {'a': 1});
+    });
+
+    test('wraps a decoded list under data', () {
+      expect(decoded(<Object?>[1, 2]).viewerData, {
+        'data': [1, 2],
+      });
+    });
+
+    test('wraps a decoded scalar under value', () {
+      expect(decoded(123).viewerData, {'value': 123});
     });
   });
 }

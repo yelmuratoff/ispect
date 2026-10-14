@@ -9,17 +9,18 @@ import 'package:ispect_tool/src/core/exceptions.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+import 'captured_stdout.dart';
 import 'release_fixture.dart';
 
 void main() {
   late Directory workspace;
-  late _CapturedStdout out;
-  late _CapturedStdout err;
+  late CapturedStdout out;
+  late CapturedStdout err;
 
   setUp(() {
     workspace = Directory.systemTemp.createTempSync('ispect-version-bump-');
-    out = _CapturedStdout();
-    err = _CapturedStdout();
+    out = CapturedStdout();
+    err = CapturedStdout();
   });
 
   tearDown(() {
@@ -101,24 +102,49 @@ void main() {
       );
     });
   });
-}
 
-final class _CapturedStdout implements Stdout {
-  final StringBuffer buffer = StringBuffer();
+  group('version bump argument', () {
+    String repoAt(String version) => createReleaseFixture(
+          destination: p.join(workspace.path, 'repo'),
+          version: version,
+        );
 
-  @override
-  void write(Object? object) => buffer.write(object);
+    for (final (argument, from, to) in [
+      ('patch', '7.0.1', '7.0.2'),
+      ('minor', '7.0.1', '7.1.0'),
+      ('major', '7.0.1', '8.0.0'),
+      ('dev', '7.1.0-dev.4', '7.1.0-dev.5'),
+      ('7.2.0-rc.1', '7.1.0', '7.2.0-rc.1'),
+    ]) {
+      test('$argument advances $from to $to', () async {
+        final repo = repoAt(from);
 
-  @override
-  void writeln([Object? object = '']) => buffer.writeln(object);
+        await expectLater(bump(repo, ['--no-sync', argument]), completion(0));
+        expect(readConfig(repo), 'VERSION=$to\n');
+      });
+    }
 
-  @override
-  void writeAll(Iterable<dynamic> objects, [String separator = '']) =>
-      buffer.writeAll(objects, separator);
+    test('an unparsable version exits 2 and leaves VERSION alone', () async {
+      final repo = repoAt('7.0.1');
 
-  @override
-  void writeCharCode(int charCode) => buffer.writeCharCode(charCode);
+      await expectLater(bump(repo, ['--no-sync', 'seven']), completion(2));
+      expect(err.buffer.toString(), contains('Invalid version format: seven'));
+      expect(readConfig(repo), 'VERSION=7.0.1\n');
+    });
 
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+    test('an explicit version below the current one exits 2', () async {
+      final repo = repoAt('7.0.1');
+
+      await expectLater(bump(repo, ['--no-sync', '7.0.0']), completion(2));
+      expect(err.buffer.toString(), startsWith('[ERR] '));
+      expect(readConfig(repo), 'VERSION=7.0.1\n');
+    });
+
+    test('an explicit version equal to the current one exits 2', () async {
+      final repo = repoAt('7.0.1');
+
+      await expectLater(bump(repo, ['--no-sync', '7.0.1']), completion(2));
+      expect(readConfig(repo), 'VERSION=7.0.1\n');
+    });
+  });
 }

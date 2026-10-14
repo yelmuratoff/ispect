@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:ispect/src/features/performance/src/memory_stats.dart'
     as memory;
+import 'package:ispect/src/features/performance/src/overlay_config.dart';
+import 'package:ispect/src/features/performance/src/sampler.dart';
 import 'package:ispect/src/features/performance/src/stats.dart';
 import 'package:ispect/src/ispect.dart';
 import 'package:ispectify/ispectify.dart';
@@ -34,26 +36,8 @@ const EdgeInsets _kCompactPadding = EdgeInsets.symmetric(
 
 const String _kOverlaySemanticsLabel = 'Performance overlay';
 
-/// Discards startup spikes (JIT, asset decode, shader cache) from session
-/// min FPS and drop counter.
-const Duration _kWarmupDuration = Duration(milliseconds: 800);
-
-/// RSS rarely changes within one frame; sampling at 1 Hz keeps the readout
-/// useful without burning syscalls every tick.
-const Duration _kMemoryPollInterval = Duration(seconds: 1);
-
 const double _kFpsHealthyRatio = 0.95;
 const double _kFpsWarningRatio = 0.80;
-
-/// How long after warmup to collect baseline samples before locking in their
-/// median. Lets the app navigate past the lightweight splash/first screen so
-/// the reference point reflects "normal" steady-state usage, not boot.
-const Duration _kMemoryBaselineSettleWindow = Duration(seconds: 5);
-
-/// EWMA smoothing factor for the displayed RSS value - α≈0.3 gives roughly
-/// a 3-sample effective window, enough to swallow GC/allocator jiggle
-/// without lagging real growth by more than ~3 seconds.
-const double _kMemoryEwmaAlpha = 0.3;
 
 /// The default overlay is not color-blind safe. Opt in by passing each
 /// `colorBlind*` value into the matching overlay parameter - including
@@ -267,32 +251,34 @@ class _ISpectPerformanceOverlayState extends State<ISpectPerformanceOverlay> {
       width: widget.width,
       height: resolvedHeight,
       child: _OverlayBody(
-        sampleSize: widget.sampleSize,
-        target: target,
-        refreshRate: refreshRate,
-        barRangeMax: widget.barRangeMax,
-        backgroundColor: widget.backgroundColor,
-        textColor: widget.textColor,
-        uiColor: widget.uiColor,
-        rasterColor: widget.rasterColor,
-        totalColor: widget.totalColor,
-        overTargetColor: widget.overTargetColor,
-        compact: widget.compact,
-        showP90: widget.showP90,
-        allowFreeze: widget.allowFreeze,
+        config: PerformanceOverlayConfig(
+          sampleSize: widget.sampleSize,
+          target: target,
+          refreshRate: refreshRate,
+          barRangeMax: widget.barRangeMax,
+          backgroundColor: widget.backgroundColor,
+          textColor: widget.textColor,
+          uiColor: widget.uiColor,
+          rasterColor: widget.rasterColor,
+          totalColor: widget.totalColor,
+          overTargetColor: widget.overTargetColor,
+          compact: widget.compact,
+          showP90: widget.showP90,
+          allowFreeze: widget.allowFreeze,
+          enableJankLogging: widget.enableJankLogging,
+          severeJankFactor: widget.severeJankFactor,
+          jankLogCooldown: widget.jankLogCooldown,
+          showMemory: widget.showMemory,
+          memoryWarnRatio: widget.memoryWarnRatio,
+          memoryDangerRatio: widget.memoryDangerRatio,
+          showAllTimeStats: widget.showAllTimeStats,
+          jankBurstWindow: widget.jankBurstWindow,
+          jankBurstCooldown: widget.jankBurstCooldown,
+        ),
         paused: _paused,
         onTogglePause: _togglePause,
         onFrameTiming: widget.onFrameTiming,
-        enableJankLogging: widget.enableJankLogging,
-        severeJankFactor: widget.severeJankFactor,
-        jankLogCooldown: widget.jankLogCooldown,
-        showMemory: widget.showMemory,
-        memoryWarnRatio: widget.memoryWarnRatio,
-        memoryDangerRatio: widget.memoryDangerRatio,
-        showAllTimeStats: widget.showAllTimeStats,
         onJankBurst: widget.onJankBurst,
-        jankBurstWindow: widget.jankBurstWindow,
-        jankBurstCooldown: widget.jankBurstCooldown,
       ),
     );
     // Skip the Transform layer in the common (default) case so the engine
@@ -362,7 +348,7 @@ class _OverlaySnapshot {
     required this.rasterStats,
     required this.totalStats,
     required this.fps,
-    required this.lastFrameMissedVsyncs,
+    required this.lastFramePerceptibleDrops,
     required this.allTimeMinFps,
     required this.droppedFramesTotal,
     required this.rssBytes,
@@ -382,7 +368,7 @@ class _OverlaySnapshot {
 
   /// Surfaces the latest hitch in the header before it ages out of the FPS
   /// window.
-  final int lastFrameMissedVsyncs;
+  final int lastFramePerceptibleDrops;
 
   final double? allTimeMinFps;
 
@@ -408,7 +394,7 @@ class _OverlaySnapshot {
     rasterStats: PerformanceChartStats.zero,
     totalStats: PerformanceChartStats.zero,
     fps: null,
-    lastFrameMissedVsyncs: 0,
+    lastFramePerceptibleDrops: 0,
     allTimeMinFps: null,
     droppedFramesTotal: 0,
     rssBytes: null,
@@ -419,60 +405,18 @@ class _OverlaySnapshot {
 
 class _OverlayBody extends StatefulWidget {
   const _OverlayBody({
-    required this.sampleSize,
-    required this.target,
-    required this.refreshRate,
-    required this.barRangeMax,
-    required this.backgroundColor,
-    required this.textColor,
-    required this.uiColor,
-    required this.rasterColor,
-    required this.totalColor,
-    required this.overTargetColor,
-    required this.compact,
-    required this.showP90,
-    required this.allowFreeze,
+    required this.config,
     required this.paused,
     required this.onTogglePause,
     required this.onFrameTiming,
-    required this.enableJankLogging,
-    required this.severeJankFactor,
-    required this.jankLogCooldown,
-    required this.showMemory,
-    required this.memoryWarnRatio,
-    required this.memoryDangerRatio,
-    required this.showAllTimeStats,
     required this.onJankBurst,
-    required this.jankBurstWindow,
-    required this.jankBurstCooldown,
   });
 
-  final int sampleSize;
-  final Duration target;
-  final double refreshRate;
-  final Duration barRangeMax;
-  final Color backgroundColor;
-  final Color textColor;
-  final Color uiColor;
-  final Color rasterColor;
-  final Color totalColor;
-  final Color overTargetColor;
-  final bool compact;
-  final bool showP90;
-  final bool allowFreeze;
+  final PerformanceOverlayConfig config;
   final bool paused;
   final VoidCallback onTogglePause;
   final void Function(FrameTiming timing)? onFrameTiming;
-  final bool enableJankLogging;
-  final double severeJankFactor;
-  final Duration jankLogCooldown;
-  final bool showMemory;
-  final double memoryWarnRatio;
-  final double memoryDangerRatio;
-  final bool showAllTimeStats;
   final void Function(double currentFps)? onJankBurst;
-  final int jankBurstWindow;
-  final Duration jankBurstCooldown;
 
   @override
   State<_OverlayBody> createState() => _OverlayBodyState();
@@ -487,21 +431,10 @@ class _OverlayBodyState extends State<_OverlayBody> {
   final List<int> _totalUs = <int>[];
 
   bool _skippedFirstSample = false;
-  final Stopwatch _warmupTimer = Stopwatch();
+  final Stopwatch _clock = Stopwatch()..start();
+  final PerformanceSessionSampler _sampler = PerformanceSessionSampler();
 
-  double _allTimeMinFps = double.infinity;
-  int _droppedFramesTotal = 0;
-  int _lastFrameMissedVsyncs = 0;
-  int _consecutiveJankCount = 0;
-  final Stopwatch _jankBurstCooldown = Stopwatch();
-  final Stopwatch _jankLogCooldown = Stopwatch();
-
-  int? _currentRssBytes;
-  int? _smoothedRssBytes;
-  int? _peakRssBytes;
-  int? _baselineRssBytes;
-  List<int> _baselineSamples = <int>[];
-  final Stopwatch _memoryPollTimer = Stopwatch();
+  PerformanceOverlayConfig get _config => widget.config;
 
   @override
   void initState() {
@@ -516,9 +449,6 @@ class _OverlayBodyState extends State<_OverlayBody> {
     super.dispose();
   }
 
-  bool get _warmupCompleted =>
-      _warmupTimer.elapsedMilliseconds >= _kWarmupDuration.inMilliseconds;
-
   void _timingsCallback(List<FrameTiming> frameTimings) {
     if (!mounted) return;
 
@@ -530,7 +460,8 @@ class _OverlayBodyState extends State<_OverlayBody> {
     _skippedFirstSample = true;
 
     if (newSamples.isEmpty) return;
-    if (!_warmupTimer.isRunning) _warmupTimer.start();
+    final now = _clock.elapsed;
+    final config = _config;
 
     final onTiming = widget.onFrameTiming;
     if (onTiming != null) {
@@ -546,14 +477,14 @@ class _OverlayBodyState extends State<_OverlayBody> {
         }
       }
     }
-    if (widget.enableJankLogging) {
-      _logSevereJank(newSamples);
+    if (config.enableJankLogging) {
+      _logSevereJank(newSamples, now);
     }
-    _trackJankBurst(newSamples);
+    _reportJankBursts(newSamples, now);
 
     if (widget.paused) return;
 
-    final targetUs = widget.target.inMicroseconds;
+    final targetUs = config.target.inMicroseconds;
     for (final t in newSamples) {
       _uiUs.add(t.buildDuration.inMicroseconds);
       _rasterUs.add(t.rasterDuration.inMicroseconds);
@@ -563,12 +494,12 @@ class _OverlayBodyState extends State<_OverlayBody> {
     _trimToWindow(_rasterUs);
     _trimToWindow(_totalUs);
 
-    final fps = computeSmoothFps(_totalUs, widget.refreshRate);
-    if (_warmupCompleted && fps != null && fps > 0 && fps < _allTimeMinFps) {
-      _allTimeMinFps = fps;
-    }
+    final fps = computeSmoothFps(_totalUs, config.refreshRate);
+    _sampler.recordFps(fps, now: now);
 
-    if (widget.showMemory) _pollMemoryIfDue();
+    if (config.showMemory) {
+      _sampler.pollMemory(now: now, readRssBytes: memory.readCurrentRssBytes);
+    }
 
     // Painter reads these inside the same frame this callback runs in,
     // before the next engine dispatch can mutate them - defensive copies
@@ -581,109 +512,50 @@ class _OverlayBodyState extends State<_OverlayBody> {
       rasterStats: PerformanceChartStats.fromMicroseconds(_rasterUs, targetUs),
       totalStats: PerformanceChartStats.fromMicroseconds(_totalUs, targetUs),
       fps: fps,
-      lastFrameMissedVsyncs: _lastFrameMissedVsyncs,
-      allTimeMinFps: _allTimeMinFps == double.infinity ? null : _allTimeMinFps,
-      droppedFramesTotal: _droppedFramesTotal,
-      rssBytes: _smoothedRssBytes,
-      peakRssBytes: _peakRssBytes,
-      baselineRssBytes: _baselineRssBytes,
+      lastFramePerceptibleDrops: _sampler.lastFramePerceptibleDrops,
+      allTimeMinFps: _sampler.allTimeMinFps,
+      droppedFramesTotal: _sampler.droppedFramesTotal,
+      rssBytes: _sampler.smoothedRssBytes,
+      peakRssBytes: _sampler.peakRssBytes,
+      baselineRssBytes: _sampler.baselineRssBytes,
     );
   }
 
-  void _pollMemoryIfDue() {
-    if (_memoryPollTimer.isRunning &&
-        _memoryPollTimer.elapsed < _kMemoryPollInterval) {
-      return;
-    }
-    _memoryPollTimer
-      ..reset()
-      ..start();
-    final rss = memory.readCurrentRssBytes();
-    if (rss == null) return;
-    _currentRssBytes = rss;
-    // Smooth the *displayed* value with an EWMA so GC/allocator jiggle does
-    // not flicker the colour tier. Peak and baseline observe this smoothed
-    // signal too - a brief allocation spike that GC immediately collects
-    // should not pin peak.
-    final previousSmoothed = _smoothedRssBytes;
-    _smoothedRssBytes = previousSmoothed == null
-        ? rss
-        : (_kMemoryEwmaAlpha * rss + (1 - _kMemoryEwmaAlpha) * previousSmoothed)
-              .round();
-    // Baseline: collect samples for `_kMemoryBaselineSettleWindow` after
-    // warmup, then lock in the median. Median is robust to a single big
-    // navigation that lands during the window.
-    if (_warmupCompleted && _baselineRssBytes == null) {
-      _baselineSamples.add(rss);
-      if (_warmupTimer.elapsed >=
-          _kWarmupDuration + _kMemoryBaselineSettleWindow) {
-        _baselineRssBytes = _medianInt(_baselineSamples);
-        _baselineSamples = const <int>[];
-      }
-    }
-    final smoothed = _smoothedRssBytes!;
-    final previousPeak = _peakRssBytes;
-    if (previousPeak == null || smoothed > previousPeak) {
-      _peakRssBytes = smoothed;
-    }
-  }
-
-  static int _medianInt(List<int> samples) {
-    final sorted = List<int>.of(samples)..sort();
-    final n = sorted.length;
-    if (n.isOdd) return sorted[n ~/ 2];
-    return ((sorted[n ~/ 2 - 1] + sorted[n ~/ 2]) / 2).round();
-  }
-
   void _trimToWindow(List<int> buffer) {
-    final overflow = buffer.length - widget.sampleSize;
+    final overflow = buffer.length - _config.sampleSize;
     if (overflow > 0) buffer.removeRange(0, overflow);
   }
 
-  void _trackJankBurst(Iterable<FrameTiming> samples) {
-    final targetUs = widget.target.inMicroseconds;
+  void _reportJankBursts(List<FrameTiming> samples, Duration now) {
+    final config = _config;
     final onBurst = widget.onJankBurst;
-    final cooldownMs = widget.jankBurstCooldown.inMilliseconds;
-    final warmedUp = _warmupCompleted;
-    var lastPerceptible = 0;
-    for (final t in samples) {
-      final totalUs = t.totalSpan.inMicroseconds;
-      final missed = missedVsyncs(totalUs, targetUs);
-      final perceptible = perceptibleDrops(totalUs, targetUs);
-      lastPerceptible = perceptible;
-      if (missed > 0) {
-        if (warmedUp) _droppedFramesTotal += perceptible;
-        _consecutiveJankCount++;
-        if (warmedUp &&
-            onBurst != null &&
-            _consecutiveJankCount >= widget.jankBurstWindow &&
-            (!_jankBurstCooldown.isRunning ||
-                _jankBurstCooldown.elapsedMilliseconds >= cooldownMs)) {
-          _jankBurstCooldown
-            ..reset()
-            ..start();
-          final fps = _snapshot.value.fps ?? widget.refreshRate;
-          try {
-            onBurst(fps);
-          } catch (e, st) {
-            ISpect.logger.handle(
-              exception: e,
-              stackTrace: st,
-              message: 'ISpectPerformanceOverlay.onJankBurst threw',
-            );
-          }
-        }
-      } else {
-        _consecutiveJankCount = 0;
+    final bursts = _sampler.recordFrameSpans(
+      samples.map((t) => t.totalSpan.inMicroseconds),
+      targetUs: config.target.inMicroseconds,
+      now: now,
+      notifyBursts: onBurst != null,
+      burstWindow: config.jankBurstWindow,
+      burstCooldown: config.jankBurstCooldown,
+    );
+    if (onBurst == null) return;
+    for (var i = 0; i < bursts; i++) {
+      final fps = _snapshot.value.fps ?? config.refreshRate;
+      try {
+        onBurst(fps);
+      } catch (e, st) {
+        ISpect.logger.handle(
+          exception: e,
+          stackTrace: st,
+          message: 'ISpectPerformanceOverlay.onJankBurst threw',
+        );
       }
     }
-    _lastFrameMissedVsyncs = lastPerceptible;
   }
 
-  void _logSevereJank(Iterable<FrameTiming> samples) {
-    final thresholdUs = (widget.target.inMicroseconds * widget.severeJankFactor)
+  void _logSevereJank(Iterable<FrameTiming> samples, Duration now) {
+    final config = _config;
+    final thresholdUs = (config.target.inMicroseconds * config.severeJankFactor)
         .round();
-    final cooldownMs = widget.jankLogCooldown.inMilliseconds;
     for (final t in samples) {
       // Use the heaviest thread's work - `totalSpan` includes scheduling
       // wait time, which inflates in debug mode and idle UIs to false jank.
@@ -694,13 +566,12 @@ class _OverlayBodyState extends State<_OverlayBody> {
       // Throttle: one entry per cooldown window. Without this a sustained
       // jank session (e.g. log viewer rebuilding itself on every new entry)
       // creates a feedback loop where each log triggers more frame work.
-      if (_jankLogCooldown.isRunning &&
-          _jankLogCooldown.elapsedMilliseconds < cooldownMs) {
+      if (!_sampler.claimJankLogSlot(
+        now: now,
+        cooldown: config.jankLogCooldown,
+      )) {
         continue;
       }
-      _jankLogCooldown
-        ..reset()
-        ..start();
       // No `stackTrace`: by the time `addTimingsCallback` fires the offending
       // frame is done - the current stack is engine code, not the cause.
       ISpect.logger.performanceJank(
@@ -708,28 +579,13 @@ class _OverlayBodyState extends State<_OverlayBody> {
         buildDuration: t.buildDuration,
         rasterDuration: t.rasterDuration,
         totalSpan: t.totalSpan,
-        targetFrameTime: widget.target,
+        targetFrameTime: config.target,
       );
     }
   }
 
   void _resetSessionStats() {
-    _allTimeMinFps = double.infinity;
-    _droppedFramesTotal = 0;
-    _lastFrameMissedVsyncs = 0;
-    _consecutiveJankCount = 0;
-    _jankBurstCooldown
-      ..stop()
-      ..reset();
-    _jankLogCooldown
-      ..stop()
-      ..reset();
-    // Snap baseline and peak to the last smoothed reading so colouring
-    // restarts from "now" without the 5s settle gap.
-    final snapped = _smoothedRssBytes ?? _currentRssBytes;
-    _peakRssBytes = snapped;
-    _baselineRssBytes = snapped;
-    _baselineSamples = const <int>[];
+    _sampler.reset();
     final current = _snapshot.value;
     _snapshot.value = _OverlaySnapshot(
       uiUs: current.uiUs,
@@ -739,12 +595,12 @@ class _OverlayBodyState extends State<_OverlayBody> {
       rasterStats: current.rasterStats,
       totalStats: current.totalStats,
       fps: current.fps,
-      lastFrameMissedVsyncs: 0,
+      lastFramePerceptibleDrops: 0,
       allTimeMinFps: null,
       droppedFramesTotal: 0,
-      rssBytes: _smoothedRssBytes,
-      peakRssBytes: _peakRssBytes,
-      baselineRssBytes: _baselineRssBytes,
+      rssBytes: _sampler.smoothedRssBytes,
+      peakRssBytes: _sampler.peakRssBytes,
+      baselineRssBytes: _sampler.baselineRssBytes,
     );
   }
 
@@ -761,29 +617,14 @@ class _OverlayBodyState extends State<_OverlayBody> {
               child: CustomPaint(
                 painter: _ChartPainter(
                   snapshot: _snapshot,
-                  sampleSize: widget.sampleSize,
-                  target: widget.target,
-                  refreshRate: widget.refreshRate,
-                  barRangeMax: widget.barRangeMax,
-                  backgroundColor: widget.backgroundColor,
-                  textColor: widget.textColor,
-                  uiColor: widget.uiColor,
-                  rasterColor: widget.rasterColor,
-                  totalColor: widget.totalColor,
-                  overTargetColor: widget.overTargetColor,
-                  compact: widget.compact,
-                  showP90: widget.showP90,
-                  showMemory: widget.showMemory,
-                  memoryWarnRatio: widget.memoryWarnRatio,
-                  memoryDangerRatio: widget.memoryDangerRatio,
-                  showAllTimeStats: widget.showAllTimeStats,
+                  config: _config,
                   paused: widget.paused,
                 ),
               ),
             ),
           ),
         ),
-        if (widget.allowFreeze)
+        if (_config.allowFreeze)
           Positioned(
             top: 1,
             right: 1,
@@ -791,7 +632,7 @@ class _OverlayBodyState extends State<_OverlayBody> {
               paused: widget.paused,
               onTap: widget.onTogglePause,
               onLongPress: _resetSessionStats,
-              color: widget.textColor,
+              color: _config.textColor,
             ),
           ),
       ],
@@ -806,45 +647,15 @@ class _OverlayBodyState extends State<_OverlayBody> {
 class _ChartPainter extends CustomPainter {
   _ChartPainter({
     required this.snapshot,
-    required this.sampleSize,
-    required this.target,
-    required this.refreshRate,
-    required this.barRangeMax,
-    required this.backgroundColor,
-    required this.textColor,
-    required this.uiColor,
-    required this.rasterColor,
-    required this.totalColor,
-    required this.overTargetColor,
-    required this.compact,
-    required this.showP90,
-    required this.showMemory,
-    required this.memoryWarnRatio,
-    required this.memoryDangerRatio,
-    required this.showAllTimeStats,
+    required this.config,
     required this.paused,
-  }) : _underBuffer = Float32List(sampleSize * 12),
-       _overBuffer = Float32List(sampleSize * 12),
-       _capBuffer = Float32List(sampleSize * 6),
+  }) : _underBuffer = Float32List(config.sampleSize * 12),
+       _overBuffer = Float32List(config.sampleSize * 12),
+       _capBuffer = Float32List(config.sampleSize * 6),
        super(repaint: snapshot);
 
   final ValueListenable<_OverlaySnapshot> snapshot;
-  final int sampleSize;
-  final Duration target;
-  final double refreshRate;
-  final Duration barRangeMax;
-  final Color backgroundColor;
-  final Color textColor;
-  final Color uiColor;
-  final Color rasterColor;
-  final Color totalColor;
-  final Color overTargetColor;
-  final bool compact;
-  final bool showP90;
-  final bool showMemory;
-  final double memoryWarnRatio;
-  final double memoryDangerRatio;
-  final bool showAllTimeStats;
+  final PerformanceOverlayConfig config;
   final bool paused;
 
   // Paints are mutated in place each frame; the loop never allocates one.
@@ -854,7 +665,7 @@ class _ChartPainter extends CustomPainter {
   final Paint _capMarkerPaint = Paint();
   final Paint _dividerPaint = Paint();
   late final Paint _backplatePaint = Paint()
-    ..color = backgroundColor.withValues(alpha: 0.7)
+    ..color = config.backgroundColor.withValues(alpha: 0.7)
     ..style = PaintingStyle.fill;
 
   // Pre-allocated triangle buffers - one bar contributes 6 vertices
@@ -886,13 +697,13 @@ class _ChartPainter extends CustomPainter {
   );
 
   late final TextStyle _statsStyle = TextStyle(
-    color: textColor,
+    color: config.textColor,
     fontSize: _kStatsFontSize,
     height: _kStatsLineHeight,
     fontFeatures: const [FontFeature.tabularFigures()],
   );
   late final TextStyle _headerStyle = TextStyle(
-    color: textColor.withValues(alpha: 0.85),
+    color: config.textColor.withValues(alpha: 0.85),
     fontSize: _kHeaderFontSize,
     fontFeatures: const [FontFeature.tabularFigures()],
   );
@@ -900,52 +711,55 @@ class _ChartPainter extends CustomPainter {
     fontWeight: FontWeight.w700,
   );
   late final TextStyle _headerPausedStyle = _headerStyle.copyWith(
-    color: textColor,
+    color: config.textColor,
     fontWeight: FontWeight.w700,
   );
-  late final TextStyle _overTargetStyle = TextStyle(color: overTargetColor);
+  late final TextStyle _overTargetStyle = TextStyle(
+    color: config.overTargetColor,
+  );
   late final TextStyle _uiLabelStyle = TextStyle(
-    color: uiColor,
+    color: config.uiColor,
     fontWeight: FontWeight.w700,
   );
   late final TextStyle _rasterLabelStyle = TextStyle(
-    color: rasterColor,
+    color: config.rasterColor,
     fontWeight: FontWeight.w700,
   );
   late final TextStyle _totalLabelStyle = TextStyle(
-    color: totalColor,
+    color: config.totalColor,
     fontWeight: FontWeight.w700,
   );
   late final TextStyle _compactPausedStyle = TextStyle(
-    color: textColor.withValues(alpha: 0.7),
+    color: config.textColor.withValues(alpha: 0.7),
     fontWeight: FontWeight.w700,
   );
   // Lerp allocates; precompute the warn-tier colour and its dependent styles.
   late final Color _warnFpsColor =
-      Color.lerp(textColor, overTargetColor, 0.55) ?? overTargetColor;
+      Color.lerp(config.textColor, config.overTargetColor, 0.55) ??
+      config.overTargetColor;
   late final TextStyle _headerBoldWarnStyle = _headerBoldStyle.copyWith(
     color: _warnFpsColor,
   );
   late final TextStyle _headerBoldDangerStyle = _headerBoldStyle.copyWith(
-    color: overTargetColor,
+    color: config.overTargetColor,
   );
   late final TextStyle _warnStyle = TextStyle(color: _warnFpsColor);
 
-  late final Color _gridColor = textColor.withValues(alpha: 0.4);
-  late final Color _gridColorSecondary = textColor.withValues(
-    alpha: textColor.a * 0.4 * 0.4,
+  late final Color _gridColor = config.textColor.withValues(alpha: 0.4);
+  late final Color _gridColorSecondary = config.textColor.withValues(
+    alpha: config.textColor.a * 0.4 * 0.4,
   );
-  late final Color _capMarkerColor = textColor.withValues(alpha: 0.85);
-  late final Color _dividerColor = textColor.withValues(alpha: 0.2);
+  late final Color _capMarkerColor = config.textColor.withValues(alpha: 0.85);
+  late final Color _dividerColor = config.textColor.withValues(alpha: 0.2);
 
   @override
   void paint(Canvas canvas, Size size) {
     final s = snapshot.value;
-    final targetUs = target.inMicroseconds;
-    _bgPaint.color = backgroundColor;
+    final targetUs = config.target.inMicroseconds;
+    _bgPaint.color = config.backgroundColor;
     canvas.drawRect(Offset.zero & size, _bgPaint);
 
-    if (compact) {
+    if (config.compact) {
       _paintCompact(canvas, size, s);
       return;
     }
@@ -979,7 +793,7 @@ class _ChartPainter extends CustomPainter {
       rect: Rect.fromLTWH(0, chartTop, columnWidth, chartHeight),
       samplesUs: s.uiUs,
       targetUs: targetUs,
-      barColor: uiColor,
+      barColor: config.uiColor,
       stats: s.uiStats,
       statsPainter: _uiStatsPainter,
       labelText: 'UI',
@@ -995,7 +809,7 @@ class _ChartPainter extends CustomPainter {
       ),
       samplesUs: s.rasterUs,
       targetUs: targetUs,
-      barColor: rasterColor,
+      barColor: config.rasterColor,
       stats: s.rasterStats,
       statsPainter: _rasterStatsPainter,
       labelText: 'Raster',
@@ -1011,7 +825,7 @@ class _ChartPainter extends CustomPainter {
       ),
       samplesUs: s.totalUs,
       targetUs: targetUs,
-      barColor: totalColor,
+      barColor: config.totalColor,
       stats: s.totalStats,
       statsPainter: _totalStatsPainter,
       labelText: 'Total',
@@ -1020,8 +834,8 @@ class _ChartPainter extends CustomPainter {
   }
 
   TextStyle _fpsHealthStyle(double? fps) {
-    if (fps == null || refreshRate <= 0) return _headerBoldStyle;
-    final ratio = fps / refreshRate;
+    if (fps == null || config.refreshRate <= 0) return _headerBoldStyle;
+    final ratio = fps / config.refreshRate;
     if (ratio >= _kFpsHealthyRatio) return _headerBoldStyle;
     if (ratio >= _kFpsWarningRatio) return _headerBoldWarnStyle;
     return _headerBoldDangerStyle;
@@ -1033,8 +847,8 @@ class _ChartPainter extends CustomPainter {
   TextStyle? _memoryHealthStyle(int? rss, int? baseline) {
     if (rss == null || baseline == null || baseline <= 0) return null;
     final ratio = rss / baseline;
-    if (ratio <= memoryWarnRatio) return null;
-    if (ratio <= memoryDangerRatio) return _warnStyle;
+    if (ratio <= config.memoryWarnRatio) return null;
+    if (ratio <= config.memoryDangerRatio) return _warnStyle;
     return _overTargetStyle;
   }
 
@@ -1042,27 +856,27 @@ class _ChartPainter extends CustomPainter {
     _headerPainter.text = TextSpan(
       style: _headerStyle,
       children: [
-        TextSpan(text: '${refreshRate.toStringAsFixed(0)}Hz · '),
+        TextSpan(text: '${config.refreshRate.toStringAsFixed(0)}Hz · '),
         TextSpan(
           text: '${s.fps?.toStringAsFixed(1) ?? '--'} FPS',
           style: _fpsHealthStyle(s.fps),
         ),
-        if (showMemory && s.rssBytes != null)
+        if (config.showMemory && s.rssBytes != null)
           TextSpan(
             text: ' · ${_formatMb(s.rssBytes!)} MB',
             style: _memoryHealthStyle(s.rssBytes, s.baselineRssBytes),
           ),
-        if (s.lastFrameMissedVsyncs > 0)
+        if (s.lastFramePerceptibleDrops > 0)
           TextSpan(
-            text: ' · +${s.lastFrameMissedVsyncs}',
+            text: ' · +${s.lastFramePerceptibleDrops}',
             style: _overTargetStyle,
           ),
-        if (!showAllTimeStats && s.droppedFramesTotal > 0)
+        if (!config.showAllTimeStats && s.droppedFramesTotal > 0)
           TextSpan(
             text: ' · ${s.droppedFramesTotal} drops',
             style: _overTargetStyle,
           ),
-        if (showAllTimeStats) ..._allTimeStatsSpans(s),
+        if (config.showAllTimeStats) ..._allTimeStatsSpans(s),
         if (paused) TextSpan(text: '  · PAUSED', style: _headerPausedStyle),
       ],
     );
@@ -1097,16 +911,16 @@ class _ChartPainter extends CustomPainter {
   Iterable<TextSpan> _allTimeStatsSpans(_OverlaySnapshot s) sync* {
     final min = s.allTimeMinFps;
     if (min != null) yield TextSpan(text: ' · min ${min.toStringAsFixed(0)}');
-    if (s.droppedFramesTotal > 0 && s.lastFrameMissedVsyncs == 0) {
+    if (s.droppedFramesTotal > 0 && s.lastFramePerceptibleDrops == 0) {
       yield TextSpan(
         text: ' · drop ${s.droppedFramesTotal}',
         style: _overTargetStyle,
       );
     }
-    if (showMemory && s.baselineRssBytes != null) {
+    if (config.showMemory && s.baselineRssBytes != null) {
       yield TextSpan(text: ' · base ${_formatMb(s.baselineRssBytes!)}MB');
     }
-    if (showMemory && s.peakRssBytes != null) {
+    if (config.showMemory && s.peakRssBytes != null) {
       yield TextSpan(text: ' · peak ${_formatMb(s.peakRssBytes!)}MB');
     }
   }
@@ -1128,7 +942,7 @@ class _ChartPainter extends CustomPainter {
         TextSpan(text: label, style: labelStyle),
         TextSpan(
           text: ' ${_formatMs(stats.avg)}/${_formatMs(stats.p99)}ms ',
-          style: stats.p99 > target ? _overTargetStyle : null,
+          style: stats.p99 > config.target ? _overTargetStyle : null,
         ),
         const TextSpan(text: '· '),
       ],
@@ -1137,7 +951,7 @@ class _ChartPainter extends CustomPainter {
     _compactPainter.text = TextSpan(
       style: _statsStyle,
       children: [
-        TextSpan(text: '${refreshRate.toStringAsFixed(0)}Hz · '),
+        TextSpan(text: '${config.refreshRate.toStringAsFixed(0)}Hz · '),
         TextSpan(
           text: '${s.fps?.toStringAsFixed(1) ?? '--'} FPS ',
           style: _fpsHealthStyle(s.fps),
@@ -1150,12 +964,12 @@ class _ChartPainter extends CustomPainter {
           text: '$jankTotal jank',
           style: jankTotal > 0 ? _overTargetStyle : null,
         ),
-        if (showMemory && s.rssBytes != null)
+        if (config.showMemory && s.rssBytes != null)
           TextSpan(
             text: ' · ${_formatMb(s.rssBytes!)}MB',
             style: _memoryHealthStyle(s.rssBytes, s.baselineRssBytes),
           ),
-        if (showAllTimeStats) ..._allTimeStatsSpans(s),
+        if (config.showAllTimeStats) ..._allTimeStatsSpans(s),
         if (paused) TextSpan(text: '  · PAUSED', style: _compactPausedStyle),
       ],
     );
@@ -1199,10 +1013,10 @@ class _ChartPainter extends CustomPainter {
     int targetUs,
     Color barColor,
   ) {
-    final rangeUs = barRangeMax.inMicroseconds;
-    if (rangeUs <= 0 || samplesUs.isEmpty || sampleSize <= 0) return;
+    final rangeUs = config.barRangeMax.inMicroseconds;
+    if (rangeUs <= 0 || samplesUs.isEmpty || config.sampleSize <= 0) return;
 
-    final slotWidth = rect.width / sampleSize;
+    final slotWidth = rect.width / config.sampleSize;
     final barWidth = (slotWidth - _kBarGap).clamp(1.0, slotWidth);
 
     // Two vertex batches per column (under-target colour + over-target colour)
@@ -1212,8 +1026,8 @@ class _ChartPainter extends CustomPainter {
     var overLen = 0;
     var capLen = 0;
 
-    for (var i = sampleSize - 1; i >= 0; i--) {
-      final index = i - sampleSize + samplesUs.length;
+    for (var i = config.sampleSize - 1; i >= 0; i--) {
+      final index = i - config.sampleSize + samplesUs.length;
       if (index < 0) break;
       final us = samplesUs[index];
       final isCapped = us > rangeUs;
@@ -1256,7 +1070,7 @@ class _ChartPainter extends CustomPainter {
       _drawTriangleBatch(canvas, _underBuffer, underLen, _barPaint);
     }
     if (overLen > 0) {
-      _barPaint.color = overTargetColor;
+      _barPaint.color = config.overTargetColor;
       _drawTriangleBatch(canvas, _overBuffer, overLen, _barPaint);
     }
     if (capLen > 0) {
@@ -1321,10 +1135,10 @@ class _ChartPainter extends CustomPainter {
   }
 
   void _paintGrid(Canvas canvas, Rect rect) {
-    final rangeUs = barRangeMax.inMicroseconds;
+    final rangeUs = config.barRangeMax.inMicroseconds;
     if (rangeUs <= 0) return;
     for (var multiple = 1; multiple <= 4; multiple++) {
-      final yUs = target.inMicroseconds * multiple;
+      final yUs = config.target.inMicroseconds * multiple;
       if (yUs > rangeUs) break;
       final factor = yUs / rangeUs;
       final y = rect.bottom - rect.height * factor;
@@ -1351,16 +1165,16 @@ class _ChartPainter extends CustomPainter {
         ),
         TextSpan(
           text: 'avg ${_formatMs(stats.avg)}ms\n',
-          style: stats.avg > target ? _overTargetStyle : null,
+          style: stats.avg > config.target ? _overTargetStyle : null,
         ),
-        if (showP90)
+        if (config.showP90)
           TextSpan(
             text: 'p90 ${_formatMs(stats.p90)}ms\n',
-            style: stats.p90 > target ? _overTargetStyle : null,
+            style: stats.p90 > config.target ? _overTargetStyle : null,
           ),
         TextSpan(
           text: 'p99 ${_formatMs(stats.p99)}ms',
-          style: stats.p99 > target ? _overTargetStyle : null,
+          style: stats.p99 > config.target ? _overTargetStyle : null,
         ),
       ],
     );
@@ -1379,24 +1193,7 @@ class _ChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ChartPainter old) =>
-      old.snapshot != snapshot ||
-      old.target != target ||
-      old.refreshRate != refreshRate ||
-      old.barRangeMax != barRangeMax ||
-      old.backgroundColor != backgroundColor ||
-      old.textColor != textColor ||
-      old.uiColor != uiColor ||
-      old.rasterColor != rasterColor ||
-      old.totalColor != totalColor ||
-      old.overTargetColor != overTargetColor ||
-      old.compact != compact ||
-      old.showP90 != showP90 ||
-      old.showMemory != showMemory ||
-      old.memoryWarnRatio != memoryWarnRatio ||
-      old.memoryDangerRatio != memoryDangerRatio ||
-      old.showAllTimeStats != showAllTimeStats ||
-      old.paused != paused ||
-      old.sampleSize != sampleSize;
+      old.snapshot != snapshot || old.config != config || old.paused != paused;
 }
 
 /// Sits outside the overlay's `IgnorePointer` so taps land here while the

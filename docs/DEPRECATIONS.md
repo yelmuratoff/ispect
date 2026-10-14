@@ -40,6 +40,7 @@ the next major release so a patch or minor release cannot break consumers.
 | `StringBuffer.writelnIf` (`StringBufferExtension`) | `if (condition) buffer.writeln(value)` | `8.0.0` | Unused extension exported with the navigator observer. |
 | `ISpectSettingsState.isAllLogTypesEnabled` | `disabledLogTypes.isEmpty` | `8.0.0` | No caller in the toolkit. |
 | `LogsJsonService.shareLogsAsJsonFile`, `shareFilteredLogsAsJsonFile`, `saveFilteredLogsToDevice` | `exportToJson` or `formatFilteredContent` with `LogsFileFactory.shareFile` / `saveToDevice` | `8.0.0` | The share sheets compose those calls directly. |
+| `ISpectToaster.showErrorToast(l10n:)`, `showInfoToast(l10n:)`, `showSuccessToast(l10n:)` | Omit the argument | `8.0.0` | These toasts render only the caller's `title` and `message`, so the parameter was never read. |
 | `InspectorMode.inspectAndCompare` (`ispect_layout`) | `InspectorController.enterCompareMode()` (`InspectorMode.compareSelect`) | `8.0.0` | The compare shortcut and button use `compareSelect`; the hover-compare mode was reachable only through `setMode`. |
 
 ## Already removed

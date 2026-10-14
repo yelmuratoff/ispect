@@ -1,18 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
-import 'package:ispect/src/ispect.dart';
-import 'package:ispectify/ispectify.dart';
 
-/// A widget that catches errors thrown during [pluginBuilder] execution
+/// A widget that catches errors thrown by the [pluginBuilder] call itself
 /// and displays a styled fallback instead of the default red error screen.
 ///
-/// Used to wrap plugin screens in the inspector panel so that a broken
-/// plugin does not destroy the debugging experience.
+/// Errors thrown later while building or laying out the plugin's own
+/// descendants are not caught here: Flutter reports them through
+/// `FlutterError.onError` and renders `ErrorWidget.builder` in place of the
+/// failing widget only, so the rest of the ISpect UI keeps working.
 class SafePluginScreen extends StatefulWidget {
   const SafePluginScreen({
     required this.pluginBuilder,
@@ -49,9 +50,7 @@ class _SafePluginScreenState extends State<SafePluginScreen> {
     try {
       return KeyedSubtree(key: _childKey, child: widget.pluginBuilder(context));
     } catch (error, stackTrace) {
-      final resourceLimits =
-          ISpect.loggerIfInitialized?.options.resourceLimits ??
-          DiagnosticResourceLimits.balanced;
+      final resourceLimits = ISpectResourceLimits.current;
       final errorText = ISpectSafeDiagnosticSnapshot.summary(
         error,
         resourceLimits: resourceLimits,
@@ -116,9 +115,7 @@ class _ISpectErrorFallback extends StatelessWidget {
           ISpectGeneratedLocalization,
         ) ??
         ISpectGeneratedLocalizationEn();
-    final resourceLimits =
-        ISpect.loggerIfInitialized?.options.resourceLimits ??
-        DiagnosticResourceLimits.balanced;
+    final resourceLimits = ISpectResourceLimits.current;
     final safePluginId = ISpectSafeDiagnosticSnapshot.summary(
       pluginId,
       resourceLimits: resourceLimits,

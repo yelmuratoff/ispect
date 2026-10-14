@@ -399,7 +399,8 @@ class ISpectTheme {
   /// Retrieves the color associated with a specific log type.
   ///
   /// - `key`: The log type identifier.
-  /// - Returns the mapped color if found; otherwise, defaults to `Colors.grey`.
+  /// - Returns `Colors.grey` when `key` is `null`, the mapped color when
+  ///   `key` has one, and `null` for an unmapped `key`.
   Color? getTypeColor(BuildContext context, {required String? key}) {
     if (key == null) return Colors.grey;
     return colors(context)[key];
@@ -409,7 +410,8 @@ class ISpectTheme {
   ///
   /// - `key`: The log level identifier.
   /// - Strips the `'LogLevel.'` prefix before looking up the color.
-  /// - Returns the mapped color if found; otherwise, defaults to `Colors.grey`.
+  /// - Returns `Colors.transparent` when `key` is `null`, the mapped color
+  ///   when the level has one, and `Colors.grey` otherwise.
   Color getColorByLogLevel(BuildContext context, {required String? key}) {
     if (key == null) return Colors.transparent;
     return colors(context)[key.replaceAll('LogLevel.', '')] ?? Colors.grey;

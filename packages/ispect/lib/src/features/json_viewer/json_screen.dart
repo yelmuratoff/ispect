@@ -5,6 +5,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/debug_report.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
@@ -38,11 +39,7 @@ class JsonScreen extends StatefulWidget {
     DiagnosticProcessingPolicy? processingPolicy,
     Key? key,
   }) {
-    final limits =
-        (resourceLimits ??
-              ISpect.loggerIfInitialized?.options.resourceLimits ??
-              DiagnosticResourceLimits.balanced)
-          ..validate();
+    final limits = (resourceLimits ?? ISpectResourceLimits.current)..validate();
     final scheduling =
         (processingPolicy ??
               ISpect.loggerIfInitialized?.options.processingPolicy ??

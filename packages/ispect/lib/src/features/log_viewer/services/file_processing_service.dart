@@ -1,13 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/file_format.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/file_processing_result.dart';
 
 FileProcessingResult _processPastedContentInBackground(
-  ({String content, DiagnosticResourceLimits resourceLimits}) input,
+  ({
+    String content,
+    DiagnosticResourceLimits resourceLimits,
+    DiagnosticProcessingPolicy processingPolicy,
+  })
+  input,
 ) => FileProcessingService(
   resourceLimits: input.resourceLimits,
+  processingPolicy: input.processingPolicy,
 ).processPastedContent(input.content);
 
 /// Service that normalizes and validates raw log content.
@@ -19,6 +26,8 @@ class FileProcessingService {
 
   final DiagnosticResourceLimits? resourceLimits;
   final DiagnosticProcessingPolicy? processingPolicy;
+
+  static const _pastedFileName = 'Pasted Content';
 
   /// Moves large content validation and decoding off the UI isolate on native
   /// platforms. Web yields before using its single-isolate implementation.
@@ -35,6 +44,7 @@ class FileProcessingService {
     return compute(_processPastedContentInBackground, (
       content: content,
       resourceLimits: limits,
+      processingPolicy: scheduling,
     ), debugLabel: 'ISpect JSON import');
   }
 
@@ -46,10 +56,10 @@ class FileProcessingService {
         content,
         characterLimit: limits.maxImportCharacters,
       );
-    } on JsonInputLimitException catch (error) {
-      return FileProcessingResult.failure(
-        fileName: 'Pasted Content',
-        error: error.message,
+    } on JsonInputLimitException {
+      return const FileProcessingFailure(
+        fileName: _pastedFileName,
+        error: FileProcessingError.exceedsSafeLimits,
         format: FileFormat.json,
       );
     }
@@ -57,9 +67,9 @@ class FileProcessingService {
     final trimmedContent = content.trim();
 
     if (trimmedContent.isEmpty) {
-      return FileProcessingResult.failure(
-        fileName: 'Pasted Content',
-        error: 'Content is empty',
+      return const FileProcessingFailure(
+        fileName: _pastedFileName,
+        error: FileProcessingError.emptyContent,
         format: FileFormat.text,
       );
     }
@@ -69,11 +79,11 @@ class FileProcessingService {
       return _processJsonContent(content, trimmedContent);
     }
 
-    return FileProcessingResult.success(
+    return FileProcessingSuccess(
       content: content,
       displayName: 'Text',
       mimeType: 'text/plain',
-      fileName: 'Pasted Content',
+      fileName: _pastedFileName,
       format: detectedFormat,
       resourceLimits: limits,
       processingPolicy: _processingPolicy,
@@ -86,32 +96,30 @@ class FileProcessingService {
   ) {
     try {
       final decodedJson = _decodeForViewer(trimmedContent, _resourceLimits);
-      return FileProcessingResult.success(
+      return FileProcessingSuccess(
         content: originalContent,
         displayName: 'JSON',
         mimeType: 'application/json',
-        fileName: 'Pasted Content',
+        fileName: _pastedFileName,
         format: FileFormat.json,
         decodedJson: decodedJson,
-        jsonDecodeAttempted: true,
-        jsonDecodeSucceeded: true,
+        hasDecodedJson: true,
         resourceLimits: _resourceLimits,
         processingPolicy: _processingPolicy,
       );
-    } on JsonInputLimitException catch (error) {
-      return FileProcessingResult.failure(
-        fileName: 'Pasted Content',
-        error: error.message,
+    } on JsonInputLimitException {
+      return const FileProcessingFailure(
+        fileName: _pastedFileName,
+        error: FileProcessingError.exceedsSafeLimits,
         format: FileFormat.json,
       );
     } on FormatException {
-      return FileProcessingResult.success(
+      return FileProcessingSuccess(
         content: originalContent,
         displayName: 'JSON (Invalid)',
         mimeType: 'application/json',
-        fileName: 'Pasted Content',
+        fileName: _pastedFileName,
         format: FileFormat.json,
-        jsonDecodeAttempted: true,
         resourceLimits: _resourceLimits,
         processingPolicy: _processingPolicy,
       );
@@ -147,11 +155,7 @@ class FileProcessingService {
       (content.startsWith('[') && content.endsWith(']'));
 
   DiagnosticResourceLimits get _resourceLimits {
-    final limits =
-        (resourceLimits ??
-              ISpect.loggerIfInitialized?.options.resourceLimits ??
-              DiagnosticResourceLimits.balanced)
-          ..validate();
+    final limits = (resourceLimits ?? ISpectResourceLimits.current)..validate();
     return limits;
   }
 

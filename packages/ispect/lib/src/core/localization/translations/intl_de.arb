@@ -380,6 +380,8 @@
    "contentProcessingError": "Fehler bei der Inhaltsverarbeitung",
    "failedToLoadLogContent": "Protokollinhalt konnte nicht geladen werden",
    "unknownContentProcessingError": "Unbekannter Fehler bei der Verarbeitung des Inhalts",
+   "contentEmptyError": "Der Inhalt ist leer",
+   "contentExceedsSafeLimitsError": "Der Inhalt überschreitet die sicheren Importlimits",
    "correlationIdShort": "Korr",
    "transactionIdShort": "Trans",
    "columnType": "Typ",

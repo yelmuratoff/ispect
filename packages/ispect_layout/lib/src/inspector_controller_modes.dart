@@ -168,6 +168,7 @@ extension InspectorControllerModes on InspectorController {
         selectedColorOffsetNotifier.value = null;
         selectedColorStateNotifier.value = null;
         selectedColorImageOffsetNotifier.value = null;
+        zoomScaleNotifier.value = _initialZoomScale;
         break;
       case InspectorMode.zoom:
         _cleanupImage();
@@ -189,6 +190,7 @@ extension InspectorControllerModes on InspectorController {
         break;
       case InspectorMode.colorPicker:
         final captureEpoch = ++_imageCaptureEpoch;
+        zoomScaleNotifier.value = _initialZoomScale;
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => _resampleAfterCapture(captureEpoch),
         );

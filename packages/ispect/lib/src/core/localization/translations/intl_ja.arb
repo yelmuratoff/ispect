@@ -380,6 +380,8 @@
    "contentProcessingError": "コンテンツ処理エラー",
    "failedToLoadLogContent": "ログの内容を読み込めませんでした",
    "unknownContentProcessingError": "コンテンツの処理中に不明なエラーが発生しました",
+   "contentEmptyError": "コンテンツが空です",
+   "contentExceedsSafeLimitsError": "コンテンツが安全なインポート上限を超えています",
    "correlationIdShort": "相関",
    "transactionIdShort": "トランザクション",
    "columnType": "種類",

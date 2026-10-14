@@ -31,7 +31,7 @@ class ISpectBaseLogger {
   })  : settings = settings ?? ConsoleSettings(),
         _filter = filter,
         _output = output ?? outputLog {
-    ansiColorDisabled = false;
+    if (this.settings.enableColors) ansiColorDisabled = false;
   }
 
   final ConsoleSettings settings;
@@ -39,10 +39,19 @@ class ISpectBaseLogger {
   final LoggerOutput _output;
   final ILoggerFilter? _filter;
 
+  /// Whether [ConsoleSettings.enabled] and [ConsoleSettings.level] admit a
+  /// message at [level], which defaults to [LogLevel.debug].
+  ///
+  /// Callers can check this before rendering an expensive message. The
+  /// configured [ILoggerFilter] still applies inside [log].
+  bool isEnabledFor(LogLevel? level) =>
+      settings.enabled &&
+      (level ?? LogLevel.debug).index <= settings.level.index;
+
   /// Formats [msg] and writes it through the configured output.
   ///
-  /// No-ops when [ConsoleSettings.enabled] is `false`, [level] is below
-  /// [ConsoleSettings.level], or the configured [ILoggerFilter] rejects it.
+  /// No-ops when [isEnabledFor] rejects [level] or the configured
+  /// [ILoggerFilter] rejects the message.
   void log(
     Object? msg, {
     LogLevel? level,
@@ -53,8 +62,7 @@ class ISpectBaseLogger {
   }) {
     final selectedLevel = level ?? LogLevel.debug;
 
-    if (!settings.enabled ||
-        selectedLevel.index > settings.level.index ||
+    if (!isEnabledFor(selectedLevel) ||
         !(_filter?.shouldLog(msg, selectedLevel) ?? true)) {
       return;
     }

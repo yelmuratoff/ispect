@@ -242,8 +242,7 @@ void main() {
 
       expect(logger.history, isNotEmpty);
       final add = logger.history.last.additionalData ?? {};
-      // Database keys are identifiers and are redacted in the trace envelope.
-      expect(add['key'], defaultPlaceholder);
+      expect(add['key'], 'myKey');
       // DB-specific meta should not contain statement/statementDigest.
       final meta = add['meta'] as Map<String, dynamic>?;
       expect(meta?.containsKey('statement') ?? false, isFalse);
@@ -557,6 +556,98 @@ void main() {
       expect(additionalData['key'], defaultPlaceholder);
       expect(meta['key'], defaultPlaceholder);
       expect(additionalData['correlationId'], 'transaction-audit');
+    });
+
+    test('keeps ordinary storage keys visible in messages and metadata', () {
+      for (final storageKey in const [
+        'theme_mode',
+        'last_sync_at',
+        'cart_items',
+        'user:42',
+        'orders/2026-10-14',
+        'feature_flags:checkout_v2',
+        'user_profile_cache_v2',
+      ]) {
+        logger.db(source: 'kv', operation: 'read', key: storageKey);
+
+        final additionalData = logger.history.last.additionalData ?? {};
+        final meta = additionalData['meta'] as Map;
+        expect(additionalData['key'], storageKey, reason: storageKey);
+        expect(meta['key'], storageKey, reason: storageKey);
+      }
+    });
+
+    test('masks storage keys whose names the redactor classifies as secret',
+        () {
+      for (final storageKey in const [
+        'auth_token',
+        'refresh_token',
+        'password',
+      ]) {
+        logger.db(source: 'kv', operation: 'read', key: storageKey);
+
+        final entry = logger.history.last;
+        final additionalData = entry.additionalData ?? {};
+        final meta = additionalData['meta'] as Map;
+        expect(additionalData['key'], defaultPlaceholder, reason: storageKey);
+        expect(meta['key'], defaultPlaceholder, reason: storageKey);
+        expect(entry.message.toString(), isNot(contains(storageKey)));
+      }
+    });
+
+    test('masks storage keys that embed an email or a JWT', () {
+      const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
+          '.eyJzdWIiOiIxMjM0NTY3ODkwIn0'
+          '.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+      for (final storageKey in const [
+        'user:alice@example.com',
+        'session:$jwt',
+        'cache:$jwt',
+      ]) {
+        logger.db(source: 'kv', operation: 'read', key: storageKey);
+
+        final entry = logger.history.last;
+        final additionalData = entry.additionalData ?? {};
+        final meta = additionalData['meta'] as Map;
+        expect(additionalData['key'], defaultPlaceholder, reason: storageKey);
+        expect(meta['key'], defaultPlaceholder, reason: storageKey);
+        expect(entry.message.toString(), isNot(contains(storageKey)));
+      }
+    });
+
+    test('masks delimited storage keys with a sensitive or opaque segment', () {
+      for (final storageKey in const [
+        'session:4f9c2a7be1d84c0f9a6b',
+        'sessions/AbC123xYz789QwErTy',
+        'sid:Zx81kq',
+        'auth:Q7mw2p',
+        'user:+15551234567',
+        'contacts/+15551234567',
+        'cache|deadbeef0123456789abcdef',
+        'profile#bob@example.com',
+      ]) {
+        logger.db(source: 'kv', operation: 'read', key: storageKey);
+
+        final entry = logger.history.last;
+        final additionalData = entry.additionalData ?? {};
+        final meta = additionalData['meta'] as Map;
+        expect(additionalData['key'], defaultPlaceholder, reason: storageKey);
+        expect(meta['key'], defaultPlaceholder, reason: storageKey);
+        expect(entry.message.toString(), isNot(contains(storageKey)));
+      }
+    });
+
+    test('masks storage keys matching configured redactKeys', () {
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        key: 'tenant_marker',
+        redactKeys: const ['tenant_marker'],
+      );
+
+      final additionalData = logger.history.last.additionalData ?? {};
+      expect(additionalData['key'], defaultPlaceholder);
+      expect((additionalData['meta'] as Map)['key'], defaultPlaceholder);
     });
 
     test('keeps database keys raw when redaction is explicitly disabled', () {
@@ -1545,7 +1636,7 @@ dollar-secret$audit$''',
       expect(entry.stackTrace, isNotNull);
       final add = entry.additionalData ?? {};
       expect(add['success'], isFalse);
-      expect(add['key'], defaultPlaceholder);
+      expect(add['key'], 'a');
     });
 
     test('projects result and sets items count', () async {

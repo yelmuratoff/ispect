@@ -1,26 +1,22 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:super_drag_and_drop/super_drag_and_drop.dart';
 
-import '../../../core/models/models.dart';
-import '../presentation/widgets/widgets.dart';
+import 'drop_outcome.dart';
 
-/// Handles different drop formats and processes them accordingly.
+/// Reads one dropped item through the first format it can provide and reports
+/// each result to [onOutcome].
 class DropFormatHandler {
-  DropFormatHandler({
-    required this.reader,
-    required this.item,
-    required this.onHandleFile,
-    required this.onAddWidget,
-  });
+  DropFormatHandler({required this.item, required this.onOutcome});
 
-  final dynamic reader;
   final DropItem item;
-  final void Function(dynamic file, String? displayName, String? mimeType)
-  onHandleFile;
-  final void Function(Widget widget) onAddWidget;
+  final void Function(DropOutcome outcome) onOutcome;
 
+  late final _reader = item.dataReader!;
+
+  /// Reads [item]; does nothing when the item carries no data reader.
   Future<void> process() async {
+    if (item.dataReader == null) return;
+
     final formatHandlers = [
       () => _tryFormat(Formats.json, 'JSON', 'application/json'),
       () => _tryFormat(Formats.plainTextFile, null, null),
@@ -35,17 +31,36 @@ class DropFormatHandler {
     await _tryWebFormats() || await _tryMimeTypes() || await _tryPlainText();
   }
 
+  void _readFile(
+    FileFormat format, {
+    String? displayName,
+    String? mimeType,
+    required void Function(Object error) onError,
+  }) {
+    _reader.getFile(
+      format,
+      (file) => onOutcome(
+        DroppedFile(
+          fileName: file.fileName,
+          openStream: file.getStream,
+          displayName: displayName,
+          mimeType: mimeType,
+        ),
+      ),
+      onError: onError,
+    );
+  }
+
   Future<bool> _tryFormat(
-    dynamic format,
+    FileFormat format,
     String? displayName,
     String? mimeType,
   ) async {
-    if (reader.canProvide(format)) {
-      reader.getFile(
+    if (_reader.canProvide(format)) {
+      _readFile(
         format,
-        (file) {
-          onHandleFile(file, displayName, mimeType);
-        },
+        displayName: displayName,
+        mimeType: mimeType,
         onError: (error) {
           ISpect.logger.error('Error reading format: $error');
         },
@@ -56,12 +71,12 @@ class DropFormatHandler {
   }
 
   Future<bool> _tryFileUri() async {
-    if (reader.canProvide(Formats.fileUri)) {
-      reader.getValue<Uri>(
+    if (_reader.canProvide(Formats.fileUri)) {
+      _reader.getValue<Uri>(
         Formats.fileUri,
         (value) {
           if (value != null) {
-            onAddWidget(FileUriWidget(fileUri: value));
+            onOutcome(DroppedFileUri(value));
             _tryReadExternalFile(value);
           }
         },
@@ -99,19 +114,15 @@ class DropFormatHandler {
   }
 
   Future<bool> _tryPlainText() async {
-    if (reader.canProvide(Formats.plainText)) {
-      reader.getValue<String>(
+    if (_reader.canProvide(Formats.plainText)) {
+      _reader.getValue<String>(
         Formats.plainText,
         (value) {
           if (value != null) {
-            final mockFile = MockFile(
-              content: value,
-              fileName: 'dropped_text.txt',
-            );
-            onAddWidget(
-              FileContentWidget(
+            onOutcome(
+              DroppedText(
                 content: value,
-                file: mockFile,
+                fileName: 'dropped_text.txt',
                 displayName: 'Text',
                 mimeType: 'text/plain',
               ),
@@ -136,8 +147,8 @@ class DropFormatHandler {
         : '';
 
     if (extension != 'txt' && extension != 'json') {
-      _showError(
-        ExternalFileErrorWidget(
+      onOutcome(
+        ExternalFileFailure(
           fileName: fileName,
           error: 'Only .txt and .json files are supported',
         ),
@@ -145,16 +156,13 @@ class DropFormatHandler {
       return;
     }
 
-    if (reader.canProvide(Formats.plainTextFile)) {
-      reader.getFile(
+    if (_reader.canProvide(Formats.plainTextFile)) {
+      _readFile(
         Formats.plainTextFile,
-        (file) {
-          onHandleFile(file, null, null);
-        },
         onError: (error) {
           ISpect.logger.error('Could not read external file: $error');
-          _showError(
-            ExternalFileErrorWidget(
+          onOutcome(
+            ExternalFileFailure(
               fileName: fileName,
               error: 'Could not read file content',
             ),
@@ -164,8 +172,8 @@ class DropFormatHandler {
       return;
     }
 
-    _showError(
-      ExternalFileErrorWidget(
+    onOutcome(
+      ExternalFileFailure(
         fileName: fileName,
         error: 'File format not supported for content reading',
       ),
@@ -175,10 +183,11 @@ class DropFormatHandler {
   void _tryReadWebFormat(String format) {
     ISpect.logger.info('Attempting to read web format: $format');
 
-    if (reader.canProvide(Formats.json)) {
-      reader.getFile(
+    if (_reader.canProvide(Formats.json)) {
+      _readFile(
         Formats.json,
-        (file) => onHandleFile(file, 'JSON', 'application/json'),
+        displayName: 'JSON',
+        mimeType: 'application/json',
         onError: (error) {
           ISpect.logger.error('Error reading web format as JSON: $error');
           _tryWebFormatAsPlainText(format);
@@ -187,14 +196,13 @@ class DropFormatHandler {
       return;
     }
 
-    if (reader.canProvide(Formats.plainTextFile)) {
-      reader.getFile(
+    if (_reader.canProvide(Formats.plainTextFile)) {
+      _readFile(
         Formats.plainTextFile,
-        (file) => onHandleFile(file, null, null),
         onError: (error) {
           ISpect.logger.error('Error reading web format as text: $error');
-          _showError(
-            FormatErrorWidget(
+          onOutcome(
+            DropFormatFailure(
               type: 'Web Format',
               format: format,
               error: 'Could not read as text file',
@@ -211,10 +219,11 @@ class DropFormatHandler {
   void _tryReadMimeTypeFormat(String mimeType) {
     ISpect.logger.info('Attempting to read MIME type: $mimeType');
 
-    if (mimeType == 'application/json' && reader.canProvide(Formats.json)) {
-      reader.getFile(
+    if (mimeType == 'application/json' && _reader.canProvide(Formats.json)) {
+      _readFile(
         Formats.json,
-        (file) => onHandleFile(file, 'JSON', 'application/json'),
+        displayName: 'JSON',
+        mimeType: 'application/json',
         onError: (error) {
           ISpect.logger.error('Error reading JSON MIME type: $error');
           _tryReadAsPlainTextFile(mimeType);
@@ -223,14 +232,13 @@ class DropFormatHandler {
       return;
     }
 
-    if (reader.canProvide(Formats.plainTextFile)) {
-      reader.getFile(
+    if (_reader.canProvide(Formats.plainTextFile)) {
+      _readFile(
         Formats.plainTextFile,
-        (file) => onHandleFile(file, null, null),
         onError: (error) {
           ISpect.logger.error('Error reading MIME type as file: $error');
-          _showError(
-            FormatErrorWidget(
+          onOutcome(
+            DropFormatFailure(
               type: 'MIME Type',
               format: mimeType,
               error: 'Could not read file content',
@@ -241,24 +249,17 @@ class DropFormatHandler {
       return;
     }
 
-    if (reader.canProvide(Formats.plainText)) {
-      reader.getValue<String>(
+    if (_reader.canProvide(Formats.plainText)) {
+      _reader.getValue<String>(
         Formats.plainText,
         (value) {
           if (value != null) {
-            final displayName = mimeType == 'application/json'
-                ? 'JSON'
-                : 'Text';
-            final mockFile = MockFile(
-              content: value,
-              fileName:
-                  'mime_content.${mimeType == 'application/json' ? 'json' : 'txt'}',
-            );
-            onAddWidget(
-              FileContentWidget(
+            final isJson = mimeType == 'application/json';
+            onOutcome(
+              DroppedText(
                 content: value,
-                file: mockFile,
-                displayName: displayName,
+                fileName: 'mime_content.${isJson ? 'json' : 'txt'}',
+                displayName: isJson ? 'JSON' : 'Text',
                 mimeType: mimeType,
               ),
             );
@@ -266,8 +267,8 @@ class DropFormatHandler {
         },
         onError: (error) {
           ISpect.logger.error('Error reading MIME type as text: $error');
-          _showError(
-            FormatErrorWidget(
+          onOutcome(
+            DropFormatFailure(
               type: 'MIME Type',
               format: mimeType,
               error: 'Could not read text content',
@@ -278,8 +279,8 @@ class DropFormatHandler {
       return;
     }
 
-    _showError(
-      FormatErrorWidget(
+    onOutcome(
+      DropFormatFailure(
         type: 'MIME Type',
         format: mimeType,
         error: 'MIME type not supported for reading',
@@ -288,14 +289,13 @@ class DropFormatHandler {
   }
 
   void _tryReadAsPlainTextFile(String mimeType) {
-    if (reader.canProvide(Formats.plainTextFile)) {
-      reader.getFile(
+    if (_reader.canProvide(Formats.plainTextFile)) {
+      _readFile(
         Formats.plainTextFile,
-        (file) => onHandleFile(file, null, null),
         onError: (error) {
           ISpect.logger.error('Error reading as plain text file: $error');
-          _showError(
-            FormatErrorWidget(
+          onOutcome(
+            DropFormatFailure(
               type: 'MIME Type',
               format: mimeType,
               error: 'Could not read as text file',
@@ -304,8 +304,8 @@ class DropFormatHandler {
         },
       );
     } else {
-      _showError(
-        FormatErrorWidget(
+      onOutcome(
+        DropFormatFailure(
           type: 'MIME Type',
           format: mimeType,
           error: 'Plain text file format not available',
@@ -315,19 +315,15 @@ class DropFormatHandler {
   }
 
   void _tryWebFormatAsPlainText(String format) {
-    if (reader.canProvide(Formats.plainText)) {
-      reader.getValue<String>(
+    if (_reader.canProvide(Formats.plainText)) {
+      _reader.getValue<String>(
         Formats.plainText,
         (value) {
           if (value != null) {
-            final mockFile = MockFile(
-              content: value,
-              fileName: 'web_format_content.txt',
-            );
-            onAddWidget(
-              FileContentWidget(
+            onOutcome(
+              DroppedText(
                 content: value,
-                file: mockFile,
+                fileName: 'web_format_content.txt',
                 displayName: 'Web Content',
                 mimeType: 'text/plain',
               ),
@@ -336,8 +332,8 @@ class DropFormatHandler {
         },
         onError: (error) {
           ISpect.logger.error('Error reading web format as plain text: $error');
-          _showError(
-            FormatErrorWidget(
+          onOutcome(
+            DropFormatFailure(
               type: 'Web Format',
               format: format,
               error: 'Could not read as plain text',
@@ -346,17 +342,13 @@ class DropFormatHandler {
         },
       );
     } else {
-      _showError(
-        FormatErrorWidget(
+      onOutcome(
+        DropFormatFailure(
           type: 'Web Format',
           format: format,
           error: 'Format not supported for content reading',
         ),
       );
     }
-  }
-
-  void _showError(Widget errorWidget) {
-    onAddWidget(errorWidget);
   }
 }

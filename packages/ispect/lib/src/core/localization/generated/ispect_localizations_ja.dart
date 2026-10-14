@@ -1240,6 +1240,12 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get unknownContentProcessingError => 'コンテンツの処理中に不明なエラーが発生しました';
 
   @override
+  String get contentEmptyError => 'コンテンツが空です';
+
+  @override
+  String get contentExceedsSafeLimitsError => 'コンテンツが安全なインポート上限を超えています';
+
+  @override
   String get correlationIdShort => '相関';
 
   @override

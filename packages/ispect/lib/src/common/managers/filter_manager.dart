@@ -70,10 +70,6 @@ class FilterManager {
   String? _lastSearchMatchQuery;
   List<ISpectLogData>? _lastSearchMatchInput;
 
-  Map<String, int>? _cachedKeyCounts;
-  List<String>? _cachedUniqueKeys;
-  int _lastKeysGeneration = -1;
-
   ISpectFilter get filter => _filter;
 
   set filter(ISpectFilter val) {
@@ -99,7 +95,6 @@ class FilterManager {
       excludedLogTypeKeys: _vetoedLogTypeKeys,
     );
     _invalidateFilterCache();
-    _lastKeysGeneration = -1;
     _notify();
   }
 
@@ -290,32 +285,6 @@ class FilterManager {
     _cachedNoSearchResult = null;
     _searchMatchesGeneration = -1;
     _lastSearchMatchInput = null;
-  }
-
-  LogTypeKeysResult getLogTypeKeys(List<ISpectLogData> logsData) {
-    if (_lastKeysGeneration == _dataGeneration) {
-      final cachedCounts = _cachedKeyCounts;
-      final cachedUnique = _cachedUniqueKeys;
-      if (cachedCounts != null && cachedUnique != null) {
-        return (counts: cachedCounts, unique: cachedUnique);
-      }
-    }
-
-    final counts = <String, int>{};
-    for (final data in logsData) {
-      final key = captureISpectLogWithoutPayload(data).key;
-      if (key == null || isExcluded(key)) continue;
-      counts[key] = (counts[key] ?? 0) + 1;
-    }
-
-    final uniqueKeys = counts.keys.toList(growable: false);
-    final frozenCounts = Map<String, int>.unmodifiable(counts);
-
-    _cachedKeyCounts = frozenCounts;
-    _cachedUniqueKeys = uniqueKeys;
-    _lastKeysGeneration = _dataGeneration;
-
-    return (counts: frozenCounts, unique: uniqueKeys);
   }
 
   void dispose() {

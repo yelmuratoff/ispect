@@ -1282,6 +1282,13 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
       'सामग्री प्रोसेस करते समय अज्ञात त्रुटि हुई';
 
   @override
+  String get contentEmptyError => 'सामग्री खाली है';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'सामग्री सुरक्षित इम्पोर्ट सीमाओं से अधिक है';
+
+  @override
   String get correlationIdShort => 'सहसंबंध';
 
   @override

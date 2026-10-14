@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect_layout/src/inspector_controller.dart';
+import 'package:ispect_layout/src/widgets/multi_value_listenable.dart';
 
 class InspectorPanel extends StatefulWidget {
   const InspectorPanel({
@@ -88,9 +89,9 @@ class _InspectorPanelState extends State<InspectorPanel> {
     // Subscribe locally so the panel updates correctly when used outside
     // Inspector.build (e.g., via a custom panelBuilder that doesn't wrap
     // InspectorPanel in its own ValueListenableBuilder).
-    return ListenableBuilder(
-      listenable: controller.modeNotifier,
-      builder: (context, _) => _build(context),
+    return MultiValueListenableBuilder(
+      valueListenables: [controller.modeNotifier, controller.themeNotifier],
+      builder: _build,
     );
   }
 

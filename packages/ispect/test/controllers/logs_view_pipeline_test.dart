@@ -239,18 +239,52 @@ void main() {
     expect(state.totalCount, 3);
   });
 
-  test('level stats and type keys describe the raw snapshot', () {
+  group('header counts', () {
     final logs = [
       plain('A'),
       plain('E', key: ISpectLogType.error.key, level: LogLevel.error),
       plain('W', key: ISpectLogType.warning.key, level: LogLevel.warning),
     ];
-    view.setOnlyLogTypeKey(ISpectLogType.error.key);
 
-    final state = pipeline.compute(logs);
+    test('follow the selected log types while chips keep the raw keys', () {
+      view.setOnlyLogTypeKey(ISpectLogType.error.key);
 
-    expect(state.levelStats, (errors: 1, warnings: 1));
-    expect(state.logTypeKeys.counts[ISpectLogType.warning.key], 1);
-    expect(ids(state.filtered), ['E']);
+      final state = pipeline.compute(logs);
+
+      expect(state.headerCounts, (total: 1, errors: 1, warnings: 0));
+      expect(state.logTypeKeys.counts[ISpectLogType.warning.key], 1);
+      expect(ids(state.filtered), ['E']);
+    });
+
+    test('drop a type hidden for the session', () {
+      view.hideLogTypeKey(ISpectLogType.error.key);
+
+      final state = pipeline.compute(logs);
+
+      expect(state.headerCounts, (total: 2, errors: 0, warnings: 1));
+      expect(state.headerCounts.total, state.filtered.length);
+    });
+
+    test('ignore a highlight search query', () {
+      view.searchByCorrelationId('message W');
+
+      final state = pipeline.compute(logs);
+
+      expect(state.isHighlightMode, isTrue);
+      expect(state.headerCounts, (total: 3, errors: 1, warnings: 1));
+    });
+
+    test('pick up appended logs after a filter change', () {
+      view.hideLogTypeKey(ISpectLogType.warning.key);
+      pipeline.compute(logs);
+      final appended = [
+        ...logs,
+        plain('E2', key: ISpectLogType.error.key, level: LogLevel.error),
+      ];
+
+      final state = pipeline.compute(appended);
+
+      expect(state.headerCounts, (total: 3, errors: 2, warnings: 0));
+    });
   });
 }

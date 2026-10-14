@@ -380,6 +380,8 @@
    "contentProcessingError": "सामग्री प्रोसेसिंग त्रुटि",
    "failedToLoadLogContent": "लॉग सामग्री लोड नहीं हो सकी",
    "unknownContentProcessingError": "सामग्री प्रोसेस करते समय अज्ञात त्रुटि हुई",
+   "contentEmptyError": "सामग्री खाली है",
+   "contentExceedsSafeLimitsError": "सामग्री सुरक्षित इम्पोर्ट सीमाओं से अधिक है",
    "correlationIdShort": "सहसंबंध",
    "transactionIdShort": "लेनदेन",
    "columnType": "प्रकार",

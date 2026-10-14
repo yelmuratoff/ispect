@@ -3,6 +3,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/default_curl_redactor.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/core/res/json_color.dart';
@@ -32,9 +33,7 @@ class CopyButton extends StatelessWidget {
           node.rawValue,
           keyName: node.key,
         );
-        final limits =
-            ISpect.loggerIfInitialized?.options.resourceLimits ??
-            DiagnosticResourceLimits.balanced;
+        final limits = ISpectResourceLimits.current;
         copyClipboard(
           context,
           value:

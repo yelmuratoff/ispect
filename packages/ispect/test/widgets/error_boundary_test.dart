@@ -13,6 +13,13 @@ final class _HostilePluginException implements Exception {
   }
 }
 
+final class _ThrowingPluginBody extends StatelessWidget {
+  const _ThrowingPluginBody();
+
+  @override
+  Widget build(BuildContext context) => throw StateError('descendant build');
+}
+
 void main() {
   group('SafePluginScreen', () {
     testWidgets('renders child when pluginBuilder succeeds', (tester) async {
@@ -83,6 +90,43 @@ void main() {
 
         expect(find.textContaining('STRING-PLUGIN-SECRET'), findsNothing);
         expect(find.textContaining('[REDACTED]'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'contains a descendant build error to the failing widget while the '
+      'surrounding UI keeps working',
+      (tester) async {
+        var siblingTaps = 0;
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Column(
+                children: [
+                  TextButton(
+                    onPressed: () => siblingTaps++,
+                    child: const Text('Sibling'),
+                  ),
+                  Expanded(
+                    child: SafePluginScreen(
+                      pluginBuilder: (_) => const _ThrowingPluginBody(),
+                      pluginId: 'deep-plugin',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        expect(tester.takeException(), isA<StateError>());
+        expect(find.byType(ErrorWidget), findsOneWidget);
+        expect(find.text('Failed to render plugin screen'), findsNothing);
+
+        await tester.tap(find.text('Sibling'));
+        await tester.pump();
+        expect(siblingTaps, 1);
       },
     );
 

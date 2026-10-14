@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:ispectify/ispectify.dart';
+import 'package:meta/meta.dart';
 
 final class RollingFileLogHistory implements FileLogHistory {
   RollingFileLogHistory(
@@ -14,12 +15,15 @@ final class RollingFileLogHistory implements FileLogHistory {
     throw UnsupportedError('File log history requires dart:io');
   }
 
+  @visibleForTesting
   RollingFileLogHistory.testing(
     ISpectLoggerOptions loggerOptions, {
     required FileLogDirectoryProvider directoryProvider,
     FileLogHistoryOptions options = const FileLogHistoryOptions(),
     RedactionService? redactor,
     Timer Function(Duration, void Function())? timerFactory,
+    FutureOr<void> Function(Never file, String operation)? ioHook,
+    int? archiveCompressedByteLimit,
     bool? providerDirectoryRequiresOwnerOnlyProtection,
     void Function(
       String message, {

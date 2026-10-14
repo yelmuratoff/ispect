@@ -2,6 +2,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/ispect_layout.dart';
+import 'package:ispect_layout/src/widgets/inspector/overlay.dart';
+import 'package:ispect_layout/src/widgets/zoom/zoom_overlay.dart';
+import 'package:ispect_layout/src/widgets/zoomable_color_picker/zoomable_color_picker.dart';
 
 Future<InspectorController> _pumpInspector(WidgetTester tester) async {
   final controller = InspectorController();
@@ -116,7 +119,7 @@ void main() {
       expect(notifications, 0);
     });
 
-    test('scroll changes the scale only in zoom mode', () {
+    test('scroll leaves the scale unchanged outside the loupe modes', () {
       final initial = controller.zoomScaleNotifier.value;
 
       controller.onPointerScroll(scroll(-10));
@@ -160,6 +163,106 @@ void main() {
 
       expect(controller.zoomScaleNotifier.value, lessThan(zoomed));
       expect(controller.zoomScaleNotifier.value, 4);
+    });
+
+    testWidgets('scrolling adjusts the color picker loupe scale', (
+      tester,
+    ) async {
+      final controller = await _pumpInspector(tester);
+      controller.setMode(InspectorMode.colorPicker);
+      final initial = controller.zoomScaleNotifier.value;
+
+      controller.onPointerScroll(scroll(-10));
+      expect(controller.zoomScaleNotifier.value, initial + 1);
+
+      controller.onPointerScroll(scroll(10));
+      controller.onPointerScroll(scroll(10));
+      expect(controller.zoomScaleNotifier.value, initial - 1);
+    });
+
+    testWidgets('leaving color picker mode resets the scale', (tester) async {
+      final controller = await _pumpInspector(tester);
+      controller
+        ..setMode(InspectorMode.colorPicker)
+        ..zoomIn()
+        ..zoomIn();
+
+      controller.setMode(InspectorMode.none);
+
+      expect(controller.zoomScaleNotifier.value, 4);
+    });
+
+    testWidgets('a new color picker session starts at the default scale', (
+      tester,
+    ) async {
+      final controller = await _pumpInspector(tester);
+      controller
+        ..setMode(InspectorMode.colorPicker)
+        ..zoomIn()
+        ..zoomIn()
+        ..cancelCurrentMode()
+        ..setMode(InspectorMode.colorPicker);
+
+      expect(controller.zoomScaleNotifier.value, 4);
+    });
+  });
+
+  group('mode overlays', () {
+    testWidgets('color picker shows the loupe once the capture lands', (
+      tester,
+    ) async {
+      final controller = await _pumpInspector(tester);
+      await _hoverAndRest(tester, const Offset(120, 120));
+
+      controller.setMode(InspectorMode.colorPicker);
+      await _awaitCapture(tester);
+
+      expect(find.byType(ZoomableColorPickerOverlay), findsOneWidget);
+      expect(find.byType(ZoomOverlayWidget), findsNothing);
+      expect(find.byType(InspectorOverlay), findsNothing);
+
+      controller.setMode(InspectorMode.none);
+      await tester.pump();
+
+      expect(find.byType(ZoomableColorPickerOverlay), findsNothing);
+    });
+
+    testWidgets('zoom shows the magnifier once the capture lands', (
+      tester,
+    ) async {
+      final controller = await _pumpInspector(tester);
+      await _hoverAndRest(tester, const Offset(120, 120));
+
+      controller.setMode(InspectorMode.zoom);
+      await _awaitCapture(tester);
+
+      expect(find.byType(ZoomOverlayWidget), findsOneWidget);
+      expect(find.byType(ZoomableColorPickerOverlay), findsNothing);
+      expect(find.byType(InspectorOverlay), findsNothing);
+
+      controller.setMode(InspectorMode.none);
+      await tester.pump();
+
+      expect(find.byType(ZoomOverlayWidget), findsNothing);
+    });
+
+    testWidgets('inspector shows the selection overlay', (tester) async {
+      final controller = await _pumpInspector(tester);
+
+      controller.setMode(InspectorMode.inspector);
+      await tester.pump();
+      await tester.tapAt(const Offset(120, 120));
+      await tester.pump();
+
+      expect(find.byType(InspectorOverlay), findsOneWidget);
+      expect(controller.currentRenderBoxNotifier.value, isNotNull);
+      expect(find.byType(ZoomableColorPickerOverlay), findsNothing);
+      expect(find.byType(ZoomOverlayWidget), findsNothing);
+
+      controller.setMode(InspectorMode.none);
+      await tester.pump();
+
+      expect(find.byType(InspectorOverlay), findsNothing);
     });
   });
 }
