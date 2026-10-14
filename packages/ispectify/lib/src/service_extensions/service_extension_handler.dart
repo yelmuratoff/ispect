@@ -4,8 +4,6 @@ import 'dart:developer' as developer;
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify/src/service_extensions/log_query.dart';
 
-/// Maps one `ext.ispect.*` call onto [LogQuery] and its result onto a
-/// [developer.ServiceExtensionResponse].
 abstract final class ServiceExtensionHandler {
   static const methods = [
     ISpectServiceExtensions.getSummary,

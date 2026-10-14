@@ -14,16 +14,20 @@ import 'package:ispectify/src/service_extensions/service_extension_handler.dart'
 /// - [getSummary]: entry and level counts, top log keys, recent errors.
 /// - [getLogs]: compact entries filtered by `minLevel`, `keys` (comma
 ///   separated), and `query`; `limit` caps the page (default [defaultLimit],
-///   max [maxLimit]). Without a cursor it returns the newest matches and
-///   `hasMore` reports older ones; pass the first returned `id` as
+///   max [maxLimit]). `minLevel` takes a [LogLevel] name and keeps that level
+///   and more severe ones; entries without a level never match it, so it can
+///   return fewer entries than `errorCount`, which uses
+///   [ISpectLogData.isError]. Without a cursor it returns the newest matches
+///   and `hasMore` reports older ones; pass the first returned `id` as
 ///   `beforeId` to page back. With `afterId` it returns the matches logged
 ///   after that entry and `hasMore` reports newer ones, so polling with the
 ///   returned `cursor` streams new logs. `query` matches captured values
 ///   before export redaction, so a hit can come from a value the response
 ///   masks.
 /// - [getLog]: the `level` and the full redacted JSON Lines record of `id`.
-/// - [getTrace]: every entry whose correlation or transaction ID equals `id`,
-///   such as the request, response, and error of one HTTP call.
+/// - [getTrace]: the oldest [maxLimit] entries whose correlation or
+///   transaction ID equals `id`, such as the request, response, and error of
+///   one HTTP call; `hasMore` reports the rest.
 ///
 /// Invalid parameters answer with an `invalidParams` error whose message
 /// says how to correct the call.
@@ -49,18 +53,18 @@ abstract final class ISpectServiceExtensions {
   /// "not initialized" error. A later call replaces [resolveLogger].
   static void register(ISpectLogger? Function() resolveLogger) {
     if (!kISpectEnabled) return;
-    final alreadyRegistered = _resolveLogger != null;
-    _resolveLogger = resolveLogger;
-    if (alreadyRegistered) return;
-    for (final method in ServiceExtensionHandler.methods) {
-      developer.registerExtension(
-        method,
-        (method, parameters) async => ServiceExtensionHandler.handle(
+    if (_resolveLogger == null) {
+      for (final method in ServiceExtensionHandler.methods) {
+        developer.registerExtension(
           method,
-          parameters,
-          logger: _resolveLogger?.call(),
-        ),
-      );
+          (method, parameters) async => ServiceExtensionHandler.handle(
+            method,
+            parameters,
+            logger: _resolveLogger?.call(),
+          ),
+        );
+      }
     }
+    _resolveLogger = resolveLogger;
   }
 }

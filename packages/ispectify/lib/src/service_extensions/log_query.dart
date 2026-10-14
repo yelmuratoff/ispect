@@ -144,13 +144,15 @@ final class LogQuery {
 
   /// Throws [InvalidLogQuery] when no entry with [id] is in the history.
   Map<String, Object?> log(String id) {
-    final log = _logger.history.where((log) => _id(log) == id).lastOrNull;
-    if (log == null) {
+    final history = _logger.history;
+    final index = history.lastIndexWhere((log) => _id(log) == id);
+    if (index < 0) {
       throw InvalidLogQuery(
         'No log with id $id in history; '
         'take ids from getLogs, getTrace, or getSummary.',
       );
     }
+    final log = history[index];
     return {
       if (captureISpectLogWithoutPayload(log).logLevel case final level?)
         'level': level.name,

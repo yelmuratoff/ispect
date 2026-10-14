@@ -301,6 +301,23 @@ void main() {
       expect(response.errorDetail, contains('without afterId'));
     });
 
+    test('rejects an evicted beforeId with a restart hint', () {
+      final response = _callError(logger, ISpectServiceExtensions.getLogs, {
+        'beforeId': 'missing',
+      });
+
+      expect(response.errorCode, ServiceExtensionResponse.invalidParams);
+      expect(response.errorDetail, contains('without beforeId'));
+    });
+
+    test('omits the cursor when the history is empty', () {
+      final body = _call(logger, ISpectServiceExtensions.getLogs);
+
+      expect(_logs(body), isEmpty);
+      expect(body['hasMore'], isFalse);
+      expect(body.containsKey('cursor'), isFalse);
+    });
+
     test('rejects an out-of-range limit and an unknown level', () {
       final limit = _callError(logger, ISpectServiceExtensions.getLogs, {
         'limit': '${ISpectServiceExtensions.maxLimit + 1}',
@@ -378,6 +395,44 @@ void main() {
         [ISpectLogType.httpRequest.key, ISpectLogType.httpError.key],
       );
       expect(body['hasMore'], isFalse);
+    });
+
+    test('matches entries by transaction id', () {
+      final raw = _loggerWithRawHistory([
+        ISpectLogData(
+          'insert order',
+          additionalData: const {TraceKeys.transactionId: 'tx-1'},
+        ),
+        ISpectLogData(
+          'other transaction',
+          additionalData: const {TraceKeys.transactionId: 'tx-2'},
+        ),
+      ]);
+      addTearDown(raw.dispose);
+
+      final body = _call(raw, ISpectServiceExtensions.getTrace, {
+        'id': 'tx-1',
+      });
+
+      expect(_messages(body), ['insert order']);
+    });
+
+    test('caps a long trace at maxLimit and reports the rest', () {
+      for (var i = 0; i <= ISpectServiceExtensions.maxLimit; i++) {
+        logger.httpRequest(
+          source: 'test',
+          operation: 'GET $i',
+          correlationId: 'req-1',
+        );
+      }
+
+      final body = _call(logger, ISpectServiceExtensions.getTrace, {
+        'id': 'req-1',
+      });
+
+      expect(_logs(body), hasLength(ISpectServiceExtensions.maxLimit));
+      expect(_logs(body).first[TraceKeys.operation], 'GET 0');
+      expect(body['hasMore'], isTrue);
     });
   });
 
