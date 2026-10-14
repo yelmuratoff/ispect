@@ -57,7 +57,7 @@
 - **Localization:** Settings, log viewer, desktop table, composer, JSON viewer, and error screens are translated in every supported locale, with plural-aware counts.
 - **Session history:** Loading and clearing failures show an error state with Retry instead of an empty list.
 - **Shared capture policy:** BLoC, Riverpod, Dio, http, and WebSocket adapters share one capture and redaction policy.
-- **Less work per log:** Entries below the console level are no longer rendered (`ISpectBaseLogger.isEnabledFor`), file history resolves each day's segment once per save, and export scrubbing classifies keys once per call.
+- **Less work per log:** Entries below the console level are no longer rendered (`ISpectBaseLogger.isEnabledFor`), file history resolves each day's segment once per save, and redaction classifies each key once per policy, so network capture, database traces, and exports redact faster.
 - **Release tooling:** `deps` and `sync` handle exact, range, and map-form internal constraints; `publish` and `check-published` share one version gate and suggestion; `PUBLISH_FORCE` is documented.
 
 ### Deprecations
