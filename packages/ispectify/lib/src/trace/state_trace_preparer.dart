@@ -4,19 +4,52 @@ import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart';
 import 'package:ispectify/src/redaction/redaction_service.dart';
 import 'package:ispectify/src/redaction/redaction_toggle.dart';
+import 'package:ispectify/src/trace/trace_config.dart';
+import 'package:ispectify/src/trace/trace_payload.dart';
 
 /// Bounds and redacts state-management payloads before they enter a trace.
 ///
 /// BLoC and Riverpod observers share one policy: every caller-controlled value
 /// is bounded to [DiagnosticResourceLimits.maxStateTraceBytes] under
 /// [captureMode], then redacted by [redactor] when one is active. A redaction
-/// failure yields [defaultPlaceholder], never the raw value.
+/// failure yields [redactionFailedPlaceholder], never the raw value.
 final class StateTracePreparer {
   const StateTracePreparer({
     required this.redactor,
     required this.captureMode,
     required this.resourceLimits,
   });
+
+  /// Returns [cached] when it still matches the resolved policy, otherwise a
+  /// new preparer.
+  ///
+  /// When [redactionActive] is `true` the redactor resolves through
+  /// [ISpectRedaction.resolveService], so an explicit [redactor] wins over the
+  /// global service; otherwise the preparer has no redactor. [cached] is reused
+  /// only when its redactor and [resourceLimits] are identical and its
+  /// [captureMode] is equal.
+  factory StateTracePreparer.resolve({
+    required bool redactionActive,
+    required RedactionService? redactor,
+    required DiagnosticCaptureMode captureMode,
+    required DiagnosticResourceLimits resourceLimits,
+    StateTracePreparer? cached,
+  }) {
+    final activeRedactor = redactionActive
+        ? ISpectRedaction.resolveService(service: redactor)
+        : null;
+    if (cached != null &&
+        identical(cached.redactor, activeRedactor) &&
+        identical(cached.resourceLimits, resourceLimits) &&
+        cached.captureMode == captureMode) {
+      return cached;
+    }
+    return StateTracePreparer(
+      redactor: activeRedactor,
+      captureMode: captureMode,
+      resourceLimits: resourceLimits,
+    );
+  }
 
   /// Active redaction service, or `null` when redaction is off.
   final RedactionService? redactor;
@@ -27,38 +60,28 @@ final class StateTracePreparer {
 
   bool get redactionActive => redactor != null;
 
+  /// Trace config for fields this preparer already bounded and redacted.
+  ///
+  /// Trace-level redaction is off: a second generic pass would replace the
+  /// configured [redactor] and repeat boundary traversal. Error traces attach
+  /// their stack trace and share [resourceLimits].
+  ISpectTraceConfig get traceConfig => ISpectTraceConfig(
+        redact: false,
+        attachStackOnError: true,
+        resourceLimits: resourceLimits,
+      );
+
   /// Returns a bounded, redacted snapshot of [value].
-  Object? prepareValue(Object? value) {
-    final active = redactionActive;
-    final balanced = captureMode == DiagnosticCaptureMode.balanced;
-    final prepared = LogExportOutput.boundJsonValue(
-      value,
-      maxBytes: resourceLimits.maxStateTraceBytes,
-      resourceLimits: resourceLimits,
-      preserveTypes: active,
-      replaceOversizedStrings: active,
-      allowCustomSerialization: balanced,
-      allowCustomStringification: balanced,
-    );
-    if (!active) return prepared;
-    try {
-      final redacted = redactor!.redactForExport(
-        LogExportOutput.replaceTruncatedPrefixes(
-          prepared,
-          resourceLimits: resourceLimits,
-        ),
+  ///
+  /// Fails closed to [redactionFailedPlaceholder] when bounding or redaction
+  /// throws.
+  Object? prepareValue(Object? value) => prepareTracePayload(
+        value,
+        redactor: redactor,
+        captureMode: captureMode,
         resourceLimits: resourceLimits,
-      );
-      return LogExportOutput.boundJsonValue(
-        redacted,
         maxBytes: resourceLimits.maxStateTraceBytes,
-        resourceLimits: resourceLimits,
-        replaceOversizedStrings: true,
       );
-    } catch (_) {
-      return defaultPlaceholder;
-    }
-  }
 
   /// Returns [value] as bounded text; structured values collapse to the
   /// placeholder.
@@ -106,30 +129,20 @@ final class StateTracePreparer {
     required DiagnosticResourceLimits resourceLimits,
   }) {
     final active = enableRedaction && ISpectRedaction.enabled;
-    final balanced = captureMode == DiagnosticCaptureMode.balanced;
     try {
-      final prepared = LogExportOutput.boundJsonValue(
+      final prepared = prepareTracePayload(
         data,
-        preserveTypes: active,
-        replaceOversizedStrings: active,
-        allowCustomSerialization: balanced,
-        allowCustomStringification: balanced,
+        redactor:
+            active ? ISpectRedaction.resolveService(service: redactor) : null,
+        captureMode: captureMode,
         resourceLimits: resourceLimits,
       );
-      final output = active
-          ? ISpectRedaction.resolveService(service: redactor).redactForExport(
-              LogExportOutput.replaceTruncatedPrefixes(
-                prepared,
-                resourceLimits: resourceLimits,
-              ),
+      final bounded = active
+          ? prepared
+          : LogExportOutput.boundJsonValue(
+              prepared,
               resourceLimits: resourceLimits,
-            )
-          : prepared;
-      final bounded = LogExportOutput.boundJsonValue(
-        output,
-        replaceOversizedStrings: active,
-        resourceLimits: resourceLimits,
-      );
+            );
       if (bounded is Map) {
         return <String, dynamic>{
           for (final entry in bounded.entries)

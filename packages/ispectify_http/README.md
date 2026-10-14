@@ -59,9 +59,9 @@
 dependencies:
   http: ^1.5.0
   http_interceptor: ^3.0.0
-  ispect: ^7.0.0
-  ispectify: ^7.0.0
-  ispectify_http: ^7.0.0
+  ispect: ^7.1.0-dev.5
+  ispectify: ^7.1.0-dev.5
+  ispectify_http: ^7.1.0-dev.5
 ```
 
 ## Quick start
@@ -135,6 +135,10 @@ concrete settings `copyWith` or builder for these retention controls; the
 attached interceptor's `configure(...)` method exposes the same shared capture
 fields at runtime. Pass `inheritResourceLimits: true` to either `copyWith` or
 `configure` to return resource-budget ownership to the logger.
+
+When response bodies are captured, the response entry is recorded once its
+body is read or cancelled. A caller of `send()` that does not start reading the
+body before the next event-loop turn gets the entry without the body.
 
 ## Data redaction
 
@@ -234,6 +238,22 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | [`ispectify_db`](https://pub.dev/packages/ispectify_db)             | Database operation tracing for SQL, ORMs, and KV stores.                                        |
 | [`ispectify_bloc`](https://pub.dev/packages/ispectify_bloc)         | BLoC event, state, transition, and error observer.                                              |
 | [`ispectify_riverpod`](https://pub.dev/packages/ispectify_riverpod) | Riverpod provider add, update, dispose, and failure observer.                                   |
+
+## AI package skills
+
+Each ISpect package bundles a focused setup skill for coding agents. From your
+application directory, after resolving dependencies, install skills for your
+direct dependencies with:
+
+```bash
+dart run skills@ get
+```
+
+For a single package, use `dart run skills@ get -p <package_name>` (for example,
+`-p ispectify_dio`). The skills cover public integration APIs, compile-time
+gating, and safe capture settings. See [Dart package skills](https://dart.dev/ai/package-skills)
+for installation and update options. These consumer skills are separate from
+the repository's contributor skills.
 
 ## Contributing
 

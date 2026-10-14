@@ -13,6 +13,9 @@ void showColorPickerResultSnackbar({
   required Color color,
   bool showColorSchemeMatch = false,
 }) {
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  if (messenger == null) return;
+
   final colorString = colorToDisplayHex(color);
   final tokens = showColorSchemeMatch
       ? ColorSchemeInspector.matchingTokens(
@@ -21,7 +24,6 @@ void showColorPickerResultSnackbar({
         )
       : const <String>[];
 
-  final messenger = ScaffoldMessenger.of(context);
   messenger.clearSnackBars();
 
   messenger.showSnackBar(

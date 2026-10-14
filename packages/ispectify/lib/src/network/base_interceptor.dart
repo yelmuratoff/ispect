@@ -2,6 +2,7 @@ import 'package:ispectify/src/network/network_configuration_mixin.dart';
 import 'package:ispectify/src/network/network_logger_mixin.dart';
 import 'package:ispectify/src/network/network_redaction_mixin.dart';
 
+export 'network_capture_policy_mixin.dart';
 export 'network_configuration_mixin.dart';
 export 'network_logger_mixin.dart';
 export 'network_redaction_mixin.dart';
@@ -26,6 +27,11 @@ mixin BaseNetworkInterceptor
   static const noRedactConfig = NetworkRedactionMixin.noRedactConfig;
 
   /// Alias for [NetworkLoggerMixin.asStringMap].
+  @Deprecated(
+    'Use NetworkPayloadSanitizer.toStringKeyMap, which also bounds the copy. '
+    'Will be removed in 8.0.0.',
+  )
   static Map<String, dynamic>? asStringMap(Object? value) =>
+      // ignore: deprecated_member_use_from_same_package
       NetworkLoggerMixin.asStringMap(value);
 }

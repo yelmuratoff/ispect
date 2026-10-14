@@ -1,16 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
+import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
-import 'package:ispect/src/ispect.dart';
-import 'package:ispectify/ispectify.dart';
 
-/// A widget that catches errors thrown during [pluginBuilder] execution
+/// A widget that catches errors thrown by the [pluginBuilder] call itself
 /// and displays a styled fallback instead of the default red error screen.
 ///
-/// Used to wrap plugin screens in the inspector panel so that a broken
-/// plugin does not destroy the debugging experience.
+/// Errors thrown later while building or laying out the plugin's own
+/// descendants are not caught here: Flutter reports them through
+/// `FlutterError.onError` and renders `ErrorWidget.builder` in place of the
+/// failing widget only, so the rest of the ISpect UI keeps working.
 class SafePluginScreen extends StatefulWidget {
   const SafePluginScreen({
     required this.pluginBuilder,
@@ -47,9 +50,7 @@ class _SafePluginScreenState extends State<SafePluginScreen> {
     try {
       return KeyedSubtree(key: _childKey, child: widget.pluginBuilder(context));
     } catch (error, stackTrace) {
-      final resourceLimits =
-          ISpect.loggerIfInitialized?.options.resourceLimits ??
-          DiagnosticResourceLimits.balanced;
+      final resourceLimits = ISpectResourceLimits.current;
       final errorText = ISpectSafeDiagnosticSnapshot.summary(
         error,
         resourceLimits: resourceLimits,
@@ -108,9 +109,13 @@ class _ISpectErrorFallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final resourceLimits =
-        ISpect.loggerIfInitialized?.options.resourceLimits ??
-        DiagnosticResourceLimits.balanced;
+    final l10n =
+        Localizations.of<ISpectGeneratedLocalization>(
+          context,
+          ISpectGeneratedLocalization,
+        ) ??
+        ISpectGeneratedLocalizationEn();
+    final resourceLimits = ISpectResourceLimits.current;
     final safePluginId = ISpectSafeDiagnosticSnapshot.summary(
       pluginId,
       resourceLimits: resourceLimits,
@@ -118,7 +123,7 @@ class _ISpectErrorFallback extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Plugin Error: $safePluginId'),
+        title: Text(l10n.pluginErrorTitle(safePluginId)),
         leading: const BackButton(),
       ),
       body: SafeArea(
@@ -131,7 +136,7 @@ class _ISpectErrorFallback extends StatelessWidget {
                 Icon(Icons.error_outline, size: 64, color: colorScheme.error),
                 const SizedBox(height: 16),
                 Text(
-                  'Failed to render plugin screen',
+                  l10n.pluginRenderFailed,
                   style: textTheme.titleLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -148,7 +153,7 @@ class _ISpectErrorFallback extends StatelessWidget {
                     stackTraceText!.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   ExpansionTile(
-                    title: const Text('Stack Trace'),
+                    title: Text(l10n.stackTrace),
                     children: [
                       Container(
                         width: double.infinity,
@@ -174,13 +179,13 @@ class _ISpectErrorFallback extends StatelessWidget {
                     OutlinedButton.icon(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.arrow_back),
-                      label: const Text('Back'),
+                      label: Text(l10n.back),
                     ),
                     const SizedBox(width: 12),
                     FilledButton.icon(
                       onPressed: onRetry,
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
+                      label: Text(l10n.retry),
                     ),
                   ],
                 ),

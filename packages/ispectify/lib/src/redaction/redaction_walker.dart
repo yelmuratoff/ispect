@@ -59,7 +59,7 @@ final class RedactionWalker {
     final ctx = _cachedContext ??= _createContext();
     final binaryBytes = _binaryBytes(node);
     if (binaryBytes != null && config.redactBinary) {
-      _trackStrategyHit(keyName);
+      _trackStrategyHit(keyName, node);
       return ctx.redactUint8List(binaryBytes);
     }
 
@@ -73,7 +73,7 @@ final class RedactionWalker {
       context: ctx,
     );
     if (strategyResult != null) {
-      _trackStrategyHit(keyName);
+      _trackStrategyHit(keyName, node);
       return strategyResult;
     }
 
@@ -121,10 +121,10 @@ final class RedactionWalker {
       );
 
   /// Determines whether the hit was key-based or pattern-based.
-  void _trackStrategyHit(String? keyName) {
+  void _trackStrategyHit(String? keyName, Object node) {
     final ctx = _cachedContext;
     if (keyName != null && ctx != null) {
-      final classification = ctx.classifyKey(keyName);
+      final classification = ctx.classifyEntry(keyName, node);
       if (classification.fullyMasked || classification.sensitive) {
         stats.incrementKeyBased();
         return;

@@ -15,6 +15,10 @@ class HttpResponseData {
     required this.baseResponse,
     required this.requestData,
     required this.multipartRequest,
+    @Deprecated(
+      'The interceptor decodes response.bodyBytes itself; omit this argument. '
+      'Will be removed in 8.0.0.',
+    )
     Object? preDecodedBody = _bodyNotPrepared,
   }) : _preDecodedBody = preDecodedBody;
 

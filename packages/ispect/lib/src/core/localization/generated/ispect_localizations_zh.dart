@@ -694,7 +694,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'WebSocket 接收消息日志';
 
   @override
-  String get wsStateLogDesc => 'WebSocket connection state changed';
+  String get wsStateLogDesc => 'WebSocket 连接状态变更日志';
 
   @override
   String get dbQueryLogDesc => '数据库查询日志';
@@ -1087,4 +1087,273 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get composerEditAndResend => '编辑并重新发送';
+
+  @override
+  String get settingsDisplay => '显示';
+
+  @override
+  String get relativeTime => '相对时间';
+
+  @override
+  String get absoluteTime => '绝对时间';
+
+  @override
+  String get compactUrls => '精简 URL';
+
+  @override
+  String get settingsTools => '工具';
+
+  @override
+  String get settingsAdvanced => '高级';
+
+  @override
+  String get forwardErrorsToDeveloperLog => '将错误转发到 dart:developer';
+
+  @override
+  String get historyCapacity => '历史容量';
+
+  @override
+  String get historyCapacityDesc => '内存中保留的日志数';
+
+  @override
+  String get consoleTruncate => '控制台截断';
+
+  @override
+  String get consoleTruncateDesc => '每行控制台输出的最大字符数';
+
+  @override
+  String get captureMode => '捕获模式';
+
+  @override
+  String get captureModeDesc => '保留有用的值或最大程度隔离';
+
+  @override
+  String get captureModeBalancedDesc => '受保护的格式化器，输出有上限';
+
+  @override
+  String get captureModeStrict => '严格';
+
+  @override
+  String get captureModeStrictDesc => '从不运行应用的格式化器';
+
+  @override
+  String get profileBalanced => '均衡';
+
+  @override
+  String get resourceProfile => '资源配置';
+
+  @override
+  String get resourceProfileDesc => '捕获、内存、导入和导出限制';
+
+  @override
+  String get resourceProfileConstrained => '节省';
+
+  @override
+  String get resourceProfileConstrainedDesc => '长时间会话时降低内存占用';
+
+  @override
+  String get resourceProfileBalancedDesc => '以有限成本获得有用的诊断';
+
+  @override
+  String get resourceProfileExtended => '扩展';
+
+  @override
+  String get resourceProfileExtendedDesc => '受控地允许更大的内部传递';
+
+  @override
+  String get processingProfile => '处理配置';
+
+  @override
+  String get processingProfileDesc => '响应性与批处理吞吐量';
+
+  @override
+  String get processingProfileResponsive => '响应优先';
+
+  @override
+  String get processingProfileResponsiveDesc => '频繁让出以保持界面流畅';
+
+  @override
+  String get processingProfileBalancedDesc => '通用调度';
+
+  @override
+  String get processingProfileThroughput => '吞吐优先';
+
+  @override
+  String get processingProfileThroughputDesc => '更大的批次以加快传递';
+
+  @override
+  String get limitInvalidValue => '请输入非负整数';
+
+  @override
+  String get limitZeroDisables => '0 表示不限制';
+
+  @override
+  String get apply => '应用';
+
+  @override
+  String logCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 条日志',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String warningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 条警告',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 个错误',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filteredLogCount(int filtered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$filtered / $total 条日志',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contentProcessingError => '内容处理错误';
+
+  @override
+  String get failedToLoadLogContent => '无法加载日志内容';
+
+  @override
+  String get unknownContentProcessingError => '处理内容时发生未知错误';
+
+  @override
+  String get contentEmptyError => '内容为空';
+
+  @override
+  String get contentExceedsSafeLimitsError => '内容超出安全导入限制';
+
+  @override
+  String get correlationIdShort => '关联';
+
+  @override
+  String get transactionIdShort => '事务';
+
+  @override
+  String get columnType => '类型';
+
+  @override
+  String get columnTime => '时间';
+
+  @override
+  String get columnMessage => '消息';
+
+  @override
+  String sortColumnAscending(String column) {
+    return '按$column排序，升序';
+  }
+
+  @override
+  String sortColumnDescending(String column) {
+    return '按$column排序，降序';
+  }
+
+  @override
+  String sortColumnUnsorted(String column) {
+    return '按$column排序，未排序';
+  }
+
+  @override
+  String resizeColumn(String column) {
+    return '调整$column列宽';
+  }
+
+  @override
+  String get resumeLiveTail => '恢复实时跟踪';
+
+  @override
+  String get pauseLiveTail => '暂停实时跟踪';
+
+  @override
+  String get liveTailLive => '实时';
+
+  @override
+  String get liveTailPaused => '已暂停';
+
+  @override
+  String get open => '打开';
+
+  @override
+  String filterByType(String type) {
+    return '按类型 $type 筛选';
+  }
+
+  @override
+  String httpStatus(int code) {
+    return 'HTTP 状态 $code';
+  }
+
+  @override
+  String get composerBodyNone => '无';
+
+  @override
+  String get composerBodyText => '文本';
+
+  @override
+  String get composerBodyForm => '表单';
+
+  @override
+  String get composerBodyMultipart => '多部分';
+
+  @override
+  String get jsonViewer => 'JSON 查看器';
+
+  @override
+  String get detail => '详情';
+
+  @override
+  String copyKey(String key) {
+    return '复制 $key';
+  }
+
+  @override
+  String get copyToClipboardFailed => '复制到剪贴板失败';
+
+  @override
+  String pluginErrorTitle(String pluginId) {
+    return '插件错误：$pluginId';
+  }
+
+  @override
+  String get pluginRenderFailed => '无法渲染插件界面';
+
+  @override
+  String get stackTrace => '堆栈跟踪';
+
+  @override
+  String get resizeDivider => '调整分隔条大小';
+
+  @override
+  String get sessionLogsLoadFailed => '无法加载会话日志';
+
+  @override
+  String get dailySessionsLoadFailed => '无法加载会话';
+
+  @override
+  String get dailySessionsClearFailed => '无法清除会话';
+
+  @override
+  String get exception => '异常';
 }

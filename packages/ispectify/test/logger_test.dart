@@ -1,3 +1,4 @@
+import 'package:ansicolor/ansicolor.dart';
 import 'package:ispectify/src/console_settings.dart';
 import 'package:ispectify/src/logger/logger.dart';
 import 'package:ispectify/src/models/log_level.dart';
@@ -90,6 +91,30 @@ void main() {
 
       expect(loggedMessages.length, 1);
       expect(loggedMessages[0], contains('Default level message'));
+    });
+  });
+
+  group('ANSI color global', () {
+    late bool original;
+
+    setUp(() => original = ansiColorDisabled);
+    tearDown(() => ansiColorDisabled = original);
+
+    test('a logger with colors disabled leaves host ANSI detection alone', () {
+      ansiColorDisabled = true;
+
+      ISpectBaseLogger(settings: ConsoleSettings(enableColors: false))
+          .copyWith(settings: ConsoleSettings(enableColors: false));
+
+      expect(ansiColorDisabled, isTrue);
+    });
+
+    test('a logger with colors enabled forces ANSI output on', () {
+      ansiColorDisabled = true;
+
+      ISpectBaseLogger();
+
+      expect(ansiColorDisabled, isFalse);
     });
   });
 }

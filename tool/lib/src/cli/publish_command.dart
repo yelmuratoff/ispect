@@ -52,6 +52,9 @@ final class PublishCommand extends Command<int> {
   String get invocation => 'ispect_tool publish [--dry-run|--auto] [options]';
 
   @override
+  String get usageFooter => '\n$publishEnvironmentHelp';
+
+  @override
   Future<int> run() => runPublish(
       repoRoot: repoRoot,
       arguments: normalizeOptionValues(argResults!.arguments));

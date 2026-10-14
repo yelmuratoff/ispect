@@ -110,6 +110,25 @@ void main() {
       expect(panel.theme?.stashedOpacity, lessThan(1));
     });
 
+    testWidgets('the translucent parked panel casts no shadow', (tester) async {
+      if (!kISpectEnabled) return;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: ISpectLocalizations.delegate(),
+          builder: (context, child) => ISpectBuilder.wrap(child: child!),
+          home: const ColoredBox(color: Color(0xFFFFFFFF)),
+        ),
+      );
+      await tester.pump();
+
+      final panel = tester.widget<DraggableActionPanel>(
+        find.byType(DraggableActionPanel),
+      );
+
+      expect(panel.theme?.stashedElevation, 0);
+    });
+
     testWidgets('the panel outline carries the ISpect divider colour', (
       tester,
     ) async {

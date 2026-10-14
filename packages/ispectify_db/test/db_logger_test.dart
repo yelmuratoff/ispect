@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
@@ -200,6 +202,22 @@ void main() {
       expect((meta['namedArgs'] as Map)['password'], '[REDACTED]');
     });
 
+    test('bounds the redacted statement by maxStatementLength', () {
+      logger.db(
+        source: 'sqflite',
+        operation: 'query',
+        statement: 'SELECT ${List.filled(30, 'column_name').join(', ')} '
+            'FROM users',
+        config: const ISpectDbConfig(maxStatementLength: 40),
+      );
+
+      final meta = logger.history.last.additionalData![TraceKeys.meta]
+          as Map<String, Object?>;
+      final statement = meta['statement']! as String;
+      expect(statement, startsWith('SELECT column_name'));
+      expect(statement.length, lessThanOrEqualTo(40 + '...'.length));
+    });
+
     test('sets error logs to LogLevel.error', () {
       logger.db(
         source: 'sqflite',
@@ -224,8 +242,7 @@ void main() {
 
       expect(logger.history, isNotEmpty);
       final add = logger.history.last.additionalData ?? {};
-      // Database keys are identifiers and are redacted in the trace envelope.
-      expect(add['key'], defaultPlaceholder);
+      expect(add['key'], 'myKey');
       // DB-specific meta should not contain statement/statementDigest.
       final meta = add['meta'] as Map<String, dynamic>?;
       expect(meta?.containsKey('statement') ?? false, isFalse);
@@ -233,17 +250,12 @@ void main() {
     });
 
     test('skips redaction when redact is false', () {
-      // Per-call redact: false only affects _preprocessDb (statement
-      // digest, positional args). trace() still applies its own
-      // redaction from cfg.redact. To fully skip, use a config with
-      // redact: false.
       logger.db(
         source: 'sqflite',
         operation: 'query',
         statement: 'SELECT * FROM users',
         namedArgs: {'password': 'secret123'},
         redact: false,
-        config: const ISpectDbConfig(redact: false),
       );
 
       final add = logger.history.last.additionalData ?? {};
@@ -544,6 +556,98 @@ void main() {
       expect(additionalData['key'], defaultPlaceholder);
       expect(meta['key'], defaultPlaceholder);
       expect(additionalData['correlationId'], 'transaction-audit');
+    });
+
+    test('keeps ordinary storage keys visible in messages and metadata', () {
+      for (final storageKey in const [
+        'theme_mode',
+        'last_sync_at',
+        'cart_items',
+        'user:42',
+        'orders/2026-10-14',
+        'feature_flags:checkout_v2',
+        'user_profile_cache_v2',
+      ]) {
+        logger.db(source: 'kv', operation: 'read', key: storageKey);
+
+        final additionalData = logger.history.last.additionalData ?? {};
+        final meta = additionalData['meta'] as Map;
+        expect(additionalData['key'], storageKey, reason: storageKey);
+        expect(meta['key'], storageKey, reason: storageKey);
+      }
+    });
+
+    test('masks storage keys whose names the redactor classifies as secret',
+        () {
+      for (final storageKey in const [
+        'auth_token',
+        'refresh_token',
+        'password',
+      ]) {
+        logger.db(source: 'kv', operation: 'read', key: storageKey);
+
+        final entry = logger.history.last;
+        final additionalData = entry.additionalData ?? {};
+        final meta = additionalData['meta'] as Map;
+        expect(additionalData['key'], defaultPlaceholder, reason: storageKey);
+        expect(meta['key'], defaultPlaceholder, reason: storageKey);
+        expect(entry.message.toString(), isNot(contains(storageKey)));
+      }
+    });
+
+    test('masks storage keys that embed an email or a JWT', () {
+      const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
+          '.eyJzdWIiOiIxMjM0NTY3ODkwIn0'
+          '.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+      for (final storageKey in const [
+        'user:alice@example.com',
+        'session:$jwt',
+        'cache:$jwt',
+      ]) {
+        logger.db(source: 'kv', operation: 'read', key: storageKey);
+
+        final entry = logger.history.last;
+        final additionalData = entry.additionalData ?? {};
+        final meta = additionalData['meta'] as Map;
+        expect(additionalData['key'], defaultPlaceholder, reason: storageKey);
+        expect(meta['key'], defaultPlaceholder, reason: storageKey);
+        expect(entry.message.toString(), isNot(contains(storageKey)));
+      }
+    });
+
+    test('masks delimited storage keys with a sensitive or opaque segment', () {
+      for (final storageKey in const [
+        'session:4f9c2a7be1d84c0f9a6b',
+        'sessions/AbC123xYz789QwErTy',
+        'sid:Zx81kq',
+        'auth:Q7mw2p',
+        'user:+15551234567',
+        'contacts/+15551234567',
+        'cache|deadbeef0123456789abcdef',
+        'profile#bob@example.com',
+      ]) {
+        logger.db(source: 'kv', operation: 'read', key: storageKey);
+
+        final entry = logger.history.last;
+        final additionalData = entry.additionalData ?? {};
+        final meta = additionalData['meta'] as Map;
+        expect(additionalData['key'], defaultPlaceholder, reason: storageKey);
+        expect(meta['key'], defaultPlaceholder, reason: storageKey);
+        expect(entry.message.toString(), isNot(contains(storageKey)));
+      }
+    });
+
+    test('masks storage keys matching configured redactKeys', () {
+      logger.db(
+        source: 'kv',
+        operation: 'read',
+        key: 'tenant_marker',
+        redactKeys: const ['tenant_marker'],
+      );
+
+      final additionalData = logger.history.last.additionalData ?? {};
+      expect(additionalData['key'], defaultPlaceholder);
+      expect((additionalData['meta'] as Map)['key'], defaultPlaceholder);
     });
 
     test('keeps database keys raw when redaction is explicitly disabled', () {
@@ -1095,13 +1199,13 @@ void main() {
     });
 
     test('normalizes backslash and doubled-quote escapes without leaking', () {
-      final digest = DbSqlDigest.compute(
+      final normalized = DbSqlDigest.normalize(
         r"""SELECT 'first\'secret', 'second''secret',
         "third\"secret", "fourth""secret",
         `fifth\`secret`, `sixth``secret` FROM t""",
       );
 
-      expect(digest, isNotNull);
+      expect(normalized, isNotNull);
       for (final secret in const [
         'first',
         'second',
@@ -1111,48 +1215,188 @@ void main() {
         'sixth',
         'secret',
       ]) {
-        expect(digest, isNot(contains(secret)));
+        expect(normalized, isNot(contains(secret)));
       }
     });
 
-    test('strips line and block comments before building the digest', () {
-      final digest = DbSqlDigest.compute(
+    test('fails closed when a backslash could end or escape a quote', () {
+      for (final statement in const [
+        r"SELECT * FROM t WHERE p = 'C:\' AND t = 'SECRET'",
+        r'SELECT * FROM t WHERE p = "C:\" AND t = "SECRET"',
+        r"SELECT * FROM t WHERE n LIKE ? ESCAPE '\' AND t = 'SECRET'",
+      ]) {
+        final normalized = DbSqlDigest.normalize(statement);
+        expect(normalized, startsWith('SELECT * FROM t WHERE'));
+        expect(normalized, isNot(contains('SECRET')));
+      }
+    });
+
+    test('keeps the clauses after a backslash ESCAPE literal', () {
+      expect(
+        DbSqlDigest.normalize(
+          r"SELECT * FROM t WHERE n LIKE ? ESCAPE '\' AND id = ?",
+        ),
+        'SELECT * FROM t WHERE n LIKE ? ESCAPE ? AND id = ?',
+      );
+      expect(
+        DbSqlDigest.normalize(
+          r"SELECT * FROM t WHERE n LIKE ? ESCAPE '\' AND tenant_id = ? "
+          "AND s = 'x'",
+        ),
+        'SELECT * FROM t WHERE n LIKE ? ESCAPE ? AND tenant_id = ? AND s = ?',
+      );
+      expect(
+        DbSqlDigest.normalize(
+          "SELECT * FROM t WHERE n LIKE ? escape\n'\\' AND id = ?",
+        ),
+        'SELECT * FROM t WHERE n LIKE ? escape ? AND id = ?',
+      );
+    });
+
+    test('fails closed on a MySQL-escaped quote outside an ESCAPE clause', () {
+      for (final statement in const [
+        r"INSERT INTO users(pw) VALUES ('\'hunter2')",
+        r"INSERT INTO users(pw) VALUES ('\'hunter2', 'x')",
+      ]) {
+        final normalized = DbSqlDigest.normalize(statement);
+        expect(normalized, startsWith('INSERT INTO users(pw) VALUES ('));
+        expect(normalized, isNot(contains('hunter2')));
+        expect(normalized, isNot(contains('x')));
+      }
+    });
+
+    test('keeps a backslash literal that cannot reach the closing quote', () {
+      expect(
+        DbSqlDigest.normalize(r"SELECT * FROM t WHERE p = 'C:\dir' AND q = 1"),
+        'SELECT * FROM t WHERE p = ? AND q = ?',
+      );
+    });
+
+    test('keeps PostgreSQL # operators instead of reading a comment', () {
+      expect(
+        DbSqlDigest.normalize("SELECT data #> '{a}', data #- '{b}' FROM t"),
+        'SELECT data #> ?, data #- ? FROM t',
+      );
+      expect(
+        DbSqlDigest.normalize("SELECT data\n  #> '{a}' FROM t"),
+        'SELECT data #> ? FROM t',
+      );
+      expect(DbSqlDigest.tableOf("SELECT data #>> '{a}' FROM t"), 't');
+    });
+
+    test('keeps a PostgreSQL # XOR operator and the clauses after it', () {
+      expect(
+        DbSqlDigest.normalize('SELECT a # b FROM t WHERE x = ?'),
+        'SELECT a # b FROM t WHERE x = ?',
+      );
+      expect(DbSqlDigest.tableOf('SELECT a # b FROM t WHERE x = ?'), 't');
+      expect(
+        DbSqlDigest.compute('SELECT a # b FROM users'),
+        isNot(DbSqlDigest.compute('SELECT a # b FROM orders')),
+      );
+    });
+
+    test('masks a multi-line literal that follows a # operator', () {
+      expect(
+        DbSqlDigest.normalize("SELECT flags # 'a\nb', 'SECRET' FROM t"),
+        'SELECT flags ?',
+      );
+      expect(
+        DbSqlDigest.normalize("SELECT flags\n# 'a\nb', 'SECRET' FROM t"),
+        isNot(contains('SECRET')),
+      );
+    });
+
+    test('fails closed when a mid-line MySQL # comment holds a quote', () {
+      final normalized = DbSqlDigest.normalize(
+        "SELECT id FROM users WHERE a = ? # it's fine\n"
+        "AND password = 'hunter'",
+      );
+
+      expect(normalized, startsWith('SELECT id FROM users WHERE a = ?'));
+      expect(normalized, isNot(contains('hunter')));
+    });
+
+    test('fails closed when a # operator line leaves a quote open', () {
+      for (final statement in const [
+        "SELECT data #- it's\nAND password = 'hunter' FROM t",
+        "SELECT data #> it's\nAND password = 'hunter' FROM t",
+      ]) {
+        final normalized = DbSqlDigest.normalize(statement);
+        expect(normalized, startsWith('SELECT data'));
+        expect(normalized, isNot(contains('hunter')));
+      }
+    });
+
+    test('keeps the clauses after a # XOR with positional parameters', () {
+      expect(
+        DbSqlDigest.normalize(r'SELECT a FROM t WHERE (flags # $1) = $2'),
+        r'SELECT a FROM t WHERE (flags # $?) = $?',
+      );
+    });
+
+    test('fails closed when a mid-line # comment holds a dollar quote', () {
+      final normalized = DbSqlDigest.normalize(
+        'SELECT id FROM t WHERE a = ? # \$tag\$ secret \$tag\$\n'
+        'AND b = ?',
+      );
+
+      expect(normalized, startsWith('SELECT id FROM t WHERE a = ?'));
+      expect(normalized, isNot(contains('secret')));
+    });
+
+    test('keeps SQLite #name parameters', () {
+      expect(
+        DbSqlDigest.normalize('SELECT * FROM t WHERE id = #id AND n = #name'),
+        'SELECT * FROM t WHERE id = #id AND n = #name',
+      );
+    });
+
+    test('drops a MySQL # comment that starts a line', () {
+      expect(
+        DbSqlDigest.normalize(
+          '# tenantSecret=FIRST_SECRET\n'
+          'SELECT * FROM t\n'
+          '  # tenantSecret=HASH_SECRET\n'
+          'WHERE id = 1',
+        ),
+        'SELECT * FROM t WHERE id = ?',
+      );
+    });
+
+    test('strips line and block comments before normalizing', () {
+      final normalized = DbSqlDigest.normalize(
         '''
 SELECT * FROM users -- tenantSecret=LINE_SECRET
-WHERE id = 1 # tenantSecret=HASH_SECRET
+WHERE id = 1
+# tenantSecret=HASH_SECRET
 /* tenantSecret=BLOCK_SECRET */
 AND active = 1
 ''',
       );
 
-      expect(digest, isNotNull);
-      expect(digest, isNot(contains('tenantsecret')));
-      expect(digest, isNot(contains('line_secret')));
-      expect(digest, isNot(contains('hash_secret')));
-      expect(digest, isNot(contains('block_secret')));
+      expect(normalized, 'SELECT * FROM users WHERE id = ? AND active = ?');
     });
 
     test('strips nested and unterminated block comments fail closed', () {
-      final nested = DbSqlDigest.compute(
-        'SELECT 1 /* outer BLOCK_SECRET /* inner INNER_SECRET */ tail */',
+      expect(
+        DbSqlDigest.normalize(
+          'SELECT 1 /* outer BLOCK_SECRET /* inner INNER_SECRET */ tail */',
+        ),
+        'SELECT ?',
       );
-      final unterminated = DbSqlDigest.compute(
-        'SELECT 1 /* tenantSecret=UNTERMINATED_SECRET',
+      expect(
+        DbSqlDigest.normalize('SELECT 1 /* tenantSecret=UNTERMINATED_SECRET'),
+        'SELECT ?',
       );
-
-      expect(nested, isNot(contains('block_secret')));
-      expect(nested, isNot(contains('inner_secret')));
-      expect(unterminated, isNot(contains('unterminated_secret')));
     });
 
     test('unterminated quoted values fail closed', () {
-      final single = DbSqlDigest.compute("SELECT 'SINGLE_SECRET");
-      final dollar = DbSqlDigest.compute(
-        r'SELECT $audit$DOLLAR_SECRET',
+      expect(DbSqlDigest.normalize("SELECT 'SINGLE_SECRET"), 'SELECT ?');
+      expect(
+        DbSqlDigest.normalize(r'SELECT $audit$DOLLAR_SECRET'),
+        'SELECT ?',
       );
-
-      expect(single, isNot(contains('single_secret')));
-      expect(dollar, isNot(contains('dollar_secret')));
     });
 
     test('normalizes untagged PostgreSQL dollar-quoted strings opaquely', () {
@@ -1289,6 +1533,86 @@ dollar-secret$audit$''',
       expect(executed, isTrue);
       expect(logger.history, isEmpty);
     });
+
+    test('db errors follow errorSampleRate instead of sampleRate', () {
+      logger
+        ..db(
+          source: 'test',
+          operation: 'query',
+          error: 'boom',
+          config: const ISpectDbConfig(sampleRate: 0),
+        )
+        ..db(
+          source: 'test',
+          operation: 'query',
+          success: false,
+          sample: 0,
+        );
+
+      expect(logger.history, hasLength(2));
+      expect(logger.history.map((e) => e.key), everyElement('db-error'));
+    });
+
+    test('db drops errors when errorSampleRate is 0', () {
+      logger.db(
+        source: 'test',
+        operation: 'query',
+        error: 'boom',
+        config: const ISpectDbConfig(sampleRate: 1, errorSampleRate: 0),
+      );
+      expect(logger.history, isEmpty);
+    });
+
+    test('dbTrace logs a failure when sampleRate is 0', () async {
+      await expectLater(
+        logger.dbTrace<void>(
+          source: 'test',
+          operation: 'query',
+          config: const ISpectDbConfig(sampleRate: 0),
+          run: () async => throw StateError('boom'),
+        ),
+        throwsStateError,
+      );
+      expect(logger.history.single.key, 'db-error');
+    });
+
+    test('dbTraceSync logs a failure when sampleRate is 0', () {
+      expect(
+        () => logger.dbTraceSync<void>(
+          source: 'test',
+          operation: 'query',
+          sample: 0,
+          run: () => throw StateError('boom'),
+        ),
+        throwsStateError,
+      );
+      expect(logger.history.single.key, 'db-error');
+    });
+
+    test('dbTrace drops a failure when errorSampleRate is 0', () async {
+      var projected = false;
+      await expectLater(
+        logger.dbTrace<void>(
+          source: 'test',
+          operation: 'query',
+          config: const ISpectDbConfig(errorSampleRate: 0),
+          run: () async => throw StateError('boom'),
+        ),
+        throwsStateError,
+      );
+      await logger.dbTrace<int>(
+        source: 'test',
+        operation: 'query',
+        sample: 0,
+        projectResult: (value) {
+          projected = true;
+          return value;
+        },
+        run: () async => 1,
+      );
+      expect(projected, isFalse);
+      expect(logger.history, isEmpty);
+    });
   });
 
   group('dbTrace', () {
@@ -1312,7 +1636,7 @@ dollar-secret$audit$''',
       expect(entry.stackTrace, isNotNull);
       final add = entry.additionalData ?? {};
       expect(add['success'], isFalse);
-      expect(add['key'], defaultPlaceholder);
+      expect(add['key'], 'a');
     });
 
     test('projects result and sets items count', () async {
@@ -1478,8 +1802,8 @@ dollar-secret$audit$''',
       );
 
       expect(result, 42);
-      expect(logger.history, hasLength(1));
-      final trace = logger.history.single.additionalData!;
+      expect(logger.history, hasLength(2));
+      final trace = logger.history.last.additionalData!;
       expect(trace[TraceKeys.operation], 'query');
       expect(
         (trace[TraceKeys.meta] as Map<String, Object?>)['value'],
@@ -1487,7 +1811,42 @@ dollar-secret$audit$''',
       );
 
       logger.db(source: 'test', operation: 'get');
-      expect(logger.history, hasLength(2));
+      expect(logger.history, hasLength(3));
+    });
+
+    test('warns without the error text when projectResult throws', () {
+      logger.dbTraceSync<int>(
+        source: 'sqflite',
+        operation: 'query',
+        run: () => 42,
+        projectResult: (_) => throw StateError('PROJECTION_SECRET'),
+      );
+
+      final warning = logger.history.first;
+      expect(warning.logLevel, LogLevel.warning);
+      expect(warning.message, contains('projection callback failed'));
+      expect(warning.textMessage, isNot(contains('PROJECTION_SECRET')));
+      expect(logger.history.last.key, 'db-query');
+    });
+
+    test('dbTraceSync rethrows and logs a db-error entry', () {
+      expect(
+        () => logger.dbTraceSync<int>(
+          source: 'sqflite',
+          operation: 'insert',
+          table: 'users',
+          run: () => throw StateError('sync-boom'),
+        ),
+        throwsA(isA<StateError>()),
+      );
+
+      final entry = logger.history.single;
+      expect(entry.key, 'db-error');
+      expect(entry.logLevel, LogLevel.error);
+      final add = entry.additionalData!;
+      expect(add['success'], isFalse);
+      expect(add['target'], 'users');
+      expect(add['error'], contains('sync-boom'));
     });
 
     test('captures synchronous exception in run callback', () async {
@@ -1555,6 +1914,18 @@ dollar-secret$audit$''',
       expect(token.elapsed, Duration.zero);
 
       logger.dbEnd(token);
+      expect(logger.history, isEmpty);
+    });
+
+    test('inert token stays silent after the logger is re-enabled', () {
+      logger.configure(options: ISpectLoggerOptions(enabled: false));
+      final token = logger.dbStart(source: 'sqflite', operation: 'query');
+
+      logger
+        ..configure(options: ISpectLoggerOptions())
+        ..dbEnd(token);
+
+      expect(logger.hasActiveConsumers, isTrue);
       expect(logger.history, isEmpty);
     });
 
@@ -1720,6 +2091,23 @@ dollar-secret$audit$''',
           .whereType<String>()
           .toSet();
       expect(ids.length, 1);
+    });
+
+    test('entries inside a transaction correlate by its transaction id',
+        () async {
+      String? observed;
+      await logger.dbTransaction(
+        source: 'sqflite',
+        run: () async {
+          observed = ISpectDbTxn.currentTransactionId();
+          logger.db(source: 'sqflite', operation: 'update', table: 't');
+        },
+      );
+
+      final entry = logger.history.single;
+      expect(observed, isNotNull);
+      expect(entry.additionalData?[TraceKeys.transactionId], observed);
+      expect(entry.additionalData?[TraceKeys.correlationId], observed);
     });
 
     test('does not commit after rollback', () async {

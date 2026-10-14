@@ -47,20 +47,28 @@ final class ObserverRegistry {
     return () => remove(observer);
   }
 
-  /// Notifies all observers using [notify]. Any exceptions thrown by an
-  /// observer callback are caught and logged via [consoleLogger].
+  /// Notifies all observers using [notify]. Any exception thrown by an
+  /// observer callback is caught and reported by its runtime type via
+  /// [consoleLogger] when [options] enable console logs.
   void notify(
-    void Function(ISpectObserver) notify,
-    ISpectBaseLogger consoleLogger,
-  ) {
+    void Function(ISpectObserver) notify, {
+    required ISpectBaseLogger consoleLogger,
+    required ISpectLoggerOptions options,
+  }) {
     if (_observers.isEmpty) return;
     for (final observer in _snapshot) {
       try {
         notify(observer);
-      } catch (_) {
+      } catch (error) {
+        if (!options.useConsoleLogs) continue;
         try {
+          final type = describeRuntimeType(
+            error,
+            captureMode: options.captureMode,
+            fallback: 'unknown error',
+          );
           consoleLogger.log(
-            'Observer callback failed safely.',
+            'Observer callback failed safely: $type',
             level: LogLevel.error,
           );
         } catch (_) {

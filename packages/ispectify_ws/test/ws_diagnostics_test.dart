@@ -39,6 +39,28 @@ final class _PayloadCountingRedactor extends RedactionService {
   }
 }
 
+final class _DisablingRedactor extends RedactionService {
+  _DisablingRedactor(this.onRedact);
+
+  final void Function() onRedact;
+
+  @override
+  Object? redactForExport(
+    Object? data, {
+    Set<String>? ignoredValues,
+    Set<String>? ignoredKeys,
+    DiagnosticResourceLimits resourceLimits = DiagnosticResourceLimits.balanced,
+  }) {
+    onRedact();
+    return super.redactForExport(
+      data,
+      ignoredValues: ignoredValues,
+      ignoredKeys: ignoredKeys,
+      resourceLimits: resourceLimits,
+    );
+  }
+}
+
 final class _SerializationProbe {
   _SerializationProbe(this.onSerialize);
 
@@ -58,6 +80,13 @@ final class _StringificationProbe {
     calls++;
     return 'customer-alpha-private-value';
   }
+}
+
+final class _ThrowingCaptureSettings extends ISpectWSInterceptorSettings {
+  const _ThrowingCaptureSettings();
+
+  @override
+  bool get printSentData => throw StateError('CAPTURE_SECRET');
 }
 
 final class _IterableProbe extends IterableBase<Object?> {
@@ -195,7 +224,28 @@ void main() {
         redactor: _ThrowingRedactor(),
       ).onSent({'boom': true});
 
-      expect(logger.history, isNotEmpty);
+      final sent = _firstByKey(logger, ISpectLogType.wsSent.key);
+      expect(_meta(sent)['data'].toString(), isNot(contains('boom')));
+      expect(
+        logger.history.where((e) => e.logLevel == LogLevel.warning),
+        isNotEmpty,
+      );
+    });
+
+    test('falls back to a ws-error entry when frame capture throws', () {
+      WsDiagnostics(
+        logger: logger,
+        settings: const _ThrowingCaptureSettings(),
+      ).onSent({'k': 'v'});
+
+      final log = logger.history.single;
+      expect(log.key, ISpectLogType.wsError.key);
+      expect(log.additionalData?[TraceKeys.operation], 'send');
+      expect(
+        log.additionalData?[TraceKeys.error],
+        'ISpect WebSocket frame capture failed safely.',
+      );
+      expect(log.textMessage, isNot(contains('CAPTURE_SECRET')));
     });
 
     test('attaches the source label to emitted logs', () {
@@ -359,6 +409,18 @@ void main() {
       expect(_meta(state)['raw'], contains(secret));
     });
 
+    test('redactor kill switch stops before raw state stringification', () {
+      final raw = _StringificationProbe();
+
+      WsDiagnostics(
+        logger: logger,
+        redactor: _DisablingRedactor(logger.disable),
+      ).onStateChanged(WsConnectionState.closed, raw: raw);
+
+      expect(raw.calls, 0);
+      expect(logger.history, isEmpty);
+    });
+
     test('captures bounded readable raw state by default', () {
       final raw = _StringificationProbe();
 
@@ -484,6 +546,21 @@ void main() {
       expect(log.exception, isNull);
       expect(log.additionalData?[TraceKeys.error], contains(error));
       expect(log.stackTrace, isNull);
+    });
+
+    test('redactor kill switch stops before error and stack stringification',
+        () {
+      final error = _HostileWsException();
+      final stackTrace = _HostileWsStack();
+
+      WsDiagnostics(
+        logger: logger,
+        redactor: _DisablingRedactor(logger.disable),
+      ).onError(error, stackTrace);
+
+      expect(error.calls, 0);
+      expect(stackTrace.calls, 0);
+      expect(logger.history, isEmpty);
     });
 
     test('does not execute opt-out error or stack formatters', () {

@@ -4,9 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/logs_view_pipeline.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
+
+enum LogTypeFilterAction { toggle, showOnly, hide }
+
+typedef LogTypeFilterCallback =
+    void Function(String key, LogTypeFilterAction action);
 
 /// Controller that encapsulates scroll tracking, keyboard navigation,
 /// column resizing, type filtering, and relative time timer management
@@ -16,13 +21,13 @@ class LogsScreenController {
     required this.logsViewController,
     required this.logsScrollController,
     required this.searchFocusNode,
-    required this.titleFiltersController,
     required VoidCallback onStateChanged,
   }) : _onStateChanged = onStateChanged {
     keyboardFocusNode = FocusNode(debugLabel: 'DesktopLogKeyboard');
     listController = ListController();
     scrollDirection = ValueNotifier<bool?>(null);
     hasNewLogs = ValueNotifier<bool>(false);
+    liveTailActive = ValueNotifier<bool>(false);
 
     logsScrollController.addListener(_onScroll);
     searchFocusNode.addListener(_onSearchFocusChanged);
@@ -32,7 +37,6 @@ class LogsScreenController {
   final ISpectViewController logsViewController;
   final ScrollController logsScrollController;
   final FocusNode searchFocusNode;
-  final GroupButtonController titleFiltersController;
   final VoidCallback _onStateChanged;
 
   late final FocusNode keyboardFocusNode;
@@ -40,10 +44,11 @@ class LogsScreenController {
   late final ValueNotifier<bool?> scrollDirection;
   late final ValueNotifier<bool> hasNewLogs;
 
+  late final ValueNotifier<bool> liveTailActive;
+
   double typeColumnWidth = 100;
   double timeColumnWidth = 140;
 
-  bool isLiveTailActive = false;
   bool isLiveTailPaused = false;
   int lastLogCount = 0;
 
@@ -57,18 +62,13 @@ class LogsScreenController {
     keyboardFocusNode.dispose();
     listController.dispose();
     hasNewLogs.dispose();
+    liveTailActive.dispose();
     _relativeTimeTimer?.cancel();
     _relativeTimeTimer = null;
     relativeTimeTick.dispose();
   }
 
   // --- Scroll tracking ---
-
-  /// Whether newest logs appear at scroll offset 0 (top).
-  bool get isNewestAtTop {
-    final vc = logsViewController;
-    return vc.sortColumn == LogSortColumn.time && vc.isLogOrderReversed;
-  }
 
   void _onScroll() {
     final sc = logsScrollController;
@@ -88,19 +88,19 @@ class LogsScreenController {
     const deactivateThreshold = 120.0;
 
     if (!isLiveTailPaused) {
-      if (isNewestAtTop) {
+      if (logsViewController.isNewestFirst) {
         if (offset <= activateThreshold) {
-          isLiveTailActive = true;
+          liveTailActive.value = true;
           hasNewLogs.value = false;
         } else if (offset > deactivateThreshold) {
-          isLiveTailActive = false;
+          liveTailActive.value = false;
         }
       } else {
         if (offset >= maxExtent - activateThreshold) {
-          isLiveTailActive = true;
+          liveTailActive.value = true;
           hasNewLogs.value = false;
         } else if (offset < maxExtent - deactivateThreshold) {
-          isLiveTailActive = false;
+          liveTailActive.value = false;
         }
       }
     }
@@ -109,7 +109,7 @@ class LogsScreenController {
   void toggleLiveTailPause() {
     isLiveTailPaused = !isLiveTailPaused;
     if (isLiveTailPaused) {
-      isLiveTailActive = false;
+      liveTailActive.value = false;
     }
     _onStateChanged();
   }
@@ -129,7 +129,9 @@ class LogsScreenController {
   void scrollToNewest() {
     final sc = logsScrollController;
     if (!sc.hasClients) return;
-    final target = isNewestAtTop ? 0.0 : sc.position.maxScrollExtent;
+    final target = logsViewController.isNewestFirst
+        ? 0.0
+        : sc.position.maxScrollExtent;
     sc.animateTo(
       target,
       duration: const Duration(milliseconds: 300),
@@ -151,64 +153,34 @@ class LogsScreenController {
 
   // --- Type filtering ---
 
-  void handleTypeFilter(String typeAction, List<ISpectLogData> logsData) {
-    final keys = logsViewController.getLogTypeKeys(logsData);
-    final uniq = keys.unique;
-
-    if (typeAction.startsWith('__show_only__')) {
-      final type = typeAction.replaceFirst('__show_only__', '');
-      logsViewController.setOnlyLogTypeKey(type);
-      _syncChipsToFilter(type, uniq, showOnly: true);
-      return;
-    }
-    if (typeAction.startsWith('__hide__')) {
-      final type = typeAction.replaceFirst('__hide__', '');
-      logsViewController.excludeLogTypeKey(type, uniq);
-      _syncChipsToFilter(type, uniq, showOnly: false);
-      return;
-    }
-    // Simple click on type: toggle
-    final currentKeys = logsViewController.filter.logTypeKeys;
-    if (currentKeys.length == 1 && currentKeys.first == typeAction) {
-      logsViewController.filter = logsViewController.filter.copyWith(
-        logTypeKeys: <String>[],
-      );
-      titleFiltersController.unselectAll();
-    } else {
-      logsViewController.setOnlyLogTypeKey(typeAction);
-      _syncChipsToFilter(typeAction, uniq, showOnly: true);
-    }
-  }
-
-  void _syncChipsToFilter(
-    String type,
-    List<String> uniqTitles, {
-    required bool showOnly,
-  }) {
-    final controller = titleFiltersController..unselectAll();
-    if (showOnly) {
-      final idx = uniqTitles.indexOf(type);
-      if (idx != -1) controller.selectIndex(idx);
-    } else {
-      for (var i = 0; i < uniqTitles.length; i++) {
-        if (uniqTitles[i] != type) controller.selectIndex(i);
-      }
+  void handleTypeFilter(String key, LogTypeFilterAction action) {
+    switch (action) {
+      case LogTypeFilterAction.showOnly:
+        logsViewController.setOnlyLogTypeKey(key);
+      case LogTypeFilterAction.hide:
+        logsViewController.hideLogTypeKey(key);
+      case LogTypeFilterAction.toggle:
+        final currentKeys = logsViewController.filter.logTypeKeys;
+        if (currentKeys.length == 1 && currentKeys.first == key) {
+          logsViewController.filter = logsViewController.filter.copyWith(
+            logTypeKeys: <String>[],
+          );
+        } else {
+          logsViewController.setOnlyLogTypeKey(key);
+        }
     }
   }
 
   List<ISpectLogData>? _cachedSortedEntries;
+  List<ISpectLogData>? _lastSortInput;
   int _sortedEntriesGeneration = -1;
   LogSortColumn? _lastSortColumn;
   LogSortDirection? _lastSortDirection;
 
-  List<ISpectLogData>? _cachedVisualEntries;
-  List<ISpectLogData>? _lastVisualEntriesInput;
-  bool _lastVisualEntriesReversed = false;
-
   KeyEventResult handleKeyEvent(
     FocusNode node,
     KeyEvent event,
-    List<ISpectLogData> logsData,
+    LogsViewState state,
     BuildContext context,
   ) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
@@ -245,9 +217,7 @@ class LogsScreenController {
       return KeyEventResult.ignored;
     }
 
-    final filteredLogEntries = logsViewController.applyCurrentFilters(logsData);
-    final sortedEntries = applySortingIfNeeded(filteredLogEntries);
-    if (sortedEntries.isEmpty) return KeyEventResult.ignored;
+    if (state.rowCount == 0) return KeyEventResult.ignored;
 
     final activeData = logsViewController.activeData;
 
@@ -275,25 +245,28 @@ class LogsScreenController {
     if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
         event.logicalKey == LogicalKeyboardKey.arrowUp) {
       final isDown = event.logicalKey == LogicalKeyboardKey.arrowDown;
-      final visualEntries = getVisualEntries(sortedEntries);
       int targetVisualIndex;
 
       if (activeData == null) {
-        targetVisualIndex = isDown ? 0 : visualEntries.length - 1;
+        targetVisualIndex = isDown ? 0 : state.rowCount - 1;
       } else {
-        final currentVisualIndex = visualEntries.indexOf(activeData);
-        if (currentVisualIndex == -1) return KeyEventResult.ignored;
+        final currentVisualIndex = state.idToVisualIndex[activeData.id];
+        if (currentVisualIndex == null) return KeyEventResult.ignored;
 
         targetVisualIndex = isDown
             ? currentVisualIndex + 1
             : currentVisualIndex - 1;
-        if (targetVisualIndex < 0 ||
-            targetVisualIndex >= visualEntries.length) {
+        if (targetVisualIndex < 0 || targetVisualIndex >= state.rowCount) {
           return KeyEventResult.handled;
         }
       }
 
-      final nextEntry = visualEntries[targetVisualIndex];
+      final nextEntry = switch (state.rowAt(targetVisualIndex)) {
+        final NetworkTransaction tx => tx.response ?? tx.error ?? tx.request,
+        final ISpectLogData log => log,
+        _ => null,
+      };
+      if (nextEntry == null) return KeyEventResult.ignored;
 
       if (logsViewController.detailData != null) {
         logsViewController.selectAndFollowDetail(nextEntry);
@@ -317,26 +290,8 @@ class LogsScreenController {
 
   // --- Helper methods ---
 
-  /// Returns entries in visual display order. Cached by input identity + reverse state.
-  List<ISpectLogData> getVisualEntries(List<ISpectLogData> sortedEntries) {
-    final isReversed =
-        logsViewController.sortColumn == LogSortColumn.time &&
-        logsViewController.isLogOrderReversed;
-
-    if (identical(sortedEntries, _lastVisualEntriesInput) &&
-        _lastVisualEntriesReversed == isReversed &&
-        _cachedVisualEntries != null) {
-      return _cachedVisualEntries!;
-    }
-
-    final result = isReversed ? sortedEntries.reversed.toList() : sortedEntries;
-    _cachedVisualEntries = result;
-    _lastVisualEntriesInput = sortedEntries;
-    _lastVisualEntriesReversed = isReversed;
-    return result;
-  }
-
-  /// Applies column sorting if needed. Cached by generation + column + direction.
+  /// Applies column sorting if needed. Cached by input identity, generation,
+  /// column, and direction.
   List<ISpectLogData> applySortingIfNeeded(List<ISpectLogData> entries) {
     final column = logsViewController.sortColumn;
     if (column == LogSortColumn.time) return entries;
@@ -344,7 +299,8 @@ class LogsScreenController {
     final generation = logsViewController.outputGeneration;
     final direction = logsViewController.sortDirection;
 
-    if (_sortedEntriesGeneration == generation &&
+    if (identical(_lastSortInput, entries) &&
+        _sortedEntriesGeneration == generation &&
         _lastSortColumn == column &&
         _lastSortDirection == direction &&
         _cachedSortedEntries != null) {
@@ -353,6 +309,7 @@ class LogsScreenController {
 
     final sorted = logsViewController.applySorting(entries);
     _cachedSortedEntries = sorted;
+    _lastSortInput = entries;
     _sortedEntriesGeneration = generation;
     _lastSortColumn = column;
     _lastSortDirection = direction;
@@ -401,22 +358,19 @@ class LogsScreenController {
 
   // --- Live tail ---
 
-  /// Check for new logs and handle live tail auto-scroll.
-  /// Returns true if state was updated and a rebuild is needed.
   void checkForNewLogs(
     int rawCount, {
     required bool isDesktop,
     required VoidCallback onMount,
   }) {
-    if (isDesktop && rawCount != lastLogCount) {
-      if (rawCount > lastLogCount && lastLogCount > 0) {
-        if (isLiveTailActive) {
-          WidgetsBinding.instance.addPostFrameCallback((_) => onMount());
-        } else {
-          hasNewLogs.value = true;
-        }
-      }
-      lastLogCount = rawCount;
+    if (rawCount == lastLogCount) return;
+    final hasNewLogsArrived = rawCount > lastLogCount && lastLogCount > 0;
+    lastLogCount = rawCount;
+    if (!isDesktop || !hasNewLogsArrived) return;
+    if (liveTailActive.value) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => onMount());
+    } else {
+      hasNewLogs.value = true;
     }
   }
 }

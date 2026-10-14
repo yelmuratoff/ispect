@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:ispect_tool/src/cli/aot_probe_command.dart';
 import 'package:ispect_tool/src/cli/check_command.dart';
 import 'package:ispect_tool/src/cli/deps_command.dart';
 import 'package:ispect_tool/src/cli/docs_commands.dart';
@@ -31,7 +32,8 @@ Future<void> main(List<String> arguments) async {
     ..addCommand(LlmsCommand(repoRoot))
     ..addCommand(ChangelogCommand(repoRoot))
     ..addCommand(ReleasePrepCommand(repoRoot))
-    ..addCommand(PublishCommand(repoRoot));
+    ..addCommand(PublishCommand(repoRoot))
+    ..addCommand(AotProbeCommand(repoRoot));
 
   try {
     exitCode = await runner.run(arguments) ?? 0;

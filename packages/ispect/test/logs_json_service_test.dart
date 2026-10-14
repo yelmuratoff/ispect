@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_dynamic_calls
+// ignore_for_file: avoid_dynamic_calls, deprecated_member_use_from_same_package
 
 import 'dart:convert';
 import 'dart:typed_data';
@@ -1364,6 +1364,22 @@ void main() {
             ),
           );
         }
+      });
+
+      test('exports an unknown file type as the JSON document', () {
+        String contentFor(String fileType) => service.formatFilteredContent(
+          logs: [sensitiveLog()],
+          filteredLogs: [sensitiveLog()],
+          filter: ISpectFilter(),
+          fileType: fileType,
+        );
+
+        final decoded = jsonDecode(contentFor('xml')) as Map<String, dynamic>;
+
+        expect(decoded, contains(ISpectMetadata.exportKey));
+        expect(contentFor('csv'), isNot(startsWith('{')));
+        expect(contentFor('md'), isNot(startsWith('{')));
+        expect(contentFor('txt'), isNot(startsWith('{')));
       });
 
       test('host metadata cannot replace filtered export fields', () {

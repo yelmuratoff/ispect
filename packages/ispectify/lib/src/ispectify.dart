@@ -171,7 +171,7 @@ class ISpectLogger {
   /// cannot break notification for the rest.
   void _notifyObservers(void Function(ISpectObserver) notify) {
     if (!_isActive || !_compileGateEnabled) return;
-    _observers.notify(notify, _logger);
+    _observers.notify(notify, consoleLogger: _logger, options: _options);
   }
 
   /// Replaces only the provided components; others retain their current values.

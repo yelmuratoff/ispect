@@ -116,6 +116,7 @@ final class LogPipeline {
       final outboundData = consoleData ?? data;
       final level = outboundData.logLevel ??
           (outboundData.isError ? LogLevel.error : null);
+      if (!_consoleLogger.isEnabledFor(level)) return;
       final pen = outboundData.pen ?? _options.penByKey(outboundData.key);
       final settings = _consoleLogger.settings;
 

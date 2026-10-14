@@ -37,6 +37,15 @@ final class PlatformOutput {
       default:
         // ignore: avoid_print
         print(message);
+        if (error == null && stackTrace == null) return;
+        developer.log(
+          '',
+          name: 'ISpect',
+          level: level,
+          error: error,
+          stackTrace: stackTrace,
+          time: time,
+        );
     }
   }
 }

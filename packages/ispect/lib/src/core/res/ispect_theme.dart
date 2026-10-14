@@ -332,6 +332,10 @@ class ISpectTheme {
   /// fields and combining map/list fields (entries from [other] win on key
   /// conflicts).
   ///
+  /// Colors and panel themes fall back to this theme when [other] leaves them
+  /// null. [pageTitle], [themeMode], and [useHostColors] have non-null
+  /// constructor defaults, so they always come from [other].
+  ///
   /// Useful for building layered themes (e.g. package defaults + app overrides):
   /// ```dart
   /// final effective = ISpectTheme().merge(appTheme);
@@ -395,7 +399,8 @@ class ISpectTheme {
   /// Retrieves the color associated with a specific log type.
   ///
   /// - `key`: The log type identifier.
-  /// - Returns the mapped color if found; otherwise, defaults to `Colors.grey`.
+  /// - Returns `Colors.grey` when `key` is `null`, the mapped color when
+  ///   `key` has one, and `null` for an unmapped `key`.
   Color? getTypeColor(BuildContext context, {required String? key}) {
     if (key == null) return Colors.grey;
     return colors(context)[key];
@@ -405,7 +410,8 @@ class ISpectTheme {
   ///
   /// - `key`: The log level identifier.
   /// - Strips the `'LogLevel.'` prefix before looking up the color.
-  /// - Returns the mapped color if found; otherwise, defaults to `Colors.grey`.
+  /// - Returns `Colors.transparent` when `key` is `null`, the mapped color
+  ///   when the level has one, and `Colors.grey` otherwise.
   Color getColorByLogLevel(BuildContext context, {required String? key}) {
     if (key == null) return Colors.transparent;
     return colors(context)[key.replaceAll('LogLevel.', '')] ?? Colors.grey;
@@ -446,6 +452,23 @@ class ISpectTheme {
   String? getTypeDescription(BuildContext context, {required String? key}) {
     if (key == null) return null;
     return descriptions(context)[key];
+  }
+
+  /// Returns the display title for the log type identified by [key].
+  ///
+  /// Prefers the title configured for [key] in [customLogTypes], then the
+  /// title of the registered [ISpectLogType], then the built-in log type
+  /// title, and falls back to [key] itself.
+  /// Returns `null` when [key] is `null` or empty.
+  String? getTypeTitle(BuildContext context, {required String? key}) {
+    if (key == null || key.isEmpty) return null;
+    final customTitle = customLogTypes
+        .firstWhereOrNull((type) => type.key == key)
+        ?.title;
+    if (customTitle != null) return customTitle;
+    final registeredTitle = ISpectLogType.fromKey(key)?.title;
+    if (registeredTitle != null) return registeredTitle;
+    return _getBuiltInTitles(context)[key] ?? key;
   }
 
   Map<String, dynamic> toMap() => {
@@ -551,6 +574,14 @@ final Expando<Map<String, Color>> _lightColorsExpando =
     Expando<Map<String, Color>>('ISpectTheme.lightColors');
 final Expando<Map<String, Color>> _darkColorsExpando =
     Expando<Map<String, Color>>('ISpectTheme.darkColors');
+final Expando<Map<String, String>> _builtInTitlesExpando =
+    Expando<Map<String, String>>('ISpectTheme.builtInTitles');
+
+Map<String, String> _getBuiltInTitles(BuildContext context) =>
+    _builtInTitlesExpando[context.ispectL10n] ??= {
+      for (final description in ISpectConstants.defaultLogDescriptions(context))
+        if (description.title case final title?) description.key: title,
+    };
 
 Map<String, Color> _getLightColors(ISpectTheme theme) {
   final cached = _lightColorsExpando[theme];

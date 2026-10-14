@@ -178,4 +178,91 @@ void main() {
       expect(size, lessThanOrEqualTo(300));
     }
   });
+
+  test('a flush opens the active segment once per date, not once per record',
+      () async {
+    final root = await createPrivateTempDirectory('ispect-history-');
+    addTearDown(() => root.delete(recursive: true));
+    final operations = <String>[];
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+      ioHook: (file, operation) => operations.add(operation),
+    );
+    addTearDown(history.dispose);
+    final date = DateTime(2026, 7, 10, 9);
+    final otherDate = DateTime(2026, 7, 11, 9);
+
+    for (var index = 0; index < 20; index++) {
+      final offset = Duration(seconds: index);
+      history
+        ..add(ISpectLogData('entry', id: 'A$index', time: date.add(offset)))
+        ..add(
+          ISpectLogData('other', id: 'B$index', time: otherDate.add(offset)),
+        );
+    }
+    await history.saveToDailyFile();
+    final firstFlush = List<String>.of(operations);
+    operations.clear();
+
+    for (var index = 0; index < 20; index++) {
+      final time = date.add(Duration(minutes: 1, seconds: index));
+      history.add(ISpectLogData('more', id: 'C$index', time: time));
+    }
+    await history.saveToDailyFile();
+
+    expect(firstFlush, ['appendRecord', 'appendRecord']);
+    expect(operations, ['repairIncompleteTail', 'appendRecord']);
+    expect(
+      (await history.getLogsByDate(date)).map((log) => log.id),
+      [
+        for (var index = 0; index < 20; index++) 'A$index',
+        for (var index = 0; index < 20; index++) 'C$index',
+      ],
+    );
+    expect(
+      (await history.getLogsByDate(otherDate)).map((log) => log.id),
+      [for (var index = 0; index < 20; index++) 'B$index'],
+    );
+  });
+
+  test('a batched flush rotates into a fresh segment per size boundary',
+      () async {
+    final root = await createPrivateTempDirectory('ispect-history-');
+    addTearDown(() => root.delete(recursive: true));
+    final history = RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(
+        maxFileSize: 300,
+        maxTotalSize: 30000,
+        enableAutoSave: false,
+      ),
+    );
+    addTearDown(history.dispose);
+    final date = DateTime(2026, 7, 10, 9);
+
+    for (var index = 0; index < 4; index++) {
+      history.add(ISpectLogData('x' * 80, id: 'A$index', time: date));
+    }
+    await history.saveToDailyFile();
+
+    final datePath = await history.getLogPathByDate(date);
+    final files = await Directory(datePath)
+        .list()
+        .map((entity) => entity.path.split(Platform.pathSeparator).last)
+        .toList()
+      ..sort();
+    expect(files, [
+      '000000.jsonl',
+      '000001.jsonl',
+      '000002.jsonl',
+      '000003.jsonl',
+    ]);
+    expect(
+      (await history.getLogsByDate(date)).map((log) => log.id),
+      ['A0', 'A1', 'A2', 'A3'],
+    );
+  });
 }

@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_list_item.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_card.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_details.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
@@ -328,6 +330,168 @@ void main() {
       expect(harness.logsScrollController.offset, scrollOffset);
     },
   );
+
+  testWidgets(
+    'refining a highlight query updates the count and focused row on its own',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1400, 600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(appShell(const _ViewerHarness()));
+      await tester.pumpAndSettle();
+      final harness =
+          tester.state<_ViewerHarnessState>(find.byType(_ViewerHarness))
+            ..showLogs([
+              _plainLog('needle alpha', id: 'MATCH-ALPHA'),
+              ..._httpTransactions(0, 3),
+              _plainLog('needle beta', id: 'MATCH-BETA'),
+            ]);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(SearchBar), 'needle');
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      expect(find.text('1/2'), findsOneWidget);
+
+      await tester.enterText(find.byType(SearchBar), 'needle alpha');
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+
+      expect(harness.logsViewController.focusedMatchId, 'MATCH-ALPHA');
+      expect(find.text('1/1'), findsOneWidget);
+      LogListItem rowFor(String message) => tester.widget<LogListItem>(
+        find.ancestor(
+          of: find.text(message),
+          matching: find.byType(LogListItem),
+        ),
+      );
+      expect(rowFor('needle alpha').searchMatchState, SearchMatchState.focused);
+      expect(rowFor('needle beta').searchMatchState, SearchMatchState.none);
+    },
+  );
+
+  group('desktop arrow keys', () {
+    Future<_ViewerHarnessState> pumpDesktop(
+      WidgetTester tester,
+      List<ISpectLogData> logs,
+    ) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1400, 900);
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(appShell(const _ViewerHarness()));
+      await tester.pumpAndSettle();
+      final harness = tester.state<_ViewerHarnessState>(
+        find.byType(_ViewerHarness),
+      )..showLogs(logs);
+      await tester.pumpAndSettle();
+      tester
+          .widget<Focus>(
+            find.byWidgetPredicate(
+              (widget) =>
+                  widget is Focus &&
+                  widget.focusNode?.debugLabel == 'DesktopLogKeyboard',
+            ),
+          )
+          .focusNode!
+          .requestFocus();
+      await tester.pump();
+      return harness;
+    }
+
+    Future<String?> arrowDown(
+      WidgetTester tester,
+      _ViewerHarnessState harness,
+    ) async {
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pumpAndSettle();
+      return harness.logsViewController.activeData?.id;
+    }
+
+    testWidgets('step over a grouped HTTP transaction as one row', (
+      tester,
+    ) async {
+      final harness = await pumpDesktop(tester, [
+        _plainLog('alpha', id: 'A'),
+        ..._httpTransactions(0, 1),
+        _plainLog('beta', id: 'B'),
+      ]);
+
+      expect(await arrowDown(tester, harness), 'B');
+      expect(await arrowDown(tester, harness), 'RESPONSE-0');
+      expect(await arrowDown(tester, harness), 'A');
+    });
+
+    testWidgets('walk every rendered row while a highlight query is active', (
+      tester,
+    ) async {
+      final harness = await pumpDesktop(tester, [
+        _plainLog('needle one', id: 'N1'),
+        _plainLog('other', id: 'O'),
+        _plainLog('needle two', id: 'N2'),
+      ]);
+      harness.logsViewController
+        ..toggleGroupHttpLogs()
+        ..searchByCorrelationId('needle');
+      await tester.pumpAndSettle();
+
+      expect(await arrowDown(tester, harness), 'N2');
+      expect(await arrowDown(tester, harness), 'O');
+      expect(await arrowDown(tester, harness), 'N1');
+    });
+  });
+
+  testWidgets('returning to the newest edge shows the live tail indicator', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1400, 600);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(appShell(const _ViewerHarness()));
+    await tester.pumpAndSettle();
+    final harness = tester.state<_ViewerHarnessState>(
+      find.byType(_ViewerHarness),
+    )..showLogs([for (var i = 0; i < 100; i++) _plainLog('row $i', id: 'L$i')]);
+    await tester.pumpAndSettle();
+    expect(find.text('LIVE'), findsNothing);
+
+    harness.logsScrollController.jumpTo(1000);
+    await tester.pumpAndSettle();
+    harness.logsScrollController.jumpTo(0);
+    await tester.pumpAndSettle();
+
+    expect(find.text('LIVE'), findsOneWidget);
+  });
+
+  testWidgets('Cmd+K leaves focus alone while another route is on top', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(400, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(appShell(const _ViewerHarness()));
+    await tester.pumpAndSettle();
+    final harness = tester.state<_ViewerHarnessState>(
+      find.byType(_ViewerHarness),
+    );
+    final routeFocus = FocusNode();
+    addTearDown(routeFocus.dispose);
+    unawaited(
+      Navigator.of(harness.context).push(
+        MaterialPageRoute<void>(
+          builder: (_) =>
+              Scaffold(body: TextField(focusNode: routeFocus, autofocus: true)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(routeFocus.hasFocus, isTrue);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.metaLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyK);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.metaLeft);
+    await tester.pumpAndSettle();
+
+    expect(routeFocus.hasFocus, isTrue);
+    expect(harness.searchFocusNode.hasFocus, isFalse);
+  });
 }
 
 ISpectLogData _plainLog(String message, {required String id}) => ISpectLogData(
@@ -369,7 +533,6 @@ final class _ViewerHarness extends StatefulWidget {
 }
 
 final class _ViewerHarnessState extends State<_ViewerHarness> {
-  final _titleFiltersController = GroupButtonController();
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
   final _logsViewController = ISpectViewController();
@@ -377,6 +540,7 @@ final class _ViewerHarnessState extends State<_ViewerHarness> {
 
   ScrollController get logsScrollController => _logsScrollController;
   ISpectViewController get logsViewController => _logsViewController;
+  FocusNode get searchFocusNode => _searchFocusNode;
 
   void showLogs(List<ISpectLogData> logs) {
     setState(() => _logs = List<ISpectLogData>.unmodifiable(logs));
@@ -386,7 +550,6 @@ final class _ViewerHarnessState extends State<_ViewerHarness> {
 
   @override
   void dispose() {
-    _titleFiltersController.dispose();
     _searchFocusNode.dispose();
     _logsScrollController.dispose();
     _logsViewController.dispose();
@@ -400,7 +563,6 @@ final class _ViewerHarnessState extends State<_ViewerHarness> {
         logsData: _logs,
         controller: _logsViewController,
         iSpectTheme: ISpect.read(context),
-        titleFiltersController: _titleFiltersController,
         searchFocusNode: _searchFocusNode,
         logsScrollController: _logsScrollController,
       ),

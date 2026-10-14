@@ -10,8 +10,12 @@ import '../core/readme_builder.dart';
 final class ReadmeCommand extends Command<int> {
   ReadmeCommand(this.repoRoot) {
     argParser
-      ..addFlag('check', help: 'Report drift without writing; exit 1 on drift.')
-      ..addFlag('dry-run', help: 'Print the generated content without writing.')
+      ..addFlag('check',
+          negatable: false,
+          help: 'Report drift without writing; exit 1 on drift.')
+      ..addFlag('dry-run',
+          negatable: false,
+          help: 'Print the generated content without writing.')
       ..addOption('package', help: 'Build a single target by name.');
   }
 
@@ -33,8 +37,11 @@ final class ReadmeCommand extends Command<int> {
 final class LlmsCommand extends Command<int> {
   LlmsCommand(this.repoRoot) {
     argParser
-      ..addFlag('check', help: 'Report drift without writing; exit 1 on drift.')
+      ..addFlag('check',
+          negatable: false,
+          help: 'Report drift without writing; exit 1 on drift.')
       ..addFlag('dry-run',
+          negatable: false,
           help: 'Print the generated content without writing.');
   }
 
@@ -56,8 +63,10 @@ final class LlmsCommand extends Command<int> {
 final class ChangelogCommand extends Command<int> {
   ChangelogCommand(this.repoRoot) {
     argParser
-      ..addFlag('full-copy', help: 'Overwrite package changelogs entirely.')
-      ..addFlag('yes', help: 'Answer the overwrite confirmation with yes.')
+      ..addFlag('full-copy',
+          negatable: false, help: 'Overwrite package changelogs entirely.')
+      ..addFlag('yes',
+          negatable: false, help: 'Answer the overwrite confirmation with yes.')
       ..addOption('version', help: 'Propagate a specific version section.');
   }
 

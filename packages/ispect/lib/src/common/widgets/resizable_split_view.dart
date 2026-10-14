@@ -119,13 +119,13 @@ class _DragDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     final isActive = isDragging || isHovered;
     final primaryColor = context.ispectPrimaryColor;
-    final defaultColor = context.ispectSubtleBorderColor;
+    final defaultColor = dividerColor ?? context.ispectSubtleBorderColor;
     final lineColor = isActive
         ? primaryColor.withValues(alpha: 0.5)
         : defaultColor;
 
     return Semantics(
-      label: 'Resize divider',
+      label: context.ispectL10n.resizeDivider,
       slider: true,
       child: MouseRegion(
         cursor: SystemMouseCursors.resizeColumn,

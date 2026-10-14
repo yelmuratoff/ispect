@@ -106,6 +106,140 @@ void main() {
         expect(p1.initCalls, 1);
         expect(p2.initCalls, 1);
       });
+
+      testWidgets('keeps init and dispose balanced when plugins change', (
+        tester,
+      ) async {
+        final kept = _TestPlugin(pluginId: 'kept');
+        final removed = _TestPlugin(pluginId: 'removed');
+        final added = _TestPlugin(pluginId: 'added');
+        Widget app(List<InspectorPlugin> plugins) => MaterialApp(
+          localizationsDelegates: ISpectLocalizations.delegate(),
+          home: ISpectBuilder(
+            options: ISpectOptions(plugins: plugins),
+            child: const SizedBox.shrink(),
+          ),
+        );
+
+        await tester.pumpWidget(app([kept, removed]));
+        await tester.pumpWidget(app([kept, added]));
+
+        expect(kept.initCalls, 1);
+        expect(kept.disposeCalls, 0);
+        expect(removed.disposeCalls, 1);
+        expect(added.initCalls, 1);
+
+        await tester.pumpWidget(_emptyApp);
+
+        for (final plugin in [kept, removed, added]) {
+          expect(plugin.disposeCalls, plugin.initCalls, reason: plugin.id);
+        }
+        expect(kept.disposeCalls, 1);
+        expect(added.disposeCalls, 1);
+        expect(removed.disposeCalls, 1);
+      });
+
+      testWidgets(
+        'keeps the active instance when a rebuild passes a new same-id plugin',
+        (tester) async {
+          if (!kISpectEnabled) return;
+
+          late ISpectScopeModel model;
+          Widget app(InspectorPlugin plugin) => MaterialApp(
+            localizationsDelegates: ISpectLocalizations.delegate(),
+            home: ISpectBuilder(
+              options: ISpectOptions(plugins: [plugin]),
+              child: Builder(
+                builder: (context) {
+                  model = ISpect.read(context);
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+          );
+          final original = _TestPlugin(pluginId: 'device-info');
+          final rebuilt = _TestPlugin(pluginId: 'device-info');
+
+          await tester.pumpWidget(app(original));
+          await tester.pumpWidget(app(rebuilt));
+
+          expect(original.initCalls, 1);
+          expect(original.disposeCalls, 0);
+          expect(rebuilt.initCalls, 0);
+          expect(rebuilt.disposeCalls, 0);
+          expect(model.options.plugins.single, same(original));
+        },
+      );
+
+      testWidgets('swaps the instance when the plugin id changes', (
+        tester,
+      ) async {
+        if (!kISpectEnabled) return;
+
+        late ISpectScopeModel model;
+        Widget app(InspectorPlugin plugin) => MaterialApp(
+          localizationsDelegates: ISpectLocalizations.delegate(),
+          home: ISpectBuilder(
+            options: ISpectOptions(plugins: [plugin]),
+            child: Builder(
+              builder: (context) {
+                model = ISpect.read(context);
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        );
+        final first = _TestPlugin(pluginId: 'first');
+        final second = _TestPlugin(pluginId: 'second');
+
+        await tester.pumpWidget(app(first));
+        expect(model.options.plugins.single, same(first));
+
+        await tester.pumpWidget(app(second));
+
+        expect(first.disposeCalls, 1);
+        expect(second.initCalls, 1);
+        expect(second.disposeCalls, 0);
+        expect(model.options.plugins.single, same(second));
+      });
+    });
+
+    group('widget updates', () {
+      testWidgets('applies new options, theme and enabled flag to the scope', (
+        tester,
+      ) async {
+        late ISpectScopeModel model;
+        Widget app({
+          required bool enabled,
+          required bool jankLogging,
+          ISpectTheme? theme,
+        }) => MaterialApp(
+          localizationsDelegates: ISpectLocalizations.delegate(),
+          home: ISpectBuilder(
+            isISpectEnabled: enabled,
+            options: ISpectOptions(enableJankLogging: jankLogging),
+            theme: theme,
+            child: Builder(
+              builder: (context) {
+                model = ISpect.read(context);
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        );
+
+        await tester.pumpWidget(app(enabled: true, jankLogging: false));
+        expect(model.options.enableJankLogging, isFalse);
+
+        const theme = ISpectTheme(useHostColors: true);
+        await tester.pumpWidget(
+          app(enabled: false, jankLogging: true, theme: theme),
+        );
+
+        expect(model.options.enableJankLogging, isTrue);
+        expect(model.isISpectEnabled, isFalse);
+        expect(model.theme.useHostColors, isTrue);
+      });
     });
 
     group('ErrorWidget.builder ownership', () {

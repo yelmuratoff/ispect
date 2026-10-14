@@ -3,8 +3,11 @@
 import 'dart:convert';
 
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/utils/chunking.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
+import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:meta/meta.dart';
 
 /// Immutable outcome of a bounded log import.
@@ -275,6 +278,10 @@ class LogsJsonService {
   /// - Return: void (triggers file download)
   /// - Usage example: `await service.shareLogsAsJsonFile(logs, fileName: 'my_logs');`
   /// - Edge case notes: Validates non-empty logs, combines export and download operations
+  @Deprecated(
+    'Pass exportToJson output to LogsFileFactory.shareFile instead. '
+    'Will be removed in 8.0.0.',
+  )
   Future<void> shareLogsAsJsonFile(
     List<ISpectLogData> logs, {
     required ISpectShareCallback onShare,
@@ -309,6 +316,10 @@ class LogsJsonService {
   /// - Return: void (triggers file download)
   /// - Usage example: `await service.shareFilteredLogsAsJsonFile(allLogs, filteredLogs, currentFilter);`
   /// - Edge case notes: Includes filter metadata for context, validates non-empty filtered logs
+  @Deprecated(
+    'Pass formatFilteredContent output to LogsFileFactory.shareFile instead. '
+    'Will be removed in 8.0.0.',
+  )
   Future<void> shareFilteredLogsAsJsonFile(
     List<ISpectLogData> logs,
     List<ISpectLogData> filteredLogs,
@@ -348,6 +359,10 @@ class LogsJsonService {
   /// Saves filtered logs to device without requiring a share callback.
   ///
   /// Returns the file path (native) or filename (web).
+  @Deprecated(
+    'Pass formatFilteredContent output to LogsFileFactory.saveToDevice '
+    'instead. Will be removed in 8.0.0.',
+  )
   Future<String> saveFilteredLogsToDevice(
     List<ISpectLogData> logs,
     List<ISpectLogData> filteredLogs,
@@ -405,8 +420,11 @@ class LogsJsonService {
       sensitiveKeys: redactKeys,
     );
 
-    switch (fileType) {
-      case 'txt':
+    final format = ExportFormat.values
+        .where((format) => format.extension == fileType)
+        .firstOrNull;
+    switch (format) {
+      case ExportFormat.text:
         return LogExporter.toText(
           filteredLogs,
           redactKeys: redactKeys,
@@ -415,7 +433,7 @@ class LogsJsonService {
           enableRedaction: enableRedaction,
           resourceLimits: _resourceLimits,
         );
-      case 'md':
+      case ExportFormat.markdown:
         return LogExporter.toMarkdown(
           filteredLogs,
           redactKeys: redactKeys,
@@ -424,7 +442,7 @@ class LogsJsonService {
           enableRedaction: enableRedaction,
           resourceLimits: _resourceLimits,
         );
-      case 'csv':
+      case ExportFormat.csv:
         return LogExporter.toCsv(
           filteredLogs,
           redactKeys: redactKeys,
@@ -432,7 +450,8 @@ class LogsJsonService {
           enableRedaction: enableRedaction,
           resourceLimits: _resourceLimits,
         );
-      default:
+      case ExportFormat.json:
+      case null:
         final limits = _resourceLimits;
         final encoder = _JsonExportEncoder(
           includeMetadata: true,
@@ -492,22 +511,12 @@ class LogsJsonService {
     Object? source,
     RedactionService? redactor,
     DiagnosticResourceLimits resourceLimits,
-  ) {
-    final prepared = LogExportOutput.boundJsonValue(
-      source,
-      resourceLimits: resourceLimits,
-      preserveTypes: redactor != null,
-      replaceOversizedStrings: redactor != null,
-    );
-    final outbound = redactor == null
-        ? prepared
-        : redactor.redactForExport(prepared, resourceLimits: resourceLimits);
-    return LogExportOutput.boundJsonValue(
-      outbound,
-      resourceLimits: resourceLimits,
-      replaceOversizedStrings: redactor != null,
-    );
-  }
+  ) => ISpectSafeDiagnosticSnapshot.boundedValue(
+    source,
+    redactor: redactor,
+    resourceLimits: resourceLimits,
+    preserveTypes: redactor != null,
+  );
 
   static RedactionService? _effectiveRedactor(
     bool enableRedaction,
@@ -635,11 +644,7 @@ class LogsJsonService {
   }
 
   DiagnosticResourceLimits get _resourceLimits {
-    final limits =
-        (resourceLimits ??
-              ISpect.loggerIfInitialized?.options.resourceLimits ??
-              DiagnosticResourceLimits.balanced)
-          ..validate();
+    final limits = (resourceLimits ?? ISpectResourceLimits.current)..validate();
     return limits;
   }
 

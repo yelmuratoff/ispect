@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/managers/filter_manager.dart';
 import 'package:ispect/src/common/managers/settings_manager.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/features/log_viewer/controllers/display_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/search_highlight_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/selection_controller.dart';
@@ -57,8 +58,7 @@ class ISpectViewController implements Listenable {
     final resolvedResourceLimits =
         resourceLimits ??
         initialSettings?.resourceLimits ??
-        ISpect.loggerIfInitialized?.options.resourceLimits ??
-        DiagnosticResourceLimits.balanced;
+        ISpectResourceLimits.current;
     final resolvedProcessingPolicy =
         processingPolicy ??
         initialSettings?.processingPolicy ??
@@ -203,6 +203,9 @@ class ISpectViewController implements Listenable {
   void updateSearchMatches(List<ISpectLogData> matches) =>
       _search.updateSearchMatches(matches);
 
+  bool needsSearchMatchUpdate(List<ISpectLogData> matches) =>
+      _search.needsMatchUpdate(matches);
+
   SearchMatchState matchStateFor(ISpectLogData logEntry) =>
       _search.matchStateFor(logEntry);
 
@@ -220,6 +223,9 @@ class ISpectViewController implements Listenable {
   LogSortColumn get sortColumn => _sorting.sortColumn;
   LogSortDirection get sortDirection => _sorting.sortDirection;
   bool get isLogOrderReversed => _display.isLogOrderReversed;
+
+  bool get isNewestFirst =>
+      sortColumn == LogSortColumn.time && isLogOrderReversed;
 
   void toggleSort(LogSortColumn column) => _sorting.toggleSort(column);
 
@@ -259,7 +265,6 @@ class ISpectViewController implements Listenable {
     );
     if (!setEquals(settings.disabledLogTypes, newSettings.disabledLogTypes)) {
       _filterManager.updateExcludedLogTypeKeys(newSettings.disabledLogTypes);
-      _cachedLevelStats = null;
     }
     _settingsManager.updateSettings(newSettings);
     _display.applyFromSettings(newSettings);
@@ -304,8 +309,12 @@ class ISpectViewController implements Listenable {
 
   void setOnlyLogTypeKey(String key) => _filterManager.setOnlyLogTypeKey(key);
 
-  void excludeLogTypeKey(String key, List<String> allKeys) =>
-      _filterManager.excludeLogTypeKey(key, allKeys);
+  void hideLogTypeKey(String key) => _filterManager.hideLogTypeKey(key);
+
+  Set<String> get hiddenLogTypeKeys => _filterManager.hiddenLogTypeKeys;
+
+  int get activeLogTypeFilterCount =>
+      filter.logTypeKeys.length + hiddenLogTypeKeys.length;
 
   void clearAllFilters() => _filterManager.clearAllFilters();
 
@@ -318,59 +327,6 @@ class ISpectViewController implements Listenable {
   void onDataChanged() => _filterManager.onDataChanged();
 
   int get outputGeneration => _filterManager.outputGeneration;
-
-  LogTypeKeysResult getLogTypeKeys(List<ISpectLogData> logsData) =>
-      _filterManager.getLogTypeKeys(logsData);
-
-  /// Returns counts of `error`/`critical` and `warning` entries in [logsData].
-  ({int errors, int warnings}) getLevelStats(List<ISpectLogData> logsData) {
-    final cached = _cachedLevelStats;
-    final previous = _cachedLevelStatsInput;
-    if (cached != null &&
-        identical(previous, logsData) &&
-        _cachedLevelStatsLength == logsData.length) {
-      return cached;
-    }
-
-    var errors = 0;
-    var warnings = 0;
-    var start = 0;
-    if (cached != null &&
-        previous != null &&
-        _isAppendOnlyExtension(previous, logsData)) {
-      errors = cached.errors;
-      warnings = cached.warnings;
-      start = previous.length;
-    }
-    for (var index = start; index < logsData.length; index++) {
-      final captured = captureISpectLogWithoutPayload(logsData[index]);
-      if (_filterManager.isExcluded(captured.key)) continue;
-      final level = captured.logLevel;
-      if (level == LogLevel.error || level == LogLevel.critical) {
-        errors++;
-      } else if (level == LogLevel.warning) {
-        warnings++;
-      }
-    }
-    final result = (errors: errors, warnings: warnings);
-    _cachedLevelStats = result;
-    _cachedLevelStatsInput = logsData;
-    _cachedLevelStatsLength = logsData.length;
-    return result;
-  }
-
-  static bool _isAppendOnlyExtension(
-    List<ISpectLogData> previous,
-    List<ISpectLogData> current,
-  ) {
-    if (previous.isEmpty || current.length < previous.length) return false;
-    return identical(previous.first, current.first) &&
-        identical(previous.last, current[previous.length - 1]);
-  }
-
-  ({int errors, int warnings})? _cachedLevelStats;
-  List<ISpectLogData>? _cachedLevelStatsInput;
-  int _cachedLevelStatsLength = -1;
 
   void handleLogTypeKeyFilterToggle(String key, {required bool isSelected}) =>
       _filterManager.handleLogTypeKeyFilterToggle(key, isSelected: isSelected);

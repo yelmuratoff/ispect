@@ -276,6 +276,86 @@ void main() {
       expect(find.byIcon(Icons.format_shapes), findsNothing);
       expect(find.byIcon(Icons.colorize), findsNothing);
     });
+
+    testWidgets('applies a changed theme without remounting', (tester) async {
+      const updated = InspectorTheme(chromeSurfaceColor: Color(0xFF101010));
+      Widget build(InspectorTheme theme) => MaterialApp(
+        home: Scaffold(
+          body: Inspector(
+            theme: theme,
+            child: Stack(
+              children: [
+                Center(
+                  child: Container(
+                    key: _containerKey,
+                    width: 100.0,
+                    height: 100.0,
+                    color: Colors.blue,
+                  ),
+                ),
+                const Align(alignment: Alignment.topLeft, child: _Counter()),
+              ],
+            ),
+          ),
+        ),
+      );
+      FloatingActionButton zoomButton() => tester.widget(
+        find.ancestor(
+          of: find.byIcon(Icons.zoom_in),
+          matching: find.byType(FloatingActionButton),
+        ),
+      );
+      InspectorController currentController() =>
+          tester.state<InspectorState>(find.byType(Inspector)).controller;
+
+      await tester.pumpWidget(build(InspectorTheme.defaults));
+      expect(zoomButton().backgroundColor, const Color(0xFF1E1E1E));
+
+      await tester.tap(find.text('count: 0'));
+      await tester.pump();
+      expect(find.text('count: 1'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.format_shapes));
+      await tester.pump();
+      await tester.tapAt(tester.getCenter(find.byKey(_containerKey)));
+      await tester.pump();
+      final controllerBefore = currentController();
+      expect(controllerBefore.currentRenderBoxNotifier.value, isNotNull);
+
+      await tester.pumpWidget(build(updated));
+
+      final controller = currentController();
+      expect(controller, same(controllerBefore));
+      expect(controller.theme, updated);
+      expect(zoomButton().backgroundColor, const Color(0xFF101010));
+      expect(controller.modeNotifier.value, InspectorMode.inspector);
+      expect(
+        controller.currentRenderBoxNotifier.value?.targetRenderBox,
+        same(tester.renderObject(find.byKey(_containerKey))),
+      );
+      expect(find.text('count: 1'), findsOneWidget);
+    });
+
+    testWidgets('keeps a supplied controller when only the theme changes', (
+      tester,
+    ) async {
+      final controller = InspectorController();
+      addTearDown(controller.dispose);
+      Widget build(InspectorTheme theme) => MaterialApp(
+        builder: (context, child) =>
+            Inspector(controller: controller, theme: theme, child: child!),
+        home: const Scaffold(body: SizedBox.expand()),
+      );
+
+      await tester.pumpWidget(build(InspectorTheme.defaults));
+      await tester.pumpWidget(
+        build(const InspectorTheme(chromeSurfaceColor: Color(0xFF101010))),
+      );
+
+      final state = tester.state<InspectorState>(find.byType(Inspector));
+      expect(state.controller, same(controller));
+      expect(controller.theme, InspectorTheme.defaults);
+    });
   });
 
   group('Widget inspector', () {
@@ -394,6 +474,85 @@ void main() {
       expect(getButton().backgroundColor, const Color(0xFF1E1E1E));
       expect(getButton().foregroundColor, Colors.white70);
     });
+
+    testWidgets(
+      'mode entered from the panel survives an unrelated key release',
+      (tester) async {
+        final hostKeyUps = <LogicalKeyboardKey>[];
+        await tester.pumpWidget(
+          MaterialApp(
+            builder: (context, child) => Focus(
+              onKeyEvent: (node, event) {
+                if (event is KeyUpEvent) hostKeyUps.add(event.logicalKey);
+                return KeyEventResult.ignored;
+              },
+              child: Inspector(child: child!),
+            ),
+            home: const Scaffold(body: SizedBox.expand()),
+          ),
+        );
+        final controller = tester
+            .state<InspectorState>(find.byType(Inspector))
+            .controller;
+
+        await tester.tap(find.byIcon(Icons.format_shapes));
+        await tester.pump();
+        expect(controller.modeNotifier.value, InspectorMode.inspector);
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.pump();
+
+        expect(controller.modeNotifier.value, InspectorMode.inspector);
+        expect(hostKeyUps, contains(LogicalKeyboardKey.shiftLeft));
+      },
+    );
+
+    testWidgets(
+      'mode entered from the panel survives a press and release of its '
+      'own shortcut',
+      (tester) async {
+        await tester.pumpWidget(_buildBody());
+        final controller = tester
+            .state<InspectorState>(find.byType(Inspector))
+            .controller;
+
+        await tester.tap(find.byIcon(Icons.format_shapes));
+        await tester.pump();
+        expect(controller.modeNotifier.value, InspectorMode.inspector);
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.keyW);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.keyW);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
+        await tester.pump();
+
+        expect(controller.modeNotifier.value, InspectorMode.inspector);
+      },
+    );
+
+    testWidgets(
+      'color picker entered by setMode survives a press and release of its '
+      'shortcut',
+      (tester) async {
+        await tester.pumpWidget(_buildBody());
+        final controller = tester
+            .state<InspectorState>(find.byType(Inspector))
+            .controller;
+
+        controller.setMode(InspectorMode.colorPicker);
+        await tester.pump();
+        expect(controller.modeNotifier.value, InspectorMode.colorPicker);
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.alt);
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.keyC);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.keyC);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.alt);
+        await tester.pump();
+
+        expect(controller.modeNotifier.value, InspectorMode.colorPicker);
+      },
+    );
 
     testWidgets('respects decimalPlaces from Inspector', (tester) async {
       await tester.pumpWidget(_buildPrecisionBody());
@@ -596,4 +755,21 @@ void main() {
       },
     );
   });
+}
+
+class _Counter extends StatefulWidget {
+  const _Counter();
+
+  @override
+  State<_Counter> createState() => _CounterState();
+}
+
+class _CounterState extends State<_Counter> {
+  int _count = 0;
+
+  @override
+  Widget build(BuildContext context) => TextButton(
+    onPressed: () => setState(() => _count++),
+    child: Text('count: $_count'),
+  );
 }

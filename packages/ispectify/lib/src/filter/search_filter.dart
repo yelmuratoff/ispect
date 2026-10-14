@@ -1,7 +1,11 @@
 import 'package:ispectify/ispectify.dart';
 
-/// Case-insensitive search across all fields of [ISpectLogData],
-/// including nested [ISpectLogData.additionalData].
+/// Case-insensitive search across the values of [ISpectLogData], including
+/// values nested in [ISpectLogData.additionalData].
+///
+/// Map keys are never matched: they name the record's fields, so a query
+/// such as `error` would otherwise match every record whose schema has an
+/// error-related field.
 class SearchFilter implements Filter<ISpectLogData> {
   SearchFilter(
     String query, {
@@ -44,8 +48,8 @@ class SearchFilter implements Filter<ISpectLogData> {
     return _deepSearch(snapshot);
   }
 
-  /// Iteratively searches nested structures (Map/List) for a string
-  /// containing [_lowerQuery].
+  /// Iteratively searches the values of nested structures (Map/List) for a
+  /// string containing [_lowerQuery].
   ///
   /// Uses identity-based [Set] to detect circular references in Map/List
   /// without preventing equal primitives from being checked (primitives
@@ -67,11 +71,6 @@ class SearchFilter implements Filter<ISpectLogData> {
 
       if (current is Map<dynamic, dynamic>) {
         if (!visited.add(current)) continue;
-        for (final key in current.keys) {
-          if (key is String && key.toLowerCase().contains(_lowerQuery)) {
-            return true;
-          }
-        }
         stack.addAll(current.values);
         continue;
       }

@@ -24,6 +24,20 @@ String releaseLine(Version version) => '${version.major}.${version.minor}';
 bool hasGluedCounter(Version version) => version.preRelease
     .any((part) => part is String && _gluedCounter.hasMatch(part));
 
+/// Writes the [hasGluedCounter] warning for [version] to [sink], or nothing
+/// when its counter is not glued.
+void writeGluedCounterWarning(StringSink sink, Version version) {
+  if (!hasGluedCounter(version)) {
+    return;
+  }
+  sink
+    ..writeln('[WARN] $version glues its counter to the prerelease label, so '
+        'Pub compares that counter as text (dev11 sorts below dev8).')
+    ..writeln('[WARN] Further bumps stay monotonic by appending a numeric '
+        'identifier; to sort above an already published sibling the series has '
+        'to leave this label (rc.1) or the prerelease.');
+}
+
 /// Advances the prerelease counter so the result always sorts above [current].
 ///
 /// A trailing numeric identifier is incremented; otherwise `.1` is appended,

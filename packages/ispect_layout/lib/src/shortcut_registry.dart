@@ -162,17 +162,21 @@ class InspectorShortcuts {
     return false;
   }
 
+  static bool _isModifierKey(LogicalKeyboardKey key) => _modifierKeys.contains(
+    LogicalKeyboardKey.collapseSynonyms(<LogicalKeyboardKey>{key}).single,
+  );
+
   static ShortcutActivator _legacyHoldActivator(LogicalKeyboardKey key) {
-    if (_modifierKeys.contains(
-      LogicalKeyboardKey.collapseSynonyms(<LogicalKeyboardKey>{key}).single,
-    )) {
-      return LogicalKeySet(key);
-    }
+    if (_isModifierKey(key)) return LogicalKeySet(key);
     return SingleActivator(key, includeRepeats: false);
   }
 
-  static ShortcutActivator _legacyToggleActivator(LogicalKeyboardKey key) =>
-      SingleActivator(key, includeRepeats: false);
+  static ShortcutActivator _legacyToggleActivator(LogicalKeyboardKey key) {
+    if (_isModifierKey(key)) {
+      return _NonRepeatingActivator(LogicalKeySet(key));
+    }
+    return SingleActivator(key, includeRepeats: false);
+  }
 }
 
 final _modifierKeys = <LogicalKeyboardKey>{
@@ -181,3 +185,19 @@ final _modifierKeys = <LogicalKeyboardKey>{
   LogicalKeyboardKey.meta,
   LogicalKeyboardKey.shift,
 };
+
+final class _NonRepeatingActivator extends ShortcutActivator {
+  const _NonRepeatingActivator(this._inner);
+
+  final ShortcutActivator _inner;
+
+  @override
+  Iterable<LogicalKeyboardKey>? get triggers => _inner.triggers;
+
+  @override
+  bool accepts(KeyEvent event, HardwareKeyboard state) =>
+      event is! KeyRepeatEvent && _inner.accepts(event, state);
+
+  @override
+  String debugDescribeKeys() => _inner.debugDescribeKeys();
+}

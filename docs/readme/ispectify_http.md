@@ -89,6 +89,10 @@ attached interceptor's `configure(...)` method exposes the same shared capture
 fields at runtime. Pass `inheritResourceLimits: true` to either `copyWith` or
 `configure` to return resource-budget ownership to the logger.
 
+When response bodies are captured, the response entry is recorded once its
+body is read or cancelled. A caller of `send()` that does not start reading the
+body before the next event-loop turn gets the entry without the body.
+
 <!-- partial:redaction -->
 
 Custom redactor:

@@ -6,23 +6,23 @@ import 'package:ispect/ispect.dart';
 import '../../../../core/utils/utils.dart';
 
 class FileContentWidget extends StatelessWidget {
-  const FileContentWidget({
+  FileContentWidget({
     super.key,
     required this.content,
     required this.file,
-    required this.displayName,
-    required this.mimeType,
-  });
+    required this.inspection,
+  }) : contentSizeInBytes = utf8.encode(content).length;
 
   final String content;
   final dynamic file;
-  final String displayName;
-  final String mimeType;
+  final FileInspection inspection;
+  final int contentSizeInBytes;
+
+  String get displayName => inspection.type.displayName;
+  String get mimeType => inspection.type.mimeType;
 
   @override
   Widget build(BuildContext context) {
-    final int? fileLength = _getFileLengthSafely(file);
-
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -52,37 +52,30 @@ class FileContentWidget extends StatelessWidget {
             Text('File Name: ${file.fileName}'),
             const SizedBox(height: 4),
           ],
-          if (fileLength != null) ...[
-            Text('File Size: ${formatFileSize(fileLength)}'),
-            const SizedBox(height: 8),
-          ],
+          Text('File Size: ${formatFileSize(contentSizeInBytes)}'),
+          const SizedBox(height: 8),
           const SizedBox(height: 32),
           FilledButton(
-            onPressed: () {
-              dynamic data;
-              if (mimeType == 'application/json') {
-                try {
-                  data = jsonDecode(content);
-                } on FormatException catch (e) {
-                  ISpectToaster.showErrorToast(
-                    context,
-                    title: 'Invalid JSON',
-                    message: e.message,
-                  );
-                  return;
-                }
-              } else {
-                data = content;
+            onPressed: () async {
+              final jsonError = inspection.jsonError;
+              if (jsonError != null) {
+                ISpectToaster.showErrorToast(
+                  context,
+                  title: 'Invalid JSON',
+                  message: jsonError.message,
+                );
+                return;
               }
-              Navigator.of(context).push(
+              final data = await viewerContent(content, inspection);
+              if (!context.mounted) return;
+              await Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (context) => JsonScreen(
                     data: {
                       'display_name': displayName,
                       'mime_type': mimeType,
                       'file_name': file.fileName,
-                      if (fileLength != null)
-                        'size': formatFileSize(fileLength),
+                      'size': formatFileSize(contentSizeInBytes),
                       'content': data,
                     },
                   ),
@@ -94,16 +87,5 @@ class FileContentWidget extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  int? _getFileLengthSafely(dynamic file) {
-    try {
-      if (file.runtimeType.toString().contains('length')) {
-        return file.length as int?;
-      }
-    } catch (e, st) {
-      ISpect.logger.handle(exception: e, stackTrace: st);
-    }
-    return null;
   }
 }

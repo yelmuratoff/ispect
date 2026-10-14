@@ -43,6 +43,11 @@ final class DioRequestSender implements NetworkRequestSender {
         durationMs: stopwatch.elapsedMilliseconds,
         error: e,
       );
+    } on Object catch (e) {
+      return NetworkReplayResult(
+        durationMs: stopwatch.elapsedMilliseconds,
+        error: e,
+      );
     }
   }
 

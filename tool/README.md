@@ -17,16 +17,19 @@ dart run tool/bin/ispect_tool.dart <command>
 | `version check`                   | `check_version_sync.sh`  | Every package `version:` matches `version.config`                                          |
 | `version bump <kind\|dev\|X.Y.Z>` | `bump_version.sh`        | Advances `VERSION`, refusing anything Pub does not order above the current one             |
 | `sync [--bump k] [--dry-run]`     | `update_versions.sh`     | Propagates `VERSION` to manifests, internal constraints, and the web lockfile              |
-| `deps`                            | `check_dependencies.sh`  | Internal `^<version>` constraints match `version.config`                                   |
+| `deps`                            | `check_dependencies.sh`  | Every internal constraint is exactly `^<version>` from `version.config`                    |
 | `readme [--check]`                | `build_readme.sh`        | Builds `README.md` and `packages/*/README.md` from `docs/readme/**`                        |
 | `llms [--check]`                  | `build_llms.sh`          | Builds `llms.txt` from repository metadata                                                 |
 | `changelog [--full-copy]`         | `update_changelog.sh`    | Propagates a root changelog section to the packages                                        |
 | `release-prep [kind] [opts]`      | `release_prep.sh`        | Runs the whole release synchronization inside a rollback transaction                       |
 | `check-published`                 | the gate in `publish.sh` | Refuses a version the resolver would not rank above the published peak of its release line |
 | `publish [--dry-run\|--auto]`     | `publish.sh`             | Publishes every package in dependency order behind its preflights                          |
+| `aot-probe`                       | -                        | Builds the example's pure-Dart probe with and without `ISPECT_ENABLED`, checks sentinels   |
 
 `publish --only <package>` narrows the run to one package - the way to resume a
-release after a single package failed while the rest went out.
+release after a single package failed while the rest went out. Setting
+`PUBLISH_FORCE` to any non-empty value skips the per-package confirmation prompt
+of the default mode; `--dry-run` still publishes nothing.
 
 ```bash
 ./bash/release_prep.sh --carry-changelog

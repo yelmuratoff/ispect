@@ -53,22 +53,9 @@ class DotPainter extends CustomPainter {
     // Convert to integer count for the loop
     final dotsCount = count.ceil();
 
-    // For small counts, use simple loop
-    if (dotsCount < 50) {
-      for (var i = 0; i < dotsCount; i++) {
-        final x = spacing * i;
-        canvas.drawCircle(Offset(x, y), radius, _cachedPaint!);
-      }
-      return;
-    }
-
-    // For large counts, batch draws to improve performance
-    for (var i = 0; i < dotsCount; i += 10) {
-      final batchSize = (i + 10 > dotsCount) ? dotsCount - i : 10;
-      for (var j = 0; j < batchSize; j++) {
-        final x = spacing * (i + j);
-        canvas.drawCircle(Offset(x, y), radius, _cachedPaint!);
-      }
+    for (var i = 0; i < dotsCount; i++) {
+      final x = spacing * i;
+      canvas.drawCircle(Offset(x, y), radius, _cachedPaint!);
     }
   }
 

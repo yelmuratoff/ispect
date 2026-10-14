@@ -5,6 +5,8 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
 import 'exceptions.dart';
+import 'pubspec.dart';
+import 'repo_paths.dart';
 
 /// The pubspec sections that carry publishable version constraints.
 ///
@@ -19,7 +21,7 @@ enum PubspecSection {
   final String key;
 }
 
-/// One internal `^` constraint that disagrees with `version.config`.
+/// One internal constraint other than `^<version>` from `version.config`.
 final class DependencyInconsistency {
   const DependencyInconsistency({
     required this.pubspec,
@@ -40,7 +42,7 @@ final class DependencyInconsistency {
 
   final PubspecSection section;
 
-  /// The constraint as written, caret included.
+  /// The constraint as written: a caret, exact, or range constraint, or `any`.
   final String constraint;
 
   String describe(Version expected) => '$owner (${section.key}) depends on '
@@ -50,8 +52,10 @@ final class DependencyInconsistency {
   String toString() => '$pubspec:${section.key}:$dependency=$constraint';
 }
 
-/// Verifies that every internal `^` constraint between monorepo packages
-/// matches the version in `version.config`.
+/// Verifies that every internal version constraint between monorepo packages
+/// is exactly `^<version>` for the version in `version.config`.
+///
+/// A path, git, or sdk dependency declares no version and is skipped.
 ///
 /// Covers the package pubspecs under `packages/`, their `example/` projects,
 /// and the standalone `web_logs_viewer` project.
@@ -109,23 +113,15 @@ final class DependencyCheck {
     );
   }
 
-  List<_Pubspec> _packagePubspecs() {
-    final packages = Directory(p.join(repoRoot, 'packages'));
-    if (!packages.existsSync()) {
-      return const [];
-    }
-    final directories = packages.listSync().whereType<Directory>().toList()
-      ..sort((a, b) => a.path.compareTo(b.path));
-    return [
-      for (final directory in directories)
-        if (_readOrNull(File(p.join(directory.path, 'pubspec.yaml')))
-            case final _Pubspec pubspec)
-          pubspec,
-    ];
-  }
+  List<Pubspec> _packagePubspecs() => [
+        for (final directory in packageDirectories(repoRoot))
+          if (_readOrNull(File(p.join(directory, 'pubspec.yaml')))
+              case final Pubspec pubspec)
+            pubspec,
+      ];
 
   List<DependencyInconsistency> _scan(
-    _Pubspec pubspec,
+    Pubspec pubspec,
     Version expected,
     Set<String> candidates,
   ) {
@@ -142,9 +138,8 @@ final class DependencyCheck {
         if (dependency is! String || !candidates.contains(dependency)) {
           continue;
         }
-        final constraint = _caretConstraint(entry.value);
-        if (constraint == null ||
-            constraint.substring(1) == expected.toString()) {
+        final constraint = _versionConstraint(entry.value);
+        if (constraint == null || constraint == '^$expected') {
           continue;
         }
         found.add(
@@ -161,48 +156,15 @@ final class DependencyCheck {
     return found;
   }
 
-  static String? _caretConstraint(Object? value) {
-    if (value is String) {
-      return value.startsWith('^') ? value : null;
-    }
-    if (value is YamlMap) {
-      final version = value['version'];
-      return version is String && version.startsWith('^') ? version : null;
-    }
-    return null;
-  }
+  static String? _versionConstraint(Object? value) => switch (value) {
+        YamlMap() when value.containsKey('version') => '${value['version']}',
+        YamlMap() => null,
+        null => 'any',
+        _ => '$value',
+      };
 
-  /// Throws [PubspecException] when the file exists but does not parse.
-  _Pubspec? _readOrNull(File file) {
-    if (!file.existsSync()) {
-      return null;
-    }
-    final Object? document;
-    try {
-      document = loadYaml(file.readAsStringSync(), sourceUrl: file.uri);
-    } on YamlException catch (e) {
-      throw PubspecException('${file.path} is not valid YAML: ${e.message}');
-    }
-    if (document is! YamlMap) {
-      throw PubspecException('${file.path} is not a YAML mapping');
-    }
-    final name = document['name'];
-    return _Pubspec(
-      file: file,
-      document: document,
-      name: name is String ? name : p.relative(file.path, from: repoRoot),
-    );
-  }
-}
-
-final class _Pubspec {
-  const _Pubspec({
-    required this.file,
-    required this.document,
-    required this.name,
-  });
-
-  final File file;
-  final YamlMap document;
-  final String name;
+  /// Throws [PubspecException] when the file exists but does not parse, and
+  /// [ManifestException] when it declares no name.
+  Pubspec? _readOrNull(File file) =>
+      file.existsSync() ? Pubspec.read(file, repoRoot: repoRoot) : null;
 }

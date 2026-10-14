@@ -64,16 +64,30 @@ final class ISpectMetadata {
   /// Returns the metadata as a map, dropping `null`-valued typed fields.
   ///
   /// [extra] is merged first so the typed fields win on key collision.
-  Map<String, Object?> toMap() => {
-        ...?extra,
-        if (appName != null) 'appName': appName,
-        if (appVersion != null) 'appVersion': appVersion,
-        if (buildNumber != null) 'buildNumber': buildNumber,
-        if (environment != null) 'environment': environment,
-        if (device != null) 'device': device,
-        if (os != null) 'os': os,
-        if (osVersion != null) 'osVersion': osVersion,
-        if (locale != null) 'locale': locale,
+  Map<String, Object?> toMap() => {...?extra, ..._typedFields};
+
+  /// Returns the typed fields followed by the [boundedExtra] entries that no
+  /// typed field claims; a non-map [boundedExtra] is ignored.
+  @internal
+  Map<String, Object?> exportFields(Object? boundedExtra) {
+    final result = <String, Object?>{..._typedFields};
+    if (boundedExtra is Map<String, Object?>) {
+      for (final entry in boundedExtra.entries) {
+        result.putIfAbsent(entry.key, () => entry.value);
+      }
+    }
+    return result;
+  }
+
+  Map<String, String> get _typedFields => {
+        if (appName case final value?) 'appName': value,
+        if (appVersion case final value?) 'appVersion': value,
+        if (buildNumber case final value?) 'buildNumber': value,
+        if (environment case final value?) 'environment': value,
+        if (device case final value?) 'device': value,
+        if (os case final value?) 'os': value,
+        if (osVersion case final value?) 'osVersion': value,
+        if (locale case final value?) 'locale': value,
       };
 
   /// Whether every field is unset, so [toMap] would return an empty map.

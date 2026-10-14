@@ -77,7 +77,7 @@ class DesktopStatusBadge extends StatelessWidget {
     final (bgColor, textColor) = JsonColors.statusCodeColors(statusCode);
     return Semantics(
       container: true,
-      label: 'HTTP status $statusCode',
+      label: context.ispectL10n.httpStatus(statusCode),
       excludeSemantics: true,
       child: DecoratedBox(
         decoration: ISpectSquircle.decoration(

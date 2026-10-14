@@ -3,12 +3,17 @@ import 'dart:convert';
 import 'package:ispectify/src/redaction/scrub/code_units.dart';
 import 'package:ispectify/src/redaction/scrub/url_component_codec.dart';
 
+typedef AssignmentMatcher = bool Function(
+  String key,
+  String Function() assignedValue,
+);
+
 /// Masks `key=value` / `"key": value` assignments and query parameters inside
 /// free-form text without parsing it as a whole document.
 abstract final class AssignmentTokenizer {
   static String maskSensitiveAssignments(
     String value,
-    bool Function(String key) isSensitive,
+    AssignmentMatcher isSensitive,
     String placeholder,
   ) {
     final output = StringBuffer();
@@ -28,17 +33,23 @@ abstract final class AssignmentTokenizer {
               : _isInlineWhitespace(value.codeUnitAt(valueStart)))) {
         valueStart++;
       }
+      int? scannedValueEnd;
+      int valueEndOf() => scannedValueEnd ??= _assignmentValueEnd(
+            value,
+            valueStart,
+            quotedKey: assignment.quotedKey,
+          );
       final key = assignment.key;
-      if (key != null && !isSensitive(key)) {
+      if (key != null &&
+          !isSensitive(
+            key,
+            () => _unquoted(value.substring(valueStart, valueEndOf())),
+          )) {
         index = assignment.keyEnd;
         continue;
       }
 
-      final valueEnd = _assignmentValueEnd(
-        value,
-        valueStart,
-        quotedKey: assignment.quotedKey,
-      );
+      final valueEnd = valueEndOf();
       final replacement =
           assignment.quotedKey ? jsonEncode(placeholder) : placeholder;
       output
@@ -49,6 +60,17 @@ abstract final class AssignmentTokenizer {
     }
     output.write(value.substring(copiedThrough));
     return output.toString();
+  }
+
+  static String _unquoted(String assigned) {
+    final text = assigned.trim();
+    if (text.length < 2) return text;
+    final quote = text.codeUnitAt(0);
+    if ((quote == CodeUnits.doubleQuote || quote == CodeUnits.singleQuote) &&
+        text.codeUnitAt(text.length - 1) == quote) {
+      return text.substring(1, text.length - 1);
+    }
+    return text;
   }
 
   static ({
@@ -298,14 +320,15 @@ abstract final class AssignmentTokenizer {
 
   static String maskQueryParameters(
     String value,
-    bool Function(String key) isSensitive,
+    AssignmentMatcher isSensitive,
     String placeholder,
   ) =>
       value.replaceAllMapped(_queryParameterPattern, (match) {
         final separator = match.group(1)!;
         final encodedKey = match.group(2)!;
         final decodedKey = UrlComponentCodec.decodeKey(encodedKey);
-        if (decodedKey == null || isSensitive(decodedKey)) {
+        if (decodedKey == null ||
+            isSensitive(decodedKey, () => match.group(3)!)) {
           return '$separator$encodedKey=$placeholder';
         }
         return match.group(0)!;

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify/ispectify.dart';
@@ -19,7 +20,8 @@ class ISpectHttpInterceptor
         NetworkLoggerMixin,
         NetworkRedactionMixin,
         NetworkConfigurationMixin,
-        BaseNetworkInterceptor
+        BaseNetworkInterceptor,
+        NetworkCapturePolicyMixin
     implements HttpInterceptor {
   ISpectHttpInterceptor({
     ISpectLogger? logger,
@@ -42,33 +44,18 @@ class ISpectHttpInterceptor
   RedactionService get redactor =>
       ISpectRedaction.resolveService(service: _explicitRedactor);
 
-  bool get _captureEnabled => _logger.hasActiveConsumers && settings.enabled;
-  bool get _requestCaptureEnabled => _captureEnabled && settings.logRequests;
-  bool get _responseCaptureEnabled => _captureEnabled && settings.logResponses;
+  bool get _requestCaptureEnabled => captureEnabled && settings.logRequests;
+  bool get _responseCaptureEnabled => captureEnabled && settings.logResponses;
 
   bool _captureResponseEnabled(bool isErrorResponse) =>
-      isErrorResponse ? _captureEnabled : _responseCaptureEnabled;
+      isErrorResponse ? captureEnabled : _responseCaptureEnabled;
 
+  @override
   ISpectHttpInterceptorSettings get settings => _settings;
   ISpectHttpInterceptorSettings _settings;
 
   late final Expando<String> _requestIds = Expando<String>('ispect_rid');
   late final Expando<Stopwatch> _stopwatches = Expando<Stopwatch>('ispect_sw');
-
-  @override
-  bool get enableRedaction => settings.enableRedaction;
-
-  @override
-  DiagnosticCaptureMode get captureMode => settings.captureMode;
-
-  @override
-  DiagnosticResourceLimits get resourceLimits =>
-      settings.resourceLimits ?? _logger.options.resourceLimits;
-
-  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
-        redact: false,
-        resourceLimits: resourceLimits,
-      );
 
   @override
   BaseNetworkInterceptorSettings get configurableSettings => _settings;
@@ -82,11 +69,11 @@ class ISpectHttpInterceptor
 
   @override
   FutureOr<bool> shouldInterceptRequest({required BaseRequest request}) =>
-      _captureEnabled;
+      captureEnabled;
 
   @override
   FutureOr<bool> shouldInterceptResponse({required BaseResponse response}) =>
-      _captureEnabled;
+      captureEnabled;
 
   @override
   Future<BaseRequest> interceptRequest({
@@ -101,11 +88,11 @@ class ISpectHttpInterceptor
   }
 
   void _captureRequest(BaseRequest request) {
-    if (!_captureEnabled) return;
+    if (!captureEnabled) return;
 
     final logRequest =
         settings.logRequests && settings.shouldProcessRequest(request);
-    if (!_captureEnabled) return;
+    if (!captureEnabled) return;
 
     final requestId = generateTraceId();
     _requestIds[request] = requestId;
@@ -150,14 +137,11 @@ class ISpectHttpInterceptor
       operation: operation,
       target: url,
       correlationId: requestId,
-      config: _traceConfig,
+      config: capturedTraceConfig,
       meta: {
         NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.requestData: requestDataJson,
-        NetworkLogRenderer.renderHintsKey: {
-          NetworkLogRenderer.hintPrintBody: settings.printRequestData,
-          NetworkLogRenderer.hintPrintHeaders: settings.printRequestHeaders,
-        },
+        NetworkLogRenderer.renderHintsKey: settings.requestRenderHints,
       },
     );
   }
@@ -166,6 +150,12 @@ class ISpectHttpInterceptor
   Future<BaseResponse> interceptResponse({
     required BaseResponse response,
   }) async {
+    if (!kISpectEnabled) return response;
+    if (_shouldTeeBody(response) && response is StreamedResponse) {
+      final request = response.request;
+      if (request != null) _stopwatches[request]?.stop();
+      return _teeBody(response);
+    }
     guardDiagnostics(
       _logger,
       () => _captureResponse(response),
@@ -174,11 +164,101 @@ class ISpectHttpInterceptor
     return response;
   }
 
-  void _captureResponse(BaseResponse response) {
-    if (!_captureEnabled) return;
+  // http_interceptor 3 hands response interceptors the unread StreamedResponse.
+  bool _shouldTeeBody(BaseResponse response) {
+    final contentLength = response.contentLength;
+    return response is StreamedResponse &&
+        contentLength != null &&
+        contentLength <= resourceLimits.maxNetworkBodyBytes &&
+        _bodyCaptureEnabled(response);
+  }
 
-    final isErrorResponse =
-        response.statusCode >= 400 && response.statusCode < 600;
+  StreamedResponse _teeBody(StreamedResponse response) {
+    final budget = resourceLimits.maxNetworkBodyBytes;
+    final received = BytesBuilder();
+    var overflowed = false;
+    var settled = false;
+
+    void settle({required bool complete}) {
+      if (settled) return;
+      settled = true;
+      final bytes = received.takeBytes();
+      guardDiagnostics(
+        _logger,
+        () => _captureResponse(
+          response,
+          body: complete && !overflowed
+              ? Response.bytes(
+                  bytes,
+                  response.statusCode,
+                  request: response.request,
+                  headers: response.headers,
+                  isRedirect: response.isRedirect,
+                  persistentConnection: response.persistentConnection,
+                  reasonPhrase: response.reasonPhrase,
+                )
+              : null,
+        ),
+        what: 'http response capture',
+      );
+    }
+
+    late final StreamSubscription<List<int>> subscription;
+    final controller = StreamController<List<int>>(sync: true);
+    Timer.run(() {
+      if (!controller.hasListener) settle(complete: false);
+    });
+    controller
+      ..onListen = () {
+        subscription = response.stream.listen(
+          (chunk) {
+            if (!settled && !overflowed) {
+              if (received.length + chunk.length > budget) {
+                overflowed = true;
+                received.clear();
+              } else {
+                received.add(chunk);
+              }
+            }
+            controller.add(chunk);
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            settle(complete: false);
+            controller.addError(error, stackTrace);
+            unawaited(controller.close());
+          },
+          onDone: () {
+            settle(complete: true);
+            unawaited(controller.close());
+          },
+          cancelOnError: true,
+        );
+      }
+      ..onPause = (() => subscription.pause())
+      ..onResume = (() => subscription.resume())
+      ..onCancel = () {
+        settle(complete: false);
+        return subscription.cancel();
+      };
+
+    return _TeedStreamedResponse(response, controller.stream);
+  }
+
+  static bool _isErrorStatus(int statusCode) =>
+      statusCode >= _minErrorStatusCode && statusCode <= _maxErrorStatusCode;
+
+  bool _bodyCaptureEnabled(BaseResponse response) {
+    final isErrorResponse = _isErrorStatus(response.statusCode);
+    if (!_captureResponseEnabled(isErrorResponse)) return false;
+    return isErrorResponse
+        ? settings.printErrorData
+        : settings.logResponses && settings.printResponseData;
+  }
+
+  void _captureResponse(BaseResponse response, {Response? body}) {
+    if (!captureEnabled) return;
+
+    final isErrorResponse = _isErrorStatus(response.statusCode);
 
     if (!isErrorResponse &&
         (!settings.logResponses || !settings.shouldProcessResponse(response))) {
@@ -189,24 +269,44 @@ class ISpectHttpInterceptor
     }
     if (!_captureResponseEnabled(isErrorResponse)) return;
 
+    final prepared = _prepareResponse(
+      response,
+      body: response is Response ? response : body,
+      isErrorResponse: isErrorResponse,
+    );
+    if (prepared == null) return;
+
+    if (!_captureResponseEnabled(isErrorResponse)) return;
+    if (isErrorResponse) {
+      _logErrorResponse(prepared);
+    } else {
+      _logSuccessResponse(prepared);
+    }
+  }
+
+  _PreparedResponse? _prepareResponse(
+    BaseResponse response, {
+    required Response? body,
+    required bool isErrorResponse,
+  }) {
     final request = response.request;
     final requestId = request != null ? _requestIds[request] : null;
     final sw = request != null ? _stopwatches[request] : null;
     sw?.stop();
 
     final redactionActive = settings.isRedactionActive;
-    final method = request?.method ?? 'UNKNOWN';
+    final method = request?.method ?? _unknownMethod;
     final operation = redactDiagnosticText(
       method,
       useRedaction: redactionActive,
     );
-    if (!_captureResponseEnabled(isErrorResponse)) return;
+    if (!_captureResponseEnabled(isErrorResponse)) return null;
 
     final requestUrl = request?.url;
     final (:url, path: _) = requestUrl != null
         ? redactUrlAndPath(requestUrl, useRedaction: redactionActive)
         : (url: '', path: '');
-    if (!_captureResponseEnabled(isErrorResponse)) return;
+    if (!_captureResponseEnabled(isErrorResponse)) return null;
 
     final includeResponseData =
         isErrorResponse ? settings.printErrorData : settings.printResponseData;
@@ -222,7 +322,7 @@ class ISpectHttpInterceptor
         request,
         resourceLimits: resourceLimits,
       ),
-      response: response is Response ? response : null,
+      response: body,
       multipartRequest: request is MultipartRequest ? request : null,
     );
 
@@ -235,7 +335,15 @@ class ISpectHttpInterceptor
       redactionActive: redactionActive,
       captureMode: settings.captureMode,
     );
-    if (!_captureResponseEnabled(isErrorResponse)) return;
+    final contentLength = response.contentLength;
+    if (body == null &&
+        includeResponseData &&
+        contentLength != null &&
+        contentLength > resourceLimits.maxNetworkBodyBytes) {
+      responseDataJson[NetworkJsonKeys.body] = LogExportOutput.truncatedMarker;
+      responseDataJson[NetworkJsonKeys.bodyBytes] = contentLength.toString();
+    }
+    if (!_captureResponseEnabled(isErrorResponse)) return null;
     if (redactionActive) {
       HttpResponseData.redact(
         responseDataJson,
@@ -244,51 +352,83 @@ class ISpectHttpInterceptor
       );
     }
 
-    if (!_captureResponseEnabled(isErrorResponse)) return;
-    final baseMeta = <String, Object?>{
-      if (requestId != null) NetworkJsonKeys.requestId: requestId,
-      NetworkJsonKeys.statusCode: response.statusCode,
-      if (isErrorResponse)
-        NetworkJsonKeys.errorData: responseDataJson
-      else
-        NetworkJsonKeys.responseData: responseDataJson,
-    };
+    if (!_captureResponseEnabled(isErrorResponse)) return null;
+    return (
+      operation: operation,
+      target: url,
+      requestId: requestId,
+      duration: sw?.elapsed,
+      meta: <String, Object?>{
+        if (requestId != null) NetworkJsonKeys.requestId: requestId,
+        NetworkJsonKeys.statusCode: response.statusCode,
+        if (isErrorResponse)
+          NetworkJsonKeys.errorData: responseDataJson
+        else
+          NetworkJsonKeys.responseData: responseDataJson,
+      },
+    );
+  }
 
-    if (!_captureResponseEnabled(isErrorResponse)) return;
-    if (isErrorResponse) {
-      _logger.httpError(
-        source: 'http',
-        operation: operation,
-        target: url,
-        correlationId: requestId,
-        duration: sw?.elapsed,
-        config: _traceConfig,
-        meta: {
-          ...baseMeta,
-          NetworkLogRenderer.renderHintsKey: {
-            NetworkLogRenderer.hintPrintBody: settings.printErrorData,
-            NetworkLogRenderer.hintPrintHeaders: settings.printErrorHeaders,
-            NetworkLogRenderer.hintPrintMessage: settings.printErrorMessage,
-          },
-        },
-      );
-    } else {
-      _logger.httpResponse(
-        source: 'http',
-        operation: operation,
-        target: url,
-        correlationId: requestId,
-        duration: sw?.elapsed,
-        config: _traceConfig,
-        meta: {
-          ...baseMeta,
-          NetworkLogRenderer.renderHintsKey: {
-            NetworkLogRenderer.hintPrintBody: settings.printResponseData,
-            NetworkLogRenderer.hintPrintHeaders: settings.printResponseHeaders,
-            NetworkLogRenderer.hintPrintMessage: settings.printResponseMessage,
-          },
-        },
-      );
-    }
+  void _logErrorResponse(_PreparedResponse prepared) {
+    _logger.httpError(
+      source: 'http',
+      operation: prepared.operation,
+      target: prepared.target,
+      correlationId: prepared.requestId,
+      duration: prepared.duration,
+      config: capturedTraceConfig,
+      meta: {
+        ...prepared.meta,
+        NetworkLogRenderer.renderHintsKey: settings.errorRenderHints,
+      },
+    );
+  }
+
+  void _logSuccessResponse(_PreparedResponse prepared) {
+    _logger.httpResponse(
+      source: 'http',
+      operation: prepared.operation,
+      target: prepared.target,
+      correlationId: prepared.requestId,
+      duration: prepared.duration,
+      config: capturedTraceConfig,
+      meta: {
+        ...prepared.meta,
+        NetworkLogRenderer.renderHintsKey: settings.responseRenderHints,
+      },
+    );
   }
 }
+
+const _minErrorStatusCode = 400;
+const _maxErrorStatusCode = 599;
+const _unknownMethod = 'UNKNOWN';
+
+final class _TeedStreamedResponse extends StreamedResponse
+    implements BaseResponseWithUrl {
+  _TeedStreamedResponse(StreamedResponse source, Stream<List<int>> stream)
+      : url = source is BaseResponseWithUrl
+            ? (source as BaseResponseWithUrl).url
+            : source.request?.url ?? Uri(),
+        super(
+          stream,
+          source.statusCode,
+          contentLength: source.contentLength,
+          request: source.request,
+          headers: source.headers,
+          isRedirect: source.isRedirect,
+          persistentConnection: source.persistentConnection,
+          reasonPhrase: source.reasonPhrase,
+        );
+
+  @override
+  final Uri url;
+}
+
+typedef _PreparedResponse = ({
+  String operation,
+  String target,
+  String? requestId,
+  Duration? duration,
+  Map<String, Object?> meta,
+});

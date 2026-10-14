@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'exceptions.dart';
+import 'repo_paths.dart';
 
 const String _rootChangelogPath = 'CHANGELOG.md';
 const String _headingPrefix = '## ';
@@ -99,16 +100,18 @@ final class ChangelogPropagator {
   /// The root changelog's section for [version], heading line included.
   ///
   /// The section runs to the next `## ` heading, with trailing blank lines
-  /// removed. Matching requires the heading line to read exactly
-  /// `## <version>`.
+  /// removed. The heading line must read `## <version>` exactly or continue
+  /// after a space, as in `## <version> - 2026-01-01`, so `7.1.0` never
+  /// matches `## 7.1.0-dev.4`.
   ///
-  /// Throws [ChangelogException] when no heading starts with `## <version>`,
-  /// or when one does but no heading matches it exactly.
+  /// Throws [ChangelogException] when no heading matches [version].
   String extractSection(String version) {
     final lines = _splitLines(_rootChangelog().readAsStringSync());
     final heading = '$_headingPrefix$version';
+    bool isVersionHeading(String line) =>
+        line == heading || line.startsWith('$heading ');
 
-    if (!lines.any((line) => line.startsWith(heading))) {
+    if (!lines.any(isVersionHeading)) {
       throw ChangelogException(
         'Version $version not found in root CHANGELOG',
       );
@@ -121,7 +124,7 @@ final class ChangelogPropagator {
         if (inSection) {
           break;
         }
-        if (line == heading) {
+        if (isVersionHeading(line)) {
           inSection = true;
         }
       }
@@ -132,9 +135,6 @@ final class ChangelogPropagator {
 
     while (section.isNotEmpty && section.last.isEmpty) {
       section.removeLast();
-    }
-    if (section.isEmpty) {
-      throw ChangelogException('Could not extract section for $version');
     }
     return section.join('\n');
   }
@@ -181,7 +181,7 @@ final class ChangelogPropagator {
     final skipped = <String>[];
     final missing = <String>[];
 
-    for (final directory in _packageDirectories()) {
+    for (final directory in packageDirectories(repoRoot)) {
       final changelog = File(p.join(directory, _rootChangelogPath));
       final relative = _relative(changelog.path);
 
@@ -200,7 +200,7 @@ final class ChangelogPropagator {
 
       final heading = '$_headingPrefix$target';
       final hasSection = _splitLines(changelog.readAsStringSync())
-          .any((line) => line.startsWith(heading));
+          .any((line) => line == heading || line.startsWith('$heading '));
       if (hasSection) {
         out.writeln('[SKIP] $relative already has $target');
         skipped.add(relative);
@@ -232,27 +232,14 @@ final class ChangelogPropagator {
     return file;
   }
 
-  List<String> _packageDirectories() {
-    final packages = Directory(p.join(repoRoot, 'packages'));
-    if (!packages.existsSync()) {
-      return const [];
-    }
-    return packages
-        .listSync()
-        .whereType<Directory>()
-        .map((directory) => directory.path)
-        .toList()
-      ..sort();
-  }
-
   String _relative(String path) => p.relative(path, from: repoRoot);
 }
 
 /// Parses [arguments], propagates the changelog, and returns the exit code.
 ///
 /// Accepts `--full-copy`, `--yes`, `--version <ver>`, and `--help`. Returns 1
-/// for a failure it reports and 2 for an argument it does not accept. Without
-/// [confirm] a `--full-copy` run requires `--yes`.
+/// for a failure it reports or a declined `--full-copy`, and 2 for an argument
+/// it does not accept. Without [confirm] a `--full-copy` run requires `--yes`.
 int runChangelogPropagation({
   required String repoRoot,
   required List<String> arguments,
@@ -295,12 +282,12 @@ int runChangelogPropagation({
   );
 
   try {
-    propagator.run(
+    final result = propagator.run(
       mode: mode,
       version: version,
       confirm: forceYes ? _alwaysConfirm : confirm,
     );
-    return 0;
+    return result.aborted ? 1 : 0;
   } on ToolException catch (e) {
     errors.writeln('[ERR] ${e.message}');
     return 1;

@@ -1118,4 +1118,297 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get composerEditAndResend => 'Изменить и отправить';
+
+  @override
+  String get settingsDisplay => 'Отображение';
+
+  @override
+  String get relativeTime => 'Относительное время';
+
+  @override
+  String get absoluteTime => 'Абсолютное время';
+
+  @override
+  String get compactUrls => 'Короткие URL';
+
+  @override
+  String get settingsTools => 'Инструменты';
+
+  @override
+  String get settingsAdvanced => 'Дополнительно';
+
+  @override
+  String get forwardErrorsToDeveloperLog =>
+      'Передавать ошибки в dart:developer';
+
+  @override
+  String get historyCapacity => 'Объём истории';
+
+  @override
+  String get historyCapacityDesc => 'Сколько логов хранить в памяти';
+
+  @override
+  String get consoleTruncate => 'Обрезка в консоли';
+
+  @override
+  String get consoleTruncateDesc => 'Макс. символов в строке консоли';
+
+  @override
+  String get captureMode => 'Режим захвата';
+
+  @override
+  String get captureModeDesc => 'Полезные значения или максимальная изоляция';
+
+  @override
+  String get captureModeBalancedDesc =>
+      'Защищённые форматтеры с ограниченным выводом';
+
+  @override
+  String get captureModeStrict => 'Строгий';
+
+  @override
+  String get captureModeStrictDesc =>
+      'Никогда не запускать форматтеры приложения';
+
+  @override
+  String get profileBalanced => 'Сбалансированный';
+
+  @override
+  String get resourceProfile => 'Профиль ресурсов';
+
+  @override
+  String get resourceProfileDesc =>
+      'Лимиты захвата, памяти, импорта и экспорта';
+
+  @override
+  String get resourceProfileConstrained => 'Ограниченный';
+
+  @override
+  String get resourceProfileConstrainedDesc =>
+      'Меньше памяти для долгих сессий';
+
+  @override
+  String get resourceProfileBalancedDesc =>
+      'Полезная диагностика с ограниченными затратами';
+
+  @override
+  String get resourceProfileExtended => 'Расширенный';
+
+  @override
+  String get resourceProfileExtendedDesc =>
+      'Более крупные контролируемые внутренние передачи';
+
+  @override
+  String get processingProfile => 'Профиль обработки';
+
+  @override
+  String get processingProfileDesc =>
+      'Отзывчивость и пакетная пропускная способность';
+
+  @override
+  String get processingProfileResponsive => 'Отзывчивый';
+
+  @override
+  String get processingProfileResponsiveDesc =>
+      'Чаще уступать поток, чтобы интерфейс оставался плавным';
+
+  @override
+  String get processingProfileBalancedDesc => 'Планирование общего назначения';
+
+  @override
+  String get processingProfileThroughput => 'Пропускной';
+
+  @override
+  String get processingProfileThroughputDesc =>
+      'Крупные пакеты для более быстрой передачи';
+
+  @override
+  String get limitInvalidValue => 'Введите неотрицательное целое число';
+
+  @override
+  String get limitZeroDisables => '0 отключает этот лимит';
+
+  @override
+  String get apply => 'Применить';
+
+  @override
+  String logCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count лога',
+      many: '$count логов',
+      few: '$count лога',
+      one: '$count лог',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String warningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count предупреждения',
+      many: '$count предупреждений',
+      few: '$count предупреждения',
+      one: '$count предупреждение',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ошибки',
+      many: '$count ошибок',
+      few: '$count ошибки',
+      one: '$count ошибка',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filteredLogCount(int filtered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$filtered / $total лога',
+      many: '$filtered / $total логов',
+      few: '$filtered / $total лога',
+      one: '$filtered / $total лог',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contentProcessingError => 'Ошибка обработки содержимого';
+
+  @override
+  String get failedToLoadLogContent => 'Не удалось загрузить содержимое логов';
+
+  @override
+  String get unknownContentProcessingError =>
+      'Неизвестная ошибка при обработке содержимого';
+
+  @override
+  String get contentEmptyError => 'Содержимое пустое';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'Содержимое превышает безопасные лимиты импорта';
+
+  @override
+  String get correlationIdShort => 'Корр';
+
+  @override
+  String get transactionIdShort => 'Транз';
+
+  @override
+  String get columnType => 'Тип';
+
+  @override
+  String get columnTime => 'Время';
+
+  @override
+  String get columnMessage => 'Сообщение';
+
+  @override
+  String sortColumnAscending(String column) {
+    return 'Сортировать по столбцу «$column», по возрастанию';
+  }
+
+  @override
+  String sortColumnDescending(String column) {
+    return 'Сортировать по столбцу «$column», по убыванию';
+  }
+
+  @override
+  String sortColumnUnsorted(String column) {
+    return 'Сортировать по столбцу «$column», не отсортировано';
+  }
+
+  @override
+  String resizeColumn(String column) {
+    return 'Изменить ширину столбца «$column»';
+  }
+
+  @override
+  String get resumeLiveTail => 'Возобновить живой поток';
+
+  @override
+  String get pauseLiveTail => 'Приостановить живой поток';
+
+  @override
+  String get liveTailLive => 'ОНЛАЙН';
+
+  @override
+  String get liveTailPaused => 'ПАУЗА';
+
+  @override
+  String get open => 'Открыть';
+
+  @override
+  String filterByType(String type) {
+    return 'Фильтровать по типу $type';
+  }
+
+  @override
+  String httpStatus(int code) {
+    return 'HTTP-статус $code';
+  }
+
+  @override
+  String get composerBodyNone => 'Нет';
+
+  @override
+  String get composerBodyText => 'Текст';
+
+  @override
+  String get composerBodyForm => 'Форма';
+
+  @override
+  String get composerBodyMultipart => 'Multipart';
+
+  @override
+  String get jsonViewer => 'Просмотр JSON';
+
+  @override
+  String get detail => 'Подробности';
+
+  @override
+  String copyKey(String key) {
+    return 'Скопировать $key';
+  }
+
+  @override
+  String get copyToClipboardFailed => 'Не удалось скопировать в буфер обмена';
+
+  @override
+  String pluginErrorTitle(String pluginId) {
+    return 'Ошибка плагина: $pluginId';
+  }
+
+  @override
+  String get pluginRenderFailed => 'Не удалось отобразить экран плагина';
+
+  @override
+  String get stackTrace => 'Стек вызовов';
+
+  @override
+  String get resizeDivider => 'Изменить размер разделителя';
+
+  @override
+  String get sessionLogsLoadFailed => 'Не удалось загрузить логи сессии';
+
+  @override
+  String get dailySessionsLoadFailed => 'Не удалось загрузить сессии';
+
+  @override
+  String get dailySessionsClearFailed => 'Не удалось очистить сессии';
+
+  @override
+  String get exception => 'Исключение';
 }

@@ -65,7 +65,8 @@ extension ISpectFlutter on ISpectLogger {
   /// the platform:
   /// - **Web**: Uses `print()`.
   /// - **iOS/macOS**: Uses `log()` for structured logging.
-  /// - **Other platforms**: Uses `debugPrint()` for efficient log handling.
+  /// - **Other platforms**: Uses `print()`, plus `log()` for a forwarded
+  ///   `error` or `stackTrace`.
   ///
   /// - `message`: The log message to be displayed.
   static void _defaultFlutterOutput(

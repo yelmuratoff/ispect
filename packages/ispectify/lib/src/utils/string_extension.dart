@@ -1,3 +1,8 @@
+import 'dart:collection';
+
+import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
+import 'package:ispectify/src/utils/json_value_normalizer.dart';
+
 /// Default truncation limit for strings across the package.
 const int kDefaultStringTruncateLimit = 10000;
 
@@ -63,18 +68,52 @@ String truncateString(
 ///
 /// Non-string, non-collection values pass through unchanged.
 /// Returns `null` for `null` input.
-Object? truncateLeaves(Object? input, {required int maxLength}) {
+///
+/// A collection nested [maxDepth] levels deep (default
+/// [DiagnosticResourceLimits.maxTraversalDepth] of
+/// [DiagnosticResourceLimits.balanced]) is replaced with
+/// [JsonValueNormalizer.maxDepthReached], and a collection that contains
+/// itself with [JsonValueNormalizer.circularReference].
+Object? truncateLeaves(
+  Object? input, {
+  required int maxLength,
+  int? maxDepth,
+}) =>
+    _truncateLeaves(
+      input,
+      maxLength: maxLength,
+      depth: 0,
+      maxDepth: maxDepth ?? DiagnosticResourceLimits.balanced.maxTraversalDepth,
+      ancestors: HashSet<Object>.identity(),
+    );
+
+Object? _truncateLeaves(
+  Object? input, {
+  required int maxLength,
+  required int depth,
+  required int maxDepth,
+  required Set<Object> ancestors,
+}) {
   if (input == null) return null;
   if (input is String) return truncateString(input, maxLength: maxLength);
-  if (input is Map) {
-    return input.map(
-      (k, v) => MapEntry(k.toString(), truncateLeaves(v, maxLength: maxLength)),
-    );
+  if (input is! Map && input is! Iterable) return input;
+  if (depth >= maxDepth) return JsonValueNormalizer.maxDepthReached;
+  if (!ancestors.add(input)) return JsonValueNormalizer.circularReference;
+  Object? child(Object? value) => _truncateLeaves(
+        value,
+        maxLength: maxLength,
+        depth: depth + 1,
+        maxDepth: maxDepth,
+        ancestors: ancestors,
+      );
+  try {
+    if (input is Map) {
+      return input.map((k, v) => MapEntry(k.toString(), child(v)));
+    }
+    return (input as Iterable<Object?>).map(child).toList();
+  } finally {
+    ancestors.remove(input);
   }
-  if (input is Iterable) {
-    return input.map((e) => truncateLeaves(e, maxLength: maxLength)).toList();
-  }
-  return input;
 }
 
 /// An extension on nullable [String] providing truncation.

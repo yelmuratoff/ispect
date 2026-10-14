@@ -706,7 +706,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'WebSocket қабылданған хабарламалар журналы';
 
   @override
-  String get wsStateLogDesc => 'WebSocket connection state changed';
+  String get wsStateLogDesc => 'WebSocket қосылымы күйінің өзгерістер журналы';
 
   @override
   String get dbQueryLogDesc => 'Дерекқор сұранымдары журналы';
@@ -1116,4 +1116,288 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get composerEditAndResend => 'Өңдеп қайта жіберу';
+
+  @override
+  String get settingsDisplay => 'Көрсету';
+
+  @override
+  String get relativeTime => 'Салыстырмалы уақыт';
+
+  @override
+  String get absoluteTime => 'Абсолютті уақыт';
+
+  @override
+  String get compactUrls => 'Қысқа URL';
+
+  @override
+  String get settingsTools => 'Құралдар';
+
+  @override
+  String get settingsAdvanced => 'Қосымша';
+
+  @override
+  String get forwardErrorsToDeveloperLog =>
+      'Қателерді dart:developer-ге жіберу';
+
+  @override
+  String get historyCapacity => 'Тарих сыйымдылығы';
+
+  @override
+  String get historyCapacityDesc => 'Жадта сақталатын логтар саны';
+
+  @override
+  String get consoleTruncate => 'Консольде қысқарту';
+
+  @override
+  String get consoleTruncateDesc => 'Консоль жолындағы ең көп таңба саны';
+
+  @override
+  String get captureMode => 'Жазу режимі';
+
+  @override
+  String get captureModeDesc => 'Пайдалы мәндер немесе барынша оқшаулау';
+
+  @override
+  String get captureModeBalancedDesc =>
+      'Шығысы шектелген қорғалған форматтағыштар';
+
+  @override
+  String get captureModeStrict => 'Қатаң';
+
+  @override
+  String get captureModeStrictDesc =>
+      'Қолданба форматтағыштарын ешқашан іске қоспау';
+
+  @override
+  String get profileBalanced => 'Теңгерімді';
+
+  @override
+  String get resourceProfile => 'Ресурс профилі';
+
+  @override
+  String get resourceProfileDesc => 'Жазу, жад, импорт және экспорт шектеулері';
+
+  @override
+  String get resourceProfileConstrained => 'Шектеулі';
+
+  @override
+  String get resourceProfileConstrainedDesc =>
+      'Ұзақ сессиялар үшін жадты аз пайдалану';
+
+  @override
+  String get resourceProfileBalancedDesc =>
+      'Шығыны шектелген пайдалы диагностика';
+
+  @override
+  String get resourceProfileExtended => 'Кеңейтілген';
+
+  @override
+  String get resourceProfileExtendedDesc =>
+      'Бақыланатын үлкенірек ішкі берілімдер';
+
+  @override
+  String get processingProfile => 'Өңдеу профилі';
+
+  @override
+  String get processingProfileDesc =>
+      'Жауап беру жылдамдығы және пакеттік өткізу қабілеті';
+
+  @override
+  String get processingProfileResponsive => 'Жылдам жауап';
+
+  @override
+  String get processingProfileResponsiveDesc =>
+      'Интерфейс бірқалыпты жұмыс істеуі үшін жиі кезек беру';
+
+  @override
+  String get processingProfileBalancedDesc => 'Жалпы мақсаттағы жоспарлау';
+
+  @override
+  String get processingProfileThroughput => 'Өткізу қабілеті';
+
+  @override
+  String get processingProfileThroughputDesc =>
+      'Жылдам беру үшін үлкенірек пакеттер';
+
+  @override
+  String get limitInvalidValue => 'Теріс емес бүтін сан енгізіңіз';
+
+  @override
+  String get limitZeroDisables => '0 бұл шектеуді өшіреді';
+
+  @override
+  String get apply => 'Қолдану';
+
+  @override
+  String logCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count лог',
+      one: '$count лог',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String warningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ескерту',
+      one: '$count ескерту',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count қате',
+      one: '$count қате',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filteredLogCount(int filtered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$filtered / $total лог',
+      one: '$filtered / $total лог',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contentProcessingError => 'Мазмұнды өңдеу қатесі';
+
+  @override
+  String get failedToLoadLogContent => 'Лог мазмұнын жүктеу мүмкін болмады';
+
+  @override
+  String get unknownContentProcessingError =>
+      'Мазмұнды өңдеу кезінде белгісіз қате орын алды';
+
+  @override
+  String get contentEmptyError => 'Мазмұн бос';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'Мазмұн импорттың қауіпсіз шектеулерінен асып кетті';
+
+  @override
+  String get correlationIdShort => 'Корр';
+
+  @override
+  String get transactionIdShort => 'Транз';
+
+  @override
+  String get columnType => 'Түрі';
+
+  @override
+  String get columnTime => 'Уақыт';
+
+  @override
+  String get columnMessage => 'Хабарлама';
+
+  @override
+  String sortColumnAscending(String column) {
+    return '«$column» бағаны бойынша сұрыптау, өсу ретімен';
+  }
+
+  @override
+  String sortColumnDescending(String column) {
+    return '«$column» бағаны бойынша сұрыптау, кему ретімен';
+  }
+
+  @override
+  String sortColumnUnsorted(String column) {
+    return '«$column» бағаны бойынша сұрыптау, сұрыпталмаған';
+  }
+
+  @override
+  String resizeColumn(String column) {
+    return '«$column» бағанының енін өзгерту';
+  }
+
+  @override
+  String get resumeLiveTail => 'Тікелей ағынды жалғастыру';
+
+  @override
+  String get pauseLiveTail => 'Тікелей ағынды кідірту';
+
+  @override
+  String get liveTailLive => 'ТІКЕЛЕЙ';
+
+  @override
+  String get liveTailPaused => 'КІДІРІС';
+
+  @override
+  String get open => 'Ашу';
+
+  @override
+  String filterByType(String type) {
+    return '$type түрі бойынша сүзу';
+  }
+
+  @override
+  String httpStatus(int code) {
+    return 'HTTP күйі $code';
+  }
+
+  @override
+  String get composerBodyNone => 'Жоқ';
+
+  @override
+  String get composerBodyText => 'Мәтін';
+
+  @override
+  String get composerBodyForm => 'Форма';
+
+  @override
+  String get composerBodyMultipart => 'Multipart';
+
+  @override
+  String get jsonViewer => 'JSON көру';
+
+  @override
+  String get detail => 'Толығырақ';
+
+  @override
+  String copyKey(String key) {
+    return '$key көшіру';
+  }
+
+  @override
+  String get copyToClipboardFailed => 'Алмасу буферіне көшіру мүмкін болмады';
+
+  @override
+  String pluginErrorTitle(String pluginId) {
+    return 'Плагин қатесі: $pluginId';
+  }
+
+  @override
+  String get pluginRenderFailed => 'Плагин экранын көрсету мүмкін болмады';
+
+  @override
+  String get stackTrace => 'Шақырулар стегі';
+
+  @override
+  String get resizeDivider => 'Бөлгіштің өлшемін өзгерту';
+
+  @override
+  String get sessionLogsLoadFailed => 'Сессия логтарын жүктеу мүмкін болмады';
+
+  @override
+  String get dailySessionsLoadFailed => 'Сессияларды жүктеу мүмкін болмады';
+
+  @override
+  String get dailySessionsClearFailed => 'Сессияларды тазалау мүмкін болмады';
+
+  @override
+  String get exception => 'Ерекшелік';
 }

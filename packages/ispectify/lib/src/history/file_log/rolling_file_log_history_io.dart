@@ -52,7 +52,11 @@ final class RollingFileLogHistory implements FileLogHistory {
     FutureOr<void> Function(File file, String operation)? ioHook,
     int? archiveCompressedByteLimit,
     bool? providerDirectoryRequiresOwnerOnlyProtection,
-    _FileLogDiagnosticSink? diagnosticSink,
+    void Function(
+      String message, {
+      Object? error,
+      StackTrace? stackTrace,
+    })? diagnosticSink,
   }) : this._(
           loggerOptions,
           directoryProvider: directoryProvider,
@@ -188,6 +192,8 @@ final class RollingFileLogHistory implements FileLogHistory {
         pen: captured.pen,
         additionalData: captured.additionalData,
         stackTrace: captured.stackTrace,
+        captureMode: captured.captureMode,
+        resourceLimits: captured.resourceLimits,
       );
     } else if (data is ISpectLogException && captured.exception is Exception) {
       storedData = ISpectLogException(
@@ -201,6 +207,8 @@ final class RollingFileLogHistory implements FileLogHistory {
         pen: captured.pen,
         additionalData: captured.additionalData,
         stackTrace: captured.stackTrace,
+        captureMode: captured.captureMode,
+        resourceLimits: captured.resourceLimits,
       );
     } else {
       storedData = ISpectLogData(
@@ -214,6 +222,8 @@ final class RollingFileLogHistory implements FileLogHistory {
         exception: captured.exception,
         error: captured.error,
         stackTrace: captured.stackTrace,
+        captureMode: captured.captureMode,
+        resourceLimits: captured.resourceLimits,
       );
     }
     if (!_buffer.add(storedData)) return;
@@ -282,7 +292,7 @@ final class RollingFileLogHistory implements FileLogHistory {
 
   Future<void> _runBackgroundFlush() async {
     try {
-      await _enqueueFlush();
+      await _serialized(_flushPending);
     } on FileLogHistoryException catch (error) {
       _reportError(error);
     }
@@ -402,22 +412,37 @@ final class RollingFileLogHistory implements FileLogHistory {
     if (!_enabled) return Future<void>.value();
     _autoSaveTimer?.cancel();
     _autoSaveTimer = null;
-    return _enqueueFlush();
+    return _serialized(_flushPending);
   }
 
-  Future<void> _enqueueFlush() {
-    final completer = Completer<void>();
+  Future<T> _serialized<T>(Future<T> Function() operation) {
+    final completer = Completer<T>();
     final previous = _operationChain;
     _operationChain = () async {
       await previous;
       try {
-        await _flushPending();
-        completer.complete();
+        completer.complete(await operation());
       } catch (error, stackTrace) {
         completer.completeError(error, stackTrace);
       }
     }();
     return completer.future;
+  }
+
+  Future<T> _guardFileSystem<T>(
+    String operation,
+    Future<T> Function() action,
+  ) async {
+    try {
+      return await action();
+    } on FileSystemException catch (error, stackTrace) {
+      throw FileLogStorageException(
+        operation: operation,
+        path: _store.resolvedSessionDirectory,
+        cause: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   Future<void> _flushPending() async {
@@ -426,14 +451,12 @@ final class RollingFileLogHistory implements FileLogHistory {
     _pending.clear();
     try {
       await _ensureInitialized();
-      for (final pending in snapshot.values.toList(growable: false)) {
-        final encoded = _codec.encode(
-          pending.log,
-          sessionId: pending.sessionId,
-          maxBytes: _limits.recordBytes,
-        );
-        await _appendRecord(pending.time, encoded.bytes);
-        snapshot.remove(pending.id);
+      final byDate = <String, List<_PendingLog>>{};
+      for (final pending in snapshot.values) {
+        (byDate[FileLogLayout.dateName(pending.time)] ??= []).add(pending);
+      }
+      for (final group in byDate.values) {
+        await _appendRecords(group, snapshot);
       }
       await _retention.apply();
     } catch (error, stackTrace) {
@@ -599,17 +622,15 @@ final class RollingFileLogHistory implements FileLogHistory {
     var lineStart = 0;
     for (var index = 0; index <= input.length; index++) {
       if (index != input.length && input.codeUnitAt(index) != 0x0A) continue;
-      final lineCharacters = index - lineStart;
-      if (lineCharacters > _limits.recordBytes ||
-          _utf8RangeExceeds(
-            input,
-            lineStart,
-            index,
-            _limits.recordBytes,
-          )) {
+      if (index - lineStart > _limits.recordBytes) {
         throw const FileLogLimitException(operation: 'importFromJson');
       }
-      final line = input.substring(lineStart, index).trim();
+      final rawLine = input.substring(lineStart, index);
+      if (LogExportOutput.utf8Length(rawLine, limit: _limits.recordBytes) >
+          _limits.recordBytes) {
+        throw const FileLogLimitException(operation: 'importFromJson');
+      }
+      final line = rawLine.trim();
       lineStart = index + 1;
       if (line.isEmpty) continue;
       if (logs.length >= maxImportRecords) {
@@ -629,47 +650,27 @@ final class RollingFileLogHistory implements FileLogHistory {
     return logs;
   }
 
-  bool _utf8RangeExceeds(
-    String input,
-    int start,
-    int end,
-    int maxBytes,
-  ) {
-    var bytes = 0;
-    for (var index = start; index < end; index++) {
-      final codeUnit = input.codeUnitAt(index);
-      if (codeUnit <= 0x7f) {
-        bytes++;
-      } else if (codeUnit <= 0x7ff) {
-        bytes += 2;
-      } else if (codeUnit >= 0xd800 &&
-          codeUnit <= 0xdbff &&
-          index + 1 < end &&
-          input.codeUnitAt(index + 1) >= 0xdc00 &&
-          input.codeUnitAt(index + 1) <= 0xdfff) {
-        bytes += 4;
-        index++;
-      } else {
-        bytes += 3;
+  @override
+  Future<void> clearAllFileStorage() {
+    if (!_enabled) return Future<void>.value();
+    return _serialized(() async {
+      await _ensureInitialized();
+      for (final artifact in await _retention.scanArtifacts()) {
+        await _retention.deleteArtifact(artifact);
       }
-      if (bytes > maxBytes) return true;
-    }
-    return false;
+      await _retention.deleteEmptyDateDirectories();
+    });
   }
 
   @override
-  Future<void> clearAllFileStorage() async {
-    if (!_enabled) return;
-    await _ensureInitialized();
-    for (final artifact in await _retention.scanArtifacts()) {
-      await _retention.deleteArtifact(artifact);
-    }
-    await _retention.deleteEmptyDateDirectories();
+  Future<void> clearDateStorage(DateTime date) {
+    if (!_enabled) return Future<void>.value();
+    return _serialized(
+      () => _guardFileSystem('clearDateStorage', () => _clearDateStorage(date)),
+    );
   }
 
-  @override
-  Future<void> clearDateStorage(DateTime date) async {
-    if (!_enabled) return;
+  Future<void> _clearDateStorage(DateTime date) async {
     await _ensureInitialized();
     final directory = await _store.validatedDateDirectory(
       _store.dateDirectoryPath(date),
@@ -711,8 +712,14 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   @override
-  Future<List<DateTime>> getAvailableLogDates() async {
-    if (!_enabled) return const [];
+  Future<List<DateTime>> getAvailableLogDates() {
+    if (!_enabled) return Future<List<DateTime>>.value(const []);
+    return _serialized(
+      () => _guardFileSystem('getAvailableLogDates', _availableLogDates),
+    );
+  }
+
+  Future<List<DateTime>> _availableLogDates() async {
     await _ensureInitialized();
     final dates = <DateTime>[];
     final root = await _store.validatedSessionDirectory(
@@ -758,8 +765,14 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   @override
-  Future<int> getDateFileSize(DateTime date) async {
-    if (!_enabled) return 0;
+  Future<int> getDateFileSize(DateTime date) {
+    if (!_enabled) return Future<int>.value(0);
+    return _serialized(
+      () => _guardFileSystem('getDateFileSize', () => _dateFileSize(date)),
+    );
+  }
+
+  Future<int> _dateFileSize(DateTime date) async {
     await _ensureInitialized();
     var total = 0;
     final directory = await _store.validatedDateDirectory(
@@ -799,8 +812,12 @@ final class RollingFileLogHistory implements FileLogHistory {
       await getLogPathByDate(DateTime.now()) != '';
 
   @override
-  Future<List<ISpectLogData>> getLogsByDate(DateTime date) async {
-    if (!_enabled) return const [];
+  Future<List<ISpectLogData>> getLogsByDate(DateTime date) {
+    if (!_enabled) return Future<List<ISpectLogData>>.value(const []);
+    return _serialized(() => _logsByDate(date));
+  }
+
+  Future<List<ISpectLogData>> _logsByDate(DateTime date) async {
     await _ensureInitialized();
     final files = <File>[];
     final directory = await _store.validatedDateDirectory(
@@ -827,8 +844,12 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   @override
-  Future<String> getLogPathByDate(DateTime date) async {
-    if (!_enabled) return '';
+  Future<String> getLogPathByDate(DateTime date) {
+    if (!_enabled) return Future<String>.value('');
+    return _serialized(() => _logPathByDate(date));
+  }
+
+  Future<String> _logPathByDate(DateTime date) async {
     await _ensureInitialized();
     final directory = await _store.validatedDateDirectory(
       _store.dateDirectoryPath(date),
@@ -853,8 +874,12 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   @override
-  Future<List<ISpectLogData>> getLogsBySession(String sessionPath) async {
-    if (!_enabled) return const [];
+  Future<List<ISpectLogData>> getLogsBySession(String sessionPath) {
+    if (!_enabled) return Future<List<ISpectLogData>>.value(const []);
+    return _serialized(() => _logsBySession(sessionPath));
+  }
+
+  Future<List<ISpectLogData>> _logsBySession(String sessionPath) async {
     await _ensureInitialized();
     final type = await FileSystemEntity.type(
       sessionPath,
@@ -898,12 +923,20 @@ final class RollingFileLogHistory implements FileLogHistory {
   }
 
   @override
-  Future<SessionStatistics> getSessionStatistics() async {
-    final dates = await getAvailableLogDates();
+  Future<SessionStatistics> getSessionStatistics() =>
+      _serialized(_sessionStatistics);
+
+  Future<SessionStatistics> _sessionStatistics() async {
+    final dates = _enabled
+        ? await _guardFileSystem('getAvailableLogDates', _availableLogDates)
+        : const <DateTime>[];
     var totalSize = 0;
     var totalEntries = 0;
     for (final date in dates) {
-      totalSize += await getDateFileSize(date);
+      totalSize += await _guardFileSystem(
+        'getDateFileSize',
+        () => _dateFileSize(date),
+      );
       totalEntries += await _reader.countDateEntries(date);
     }
     return SessionStatistics(
@@ -961,7 +994,6 @@ final class RollingFileLogHistory implements FileLogHistory {
         ),
         FileLogLayout.segmentName(0),
       );
-      await _retention.apply();
     } on FileLogHistoryException {
       rethrow;
     } catch (error, stackTrace) {
@@ -971,9 +1003,87 @@ final class RollingFileLogHistory implements FileLogHistory {
         stackTrace: stackTrace,
       );
     }
+    try {
+      await _retention.apply();
+    } on FileLogHistoryException catch (error) {
+      _reportError(error);
+    } catch (error, stackTrace) {
+      _reportError(
+        FileLogStorageException(
+          operation: 'initializeRetention',
+          cause: error,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
   }
 
-  Future<void> _appendRecord(DateTime date, List<int> bytes) async {
+  Future<void> _appendRecords(
+    List<_PendingLog> group,
+    LinkedHashMap<String, _PendingLog> snapshot,
+  ) async {
+    _ActiveSegment? segment;
+    _OpenAppend? acquired;
+    final uncommitted = <String>[];
+    try {
+      for (final pending in group) {
+        final List<int> bytes;
+        try {
+          bytes = _codec
+              .encode(
+                pending.log,
+                sessionId: pending.sessionId,
+                maxBytes: _limits.recordBytes,
+              )
+              .bytes;
+        } on FileLogLimitException catch (error) {
+          snapshot.remove(pending.id);
+          _reportError(error);
+          continue;
+        }
+        segment ??= await _resolveActiveSegment(pending.time);
+        if (segment.length > 0 &&
+            segment.length + bytes.length > _options.maxFileSize) {
+          final full = acquired;
+          acquired = null;
+          if (full != null) {
+            await _commitAppend(full);
+            uncommitted
+              ..forEach(snapshot.remove)
+              ..clear();
+          }
+          segment.rotate(_store);
+        }
+        acquired ??= await _openAppend(segment);
+        await acquired.handle.writeFrom(bytes);
+        segment.length += bytes.length;
+        uncommitted.add(pending.id);
+      }
+      final last = acquired;
+      acquired = null;
+      if (last != null) {
+        await _commitAppend(last);
+        uncommitted.forEach(snapshot.remove);
+      }
+    } catch (_) {
+      final open = acquired;
+      if (open != null) {
+        try {
+          await _rollBackAppend(open);
+        } finally {
+          await open.handle.close();
+        }
+      }
+      rethrow;
+    }
+    if (segment != null &&
+        FileLogLayout.dateName(group.first.time) ==
+            FileLogLayout.dateName(DateTime.now())) {
+      _resolvedTodaySessionPath = segment.file.path;
+    }
+  }
+
+  Future<_ActiveSegment> _resolveActiveSegment(DateTime date) async {
     final directory = await _store.ensureDateDirectory(
       date,
       operation: 'appendRecord',
@@ -999,45 +1109,75 @@ final class RollingFileLogHistory implements FileLogHistory {
           FileLogLayout.segmentIndex(FileLogLayout.basename(artifact.path));
       if (index > highestIndex) highestIndex = index;
     }
-    var active = segments.isEmpty
+    final candidate = segments.isEmpty
         ? _store.nextSegment(directory, highestIndex)
         : segments.last;
-    final tailIsAppendable = await _repairIncompleteTail(active);
-    final currentLength = await _store.managedFileLength(
-      active,
-      operation: 'appendRecord',
-      allowMissing: true,
-    );
-    if (!tailIsAppendable ||
-        currentLength > 0 &&
-            currentLength + bytes.length > _options.maxFileSize) {
-      active = _store.nextSegment(directory, highestIndex);
-    }
-    await _store.validatedDateArtifact(
-      active,
+    final segment = _ActiveSegment(
       directory: directory,
+      file: candidate,
+      highestIndex: highestIndex,
+    );
+    if (await _repairIncompleteTail(candidate)) {
+      segment.length = await _store.managedFileLength(
+        candidate,
+        operation: 'appendRecord',
+        allowMissing: true,
+      );
+    } else {
+      segment.rotate(_store);
+    }
+    return segment;
+  }
+
+  Future<_OpenAppend> _openAppend(_ActiveSegment segment) async {
+    await _store.validatedDateArtifact(
+      segment.file,
+      directory: segment.directory,
       operation: 'appendRecord',
       allowMissing: true,
       allowedKinds: const {ManagedFileKind.segment},
     );
     final acquired = await _store.acquireAppendHandle(
-      active,
+      segment.file,
       operation: 'appendRecord',
       createIfMissing: true,
     );
     try {
-      await acquired.handle.writeFrom(bytes);
-      await acquired.handle.flush();
+      return _OpenAppend(acquired, await acquired.handle.length());
+    } catch (_) {
+      await acquired.handle.close();
+      rethrow;
+    }
+  }
+
+  Future<void> _commitAppend(_OpenAppend open) async {
+    try {
+      await open.handle.flush();
       await _store.validateWritablePath(
-        acquired,
+        open.acquired,
         operation: 'appendRecord',
       );
+    } catch (_) {
+      await _rollBackAppend(open);
+      rethrow;
     } finally {
-      await acquired.handle.close();
+      await open.handle.close();
     }
-    if (FileLogLayout.dateName(date) ==
-        FileLogLayout.dateName(DateTime.now())) {
-      _resolvedTodaySessionPath = active.path;
+  }
+
+  Future<void> _rollBackAppend(_OpenAppend open) async {
+    try {
+      await open.handle.truncate(open.startLength);
+      await open.handle.flush();
+    } on FileSystemException catch (error, stackTrace) {
+      _reportError(
+        FileLogStorageException(
+          operation: 'rollBackAppend',
+          path: open.acquired.file.path,
+          cause: error,
+          stackTrace: stackTrace,
+        ),
+      );
     }
   }
 
@@ -1089,6 +1229,39 @@ final class RollingFileLogHistory implements FileLogHistory {
     } finally {
       await handle.close();
     }
+  }
+}
+
+final class _OpenAppend {
+  const _OpenAppend(this.acquired, this.startLength);
+
+  final AcquiredWritableFile acquired;
+  final int startLength;
+
+  RandomAccessFile get handle => acquired.handle;
+}
+
+final class _ActiveSegment {
+  _ActiveSegment({
+    required this.directory,
+    required this.file,
+    required int highestIndex,
+  }) : _highestIndex = _maxIndex(highestIndex, file);
+
+  final Directory directory;
+  File file;
+  int length = 0;
+  int _highestIndex;
+
+  static int _maxIndex(int highestIndex, File file) {
+    final index = FileLogLayout.segmentIndex(FileLogLayout.basename(file.path));
+    return index > highestIndex ? index : highestIndex;
+  }
+
+  void rotate(ManagedLogStore store) {
+    file = store.nextSegment(directory, _highestIndex);
+    _highestIndex++;
+    length = 0;
   }
 }
 

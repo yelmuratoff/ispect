@@ -236,13 +236,74 @@ dev_dependencies:
       );
     });
 
-    test('ignores constraints that do not use a caret', () {
+    test('ignores a path dependency, which declares no version', () {
       final root = _writeRepo(
         _repoWith({
           'packages/alpha/pubspec.yaml': _pubspec(
             name: 'alpha',
-            body: '\ndependencies:\n  beta:\n    path: ../beta\n'
-                '  gamma: any\n',
+            body: '\ndependencies:\n  beta:\n    path: ../beta\n',
+          ),
+        }),
+      );
+
+      expect(_dartFindings(root), isEmpty);
+    });
+
+    for (final (form, constraint) in [
+      ('an exact', _stale),
+      ('an exact current', _version),
+      ('a range', "'>=$_stale <8.0.0'"),
+      ('an unconstrained', 'any'),
+    ]) {
+      test('flags $form constraint that is not ^VERSION', () {
+        final root = _writeRepo(
+          _repoWith({
+            'packages/alpha/pubspec.yaml': _pubspec(
+              name: 'alpha',
+              body: '\ndependencies:\n  beta: $constraint\n',
+            ),
+          }),
+        );
+
+        final found = _dartFindings(root);
+        expect(found, hasLength(1));
+        expect(found.single.dependency, 'beta');
+        expect(found.single.constraint, isNot('^$_version'));
+      });
+    }
+
+    test('flags a bare entry, which pub reads as any', () {
+      final root = _writeRepo(
+        _repoWith({
+          'packages/alpha/pubspec.yaml': _pubspec(
+            name: 'alpha',
+            body: '\ndependencies:\n  beta:\n',
+          ),
+        }),
+      );
+
+      expect(_dartPairs(_dartFindings(root)), ['beta any']);
+    });
+
+    test('flags an exact version written in the long hosted form', () {
+      final root = _writeRepo(
+        _repoWith({
+          'packages/alpha/pubspec.yaml': _pubspec(
+            name: 'alpha',
+            body: '\ndependencies:\n  beta: {version: $_version}\n',
+          ),
+        }),
+      );
+
+      expect(_dartPairs(_dartFindings(root)), ['beta $_version']);
+    });
+
+    test('accepts ^VERSION written in the long hosted form', () {
+      final root = _writeRepo(
+        _repoWith({
+          'packages/alpha/pubspec.yaml': _pubspec(
+            name: 'alpha',
+            body: '\ndependencies:\n  beta:\n    version: ^$_version\n',
           ),
         }),
       );

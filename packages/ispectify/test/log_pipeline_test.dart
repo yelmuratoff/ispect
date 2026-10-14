@@ -75,6 +75,46 @@ void main() {
       await sub.cancel();
     });
 
+    test('skips rendering entries below the console level', () {
+      final formatter = _CountingEntryFormatter();
+      final output = <String>[];
+      LogPipeline(
+        streamController: streamController,
+        options: ISpectLoggerOptions(),
+        consoleLogger: ISpectBaseLogger(
+          settings: ConsoleSettings(
+            level: LogLevel.warning,
+            formatter: formatter,
+          ),
+          output: (message, {logLevel, error, stackTrace, time}) =>
+              output.add(message),
+        ),
+        history: history,
+      )
+        ..dispatch(ISpectLogData('info', logLevel: LogLevel.info))
+        ..dispatch(ISpectLogData('untyped'))
+        ..dispatch(ISpectLogData('warning', logLevel: LogLevel.warning));
+
+      expect(formatter.calls, 1);
+      expect(output, hasLength(1));
+      expect(output.single, contains('warning'));
+    });
+
+    test('skips rendering when the console logger is disabled', () {
+      final formatter = _CountingEntryFormatter();
+      LogPipeline(
+        streamController: streamController,
+        options: ISpectLoggerOptions(),
+        consoleLogger: ISpectBaseLogger(
+          settings: ConsoleSettings(enabled: false, formatter: formatter),
+          output: (message, {logLevel, error, stackTrace, time}) {},
+        ),
+        history: history,
+      ).dispatch(ISpectLogData('error', logLevel: LogLevel.error));
+
+      expect(formatter.calls, 0);
+    });
+
     test('update(filter: ...) changes filtering behavior', () {
       final filter = ISpectFilter(logTypeKeys: ['keep']);
       pipeline.update(filter: filter);
@@ -210,6 +250,16 @@ void main() {
       expect(payload, endsWith(LogExportOutput.truncatedMarker));
     });
   });
+}
+
+final class _CountingEntryFormatter implements ILogEntryFormatter {
+  int calls = 0;
+
+  @override
+  String format(ISpectLogData data, ConsoleSettings settings) {
+    calls++;
+    return '${data.message}';
+  }
 }
 
 final class _RecordingHistory implements ILogHistory {

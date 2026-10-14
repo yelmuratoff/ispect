@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:ispectify/ispectify.dart';
@@ -90,6 +91,10 @@ final class NetworkPayloadSanitizer {
   }
 
   /// Returns null if the headers map is empty after sanitization.
+  @Deprecated(
+    'Use headersMap and check isEmpty at the call site. '
+    'Will be removed in 8.0.0.',
+  )
   Map<String, dynamic>? headersOrNull(
     Map<dynamic, dynamic>? headers, {
     required bool enableRedaction,
@@ -198,6 +203,10 @@ final class NetworkPayloadSanitizer {
 
   /// Ensures the value is represented as a string-keyed map. Non-map values are
   /// wrapped in `{ 'data': value }`.
+  @Deprecated(
+    'Use NetworkPayloadSanitizer.toStringKeyMap for map values. '
+    'Will be removed in 8.0.0.',
+  )
   Map<String, dynamic> ensureMap(Object? value) {
     final bounded = _boundedSnapshot(
       value,
@@ -216,6 +225,10 @@ final class NetworkPayloadSanitizer {
   ///
   /// Also available as [toStringKeyMap] for call sites without a sanitizer
   /// instance (e.g. data serialization classes).
+  @Deprecated(
+    'Use NetworkPayloadSanitizer.toStringKeyMap instead. '
+    'Will be removed in 8.0.0.',
+  )
   Map<String, dynamic> stringKeyMap(Map<dynamic, dynamic>? input) =>
       toStringKeyMap(input, resourceLimits: _resourceLimits);
 
@@ -246,6 +259,9 @@ final class NetworkPayloadSanitizer {
   }
 
   /// Returns null when the provided map is null or empty; otherwise returns the map.
+  @Deprecated(
+    'Check isEmpty at the call site instead. Will be removed in 8.0.0.',
+  )
   Map<K, V>? nullIfEmpty<K, V>(Map<K, V>? map) =>
       map == null || map.isEmpty ? null : map;
 
@@ -282,6 +298,40 @@ final class NetworkPayloadSanitizer {
     }
   }
 
+  Object? _decodeJsonBody(String value) {
+    Object? decode({required int maxNodes, required int maxCollectionItems}) =>
+        BoundedJsonDecoder.decode(
+          value,
+          maxCharacters: _resourceLimits.maxCapturedValueBytes,
+          maxEncodedBytes: _resourceLimits.maxCapturedValueBytes,
+          maxDepth: _resourceLimits.maxTraversalDepth,
+          maxNodes: maxNodes,
+          maxCollectionItems: maxCollectionItems,
+        );
+
+    try {
+      return decode(
+        maxNodes: _resourceLimits.maxTraversalNodes,
+        maxCollectionItems: _resourceLimits.maxCollectionItems,
+      );
+    } on BoundedJsonException catch (error) {
+      if (error.reason != BoundedJsonRejection.collectionLimit &&
+          error.reason != BoundedJsonRejection.nodeLimit) {
+        rethrow;
+      }
+      return decode(
+        maxNodes: math.min(
+          value.length + 1,
+          DiagnosticResourceLimits.maxAllowedTraversalNodes,
+        ),
+        maxCollectionItems: math.min(
+          value.length + 1,
+          DiagnosticResourceLimits.maxAllowedCollectionItems,
+        ),
+      );
+    }
+  }
+
   Object? _redactBody(
     Object? value, {
     Set<String>? ignoredValues,
@@ -291,14 +341,7 @@ final class NetworkPayloadSanitizer {
 
     try {
       if (value is String && BoundedJsonDecoder.looksLikeJson(value)) {
-        final decoded = BoundedJsonDecoder.decode(
-          value,
-          maxCharacters: _resourceLimits.maxCapturedValueBytes,
-          maxEncodedBytes: _resourceLimits.maxCapturedValueBytes,
-          maxDepth: _resourceLimits.maxTraversalDepth,
-          maxNodes: _resourceLimits.maxTraversalNodes,
-          maxCollectionItems: _resourceLimits.maxCollectionItems,
-        );
+        final decoded = _decodeJsonBody(value);
         if (decoded is Map || decoded is List) {
           final redacted = _redactor.redactForExport(
             decoded,

@@ -24,7 +24,7 @@ class LogTypeKeyFilter implements Filter<ISpectLogData> {
 
   @override
   bool apply(ISpectLogData item) {
-    final key = captureISpectLogDataForEgress(item).key;
+    final key = captureISpectLogWithoutPayload(item).key;
     return key != null && keys.contains(key);
   }
 }

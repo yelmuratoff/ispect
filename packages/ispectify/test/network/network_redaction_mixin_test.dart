@@ -314,5 +314,36 @@ void main() {
         {'tenant_secret': '<SECOND>'},
       );
     });
+
+    test('warns once when a custom strategy throws during redaction', () {
+      final logger = FakeISpectLogger();
+      final harness = _Harness(
+        logger,
+        enableRedaction: true,
+        redactor: RedactionService(strategy: const _ThrowingStrategy()),
+      );
+
+      final result = harness.safeRedact(
+        {'password': 'STRATEGY-RAW-SECRET'},
+        useRedaction: true,
+      );
+
+      expect(result, redactionFailedPlaceholder);
+      expect(result.toString(), isNot(contains('STRATEGY-RAW-SECRET')));
+      final warning = logger.byLogLevel(LogLevel.warning).single;
+      expect(warning.textMessage, isNot(contains('STRATEGY-RAW-SECRET')));
+    });
   });
+}
+
+final class _ThrowingStrategy implements RedactionStrategy {
+  const _ThrowingStrategy();
+
+  @override
+  Object? tryRedact(
+    Object? node, {
+    required RedactionContext context,
+    String? keyName,
+  }) =>
+      throw StateError('strategy failure');
 }

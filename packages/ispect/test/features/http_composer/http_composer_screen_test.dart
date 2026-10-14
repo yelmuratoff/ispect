@@ -168,7 +168,7 @@ void main() {
 
       expect(error.toJsonCalls, 0);
       expect(error.toStringCalls, 0);
-      expect(find.text('ERR'), findsOneWidget);
+      expect(find.text('Error'), findsOneWidget);
       expect(find.textContaining('REPLAY_SCREEN_'), findsNothing);
       expect(tester.takeException(), isNull);
     });

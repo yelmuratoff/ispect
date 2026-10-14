@@ -28,13 +28,13 @@ class BlockingGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void addAllowedPointer(PointerDownEvent event) {
-    _pointers.add(event.pointer);
-
-    if (_pointers.length > 1) {
+    if (_pointers.isNotEmpty) {
       // Allow multiple pointers (for hover, etc.)
       resolve(GestureDisposition.rejected);
       return;
     }
+
+    _pointers.add(event.pointer);
 
     // Start tracking this pointer to capture ALL events (down, move, up, cancel)
     startTrackingPointer(event.pointer, event.transform);

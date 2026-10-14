@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-/// Maximum allowed file size: 100 MB.
-const _maxFileSize = 100 * 1024 * 1024;
+/// The largest file the viewer loads, whether dropped or picked.
+const int maxLoadableFileSize = 100 * 1024 * 1024;
 
 final class FileSizeLimitException implements Exception {
   const FileSizeLimitException({
@@ -25,7 +25,7 @@ StreamSubscription<Uint8List> processFileStream(
   dynamic file, {
   required void Function(String content) onSuccess,
   required void Function(Object error) onError,
-  int maxFileSize = _maxFileSize,
+  int maxFileSize = maxLoadableFileSize,
 }) {
   final stream = file.getStream() as Stream<Uint8List>;
   final chunks = <Uint8List>[];

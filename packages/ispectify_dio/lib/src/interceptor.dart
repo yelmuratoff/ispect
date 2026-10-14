@@ -9,7 +9,8 @@ class ISpectDioInterceptor extends Interceptor
         NetworkLoggerMixin,
         NetworkRedactionMixin,
         NetworkConfigurationMixin,
-        BaseNetworkInterceptor {
+        BaseNetworkInterceptor,
+        NetworkCapturePolicyMixin {
   ISpectDioInterceptor({
     ISpectLogger? logger,
     ISpectDioInterceptorSettings settings =
@@ -32,29 +33,14 @@ class ISpectDioInterceptor extends Interceptor
   RedactionService get redactor =>
       ISpectRedaction.resolveService(service: _explicitRedactor);
 
-  bool get _captureEnabled => _logger.hasActiveConsumers && settings.enabled;
-  bool get _requestCaptureEnabled => _captureEnabled && settings.logRequests;
-  bool get _responseCaptureEnabled => _captureEnabled && settings.logResponses;
+  bool get _requestCaptureEnabled => captureEnabled && settings.logRequests;
+  bool get _responseCaptureEnabled => captureEnabled && settings.logResponses;
 
+  @override
   ISpectDioInterceptorSettings get settings => _settings;
   ISpectDioInterceptorSettings _settings;
 
   final String? addonId;
-
-  @override
-  bool get enableRedaction => settings.enableRedaction;
-
-  @override
-  DiagnosticCaptureMode get captureMode => settings.captureMode;
-
-  @override
-  DiagnosticResourceLimits get resourceLimits =>
-      settings.resourceLimits ?? _logger.options.resourceLimits;
-
-  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
-        redact: false,
-        resourceLimits: resourceLimits,
-      );
 
   @override
   BaseNetworkInterceptorSettings get configurableSettings => _settings;
@@ -80,11 +66,11 @@ class ISpectDioInterceptor extends Interceptor
   }
 
   void _captureRequest(RequestOptions options) {
-    if (!_captureEnabled) return;
+    if (!captureEnabled) return;
 
     final logRequest =
         settings.logRequests && settings.shouldProcessRequest(options);
-    if (!_captureEnabled) return;
+    if (!captureEnabled) return;
 
     final requestId = generateTraceId();
     // RequestOptions copies carry extra, unlike Expando state.
@@ -94,22 +80,12 @@ class ISpectDioInterceptor extends Interceptor
 
     if (!logRequest || !_requestCaptureEnabled) return;
 
-    final redactionActive = settings.isRedactionActive;
-    final operation = redactDiagnosticText(
-      options.method,
-      useRedaction: redactionActive,
-    );
-    if (!_requestCaptureEnabled) return;
-
-    final requestData = DioRequestData(
+    final prelude = _prepareRequest(
       options,
-      resourceLimits: resourceLimits,
+      isCapturing: () => _requestCaptureEnabled,
     );
-    final uriSnapshot = requestData.uriSnapshot;
-    final url = uriSnapshot.isTrusted
-        ? redactUrl(uriSnapshot.url, useRedaction: redactionActive)
-        : uriSnapshot.url;
-    if (!_requestCaptureEnabled) return;
+    if (prelude == null) return;
+    final (:redactionActive, :operation, :requestData, :url) = prelude;
 
     final requestDataJson = requestData.toJson(
       includeData: settings.printRequestData,
@@ -132,14 +108,11 @@ class ISpectDioInterceptor extends Interceptor
       operation: operation,
       target: url,
       correlationId: requestId,
-      config: _traceConfig,
+      config: capturedTraceConfig,
       meta: {
         NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.requestData: requestDataJson,
-        NetworkLogRenderer.renderHintsKey: {
-          NetworkLogRenderer.hintPrintBody: settings.printRequestData,
-          NetworkLogRenderer.hintPrintHeaders: settings.printRequestHeaders,
-        },
+        NetworkLogRenderer.renderHintsKey: settings.requestRenderHints,
       },
     );
   }
@@ -166,22 +139,12 @@ class ISpectDioInterceptor extends Interceptor
     final requestId = _requestIdOf(requestOptions);
     final duration = _elapsedSince(requestOptions);
 
-    final redactionActive = settings.isRedactionActive;
-    final operation = redactDiagnosticText(
-      requestOptions.method,
-      useRedaction: redactionActive,
-    );
-    if (!_responseCaptureEnabled) return;
-
-    final requestData = DioRequestData(
+    final prelude = _prepareRequest(
       requestOptions,
-      resourceLimits: resourceLimits,
+      isCapturing: () => _responseCaptureEnabled,
     );
-    final uriSnapshot = requestData.uriSnapshot;
-    final url = uriSnapshot.isTrusted
-        ? redactUrl(uriSnapshot.url, useRedaction: redactionActive)
-        : uriSnapshot.url;
-    if (!_responseCaptureEnabled) return;
+    if (prelude == null) return;
+    final (:redactionActive, :operation, :requestData, :url) = prelude;
 
     final responseDataJson = DioResponseData(
       response: response,
@@ -211,16 +174,12 @@ class ISpectDioInterceptor extends Interceptor
       target: url,
       correlationId: requestId,
       duration: duration,
-      config: _traceConfig,
+      config: capturedTraceConfig,
       meta: {
         if (requestId != null) NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.statusCode: response.statusCode,
         NetworkJsonKeys.responseData: responseDataJson,
-        NetworkLogRenderer.renderHintsKey: {
-          NetworkLogRenderer.hintPrintBody: settings.printResponseData,
-          NetworkLogRenderer.hintPrintHeaders: settings.printResponseHeaders,
-          NetworkLogRenderer.hintPrintMessage: settings.printResponseMessage,
-        },
+        NetworkLogRenderer.renderHintsKey: settings.responseRenderHints,
       },
     );
   }
@@ -236,31 +195,21 @@ class ISpectDioInterceptor extends Interceptor
   }
 
   void _captureError(DioException err) {
-    if (!_captureEnabled || !settings.shouldProcessError(err)) {
+    if (!captureEnabled || !settings.shouldProcessError(err)) {
       return;
     }
-    if (!_captureEnabled) return;
+    if (!captureEnabled) return;
 
     final requestOptions = err.requestOptions;
     final requestId = _requestIdOf(requestOptions);
     final duration = _elapsedSince(requestOptions);
 
-    final redactionActive = settings.isRedactionActive;
-    final operation = redactDiagnosticText(
-      requestOptions.method,
-      useRedaction: redactionActive,
-    );
-    if (!_captureEnabled) return;
-
-    final requestData = DioRequestData(
+    final prelude = _prepareRequest(
       requestOptions,
-      resourceLimits: resourceLimits,
+      isCapturing: () => captureEnabled,
     );
-    final uriSnapshot = requestData.uriSnapshot;
-    final url = uriSnapshot.isTrusted
-        ? redactUrl(uriSnapshot.url, useRedaction: redactionActive)
-        : uriSnapshot.url;
-    if (!_captureEnabled) return;
+    if (prelude == null) return;
+    final (:redactionActive, :operation, :requestData, :url) = prelude;
 
     final errorDataJson = DioErrorData(
       exception: err,
@@ -278,7 +227,7 @@ class ISpectDioInterceptor extends Interceptor
       redactionActive: redactionActive,
       captureMode: settings.captureMode,
     );
-    if (!_captureEnabled) return;
+    if (!captureEnabled) return;
     if (redactionActive) {
       DioErrorData.redact(
         errorDataJson,
@@ -287,7 +236,7 @@ class ISpectDioInterceptor extends Interceptor
       );
     }
 
-    if (!_captureEnabled) return;
+    if (!captureEnabled) return;
     Object? logError;
     StackTrace? logStackTrace;
     if (settings.printErrorMessage) {
@@ -297,13 +246,13 @@ class ISpectDioInterceptor extends Interceptor
           redactor,
           resourceLimits: resourceLimits,
         );
-        if (!_captureEnabled) return;
+        if (!captureEnabled) return;
         final redactedStackTrace = NetworkMapRedactor.redactFreeTextValue(
           err.stackTrace,
           redactor,
           resourceLimits: resourceLimits,
         );
-        if (!_captureEnabled) return;
+        if (!captureEnabled) return;
         logStackTrace = StackTrace.fromString(redactedStackTrace);
       } else {
         logError = err;
@@ -311,7 +260,7 @@ class ISpectDioInterceptor extends Interceptor
       }
     }
 
-    if (!_captureEnabled) return;
+    if (!captureEnabled) return;
     _logger.httpError(
       source: 'dio',
       operation: operation,
@@ -320,17 +269,41 @@ class ISpectDioInterceptor extends Interceptor
       errorStackTrace: logStackTrace,
       correlationId: requestId,
       duration: duration,
-      config: _traceConfig,
+      config: capturedTraceConfig,
       meta: {
         if (requestId != null) NetworkJsonKeys.requestId: requestId,
         NetworkJsonKeys.statusCode: err.response?.statusCode,
         NetworkJsonKeys.errorData: errorDataJson,
-        NetworkLogRenderer.renderHintsKey: {
-          NetworkLogRenderer.hintPrintBody: settings.printErrorData,
-          NetworkLogRenderer.hintPrintHeaders: settings.printErrorHeaders,
-          NetworkLogRenderer.hintPrintMessage: settings.printErrorMessage,
-        },
+        NetworkLogRenderer.renderHintsKey: settings.errorRenderHints,
       },
+    );
+  }
+
+  _RequestPrelude? _prepareRequest(
+    RequestOptions options, {
+    required bool Function() isCapturing,
+  }) {
+    final redactionActive = settings.isRedactionActive;
+    final operation = redactDiagnosticText(
+      options.method,
+      useRedaction: redactionActive,
+    );
+    if (!isCapturing()) return null;
+
+    final requestData = DioRequestData(
+      options,
+      resourceLimits: resourceLimits,
+    );
+    final uriSnapshot = requestData.uriSnapshot;
+    final url = uriSnapshot.isTrusted
+        ? redactUrl(uriSnapshot.url, useRedaction: redactionActive)
+        : uriSnapshot.url;
+    if (!isCapturing()) return null;
+    return (
+      redactionActive: redactionActive,
+      operation: operation,
+      requestData: requestData,
+      url: url,
     );
   }
 
@@ -349,3 +322,10 @@ class ISpectDioInterceptor extends Interceptor
 
   static final Stopwatch _monotonicClock = Stopwatch()..start();
 }
+
+typedef _RequestPrelude = ({
+  bool redactionActive,
+  String operation,
+  DioRequestData requestData,
+  String url,
+});

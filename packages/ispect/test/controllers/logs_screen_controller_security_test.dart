@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/logs_view_pipeline.dart';
 
 import '../helpers/hostile_export_diagnostics.dart';
 import '../helpers/pump_ispect.dart';
@@ -27,12 +27,10 @@ void main() {
       final viewController = ISpectViewController();
       final scrollController = ScrollController();
       final searchFocusNode = FocusNode();
-      final titleFiltersController = GroupButtonController();
       final controller = LogsScreenController(
         logsViewController: viewController,
         logsScrollController: scrollController,
         searchFocusNode: searchFocusNode,
-        titleFiltersController: titleFiltersController,
         onStateChanged: () {},
       );
       addTearDown(() {
@@ -40,7 +38,6 @@ void main() {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(SystemChannels.platform, null);
         controller.dispose();
-        titleFiltersController.dispose();
         searchFocusNode.dispose();
         scrollController.dispose();
         viewController.dispose();
@@ -61,7 +58,7 @@ void main() {
           logicalKey: LogicalKeyboardKey.keyC,
           timeStamp: Duration.zero,
         ),
-        [log],
+        LogsViewPipeline(screen: controller).compute([log]),
         context,
       );
       await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
@@ -89,19 +86,16 @@ void main() {
     final viewController = ISpectViewController();
     final scrollController = ScrollController();
     final searchFocusNode = FocusNode();
-    final titleFiltersController = GroupButtonController();
     final controller = LogsScreenController(
       logsViewController: viewController,
       logsScrollController: scrollController,
       searchFocusNode: searchFocusNode,
-      titleFiltersController: titleFiltersController,
       onStateChanged: () {},
     );
     addTearDown(() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, null);
       controller.dispose();
-      titleFiltersController.dispose();
       searchFocusNode.dispose();
       scrollController.dispose();
       viewController.dispose();
@@ -123,7 +117,7 @@ void main() {
         logicalKey: LogicalKeyboardKey.keyC,
         timeStamp: Duration.zero,
       ),
-      [log],
+      LogsViewPipeline(screen: controller).compute([log]),
       context,
     );
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
@@ -147,12 +141,10 @@ void main() {
     final viewController = ISpectViewController();
     final scrollController = ScrollController();
     final searchFocusNode = FocusNode();
-    final titleFiltersController = GroupButtonController();
     final controller = LogsScreenController(
       logsViewController: viewController,
       logsScrollController: scrollController,
       searchFocusNode: searchFocusNode,
-      titleFiltersController: titleFiltersController,
       onStateChanged: () {},
     );
     addTearDown(() {
@@ -160,7 +152,6 @@ void main() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, null);
       controller.dispose();
-      titleFiltersController.dispose();
       searchFocusNode.dispose();
       scrollController.dispose();
       viewController.dispose();
@@ -168,6 +159,7 @@ void main() {
 
     const secret = 'KEYBOARD_COPY_SECRET';
     final hostile = hostileCopyLog(secret);
+    final state = LogsViewPipeline(screen: controller).compute([hostile.log]);
     final exceptionCallsAtCapture = hostile.exception.calls;
     final errorCallsAtCapture = hostile.error.calls;
     final stackCallsAtCapture = hostile.stackTrace.calls;
@@ -187,7 +179,7 @@ void main() {
         logicalKey: LogicalKeyboardKey.keyC,
         timeStamp: Duration.zero,
       ),
-      [hostile.log],
+      state,
       context,
     );
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);

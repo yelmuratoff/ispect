@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_view_pipeline.dart';
@@ -10,7 +9,6 @@ void main() {
   late ISpectViewController view;
   late ScrollController scroll;
   late FocusNode focus;
-  late GroupButtonController titles;
   late LogsScreenController screen;
   late LogsViewPipeline pipeline;
 
@@ -18,12 +16,10 @@ void main() {
     view = ISpectViewController();
     scroll = ScrollController();
     focus = FocusNode();
-    titles = GroupButtonController();
     screen = LogsScreenController(
       logsViewController: view,
       logsScrollController: scroll,
       searchFocusNode: focus,
-      titleFiltersController: titles,
       onStateChanged: () {},
     );
     pipeline = LogsViewPipeline(screen: screen);
@@ -31,7 +27,6 @@ void main() {
 
   tearDown(() {
     screen.dispose();
-    titles.dispose();
     focus.dispose();
     scroll.dispose();
     view.dispose();
@@ -193,6 +188,37 @@ void main() {
     expect(identical(state.searchMatches, again.searchMatches), isTrue);
   });
 
+  test('highlight mode counts a grouped transaction as one match', () {
+    view.searchByCorrelationId('request-');
+    final logs = [
+      plain('N', message: 'request-free note'),
+      ...transaction(1),
+      plain('O', message: 'other'),
+      ...transaction(2),
+    ];
+
+    final state = pipeline.compute(logs);
+
+    expect(state.grouped, hasLength(4));
+    expect(ids(state.searchMatches!), ['REQUEST-2', 'REQUEST-1', 'N']);
+
+    final again = pipeline.compute(logs);
+    expect(identical(state.searchMatches, again.searchMatches), isTrue);
+  });
+
+  test('toggling grouping recounts matches for the same snapshot', () {
+    view.searchByCorrelationId('request-');
+    final logs = [...transaction(1), ...transaction(2)];
+
+    expect(pipeline.compute(logs).searchMatches, hasLength(2));
+
+    view.toggleGroupHttpLogs();
+    expect(pipeline.compute(logs).searchMatches, hasLength(4));
+
+    view.toggleGroupHttpLogs();
+    expect(pipeline.compute(logs).searchMatches, hasLength(2));
+  });
+
   test('filter mode narrows the list to matches and reports no highlights', () {
     view
       ..toggleGroupHttpLogs()
@@ -213,18 +239,52 @@ void main() {
     expect(state.totalCount, 3);
   });
 
-  test('level stats and type keys describe the raw snapshot', () {
+  group('header counts', () {
     final logs = [
       plain('A'),
       plain('E', key: ISpectLogType.error.key, level: LogLevel.error),
       plain('W', key: ISpectLogType.warning.key, level: LogLevel.warning),
     ];
-    view.setOnlyLogTypeKey(ISpectLogType.error.key);
 
-    final state = pipeline.compute(logs);
+    test('follow the selected log types while chips keep the raw keys', () {
+      view.setOnlyLogTypeKey(ISpectLogType.error.key);
 
-    expect(state.levelStats, (errors: 1, warnings: 1));
-    expect(state.logTypeKeys.counts[ISpectLogType.warning.key], 1);
-    expect(ids(state.filtered), ['E']);
+      final state = pipeline.compute(logs);
+
+      expect(state.headerCounts, (total: 1, errors: 1, warnings: 0));
+      expect(state.logTypeKeys.counts[ISpectLogType.warning.key], 1);
+      expect(ids(state.filtered), ['E']);
+    });
+
+    test('drop a type hidden for the session', () {
+      view.hideLogTypeKey(ISpectLogType.error.key);
+
+      final state = pipeline.compute(logs);
+
+      expect(state.headerCounts, (total: 2, errors: 0, warnings: 1));
+      expect(state.headerCounts.total, state.filtered.length);
+    });
+
+    test('ignore a highlight search query', () {
+      view.searchByCorrelationId('message W');
+
+      final state = pipeline.compute(logs);
+
+      expect(state.isHighlightMode, isTrue);
+      expect(state.headerCounts, (total: 3, errors: 1, warnings: 1));
+    });
+
+    test('pick up appended logs after a filter change', () {
+      view.hideLogTypeKey(ISpectLogType.warning.key);
+      pipeline.compute(logs);
+      final appended = [
+        ...logs,
+        plain('E2', key: ISpectLogType.error.key, level: LogLevel.error),
+      ];
+
+      final state = pipeline.compute(appended);
+
+      expect(state.headerCounts, (total: 3, errors: 2, warnings: 0));
+    });
   });
 }

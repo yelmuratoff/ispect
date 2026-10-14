@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/inspector_controller.dart';
 import 'package:ispect_layout/src/theme.dart';
 import 'package:ispect_layout/src/widgets/color_picker/utils.dart';
+import 'package:ispect_layout/src/widgets/multi_value_listenable.dart';
 import 'package:ispect_layout/src/widgets/squircle.dart';
 
 /// Floating Confirm / Cancel bar shown at the bottom of the screen while
@@ -29,9 +30,10 @@ class InspectorActionsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<InspectorMode>(
-      valueListenable: controller.modeNotifier,
-      builder: (context, mode, _) {
+    return MultiValueListenableBuilder(
+      valueListenables: [controller.modeNotifier, controller.themeNotifier],
+      builder: (context) {
+        final mode = controller.modeNotifier.value;
         if (!_supportedModes.contains(mode)) return const SizedBox.shrink();
 
         return Align(
@@ -81,6 +83,7 @@ class _ActionsRow extends StatelessWidget {
       case InspectorMode.zoom:
         return 'Done';
       case InspectorMode.inspector:
+      // ignore: deprecated_member_use_from_same_package
       case InspectorMode.inspectAndCompare:
       case InspectorMode.compareSelect:
       case InspectorMode.none:

@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -99,8 +100,60 @@ final class _UnboundedExportIterator implements Iterator<int> {
   }
 }
 
+final class _CountingKeySet extends SetBase<String> {
+  _CountingKeySet(this._keys);
+
+  final Set<String> _keys;
+  int iterations = 0;
+
+  @override
+  Iterator<String> get iterator {
+    iterations++;
+    return _keys.iterator;
+  }
+
+  @override
+  int get length => _keys.length;
+
+  @override
+  bool contains(Object? element) => _keys.contains(element);
+
+  @override
+  String? lookup(Object? element) => _keys.lookup(element);
+
+  @override
+  bool add(String value) => _keys.add(value);
+
+  @override
+  bool remove(Object? value) => _keys.remove(value);
+
+  @override
+  Set<String> toSet() => _keys.toSet();
+}
+
 void main() {
   tearDown(ISpectRedaction.reset);
+
+  group('RedactionService export scrubbing', () {
+    test('builds the assignment key matcher once per export call', () {
+      const leafCount = 40;
+      final ignoredKeys = _CountingKeySet({'unrelated_key'});
+      final service = RedactionService();
+
+      final exported = service.redactForExport(
+        {
+          for (var index = 0; index < leafCount; index++)
+            'field$index': 'mode=fast$index&password=hunter$index',
+        },
+        ignoredKeys: ignoredKeys,
+      )! as Map<String, Object?>;
+
+      expect(ignoredKeys.iterations, lessThanOrEqualTo(4));
+      expect(exported, hasLength(leafCount));
+      expect(exported['field7'], contains('mode=fast7'));
+      expect(exported['field7'], isNot(contains('hunter7')));
+    });
+  });
 
   group('RedactionService', () {
     test('exposes ignore-list mutations through its configuration revision',
@@ -725,6 +778,34 @@ void main() {
         expect(result, isNot(contains('secret123')));
       });
 
+      test('masks a bare key query parameter', () {
+        final service = RedactionService();
+        final result =
+            service.redactUrl('https://x.io/geo?key=abcd1234secret&lang=en');
+        expect(result, isNot(contains('abcd1234secret')));
+        expect(result, contains('lang=en'));
+      });
+
+      test('masks a bare key parameter in a fragment', () {
+        final service = RedactionService();
+        final result =
+            service.redactUrl('https://x.io/cb#key=abcd1234secret&state=ok');
+        expect(result, isNot(contains('abcd1234secret')));
+        expect(result, contains('state=ok'));
+      });
+
+      test('keeps an ignored value under a sensitive query key', () {
+        final service = RedactionService(ignoredValues: const {'public-id'});
+        const url = 'https://x.io/geo?password=public-id&key=public-id';
+        expect(service.redactUrl(url), url);
+      });
+
+      test('keeps a bare key query parameter the policy ignores', () {
+        final service = RedactionService(ignoredKeys: const {'key'});
+        const url = 'https://x.io/geo?key=public-map-id';
+        expect(service.redactUrl(url), url);
+      });
+
       test('redacts userInfo credentials', () {
         final service = RedactionService();
         final result = service.redactUrl('https://user:pass@example.com/path');
@@ -1239,6 +1320,96 @@ void main() {
         expect(result, contains(defaultPlaceholder));
       });
 
+      test('keeps REST paths that share a filesystem root name', () {
+        for (final path in const [
+          '/users/42/orders',
+          '/home/feed',
+          '/data/reports',
+          '/app/settings',
+          '/var/experiments',
+        ]) {
+          final unquoted = 'GET $path failed';
+          final quoted = 'route="$path"';
+
+          expect(
+            RedactionService.redactExportString(unquoted, null),
+            unquoted,
+          );
+          expect(RedactionService.redactExportString(quoted, null), quoted);
+          expect(
+            RedactionService().redactForExport({'route': path}),
+            {'route': path},
+          );
+        }
+      });
+
+      test('masks email-shaped path segments and keeps the rest', () {
+        expect(
+          RedactionService().redactForExport(
+            '/users/alice@example.com?tab=1 (Push)',
+          ),
+          '/users/$defaultPlaceholder?tab=1 (Push)',
+        );
+        expect(
+          RedactionService.redactExportString(
+            'GET /v1/users/bob.smith@mail.co.uk/orders failed',
+            null,
+          ),
+          'GET /v1/users/$defaultPlaceholder/orders failed',
+        );
+        for (final text in const [
+          'GET /users/alice@example.com: 404',
+          '(/users/alice@example.com)',
+          'saw /users/alice@example.com, retrying',
+          'not found at /users/alice@example.com.',
+          '/u/alice@example.com;jsessionid=1',
+          '/users/alice%40example.com/profile',
+        ]) {
+          final result = RedactionService.redactExportString(text, null);
+          expect(result, isNot(contains('alice')), reason: text);
+          expect(result, contains('/$defaultPlaceholder'), reason: text);
+        }
+      });
+
+      test('keeps density-suffixed asset paths', () {
+        const text = 'loaded /assets/images/logo@2x.png';
+
+        expect(RedactionService.redactExportString(text, null), text);
+      });
+
+      test('keeps URL userinfo hosts out of path segment masking', () {
+        final result = RedactionService.redactExportString(
+          'GET https://api.example.com/users/42 and ftp://alice@files.example.com/x',
+          null,
+        );
+
+        expect(result, contains('https://api.example.com/users/42'));
+        expect(result, contains('files.example.com/x'));
+        expect(result, isNot(contains('alice')));
+      });
+
+      test('scrubs device and user filesystem paths', () {
+        for (final path in const [
+          '/Users/alice/project/lib/main.dart',
+          '/home/alice/app/config.json',
+          '/data/user/0/com.example.app/files/db.sqlite',
+          '/data/data/com.example.app/cache/x.bin',
+          '/storage/emulated/0/Download/report.pdf',
+          '/var/mobile/Containers/Data/Application/ABC/Documents/x.db',
+          '/var/www/acme-internal/.env',
+          '/var/run/app.sock',
+          '/private/var/mobile/Containers/Data/Application/ABC/tmp/x',
+          '/app/lib/main.dart',
+        ]) {
+          final result = RedactionService.redactExportString(
+            'failed at $path',
+            null,
+          );
+
+          expect(result, 'failed at $defaultPlaceholder', reason: path);
+        }
+      });
+
       test('scrubs complete quoted paths containing spaces', () {
         const input =
             '''FileSystemException: path='/Users/alice/My Project/customer-secret.txt' '''
@@ -1402,6 +1573,66 @@ void main() {
     });
 
     group('redactForExport', () {
+      test('keeps a configured ignored key in free text', () {
+        final service = RedactionService(ignoredKeys: const {'session_id'});
+
+        expect(
+          service.redactForExport('lookup failed: session_id=s-4411'),
+          'lookup failed: session_id=s-4411',
+        );
+      });
+
+      test('keeps a per-call ignored key in free text', () {
+        final service = RedactionService();
+
+        expect(
+          service.redactForExport(
+            'lookup failed: session_id=s-4411',
+            ignoredKeys: const {'session_id'},
+          ),
+          'lookup failed: session_id=s-4411',
+        );
+      });
+
+      test('keeps secret metadata assignments in free text', () {
+        final service = RedactionService();
+
+        expect(
+          service.redactForExport('issued token_type=Bearer'),
+          'issued token_type=Bearer',
+        );
+      });
+
+      test('still masks a secret assignment in free text', () {
+        final service = RedactionService();
+
+        final result = service.redactForExport(
+          'login failed: password=hunter2-secret session_id=s-4411',
+        );
+
+        expect(result, isNot(contains('hunter2-secret')));
+        expect(result, isNot(contains('s-4411')));
+      });
+
+      test('still masks secrets in JSON-shaped free text', () {
+        final service = RedactionService();
+
+        final result = service.redactForExport(
+          'body: {"password": "hunter2-secret", "access_token": "tok-4411"}',
+        );
+
+        expect(result, isNot(contains('hunter2-secret')));
+        expect(result, isNot(contains('tok-4411')));
+        expect(
+          service.redactForExport('{"api_key":"k-9981","password":12345}'),
+          allOf(isNot(contains('k-9981')), isNot(contains('12345'))),
+        );
+        expect(
+          service.redactForExport('retry /login?password=p-7781&page=2'),
+          allOf(isNot(contains('p-7781')), contains('page=2')),
+        );
+      });
+
       test('never executes caller DTO formatters', () {
         final value = _HostileExportDto();
 
@@ -1977,7 +2208,7 @@ void main() {
 
         expect(
           service.redactForExport({'safe': 'value'}),
-          defaultPlaceholder,
+          redactionFailedPlaceholder,
         );
       });
     });

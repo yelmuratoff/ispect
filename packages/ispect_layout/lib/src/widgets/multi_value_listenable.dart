@@ -34,15 +34,25 @@ class _MultiValueListenableBuilderState
     }
   }
 
-  void _deregisterListeners() {
-    for (final listenable in widget.valueListenables) {
+  void _deregisterListeners(List<ValueListenable> listenables) {
+    for (final listenable in listenables) {
       listenable.removeListener(_onUpdated);
     }
   }
 
   @override
+  void didUpdateWidget(covariant MultiValueListenableBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (listEquals(oldWidget.valueListenables, widget.valueListenables)) {
+      return;
+    }
+    _deregisterListeners(oldWidget.valueListenables);
+    _registerListeners();
+  }
+
+  @override
   void dispose() {
-    _deregisterListeners();
+    _deregisterListeners(widget.valueListenables);
     super.dispose();
   }
 

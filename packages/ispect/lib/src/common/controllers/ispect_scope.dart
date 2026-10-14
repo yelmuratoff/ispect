@@ -20,13 +20,10 @@ class ISpectScopeModel extends ChangeNotifier {
     ISpectTheme theme = const ISpectTheme(),
     NavigatorObserver? observer,
     ISpectSettingsState? settings,
-  }) : assert(_debugValidateTheme(theme)),
-       _isISpectEnabled = isISpectEnabled,
+  }) : _isISpectEnabled = isISpectEnabled,
        _isPerformanceTrackingEnabled = isPerformanceTrackingEnabled,
        _options = options ?? ISpectOptions(observer: observer),
-       _theme = theme.copyWith(
-         logIcons: {...ISpectConstants.typeIcons, ...theme.logIcons},
-       ),
+       _theme = _prepareTheme(theme),
        _observer = observer,
        _settings =
            settings ??
@@ -36,16 +33,16 @@ class ISpectScopeModel extends ChangeNotifier {
              useHistory: true,
            );
 
-  /// Runs [ISpectTheme.debugValidate] and prints any warnings via [debugPrint].
-  /// Always returns `true` so it can be used inside an `assert`.
-  static bool _debugValidateTheme(ISpectTheme theme) {
+  static ISpectTheme _prepareTheme(ISpectTheme theme) {
     assert(() {
-      for (final w in theme.debugValidate()) {
-        debugPrint('[ISpect] ⚠️ $w');
+      for (final warning in theme.debugValidate()) {
+        debugPrint('[ISpect] ⚠️ $warning');
       }
       return true;
     }());
-    return true;
+    return theme.copyWith(
+      logIcons: {...ISpectConstants.typeIcons, ...theme.logIcons},
+    );
   }
 
   // Private fields to store state
@@ -82,19 +79,16 @@ class ISpectScopeModel extends ChangeNotifier {
       _updateValue(_options, value, (v) => _options = v);
 
   /// Theming settings for ISpect.
+  ///
+  /// Assigning a theme stores a copy whose [ISpectTheme.logIcons] are the
+  /// built-in log type icons overridden by the assigned ones, so the getter
+  /// does not return the assigned instance. Listeners are notified only when
+  /// that merged copy differs from the current theme. In debug builds,
+  /// [ISpectTheme.debugValidate] warnings are printed on every assignment
+  /// and at construction.
   ISpectTheme get theme => _theme;
-  set theme(ISpectTheme value) {
-    assert(() {
-      for (final warning in value.debugValidate()) {
-        debugPrint('[ISpect] ⚠️ $warning');
-      }
-      return true;
-    }());
-    final updatedTheme = value.copyWith(
-      logIcons: {...ISpectConstants.typeIcons, ...value.logIcons},
-    );
-    _updateValue(_theme, updatedTheme, (v) => _theme = v);
-  }
+  set theme(ISpectTheme value) =>
+      _updateValue(_theme, _prepareTheme(value), (v) => _theme = v);
 
   // Private field for observer
   NavigatorObserver? _observer;

@@ -21,16 +21,6 @@ class ColorSchemeInspector {
     return lookup[color.toARGB32()] ?? const [];
   }
 
-  /// Backwards-compatible string form: `colorScheme.foo` or
-  /// `colorScheme.foo, colorScheme.bar`. Returns empty string when no match.
-  ///
-  /// Prefer [matchingTokens] for new code - it preserves structure for the UI.
-  static String identifyColorSchemeMatch(Color color, ColorScheme colorScheme) {
-    final names = matchingTokens(color, colorScheme);
-    if (names.isEmpty) return '';
-    return names.map((n) => 'colorScheme.$n').join(', ');
-  }
-
   static Map<int, List<String>> _buildReverseLookup(ColorScheme s) {
     // Order matters: tokens listed earlier win when callers want a single
     // representative match. Keep the canonical roles first.

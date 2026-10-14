@@ -30,6 +30,12 @@ typedef RiverpodFailCallback = void Function(
   ProviderContainer container,
 );
 
+/// Decides whether to skip logging for a provider.
+///
+/// Receives the provider name as a [String] `candidate`: [ProviderBase.name],
+/// or a type label for an unnamed provider, truncated to
+/// [DiagnosticResourceLimits.maxStateTraceBytes]. Returns `true` to filter the
+/// provider's events out.
 typedef RiverpodFilterPredicate = bool Function(Object? candidate);
 
 /// Riverpod observer that logs provider lifecycle events via the unified
@@ -68,10 +74,16 @@ class ISpectRiverpodObserver extends ProviderObserver {
   @visibleForTesting
   static bool? debugEnabledOverride;
 
-  bool get _ispectEnabled => kISpectEnabled && (debugEnabledOverride ?? true);
-  bool get _loggingEnabled =>
-      _ispectEnabled && _logger.isEnabled && settings.enabled;
-  bool get _captureEnabled => _loggingEnabled && _logger.hasActiveConsumers;
+  bool get _loggingEnabled => StateObserverPolicy.loggingEnabled(
+        logger: _logger,
+        settingsEnabled: settings.enabled,
+        debugEnabledOverride: debugEnabledOverride,
+      );
+  bool get _captureEnabled => StateObserverPolicy.captureEnabled(
+        logger: _logger,
+        settingsEnabled: settings.enabled,
+        debugEnabledOverride: debugEnabledOverride,
+      );
   DiagnosticResourceLimits get _resourceLimits =>
       settings.resourceLimits ?? _logger.options.resourceLimits;
 
@@ -88,17 +100,11 @@ class ISpectRiverpodObserver extends ProviderObserver {
     if (filters.isEmpty) {
       return false;
     }
-    for (final pattern in filters) {
-      var matches = false;
-      try {
-        matches = providerName().contains(pattern);
-      } catch (_) {}
-      if (!_loggingEnabled) return true;
-      if (matches) {
-        return true;
-      }
-    }
-    return false;
+    return StateObserverPolicy.matchesAnyPattern(
+      providerName(),
+      filters,
+      isEnabled: () => _loggingEnabled,
+    );
   }
 
   bool _shouldLog({
@@ -130,33 +136,16 @@ class ISpectRiverpodObserver extends ProviderObserver {
 
   StateTracePreparer? _preparerCache;
 
-  StateTracePreparer get _preparer {
-    final redactor = settings.isRedactionActive
-        ? ISpectRedaction.resolveService(service: settings.redactor)
-        : null;
-    final limits = _resourceLimits;
-    final cached = _preparerCache;
-    if (cached != null &&
-        identical(cached.redactor, redactor) &&
-        identical(cached.resourceLimits, limits) &&
-        cached.captureMode == settings.captureMode) {
-      return cached;
-    }
-    return _preparerCache = StateTracePreparer(
-      redactor: redactor,
-      captureMode: settings.captureMode,
-      resourceLimits: limits,
-    );
-  }
-
-  // Every caller-controlled trace field is prepared by _preparer. A second
-  // generic pass would replace the configured redactor and repeat boundary
-  // traversal.
-  ISpectTraceConfig get _traceConfig => ISpectTraceConfig(
-        redact: false,
-        attachStackOnError: true,
+  StateTracePreparer get _preparer =>
+      _preparerCache = StateTracePreparer.resolve(
+        redactionActive: settings.isRedactionActive,
+        redactor: settings.redactor,
+        captureMode: settings.captureMode,
         resourceLimits: _resourceLimits,
+        cached: _preparerCache,
       );
+
+  ISpectTraceConfig get _traceConfig => _preparer.traceConfig;
 
   String _providerName(ProviderBase<Object?> provider) =>
       LogExportOutput.truncateUtf8(

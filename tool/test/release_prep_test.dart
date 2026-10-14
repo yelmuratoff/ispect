@@ -295,6 +295,17 @@ void main() {
       );
       expect(runtimeTemp.listSync(), isEmpty);
     });
+
+    test('a VERSION with trailing whitespace is read as the trimmed version',
+        () async {
+      final repo = fixture('padded-version');
+      writeFixtureFile(
+          p.join(repo, 'version.config'), 'VERSION=7.0.0-dev.1 \n');
+
+      await expectLater(release(repo, ['--skip-bump']), completion(0));
+      expect(read(repo, 'CHANGELOG.md'), contains('## 7.0.0-dev.1\n'));
+      expect(read(repo, 'CHANGELOG.md'), isNot(contains('7.0.0-dev.1 ')));
+    });
   });
 
   group('managed target safety', () {
@@ -372,6 +383,99 @@ void main() {
         before,
         reason: 'the fixture was not restored exactly after a helper failure',
       );
+    });
+
+    test('a file system failure in a step restores every artifact', () async {
+      final repo = fixture('fail-file-system');
+      final before = treeSnapshot(repo);
+
+      final status = await release(
+        repo,
+        const [],
+        wrapSteps: (base) => _FailingSteps(
+          base,
+          failing: _Step.buildReadmes,
+          exitCode: 0,
+          onFailure: () {
+            writeFixtureFile(
+              p.join(repo, 'README.md'),
+              'partially generated root README\n',
+            );
+            throw const FileSystemException('Cannot rename file', 'README.md');
+          },
+        ),
+      );
+
+      expect(status, 1);
+      expect(treeSnapshot(repo), before);
+      expect(err.toString(), contains('Cannot rename file'));
+      expect(runtimeTemp.listSync(), isEmpty);
+    });
+
+    test('an Error thrown by a step restores every artifact and propagates',
+        () async {
+      final repo = fixture('fail-with-error');
+      final before = treeSnapshot(repo);
+
+      final run = release(
+        repo,
+        const [],
+        wrapSteps: (base) => _FailingSteps(
+          base,
+          failing: _Step.buildReadmes,
+          exitCode: 0,
+          onFailure: () {
+            writeFixtureFile(
+              p.join(repo, 'README.md'),
+              'partially generated root README\n',
+            );
+            throw StateError('step invariant broken');
+          },
+        ),
+      );
+
+      await expectLater(run, throwsA(isA<StateError>()));
+      expect(treeSnapshot(repo), before);
+      expect(
+        err.toString(),
+        contains('Release preparation failed; restoring the pre-run state'),
+      );
+      expect(runtimeTemp.listSync(), isEmpty);
+    });
+
+    test('an Error from a step survives a rollback cleanup failure', () async {
+      final repo = fixture('fail-with-error-cleanup');
+      late Directory snapshot;
+      addTearDown(() {
+        Process.runSync('chmod', ['700', snapshot.path]);
+      });
+
+      final run = release(
+        repo,
+        const [],
+        wrapSteps: (base) => _FailingSteps(
+          base,
+          failing: _Step.buildReadmes,
+          exitCode: 0,
+          onFailure: () {
+            snapshot = runtimeTemp.listSync().whereType<Directory>().single;
+            Process.runSync('chmod', ['500', snapshot.path]);
+            throw StateError('step invariant broken');
+          },
+        ),
+      );
+
+      await expectLater(
+        run,
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            'step invariant broken',
+          ),
+        ),
+      );
+      expect(err.toString(), contains('[ERR] Rollback cleanup failed:'));
     });
 
     test('a validation failure after generation restores every artifact',

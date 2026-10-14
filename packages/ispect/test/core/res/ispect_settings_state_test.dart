@@ -40,6 +40,37 @@ void main() {
     expect(restored.captureMode, DiagnosticCaptureMode.balanced);
   });
 
+  test('old settings snapshots restore constructor defaults', () {
+    final restored = ISpectSettingsState.fromMap(const {
+      'enabled': true,
+      'use_console_logs': true,
+      'use_history': true,
+    });
+
+    expect(restored, defaults);
+  });
+
+  test('missing logger toggles fall back to the logger defaults', () {
+    final restored = ISpectSettingsState.fromMap(const {'expanded_logs': true});
+    final loggerDefaults = ISpectLoggerOptions();
+
+    expect(restored.enabled, loggerDefaults.enabled);
+    expect(restored.useHistory, loggerDefaults.useHistory);
+    expect(restored.useConsoleLogs, loggerDefaults.useConsoleLogs);
+  });
+
+  test('explicit false logger toggles survive restoration', () {
+    final restored = ISpectSettingsState.fromMap(const {
+      'enabled': false,
+      'use_console_logs': false,
+      'use_history': false,
+    });
+
+    expect(restored.enabled, isFalse);
+    expect(restored.useConsoleLogs, isFalse);
+    expect(restored.useHistory, isFalse);
+  });
+
   test('rejects negative persisted capacities at runtime', () {
     expect(
       () => ISpectSettingsState.fromMap(const {
@@ -59,5 +90,14 @@ void main() {
       }),
       throwsArgumentError,
     );
+  });
+
+  test('equal share requests with distinct path lists share a hashCode', () {
+    const paths = ['a.txt', 'b.txt'];
+    final a = ISpectShareRequest(subject: 's', filePaths: List.of(paths));
+    final b = ISpectShareRequest(subject: 's', filePaths: List.of(paths));
+
+    expect(a, b);
+    expect(a.hashCode, b.hashCode);
   });
 }

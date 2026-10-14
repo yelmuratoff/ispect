@@ -134,7 +134,6 @@ void main() {
 
       final transactionResult = await logger.dbTransaction<int>(
         source: 'disabled-source',
-        meta: <String, Object?>{'password': diagnostic},
         logMarkers: true,
         run: () async {
           transactionRuns++;

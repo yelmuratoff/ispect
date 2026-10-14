@@ -6,7 +6,6 @@ import 'package:flutter/widgets.dart';
 import 'package:ispect/src/common/utils/debug_report.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
-import 'package:ispect/src/features/json_viewer/services/json_cache_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_node_builder.dart';
 import 'package:ispect/src/features/json_viewer/services/json_node_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_search_service.dart';
@@ -36,12 +35,9 @@ class JsonExplorerStore extends ChangeNotifier {
   int _searchGeneration = 0;
   bool _isSearching = false;
   NodeViewModelState? _selectedNode;
-  Timer? _currentSearchOperation;
   bool _mounted = true;
+  bool _hasExpandableNodes = false;
 
-  // Services for better separation of concerns
-  final NodeHierarchyCacheService _hierarchyCacheService =
-      NodeHierarchyCacheService();
   JsonNodeService? _nodeService;
   JsonSearchService? _searchService;
 
@@ -52,7 +48,7 @@ class JsonExplorerStore extends ChangeNotifier {
       UnmodifiableListView(_displayNodes);
 
   /// Whether the tree contains at least one expandable (object/array) node.
-  bool get hasExpandableNodes => _allNodes.any((n) => n.isRoot);
+  bool get hasExpandableNodes => _hasExpandableNodes;
 
   /// Whether an async search is currently in progress.
   bool get isSearching => _isSearching;
@@ -78,13 +74,12 @@ class JsonExplorerStore extends ChangeNotifier {
   int get focusedSearchResultIndex => _focusedSearchResultIndex;
 
   /// Gets the current focused search result, or `null` if no results exist.
-  SearchResult? get focusedSearchResult {
-    if (_searchResults.isEmpty) return null;
-    if (_focusedSearchResultIndex >= _searchResults.length) {
-      _focusedSearchResultIndex = _searchResults.length - 1;
-    }
-    return _searchResults[_focusedSearchResultIndex];
-  }
+  SearchResult? get focusedSearchResult => _searchResults.isEmpty
+      ? null
+      : _searchResults[_focusedSearchResultIndex.clamp(
+          0,
+          _searchResults.length - 1,
+        )];
 
   /// Collapses the given `node` so its children won't be visible.
   void collapseNode(NodeViewModelState node) {
@@ -94,7 +89,6 @@ class JsonExplorerStore extends ChangeNotifier {
     }
 
     _displayNodes = nodeService.collapseNode(node, _displayNodes);
-    _hierarchyCacheService.clear();
     notifyListeners();
   }
 
@@ -103,7 +97,6 @@ class JsonExplorerStore extends ChangeNotifier {
     final nodeService = _nodeService;
     if (!_mounted || nodeService == null) return;
     _displayNodes = nodeService.collapseAll(_displayNodes, _allNodes);
-    _hierarchyCacheService.clear();
     notifyListeners();
   }
 
@@ -120,7 +113,6 @@ class JsonExplorerStore extends ChangeNotifier {
     final nodes = JsonTreeFlattener.flatten(node.value);
     _displayNodes.insertAll(nodeIndex, nodes);
     node.expand();
-    _hierarchyCacheService.clear();
     notifyListeners();
   }
 
@@ -129,7 +121,6 @@ class JsonExplorerStore extends ChangeNotifier {
     final nodeService = _nodeService;
     if (!_mounted || nodeService == null) return;
     _displayNodes = nodeService.expandAll(_allNodes);
-    _hierarchyCacheService.clear();
     notifyListeners();
   }
 
@@ -194,7 +185,6 @@ class JsonExplorerStore extends ChangeNotifier {
     if (!mounted) return;
 
     final generation = ++_buildGeneration;
-    _hierarchyCacheService.clear();
 
     final invalidatedSearchGeneration = _invalidateSearch();
 
@@ -220,6 +210,7 @@ class JsonExplorerStore extends ChangeNotifier {
     }
 
     _allNodes = UnmodifiableListView(flatList);
+    _hasExpandableNodes = flatList.any((n) => n.isRoot);
     _displayNodes = List<NodeViewModelState>.of(flatList);
 
     _nodeService = JsonNodeService();
@@ -236,7 +227,6 @@ class JsonExplorerStore extends ChangeNotifier {
 
   @override
   void dispose() {
-    _hierarchyCacheService.clear();
     _invalidateSearch();
     _buildGeneration++;
     _mounted = false;
@@ -293,8 +283,6 @@ class JsonExplorerStore extends ChangeNotifier {
   }
 
   int _invalidateSearch({bool clearTerm = true}) {
-    _currentSearchOperation?.cancel();
-    _currentSearchOperation = null;
     final generation = ++_searchGeneration;
     _isSearching = false;
     _searchResults.clear();

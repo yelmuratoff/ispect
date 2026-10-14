@@ -6,8 +6,8 @@ import 'package:ispectify/src/redaction/strategies/redaction_strategy.dart';
 ///
 /// Fully-masked keys produce [RedactionContext.placeholder] regardless of
 /// value type, except for an explicitly ignored string value. Sensitive keys
-/// get partial masking (edge-visible) for strings and placeholder for other
-/// types.
+/// get partial masking (edge-visible) for strings, pass booleans through
+/// unchanged, and get placeholder for other types.
 class KeyBasedRedaction implements RedactionStrategy {
   const KeyBasedRedaction();
 
@@ -19,7 +19,7 @@ class KeyBasedRedaction implements RedactionStrategy {
   }) {
     if (keyName == null) return null;
 
-    final classification = context.classifyKey(keyName);
+    final classification = context.classifyEntry(keyName, node);
 
     // Structured and binary full-mask values can never fall through merely
     // because the same key is absent from the sensitive-key set.

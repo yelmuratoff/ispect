@@ -6,7 +6,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_builder.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_viewer_body.dart';
@@ -36,7 +35,6 @@ final class HighVolumeBenchmarkState extends State<HighVolumeBenchmarkApp> {
     options: const ISpectOptions(),
   );
   final _viewController = ISpectViewController(groupHttpLogs: false);
-  final _titleFiltersController = GroupButtonController();
   final _searchFocusNode = FocusNode();
   final _logsScrollController = ScrollController();
 
@@ -84,7 +82,6 @@ final class HighVolumeBenchmarkState extends State<HighVolumeBenchmarkApp> {
 
   void showAllLogs() {
     _viewController.clearAllFilters();
-    _titleFiltersController.unselectAll();
   }
 
   void resetScrollPosition() {
@@ -98,7 +95,6 @@ final class HighVolumeBenchmarkState extends State<HighVolumeBenchmarkApp> {
   void dispose() {
     _logsScrollController.dispose();
     _searchFocusNode.dispose();
-    _titleFiltersController.dispose();
     _viewController.dispose();
     _scope.dispose();
     unawaited(_logger.dispose());
@@ -122,7 +118,6 @@ final class HighVolumeBenchmarkState extends State<HighVolumeBenchmarkApp> {
                     logsData: logs,
                     controller: _viewController,
                     iSpectTheme: ISpect.read(context),
-                    titleFiltersController: _titleFiltersController,
                     searchFocusNode: _searchFocusNode,
                     logsScrollController: _logsScrollController,
                     appBarTitle: 'High-volume benchmark',

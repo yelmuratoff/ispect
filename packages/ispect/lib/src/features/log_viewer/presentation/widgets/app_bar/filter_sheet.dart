@@ -7,7 +7,6 @@ import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 
 class ISpectFilterSheet extends StatelessWidget {
@@ -15,7 +14,6 @@ class ISpectFilterSheet extends StatelessWidget {
     required this.controller,
     required this.counts,
     required this.uniqTitles,
-    required this.titlesController,
     required this.onToggleTitle,
     required this.onClearAllFilters,
     this.scrollController,
@@ -25,7 +23,6 @@ class ISpectFilterSheet extends StatelessWidget {
   final ISpectViewController controller;
   final Map<String, int> counts;
   final List<String?> uniqTitles;
-  final GroupButtonController titlesController;
   final Function(String title, bool selected) onToggleTitle;
   final VoidCallback onClearAllFilters;
   final ScrollController? scrollController;
@@ -37,7 +34,7 @@ class ISpectFilterSheet extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
-        final hasSelectedChips = titlesController.selectedIndexes.isNotEmpty;
+        final hasSelectedChips = controller.activeLogTypeFilterCount > 0;
 
         return ListView(
           controller: scrollController,
@@ -64,7 +61,7 @@ class ISpectFilterSheet extends StatelessWidget {
               _LogTypeChipsWrap(
                 counts: counts,
                 uniqTitles: uniqTitles,
-                titlesController: titlesController,
+                selectedTitles: controller.filter.logTypeKeys,
                 onToggle: onToggleTitle,
                 theme: iSpect.theme,
               ),
@@ -177,14 +174,14 @@ class _LogTypeChipsWrap extends StatelessWidget {
   const _LogTypeChipsWrap({
     required this.counts,
     required this.uniqTitles,
-    required this.titlesController,
+    required this.selectedTitles,
     required this.onToggle,
     required this.theme,
   });
 
   final Map<String, int> counts;
   final List<String?> uniqTitles;
-  final GroupButtonController titlesController;
+  final Set<String> selectedTitles;
   final Function(String title, bool selected) onToggle;
   final ISpectTheme theme;
 
@@ -197,29 +194,18 @@ class _LogTypeChipsWrap extends StatelessWidget {
       children: List.generate(uniqTitles.length, (index) {
         final title = uniqTitles[index];
         final count = counts[title] ?? 0;
-        final isSelected = titlesController.selectedIndexes.contains(index);
         final typeColor =
             theme.getTypeColor(context, key: title) ?? Colors.grey;
         final typeIcon = theme.getTypeIcon(context, key: title);
 
         return _LogTypeChip(
+          key: ValueKey('log-type-chip-$title'),
           title: title ?? '',
           count: count,
-          isSelected: isSelected,
+          isSelected: selectedTitles.contains(title),
           typeColor: typeColor,
           typeIcon: typeIcon,
-          onSelected: (selected) {
-            switch (selected) {
-              case true:
-                titlesController.selectIndex(index);
-              case false:
-                titlesController.unselectIndex(index);
-            }
-            onToggle(
-              title ?? '',
-              titlesController.selectedIndexes.contains(index),
-            );
-          },
+          onSelected: (selected) => onToggle(title ?? '', selected),
         );
       }),
     ),
@@ -234,6 +220,7 @@ class _LogTypeChip extends StatelessWidget {
     required this.typeColor,
     required this.typeIcon,
     required this.onSelected,
+    super.key,
   });
 
   final String title;

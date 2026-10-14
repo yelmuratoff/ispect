@@ -217,23 +217,5 @@ void main() {
       );
       expect(a, equals(b));
     });
-
-    test('legacy identifyColorSchemeMatch returns prefixed string', () {
-      final result = ColorSchemeInspector.identifyColorSchemeMatch(
-        const Color(0xFF112233),
-        scheme,
-      );
-      expect(result, contains('colorScheme.primary'));
-    });
-
-    test('legacy identifyColorSchemeMatch is empty when no match', () {
-      expect(
-        ColorSchemeInspector.identifyColorSchemeMatch(
-          const Color(0xFF999999),
-          scheme,
-        ),
-        '',
-      );
-    });
   });
 }

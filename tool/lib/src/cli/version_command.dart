@@ -5,6 +5,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 import '../core/exceptions.dart';
 import '../core/next_version.dart';
+import '../core/release_prep.dart';
 import '../core/version_config.dart';
 import '../core/version_sync.dart';
 
@@ -22,18 +23,6 @@ final class VersionCommand extends Command<int> {
 
   @override
   String get description => 'Inspect and advance the repository version.';
-}
-
-void _warnGluedCounter(Version version) {
-  if (!hasGluedCounter(version)) {
-    return;
-  }
-  stderr
-    ..writeln('[WARN] $version glues its counter to the prerelease label, so '
-        'Pub compares that counter as text (dev11 sorts below dev8).')
-    ..writeln('[WARN] Further bumps stay monotonic by appending a numeric '
-        'identifier; to sort above an already published sibling the series has '
-        'to leave this label (rc.1) or the prerelease.');
 }
 
 final class _VersionBumpCommand extends Command<int> {
@@ -77,14 +66,15 @@ final class _VersionBumpCommand extends Command<int> {
       return 2;
     }
 
-    config.write(next);
-    stdout.writeln('[INFO] Bumped to: $next');
-    _warnGluedCounter(next);
-
-    if (!argResults!.flag('sync')) {
-      return 0;
+    if (argResults!.flag('sync')) {
+      VersionSync(repoRoot: repoRoot, out: stdout, err: stderr)
+          .run(current: current, target: next);
+    } else {
+      config.write(next);
     }
-    return runVersionSync(repoRoot: repoRoot, arguments: const []);
+    stdout.writeln('[INFO] Bumped to: $next');
+    writeGluedCounterWarning(stderr, next);
+    return 0;
   }
 
   Version? _resolve(String argument, Version current) {
@@ -124,29 +114,16 @@ final class _VersionCheckCommand extends Command<int> {
 
   @override
   Future<int> run() async {
-    final expected = VersionConfig.forRepo(repoRoot).read();
-    stdout.writeln('[INFO] Version from version.config: $expected');
-    _warnGluedCounter(expected);
+    writeGluedCounterWarning(stderr, VersionConfig.forRepo(repoRoot).read());
 
-    final packages = PackageVersions(repoRoot);
-    final declared = packages.read();
-    for (final entry in declared.entries) {
-      final matches = entry.value == expected.toString();
-      stdout.writeln(
-        '${matches ? "[OK ]" : "[ERR]"} ${entry.key}: ${entry.value}',
-      );
+    final status = DartReleaseSteps(
+      repoRoot: repoRoot,
+      out: stdout,
+      err: stderr,
+    ).checkVersionSync();
+    if (status != 0) {
+      stderr.writeln("[ERR] Run 'ispect_tool sync' to sync them.");
     }
-
-    try {
-      packages.assertMatches(expected);
-    } on VersionSyncException catch (e) {
-      stderr
-        ..writeln('[ERR] ${e.message}: ${e.outOfSync.join(", ")}')
-        ..writeln("[ERR] Run 'ispect_tool sync' to sync them.");
-      return 1;
-    }
-
-    stdout.writeln('[OK ] All ${declared.length} packages match $expected');
-    return 0;
+    return status;
   }
 }

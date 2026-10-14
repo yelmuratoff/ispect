@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:ispect/src/common/observers/transition.dart';
-import 'package:ispectify/ispectify.dart';
-
-final _routeTimestampFormatter = DateFormat('dd.MM.yy, HH:mm:ss');
 
 extension ISpectRouteExtension on Route<dynamic>? {
   /// Retrieves the route name with meaningful fallbacks based on route type.
@@ -33,83 +28,4 @@ extension ISpectRouteExtension on Route<dynamic>? {
     ModalRoute() => 'Modal',
     _ => 'Other',
   };
-}
-
-extension ISpectTransitionListExtension on List<RouteTransition> {
-  /// Returns either full transitions text or truncated (ID-based) description.
-  ///
-  /// - [isTruncated]: if true, returns truncated description (like transitionsToId)
-  /// - [id]: required if [isTruncated] is true
-  String transitionsDescription({bool isTruncated = false, String? id}) {
-    if (isEmpty) {
-      return 'No transitions recorded';
-    }
-    if (isTruncated) {
-      if (id == null) {
-        throw ArgumentError('id must be provided when isTruncated is true');
-      }
-      return _truncatedTransitionsToId(id);
-    }
-    return _fullTransitionsText();
-  }
-
-  String transitionsText({bool isTruncated = false}) =>
-      transitionsDescription(isTruncated: isTruncated);
-
-  String transitionsToId(String id, {bool isTruncated = true}) =>
-      transitionsDescription(isTruncated: isTruncated, id: id);
-
-  String _fullTransitionsText() {
-    final buffer = StringBuffer();
-    final lastIndex = length - 1;
-    for (var i = 0; i < length; i++) {
-      final transition = this[i];
-      buffer
-        ..writeln(_transitionSuffix(i, i == lastIndex))
-        ..writeln(_routeTimestampFormatter.format(transition.timestamp))
-        ..writeln('${transition.transitionText} (${transition.type.title})');
-      if (transition.arguments != null) {
-        buffer.writeln('Arguments: ${transition.prettyArguments}');
-      }
-      buffer.writeln('\n${ConsoleUtils.bottomLine(20)}');
-    }
-    return buffer.toString();
-  }
-
-  String _truncatedTransitionsToId(String id) {
-    final routeNames = <String>[];
-    String? lastAdded;
-    var found = false;
-
-    for (var i = length - 1; i >= 0; i--) {
-      final transition = this[i];
-      final fromName = transition.from?.name ?? 'Unknown';
-      final toName = transition.to?.name ?? 'Unknown';
-
-      if (routeNames.isEmpty) {
-        routeNames.add(fromName);
-        lastAdded = fromName;
-      }
-      if (lastAdded != toName) {
-        routeNames.add(toName);
-        lastAdded = toName;
-      }
-
-      if (transition.id == id) {
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      return 'Transition with id $id not found';
-    }
-    return routeNames.join(' → ');
-  }
-
-  String _transitionSuffix(int index, bool isLast) {
-    if (index == 0) return 'Current: ';
-    if (isLast) return 'Start: ';
-    return '';
-  }
 }

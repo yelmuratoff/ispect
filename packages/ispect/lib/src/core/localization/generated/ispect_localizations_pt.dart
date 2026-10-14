@@ -713,7 +713,8 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'Registro de mensagens WebSocket recebidas';
 
   @override
-  String get wsStateLogDesc => 'WebSocket connection state changed';
+  String get wsStateLogDesc =>
+      'Registro de mudanças de estado da conexão WebSocket';
 
   @override
   String get dbQueryLogDesc => 'Registro de consultas ao banco de dados';
@@ -1128,4 +1129,289 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
 
   @override
   String get composerEditAndResend => 'Editar e reenviar';
+
+  @override
+  String get settingsDisplay => 'Exibição';
+
+  @override
+  String get relativeTime => 'Tempo relativo';
+
+  @override
+  String get absoluteTime => 'Tempo absoluto';
+
+  @override
+  String get compactUrls => 'URLs compactas';
+
+  @override
+  String get settingsTools => 'Ferramentas';
+
+  @override
+  String get settingsAdvanced => 'Avançado';
+
+  @override
+  String get forwardErrorsToDeveloperLog =>
+      'Encaminhar erros para dart:developer';
+
+  @override
+  String get historyCapacity => 'Capacidade do histórico';
+
+  @override
+  String get historyCapacityDesc => 'Logs mantidos na memória';
+
+  @override
+  String get consoleTruncate => 'Truncamento do console';
+
+  @override
+  String get consoleTruncateDesc => 'Máx. de caracteres por linha do console';
+
+  @override
+  String get captureMode => 'Modo de captura';
+
+  @override
+  String get captureModeDesc => 'Valores úteis ou isolamento máximo';
+
+  @override
+  String get captureModeBalancedDesc =>
+      'Formatadores protegidos com saída limitada';
+
+  @override
+  String get captureModeStrict => 'Estrito';
+
+  @override
+  String get captureModeStrictDesc =>
+      'Nunca executar formatadores do aplicativo';
+
+  @override
+  String get profileBalanced => 'Equilibrado';
+
+  @override
+  String get resourceProfile => 'Perfil de recursos';
+
+  @override
+  String get resourceProfileDesc =>
+      'Limites de captura, memória, importação e exportação';
+
+  @override
+  String get resourceProfileConstrained => 'Restrito';
+
+  @override
+  String get resourceProfileConstrainedDesc =>
+      'Menor uso de memória em sessões longas';
+
+  @override
+  String get resourceProfileBalancedDesc =>
+      'Diagnóstico útil com custo limitado';
+
+  @override
+  String get resourceProfileExtended => 'Estendido';
+
+  @override
+  String get resourceProfileExtendedDesc =>
+      'Transferências internas controladas maiores';
+
+  @override
+  String get processingProfile => 'Perfil de processamento';
+
+  @override
+  String get processingProfileDesc => 'Responsividade e vazão em lote';
+
+  @override
+  String get processingProfileResponsive => 'Responsivo';
+
+  @override
+  String get processingProfileResponsiveDesc =>
+      'Ceder com frequência para manter a interface fluida';
+
+  @override
+  String get processingProfileBalancedDesc => 'Agendamento de uso geral';
+
+  @override
+  String get processingProfileThroughput => 'Vazão';
+
+  @override
+  String get processingProfileThroughputDesc =>
+      'Lotes maiores para transferências mais rápidas';
+
+  @override
+  String get limitInvalidValue => 'Insira um número inteiro não negativo';
+
+  @override
+  String get limitZeroDisables => '0 desativa este limite';
+
+  @override
+  String get apply => 'Aplicar';
+
+  @override
+  String logCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count registros',
+      one: '$count registro',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String warningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count avisos',
+      one: '$count aviso',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count erros',
+      one: '$count erro',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filteredLogCount(int filtered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$filtered / $total registros',
+      one: '$filtered / $total registro',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contentProcessingError => 'Erro ao processar o conteúdo';
+
+  @override
+  String get failedToLoadLogContent => 'Falha ao carregar o conteúdo dos logs';
+
+  @override
+  String get unknownContentProcessingError =>
+      'Erro desconhecido ao processar o conteúdo';
+
+  @override
+  String get contentEmptyError => 'O conteúdo está vazio';
+
+  @override
+  String get contentExceedsSafeLimitsError =>
+      'O conteúdo excede os limites seguros de importação';
+
+  @override
+  String get correlationIdShort => 'Corr';
+
+  @override
+  String get transactionIdShort => 'Trans';
+
+  @override
+  String get columnType => 'Tipo';
+
+  @override
+  String get columnTime => 'Hora';
+
+  @override
+  String get columnMessage => 'Mensagem';
+
+  @override
+  String sortColumnAscending(String column) {
+    return 'Ordenar por $column, ordem crescente';
+  }
+
+  @override
+  String sortColumnDescending(String column) {
+    return 'Ordenar por $column, ordem decrescente';
+  }
+
+  @override
+  String sortColumnUnsorted(String column) {
+    return 'Ordenar por $column, sem ordenação';
+  }
+
+  @override
+  String resizeColumn(String column) {
+    return 'Redimensionar a coluna $column';
+  }
+
+  @override
+  String get resumeLiveTail => 'Retomar acompanhamento ao vivo';
+
+  @override
+  String get pauseLiveTail => 'Pausar acompanhamento ao vivo';
+
+  @override
+  String get liveTailLive => 'AO VIVO';
+
+  @override
+  String get liveTailPaused => 'PAUSADO';
+
+  @override
+  String get open => 'Abrir';
+
+  @override
+  String filterByType(String type) {
+    return 'Filtrar pelo tipo $type';
+  }
+
+  @override
+  String httpStatus(int code) {
+    return 'Status HTTP $code';
+  }
+
+  @override
+  String get composerBodyNone => 'Nenhum';
+
+  @override
+  String get composerBodyText => 'Texto';
+
+  @override
+  String get composerBodyForm => 'Formulário';
+
+  @override
+  String get composerBodyMultipart => 'Multipart';
+
+  @override
+  String get jsonViewer => 'Visualizador JSON';
+
+  @override
+  String get detail => 'Detalhe';
+
+  @override
+  String copyKey(String key) {
+    return 'Copiar $key';
+  }
+
+  @override
+  String get copyToClipboardFailed =>
+      'Falha ao copiar para a área de transferência';
+
+  @override
+  String pluginErrorTitle(String pluginId) {
+    return 'Erro do plugin: $pluginId';
+  }
+
+  @override
+  String get pluginRenderFailed => 'Falha ao exibir a tela do plugin';
+
+  @override
+  String get stackTrace => 'Rastreamento de pilha';
+
+  @override
+  String get resizeDivider => 'Redimensionar divisor';
+
+  @override
+  String get sessionLogsLoadFailed => 'Falha ao carregar os logs da sessão';
+
+  @override
+  String get dailySessionsLoadFailed => 'Falha ao carregar as sessões';
+
+  @override
+  String get dailySessionsClearFailed => 'Falha ao limpar as sessões';
+
+  @override
+  String get exception => 'Exceção';
 }

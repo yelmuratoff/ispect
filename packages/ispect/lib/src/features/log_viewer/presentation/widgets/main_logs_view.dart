@@ -4,7 +4,6 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/widgets/gap/sliver_gap.dart';
-import 'package:ispect/src/features/log_viewer/controllers/group_button.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_view_pipeline.dart';
@@ -24,25 +23,21 @@ class MainLogsView extends StatefulWidget {
   const MainLogsView({
     required this.logsData,
     required this.iSpectTheme,
-    required this.titleFiltersController,
     required this.searchFocusNode,
     required this.logsScrollController,
     required this.logsViewController,
     super.key,
     this.onSettingsTap,
     this.appBarTitle,
-    this.hasDetailPanel = false,
   });
 
   final List<ISpectLogData> logsData;
   final ISpectScopeModel iSpectTheme;
-  final GroupButtonController titleFiltersController;
   final FocusNode searchFocusNode;
   final ScrollController logsScrollController;
   final ISpectViewController logsViewController;
   final VoidCallback? onSettingsTap;
   final String? appBarTitle;
-  final bool hasDetailPanel;
 
   @override
   State<MainLogsView> createState() => _MainLogsViewState();
@@ -51,6 +46,7 @@ class MainLogsView extends StatefulWidget {
 class _MainLogsViewState extends State<MainLogsView> {
   late final LogsScreenController _controller;
   late final LogsViewPipeline _pipeline;
+  late LogsViewState _state;
 
   void _focusSearchField() {
     if (!mounted) return;
@@ -65,13 +61,19 @@ class _MainLogsViewState extends State<MainLogsView> {
       logsViewController: widget.logsViewController,
       logsScrollController: widget.logsScrollController,
       searchFocusNode: widget.searchFocusNode,
-      titleFiltersController: widget.titleFiltersController,
       onStateChanged: () {
-        if (mounted) setState(() {});
+        if (mounted) setState(_refreshState);
       },
     );
     _pipeline = LogsViewPipeline(screen: _controller);
+    _refreshState();
     HardwareKeyboard.instance.addHandler(_globalKeyHandler);
+  }
+
+  @override
+  void didUpdateWidget(MainLogsView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.logsData, widget.logsData)) _refreshState();
   }
 
   @override
@@ -81,11 +83,38 @@ class _MainLogsViewState extends State<MainLogsView> {
     super.dispose();
   }
 
+  void _refreshState() {
+    final state = _pipeline.compute(widget.logsData);
+    _state = state;
+    final matches = state.searchMatches;
+    final matchesChanged =
+        matches != null &&
+        widget.logsViewController.needsSearchMatchUpdate(matches);
+    if (!matchesChanged && state.totalCount == _controller.lastLogCount) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final latest = _state;
+      if (latest.searchMatches case final latestMatches?) {
+        widget.logsViewController.updateSearchMatches(latestMatches);
+      }
+      _controller.checkForNewLogs(
+        latest.totalCount,
+        isDesktop: context.screenSize.isDesktop,
+        onMount: () {
+          if (mounted) _controller.scrollToNewest();
+        },
+      );
+    });
+  }
+
   bool _globalKeyHandler(KeyEvent event) {
     if (event is! KeyDownEvent) return false;
     if (event.logicalKey != LogicalKeyboardKey.keyK) return false;
     final hk = HardwareKeyboard.instance;
     if (!hk.isMetaPressed && !hk.isControlPressed) return false;
+    if (!mounted || !(ModalRoute.isCurrentOf(context) ?? true)) return false;
     _focusSearchField();
     return true;
   }
@@ -112,34 +141,16 @@ class _MainLogsViewState extends State<MainLogsView> {
 
   @override
   Widget build(BuildContext context) {
-    final state = _pipeline.compute(widget.logsData);
-
+    final state = _state;
     final options = ISpect.read(context).options;
     final isDesktop = context.screenSize.isDesktop;
-    final matchesToCommit = state.searchMatches;
-    if (matchesToCommit != null ||
-        state.totalCount != _controller.lastLogCount) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        if (matchesToCommit != null) {
-          widget.logsViewController.updateSearchMatches(matchesToCommit);
-        }
-        _controller.checkForNewLogs(
-          state.totalCount,
-          isDesktop: isDesktop,
-          onMount: () {
-            if (mounted) _controller.scrollToNewest();
-          },
-        );
-      });
-    }
+    final viewController = widget.logsViewController;
 
     // Sort column/direction as ints for the header
-    final sortColumnIdx = widget.logsViewController.sortColumn.index;
-    final sortDirIdx =
-        widget.logsViewController.sortColumn == LogSortColumn.time
-        ? (widget.logsViewController.isLogOrderReversed ? 1 : 0)
-        : widget.logsViewController.sortDirection.index;
+    final sortColumnIdx = viewController.sortColumn.index;
+    final sortDirIdx = viewController.sortColumn == LogSortColumn.time
+        ? (viewController.isNewestFirst ? 1 : 0)
+        : viewController.sortDirection.index;
 
     Widget body = Stack(
       children: [
@@ -152,24 +163,18 @@ class _MainLogsViewState extends State<MainLogsView> {
               ISpectAppBar(
                 focusNode: widget.searchFocusNode,
                 title: widget.appBarTitle,
-                titlesController: widget.titleFiltersController,
                 counts: state.logTypeKeys.counts,
                 uniqTitles: state.logTypeKeys.unique,
-                controller: widget.logsViewController,
+                controller: viewController,
                 onSettingsTap: widget.onSettingsTap,
-                onToggleTitle: (key, selected) => widget.logsViewController
+                onToggleTitle: (key, selected) => viewController
                     .handleLogTypeKeyFilterToggle(key, isSelected: selected),
                 backgroundColor: widget.iSpectTheme.theme.background?.resolve(
                   context,
                 ),
-                filteredCount: state.isHighlightMode
-                    ? widget.logsViewController.searchMatchCount
-                    : state.filtered.length,
-                totalCount: state.isHighlightMode
-                    ? state.filtered.length
-                    : state.totalCount,
-                errorCount: state.levelStats.errors,
-                warningCount: state.levelStats.warnings,
+                totalCount: state.headerCounts.total,
+                errorCount: state.headerCounts.errors,
+                warningCount: state.headerCounts.warnings,
                 onScrollToFocusedMatch: _scrollToFocusedMatch,
               ),
               if (isDesktop)
@@ -187,13 +192,12 @@ class _MainLogsViewState extends State<MainLogsView> {
                       onSortTap: (colIdx) {
                         final col = LogSortColumn.values[colIdx];
                         if (col == LogSortColumn.time) {
-                          widget.logsViewController.toggleLogOrder();
-                          if (widget.logsViewController.sortColumn !=
-                              LogSortColumn.time) {
-                            widget.logsViewController.toggleSort(col);
+                          viewController.toggleLogOrder();
+                          if (viewController.sortColumn != LogSortColumn.time) {
+                            viewController.toggleSort(col);
                           }
                         } else {
-                          widget.logsViewController.toggleSort(col);
+                          viewController.toggleSort(col);
                         }
                       },
                       typeColumnWidth: _controller.typeColumnWidth,
@@ -219,7 +223,7 @@ class _MainLogsViewState extends State<MainLogsView> {
           ValueListenableBuilder(
             valueListenable: _controller.hasNewLogs,
             builder: (context, hasNew, _) {
-              final newestAtTop = _controller.isNewestAtTop;
+              final newestAtTop = viewController.isNewestFirst;
               return AnimatedPositioned(
                 duration: ISpectMotion.short,
                 curve: ISpectMotion.standardCurve,
@@ -253,17 +257,19 @@ class _MainLogsViewState extends State<MainLogsView> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: DesktopStatusBar(
-              filteredCount: state.filtered.length,
-              totalCount: state.totalCount,
-              isFiltered: state.isFiltered,
-              selectedLog: widget.logsViewController.activeData,
-              isLiveTailActive: _controller.isLiveTailActive,
-              isLiveTailPaused: _controller.isLiveTailPaused,
-              onToggleLiveTail: _controller.toggleLiveTailPause,
-              useRelativeTime: widget.logsViewController.useRelativeTime,
-              onToggleTimestamp:
-                  widget.logsViewController.toggleTimestampFormat,
+            child: ValueListenableBuilder(
+              valueListenable: _controller.liveTailActive,
+              builder: (context, isLiveTailActive, _) => DesktopStatusBar(
+                filteredCount: state.filtered.length,
+                totalCount: state.totalCount,
+                isFiltered: state.isFiltered,
+                selectedLog: viewController.activeData,
+                isLiveTailActive: isLiveTailActive,
+                isLiveTailPaused: _controller.isLiveTailPaused,
+                onToggleLiveTail: _controller.toggleLiveTailPause,
+                useRelativeTime: viewController.useRelativeTime,
+                onToggleTimestamp: viewController.toggleTimestampFormat,
+              ),
             ),
           ),
       ],
@@ -275,7 +281,7 @@ class _MainLogsViewState extends State<MainLogsView> {
         focusNode: _controller.keyboardFocusNode,
         autofocus: true,
         onKeyEvent: (node, event) =>
-            _controller.handleKeyEvent(node, event, widget.logsData, context),
+            _controller.handleKeyEvent(node, event, _state, context),
         child: body,
       );
     }
@@ -326,9 +332,7 @@ class _MainLogsViewState extends State<MainLogsView> {
       onShowRelated: isDesktop
           ? null
           : (id) => widget.logsViewController.searchByCorrelationId(id),
-      onTypeFilterTap: isDesktop
-          ? (type) => _controller.handleTypeFilter(type, widget.logsData)
-          : null,
+      onTypeFilterTap: isDesktop ? _controller.handleTypeFilter : null,
       useRelativeTime: widget.logsViewController.useRelativeTime,
       typeColumnWidth: _controller.typeColumnWidth,
       timeColumnWidth: _controller.timeColumnWidth,

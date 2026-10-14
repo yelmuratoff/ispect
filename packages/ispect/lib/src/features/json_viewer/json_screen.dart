@@ -5,6 +5,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/debug_report.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
@@ -38,11 +39,7 @@ class JsonScreen extends StatefulWidget {
     DiagnosticProcessingPolicy? processingPolicy,
     Key? key,
   }) {
-    final limits =
-        (resourceLimits ??
-              ISpect.loggerIfInitialized?.options.resourceLimits ??
-              DiagnosticResourceLimits.balanced)
-          ..validate();
+    final limits = (resourceLimits ?? ISpectResourceLimits.current)..validate();
     final scheduling =
         (processingPolicy ??
               ISpect.loggerIfInitialized?.options.processingPolicy ??
@@ -216,6 +213,7 @@ class _JsonScreenState extends State<JsonScreen> {
     final logKey = widget.data['key']?.toString();
     final logColor = iSpect.theme.getTypeColor(context, key: logKey);
     final logIcon = iSpect.theme.getTypeIcon(context, key: logKey);
+    final logTitle = iSpect.theme.getTypeTitle(context, key: logKey);
     final jsonTheme = JsonExplorerTheme.defaultThemeByContext(context);
     return Scaffold(
       backgroundColor: bgColor,
@@ -239,7 +237,7 @@ class _JsonScreenState extends State<JsonScreen> {
               const Gap(10),
               Flexible(
                 child: Text(
-                  logKey ?? 'JSON Viewer',
+                  logTitle ?? context.ispectL10n.jsonViewer,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -665,7 +663,10 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
                     builder: (_) => JsonScreen(
                       data: correlatedLogData,
                       correlatedLogData: data,
-                      correlatedLogLabel: _reverseLabel(correlatedLogLabel),
+                      correlatedLogLabel: _reverseLabel(
+                        context,
+                        correlatedLogLabel,
+                      ),
                       correlationDuration: correlationDuration,
                     ),
                     settings: const RouteSettings(name: 'ISpect Log Screen'),
@@ -688,7 +689,7 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          correlatedLogLabel ?? 'Detail',
+                          correlatedLogLabel ?? context.ispectL10n.detail,
                           style: TextStyle(
                             color: targetColor,
                             fontSize: 11,
@@ -715,13 +716,10 @@ class _JsonScreenCorrelationBanner extends StatelessWidget {
 
   /// When navigating to the correlated log, the "go back" label
   /// should point to the opposite direction.
-  String? _reverseLabel(String? label) {
-    if (label == null) return null;
-
-    final currentKey = data['key']?.toString();
-    final correlatedKey = correlatedLogData['key']?.toString();
-    if (currentKey == correlatedKey) return label;
-
+  String? _reverseLabel(BuildContext context, String? label) {
+    final l10n = context.ispectL10n;
+    if (label == l10n.httpRequest) return l10n.httpResponse;
+    if (label == l10n.httpResponse) return l10n.httpRequest;
     return label;
   }
 }

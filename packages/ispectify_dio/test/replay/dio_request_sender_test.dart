@@ -114,6 +114,36 @@ void main() {
       expect(result.body, isNull);
     });
 
+    test('reports a malformed file content type via result.error', () async {
+      final adapter = _FakeHttpAdapter((_) => _jsonResponse({'ok': true}));
+      final sender = DioRequestSender(_dioWith(adapter));
+
+      final result = await sender.send(
+        NetworkReplayRequest(
+          method: 'POST',
+          uri: Uri.parse('https://api.test/upload'),
+          body: const MultipartReplayBody(
+            fields: [],
+            files: [
+              MultipartReplayFile(
+                field: 'file',
+                file: ComposerPickedFile(
+                  filename: 'a.txt',
+                  bytes: [104, 105],
+                  contentType: 'not a media type',
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      expect(adapter.captured, isNull);
+      expect(result.statusCode, isNull);
+      expect(result.error, isA<FormatException>());
+      expect(result.durationMs, greaterThanOrEqualTo(0));
+    });
+
     test('builds multipart form data from fields and files', () async {
       final adapter = _FakeHttpAdapter((_) => _jsonResponse({'ok': true}));
       final sender = DioRequestSender(_dioWith(adapter));

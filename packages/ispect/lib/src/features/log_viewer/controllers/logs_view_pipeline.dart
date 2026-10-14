@@ -1,7 +1,10 @@
+import 'dart:collection';
+
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/managers/filter_manager.dart';
 import 'package:ispect/src/common/services/network_transaction_service.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/log_tallies.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
 
 /// Everything the logs list needs to render one frame, derived from the raw
@@ -15,7 +18,7 @@ final class LogsViewState {
     required this.isReversed,
     required this.isHighlightMode,
     required this.searchMatches,
-    required this.levelStats,
+    required this.headerCounts,
     required this.logTypeKeys,
     required this.idToVisualIndex,
   });
@@ -41,10 +44,10 @@ final class LogsViewState {
   /// Whether search highlights matches instead of filtering them.
   final bool isHighlightMode;
 
-  /// Matches in visual order, or null outside highlight mode.
+  /// Matches in visual order, one per row, or null outside highlight mode.
   final List<ISpectLogData>? searchMatches;
 
-  final ({int errors, int warnings}) levelStats;
+  final LogHeaderCounts headerCounts;
   final LogTypeKeysResult logTypeKeys;
 
   /// Log id to the index of the row that displays it, for both flat and
@@ -52,11 +55,18 @@ final class LogsViewState {
   final Map<String, int> idToVisualIndex;
 
   bool get isFiltered => filtered.length != totalCount;
+
+  int get rowCount => grouped?.length ?? sorted.length;
+
+  Object rowAt(int visualIndex) {
+    final rows = grouped ?? sorted;
+    return rows[isReversed ? rows.length - 1 - visualIndex : visualIndex];
+  }
 }
 
 /// Turns the raw history snapshot into a [LogsViewState].
 ///
-/// Owns the caches that make repeated builds cheap: the reversed-matches list
+/// Owns the caches that make repeated builds cheap: the ordered-matches list
 /// and the id-to-row index are rebuilt only when their inputs change identity
 /// or the filter generation advances.
 final class LogsViewPipeline {
@@ -68,6 +78,8 @@ final class LogsViewPipeline {
 
   final LogsScreenController _screen;
   final NetworkTransactionService _transactionService;
+  final _logTypeKeyTally = LogTypeKeyTally();
+  final _headerTally = LogHeaderTally();
 
   Map<String, int> _idToVisualIndex = const {};
   List<ISpectLogData>? _lastVisualIndexInput;
@@ -76,7 +88,8 @@ final class LogsViewPipeline {
   bool _lastVisualIndexReversed = false;
 
   List<ISpectLogData>? _lastRawMatches;
-  List<ISpectLogData> _reversedMatchesCache = const [];
+  Map<String, int>? _lastMatchesVisualIndex;
+  List<ISpectLogData> _orderedMatchesCache = const [];
 
   ISpectViewController get _view => _screen.logsViewController;
 
@@ -89,8 +102,7 @@ final class LogsViewPipeline {
         ? _view.applyFiltersWithoutSearch(logs)
         : _view.applyCurrentFilters(logs);
     final sorted = _screen.applySortingIfNeeded(filtered);
-    final isReversed =
-        _view.sortColumn == LogSortColumn.time && _view.isLogOrderReversed;
+    final isReversed = _view.isNewestFirst;
     final grouped = _view.groupHttpLogs
         ? _transactionService
               .getGroupedEntries(sorted, _view.outputGeneration, source: logs)
@@ -107,10 +119,17 @@ final class LogsViewPipeline {
       isReversed: isReversed,
       isHighlightMode: isHighlightMode,
       searchMatches: isHighlightMode
-          ? _searchMatches(sorted, isReversed: isReversed)
+          ? _searchMatches(
+              sorted,
+              isReversed: isReversed,
+              isGrouped: grouped != null,
+            )
           : null,
-      levelStats: _view.getLevelStats(logs),
-      logTypeKeys: _view.getLogTypeKeys(logs),
+      headerCounts: _headerTally.update(logs, filter: _view.filter),
+      logTypeKeys: _logTypeKeyTally.update(
+        logs,
+        excludedKeys: _view.settings.disabledLogTypes,
+      ),
       idToVisualIndex: _idToVisualIndex,
     );
   }
@@ -118,14 +137,28 @@ final class LogsViewPipeline {
   List<ISpectLogData> _searchMatches(
     List<ISpectLogData> sorted, {
     required bool isReversed,
+    required bool isGrouped,
   }) {
     final matches = _view.findSearchMatches(sorted);
-    if (!isReversed || matches.isEmpty) return matches;
-    if (!identical(matches, _lastRawMatches)) {
-      _reversedMatchesCache = matches.reversed.toList();
+    if ((!isReversed && !isGrouped) || matches.isEmpty) return matches;
+    if (!identical(matches, _lastRawMatches) ||
+        !identical(_idToVisualIndex, _lastMatchesVisualIndex)) {
+      _orderedMatchesCache = isGrouped
+          ? _oneMatchPerRow(matches)
+          : matches.reversed.toList();
       _lastRawMatches = matches;
+      _lastMatchesVisualIndex = _idToVisualIndex;
     }
-    return _reversedMatchesCache;
+    return _orderedMatchesCache;
+  }
+
+  List<ISpectLogData> _oneMatchPerRow(List<ISpectLogData> matches) {
+    final matchByRow = SplayTreeMap<int, ISpectLogData>();
+    for (final match in matches) {
+      final row = _idToVisualIndex[match.id];
+      if (row != null) matchByRow.putIfAbsent(row, () => match);
+    }
+    return matchByRow.values.toList(growable: false);
   }
 
   void _updateVisualIndexes(

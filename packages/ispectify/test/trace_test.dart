@@ -805,6 +805,64 @@ void main() {
     });
   });
 
+  group('invalid per-trace resource limits', () {
+    const invalid = ISpectTraceConfig(
+      resourceLimits: DiagnosticResourceLimits(maxCapturedValueBytes: 0),
+    );
+    late ISpectLogger logger;
+
+    setUp(() {
+      logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+    });
+
+    test('traceSync returns the result and runs the operation once', () {
+      var runs = 0;
+
+      final result = logger.traceSync(
+        category: dbCategory,
+        source: 'hive',
+        operation: 'get',
+        config: invalid,
+        run: () {
+          runs++;
+          return 'value';
+        },
+      );
+
+      expect(result, 'value');
+      expect(runs, 1);
+      expect(logger.history.single.logLevel, LogLevel.warning);
+    });
+
+    test('traceAsync returns the result without an error trace', () async {
+      final result = await logger.traceAsync(
+        category: dbCategory,
+        source: 'sqflite',
+        operation: 'query',
+        config: invalid,
+        run: () async => 42,
+      );
+
+      expect(result, 42);
+      expect(logger.history.single.logLevel, LogLevel.warning);
+    });
+
+    test('trace reports a warning instead of throwing', () {
+      expect(
+        () => logger.trace(
+          category: dbCategory,
+          source: 'hive',
+          operation: 'get',
+          config: invalid,
+        ),
+        returnsNormally,
+      );
+      expect(logger.history.single.logLevel, LogLevel.warning);
+    });
+  });
+
   // ── traceStart / traceEnd ────────────────────────────────────────
   group('traceStart/traceEnd', () {
     late FakeISpectLogger logger;
@@ -1175,19 +1233,28 @@ void main() {
 
   // ── ISpectLogDataX ───────────────────────────────────────────────
   group('ISpectLogDataX', () {
-    test('trace field getters return correct values', () {
-      final log = ISpectLogData(
-        'test',
-        additionalData: const {
-          TraceKeys.category: 'network',
-          TraceKeys.source: 'dio',
-          TraceKeys.operation: 'GET',
-          TraceKeys.target: '/api',
-          TraceKeys.durationMs: 42,
-          TraceKeys.success: true,
-          TraceKeys.meta: <String, dynamic>{'statusCode': 200},
+    late ISpectLogger producer;
+    setUp(() {
+      producer = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+    });
+
+    test('network getters read what the http helpers record', () {
+      producer.httpResponse(
+        source: 'dio',
+        operation: 'GET',
+        target: '/api',
+        duration: const Duration(milliseconds: 42),
+        meta: const {
+          NetworkJsonKeys.requestId: 'req-1',
+          NetworkJsonKeys.statusCode: 201,
+          NetworkJsonKeys.responseData: <String, Object?>{
+            NetworkJsonKeys.headers: <String, Object?>{'x-trace': 'abc'},
+          },
         },
       );
+      final log = producer.history.single;
 
       expect(log.traceCategory, 'network');
       expect(log.traceSource, 'dio');
@@ -1196,7 +1263,65 @@ void main() {
       expect(log.traceDurationMs, 42);
       expect(log.traceSuccess, isTrue);
       expect(log.isNetwork, isTrue);
+      expect(log.httpStatusCode, 201);
+      expect(log.requestId, 'req-1');
+      expect(log.httpHeaders, {'x-trace': 'abc'});
+    });
+
+    test('network getters keep reading legacy camelCase meta', () {
+      final log = ISpectLogData(
+        'legacy',
+        additionalData: const {
+          TraceKeys.meta: <String, dynamic>{
+            'statusCode': 200,
+            'requestId': 'legacy-id',
+          },
+        },
+      );
+
       expect(log.httpStatusCode, 200);
+      expect(log.requestId, 'legacy-id');
+    });
+
+    test('state getters read the bloc observer meta keys', () {
+      producer.blocEvent(
+        source: 'bloc',
+        target: 'CounterBloc',
+        meta: const {'bloc-type': 'CounterBloc', 'event-type': 'Increment'},
+      );
+      final log = producer.history.single;
+
+      expect(log.blocType, 'CounterBloc');
+      expect(log.eventType, 'Increment');
+    });
+
+    test('eventType reads the ws and sse helpers', () {
+      producer
+        ..wsSend(source: 'ws', operation: 'send', eventType: 'chat')
+        ..sse(source: 'sse', operation: 'receive', eventType: 'tick');
+
+      expect(producer.history.map((log) => log.eventType), ['chat', 'tick']);
+      expect(producer.history.first.isWs, isTrue);
+      expect(producer.history.last.isSse, isTrue);
+    });
+
+    test('domain getters read storage, auth, and push helpers', () {
+      producer
+        ..storage(
+          source: 's3',
+          operation: 'upload',
+          bucket: 'avatars',
+          sizeBytes: 2048,
+        )
+        ..auth(source: 'auth', operation: 'login', provider: 'google')
+        ..push(source: 'fcm', operation: 'receive', title: 'Hi', topic: 'news');
+      final [storage, auth, push] = producer.history;
+
+      expect(storage.storageBucket, 'avatars');
+      expect(storage.storageSizeBytes, 2048);
+      expect(auth.authProvider, 'google');
+      expect(push.pushTitle, 'Hi');
+      expect(push.pushTopic, 'news');
     });
 
     test('defensive getters return null on wrong types', () {

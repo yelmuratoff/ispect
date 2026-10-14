@@ -694,7 +694,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'WebSocket 受信メッセージのログ';
 
   @override
-  String get wsStateLogDesc => 'WebSocket connection state changed';
+  String get wsStateLogDesc => 'WebSocket 接続状態の変更ログ';
 
   @override
   String get dbQueryLogDesc => 'データベースクエリのログ';
@@ -1087,4 +1087,273 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get composerEditAndResend => '編集して再送信';
+
+  @override
+  String get settingsDisplay => '表示';
+
+  @override
+  String get relativeTime => '相対時刻';
+
+  @override
+  String get absoluteTime => '絶対時刻';
+
+  @override
+  String get compactUrls => 'URLを短縮表示';
+
+  @override
+  String get settingsTools => 'ツール';
+
+  @override
+  String get settingsAdvanced => '詳細設定';
+
+  @override
+  String get forwardErrorsToDeveloperLog => 'エラーをdart:developerに転送';
+
+  @override
+  String get historyCapacity => '履歴の容量';
+
+  @override
+  String get historyCapacityDesc => 'メモリに保持するログ数';
+
+  @override
+  String get consoleTruncate => 'コンソールの切り詰め';
+
+  @override
+  String get consoleTruncateDesc => 'コンソール1行あたりの最大文字数';
+
+  @override
+  String get captureMode => 'キャプチャモード';
+
+  @override
+  String get captureModeDesc => '有用な値か、最大限の分離か';
+
+  @override
+  String get captureModeBalancedDesc => '出力を制限した保護付きフォーマッタ';
+
+  @override
+  String get captureModeStrict => '厳格';
+
+  @override
+  String get captureModeStrictDesc => 'アプリのフォーマッタを実行しない';
+
+  @override
+  String get profileBalanced => 'バランス';
+
+  @override
+  String get resourceProfile => 'リソースプロファイル';
+
+  @override
+  String get resourceProfileDesc => 'キャプチャ・メモリ・インポート・エクスポートの上限';
+
+  @override
+  String get resourceProfileConstrained => '省メモリ';
+
+  @override
+  String get resourceProfileConstrainedDesc => '長時間のセッション向けにメモリ使用量を抑える';
+
+  @override
+  String get resourceProfileBalancedDesc => 'コストを抑えた有用な診断';
+
+  @override
+  String get resourceProfileExtended => '拡張';
+
+  @override
+  String get resourceProfileExtendedDesc => '制御下でより大きな内部受け渡しを許可';
+
+  @override
+  String get processingProfile => '処理プロファイル';
+
+  @override
+  String get processingProfileDesc => '応答性とバッチのスループット';
+
+  @override
+  String get processingProfileResponsive => '応答性重視';
+
+  @override
+  String get processingProfileResponsiveDesc => 'UIを滑らかに保つため頻繁に処理を譲る';
+
+  @override
+  String get processingProfileBalancedDesc => '汎用的なスケジューリング';
+
+  @override
+  String get processingProfileThroughput => 'スループット重視';
+
+  @override
+  String get processingProfileThroughputDesc => 'より大きなバッチで受け渡しを高速化';
+
+  @override
+  String get limitInvalidValue => '0以上の整数を入力してください';
+
+  @override
+  String get limitZeroDisables => '0でこの上限を無効化';
+
+  @override
+  String get apply => '適用';
+
+  @override
+  String logCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件のログ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String warningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件の警告',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String errorCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件のエラー',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String filteredLogCount(int filtered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$filtered / $total件のログ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get contentProcessingError => 'コンテンツ処理エラー';
+
+  @override
+  String get failedToLoadLogContent => 'ログの内容を読み込めませんでした';
+
+  @override
+  String get unknownContentProcessingError => 'コンテンツの処理中に不明なエラーが発生しました';
+
+  @override
+  String get contentEmptyError => 'コンテンツが空です';
+
+  @override
+  String get contentExceedsSafeLimitsError => 'コンテンツが安全なインポート上限を超えています';
+
+  @override
+  String get correlationIdShort => '相関';
+
+  @override
+  String get transactionIdShort => 'トランザクション';
+
+  @override
+  String get columnType => '種類';
+
+  @override
+  String get columnTime => '時刻';
+
+  @override
+  String get columnMessage => 'メッセージ';
+
+  @override
+  String sortColumnAscending(String column) {
+    return '$columnで並べ替え、昇順';
+  }
+
+  @override
+  String sortColumnDescending(String column) {
+    return '$columnで並べ替え、降順';
+  }
+
+  @override
+  String sortColumnUnsorted(String column) {
+    return '$columnで並べ替え、未ソート';
+  }
+
+  @override
+  String resizeColumn(String column) {
+    return '$column列の幅を変更';
+  }
+
+  @override
+  String get resumeLiveTail => 'ライブ追跡を再開';
+
+  @override
+  String get pauseLiveTail => 'ライブ追跡を一時停止';
+
+  @override
+  String get liveTailLive => 'ライブ';
+
+  @override
+  String get liveTailPaused => '一時停止中';
+
+  @override
+  String get open => '開く';
+
+  @override
+  String filterByType(String type) {
+    return '種類「$type」で絞り込む';
+  }
+
+  @override
+  String httpStatus(int code) {
+    return 'HTTPステータス $code';
+  }
+
+  @override
+  String get composerBodyNone => 'なし';
+
+  @override
+  String get composerBodyText => 'テキスト';
+
+  @override
+  String get composerBodyForm => 'フォーム';
+
+  @override
+  String get composerBodyMultipart => 'マルチパート';
+
+  @override
+  String get jsonViewer => 'JSONビューア';
+
+  @override
+  String get detail => '詳細';
+
+  @override
+  String copyKey(String key) {
+    return '$keyをコピー';
+  }
+
+  @override
+  String get copyToClipboardFailed => 'クリップボードにコピーできませんでした';
+
+  @override
+  String pluginErrorTitle(String pluginId) {
+    return 'プラグインエラー: $pluginId';
+  }
+
+  @override
+  String get pluginRenderFailed => 'プラグイン画面を表示できませんでした';
+
+  @override
+  String get stackTrace => 'スタックトレース';
+
+  @override
+  String get resizeDivider => '区切り線のサイズを変更';
+
+  @override
+  String get sessionLogsLoadFailed => 'セッションのログを読み込めませんでした';
+
+  @override
+  String get dailySessionsLoadFailed => 'セッションを読み込めませんでした';
+
+  @override
+  String get dailySessionsClearFailed => 'セッションを消去できませんでした';
+
+  @override
+  String get exception => '例外';
 }

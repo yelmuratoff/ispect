@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:ispectify/ispectify.dart';
@@ -553,6 +554,48 @@ void main() {
 
       expect(result, redactionFailedPlaceholder);
       expect(result.toString(), isNot(contains(secret)));
+    });
+
+    test('truncates a wide but small JSON body instead of failing', () {
+      final body = jsonEncode([
+        for (var i = 0; i < 1500; i++) {'id': i, 'password': 'WIDE-SECRET-$i'},
+      ]);
+
+      final result = sanitizer.body(body, enableRedaction: true);
+
+      expect(result, isA<String>());
+      expect(result, isNot(redactionFailedPlaceholder));
+      expect(result, contains('"id":0'));
+      expect(result, contains(JsonValueNormalizer.maxCollectionItemsReached));
+      expect(result, isNot(contains('"id":1499')));
+      expect(result.toString(), isNot(contains('WIDE-SECRET')));
+    });
+
+    test('truncates a JSON body over the node budget instead of failing', () {
+      final body = jsonEncode([
+        for (var i = 0; i < 900; i++)
+          {for (var f = 0; f < 12; f++) 'f$f': f, 'token': 'NODE-SECRET-$i'},
+      ]);
+
+      final result = sanitizer.body(body, enableRedaction: true);
+
+      expect(result, isA<String>());
+      expect(result, isNot(redactionFailedPlaceholder));
+      expect(result, contains('"f0":0'));
+      expect(result.toString(), isNot(contains('NODE-SECRET')));
+    });
+
+    test('fails closed when a JSON body exceeds the hard collection ceiling',
+        () {
+      final wide = NetworkPayloadSanitizer(
+        RedactionService(),
+        resourceLimits: DiagnosticResourceLimits.extended,
+      );
+      final body = '[${List.filled(150000, '0').join(',')}]';
+
+      final result = wide.body(body, enableRedaction: true);
+
+      expect(result, redactionFailedPlaceholder);
     });
 
     test('scrubs a configured key in a form-encoded body', () {

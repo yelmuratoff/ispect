@@ -241,7 +241,6 @@ class _ActionButtons extends StatelessWidget {
                             title: capturedL10n.logsFileSaved(fileName),
                             duration: const Duration(seconds: 6),
                             messenger: messenger,
-                            l10n: capturedL10n,
                             action: action,
                           ),
                         );
@@ -265,18 +264,21 @@ class _ActionButtons extends StatelessWidget {
               label: l10n.copyToClipboardTruncated,
               onPressed: isExporting
                   ? null
-                  : () {
+                  : () async {
                       final messenger = ScaffoldMessenger.maybeOf(context);
                       final capturedL10n = context.ispectL10n;
-                      controller.copy(context, contentBuilder);
                       _closeSheet(context);
+                      final outcome = await controller.copy(
+                        contentBuilder,
+                        messenger: messenger,
+                        l10n: capturedL10n,
+                      );
+                      if (outcome != ExportState.error) return;
                       unawaited(
-                        ISpectToaster.showCopiedToast(
+                        ISpectToaster.showErrorToast(
                           null,
-                          value: '',
-                          showValue: false,
+                          title: capturedL10n.copyToClipboardFailed,
                           messenger: messenger,
-                          l10n: capturedL10n,
                         ),
                       );
                     },

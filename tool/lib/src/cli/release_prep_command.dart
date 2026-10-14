@@ -13,17 +13,22 @@ final class ReleasePrepCommand extends Command<int> {
         allowed: ['patch', 'minor', 'major'],
         help: 'Bump kind (default: patch).',
       )
-      ..addFlag('skip-bump', help: 'Keep VERSION and synchronize everything.')
-      ..addFlag('no-bump', help: 'Alias for --skip-bump.')
+      ..addFlag('skip-bump',
+          negatable: false, help: 'Keep VERSION and synchronize everything.')
+      ..addFlag('no-bump', negatable: false, help: 'Alias for --skip-bump.')
       ..addFlag(
         'carry-changelog',
+        negatable: false,
         help: 'Move the previous prerelease notes to the next prerelease.',
       )
       ..addFlag(
         'recover-changelog',
+        negatable: false,
         help: 'Resume an interrupted prerelease sync without a bump.',
       )
-      ..addFlag('edit', help: 'Open CHANGELOG.md before generating artefacts.');
+      ..addFlag('edit',
+          negatable: false,
+          help: 'Open CHANGELOG.md before generating artefacts.');
   }
 
   final String repoRoot;

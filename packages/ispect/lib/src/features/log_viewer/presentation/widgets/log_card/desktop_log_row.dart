@@ -10,11 +10,12 @@ import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/slow_badge.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
-import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/navigation_flow.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/column_widths.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_context_menu.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
 
 /// A compact, single-line log row optimized for desktop/web layouts.
 ///
@@ -53,7 +54,7 @@ class DesktopLogRow extends StatefulWidget {
   final VoidCallback onTap;
   final VoidCallback? onOpenDetail;
   final VoidCallback? onShareTap;
-  final void Function(String type)? onTypeFilterTap;
+  final LogTypeFilterCallback? onTypeFilterTap;
   final ISpectNavigatorObserver? observer;
   final bool useRelativeTime;
   final double typeColumnWidth;
@@ -204,8 +205,13 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
       bgColor = zebraColor;
     }
 
-    final semanticLabel =
-        '${ISpectLogType.fromKey(widget.data.key ?? '')?.displayTitle ?? widget.data.key ?? "Log"}: $_message';
+    final typeTitle = context.ispectTheme.getTypeTitle(
+      context,
+      key: widget.data.key,
+    );
+    final semanticLabel = typeTitle == null
+        ? _message
+        : '$typeTitle: $_message';
     final semanticTap = widget.onOpenDetail != null ? _handleTap : widget.onTap;
 
     return MouseRegion(
@@ -306,7 +312,7 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
                       ],
                       if (widget.data.httpStatusCode
                           case final int statusCode) ...[
-                        _DesktopStatusCodeBadge(statusCode: statusCode),
+                        DesktopStatusBadge(statusCode: statusCode),
                         const Gap(8),
                       ],
                       if ((widget.data.traceSlow ?? false) &&
@@ -451,40 +457,6 @@ class _DesktopActionIcon extends StatelessWidget {
   );
 }
 
-class _DesktopStatusCodeBadge extends StatelessWidget {
-  const _DesktopStatusCodeBadge({required this.statusCode});
-
-  final int statusCode;
-
-  @override
-  Widget build(BuildContext context) {
-    final (bgColor, textColor) = JsonColors.statusCodeColors(statusCode);
-    return Semantics(
-      container: true,
-      label: 'HTTP status $statusCode',
-      excludeSemantics: true,
-      child: DecoratedBox(
-        decoration: ISpectSquircle.decoration(
-          color: bgColor.withValues(alpha: 0.12),
-          radius: ISpectConstants.smallBorderRadius,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-          child: Text(
-            '$statusCode',
-            style: TextStyle(
-              color: textColor,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _TypeFilterTarget extends StatelessWidget {
   const _TypeFilterTarget({
     required this.typeKey,
@@ -494,12 +466,14 @@ class _TypeFilterTarget extends StatelessWidget {
 
   final String? typeKey;
   final Color color;
-  final void Function(String type)? onTypeFilterTap;
+  final LogTypeFilterCallback? onTypeFilterTap;
 
   @override
   Widget build(BuildContext context) {
     final isInteractive = onTypeFilterTap != null && typeKey != null;
-    final onTap = isInteractive ? () => onTypeFilterTap!(typeKey!) : null;
+    final onTap = isInteractive
+        ? () => onTypeFilterTap!(typeKey!, LogTypeFilterAction.toggle)
+        : null;
     final text = Text(
       typeKey ?? '',
       maxLines: 1,
@@ -511,7 +485,7 @@ class _TypeFilterTarget extends StatelessWidget {
     }
     return Semantics(
       button: true,
-      label: 'Filter by type ${typeKey!}',
+      label: context.ispectL10n.filterByType(typeKey!),
       onTap: onTap,
       child: GestureDetector(
         excludeFromSemantics: true,

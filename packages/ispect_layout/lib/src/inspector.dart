@@ -86,6 +86,7 @@ class Inspector extends StatefulWidget {
 class InspectorState extends State<Inspector> {
   bool _isPanelVisible = false;
   Size? _lastObservedSize;
+  InspectorMode? _heldShortcutMode;
 
   bool get isPanelVisible => _isPanelVisible;
 
@@ -97,25 +98,6 @@ class InspectorState extends State<Inspector> {
   late InspectorController _controller;
   InspectorController get controller => _controller;
 
-  // Picker disc canvas size - image-only area; the visible disc is +40 px
-  // wider on each axis because the rings are painted outside the canvas.
-  // Tuned so the total visible disc lands roughly where the previous
-  // in-canvas-rings version was (overlay ~128–246).
-  static const double _overlayMinSize = 88;
-  static const double _overlayMaxSize = 206;
-  static const double _overlayOffsetY = 16;
-
-  // Approximate HUD chip footprint and the gap it sits at from the disc.
-  // Gap includes the +20 px ring stack drawn outside the disc canvas, so the
-  // fit-test mirrors what _hudPositioned actually does in the overlay.
-  static const double _hudWidth = 168;
-  static const double _hudHeight = 32;
-  static const double _hudAxialGap = 16 + 20;
-  static const double _hudLateralGap = 12 + 20;
-
-  // Vertical space at the bottom of the screen reserved for the floating
-  // action bar (button + paddings); HUD-below should not overlap it.
-  static const double _hudBottomReserved = 96;
   static const _enterInspectorIntent = _EnterInspectorIntent();
   static const _enterColorPickerIntent = _EnterColorPickerIntent();
   static const _toggleCompareIntent = _ToggleCompareIntent();
@@ -169,6 +151,8 @@ class InspectorState extends State<Inspector> {
                 widget.maxRenderTreeClipboardCharacters,
             theme: widget.theme ?? InspectorTheme.defaults,
           );
+    } else if (widget.controller == null && oldWidget.theme != widget.theme) {
+      _controller.theme = widget.theme ?? InspectorTheme.defaults;
     }
 
     if (widget.isPanelVisible != oldWidget.isPanelVisible) {
@@ -264,170 +248,9 @@ class InspectorState extends State<Inspector> {
             },
           ),
         ),
-        MultiValueListenableBuilder(
-          valueListenables: [
-            _controller.modeNotifier,
-            _controller.selectedColorOffsetNotifier,
-            _controller.selectedColorStateNotifier,
-            _controller.selectedColorImageOffsetNotifier,
-            _controller.byteDataStateNotifier,
-            _controller.zoomScaleNotifier,
-          ],
-          builder: (context) {
-            final mode = _controller.modeNotifier.value;
-            if (mode != InspectorMode.colorPicker) {
-              return const SizedBox.shrink();
-            }
-
-            final offset = _controller.selectedColorOffsetNotifier.value;
-            final color = _controller.selectedColorStateNotifier.value;
-            final image = _controller.image;
-            final zoomScale = _controller.zoomScaleNotifier.value;
-            final screenSize = MediaQuery.sizeOf(context);
-            final overlaySize = ui.lerpDouble(
-              _overlayMinSize,
-              _overlayMaxSize,
-              ((zoomScale - 2.0) / 10.0).clamp(0, 1),
-            )!;
-
-            // Image can be null briefly after a window resize / orientation
-            // change while the snapshot is being re-captured. Bail until the
-            // next frame rather than dereferencing it.
-            if (offset == null || color == null || image == null) {
-              return const SizedBox.shrink();
-            }
-
-            final pickerLeft = offset.dx.clamp(
-              0.0,
-              screenSize.width - overlaySize,
-            );
-            final pickerTop = (offset.dy - overlaySize - _overlayOffsetY).clamp(
-              0.0,
-              screenSize.height - overlaySize,
-            );
-
-            // Pick the side of the disc where the HUD chip fully fits in
-            // the on-screen bounds (minus the bottom action-bar / safe area).
-            // Priority: above (default) → right → left → below - "below" is
-            // last because the user's finger lives there.
-            final placement = _resolveHudPlacement(
-              pickerLeft: pickerLeft,
-              pickerTop: pickerTop,
-              overlaySize: overlaySize,
-              screenSize: screenSize,
-              bottomReserved:
-                  MediaQuery.paddingOf(context).bottom + _hudBottomReserved,
-            );
-
-            return Positioned(
-              left: pickerLeft,
-              top: pickerTop,
-              child: ZoomableColorPickerOverlay(
-                color: color,
-                image: image,
-                imageOffset:
-                    _controller.selectedColorImageOffsetNotifier.value ??
-                    Offset.zero,
-                overlaySize: overlaySize,
-                zoomScale: zoomScale,
-                pixelRatio: MediaQuery.devicePixelRatioOf(context),
-                hudPlacement: placement,
-              ),
-            );
-          },
-        ),
-        MultiValueListenableBuilder(
-          valueListenables: [
-            _controller.modeNotifier,
-            _controller.currentRenderBoxNotifier,
-            _controller.hoveredRenderBoxNotifier,
-            _controller.comparedRenderBoxNotifier,
-          ],
-          builder: (context) {
-            final mode = _controller.modeNotifier.value;
-            if (mode != InspectorMode.inspector &&
-                mode != InspectorMode.inspectAndCompare &&
-                mode != InspectorMode.compareSelect) {
-              return const SizedBox.shrink();
-            }
-
-            final isCompareActive = mode == InspectorMode.compareSelect;
-            final onCompare = _controller.isWidgetInspectAndCompareEnabled
-                ? (isCompareActive
-                      ? _controller.exitCompareMode
-                      : _controller.enterCompareMode)
-                : null;
-
-            return LayoutBuilder(
-              builder: (context, constraints) => InspectorOverlay(
-                size: constraints.biggest,
-                boxInfo: _controller.currentRenderBoxNotifier.value,
-                hoveredBoxInfo: _controller.hoveredRenderBoxNotifier.value,
-                comparedBoxInfo: _controller.comparedRenderBoxNotifier.value,
-                onCompare: onCompare,
-                isCompareActive: isCompareActive,
-                decimalPlaces: _controller.decimalPlaces,
-                maxRenderTreeClipboardCharacters:
-                    _controller.maxRenderTreeClipboardCharacters,
-                theme: _controller.theme,
-                onSelectFromPath: _controller.selectFromPath,
-              ),
-            );
-          },
-        ),
-        MultiValueListenableBuilder(
-          valueListenables: [
-            _controller.modeNotifier,
-            _controller.zoomImageOffsetNotifier,
-            _controller.zoomOverlayOffsetNotifier,
-            _controller.byteDataStateNotifier,
-            _controller.zoomScaleNotifier,
-          ],
-          builder: (context) {
-            final mode = _controller.modeNotifier.value;
-            if (mode != InspectorMode.zoom) return const SizedBox.shrink();
-
-            final offset = _controller.zoomOverlayOffsetNotifier.value;
-            final imageOffset = _controller.zoomImageOffsetNotifier.value;
-            final byteData = _controller.byteDataStateNotifier.value;
-            final zoomScale = _controller.zoomScaleNotifier.value;
-
-            if (offset == null || byteData == null || imageOffset == null) {
-              return const SizedBox.shrink();
-            }
-
-            final overlaySize = ui
-                .lerpDouble(
-                  128.0,
-                  256.0,
-                  ((zoomScale - 2.0) / 10.0).clamp(0, 1),
-                )!
-                .toDouble();
-            final screenSize = MediaQuery.sizeOf(context);
-            final left = (offset.dx - overlaySize / 2).clamp(
-              0.0,
-              screenSize.width - overlaySize,
-            );
-            final top = (offset.dy - overlaySize / 2).clamp(
-              0.0,
-              screenSize.height - overlaySize,
-            );
-
-            return Positioned(
-              left: left,
-              top: top,
-              child: IgnorePointer(
-                child: ZoomOverlayWidget(
-                  image: _controller.image!,
-                  imageOffset: imageOffset,
-                  overlaySize: overlaySize,
-                  zoomScale: zoomScale,
-                  pixelRatio: MediaQuery.of(context).devicePixelRatio,
-                ),
-              ),
-            );
-          },
-        ),
+        _ColorPickerLayer(controller: _controller),
+        _InspectLayer(controller: _controller),
+        _ZoomLayer(controller: _controller),
         InspectorActionsBar(controller: _controller),
       ],
     );
@@ -438,13 +261,19 @@ class InspectorState extends State<Inspector> {
         actions: {
           _EnterInspectorIntent: CallbackAction<_EnterInspectorIntent>(
             onInvoke: (_) {
-              _controller.handleInspectorShortcut(true);
+              _enterHeldShortcut(
+                InspectorMode.inspector,
+                () => _controller.handleInspectorShortcut(true),
+              );
               return null;
             },
           ),
           _EnterColorPickerIntent: CallbackAction<_EnterColorPickerIntent>(
             onInvoke: (_) {
-              _controller.handleColorPickerShortcut(true);
+              _enterHeldShortcut(
+                InspectorMode.colorPicker,
+                () => _controller.handleColorPickerShortcut(true),
+              );
               return null;
             },
           ),
@@ -456,7 +285,10 @@ class InspectorState extends State<Inspector> {
           ),
           _EnterZoomIntent: CallbackAction<_EnterZoomIntent>(
             onInvoke: (_) {
-              _controller.handleZoomShortcut(true);
+              _enterHeldShortcut(
+                InspectorMode.zoom,
+                () => _controller.handleZoomShortcut(true),
+              );
               return null;
             },
           ),
@@ -489,11 +321,205 @@ class InspectorState extends State<Inspector> {
     );
   }
 
+  Map<ShortcutActivator, Intent> _buildShortcuts() {
+    final shortcuts = <ShortcutActivator, Intent>{};
+
+    for (final activator
+        in _controller.effectiveWidgetInspectorShortcutActivators) {
+      shortcuts.putIfAbsent(activator, () => _enterInspectorIntent);
+    }
+
+    for (final activator
+        in _controller.effectiveWidgetInspectAndCompareShortcutActivators) {
+      shortcuts.putIfAbsent(activator, () => _toggleCompareIntent);
+    }
+
+    for (final activator
+        in _controller.effectiveColorPickerShortcutActivators) {
+      shortcuts.putIfAbsent(activator, () => _enterColorPickerIntent);
+    }
+
+    for (final activator in _controller.effectiveZoomShortcutActivators) {
+      shortcuts.putIfAbsent(activator, () => _enterZoomIntent);
+    }
+
+    return shortcuts;
+  }
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    final state = HardwareKeyboard.instance;
+
+    if (_controller.acceptsWidgetInspectorShortcut(event, state) ||
+        _controller.acceptsCompareShortcut(event, state) ||
+        _controller.acceptsColorPickerShortcut(event, state) ||
+        _controller.acceptsZoomShortcut(event, state)) {
+      return KeyEventResult.ignored;
+    }
+
+    if (event is KeyUpEvent && _releaseHeldShortcut(state)) {
+      return KeyEventResult.handled;
+    }
+
+    if (_isRepeatFromShortcut(event, state)) {
+      return KeyEventResult.handled;
+    }
+
+    return KeyEventResult.ignored;
+  }
+
+  void _enterHeldShortcut(InspectorMode mode, VoidCallback enter) {
+    final previousMode = _controller.modeNotifier.value;
+    enter();
+    final entered =
+        previousMode != mode && _controller.modeNotifier.value == mode;
+    _heldShortcutMode = entered ? mode : null;
+  }
+
+  bool _releaseHeldShortcut(HardwareKeyboard state) {
+    final heldMode = _heldShortcutMode;
+    if (heldMode == null || _isHeldShortcutPressed(heldMode, state)) {
+      return false;
+    }
+    _heldShortcutMode = null;
+    if (_controller.modeNotifier.value != heldMode) return false;
+    _controller.setMode(InspectorMode.none);
+    return true;
+  }
+
+  bool _isHeldShortcutPressed(InspectorMode mode, HardwareKeyboard state) {
+    switch (mode) {
+      case InspectorMode.inspector:
+        return _controller.isWidgetInspectorShortcutStillPressed(state);
+      case InspectorMode.colorPicker:
+        return _controller.isColorPickerShortcutStillPressed(state);
+      case InspectorMode.zoom:
+        return _controller.isZoomShortcutStillPressed(state);
+      case InspectorMode.none:
+      // ignore: deprecated_member_use_from_same_package
+      case InspectorMode.inspectAndCompare:
+      case InspectorMode.compareSelect:
+        return false;
+    }
+  }
+
+  bool _isRepeatFromShortcut(KeyEvent event, HardwareKeyboard state) =>
+      event is KeyRepeatEvent &&
+      ((_controller.modeNotifier.value == InspectorMode.inspector &&
+              _controller.isWidgetInspectorShortcutStillPressed(state)) ||
+          (_controller.modeNotifier.value == InspectorMode.colorPicker &&
+              _controller.isColorPickerShortcutStillPressed(state)) ||
+          (_controller.modeNotifier.value == InspectorMode.zoom &&
+              _controller.isZoomShortcutStillPressed(state)));
+}
+
+double _zoomSizeProgress(double zoomScale) =>
+    ((zoomScale - 2.0) / 10.0).clamp(0.0, 1.0);
+
+class _ColorPickerLayer extends StatelessWidget {
+  const _ColorPickerLayer({required this.controller});
+
+  final InspectorController controller;
+
+  // Picker disc canvas size - image-only area; the visible disc is +40 px
+  // wider on each axis because the rings are painted outside the canvas.
+  // Tuned so the total visible disc lands roughly where the previous
+  // in-canvas-rings version was (overlay ~128–246).
+  static const double _overlayMinSize = 88;
+  static const double _overlayMaxSize = 206;
+  static const double _overlayOffsetY = 16;
+
+  // Approximate HUD chip footprint and the gap it sits at from the disc.
+  // Gap includes the +20 px ring stack drawn outside the disc canvas, so the
+  // fit-test mirrors what _hudPositioned actually does in the overlay.
+  static const double _hudWidth = 168;
+  static const double _hudHeight = 32;
+  static final double _hudAxialGap =
+      ZoomableColorPickerStyle.defaults.hudAxialGap;
+  static final double _hudLateralGap =
+      ZoomableColorPickerStyle.defaults.hudLateralGap;
+
+  // Vertical space at the bottom of the screen reserved for the floating
+  // action bar (button + paddings); HUD-below should not overlap it.
+  static const double _hudBottomReserved = 96;
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiValueListenableBuilder(
+      valueListenables: [
+        controller.modeNotifier,
+        controller.selectedColorOffsetNotifier,
+        controller.selectedColorStateNotifier,
+        controller.selectedColorImageOffsetNotifier,
+        controller.byteDataStateNotifier,
+        controller.zoomScaleNotifier,
+      ],
+      builder: (context) {
+        final mode = controller.modeNotifier.value;
+        if (mode != InspectorMode.colorPicker) {
+          return const SizedBox.shrink();
+        }
+
+        final offset = controller.selectedColorOffsetNotifier.value;
+        final color = controller.selectedColorStateNotifier.value;
+        final image = controller.image;
+        final zoomScale = controller.zoomScaleNotifier.value;
+        final screenSize = MediaQuery.sizeOf(context);
+        final overlaySize = ui.lerpDouble(
+          _overlayMinSize,
+          _overlayMaxSize,
+          _zoomSizeProgress(zoomScale),
+        )!;
+
+        // Image can be null briefly after a window resize / orientation
+        // change while the snapshot is being re-captured. Bail until the
+        // next frame rather than dereferencing it.
+        if (offset == null || color == null || image == null) {
+          return const SizedBox.shrink();
+        }
+
+        final pickerLeft = offset.dx.clamp(0.0, screenSize.width - overlaySize);
+        final pickerTop = (offset.dy - overlaySize - _overlayOffsetY).clamp(
+          0.0,
+          screenSize.height - overlaySize,
+        );
+
+        // Pick the side of the disc where the HUD chip fully fits in
+        // the on-screen bounds (minus the bottom action-bar / safe area).
+        // Priority: above (default) → right → left → below - "below" is
+        // last because the user's finger lives there.
+        final placement = _resolveHudPlacement(
+          pickerLeft: pickerLeft,
+          pickerTop: pickerTop,
+          overlaySize: overlaySize,
+          screenSize: screenSize,
+          bottomReserved:
+              MediaQuery.paddingOf(context).bottom + _hudBottomReserved,
+        );
+
+        return Positioned(
+          left: pickerLeft,
+          top: pickerTop,
+          child: ZoomableColorPickerOverlay(
+            color: color,
+            image: image,
+            imageOffset:
+                controller.selectedColorImageOffsetNotifier.value ??
+                Offset.zero,
+            overlaySize: overlaySize,
+            zoomScale: zoomScale,
+            pixelRatio: MediaQuery.devicePixelRatioOf(context),
+            hudPlacement: placement,
+          ),
+        );
+      },
+    );
+  }
+
   /// Picks the first placement (in priority order) where the HUD chip's full
   /// bounding box is on-screen. Falls back to [HudPlacement.above] if no
   /// side fits - the chip will clip, but at least one fixed side is chosen
   /// (rather than disappearing) so the user can still nudge the picker.
-  HudPlacement _resolveHudPlacement({
+  static HudPlacement _resolveHudPlacement({
     required double pickerLeft,
     required double pickerTop,
     required double overlaySize,
@@ -532,94 +558,113 @@ class InspectorState extends State<Inspector> {
     if (fitsBelow) return HudPlacement.below;
     return HudPlacement.above;
   }
+}
 
-  Map<ShortcutActivator, Intent> _buildShortcuts() {
-    final shortcuts = <ShortcutActivator, Intent>{};
+class _InspectLayer extends StatelessWidget {
+  const _InspectLayer({required this.controller});
 
-    for (final activator
-        in _controller.effectiveWidgetInspectorShortcutActivators) {
-      shortcuts.putIfAbsent(activator, () => _enterInspectorIntent);
-    }
+  final InspectorController controller;
 
-    for (final activator
-        in _controller.effectiveWidgetInspectAndCompareShortcutActivators) {
-      shortcuts.putIfAbsent(activator, () => _toggleCompareIntent);
-    }
+  @override
+  Widget build(BuildContext context) {
+    return MultiValueListenableBuilder(
+      valueListenables: [
+        controller.modeNotifier,
+        controller.currentRenderBoxNotifier,
+        controller.hoveredRenderBoxNotifier,
+        controller.comparedRenderBoxNotifier,
+        controller.themeNotifier,
+      ],
+      builder: (context) {
+        final mode = controller.modeNotifier.value;
+        if (!mode.isInspecting) {
+          return const SizedBox.shrink();
+        }
 
-    for (final activator
-        in _controller.effectiveColorPickerShortcutActivators) {
-      shortcuts.putIfAbsent(activator, () => _enterColorPickerIntent);
-    }
+        final isCompareActive = mode == InspectorMode.compareSelect;
+        final onCompare = controller.isWidgetInspectAndCompareEnabled
+            ? (isCompareActive
+                  ? controller.exitCompareMode
+                  : controller.enterCompareMode)
+            : null;
 
-    for (final activator in _controller.effectiveZoomShortcutActivators) {
-      shortcuts.putIfAbsent(activator, () => _enterZoomIntent);
-    }
-
-    return shortcuts;
+        return LayoutBuilder(
+          builder: (context, constraints) => InspectorOverlay(
+            size: constraints.biggest,
+            boxInfo: controller.currentRenderBoxNotifier.value,
+            hoveredBoxInfo: controller.hoveredRenderBoxNotifier.value,
+            comparedBoxInfo: controller.comparedRenderBoxNotifier.value,
+            onCompare: onCompare,
+            isCompareActive: isCompareActive,
+            decimalPlaces: controller.decimalPlaces,
+            maxRenderTreeClipboardCharacters:
+                controller.maxRenderTreeClipboardCharacters,
+            theme: controller.theme,
+            onSelectFromPath: controller.selectFromPath,
+          ),
+        );
+      },
+    );
   }
+}
 
-  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
-    final state = HardwareKeyboard.instance;
+class _ZoomLayer extends StatelessWidget {
+  const _ZoomLayer({required this.controller});
 
-    if (_controller.acceptsWidgetInspectorShortcut(event, state) ||
-        _controller.acceptsCompareShortcut(event, state) ||
-        _controller.acceptsColorPickerShortcut(event, state) ||
-        _controller.acceptsZoomShortcut(event, state)) {
-      return KeyEventResult.ignored;
-    }
+  final InspectorController controller;
 
-    if (_shouldReleaseInspectorShortcut(event, state)) {
-      _controller.handleInspectorShortcut(false);
-      return KeyEventResult.handled;
-    }
+  @override
+  Widget build(BuildContext context) {
+    return MultiValueListenableBuilder(
+      valueListenables: [
+        controller.modeNotifier,
+        controller.zoomImageOffsetNotifier,
+        controller.zoomOverlayOffsetNotifier,
+        controller.byteDataStateNotifier,
+        controller.zoomScaleNotifier,
+      ],
+      builder: (context) {
+        final mode = controller.modeNotifier.value;
+        if (mode != InspectorMode.zoom) return const SizedBox.shrink();
 
-    if (_shouldReleaseColorPickerShortcut(event, state)) {
-      _controller.handleColorPickerShortcut(false);
-      return KeyEventResult.handled;
-    }
+        final offset = controller.zoomOverlayOffsetNotifier.value;
+        final imageOffset = controller.zoomImageOffsetNotifier.value;
+        final byteData = controller.byteDataStateNotifier.value;
+        final zoomScale = controller.zoomScaleNotifier.value;
 
-    if (_shouldReleaseZoomShortcut(event, state)) {
-      _controller.handleZoomShortcut(false);
-      return KeyEventResult.handled;
-    }
+        if (offset == null || byteData == null || imageOffset == null) {
+          return const SizedBox.shrink();
+        }
 
-    if (_isRepeatFromShortcut(event, state)) {
-      return KeyEventResult.handled;
-    }
+        final overlaySize = ui
+            .lerpDouble(128.0, 256.0, _zoomSizeProgress(zoomScale))!
+            .toDouble();
+        final screenSize = MediaQuery.sizeOf(context);
+        final left = (offset.dx - overlaySize / 2).clamp(
+          0.0,
+          screenSize.width - overlaySize,
+        );
+        final top = (offset.dy - overlaySize / 2).clamp(
+          0.0,
+          screenSize.height - overlaySize,
+        );
 
-    return KeyEventResult.ignored;
+        return Positioned(
+          left: left,
+          top: top,
+          child: IgnorePointer(
+            child: ZoomOverlayWidget(
+              image: controller.image!,
+              imageOffset: imageOffset,
+              overlaySize: overlaySize,
+              zoomScale: zoomScale,
+              pixelRatio: MediaQuery.of(context).devicePixelRatio,
+            ),
+          ),
+        );
+      },
+    );
   }
-
-  bool _shouldReleaseInspectorShortcut(
-    KeyEvent event,
-    HardwareKeyboard state,
-  ) =>
-      event is KeyUpEvent &&
-      _controller.modeNotifier.value == InspectorMode.inspector &&
-      !_controller.isWidgetInspectorShortcutStillPressed(state);
-
-  bool _shouldReleaseColorPickerShortcut(
-    KeyEvent event,
-    HardwareKeyboard state,
-  ) =>
-      event is KeyUpEvent &&
-      _controller.modeNotifier.value == InspectorMode.colorPicker &&
-      !_controller.isColorPickerShortcutStillPressed(state);
-
-  bool _shouldReleaseZoomShortcut(KeyEvent event, HardwareKeyboard state) =>
-      event is KeyUpEvent &&
-      _controller.modeNotifier.value == InspectorMode.zoom &&
-      !_controller.isZoomShortcutStillPressed(state);
-
-  bool _isRepeatFromShortcut(KeyEvent event, HardwareKeyboard state) =>
-      event is KeyRepeatEvent &&
-      ((_controller.modeNotifier.value == InspectorMode.inspector &&
-              _controller.isWidgetInspectorShortcutStillPressed(state)) ||
-          (_controller.modeNotifier.value == InspectorMode.colorPicker &&
-              _controller.isColorPickerShortcutStillPressed(state)) ||
-          (_controller.modeNotifier.value == InspectorMode.zoom &&
-              _controller.isZoomShortcutStillPressed(state)) ||
-          _controller.acceptsCompareShortcut(event, state));
 }
 
 class _EnterInspectorIntent extends Intent {

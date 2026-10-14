@@ -4,6 +4,7 @@
 // interceptor pipeline runs end-to-end: request logging, response logging,
 // correlation IDs, and redaction of sensitive headers.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -59,14 +60,37 @@ void main() {
       // The request side must always carry a correlation id.
       final requestCid = request.additionalData?[TraceKeys.correlationId];
       expect(requestCid, isA<String>());
-      // `response.request` may be a wrapped BaseRequest inside
-      // InterceptedClient, so the Expando-based correlation id may or may
-      // not propagate. If it does, it must match the request id.
-      final responseCid = response.additionalData?[TraceKeys.correlationId];
-      if (responseCid != null) {
-        expect(responseCid, equals(requestCid));
-      }
     });
+
+    for (final statusCode in [200, 500]) {
+      test('response $statusCode shares the request correlation id and timing',
+          () async {
+        final logger = ISpectLogger(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
+        );
+        final client = _clientWith(
+          logger,
+          inner: MockClient.streaming(
+            (request, _) async => http.StreamedResponse(
+              Stream.value(utf8.encode('{"ok":true}')),
+              statusCode,
+              request: request,
+            ),
+          ),
+        );
+
+        await client.get(Uri.parse('https://api.test/users'));
+        client.close();
+
+        expect(logger.history, hasLength(2));
+        final requestCid =
+            logger.history[0].additionalData?[TraceKeys.correlationId];
+        final responseData = logger.history[1].additionalData;
+        expect(requestCid, isA<String>());
+        expect(responseData?[TraceKeys.correlationId], requestCid);
+        expect(responseData?[TraceKeys.durationMs], isA<int>());
+      });
+    }
 
     test('request and response console URLs show redacted query parameters',
         () async {
@@ -227,7 +251,429 @@ void main() {
       expect(query['token'], secret);
     });
   });
+
+  group('HTTP integration: response body capture', () {
+    test('send returns before the body is read and captures it on read',
+        () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final source = StreamController<List<int>>();
+      final client = _clientWith(
+        logger,
+        inner: MockClient.streaming(
+          (request, _) async => http.StreamedResponse(
+            source.stream,
+            200,
+            contentLength: 11,
+            request: request,
+          ),
+        ),
+      );
+
+      final response = await client.send(
+        http.Request('GET', Uri.parse('https://api.test/slow')),
+      );
+
+      expect(source.hasListener, isFalse);
+      expect(logger.history, hasLength(1));
+
+      final chunks = <List<int>>[];
+      final done = response.stream.listen(chunks.add).asFuture<void>();
+      source.add(utf8.encode('{"ok":'));
+      await pumpEventQueue();
+      expect(chunks, hasLength(1));
+      source.add(utf8.encode('true}'));
+      await source.close();
+      await done;
+      client.close();
+
+      final responseData =
+          _meta(logger.history[1])[NetworkJsonKeys.responseData] as Map;
+      expect(responseData[NetworkJsonKeys.body], {'ok': true});
+    });
+
+    test('keeps the post-redirect url of the inner response', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final finalUrl = Uri.parse('https://api.test/final');
+      final client = _clientWith(
+        logger,
+        inner: _RedirectedClient(finalUrl),
+      );
+
+      final response = await client.send(
+        http.Request('GET', Uri.parse('https://api.test/start')),
+      );
+      await response.stream.drain<void>();
+      client.close();
+
+      expect(response, isA<http.BaseResponseWithUrl>());
+      expect((response as http.BaseResponseWithUrl).url, finalUrl);
+    });
+
+    test('a cancelled read logs the response without a body', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final source = StreamController<List<int>>();
+      addTearDown(() => unawaited(source.close()));
+      final client = _clientWith(
+        logger,
+        inner: MockClient.streaming(
+          (request, _) async => http.StreamedResponse(
+            source.stream,
+            200,
+            contentLength: 4,
+            request: request,
+          ),
+        ),
+      );
+
+      final response = await client.send(
+        http.Request('GET', Uri.parse('https://api.test/a')),
+      );
+      final subscription = response.stream.listen((_) {});
+      source.add(utf8.encode('ab'));
+      await pumpEventQueue();
+      await subscription.cancel();
+      client.close();
+
+      expect(logger.history, hasLength(2));
+      final responseData =
+          _meta(logger.history[1])[NetworkJsonKeys.responseData] as Map;
+      expect(responseData[NetworkJsonKeys.body], isNull);
+    });
+
+    test('logs an unread response once, without its body', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final client = _clientWith(
+        logger,
+        inner: MockClient.streaming(
+          (request, _) async => http.StreamedResponse(
+            Stream.value(utf8.encode('{"ok":true}')),
+            200,
+            contentLength: 11,
+            request: request,
+          ),
+        ),
+      );
+
+      final response = await client.send(
+        http.Request('GET', Uri.parse('https://api.test/a')),
+      );
+      await pumpEventQueue();
+
+      expect(response.statusCode, 200);
+      expect(logger.history, hasLength(2));
+      final responseData =
+          _meta(logger.history[1])[NetworkJsonKeys.responseData] as Map;
+      expect(responseData[NetworkJsonKeys.body], isNull);
+
+      expect(
+        utf8.decode(await response.stream.toBytes()),
+        '{"ok":true}',
+      );
+      client.close();
+
+      expect(logger.history, hasLength(2));
+    });
+
+    test('success body reaches history through InterceptedClient', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final client = _clientWith(logger, inner: _mockJson({'ok': true}));
+
+      final response = await client.get(Uri.parse('https://api.test/users'));
+      client.close();
+
+      expect(jsonDecode(response.body), {'ok': true});
+      final meta = _meta(logger.history[1]);
+      final responseData = meta[NetworkJsonKeys.responseData] as Map;
+      expect(responseData[NetworkJsonKeys.body], {'ok': true});
+    });
+
+    test('error body reaches history through InterceptedClient', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final client = _clientWith(
+        logger,
+        inner: _mockJson({'error': 'server'}, statusCode: 500),
+      );
+
+      final response = await client.get(Uri.parse('https://api.test/bad'));
+      client.close();
+
+      expect(jsonDecode(response.body), {'error': 'server'});
+      final error = logger.history
+          .firstWhere((entry) => entry.key == ISpectLogType.httpError.key);
+      final errorData = _meta(error)[NetworkJsonKeys.errorData] as Map;
+      expect(errorData[NetworkJsonKeys.body], {'error': 'server'});
+    });
+
+    test('buffered response hands the consumer identical bytes and metadata',
+        () async {
+      final bytes = utf8.encode('{"ok":true}');
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final source = StreamController<List<int>>();
+      late http.BaseRequest sent;
+      final client = _clientWith(
+        logger,
+        inner: MockClient.streaming((request, _) async {
+          sent = request;
+          return http.StreamedResponse(
+            source.stream,
+            201,
+            contentLength: bytes.length,
+            request: request,
+            headers: {'content-type': 'application/json', 'x-trace': 'abc'},
+            isRedirect: true,
+            persistentConnection: false,
+            reasonPhrase: 'Created',
+          );
+        }),
+      );
+      source
+        ..add(bytes.sublist(0, 4))
+        ..add(bytes.sublist(4));
+      unawaited(source.close());
+
+      final response = await client.send(
+        http.Request('GET', Uri.parse('https://api.test/users')),
+      );
+      final received = await response.stream.toBytes();
+      client.close();
+
+      expect(received, bytes);
+      expect(response.statusCode, 201);
+      expect(response.contentLength, bytes.length);
+      expect(response.request, same(sent));
+      expect(response.headers, {
+        'content-type': 'application/json',
+        'x-trace': 'abc',
+      });
+      expect(response.isRedirect, isTrue);
+      expect(response.persistentConnection, isFalse);
+      expect(response.reasonPhrase, 'Created');
+      final responseData =
+          _meta(logger.history[1])[NetworkJsonKeys.responseData] as Map;
+      expect(responseData[NetworkJsonKeys.body], {'ok': true});
+    });
+
+    test('stream failure while buffering surfaces to the body consumer',
+        () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final failure = http.ClientException('connection reset');
+      final source = StreamController<List<int>>()
+        ..add(utf8.encode('par'))
+        ..addError(failure);
+      unawaited(source.close());
+      final client = _clientWith(
+        logger,
+        inner: MockClient.streaming(
+          (request, _) async => http.StreamedResponse(
+            source.stream,
+            200,
+            contentLength: 8,
+            request: request,
+          ),
+        ),
+      );
+
+      final response = await client.send(
+        http.Request('GET', Uri.parse('https://api.test/reset')),
+      );
+      final received = <int>[];
+      final read = response.stream.listen(received.addAll).asFuture<void>();
+      client.close();
+
+      await expectLater(read, throwsA(same(failure)));
+      expect(utf8.decode(received), 'par');
+      final responseData =
+          _meta(logger.history[1])[NetworkJsonKeys.responseData] as Map;
+      expect(responseData.containsKey(NetworkJsonKeys.body), isFalse);
+    });
+
+    test('unknown-length stream passes through without buffering', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final source = StreamController<List<int>>();
+      final client = _clientWith(
+        logger,
+        inner: MockClient.streaming(
+          (request, _) async => http.StreamedResponse(
+            source.stream,
+            200,
+            request: request,
+          ),
+        ),
+      );
+
+      final response = await client.send(
+        http.Request('GET', Uri.parse('https://api.test/events')),
+      );
+
+      expect(source.hasListener, isFalse);
+      final responseData =
+          _meta(logger.history[1])[NetworkJsonKeys.responseData] as Map;
+      expect(responseData.containsKey(NetworkJsonKeys.body), isFalse);
+
+      final received = response.stream.toBytes();
+      source
+        ..add(utf8.encode('chunk-1;'))
+        ..add(utf8.encode('chunk-2'));
+      await source.close();
+      expect(utf8.decode(await received), 'chunk-1;chunk-2');
+      client.close();
+    });
+
+    test('known-length body above the byte budget is not buffered', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final source = StreamController<List<int>>();
+      final body = List<int>.filled(17, 0x61);
+      final client = InterceptedClient.build(
+        interceptors: [
+          ISpectHttpInterceptor(
+            logger: logger,
+            settings: const ISpectHttpInterceptorSettings(
+              resourceLimits: DiagnosticResourceLimits(maxNetworkBodyBytes: 16),
+            ),
+          ),
+        ],
+        client: MockClient.streaming(
+          (request, _) async => http.StreamedResponse(
+            source.stream,
+            200,
+            contentLength: body.length,
+            request: request,
+          ),
+        ),
+      );
+
+      final response = await client.send(
+        http.Request('GET', Uri.parse('https://api.test/large')),
+      );
+
+      expect(source.hasListener, isFalse);
+      final responseData =
+          _meta(logger.history[1])[NetworkJsonKeys.responseData] as Map;
+      expect(
+        responseData[NetworkJsonKeys.body],
+        LogExportOutput.truncatedMarker,
+      );
+      expect(responseData[NetworkJsonKeys.bodyBytes], '17');
+
+      final received = response.stream.toBytes();
+      source.add(body);
+      await source.close();
+      expect(await received, body);
+      client.close();
+    });
+
+    test('body capture disabled leaves the stream unbuffered', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final source = StreamController<List<int>>();
+      addTearDown(() => unawaited(source.close()));
+      final client = InterceptedClient.build(
+        interceptors: [
+          ISpectHttpInterceptor(
+            logger: logger,
+            settings: const ISpectHttpInterceptorSettings(
+              printResponseData: false,
+            ),
+          ),
+        ],
+        client: MockClient.streaming(
+          (request, _) async => http.StreamedResponse(
+            source.stream,
+            200,
+            contentLength: 2,
+            request: request,
+          ),
+        ),
+      );
+
+      await client.send(http.Request('GET', Uri.parse('https://api.test/a')));
+      client.close();
+
+      expect(source.hasListener, isFalse);
+      expect(logger.history, hasLength(2));
+    });
+
+    test('unlogged success responses leave the stream unbuffered', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final source = StreamController<List<int>>();
+      addTearDown(() => unawaited(source.close()));
+      final client = InterceptedClient.build(
+        interceptors: [
+          ISpectHttpInterceptor(
+            logger: logger,
+            settings: const ISpectHttpInterceptorSettings(
+              logResponses: false,
+            ),
+          ),
+        ],
+        client: MockClient.streaming(
+          (request, _) async => http.StreamedResponse(
+            source.stream,
+            200,
+            contentLength: 2,
+            request: request,
+          ),
+        ),
+      );
+
+      await client.send(http.Request('GET', Uri.parse('https://api.test/a')));
+      client.close();
+
+      expect(source.hasListener, isFalse);
+    });
+
+    test('disabled logger leaves the stream unbuffered', () async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(enabled: false, useConsoleLogs: false),
+      );
+      final source = StreamController<List<int>>();
+      addTearDown(() => unawaited(source.close()));
+      final client = _clientWith(
+        logger,
+        inner: MockClient.streaming(
+          (request, _) async => http.StreamedResponse(
+            source.stream,
+            500,
+            contentLength: 2,
+            request: request,
+          ),
+        ),
+      );
+
+      await client.send(http.Request('GET', Uri.parse('https://api.test/a')));
+      client.close();
+
+      expect(source.hasListener, isFalse);
+      expect(logger.history, isEmpty);
+    });
+  });
 }
+
+Map<String, dynamic> _meta(ISpectLogData entry) =>
+    entry.additionalData?[TraceKeys.meta] as Map<String, dynamic>;
 
 Object? _stringify(Object? value) {
   if (value == null) return null;
@@ -241,4 +687,36 @@ Object? _stringify(Object? value) {
   }
   if (value is num || value is bool || value is String) return value;
   return value.toString();
+}
+
+final class _UrlStreamedResponse extends http.StreamedResponse
+    implements http.BaseResponseWithUrl {
+  _UrlStreamedResponse(
+    super.stream,
+    super.statusCode, {
+    required this.url,
+    super.contentLength,
+    super.request,
+  });
+
+  @override
+  final Uri url;
+}
+
+final class _RedirectedClient extends http.BaseClient {
+  _RedirectedClient(this.finalUrl);
+
+  final Uri finalUrl;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    await request.finalize().drain<void>();
+    return _UrlStreamedResponse(
+      Stream.value(utf8.encode('{}')),
+      200,
+      contentLength: 2,
+      request: request,
+      url: finalUrl,
+    );
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ispect_layout/src/inspector_controller.dart';
+import 'package:ispect_layout/src/widgets/multi_value_listenable.dart';
 
 class InspectorPanel extends StatefulWidget {
   const InspectorPanel({
@@ -49,6 +50,7 @@ class _InspectorPanelState extends State<InspectorPanel> {
     final mode = controller.modeNotifier.value;
     switch (mode) {
       case InspectorMode.inspector:
+      // ignore: deprecated_member_use_from_same_package
       case InspectorMode.inspectAndCompare:
         return Icons.format_shapes;
       case InspectorMode.compareSelect:
@@ -87,9 +89,9 @@ class _InspectorPanelState extends State<InspectorPanel> {
     // Subscribe locally so the panel updates correctly when used outside
     // Inspector.build (e.g., via a custom panelBuilder that doesn't wrap
     // InspectorPanel in its own ValueListenableBuilder).
-    return ListenableBuilder(
-      listenable: controller.modeNotifier,
-      builder: (context, _) => _build(context),
+    return MultiValueListenableBuilder(
+      valueListenables: [controller.modeNotifier, controller.themeNotifier],
+      builder: _build,
     );
   }
 
@@ -120,19 +122,14 @@ class _InspectorPanelState extends State<InspectorPanel> {
             if (controller.isWidgetInspectorEnabled)
               FloatingActionButton(
                 onPressed: () => controller.setMode(
-                  (mode == InspectorMode.inspector ||
-                          mode == InspectorMode.compareSelect)
+                  mode.isInspecting
                       ? InspectorMode.none
                       : InspectorMode.inspector,
                 ),
-                backgroundColor:
-                    (mode == InspectorMode.inspector ||
-                        mode == InspectorMode.compareSelect)
+                backgroundColor: mode.isInspecting
                     ? _activeColor
                     : _surfaceColor,
-                foregroundColor:
-                    (mode == InspectorMode.inspector ||
-                        mode == InspectorMode.compareSelect)
+                foregroundColor: mode.isInspecting
                     ? _onActiveColor
                     : _onSurfaceColor,
                 child: const Icon(Icons.format_shapes),

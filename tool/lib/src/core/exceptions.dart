@@ -25,14 +25,6 @@ final class VersionRegressionException extends ToolException {
   final String current;
 }
 
-/// A package version does not match `version.config`.
-final class VersionSyncException extends ToolException {
-  const VersionSyncException(super.message, {required this.outOfSync});
-
-  /// Package names whose `version:` line disagrees with `version.config`.
-  final List<String> outOfSync;
-}
-
 /// A manifest or lockfile the tooling rewrites is missing or malformed.
 final class ManifestException extends ToolException {
   const ManifestException(super.message);
@@ -88,6 +80,12 @@ final class ManagedPathException extends ToolException {
 /// A precondition of a release run does not hold, so no artifact was written.
 final class ReleasePrepException extends ToolException {
   const ReleasePrepException(super.message);
+}
+
+/// The release AOT probe could not be resolved or compiled, so no snapshot
+/// was scanned.
+final class AotProbeException extends ToolException {
+  const AotProbeException(super.message);
 }
 
 /// A package host left the published history of a package unanswered.

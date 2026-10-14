@@ -110,6 +110,10 @@ class ISpectRiverpodSettings {
   /// Returns a bounded copy using [captureMode]. When redaction is disabled,
   /// values remain unmasked but still cannot bypass outbound byte and
   /// traversal limits. A redaction failure returns an empty map.
+  @Deprecated(
+    'Use StateTracePreparer.prepareAdditionalData, which the observer already '
+    'applies. Will be removed in 8.0.0.',
+  )
   Map<String, dynamic>? redactAdditionalData(
     Map<String, dynamic>? data,
   ) {
@@ -126,6 +130,10 @@ class ISpectRiverpodSettings {
   /// Formats a provider value for display based on [printValues].
   ///
   /// Returns the full object when verbose, otherwise its type label.
+  @Deprecated(
+    'The observer formats values from printValues itself. '
+    'Will be removed in 8.0.0.',
+  )
   Object formatValue(Object? value) => printValues
       ? (value ?? 'null')
       : safeValueTypeLabel(

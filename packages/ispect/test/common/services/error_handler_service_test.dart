@@ -748,6 +748,215 @@ void main() {
       expect(received, same(details));
     });
 
+    testWidgets('presentError on an idle app is logged on the next pump', (
+      tester,
+    ) async {
+      ErrorHandlerService(logger: logger, filters: const []).setupErrorHandling(
+        options: const ISpectErrorHandlerOptions(
+          isFlutterErrorHandlingEnabled: false,
+          isPlatformDispatcherHandlingEnabled: false,
+        ),
+      );
+      await tester.pumpWidget(const SizedBox());
+
+      FlutterError.presentError(
+        const FlutterErrorDetails(exception: _TestException('idle')),
+      );
+      await tester.pump();
+
+      expect(
+        logger.history.where((e) => e.message == 'Flutter error presented'),
+        hasLength(1),
+      );
+    });
+
+    test('FlutterError.onError chains a host handler after logging', () {
+      final hostSeen = <int>[];
+      final details = FlutterErrorDetails(
+        exception: const _TestException('host'),
+        stack: StackTrace.current,
+      );
+      FlutterError.onError = (received) {
+        expect(received, same(details));
+        hostSeen.add(errorEntries().length);
+      };
+      ErrorHandlerService(logger: logger, filters: const []).setupErrorHandling(
+        options: const ISpectErrorHandlerOptions(
+          isFlutterPresentHandlingEnabled: false,
+          isPlatformDispatcherHandlingEnabled: false,
+        ),
+      );
+
+      FlutterError.onError!(details);
+
+      expect(hostSeen, [1]);
+    });
+
+    testWidgets('a host onError that presents the error is reported once', (
+      tester,
+    ) async {
+      final bindingOnError = FlutterError.onError;
+      var presenterCalls = 0;
+      var hostCalls = 0;
+      var uncaughtCalls = 0;
+      try {
+        FlutterError.presentError = (_) => presenterCalls++;
+        FlutterError.onError = (details) {
+          FlutterError.presentError(details);
+          hostCalls++;
+        };
+        ErrorHandlerService(
+          logger: logger,
+          filters: const [],
+        ).setupErrorHandling(
+          options: const ISpectErrorHandlerOptions(
+            isPlatformDispatcherHandlingEnabled: false,
+          ),
+          onUncaughtError: (_, __) => uncaughtCalls++,
+        );
+        await tester.pumpWidget(const SizedBox());
+
+        FlutterError.onError!(
+          const FlutterErrorDetails(exception: _TestException('presented')),
+        );
+        tester.binding.scheduleFrame();
+        await tester.pump();
+      } finally {
+        FlutterError.onError = bindingOnError;
+      }
+
+      expect(
+        logger.history.where(
+          (e) =>
+              e.message == 'Flutter error caught' ||
+              e.message == 'Flutter error presented',
+        ),
+        hasLength(1),
+      );
+      expect(uncaughtCalls, 1);
+      expect(hostCalls, 1);
+      expect(presenterCalls, 1);
+    });
+
+    test('FlutterError.onError reaches the host handler when an ISpect '
+        'callback throws', () {
+      var hostCalls = 0;
+      FlutterError.onError = (_) => hostCalls++;
+      ErrorHandlerService(logger: logger, filters: const []).setupErrorHandling(
+        options: const ISpectErrorHandlerOptions(
+          isFlutterPresentHandlingEnabled: false,
+          isPlatformDispatcherHandlingEnabled: false,
+        ),
+        onUncaughtError: (_, __) => throw StateError('callback failed'),
+      );
+
+      expect(
+        () => FlutterError.onError!(
+          const FlutterErrorDetails(exception: _TestException('throws')),
+        ),
+        throwsStateError,
+      );
+      expect(hostCalls, 1);
+    });
+
+    test('PlatformDispatcher.onError reaches the host handler when an ISpect '
+        'callback throws', () {
+      final original = PlatformDispatcher.instance.onError;
+      addTearDown(() => PlatformDispatcher.instance.onError = original);
+      var hostCalls = 0;
+      PlatformDispatcher.instance.onError = (_, __) {
+        hostCalls++;
+        return false;
+      };
+      ErrorHandlerService(logger: logger, filters: const []).setupErrorHandling(
+        options: const ISpectErrorHandlerOptions(
+          isFlutterPresentHandlingEnabled: false,
+          isFlutterErrorHandlingEnabled: false,
+        ),
+        onUncaughtError: (_, __) => throw StateError('callback failed'),
+      );
+
+      expect(
+        () => PlatformDispatcher.instance.onError!(
+          const _TestException('platform throws'),
+          StackTrace.current,
+        ),
+        throwsStateError,
+      );
+      expect(hostCalls, 1);
+    });
+
+    test('FlutterError.onError does not re-dump through the default '
+        'console presenter', () {
+      final printed = <String?>[];
+      final originalDebugPrint = debugPrint;
+      debugPrint = (message, {wrapWidth}) => printed.add(message);
+      addTearDown(() => debugPrint = originalDebugPrint);
+      FlutterError.onError = FlutterError.dumpErrorToConsole;
+      ErrorHandlerService(logger: logger, filters: const []).setupErrorHandling(
+        options: const ISpectErrorHandlerOptions(
+          isFlutterPresentHandlingEnabled: false,
+          isPlatformDispatcherHandlingEnabled: false,
+        ),
+      );
+
+      FlutterError.onError!(
+        const FlutterErrorDetails(exception: _TestException('console')),
+      );
+
+      expect(errorEntries(), hasLength(1));
+      expect(printed, isEmpty);
+    });
+
+    test('FlutterError.onError does not re-run the presenter that was active '
+        'at setup', () {
+      var presenterCalls = 0;
+      void presenter(FlutterErrorDetails _) => presenterCalls++;
+      FlutterError.presentError = presenter;
+      FlutterError.onError = presenter;
+      ErrorHandlerService(logger: logger, filters: const []).setupErrorHandling(
+        options: const ISpectErrorHandlerOptions(
+          isPlatformDispatcherHandlingEnabled: false,
+        ),
+      );
+
+      FlutterError.onError!(
+        const FlutterErrorDetails(exception: _TestException('presenter')),
+      );
+
+      expect(errorEntries(), hasLength(1));
+      expect(presenterCalls, 0);
+    });
+
+    test('PlatformDispatcher.onError chains a host handler and returns its '
+        'result', () {
+      final original = PlatformDispatcher.instance.onError;
+      addTearDown(() => PlatformDispatcher.instance.onError = original);
+      final hostSeen = <int>[];
+      PlatformDispatcher.instance.onError = (_, __) {
+        hostSeen.add(
+          logger.history
+              .where((e) => e.message == 'Platform error caught')
+              .length,
+        );
+        return false;
+      };
+      ErrorHandlerService(logger: logger, filters: const []).setupErrorHandling(
+        options: const ISpectErrorHandlerOptions(
+          isFlutterPresentHandlingEnabled: false,
+          isFlutterErrorHandlingEnabled: false,
+        ),
+      );
+
+      final handled = PlatformDispatcher.instance.onError!(
+        const _TestException('platform'),
+        StackTrace.current,
+      );
+
+      expect(hostSeen, [1]);
+      expect(handled, isFalse);
+    });
+
     test('PlatformDispatcher.onError logs the error and returns true', () {
       final original = PlatformDispatcher.instance.onError;
       addTearDown(() => PlatformDispatcher.instance.onError = original);

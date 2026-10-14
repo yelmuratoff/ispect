@@ -1,7 +1,8 @@
+import 'package:ispectify/src/redaction/constants/credential_markers.dart';
+
 /// HTTP authentication scheme prefixes (Bearer, Basic, Digest, etc.).
 final RegExp schemeRegex = RegExp(
-  '^(Bearer|Basic|Token|Digest|NTLM|Negotiate|OAuth|HOBA|Mutual|'
-  r'SCRAM-SHA-\d+)\s+',
+  '^($httpAuthSchemeAlternation)\\s+',
   caseSensitive: false,
 );
 
@@ -28,22 +29,7 @@ final RegExp jwtRegex = RegExp(
 /// Anthropic (`sk-ant-`), Google AI (`AIza`), Supabase (`sbp_`),
 /// npm (`npm_`), PyPI (`pypi-`), and generic `pat_` prefixes.
 final RegExp tokenPrefixRegex = RegExp(
-  '^('
-  'github_pat_|'
-  'gh[pousr]_|'
-  'xox[baprs]-|'
-  'glpat-|'
-  'sk-ant-|'
-  'sk-|'
-  'gsk_|'
-  'AKIA[A-Z0-9]|'
-  '(?:sk|pk|rk)_(?:live|test)_|'
-  'AIza|'
-  'sbp_|'
-  'npm_|'
-  'pypi-|'
-  'pat_'
-  ')',
+  '^($knownTokenPrefixAlternation|$awsAccessKeyIdPrefix[A-Z0-9])',
 );
 
 /// Characters valid in standard or URL-safe Base64.

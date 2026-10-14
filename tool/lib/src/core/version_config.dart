@@ -4,6 +4,8 @@ import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
 import 'exceptions.dart';
+import 'pubspec.dart';
+import 'repo_paths.dart';
 
 /// The `VERSION=` line in `version.config`, the source of truth for the
 /// version every package carries.
@@ -72,46 +74,25 @@ final class VersionConfig {
 final class PackageVersions {
   const PackageVersions(this.repoRoot);
 
-  static final _name = RegExp(r'^name:\s*(\S+)', multiLine: true);
   static final _version = RegExp(r'^version:\s*(\S+)', multiLine: true);
 
   final String repoRoot;
 
   /// Package name to declared version, ordered by directory name.
+  ///
+  /// Throws [PubspecException] or [ManifestException] when a package pubspec
+  /// does not parse or declares no name.
   Map<String, String> read() {
-    final packages = Directory(p.join(repoRoot, 'packages'));
-    if (!packages.existsSync()) {
-      return const {};
-    }
-
     final result = <String, String>{};
-    final directories = packages.listSync().whereType<Directory>().toList()
-      ..sort((a, b) => a.path.compareTo(b.path));
-    for (final directory in directories) {
-      final pubspec = File(p.join(directory.path, 'pubspec.yaml'));
-      if (!pubspec.existsSync()) {
+    for (final directory in packageDirectories(repoRoot)) {
+      final file = File(p.join(directory, 'pubspec.yaml'));
+      if (!file.existsSync()) {
         continue;
       }
-      final contents = pubspec.readAsStringSync();
-      final name =
-          _name.firstMatch(contents)?.group(1) ?? p.basename(directory.path);
-      result[name] = _version.firstMatch(contents)?.group(1) ?? '';
+      final name = Pubspec.read(file, repoRoot: repoRoot).name;
+      result[name] =
+          _version.firstMatch(file.readAsStringSync())?.group(1) ?? '';
     }
     return result;
-  }
-
-  /// Throws [VersionSyncException] naming every package that disagrees.
-  void assertMatches(Version expected) {
-    final outOfSync = [
-      for (final entry in read().entries)
-        if (entry.value != expected.toString()) entry.key,
-    ];
-    if (outOfSync.isEmpty) {
-      return;
-    }
-    throw VersionSyncException(
-      '${outOfSync.length} package(s) do not match $expected',
-      outOfSync: outOfSync,
-    );
   }
 }

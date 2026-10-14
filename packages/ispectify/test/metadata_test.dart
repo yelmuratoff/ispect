@@ -82,5 +82,79 @@ void main() {
 
       expect(output, contains('> appVersion: 1.2.3'));
     });
+
+    group('every typed field', () {
+      const full = ISpectMetadata(
+        appName: 'Demo',
+        appVersion: '1.2.3',
+        buildNumber: '42',
+        environment: 'staging',
+        device: 'Pixel 8',
+        os: 'Android',
+        osVersion: '14',
+        locale: 'en_US',
+        extra: {'flavor': 'qa', 'appVersion': 'stale'},
+      );
+      final typedKeys = const ISpectMetadata(
+        appName: 'Demo',
+        appVersion: '1.2.3',
+        buildNumber: '42',
+        environment: 'staging',
+        device: 'Pixel 8',
+        os: 'Android',
+        osVersion: '14',
+        locale: 'en_US',
+      ).toMap();
+
+      test('covers all eight typed fields', () {
+        expect(typedKeys, hasLength(8));
+      });
+
+      test('appears in the text export with typed values winning', () {
+        final output = LogExporter.toText(
+          logs,
+          metadata: full,
+          enableRedaction: false,
+        );
+
+        for (final MapEntry(:key, :value) in typedKeys.entries) {
+          expect(output, contains('$key: $value'));
+        }
+        expect(output, contains('flavor: qa'));
+        expect(output, isNot(contains('stale')));
+      });
+
+      test('appears in the markdown export with typed values winning', () {
+        final output = LogExporter.toMarkdown(
+          logs,
+          metadata: full,
+          enableRedaction: false,
+        );
+
+        for (final MapEntry(:key, :value) in typedKeys.entries) {
+          expect(output, contains('> $key: $value'));
+        }
+        expect(output, contains('> flavor: qa'));
+        expect(output, isNot(contains('stale')));
+      });
+
+      test('lists typed fields before extra entries in the text export', () {
+        final output = LogExporter.toText(
+          logs,
+          metadata: full,
+          enableRedaction: false,
+        );
+
+        expect(
+          output.indexOf('locale: en_US'),
+          lessThan(output.indexOf('flavor: qa')),
+        );
+      });
+
+      test('toMap keeps extra keys first and typed values winning', () {
+        expect(full.toMap().keys.take(2), ['flavor', 'appVersion']);
+        expect(full.toMap()['appVersion'], '1.2.3');
+      });
+    });
   });
 }

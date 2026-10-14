@@ -7,6 +7,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/observers/route_sanitizer.dart';
 import 'package:ispect/src/common/observers/transition.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/widgets/export_sheet.dart';
 
 class ISpectNavigationFlowActionsSheet {
@@ -40,7 +41,7 @@ class ISpectNavigationFlowActionsSheet {
           redactKeys: redactKeys,
         ),
       ),
-    );
+    ).whenComplete(controller.dispose);
   }
 
   @visibleForTesting
@@ -482,9 +483,7 @@ class ISpectNavigationFlowActionsSheet {
   static String _twoDigits(int value) => value.toString().padLeft(2, '0');
 
   static DiagnosticResourceLimits get _resourceLimits =>
-      (ISpect.loggerIfInitialized?.options.resourceLimits ??
-            DiagnosticResourceLimits.balanced)
-        ..validate();
+      (ISpectResourceLimits.current)..validate();
 
   static int get _maxSourceItems => _resourceLimits.maxCollectionItems;
 

@@ -53,9 +53,4 @@ abstract final class UrlComponentCodec {
     }
     return output.toString();
   }
-
-  /// Finds HTTP(S) URLs embedded in [text] and redacts their query parameters
-  /// and userInfo credentials.
-  ///
-  /// Useful for sanitizing error messages that may contain full URLs with
 }

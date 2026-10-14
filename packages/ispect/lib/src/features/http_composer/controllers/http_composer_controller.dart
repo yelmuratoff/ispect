@@ -59,7 +59,10 @@ final class HttpComposerController extends ChangeNotifier {
   String? _selectedSenderId;
   bool _isSending = false;
   NetworkReplayResult? _result;
+  Map<String, dynamic>? _resultJsonData;
+  String _resultText = '';
   ComposerValidation? _validationError;
+  bool _disposed = false;
 
   List<NetworkRequestSender> get senders => List.unmodifiable(_senders);
   String? get selectedSenderId => _selectedSenderId;
@@ -76,6 +79,15 @@ final class HttpComposerController extends ChangeNotifier {
       List.unmodifiable(_multipartFiles);
   bool get isSending => _isSending;
   NetworkReplayResult? get result => _result;
+
+  /// The [result] body shaped for the JSON viewer, or `null` when the body is
+  /// not a JSON object/array or the send failed without a status.
+  Map<String, dynamic>? get resultJsonData => _resultJsonData;
+
+  /// The bounded, pretty-printed [result] body (or transport error when the
+  /// send failed without a status); empty when there is no result.
+  String get resultText => _resultText;
+
   ComposerValidation? get validationError => _validationError;
 
   /// Whether file attachment is available (a picker was supplied by the host).
@@ -115,6 +127,15 @@ final class HttpComposerController extends ChangeNotifier {
   void addMultipartField() => _addRow(_multipartFields);
   void removeMultipartFieldAt(int index) => _removeRow(_multipartFields, index);
 
+  void updateHeader(int index, {String? key, String? value}) =>
+      _updateRow(_headers, index, key: key, value: value);
+  void updateQueryParam(int index, {String? key, String? value}) =>
+      _updateRow(_queryParams, index, key: key, value: value);
+  void updateFormField(int index, {String? key, String? value}) =>
+      _updateRow(_formFields, index, key: key, value: value);
+  void updateMultipartField(int index, {String? key, String? value}) =>
+      _updateRow(_multipartFields, index, key: key, value: value);
+
   void removeFileAt(int index) {
     _multipartFiles.removeAt(index);
     notifyListeners();
@@ -127,7 +148,7 @@ final class HttpComposerController extends ChangeNotifier {
     final picker = _filePicker;
     if (picker == null) return;
     final picked = await picker();
-    if (picked == null) return;
+    if (picked == null || _disposed) return;
     _multipartFiles.add(MultipartReplayFile(field: field, file: picked));
     notifyListeners();
   }
@@ -137,9 +158,16 @@ final class HttpComposerController extends ChangeNotifier {
 
   /// Assembles the current state into a [NetworkReplayRequest].
   ///
-  /// Returns `null` and sets [validationError] when the URL is missing/invalid
-  /// or a JSON body fails to parse.
+  /// Returns `null` when the URL is missing/invalid or a JSON body fails to
+  /// parse. Updates [validationError] and notifies listeners when it changes.
   NetworkReplayRequest? buildReplayRequest() {
+    final previousError = _validationError;
+    final request = _buildRequest();
+    if (_validationError != previousError) notifyListeners();
+    return request;
+  }
+
+  NetworkReplayRequest? _buildRequest() {
     _validationError = null;
 
     final trimmedUrl = _url.trim();
@@ -201,27 +229,31 @@ final class HttpComposerController extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    final request = buildReplayRequest();
+    final request = _buildRequest();
     if (request == null) {
       notifyListeners();
       return;
     }
 
     _isSending = true;
-    _result = null;
+    _setResult(null);
     notifyListeners();
 
     try {
-      _result = (await sender.send(
-        request,
-      )).safeSnapshot(resourceLimits: resourceLimits);
+      _setResult(
+        (await sender.send(
+          request,
+        )).safeSnapshot(resourceLimits: resourceLimits),
+      );
     } catch (error) {
-      _result = NetworkReplayResult(
-        error: error,
-      ).safeSnapshot(resourceLimits: resourceLimits);
+      _setResult(
+        NetworkReplayResult(
+          error: error,
+        ).safeSnapshot(resourceLimits: resourceLimits),
+      );
     } finally {
       _isSending = false;
-      notifyListeners();
+      if (!_disposed) notifyListeners();
     }
   }
 
@@ -231,13 +263,23 @@ final class HttpComposerController extends ChangeNotifier {
         _senders.first;
   }
 
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
   Uri _mergeQuery(Uri uri) {
     final rows = _queryParams.where((row) => row.key.isNotEmpty);
     if (rows.isEmpty) return uri;
-    final merged = <String, String>{...uri.queryParameters};
+    final rowValues = <String, List<String>>{};
     for (final row in rows) {
-      merged[row.key] = row.value;
+      (rowValues[row.key] ??= <String>[]).add(row.value);
     }
+    final merged = <String, List<String>>{
+      ...uri.queryParametersAll,
+      ...rowValues,
+    };
     return uri.replace(queryParameters: merged);
   }
 
@@ -266,6 +308,67 @@ final class HttpComposerController extends ChangeNotifier {
   void _removeRow(List<ComposerKeyValue> rows, int index) {
     rows.removeAt(index);
     notifyListeners();
+  }
+
+  void _updateRow(
+    List<ComposerKeyValue> rows,
+    int index, {
+    String? key,
+    String? value,
+  }) {
+    final row = rows[index];
+    if (key != null) row.key = key;
+    if (value != null) row.value = value;
+    notifyListeners();
+  }
+
+  void _setResult(NetworkReplayResult? result) {
+    _result = result;
+    _resultJsonData = result == null ? null : _jsonViewerData(result);
+    _resultText = switch (result) {
+      null => '',
+      NetworkReplayResult(isError: true, statusCode: null, :final error) =>
+        _pretty(error),
+      NetworkReplayResult(:final body) => _pretty(body),
+    };
+  }
+
+  Map<String, dynamic>? _jsonViewerData(NetworkReplayResult result) {
+    if (result.isError && result.statusCode == null) return null;
+    final body = LogExportOutput.boundJsonValue(
+      result.body,
+      resourceLimits: resourceLimits,
+    );
+    if (body is Map<String, Object?>) return Map<String, dynamic>.from(body);
+    if (body is List<Object?>) return <String, dynamic>{'content': body};
+    return null;
+  }
+
+  String _pretty(Object? value) {
+    final bounded = LogExportOutput.boundJsonValue(
+      value,
+      resourceLimits: resourceLimits,
+    );
+    if (bounded == null) return '';
+    final String rendered;
+    if (bounded is Map<String, Object?> || bounded is List<Object?>) {
+      try {
+        rendered = const JsonEncoder.withIndent('  ').convert(bounded);
+      } catch (_) {
+        return JsonValueNormalizer.unprintableValue;
+      }
+    } else {
+      rendered = switch (bounded) {
+        final String value => value,
+        final num value => value.toString(),
+        final bool value => value.toString(),
+        _ => JsonValueNormalizer.unprintableValue,
+      };
+    }
+    return LogExportOutput.truncateUtf8(
+      rendered,
+      maxBytes: resourceLimits.maxUiDiagnosticBytes,
+    );
   }
 
   /// Reconstructs a request to pre-fill the composer from a captured network
@@ -306,8 +409,11 @@ final class HttpComposerController extends ChangeNotifier {
     _method = seed.method;
     final uri = seed.uri;
     if (uri.hasQuery) {
-      for (final entry in uri.queryParameters.entries) {
-        _queryParams.add(ComposerKeyValue(key: entry.key, value: entry.value));
+      for (final MapEntry(:key, value: values)
+          in uri.queryParametersAll.entries) {
+        for (final value in values) {
+          _queryParams.add(ComposerKeyValue(key: key, value: value));
+        }
       }
       _url = _withoutQuery(uri).toString();
     } else {

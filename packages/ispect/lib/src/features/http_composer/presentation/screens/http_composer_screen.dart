@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -29,6 +28,8 @@ const List<String> _httpMethods = [
 const double _kTabletFormMaxWidth = 720;
 const int _kInlinePreviewMaxLines = 12;
 
+typedef _RowEdit = void Function(int index, {String? key, String? value});
+
 /// In-app HTTP composer ("mini-Postman"): edit/replay a captured request or
 /// build one from scratch and send it through a registered client.
 class HttpComposerScreen extends StatefulWidget {
@@ -47,27 +48,32 @@ class HttpComposerScreen extends StatefulWidget {
 
   /// Opens the composer pre-filled from a captured network [log].
   ///
-  /// Pushes onto the nearest navigator (ISpect's own), reusing the registered
-  /// senders and the host's file picker. Wrapped in [ISpectScopeController] so
-  /// the screen resolves ISpect theme/localization on routes that don't inherit
-  /// the scope.
+  /// Pushes [route] onto the nearest navigator (ISpect's own).
   static Future<void> openFromLog(BuildContext context, ISpectLogData log) {
     final model = ISpect.read(context);
     final seed = HttpComposerController.seedFromLog(log);
-    return Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => ISpectScopeController(
-          model: model,
-          child: HttpComposerScreen(
-            senders: ISpect.senders,
-            onPickComposerFile: model.options.onPickComposerFile,
-            seed: seed,
-          ),
-        ),
-        settings: const RouteSettings(name: 'ISpect HTTP Composer'),
-      ),
-    );
+    return Navigator.of(context).push(route(model: model, seed: seed));
   }
+
+  /// Builds the composer route, reusing the registered senders and the host's
+  /// file picker from [model].
+  ///
+  /// Wrapped in [ISpectScopeController] so the screen resolves ISpect
+  /// theme/localization on routes that don't inherit the scope.
+  static Route<void> route({
+    required ISpectScopeModel model,
+    NetworkReplayRequest? seed,
+  }) => MaterialPageRoute<void>(
+    builder: (_) => ISpectScopeController(
+      model: model,
+      child: HttpComposerScreen(
+        senders: ISpect.senders,
+        onPickComposerFile: model.options.onPickComposerFile,
+        seed: seed,
+      ),
+    ),
+    settings: const RouteSettings(name: 'ISpect HTTP Composer'),
+  );
 
   @override
   State<HttpComposerScreen> createState() => _HttpComposerScreenState();
@@ -78,9 +84,7 @@ class _HttpComposerScreenState extends State<HttpComposerScreen> {
     senders: widget.senders,
     filePicker: widget.onPickComposerFile,
     seed: widget.seed,
-    resourceLimits:
-        ISpect.loggerIfInitialized?.options.resourceLimits ??
-        DiagnosticResourceLimits.balanced,
+    resourceLimits: ISpectResourceLimits.current,
   );
   late final TextEditingController _urlController = TextEditingController(
     text: _controller.url,
@@ -217,6 +221,7 @@ class _RequestPane extends StatelessWidget {
                 rows: controller.headers,
                 onAdd: controller.addHeader,
                 onRemove: controller.removeHeaderAt,
+                onEdit: controller.updateHeader,
               ),
               const Gap(12),
               _KeyValueSection(
@@ -225,6 +230,7 @@ class _RequestPane extends StatelessWidget {
                 rows: controller.queryParams,
                 onAdd: controller.addQueryParam,
                 onRemove: controller.removeQueryParamAt,
+                onEdit: controller.updateQueryParam,
               ),
               const Gap(12),
               _ComposerSection(
@@ -236,7 +242,11 @@ class _RequestPane extends StatelessWidget {
               ),
               if (showInlineResult && result != null) ...[
                 const Gap(20),
-                _ResultView(result: result),
+                _ResultView(
+                  result: result,
+                  jsonData: controller.resultJsonData,
+                  text: controller.resultText,
+                ),
               ],
             ],
           ),
@@ -267,6 +277,8 @@ class _ResponsePane extends StatelessWidget {
         children: [
           _ResultView(
             result: result,
+            jsonData: controller.resultJsonData,
+            text: controller.resultText,
             previewMaxLines: _previewLinesFor(constraints.maxHeight),
           ),
         ],
@@ -377,6 +389,7 @@ class _MethodPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _SelectPill<String>(
+    semanticsLabel: context.ispectL10n.composerMethod,
     value: controller.method,
     items: _httpMethods,
     labelOf: (method) => method,
@@ -396,6 +409,7 @@ class _ClientPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final senders = controller.senders;
     return _SelectPill<String>(
+      semanticsLabel: context.ispectL10n.composerClient,
       value: controller.selectedSenderId ?? senders.first.id,
       items: [for (final sender in senders) sender.id],
       labelOf: (id) => senders.firstWhere((s) => s.id == id).label,
@@ -408,6 +422,7 @@ class _ClientPill extends StatelessWidget {
 
 class _SelectPill<T> extends StatelessWidget {
   const _SelectPill({
+    required this.semanticsLabel,
     required this.value,
     required this.items,
     required this.labelOf,
@@ -417,6 +432,7 @@ class _SelectPill<T> extends StatelessWidget {
     this.isExpanded = false,
   });
 
+  final String semanticsLabel;
   final T value;
   final List<T> items;
   final String Function(T value) labelOf;
@@ -466,6 +482,7 @@ class _SelectPill<T> extends StatelessWidget {
       ],
       builder: (context, menu, _) => ISpectBorderedSurface(
         onTap: () => menu.isOpen ? menu.close() : menu.open(),
+        semanticsLabel: semanticsLabel,
         backgroundColor: context.ispectCardColor,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         child: Row(
@@ -557,6 +574,7 @@ class _KeyValueSection extends StatelessWidget {
     required this.rows,
     required this.onAdd,
     required this.onRemove,
+    required this.onEdit,
   });
 
   final String title;
@@ -564,6 +582,7 @@ class _KeyValueSection extends StatelessWidget {
   final List<ComposerKeyValue> rows;
   final VoidCallback onAdd;
   final ValueChanged<int> onRemove;
+  final _RowEdit onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -584,6 +603,7 @@ class _KeyValueSection extends StatelessWidget {
         addLabel: addLabel,
         onAdd: onAdd,
         onRemove: onRemove,
+        onEdit: onEdit,
       ),
     );
   }
@@ -692,6 +712,7 @@ class _BodyEditor extends StatelessWidget {
         addLabel: l10n.composerAddField,
         onAdd: controller.addFormField,
         onRemove: controller.removeFormFieldAt,
+        onEdit: controller.updateFormField,
       ),
       ComposerBodyKind.multipart => _MultipartEditor(controller: controller),
     };
@@ -718,19 +739,22 @@ class _BodyKindSelector extends StatelessWidget {
     children: [
       for (final kind in ComposerBodyKind.values)
         _ChoicePill(
-          label: _bodyKindLabel(kind),
+          label: _bodyKindLabel(context.ispectL10n, kind),
           selected: kind == selected,
           onTap: () => onSelected(kind),
         ),
     ],
   );
 
-  static String _bodyKindLabel(ComposerBodyKind kind) => switch (kind) {
-    ComposerBodyKind.none => 'None',
+  static String _bodyKindLabel(
+    ISpectGeneratedLocalization l10n,
+    ComposerBodyKind kind,
+  ) => switch (kind) {
+    ComposerBodyKind.none => l10n.composerBodyNone,
     ComposerBodyKind.json => 'JSON',
-    ComposerBodyKind.text => 'Text',
-    ComposerBodyKind.formUrlEncoded => 'Form',
-    ComposerBodyKind.multipart => 'Multipart',
+    ComposerBodyKind.text => l10n.composerBodyText,
+    ComposerBodyKind.formUrlEncoded => l10n.composerBodyForm,
+    ComposerBodyKind.multipart => l10n.composerBodyMultipart,
   };
 }
 
@@ -796,6 +820,7 @@ class _MultipartEditor extends StatelessWidget {
           addLabel: l10n.composerAddField,
           onAdd: controller.addMultipartField,
           onRemove: controller.removeMultipartFieldAt,
+          onEdit: controller.updateMultipartField,
         ),
         for (var i = 0; i < controller.multipartFiles.length; i++)
           ListTile(
@@ -829,12 +854,14 @@ class _KeyValueEditor extends StatelessWidget {
     required this.addLabel,
     required this.onAdd,
     required this.onRemove,
+    required this.onEdit,
   });
 
   final List<ComposerKeyValue> rows;
   final String addLabel;
   final VoidCallback onAdd;
   final ValueChanged<int> onRemove;
+  final _RowEdit onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -856,7 +883,7 @@ class _KeyValueEditor extends StatelessWidget {
                       context,
                       hintText: l10n.composerKeyHint,
                     ),
-                    onChanged: (value) => rows[i].key = value,
+                    onChanged: (value) => onEdit(i, key: value),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -868,7 +895,7 @@ class _KeyValueEditor extends StatelessWidget {
                       context,
                       hintText: l10n.composerValueHint,
                     ),
-                    onChanged: (value) => rows[i].value = value,
+                    onChanged: (value) => onEdit(i, value: value),
                   ),
                 ),
                 IconButton(
@@ -943,17 +970,20 @@ class _ValidationText extends StatelessWidget {
 class _ResultView extends StatelessWidget {
   const _ResultView({
     required this.result,
+    required this.jsonData,
+    required this.text,
     this.previewMaxLines = _kInlinePreviewMaxLines,
   });
 
   final NetworkReplayResult result;
+  final Map<String, dynamic>? jsonData;
+  final String text;
   final int previewMaxLines;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.ispectL10n;
     final status = result.statusCode;
-    final jsonData = _jsonViewerData(result);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -980,69 +1010,18 @@ class _ResultView extends StatelessWidget {
             ],
           ),
         ),
-        if (jsonData != null)
-          _JsonResultCard(
-            data: jsonData,
-            preview: _pretty(result.body),
-            maxLines: previewMaxLines,
-          )
+        if (jsonData case final data?)
+          _JsonResultCard(data: data, preview: text, maxLines: previewMaxLines)
         else
           ISpectBorderedSurface(
             backgroundColor: context.ispectCardColor,
             padding: const EdgeInsets.all(12),
             child: SelectableText(
-              result.isError && status == null
-                  ? _pretty(result.error)
-                  : _pretty(result.body),
+              text,
               style: ISpectInputStyle.textStyle(context),
             ),
           ),
       ],
-    );
-  }
-
-  static Map<String, dynamic>? _jsonViewerData(NetworkReplayResult result) {
-    if (result.isError && result.statusCode == null) return null;
-    final body = LogExportOutput.boundJsonValue(
-      result.body,
-      resourceLimits:
-          ISpect.loggerIfInitialized?.options.resourceLimits ??
-          DiagnosticResourceLimits.balanced,
-    );
-    if (body is Map<String, Object?>) {
-      return Map<String, dynamic>.from(body);
-    }
-    if (body is List<Object?>) return <String, dynamic>{'content': body};
-    return null;
-  }
-
-  static String _pretty(Object? body) {
-    final limits =
-        ISpect.loggerIfInitialized?.options.resourceLimits ??
-        DiagnosticResourceLimits.balanced;
-    final bounded = LogExportOutput.boundJsonValue(
-      body,
-      resourceLimits: limits,
-    );
-    if (bounded == null) return '';
-    final String rendered;
-    if (bounded is Map<String, Object?> || bounded is List<Object?>) {
-      try {
-        rendered = const JsonEncoder.withIndent('  ').convert(bounded);
-      } catch (_) {
-        return JsonValueNormalizer.unprintableValue;
-      }
-    } else {
-      rendered = switch (bounded) {
-        final String value => value,
-        final num value => value.toString(),
-        final bool value => value.toString(),
-        _ => JsonValueNormalizer.unprintableValue,
-      };
-    }
-    return LogExportOutput.truncateUtf8(
-      rendered,
-      maxBytes: limits.maxUiDiagnosticBytes,
     );
   }
 }
@@ -1116,7 +1095,7 @@ class _StatusChip extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         child: Text(
-          isError ? 'ERR' : '$status',
+          isError ? context.ispectL10n.error : '$status',
           style: TextStyle(
             color: color,
             fontWeight: FontWeight.w700,

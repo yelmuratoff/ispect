@@ -11,6 +11,7 @@ import 'llms_builder.dart';
 import 'managed_file_transaction.dart';
 import 'next_version.dart';
 import 'readme_builder.dart';
+import 'repo_paths.dart';
 import 'version_config.dart';
 import 'version_sync.dart';
 
@@ -253,9 +254,10 @@ final class ReleasePrep {
 
   /// Runs the release preparation and returns the process exit code.
   ///
-  /// Reports every failure on [err] rather than throwing; a non-zero result
-  /// always leaves the managed files as they were before the run, unless the
-  /// rollback itself is reported as failed.
+  /// Reports every [Exception] on [err] rather than throwing; an [Error] from
+  /// a step is rethrown after the rollback. A non-zero result or a rethrown
+  /// [Error] always leaves the managed files as they were before the run,
+  /// unless the rollback itself is reported as failed.
   Future<int> run(ReleasePrepOptions options) async {
     final List<String> targets;
     final String previousVersion;
@@ -282,12 +284,22 @@ final class ReleasePrep {
       return 1;
     }
 
-    var status = 0;
+    int status;
     try {
       status = await _synchronize(options, previousVersion);
     } on ToolException catch (e) {
       err.writeln('[ERR] ${e.message}');
       status = 1;
+    } on Exception catch (e) {
+      err.writeln('[ERR] $e');
+      status = 1;
+    } on Object {
+      try {
+        _finish(transaction, 1);
+      } on Object catch (cleanupError) {
+        err.writeln('[ERR] Rollback cleanup failed: $cleanupError');
+      }
+      rethrow;
     }
     if (status == 0) {
       transaction.commit();
@@ -379,32 +391,15 @@ final class ReleasePrep {
     }
   }
 
-  /// The raw `VERSION=` value, kept as text so every heading the run writes is
-  /// byte-identical to the file it came from.
   String _readVersion() {
-    final file = _file(_versionFile);
-    if (!file.existsSync()) {
-      throw const ReleasePrepException('$_versionFile not found');
-    }
-
-    var value = '';
-    for (final line in file.readAsLinesSync()) {
-      final separator = line.indexOf('=');
-      if (separator < 0 || line.substring(0, separator) != 'VERSION') {
-        continue;
-      }
-      value = line.substring(separator + 1);
-      break;
-    }
-
+    final config = VersionConfig(_file(_versionFile));
     try {
-      Version.parse(value);
-    } on FormatException {
+      return config.read().toString();
+    } on VersionConfigException catch (e) {
       throw ReleasePrepException(
-        'Invalid VERSION in $_versionFile: ${value.isEmpty ? '<empty>' : value}',
+        e.message.replaceFirst(config.file.path, _versionFile),
       );
     }
-    return value;
   }
 
   List<String> _collectReleaseTargets() {
@@ -430,18 +425,8 @@ final class ReleasePrep {
     return targets;
   }
 
-  List<String> _packageDirectories() {
-    final packages = Directory(p.join(repoRoot, 'packages'));
-    if (!packages.existsSync()) {
-      return const [];
-    }
-    return packages
-        .listSync()
-        .whereType<Directory>()
-        .map((directory) => p.basename(directory.path))
-        .toList()
-      ..sort();
-  }
+  List<String> _packageDirectories() =>
+      packageDirectories(repoRoot).map(p.basename).toList();
 
   void _syncChangelogHeading(
     ReleasePrepOptions options,
@@ -791,7 +776,7 @@ Future<int> runReleasePrep({
         bumpWasExplicit = true;
       case '--skip-bump' || '--no-bump':
         skipBump = true;
-      case '--carry-changelog' || '--rename-current-changelog':
+      case '--carry-changelog':
         carryChangelog = true;
       case '--recover-changelog':
         recoverChangelog = true;

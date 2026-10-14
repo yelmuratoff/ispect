@@ -37,11 +37,4 @@ class FilterCache {
     _cacheGeneration = -1;
     _cachedView = null;
   }
-
-  void clear() {
-    _cachedData = [];
-    _lastFilter = null;
-    _cacheGeneration = -1;
-    _cachedView = null;
-  }
 }

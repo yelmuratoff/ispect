@@ -7,6 +7,7 @@ import 'package:ispectify/src/models/data.dart';
 import 'package:ispectify/src/models/diagnostic_capture_mode.dart';
 import 'package:ispectify/src/models/diagnostic_resource_limits.dart';
 import 'package:ispectify/src/models/log_level.dart';
+import 'package:ispectify/src/models/log_type.dart';
 import 'package:ispectify/src/redaction/constants/placeholders.dart';
 import 'package:ispectify/src/redaction/redaction_service.dart';
 import 'package:ispectify/src/redaction/redaction_toggle.dart';
@@ -15,12 +16,20 @@ import 'package:ispectify/src/trace/trace_config.dart';
 import 'package:ispectify/src/trace/trace_helpers.dart';
 import 'package:ispectify/src/trace/trace_keys.dart';
 import 'package:ispectify/src/trace/trace_message.dart';
+import 'package:ispectify/src/trace/trace_payload.dart';
 import 'package:ispectify/src/trace/trace_stream_transformer.dart';
 import 'package:ispectify/src/trace/trace_token.dart';
 import 'package:ispectify/src/utils/common_utils.dart';
 
-/// File-private zone key - prevents external code from reading/spoofing txnId.
+/// File-private zone key - prevents external code from spoofing txnId.
 final _txnZoneKey = Object();
+
+/// Returns the transaction ID of the enclosing [ISpectTrace.traceTransaction],
+/// or `null` outside one.
+String? currentTraceTransactionId() {
+  final value = Zone.current[_txnZoneKey];
+  return value is String ? value : null;
+}
 
 extension ISpectTrace on ISpectLogger {
   // ── Domain-extension shortcuts ──────────────────────────────────────
@@ -116,8 +125,6 @@ extension ISpectTrace on ISpectLogger {
     if (!isEnabled) return;
 
     final cfg = config ?? const ISpectTraceConfig();
-    final resourceLimits = (cfg.resourceLimits ?? options.resourceLimits)
-      ..validate();
     final isError = error != null || success == false;
 
     if (!cfg.shouldLog(localSample: sample, isError: isError)) return;
@@ -128,31 +135,27 @@ extension ISpectTrace on ISpectLogger {
     safeTrace(
       this,
       () {
+        final resourceLimits = (cfg.resourceLimits ?? options.resourceLimits)
+          ..validate();
         final redactor = _traceRedactor(cfg);
         final captureMode = options.captureMode;
-        String prepareText(Object? value) => _tracePayloadText(
-              _prepareTracePayload(
-                value,
-                redactor,
-                captureMode,
-                resourceLimits,
-              ),
-              resourceLimits,
+        Object? prepare(Object? value) => prepareTracePayload(
+              value,
+              redactor: redactor,
+              captureMode: captureMode,
+              resourceLimits: resourceLimits,
             );
+        String prepareText(Object? value) =>
+            _tracePayloadText(prepare(value), resourceLimits);
 
-        final scalars = _prepareTracePayload(
-          <String?>[
-            category.id,
-            source,
-            operation,
-            target,
-            key,
-            resolvedLogKey,
-          ],
-          redactor,
-          captureMode,
-          resourceLimits,
-        );
+        final scalars = prepare(<String?>[
+          category.id,
+          source,
+          operation,
+          target,
+          key,
+          resolvedLogKey,
+        ]);
         String? safeScalar(int index) {
           if (scalars is! List || index >= scalars.length) {
             return defaultPlaceholder;
@@ -184,41 +187,22 @@ extension ISpectTrace on ISpectLogger {
                 maxBytes: resourceLimits.maxCapturedValueBytes,
               );
 
-        final safeMetaValue = _prepareTracePayload(
-          meta,
-          redactor,
-          captureMode,
-          resourceLimits,
-        );
+        final safeMetaValue = prepare(meta);
         final safeMeta = safeMetaValue is Map<String, Object?>
             ? safeMetaValue
             : safeMetaValue is Map
                 ? Map<String, Object?>.from(safeMetaValue)
                 : null;
 
-        final safeValue = _prepareTracePayload(
-          value,
-          redactor,
-          captureMode,
-          resourceLimits,
-        );
+        final safeValue = prepare(value);
         final safeErrorText = error == null ? null : prepareText(error);
         final safeStackTrace = errorStackTrace == null
             ? null
             : StackTrace.fromString(
                 prepareText(errorStackTrace),
               );
-        final safeCorrelationId = correlationId == null
-            ? null
-            : _tracePayloadText(
-                _prepareTracePayload(
-                  correlationId,
-                  redactor,
-                  captureMode,
-                  resourceLimits,
-                ),
-                resourceLimits,
-              );
+        final safeCorrelationId =
+            correlationId == null ? null : prepareText(correlationId);
 
         final rawTxnId = Zone.current[_txnZoneKey];
         final zoneTxnId = rawTxnId is String ? rawTxnId : null;
@@ -245,7 +229,11 @@ extension ISpectTrace on ISpectLogger {
         return ISpectLogData(
           message,
           key: safeLogKey,
-          logLevel: logLevel ?? (isError ? LogLevel.error : LogLevel.info),
+          logLevel: logLevel ??
+              (isError
+                  ? LogLevel.error
+                  : ISpectLogType.fromKey(resolvedLogKey)?.level ??
+                      LogLevel.info),
           additionalData: additionalData,
           exception:
               error is Exception ? const _PreparedTraceException() : null,
@@ -444,21 +432,15 @@ extension ISpectTrace on ISpectLogger {
       ..validate();
     final redactor = _traceRedactor(cfg);
     final captureMode = options.captureMode;
-    String prepareText(Object? value) => _tracePayloadText(
-          _prepareTracePayload(
-            value,
-            redactor,
-            captureMode,
-            resourceLimits,
-          ),
-          resourceLimits,
+    Object? prepare(Object? value) => prepareTracePayload(
+          value,
+          redactor: redactor,
+          captureMode: captureMode,
+          resourceLimits: resourceLimits,
         );
-    final preparedMeta = _prepareTracePayload(
-      meta,
-      redactor,
-      captureMode,
-      resourceLimits,
-    );
+    String prepareText(Object? value) =>
+        _tracePayloadText(prepare(value), resourceLimits);
+    final preparedMeta = prepare(meta);
     return ISpectTraceToken(
       stopwatch: Stopwatch()..start(),
       category: category,
@@ -653,36 +635,6 @@ RedactionService? _traceRedactor(ISpectTraceConfig config) {
       ? null
       : config.redactKeys;
   return ISpectRedaction.resolveService(sensitiveKeys: sensitiveKeys);
-}
-
-Object? _prepareTracePayload(
-  Object? value,
-  RedactionService? redactor,
-  DiagnosticCaptureMode captureMode,
-  DiagnosticResourceLimits resourceLimits,
-) {
-  final redactionActive = redactor != null;
-  final prepared = LogExportOutput.boundJsonValue(
-    value,
-    preserveTypes: redactionActive,
-    replaceOversizedStrings: redactionActive,
-    allowCustomSerialization: captureMode == DiagnosticCaptureMode.balanced,
-    allowCustomStringification: captureMode == DiagnosticCaptureMode.balanced,
-    resourceLimits: resourceLimits,
-  );
-  if (!redactionActive) return prepared;
-  final redacted = redactor.redactForExport(
-    LogExportOutput.replaceTruncatedPrefixes(
-      prepared,
-      resourceLimits: resourceLimits,
-    ),
-    resourceLimits: resourceLimits,
-  );
-  return LogExportOutput.boundJsonValue(
-    redacted,
-    replaceOversizedStrings: true,
-    resourceLimits: resourceLimits,
-  );
 }
 
 final class _PreparedTraceException implements Exception {

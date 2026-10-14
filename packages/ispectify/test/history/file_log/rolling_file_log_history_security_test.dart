@@ -974,6 +974,114 @@ void main() {
       isTrue,
     );
   });
+
+  test('creates its session and date directories owner-only', () async {
+    if (Platform.isWindows) {
+      markTestSkipped('POSIX permission bits are unavailable on Windows');
+      return;
+    }
+    final root = await createPrivateTempDirectory('ispect-security-');
+    addTearDown(() => root.delete(recursive: true));
+    final history = file_io.RollingFileLogHistory.testing(
+      ISpectLoggerOptions(useConsoleLogs: false),
+      directoryProvider: () async => root.path,
+      options: const FileLogHistoryOptions(enableAutoSave: false),
+    )..add(ISpectLogData('entry', id: 'A', time: DateTime(2026, 7, 10, 9)));
+    addTearDown(history.dispose);
+
+    await history.saveToDailyFile();
+
+    final session = Directory(history.sessionDirectory);
+    final dateDirectory = Directory(
+      '${session.path}${Platform.pathSeparator}2026-07-10',
+    );
+    expect((await session.stat()).mode & 0x1ff, 0x1c0);
+    expect((await dateDirectory.stat()).mode & 0x1ff, 0x1c0);
+  });
+
+  group('file-system failures surface as typed storage errors', () {
+    final date = DateTime(2026, 7, 10, 9);
+
+    Future<file_io.RollingFileLogHistory> savedHistory() async {
+      final root = await createPrivateTempDirectory('ispect-security-');
+      addTearDown(() => root.delete(recursive: true));
+      final history = file_io.RollingFileLogHistory.testing(
+        ISpectLoggerOptions(useConsoleLogs: false),
+        directoryProvider: () async => root.path,
+        options: const FileLogHistoryOptions(enableAutoSave: false),
+      )..add(ISpectLogData('entry', id: 'A', time: date));
+      addTearDown(history.dispose);
+      await history.saveToDailyFile();
+      return history;
+    }
+
+    Future<bool> restrict(Directory directory, String mode) async {
+      final chmod = await Process.run('chmod', [mode, directory.path]);
+      expect(chmod.exitCode, 0);
+      addTearDown(() => Process.run('chmod', ['0700', directory.path]));
+      try {
+        await directory.list().drain<void>();
+        await File('${directory.path}${Platform.pathSeparator}probe')
+            .create(exclusive: true);
+        return false;
+      } on FileSystemException {
+        return true;
+      }
+    }
+
+    test('clearDateStorage', () async {
+      if (Platform.isWindows) {
+        markTestSkipped('POSIX permission bits are unavailable on Windows');
+        return;
+      }
+      final history = await savedHistory();
+      final dateDirectory = Directory(await history.getLogPathByDate(date));
+      if (!await restrict(dateDirectory, '0500')) {
+        markTestSkipped('Directory permissions are not enforced');
+        return;
+      }
+
+      await expectLater(
+        history.clearDateStorage(date),
+        throwsA(isA<FileLogStorageException>()),
+      );
+    });
+
+    test('getDateFileSize', () async {
+      if (Platform.isWindows) {
+        markTestSkipped('POSIX permission bits are unavailable on Windows');
+        return;
+      }
+      final history = await savedHistory();
+      final dateDirectory = Directory(await history.getLogPathByDate(date));
+      if (!await restrict(dateDirectory, '0300')) {
+        markTestSkipped('Directory permissions are not enforced');
+        return;
+      }
+
+      await expectLater(
+        history.getDateFileSize(date),
+        throwsA(isA<FileLogStorageException>()),
+      );
+    });
+
+    test('getAvailableLogDates', () async {
+      if (Platform.isWindows) {
+        markTestSkipped('POSIX permission bits are unavailable on Windows');
+        return;
+      }
+      final history = await savedHistory();
+      if (!await restrict(Directory(history.sessionDirectory), '0300')) {
+        markTestSkipped('Directory permissions are not enforced');
+        return;
+      }
+
+      await expectLater(
+        history.getAvailableLogDates(),
+        throwsA(isA<FileLogStorageException>()),
+      );
+    });
+  });
 }
 
 Future<int> _ownedDateSize(

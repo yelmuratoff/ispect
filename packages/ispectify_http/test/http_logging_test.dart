@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_dynamic_calls
+// ignore_for_file: avoid_dynamic_calls, deprecated_member_use_from_same_package
 
 import 'dart:convert';
 
@@ -383,5 +383,32 @@ void main() {
       final json = responseData.toJson();
       expect(() => jsonEncode(json), returnsNormally);
     });
+  });
+
+  group('Response without a request', () {
+    for (final statusCode in [200, 503]) {
+      test('$statusCode logs an UNKNOWN operation with an empty target',
+          () async {
+        final logger = ISpectLogger(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
+        );
+        final interceptor = ISpectHttpInterceptor(logger: logger);
+
+        await interceptor.interceptResponse(
+          response: http.Response('{"ok":true}', statusCode),
+        );
+
+        final entry = logger.history.single;
+        expect(
+          entry.key,
+          statusCode >= 400
+              ? ISpectLogType.httpError.key
+              : ISpectLogType.httpResponse.key,
+        );
+        expect(entry.additionalData?[TraceKeys.operation], 'UNKNOWN');
+        expect(entry.additionalData?[TraceKeys.target], '');
+        expect(entry.additionalData?[TraceKeys.correlationId], isNull);
+      });
+    }
   });
 }

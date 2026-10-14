@@ -1,3 +1,4 @@
+import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// Returns a bounded scalar route diagnostic without invoking caller code.
@@ -8,26 +9,19 @@ String sanitizeRouteDiagnosticText(
 }) {
   resourceLimits.validate();
   final redactionActive = enableRedaction && ISpectRedaction.enabled;
-  final prepared = LogExportOutput.boundJsonValue(
-    value,
-    resourceLimits: resourceLimits,
-    replaceOversizedStrings: redactionActive,
-  );
-  if (prepared is! String) return defaultPlaceholder;
-  if (!redactionActive) return prepared;
-
-  final redacted = ISpectRedaction.service.redactForExport(
-    prepared,
-    resourceLimits: resourceLimits,
-  );
-  final boundedRedacted = LogExportOutput.boundJsonValue(
-    redacted,
-    resourceLimits: resourceLimits,
-    replaceOversizedStrings: true,
-  );
-  return boundedRedacted is String && boundedRedacted.isNotEmpty
-      ? boundedRedacted
-      : defaultPlaceholder;
+  final Object? bounded;
+  try {
+    bounded = ISpectSafeDiagnosticSnapshot.boundedValue(
+      value,
+      redactor: redactionActive ? ISpectRedaction.service : null,
+      resourceLimits: resourceLimits,
+    );
+  } on Object {
+    return redactionFailedPlaceholder;
+  }
+  if (bounded is! String) return defaultPlaceholder;
+  if (!redactionActive) return bounded;
+  return bounded.isNotEmpty ? bounded : defaultPlaceholder;
 }
 
 /// Reduces a route label to its path, dropping query and fragment values.
@@ -78,20 +72,13 @@ Object? sanitizeRouteDiagnosticArguments(
   if (arguments == null) return null;
   resourceLimits.validate();
   final redactionActive = enableRedaction && ISpectRedaction.enabled;
-  final prepared = LogExportOutput.boundJsonValue(
-    arguments,
-    resourceLimits: resourceLimits,
-    replaceOversizedStrings: redactionActive,
-  );
-  if (!redactionActive) return prepared;
-
-  final redacted = ISpectRedaction.service.redactForExport(
-    prepared,
-    resourceLimits: resourceLimits,
-  );
-  return LogExportOutput.boundJsonValue(
-    redacted,
-    resourceLimits: resourceLimits,
-    replaceOversizedStrings: true,
-  );
+  try {
+    return ISpectSafeDiagnosticSnapshot.boundedValue(
+      arguments,
+      redactor: redactionActive ? ISpectRedaction.service : null,
+      resourceLimits: resourceLimits,
+    );
+  } on Object {
+    return redactionFailedPlaceholder;
+  }
 }

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 
-import '../core/dependency_check.dart';
+import '../core/release_prep.dart';
 import '../core/version_config.dart';
 
 /// Verifies every internal `^<version>` constraint matches `version.config`.
@@ -23,18 +23,10 @@ final class DepsCommand extends Command<int> {
     final expected = VersionConfig.forRepo(repoRoot).read();
     stdout.writeln('[INFO] Expected internal constraint: ^$expected');
 
-    final found = DependencyCheck(repoRoot).findInconsistencies(expected);
-    for (final inconsistency in found) {
-      stderr.writeln('[ERR] ${inconsistency.describe(expected)}');
-    }
-    if (found.isNotEmpty) {
-      stderr.writeln(
-        '[ERR] ${found.length} internal constraint(s) do not match $expected',
-      );
-      return 1;
-    }
-
-    stdout.writeln('[OK ] Every internal constraint matches $expected');
-    return 0;
+    return DartReleaseSteps(
+      repoRoot: repoRoot,
+      out: stdout,
+      err: stderr,
+    ).checkDependencies();
   }
 }

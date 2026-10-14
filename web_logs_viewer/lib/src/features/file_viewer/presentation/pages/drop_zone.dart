@@ -11,6 +11,7 @@ import 'package:super_drag_and_drop/super_drag_and_drop.dart';
 import '../../../../core/models/models.dart';
 import '../../../../core/utils/utils.dart';
 import '../../domain/drop_format_handler.dart';
+import '../../domain/drop_outcome.dart';
 import '../widgets/widgets.dart';
 
 class DropZone extends StatefulWidget {
@@ -28,7 +29,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
   final List<Widget> _droppedWidgets = [];
   Widget _preview = const SizedBox();
   Widget _content = const EmptyDropZoneContent();
-  final List<StreamSubscription> _fileSubscriptions = [];
+  final FileReadTracker _reads = FileReadTracker();
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +69,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
   }
 
   void _clearDroppedItems() {
+    unawaited(_reads.cancelAll());
     setState(() {
       _droppedWidgets.clear();
       _content = const EmptyDropZoneContent();
@@ -85,12 +87,12 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
   Future<void> _onPerformDrop(PerformDropEvent event) async {
     if (!mounted) return;
 
+    final generation = _reads.generation;
     try {
       final widgets = <Widget>[];
 
       for (final item in event.session.items) {
-        final reader = item.dataReader;
-        if (reader == null) continue;
+        if (item.dataReader == null) continue;
 
         ISpect.logger.info(
           'Available formats: ${item.platformFormats.join(', ')}',
@@ -98,7 +100,10 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
 
         widgets.add(DropItemHeader(item: item));
 
-        await _processDropItem(reader, item);
+        await DropFormatHandler(
+          item: item,
+          onOutcome: (outcome) => _onDropOutcome(outcome, generation),
+        ).process();
 
         final localData = item.localData;
         if (localData != null) {
@@ -106,7 +111,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
         }
       }
 
-      if (mounted) {
+      if (mounted && _reads.isCurrent(generation)) {
         setState(() {
           _droppedWidgets.addAll(widgets);
           _updateContent();
@@ -121,54 +126,65 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
     }
   }
 
-  Future<void> _processDropItem(dynamic reader, DropItem item) async {
-    final handler = DropFormatHandler(
-      reader: reader,
-      item: item,
-      onHandleFile: _handleFile,
-      onAddWidget: _addWidgetInState,
-    );
-    await handler.process();
+  void _onDropOutcome(DropOutcome outcome, int generation) {
+    if (!_reads.isCurrent(generation)) return;
+    switch (outcome) {
+      case DroppedFile():
+        _handleFile(outcome, generation);
+      case DroppedFileUri(:final uri):
+        _addWidgetInState(FileUriWidget(fileUri: uri));
+      case DroppedText():
+        _addWidgetInState(
+          FileContentWidget(
+            content: outcome.content,
+            file: MockFile(
+              content: outcome.content,
+              fileName: outcome.fileName,
+            ),
+            inspection: inspectAs(outcome.content, (
+              displayName: outcome.displayName,
+              mimeType: outcome.mimeType,
+            )),
+          ),
+        );
+      case ExternalFileFailure(:final fileName, :final error):
+        _addWidgetInState(
+          ExternalFileErrorWidget(fileName: fileName, error: error),
+        );
+      case DropFormatFailure(:final type, :final format, :final error):
+        _addWidgetInState(
+          FormatErrorWidget(type: type, format: format, error: error),
+        );
+    }
   }
 
-  void _handleFile(dynamic file, String? displayName, String? mimeType) {
-    final sub = processFileStream(
+  void _handleFile(DroppedFile file, int generation) {
+    _reads.read(
       file,
-      onSuccess: (content) {
-        final fileInfo = detectFileType(
+      onSuccess: (content) async {
+        final inspection = await inspectFileContentInBackground(
           content,
           file.fileName,
-          defaultDisplayName: displayName ?? 'Text',
-          defaultMimeType: mimeType ?? 'text/plain',
+          defaultDisplayName: file.displayName ?? 'Text',
+          defaultMimeType: file.mimeType ?? 'text/plain',
         );
-        if (mounted) {
-          setState(() {
-            _addWidgetToContent(
-              FileContentWidget(
-                content: content,
-                file: file,
-                displayName: fileInfo.displayName,
-                mimeType: fileInfo.mimeType,
-              ),
-            );
-          });
-        }
+        if (!_reads.isCurrent(generation)) return;
+        _addWidgetInState(
+          FileContentWidget(
+            content: content,
+            file: file,
+            inspection: inspection,
+          ),
+        );
       },
       onError: (e) {
         ISpect.logger.error('Error processing file: $e');
-        if (mounted) {
-          setState(() {
-            _addWidgetToContent(
-              FileErrorWidget(
-                title: 'Failed to decode file',
-                error: e.toString(),
-              ),
-            );
-          });
-        }
+        if (!_reads.isCurrent(generation)) return;
+        _addWidgetInState(
+          FileErrorWidget(title: 'Failed to decode file', error: e.toString()),
+        );
       },
     );
-    _fileSubscriptions.add(sub);
   }
 
   void _addWidgetToContent(Widget widget) {
@@ -207,10 +223,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
 
   @override
   void dispose() {
-    for (final sub in _fileSubscriptions) {
-      sub.cancel();
-    }
-    _fileSubscriptions.clear();
+    unawaited(_reads.cancelAll());
     super.dispose();
   }
 
@@ -241,8 +254,12 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
           continue;
         }
 
-        if (file.size > 10 * 1024 * 1024) {
-          _showSnackBar('File too large: ${file.name} (max 10MB)', Colors.red);
+        if (file.size > maxLoadableFileSize) {
+          _showSnackBar(
+            'File too large: ${file.name} '
+            '(max ${formatFileSize(maxLoadableFileSize)})',
+            Colors.red,
+          );
           continue;
         }
 
@@ -277,17 +294,19 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
         }
 
         final validContent = content;
-        final fileInfo = detectFileType(validContent, fileName);
+        final generation = _reads.generation;
+        final inspection = await inspectFileContentInBackground(
+          validContent,
+          fileName,
+        );
+        if (!mounted) return;
+        if (!_reads.isCurrent(generation)) continue;
 
-        if (fileInfo.mimeType == 'application/json') {
-          try {
-            jsonDecode(validContent);
-          } catch (e) {
-            _showSnackBar(
-              'Warning: ${file.name} contains invalid JSON',
-              Colors.orange,
-            );
-          }
+        if (inspection.jsonError != null) {
+          _showSnackBar(
+            'Warning: ${file.name} contains invalid JSON',
+            Colors.orange,
+          );
         }
 
         final mockFile = MockFileWithPlatformFile(
@@ -303,8 +322,7 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
               FileContentWidget(
                 content: validContent,
                 file: mockFile,
-                displayName: fileInfo.displayName,
-                mimeType: fileInfo.mimeType,
+                inspection: inspection,
               ),
             );
           });
@@ -343,37 +361,26 @@ class DropZoneState extends State<DropZone> with AutomaticKeepAliveClientMixin {
   }
 
   void _processPastedContent(String content, String format) {
-    final trimmedContent = content.trim();
-    String detectedFormat = format;
-
-    if (format == 'auto') {
-      if ((trimmedContent.startsWith('{') && trimmedContent.endsWith('}')) ||
-          (trimmedContent.startsWith('[') && trimmedContent.endsWith(']'))) {
-        detectedFormat = 'json';
-      }
-    }
-
-    final displayName = detectedFormat == 'json' ? 'JSON' : 'Text';
-    final mimeType = detectedFormat == 'json'
-        ? 'application/json'
-        : 'text/plain';
+    final inspection = switch (format) {
+      'auto' => inspectFileContent(content, null),
+      'json' => inspectAs(content, (
+        displayName: 'JSON',
+        mimeType: 'application/json',
+      )),
+      _ => inspectAs(content, (displayName: 'Text', mimeType: 'text/plain')),
+    };
 
     final mockFile = MockFile(
       content: content,
-      fileName:
-          'pasted_content.${detectedFormat == 'auto' || detectedFormat == 'text' ? 'txt' : detectedFormat}',
+      fileName: 'pasted_content.${inspection.isJson ? 'json' : 'txt'}',
     );
 
-    if (!mounted) return;
-    setState(() {
-      _addWidgetToContent(
-        FileContentWidget(
-          content: content,
-          file: mockFile,
-          displayName: displayName,
-          mimeType: mimeType,
-        ),
-      );
-    });
+    _addWidgetInState(
+      FileContentWidget(
+        content: content,
+        file: mockFile,
+        inspection: inspection,
+      ),
+    );
   }
 }

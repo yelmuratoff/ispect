@@ -2164,6 +2164,456 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Edit & resend'**
   String get composerEditAndResend;
+
+  /// No description provided for @settingsDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get settingsDisplay;
+
+  /// No description provided for @relativeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Relative time'**
+  String get relativeTime;
+
+  /// No description provided for @absoluteTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Absolute time'**
+  String get absoluteTime;
+
+  /// No description provided for @compactUrls.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact URLs'**
+  String get compactUrls;
+
+  /// No description provided for @settingsTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get settingsTools;
+
+  /// No description provided for @settingsAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get settingsAdvanced;
+
+  /// No description provided for @forwardErrorsToDeveloperLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward errors to dart:developer'**
+  String get forwardErrorsToDeveloperLog;
+
+  /// No description provided for @historyCapacity.
+  ///
+  /// In en, this message translates to:
+  /// **'History capacity'**
+  String get historyCapacity;
+
+  /// No description provided for @historyCapacityDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs kept in memory'**
+  String get historyCapacityDesc;
+
+  /// No description provided for @consoleTruncate.
+  ///
+  /// In en, this message translates to:
+  /// **'Console truncate'**
+  String get consoleTruncate;
+
+  /// No description provided for @consoleTruncateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Max chars per console line'**
+  String get consoleTruncateDesc;
+
+  /// No description provided for @captureMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture mode'**
+  String get captureMode;
+
+  /// No description provided for @captureModeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Useful values or maximum isolation'**
+  String get captureModeDesc;
+
+  /// No description provided for @captureModeBalancedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Guarded formatters with bounded output'**
+  String get captureModeBalancedDesc;
+
+  /// No description provided for @captureModeStrict.
+  ///
+  /// In en, this message translates to:
+  /// **'Strict'**
+  String get captureModeStrict;
+
+  /// No description provided for @captureModeStrictDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Never run application formatters'**
+  String get captureModeStrictDesc;
+
+  /// No description provided for @profileBalanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced'**
+  String get profileBalanced;
+
+  /// No description provided for @resourceProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Resource profile'**
+  String get resourceProfile;
+
+  /// No description provided for @resourceProfileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture, memory, import and export limits'**
+  String get resourceProfileDesc;
+
+  /// No description provided for @resourceProfileConstrained.
+  ///
+  /// In en, this message translates to:
+  /// **'Constrained'**
+  String get resourceProfileConstrained;
+
+  /// No description provided for @resourceProfileConstrainedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower memory use for long sessions'**
+  String get resourceProfileConstrainedDesc;
+
+  /// No description provided for @resourceProfileBalancedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Useful diagnostics with bounded cost'**
+  String get resourceProfileBalancedDesc;
+
+  /// No description provided for @resourceProfileExtended.
+  ///
+  /// In en, this message translates to:
+  /// **'Extended'**
+  String get resourceProfileExtended;
+
+  /// No description provided for @resourceProfileExtendedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Larger controlled internal handoffs'**
+  String get resourceProfileExtendedDesc;
+
+  /// No description provided for @processingProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing profile'**
+  String get processingProfile;
+
+  /// No description provided for @processingProfileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Responsiveness and batch throughput'**
+  String get processingProfileDesc;
+
+  /// No description provided for @processingProfileResponsive.
+  ///
+  /// In en, this message translates to:
+  /// **'Responsive'**
+  String get processingProfileResponsive;
+
+  /// No description provided for @processingProfileResponsiveDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Yield often to keep the UI fluid'**
+  String get processingProfileResponsiveDesc;
+
+  /// No description provided for @processingProfileBalancedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'General-purpose scheduling'**
+  String get processingProfileBalancedDesc;
+
+  /// No description provided for @processingProfileThroughput.
+  ///
+  /// In en, this message translates to:
+  /// **'Throughput'**
+  String get processingProfileThroughput;
+
+  /// No description provided for @processingProfileThroughputDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Larger batches for faster handoffs'**
+  String get processingProfileThroughputDesc;
+
+  /// No description provided for @limitInvalidValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a non-negative integer'**
+  String get limitInvalidValue;
+
+  /// No description provided for @limitZeroDisables.
+  ///
+  /// In en, this message translates to:
+  /// **'0 disables this limit'**
+  String get limitZeroDisables;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// No description provided for @logCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} log} other{{count} logs}}'**
+  String logCount(int count);
+
+  /// No description provided for @warningCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} warning} other{{count} warnings}}'**
+  String warningCount(int count);
+
+  /// No description provided for @errorCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} error} other{{count} errors}}'**
+  String errorCount(int count);
+
+  /// No description provided for @filteredLogCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{total, plural, one{{filtered} / {total} log} other{{filtered} / {total} logs}}'**
+  String filteredLogCount(int filtered, int total);
+
+  /// No description provided for @contentProcessingError.
+  ///
+  /// In en, this message translates to:
+  /// **'Content processing error'**
+  String get contentProcessingError;
+
+  /// No description provided for @failedToLoadLogContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load log content'**
+  String get failedToLoadLogContent;
+
+  /// No description provided for @unknownContentProcessingError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown error occurred while processing content'**
+  String get unknownContentProcessingError;
+
+  /// No description provided for @contentEmptyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Content is empty'**
+  String get contentEmptyError;
+
+  /// No description provided for @contentExceedsSafeLimitsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Content exceeds the safe import limits'**
+  String get contentExceedsSafeLimitsError;
+
+  /// No description provided for @correlationIdShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Corr'**
+  String get correlationIdShort;
+
+  /// No description provided for @transactionIdShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Txn'**
+  String get transactionIdShort;
+
+  /// No description provided for @columnType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get columnType;
+
+  /// No description provided for @columnTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get columnTime;
+
+  /// No description provided for @columnMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get columnMessage;
+
+  /// No description provided for @sortColumnAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by {column}, sorted ascending'**
+  String sortColumnAscending(String column);
+
+  /// No description provided for @sortColumnDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by {column}, sorted descending'**
+  String sortColumnDescending(String column);
+
+  /// No description provided for @sortColumnUnsorted.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by {column}, not sorted'**
+  String sortColumnUnsorted(String column);
+
+  /// No description provided for @resizeColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resize {column} column'**
+  String resizeColumn(String column);
+
+  /// No description provided for @resumeLiveTail.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume live tail'**
+  String get resumeLiveTail;
+
+  /// No description provided for @pauseLiveTail.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause live tail'**
+  String get pauseLiveTail;
+
+  /// No description provided for @liveTailLive.
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE'**
+  String get liveTailLive;
+
+  /// No description provided for @liveTailPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'PAUSED'**
+  String get liveTailPaused;
+
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
+  /// No description provided for @filterByType.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by type {type}'**
+  String filterByType(String type);
+
+  /// No description provided for @httpStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'HTTP status {code}'**
+  String httpStatus(int code);
+
+  /// No description provided for @composerBodyNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get composerBodyNone;
+
+  /// No description provided for @composerBodyText.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get composerBodyText;
+
+  /// No description provided for @composerBodyForm.
+  ///
+  /// In en, this message translates to:
+  /// **'Form'**
+  String get composerBodyForm;
+
+  /// No description provided for @composerBodyMultipart.
+  ///
+  /// In en, this message translates to:
+  /// **'Multipart'**
+  String get composerBodyMultipart;
+
+  /// No description provided for @jsonViewer.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON Viewer'**
+  String get jsonViewer;
+
+  /// No description provided for @detail.
+  ///
+  /// In en, this message translates to:
+  /// **'Detail'**
+  String get detail;
+
+  /// No description provided for @copyKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy {key}'**
+  String copyKey(String key);
+
+  /// No description provided for @copyToClipboardFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to copy to clipboard'**
+  String get copyToClipboardFailed;
+
+  /// No description provided for @pluginErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin Error: {pluginId}'**
+  String pluginErrorTitle(String pluginId);
+
+  /// No description provided for @pluginRenderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to render plugin screen'**
+  String get pluginRenderFailed;
+
+  /// No description provided for @stackTrace.
+  ///
+  /// In en, this message translates to:
+  /// **'Stack Trace'**
+  String get stackTrace;
+
+  /// No description provided for @resizeDivider.
+  ///
+  /// In en, this message translates to:
+  /// **'Resize divider'**
+  String get resizeDivider;
+
+  /// No description provided for @sessionLogsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load session logs'**
+  String get sessionLogsLoadFailed;
+
+  /// No description provided for @dailySessionsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load sessions'**
+  String get dailySessionsLoadFailed;
+
+  /// No description provided for @dailySessionsClearFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to clear sessions'**
+  String get dailySessionsClearFailed;
+
+  /// No description provided for @exception.
+  ///
+  /// In en, this message translates to:
+  /// **'Exception'**
+  String get exception;
 }
 
 class _ISpectGeneratedLocalizationDelegate

@@ -263,7 +263,38 @@ void main() {
     expect(onLogCalls, 1);
   });
 
-  test('observer failures emit a constant diagnostic without raw details', () {
+  test('observer failures report the error type without raw details', () {
+    final output = <String>[];
+    ISpectLogger.testing(
+      logger: ISpectBaseLogger(
+        settings: ConsoleSettings(enableColors: false),
+        output: (
+          message, {
+          logLevel,
+          error,
+          stackTrace,
+          time,
+        }) =>
+            output.add(message),
+      ),
+      observer: const _ThrowingObserver(),
+    ).info('trigger');
+
+    final diagnostics =
+        output.where((line) => line.contains('Observer callback')).toList();
+    expect(diagnostics, hasLength(1));
+    expect(
+      diagnostics.single,
+      contains('Observer callback failed safely: StateError'),
+    );
+    expect(diagnostics.single, isNot(contains('OBSERVER_LOG_SECRET')));
+    expect(
+      diagnostics.single,
+      isNot(contains('log_custom_observer_test.dart')),
+    );
+  });
+
+  test('observer failures stay off the console when console logs are off', () {
     final output = <String>[];
     ISpectLogger.testing(
       logger: ISpectBaseLogger(
@@ -281,10 +312,7 @@ void main() {
       options: ISpectLoggerOptions(useConsoleLogs: false),
     ).info('trigger');
 
-    expect(output, hasLength(1));
-    expect(output.single, contains('Observer callback failed safely.'));
-    expect(output.single, isNot(contains('OBSERVER_LOG_SECRET')));
-    expect(output.single, isNot(contains('log_custom_observer_test.dart')));
+    expect(output, isEmpty);
   });
 
   test('observers receive a redacted copy by default', () {

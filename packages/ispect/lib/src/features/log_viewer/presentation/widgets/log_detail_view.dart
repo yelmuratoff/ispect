@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
+import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
@@ -89,9 +90,7 @@ class _LogDetailViewState extends State<LogDetailView> {
   late bool _isViewingRequest;
   late JsonScreen _jsonScreen;
 
-  DiagnosticResourceLimits get _resourceLimits =>
-      ISpect.loggerIfInitialized?.options.resourceLimits ??
-      DiagnosticResourceLimits.balanced;
+  DiagnosticResourceLimits get _resourceLimits => ISpectResourceLimits.current;
 
   @override
   void initState() {
@@ -250,12 +249,13 @@ class _TraceCorrelationBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = context.appTheme.colorScheme.tertiary;
+    final l10n = context.ispectL10n;
     final chips = <Widget>[];
 
     if (correlationId != null) {
       chips.add(
         _IdChip(
-          label: 'Corr',
+          label: l10n.correlationIdShort,
           value: correlationId!.display,
           color: color,
           actionIcon: onShowRelated != null
@@ -270,7 +270,7 @@ class _TraceCorrelationBanner extends StatelessWidget {
     if (transactionId != null) {
       chips.add(
         _IdChip(
-          label: 'Txn',
+          label: l10n.transactionIdShort,
           value: transactionId!.display,
           color: color,
           actionIcon: onShowRelated != null

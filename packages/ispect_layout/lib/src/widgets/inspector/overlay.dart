@@ -86,7 +86,10 @@ class _InspectorOverlayState extends State<InspectorOverlay>
     final canRenderHovered = _canRender(widget.hoveredBoxInfo);
     final canRenderCompared = _canRender(widget.comparedBoxInfo);
 
-    if (!canRenderBox && !canRenderHovered && !canRenderCompared) return;
+    if (!canRenderBox && !canRenderHovered && !canRenderCompared) {
+      setState(_syncTickerState);
+      return;
+    }
 
     final currentBoxRect = canRenderBox
         ? widget.boxInfo!.targetRectShifted

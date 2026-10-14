@@ -473,10 +473,16 @@ final class ISpectLogType {
     // graphql
     'graphql-request': AnsiPen()..xterm(141),
     'graphql-response': AnsiPen()..xterm(35),
+    // performance
+    'performance-jank': AnsiPen()..xterm(172),
   };
 
+  static final AnsiPen _errorFallbackPen = AnsiPen()..red();
+
   /// Built-in ANSI console color for this log type.
-  AnsiPen get defaultPen => _defaultPens[key] ?? ConsoleUtils.fallbackPen;
+  AnsiPen get defaultPen =>
+      _defaultPens[key] ??
+      (isError ? _errorFallbackPen : ConsoleUtils.fallbackPen);
 
   // ── Display ────────────────────────────────────────────────────────────────
 

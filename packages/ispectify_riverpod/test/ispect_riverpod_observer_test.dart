@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -83,6 +85,25 @@ final class _HostileRuntimeTypeValue {
   String toString() {
     toStringCalls++;
     throw StateError('tenantSecret=HOSTILE_VALUE_TEXT_SECRET');
+  }
+}
+
+final class _RecordingPattern implements Pattern {
+  _RecordingPattern(this._delegate);
+
+  final Pattern _delegate;
+  int calls = 0;
+
+  @override
+  Iterable<Match> allMatches(String string, [int start = 0]) {
+    calls++;
+    return _delegate.allMatches(string, start);
+  }
+
+  @override
+  Match? matchAsPrefix(String string, [int start = 0]) {
+    calls++;
+    return _delegate.matchAsPrefix(string, start);
   }
 }
 
@@ -716,13 +737,16 @@ void main() {
         });
 
         test('filterPredicate takes precedence', () {
+          final pattern = _RecordingPattern(RegExp('something-else'));
           ISpectRiverpodObserver(
             logger: logger,
+            filters: [pattern],
             filterPredicate: (candidate) =>
                 candidate.toString().contains('counter'),
           ).didAddProvider(_counterProvider, 0, container);
 
           expect(logger.byOperation('add'), isEmpty);
+          expect(pattern.calls, 0);
         });
 
         test('providerFilter on settings suppresses matching providers', () {

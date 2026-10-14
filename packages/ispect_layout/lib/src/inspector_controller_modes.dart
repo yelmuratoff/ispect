@@ -3,18 +3,37 @@ part of 'inspector_controller.dart';
 enum InspectorMode {
   none,
   inspector,
+  @Deprecated(
+    'Use enterCompareMode(), which selects InspectorMode.compareSelect. '
+    'Will be removed in 8.0.0.',
+  )
   inspectAndCompare,
   compareSelect,
   colorPicker,
-  zoom,
+  zoom;
+
+  bool get isInspecting => switch (this) {
+    InspectorMode.inspector ||
+    // ignore: deprecated_member_use_from_same_package
+    InspectorMode.inspectAndCompare ||
+    InspectorMode.compareSelect => true,
+    InspectorMode.none ||
+    InspectorMode.colorPicker ||
+    InspectorMode.zoom => false,
+  };
 }
 
 extension InspectorControllerModes on InspectorController {
   void handleInspectorShortcut(bool isPressed) =>
       _toggleMode(isPressed, InspectorMode.inspector);
 
-  void handleCompareShortcut() =>
-      _toggleMode(true, InspectorMode.inspectAndCompare);
+  void handleCompareShortcut() {
+    if (modeNotifier.value == InspectorMode.compareSelect) {
+      exitCompareMode();
+    } else {
+      enterCompareMode();
+    }
+  }
 
   void handleColorPickerShortcut(bool isPressed) =>
       _toggleMode(isPressed, InspectorMode.colorPicker);
@@ -84,6 +103,7 @@ extension InspectorControllerModes on InspectorController {
       case InspectorMode.inspector:
         if (!isWidgetInspectorEnabled) return;
         break;
+      // ignore: deprecated_member_use_from_same_package
       case InspectorMode.inspectAndCompare:
         if (!isWidgetInspectorEnabled || !isWidgetInspectAndCompareEnabled) {
           return;
@@ -115,17 +135,6 @@ extension InspectorControllerModes on InspectorController {
   }
 
   void _toggleMode(bool enable, InspectorMode targetMode) {
-    if (targetMode == InspectorMode.inspectAndCompare) {
-      if (enable) {
-        if (modeNotifier.value == InspectorMode.compareSelect) {
-          exitCompareMode();
-        } else {
-          enterCompareMode();
-        }
-      }
-      return;
-    }
-
     if (enable) {
       setMode(targetMode);
     } else if (modeNotifier.value == targetMode) {
@@ -140,11 +149,10 @@ extension InspectorControllerModes on InspectorController {
   ) {
     switch (oldMode) {
       case InspectorMode.inspector:
+      // ignore: deprecated_member_use_from_same_package
       case InspectorMode.inspectAndCompare:
       case InspectorMode.compareSelect:
-        if (newMode != InspectorMode.inspector &&
-            newMode != InspectorMode.inspectAndCompare &&
-            newMode != InspectorMode.compareSelect) {
+        if (!newMode.isInspecting) {
           currentRenderBoxNotifier.value = null;
           hoveredRenderBoxNotifier.value = null;
           comparedRenderBoxNotifier.value = null;
@@ -160,6 +168,7 @@ extension InspectorControllerModes on InspectorController {
         selectedColorOffsetNotifier.value = null;
         selectedColorStateNotifier.value = null;
         selectedColorImageOffsetNotifier.value = null;
+        zoomScaleNotifier.value = _initialZoomScale;
         break;
       case InspectorMode.zoom:
         _cleanupImage();
@@ -175,26 +184,23 @@ extension InspectorControllerModes on InspectorController {
   void _setupMode(InspectorMode mode) {
     switch (mode) {
       case InspectorMode.inspector:
+      // ignore: deprecated_member_use_from_same_package
       case InspectorMode.inspectAndCompare:
       case InspectorMode.compareSelect:
         break;
       case InspectorMode.colorPicker:
         final captureEpoch = ++_imageCaptureEpoch;
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          await _extractByteData(captureEpoch);
-        });
+        zoomScaleNotifier.value = _initialZoomScale;
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _resampleAfterCapture(captureEpoch),
+        );
         break;
       case InspectorMode.zoom:
         final captureEpoch = ++_imageCaptureEpoch;
         zoomScaleNotifier.value = _initialZoomScale;
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          await _extractByteData(captureEpoch);
-          if (_isDisposed || captureEpoch != _imageCaptureEpoch) return;
-          if (_pointerHoverPosition != null &&
-              stackKey.currentContext != null) {
-            _onZoomHover(_pointerHoverPosition!, stackKey.currentContext!);
-          }
-        });
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _resampleAfterCapture(captureEpoch),
+        );
         break;
       case InspectorMode.none:
         break;

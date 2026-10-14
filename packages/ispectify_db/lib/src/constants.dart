@@ -3,26 +3,35 @@
 /// Using constants instead of inline strings prevents typos and enables
 /// rename-safe refactoring across the package.
 abstract final class DbLogKeys {
+  @Deprecated('Use TraceKeys.source instead. Will be removed in 8.0.0.')
   static const source = 'source';
+  @Deprecated('Use TraceKeys.operation instead. Will be removed in 8.0.0.')
   static const operation = 'operation';
   static const statement = 'statement';
   static const statementDigest = 'statementDigest';
+  @Deprecated('Use TraceKeys.target instead. Will be removed in 8.0.0.')
   static const target = 'target';
   static const table = 'table';
   static const key = 'key';
   static const args = 'args';
   static const namedArgs = 'namedArgs';
+  @Deprecated('Use TraceKeys.durationMs instead. Will be removed in 8.0.0.')
   static const durationMs = 'durationMs';
+  @Deprecated('Use TraceKeys.slow instead. Will be removed in 8.0.0.')
   static const slow = 'slow';
+  @Deprecated('Use TraceKeys.success instead. Will be removed in 8.0.0.')
   static const success = 'success';
   static const affected = 'affected';
   static const items = 'items';
   static const sizeBytes = 'sizeBytes';
   static const cacheHit = 'cacheHit';
   static const value = 'value';
+  @Deprecated('Use TraceKeys.meta instead. Will be removed in 8.0.0.')
   static const meta = 'meta';
   static const userMeta = 'userMeta';
+  @Deprecated('Use TraceKeys.transactionId instead. Will be removed in 8.0.0.')
   static const transactionId = 'transactionId';
+  @Deprecated('Use TraceKeys.error instead. Will be removed in 8.0.0.')
   static const error = 'error';
   static const dbError = 'dbError';
 }
@@ -34,10 +43,14 @@ abstract final class DbLogCategory {
   static const result = 'db-result';
 }
 
-/// Operation names recognized as read (query) operations.
+/// Operation names once recognized as read (query) operations.
 ///
-/// Used by [ISpectDbCore.pickLogKey] to classify operations as
-/// [DbLogCategory.query] vs [DbLogCategory.result].
+/// Not consulted when choosing a log key: [ISpectDbCore.pickLogKey] and every
+/// emitted DB trace classify by `dbCategory.secondaryOperations`.
+@Deprecated(
+  'Use dbCategory.secondaryOperations, the set DB traces classify by. '
+  'Removal target: 8.0.0.',
+)
 const dbReadOperations = <String>{
   'query', 'select', 'read', 'get', // SQL / KV
   'fetch', 'find', 'list', 'lookup', 'scan', 'count', // NoSQL / search
@@ -50,6 +63,10 @@ const dbDefaultSource = 'custom';
 const dbDefaultOperation = 'custom';
 
 /// Transaction marker operation names.
+@Deprecated(
+  'Markers come from traceTransaction(logMarkers: true); read the trace '
+  'operation instead. Will be removed in 8.0.0.',
+)
 abstract final class DbTxnOps {
   static const begin = 'transaction-begin';
   static const commit = 'transaction-commit';

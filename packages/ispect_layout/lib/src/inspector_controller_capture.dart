@@ -48,26 +48,32 @@ extension InspectorControllerCapture on InspectorController {
     }
     _cleanupImage();
     final captureEpoch = ++_imageCaptureEpoch;
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _extractByteData(captureEpoch);
-      if (_isDisposed || captureEpoch != _imageCaptureEpoch) return;
-      if (_pointerHoverPosition == null || stackKey.currentContext == null) {
-        return;
-      }
-      switch (modeNotifier.value) {
-        case InspectorMode.zoom:
-          _onZoomHover(_pointerHoverPosition!, stackKey.currentContext!);
-          break;
-        case InspectorMode.colorPicker:
-          _onColorPickerHover(_pointerHoverPosition!, stackKey.currentContext!);
-          break;
-        case InspectorMode.none:
-        case InspectorMode.inspector:
-        case InspectorMode.inspectAndCompare:
-        case InspectorMode.compareSelect:
-          break;
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _resampleAfterCapture(captureEpoch),
+    );
+  }
+
+  Future<void> _resampleAfterCapture(int captureEpoch) async {
+    await _extractByteData(captureEpoch);
+    if (_isDisposed || captureEpoch != _imageCaptureEpoch) return;
+    final position = _pointerHoverPosition;
+    final context = stackKey.currentContext;
+    if (position == null || context == null) return;
+    if (!context.mounted) return;
+    switch (modeNotifier.value) {
+      case InspectorMode.zoom:
+        _onZoomHover(position, context);
+        break;
+      case InspectorMode.colorPicker:
+        _onColorPickerHover(position, context);
+        break;
+      case InspectorMode.none:
+      case InspectorMode.inspector:
+      // ignore: deprecated_member_use_from_same_package
+      case InspectorMode.inspectAndCompare:
+      case InspectorMode.compareSelect:
+        break;
+    }
   }
 
   Future<void> _extractByteData(int captureEpoch) async {
