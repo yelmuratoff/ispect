@@ -15,7 +15,7 @@ ISpectServiceExtensions.register(() => logger);
 | `ext.ispect.getSummary` | Entry and level counts, the most frequent log keys, and the latest errors.                                      |
 | `ext.ispect.getLogs`    | Compact entries filtered by `minLevel`, `keys`, and `query`, paged with `limit`, `afterId`, and `beforeId`.     |
 | `ext.ispect.getLog`     | One full record by `id`.                                                                                        |
-| `ext.ispect.getTrace`   | The entries that share a correlation or transaction ID, such as the request, response, and error of one call.   |
+| `ext.ispect.getTrace`   | Up to 200 entries sharing a correlation or transaction ID, such as one call's request, response, and error.     |
 
 Responses pass through the same redaction and size limits as a JSON Lines
 export. Release builds have no VM service, and builds without the flag compile
