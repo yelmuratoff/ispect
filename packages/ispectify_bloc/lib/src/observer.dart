@@ -87,7 +87,8 @@ class ISpectBlocObserver extends BlocObserver {
         debugEnabledOverride: debugEnabledOverride,
       );
 
-  final _pendingEvents = Expando<_PendingEventCorrelations>('bloc_event_ids');
+  late final _pendingEvents =
+      Expando<_PendingEventCorrelations>('bloc_event_ids');
 
   DiagnosticResourceLimits get _resourceLimits =>
       settings.resourceLimits ?? _logger.options.resourceLimits;
