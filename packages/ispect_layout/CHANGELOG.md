@@ -23,6 +23,7 @@
 - **Hide this type:** Hiding a log type no longer hides types that appear later, and tapping a hidden type's chip shows it again without narrowing the list.
 - **Host error handlers:** ISpect passes errors on to `FlutterError.onError` and `PlatformDispatcher.onError` handlers installed before it, such as crash reporters.
 - **Database keys:** Key-value keys stay readable in traces unless a part of them looks sensitive (credential names, session prefixes, emails, phone numbers, tokens, opaque IDs).
+- **Database log keys:** `ISpectDbCore.pickLogKey` returns the key DB traces actually log under: operations match the DB trace category case-sensitively, so `read`, `fetch`, and `SELECT` now return `db-result` instead of `db-query`.
 - **Header counts:** The log, error, and warning counts in the header follow the active type filters.
 - **Settings sheet:** Reverse, group, and expand are offered only as Display toggles.
 - **Sheet builders:** `showISpectSheet` builders receive the sheet's own context.
