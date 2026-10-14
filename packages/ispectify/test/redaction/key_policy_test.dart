@@ -453,6 +453,42 @@ void main() {
     });
   });
 
+  group('key classification across calls', () {
+    test('per-call ignored keys still apply after the key was classified', () {
+      final service = RedactionService();
+      final headers = <String, Object?>{'x-api-key': _secret};
+
+      expect(service.redactHeaders(headers)['x-api-key'], isNot(_secret));
+      expect(
+        service.redactHeaders(headers, ignoredKeys: {'x-api-key'})['x-api-key'],
+        _secret,
+      );
+      expect(service.redactHeaders(headers)['x-api-key'], isNot(_secret));
+    });
+
+    test('ignoreKey applies to a key classified before the call', () {
+      final service = RedactionService();
+      expect(service.redact({'token': _secret}), isNot({'token': _secret}));
+
+      service.ignoreKey('token');
+
+      expect(service.redact({'token': _secret}), {'token': _secret});
+    });
+
+    test('services with different policies classify independently', () {
+      final custom = RedactionService(sensitiveKeys: {'tenant'});
+      final defaults = RedactionService();
+
+      const tenant = {'tenant': 'acme-corp'};
+
+      expect(custom.redact(tenant), isNot(tenant));
+      expect(defaults.redact(tenant), tenant);
+      expect(custom.redact({'password': 'hunter2'}), {
+        'password': '[REDACTED]',
+      });
+    });
+  });
+
   group('plural credential keys', () {
     test('masks plural credential keys like their singular forms', () {
       final out = RedactionService().redact({

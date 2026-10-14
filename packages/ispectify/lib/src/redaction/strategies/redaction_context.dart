@@ -26,9 +26,12 @@ final class RedactionContext {
     required this.looksLikeAuthorizationValue,
     required this.isLikelyBase64,
     required this.isProbablyBinaryString,
-  }) : _classificationCache = null;
+  })  : _contextClassifications = null,
+        _policyClassifications = null;
 
-  /// Caches at most 256 repeated field names for this context's lifetime.
+  /// Caches at most 256 field names per redaction policy, shared by every
+  /// cached context built from the same [sensitiveKeysLower],
+  /// [sensitiveKeyPatterns], and [fullyMaskedKeyNamesLower] instances.
   RedactionContext.cached({
     required this.placeholder,
     required this.redactBinary,
@@ -45,7 +48,12 @@ final class RedactionContext {
     required this.looksLikeAuthorizationValue,
     required this.isLikelyBase64,
     required this.isProbablyBinaryString,
-  }) : _classificationCache = {};
+  })  : _contextClassifications = {},
+        _policyClassifications = _sharedPolicyClassifications(
+          sensitiveKeysLower,
+          sensitiveKeyPatterns,
+          fullyMaskedKeyNamesLower,
+        );
 
   final String placeholder;
   final bool redactBinary;
@@ -64,7 +72,8 @@ final class RedactionContext {
   final bool Function(String value) looksLikeAuthorizationValue;
   final bool Function(String value) isLikelyBase64;
   final bool Function(String value) isProbablyBinaryString;
-  final Map<String, _KeyClassification>? _classificationCache;
+  final Map<String, _KeyClassification>? _contextClassifications;
+  final Map<String, _KeyClassification>? _policyClassifications;
 
   /// Classifies [keyName] as fully-masked and/or sensitive in a single
   /// normalization pass, so the per-key hot path avoids repeating
@@ -106,20 +115,48 @@ final class RedactionContext {
   }
 
   _KeyClassification _cachedClassification(String keyName) {
-    final cache = _classificationCache;
-    final cached = cache?[keyName];
-    if (cached != null) return cached;
-    final classification = _classifyKey(keyName);
-    if (cache != null && cache.length < _maxClassificationCacheEntries) {
-      cache[keyName] = classification;
+    final local = _contextClassifications;
+    final known = local?[keyName];
+    if (known != null) return known;
+    final classification = isIgnoredKey(keyName.trim().toLowerCase())
+        ? _noClassification
+        : _policyClassification(keyName);
+    if (local != null && local.length < _maxClassificationCacheEntries) {
+      local[keyName] = classification;
     }
     return classification;
   }
 
-  _KeyClassification _classifyKey(String keyName) {
+  _KeyClassification _policyClassification(String keyName) {
+    final shared = _policyClassifications;
+    final known = shared?[keyName];
+    if (known != null) return known;
+    final classification = _classifyPolicyKey(keyName);
+    if (shared != null && shared.length < _maxClassificationCacheEntries) {
+      shared[keyName] = classification;
+    }
+    return classification;
+  }
+
+  static final Expando<Expando<Expando<Map<String, _KeyClassification>>>>
+      _sharedClassifications = Expando('ispect_key_classifications');
+
+  static Map<String, _KeyClassification> _sharedPolicyClassifications(
+    Set<String> sensitiveKeysLower,
+    List<RegExp> sensitiveKeyPatterns,
+    Set<String> fullyMaskedKeyNamesLower,
+  ) {
+    final byPatterns = _sharedClassifications[sensitiveKeysLower] ??=
+        Expando<Expando<Map<String, _KeyClassification>>>();
+    final byFullyMasked = byPatterns[sensitiveKeyPatterns] ??=
+        Expando<Map<String, _KeyClassification>>();
+    return byFullyMasked[fullyMaskedKeyNamesLower] ??=
+        <String, _KeyClassification>{};
+  }
+
+  _KeyClassification _classifyPolicyKey(String keyName) {
     final trimmed = keyName.trim();
     final lower = trimmed.toLowerCase();
-    if (isIgnoredKey(lower)) return _noClassification;
     var fullyMasked = fullyMaskedKeyNamesLower.contains(lower);
     var sensitive = _matchesSensitive(lower);
     final needsCanonicalization = trimmed != lower ||
