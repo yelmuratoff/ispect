@@ -1,6 +1,8 @@
+import 'dart:developer' show ServiceExtensionResponse, registerExtension;
 import 'dart:io';
 
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify/src/service_extensions/service_extension_handler.dart';
 import 'package:test/test.dart';
 
 final class _ProductionObserver extends ISpectObserver {
@@ -111,6 +113,36 @@ void main() {
       expect(await fileHistory.exportToJson(), '[]');
       expect(providerCalls, 0);
       expect(await root.list().toList(), isEmpty);
+    },
+    skip: kISpectEnabled
+        ? 'This regression exercises a build without ISPECT_ENABLED.'
+        : false,
+  );
+
+  test(
+    'VM service extensions register and answer nothing when compiled out',
+    () {
+      expect(kISpectEnabled, isFalse);
+
+      final logger = ISpectLogger();
+      addTearDown(logger.dispose);
+      ISpectServiceExtensions.register(() => logger);
+
+      expect(
+        () => registerExtension(
+          ISpectServiceExtensions.getSummary,
+          (_, __) async => ServiceExtensionResponse.result('{}'),
+        ),
+        returnsNormally,
+      );
+      final response = ServiceExtensionHandler.handle(
+        ISpectServiceExtensions.getSummary,
+        const {},
+        logger: logger,
+      );
+
+      expect(response.result, isNull);
+      expect(response.errorDetail, contains('ISPECT_ENABLED'));
     },
     skip: kISpectEnabled
         ? 'This regression exercises a build without ISPECT_ENABLED.'

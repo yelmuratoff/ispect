@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
+import 'dart:developer' show ServiceExtensionResponse, registerExtension;
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -216,6 +217,22 @@ void main() {
       expect(callbackCalls, 1);
       expect(ISpectRedaction.enabled, isTrue);
       expect(ISpectRedaction.service, same(hostService));
+    },
+    skip: kISpectEnabled,
+  );
+
+  test(
+    'initialize registers no VM service extensions when compiled out',
+    () {
+      ISpect.initialize(ISpectLogger());
+
+      expect(
+        () => registerExtension(
+          ISpectServiceExtensions.getSummary,
+          (_, __) async => ServiceExtensionResponse.result('{}'),
+        ),
+        returnsNormally,
+      );
     },
     skip: kISpectEnabled,
   );
