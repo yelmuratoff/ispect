@@ -235,6 +235,7 @@ class ISpectBlocObserver extends BlocObserver {
     Transition<dynamic, dynamic> transition,
   ) {
     super.onTransition(bloc, transition);
+    if (!kISpectEnabled) return;
     final correlations = _pendingEvents[bloc];
     final eventId = correlations?.correlationIdFor(transition.event);
     try {

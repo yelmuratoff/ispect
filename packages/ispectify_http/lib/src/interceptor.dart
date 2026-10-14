@@ -150,6 +150,7 @@ class ISpectHttpInterceptor
   Future<BaseResponse> interceptResponse({
     required BaseResponse response,
   }) async {
+    if (!kISpectEnabled) return response;
     if (_shouldTeeBody(response) && response is StreamedResponse) {
       final request = response.request;
       if (request != null) _stopwatches[request]?.stop();
