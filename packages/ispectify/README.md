@@ -322,8 +322,9 @@ redact URLs, headers, and bodies by default and use `--data-raw`. Pass
 
 A debug or profile build compiled with `ISPECT_ENABLED` exposes the log
 history through read-only VM service extensions, so DevTools, scripts, and AI
-agents can query a running app. `ISpect.initialize` and `ISpect.run` register
-them. A logger-only app registers its own logger:
+agents can query a running app. `ISpect.run` and `ISpect.initialize` register
+them automatically. An app that uses only `ispectify` registers its logger
+itself:
 
 ```dart
 ISpectServiceExtensions.register(() => logger);
@@ -338,7 +339,8 @@ ISpectServiceExtensions.register(() => logger);
 
 Responses pass through the same redaction and size limits as a JSON Lines
 export. Release builds have no VM service, and builds without the flag compile
-the extensions out.
+the extensions out. A client connected through `package:vm_service` calls them
+by name:
 
 ```dart
 final response = await service.callServiceExtension(

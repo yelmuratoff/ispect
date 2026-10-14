@@ -330,6 +330,8 @@ Persistence activates only on non-web builds run with `--dart-define=ISPECT_ENAB
 
 The global redaction switch remains authoritative. Setting `ISpectRedaction.enabled = false` while file history is configured deliberately allows raw values to be persisted. Keep it enabled unless an isolated internal investigation explicitly requires unredacted diagnostics.
 
+<!-- partial:vm_service_extensions -->
+
 <!-- partial:install_matrix -->
 
 ## Release channel
