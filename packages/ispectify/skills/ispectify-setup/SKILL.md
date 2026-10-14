@@ -19,6 +19,9 @@ core does not require Flutter; add `ispect` only for the Flutter panel.
 - Use `traceAsync`, `traceSync`, or `traceStream` for duration and outcomes.
   Choose an exported category or an `ISpectTraceCategory` with stable IDs.
   Project results to safe summaries and preserve original failures.
+- Call `ISpectServiceExtensions.register(() => logger)` once to let VM
+  service clients read the history; the `ispectify-read-logs` skill covers
+  querying it. The Flutter `ispect` package registers its logger itself.
 - Dispose an owned logger with `await logger.dispose()` at lifecycle end.
 
 ```dart
@@ -33,6 +36,7 @@ Future<void> main() async {
       resourceLimits: DiagnosticResourceLimits.constrained,
     ),
   );
+  ISpectServiceExtensions.register(() => logger);
   try {
     logger.info('Refresh started');
     await logger.traceAsync<List<int>>(

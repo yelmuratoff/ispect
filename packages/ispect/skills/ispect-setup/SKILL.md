@@ -22,6 +22,12 @@ only for integrations the app uses.
   `navigatorObservers` and `ISpectOptions`.
 - Pass the same logger to adapters and observers. `ISpect.run` initializes
   `ISpect.logger` before invoking `onInit` and the callback.
+- `FlutterError.onError` and `PlatformDispatcher.onError` handlers present
+  when `ISpect.run` starts keep receiving errors after ISpect logs them. A
+  crash reporter installed later, in `onInit` or the callback after binding
+  and SDK setup, replaces ISpect's handler: keep the previous handler and call
+  it from the reporter's handler. Install before `ISpect.run` only reporters
+  that need no binding.
 
 ```dart
 import 'package:flutter/material.dart';
@@ -71,6 +77,9 @@ credentials or user content. Exports are plain-text diagnostic artifacts;
 review them before sharing. Use `ISpectFlutter.init(options: ...)` and pass
 that logger to `ISpect.run(logger: ...)` when custom capture budgets or history
 are needed. File history is opt-in; the default is in-memory history.
+Debug and profile builds with the define also expose the history through
+read-only `ext.ispect.*` VM service extensions; the `ispect-read-logs` skill
+covers querying them.
 
 Verify an internal build shows a log and a navigation event in the panel,
 then verify a build without the define leaves diagnostics inactive.

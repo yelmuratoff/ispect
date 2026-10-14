@@ -54,7 +54,7 @@
 ### Improvements
 
 - **VM service extensions:** `ext.ispect.getSummary`, `getLogs`, `getLog`, and `getTrace` let DevTools, scripts, and AI agents read redacted log history and HTTP request traces from a running debug build. `ISpect.initialize` registers them; pure Dart apps call `ISpectServiceExtensions.register`.
-- **AI package skills:** All nine packages include setup guidance for coding agents, installable with `dart run skills@ get`.
+- **AI package skills:** All nine packages include setup guidance for coding agents, and `ispect` and `ispectify` add a skill for reading logs from a running debug build, installable with `dart run skills@ get`.
 - **Localization:** Settings, log viewer, desktop table, composer, JSON viewer, error screens, and log type descriptions are translated in every supported locale, with plural-aware counts.
 - **Session history:** Loading and clearing failures show an error state with Retry instead of an empty list.
 - **Less work per log:** Entries below the console level are skipped before rendering, with the check exposed as `ISpectBaseLogger.isEnabledFor`, and file history saves and redaction repeat less work, so network capture, database traces, and exports are faster.
