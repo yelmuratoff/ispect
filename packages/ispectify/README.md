@@ -318,6 +318,36 @@ HTTP log entries expose `curlCommand`/`curlCommandWith()`. Generated commands
 redact URLs, headers, and bodies by default and use `--data-raw`. Pass
 `enableRedaction: false` only for isolated local debugging.
 
+## VM service extensions
+
+A debug or profile build compiled with `ISPECT_ENABLED` exposes the log
+history through read-only VM service extensions, so DevTools, scripts, and AI
+agents can query a running app. `ISpect.initialize` and `ISpect.run` register
+them. A logger-only app registers its own logger:
+
+```dart
+ISpectServiceExtensions.register(() => logger);
+```
+
+| Method                  | Returns                                                                                                         |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `ext.ispect.getSummary` | Entry and level counts, the most frequent log keys, and the latest errors.                                      |
+| `ext.ispect.getLogs`    | Compact entries filtered by `minLevel`, `keys`, and `query`, paged with `limit`, `afterId`, and `beforeId`.     |
+| `ext.ispect.getLog`     | One full record by `id`.                                                                                        |
+| `ext.ispect.getTrace`   | The entries that share a correlation or transaction ID, such as the request, response, and error of one call.   |
+
+Responses pass through the same redaction and size limits as a JSON Lines
+export. Release builds have no VM service, and builds without the flag compile
+the extensions out.
+
+```dart
+final response = await service.callServiceExtension(
+  ISpectServiceExtensions.getLogs,
+  isolateId: isolateId,
+  args: {'minLevel': 'error', 'limit': '20'},
+);
+```
+
 ## Data redaction
 
 Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.

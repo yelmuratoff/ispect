@@ -54,7 +54,7 @@
 
 ### Improvements
 
-- **VM service extensions:** `ext.ispect.getSummary`, `getLogs`, `getLog`, and `getTrace` let DevTools, scripts, and AI agents read redacted log history from a running debug app; `ISpect.initialize` registers them, pure Dart apps call `ISpectServiceExtensions.register`.
+- **VM service extensions:** `ext.ispect.getSummary`, `getLogs`, `getLog`, and `getTrace` let DevTools, scripts, and AI agents read redacted log history from a running debug build, with level, key, and text filters, paging, and HTTP request traces. `ISpect.initialize` registers them; pure Dart apps call `ISpectServiceExtensions.register`.
 - **Localization:** Settings, log viewer, desktop table, composer, JSON viewer, and error screens are translated in every supported locale, with plural-aware counts.
 - **Session history:** Loading and clearing failures show an error state with Retry instead of an empty list.
 - **Shared capture policy:** BLoC, Riverpod, Dio, http, and WebSocket adapters share one capture and redaction policy.
