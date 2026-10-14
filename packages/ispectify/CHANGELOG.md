@@ -9,6 +9,8 @@
 - **Re-redaction after policy changes:** Exports re-mask entries captured before `unignoreKey`, instead of reusing the earlier text.
 - **Email path segments:** Email-shaped URL path segments are masked in exported text.
 - **Postal and card fields:** Postal code, ZIP, street address, and card expiry are fully masked.
+- **Plural credential keys:** `api_keys`, `access_tokens`, `passwords`, `secrets`, `private_keys`, and similar keys are masked like their singular forms.
+- **Flag fields next to secrets:** Fields such as `pin_set` or `password_verified` stay visible only for true/false values.
 - **SQL literals:** Normalized statements no longer leak a literal after a backslash-terminated string or a PostgreSQL `#` operator.
 
 ### Behavioral Changes
@@ -22,7 +24,7 @@
 
 ### Bug Fixes
 
-- **http response bodies:** Bodies are captured through `InterceptedClient` as the caller reads them, without delaying the response, consuming the request timeout, or losing the post-redirect URL.
+- **http response bodies:** Bodies are captured through `InterceptedClient` as the caller reads them, without delaying the response, consuming the request timeout, or losing the post-redirect URL; a response whose body is not read is still logged, without it.
 - **Search:** Queries such as "error" or "time" no longer match every log, and refining a highlight query updates the matches and counts.
 - **Convenience getters:** `httpStatusCode`, `requestId`, `httpHeaders`, `blocType`, and `eventType` read the keys the adapters write.
 - **Database tracing:** Sampling applies once and errors follow `errorSampleRate`; `maxStatementLength` applies with redaction on; entries inside `dbTransaction` carry its transaction ID as `correlationId`; `db()` shows the table and statement in the console.

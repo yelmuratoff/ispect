@@ -346,7 +346,7 @@ void main() {
       expect(responseData[NetworkJsonKeys.body], isNull);
     });
 
-    test('logs the response only once its unread body is drained', () async {
+    test('logs an unread response once, without its body', () async {
       final logger = ISpectLogger(
         options: ISpectLoggerOptions(useConsoleLogs: false),
       );
@@ -368,15 +368,18 @@ void main() {
       await pumpEventQueue();
 
       expect(response.statusCode, 200);
-      expect(logger.history, hasLength(1));
-
-      await response.stream.drain<void>();
-      client.close();
-
       expect(logger.history, hasLength(2));
       final responseData =
           _meta(logger.history[1])[NetworkJsonKeys.responseData] as Map;
-      expect(responseData[NetworkJsonKeys.body], {'ok': true});
+      expect(responseData[NetworkJsonKeys.body], isNull);
+
+      expect(
+        utf8.decode(await response.stream.toBytes()),
+        '{"ok":true}',
+      );
+      client.close();
+
+      expect(logger.history, hasLength(2));
     });
 
     test('success body reaches history through InterceptedClient', () async {

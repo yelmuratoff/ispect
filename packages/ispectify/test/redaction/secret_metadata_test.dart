@@ -69,18 +69,18 @@ void main() {
     });
 
     test('accepts only boolean values for flag qualifiers', () {
-      for (final value in <Object?>[true, false, 'true', 'False', null, 1]) {
+      for (final value in <Object?>[true, false, 'true', 'False', null, 0, 1]) {
         expect(
           isSecretMetadataValue(SecretMetadataQualifier.flag, value),
           isTrue,
           reason: '$value',
         );
       }
-      for (final value in ['1234', '000000', 'yes']) {
+      for (final value in <Object?>['1234', '000000', 'yes', 1234, -1, 2.5]) {
         expect(
           isSecretMetadataValue(SecretMetadataQualifier.flag, value),
           isFalse,
-          reason: value,
+          reason: '$value',
         );
       }
     });

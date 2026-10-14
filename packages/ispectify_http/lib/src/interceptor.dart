@@ -204,11 +204,14 @@ class ISpectHttpInterceptor
 
     late final StreamSubscription<List<int>> subscription;
     final controller = StreamController<List<int>>(sync: true);
+    Timer.run(() {
+      if (!controller.hasListener) settle(complete: false);
+    });
     controller
       ..onListen = () {
         subscription = response.stream.listen(
           (chunk) {
-            if (!overflowed) {
+            if (!settled && !overflowed) {
               if (received.length + chunk.length > budget) {
                 overflowed = true;
                 received.clear();

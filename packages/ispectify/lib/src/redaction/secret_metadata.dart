@@ -84,7 +84,12 @@ SecretMetadataQualifier? secretMetadataQualifier(String canonicalKey) {
 }
 
 bool isSecretMetadataValue(SecretMetadataQualifier qualifier, Object? value) {
-  if (value == null || value is bool || value is num) return true;
+  if (value == null || value is bool) return true;
+  if (value is num) {
+    return qualifier != SecretMetadataQualifier.flag ||
+        value == 0 ||
+        value == 1;
+  }
   if (value is! String) return false;
   final text = value.trim();
   if (text.length > _maxMetadataTextLength) return false;

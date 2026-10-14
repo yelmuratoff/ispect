@@ -458,6 +458,38 @@ void main() {
     });
   });
 
+  group('plural credential keys', () {
+    test('masks plural credential keys like their singular forms', () {
+      final out = RedactionService().redact({
+        'api_keys': ['k1-$_secret'],
+        'apikeys': _secret,
+        'access_tokens': [_secret],
+        'refresh_tokens': _secret,
+        'id_tokens': _secret,
+        'passwords': ['hunter2'],
+        'secrets': {'stripe': _secret},
+        'client_secrets': _secret,
+        'private_keys': _secret,
+        'session_ids': [_secret],
+      })! as Map<String, Object?>;
+
+      for (final entry in out.entries) {
+        expect('${entry.value}', isNot(contains(_secret)), reason: entry.key);
+        expect('${entry.value}', isNot(contains('hunter2')), reason: entry.key);
+      }
+    });
+
+    test('keeps usage counters named after tokens visible', () {
+      final out = RedactionService().redact({
+        'tokens': 1234,
+        'max_tokens': 4096,
+        'tokens_used': 87,
+      })! as Map<String, Object?>;
+
+      expect(out, {'tokens': 1234, 'max_tokens': 4096, 'tokens_used': 87});
+    });
+  });
+
   group('default key sets', () {
     test('only contact, auth-header, and cookie keys keep edge masking', () {
       expect(defaultSensitiveKeys.difference(defaultFullyMaskedKeys), {
