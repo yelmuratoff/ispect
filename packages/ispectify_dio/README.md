@@ -59,9 +59,9 @@
 ```yaml
 dependencies:
   dio: ^5.8.0+1
-  ispect: ^7.1.0-dev.5
-  ispectify: ^7.1.0-dev.5
-  ispectify_dio: ^7.1.0-dev.5
+  ispect: ^7.1.0-dev.6
+  ispectify: ^7.1.0-dev.6
+  ispectify_dio: ^7.1.0-dev.6
 ```
 
 ## Quick start
