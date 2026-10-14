@@ -90,6 +90,12 @@ final class ReleasePrepException extends ToolException {
   const ReleasePrepException(super.message);
 }
 
+/// The release AOT probe could not be resolved or compiled, so no snapshot
+/// was scanned.
+final class AotProbeException extends ToolException {
+  const AotProbeException(super.message);
+}
+
 /// A package host left the published history of a package unanswered.
 final class PubApiException extends ToolException {
   const PubApiException(
