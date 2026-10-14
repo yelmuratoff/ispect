@@ -255,6 +255,18 @@ void main() {
       expect(service.redact(input), input);
     });
 
+    test('keeps JWT and OIDC token type claims visible', () {
+      final service = RedactionService();
+      final input = <String, Object?>{
+        'token_type': 'access',
+        'refresh_token_type': 'refresh',
+        'id_token_type': 'id',
+        'grant_token_type': 'offline',
+      };
+
+      expect(service.redact(input), input);
+    });
+
     test('masks password-shaped descriptors and numeric flag strings', () {
       final service = RedactionService();
 

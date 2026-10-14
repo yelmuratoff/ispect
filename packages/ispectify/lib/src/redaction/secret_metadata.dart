@@ -40,12 +40,16 @@ final RegExp _numberValuePattern = RegExp(r'^-?\d+(?:\.\d+)?$');
 
 final Set<String> _descriptorWords = <String>{
   for (final scheme in httpAuthSchemes) scheme.toLowerCase(),
+  'access',
   'hmac',
+  'id',
   'jwt',
   'mac',
   'none',
+  'offline',
   'pkce',
   'plain',
+  'refresh',
 };
 
 final RegExp _uppercaseDescriptorPattern = RegExp(
