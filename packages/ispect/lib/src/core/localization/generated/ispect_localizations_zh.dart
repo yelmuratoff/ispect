@@ -694,7 +694,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'WebSocket 接收消息日志';
 
   @override
-  String get wsStateLogDesc => 'WebSocket connection state changed';
+  String get wsStateLogDesc => 'WebSocket 连接状态变更日志';
 
   @override
   String get dbQueryLogDesc => '数据库查询日志';

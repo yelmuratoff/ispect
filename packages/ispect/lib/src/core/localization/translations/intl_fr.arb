@@ -211,6 +211,7 @@
    "loading": "Chargement",
    "wsSentLogDesc": "Journal des messages WebSocket envoyés",
    "wsReceivedLogDesc": "Journal des messages WebSocket reçus",
+   "wsStateLogDesc": "Journal des changements d'état de la connexion WebSocket",
    "dbQueryLogDesc": "Journal des requêtes à la base de données",
    "dbResultLogDesc": "Journal des résultats de la base de données",
    "dbErrorLogDesc": "Journal des erreurs de la base de données",

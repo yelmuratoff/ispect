@@ -211,6 +211,7 @@
    "loading": "تحميل",
    "wsSentLogDesc": "سجل رسائل WebSocket المُرسلة",
    "wsReceivedLogDesc": "سجل رسائل WebSocket المستلمة",
+   "wsStateLogDesc": "سجل تغييرات حالة اتصال WebSocket",
    "dbQueryLogDesc": "سجل استعلامات قاعدة البيانات",
    "dbResultLogDesc": "سجل نتائج قاعدة البيانات",
    "dbErrorLogDesc": "سجل أخطاء قاعدة البيانات",

@@ -211,6 +211,7 @@
     "loading": "Carregando",
     "wsSentLogDesc": "Registro de mensagens WebSocket enviadas",
     "wsReceivedLogDesc": "Registro de mensagens WebSocket recebidas",
+    "wsStateLogDesc": "Registro de mudanças de estado da conexão WebSocket",
     "dbQueryLogDesc": "Registro de consultas ao banco de dados",
     "dbResultLogDesc": "Registro de resultados do banco de dados",
     "dbErrorLogDesc": "Registro de erros do banco de dados",

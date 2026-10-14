@@ -211,6 +211,7 @@
    "loading": "Wird geladen",
    "wsSentLogDesc": "Protokoll gesendeter WebSocket-Nachrichten",
    "wsReceivedLogDesc": "Protokoll empfangener WebSocket-Nachrichten",
+   "wsStateLogDesc": "Protokoll der Statusänderungen der WebSocket-Verbindung",
    "dbQueryLogDesc": "Protokoll der Datenbankabfragen",
    "dbResultLogDesc": "Protokoll der Datenbankergebnisse",
    "dbErrorLogDesc": "Protokoll der Datenbankfehler",

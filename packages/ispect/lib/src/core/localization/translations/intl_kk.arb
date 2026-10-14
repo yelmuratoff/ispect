@@ -211,6 +211,7 @@
     "loading": "Жүктеу",
     "wsSentLogDesc": "WebSocket жіберілген хабарламалар журналы",
     "wsReceivedLogDesc": "WebSocket қабылданған хабарламалар журналы",
+    "wsStateLogDesc": "WebSocket қосылымы күйінің өзгерістер журналы",
     "dbQueryLogDesc": "Дерекқор сұранымдары журналы",
     "dbResultLogDesc": "Дерекқор нәтижелері журналы",
     "dbErrorLogDesc": "Дерекқор қателері журналы",

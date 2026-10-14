@@ -694,7 +694,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'WebSocket 受信メッセージのログ';
 
   @override
-  String get wsStateLogDesc => 'WebSocket connection state changed';
+  String get wsStateLogDesc => 'WebSocket 接続状態の変更ログ';
 
   @override
   String get dbQueryLogDesc => 'データベースクエリのログ';

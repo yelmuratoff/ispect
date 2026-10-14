@@ -721,7 +721,8 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'Journal des messages WebSocket reçus';
 
   @override
-  String get wsStateLogDesc => 'WebSocket connection state changed';
+  String get wsStateLogDesc =>
+      'Journal des changements d\'état de la connexion WebSocket';
 
   @override
   String get dbQueryLogDesc => 'Journal des requêtes à la base de données';

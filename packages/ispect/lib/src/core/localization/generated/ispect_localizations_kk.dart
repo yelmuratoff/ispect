@@ -706,7 +706,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String get wsReceivedLogDesc => 'WebSocket қабылданған хабарламалар журналы';
 
   @override
-  String get wsStateLogDesc => 'WebSocket connection state changed';
+  String get wsStateLogDesc => 'WebSocket қосылымы күйінің өзгерістер журналы';
 
   @override
   String get dbQueryLogDesc => 'Дерекқор сұранымдары журналы';

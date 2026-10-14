@@ -211,6 +211,7 @@
    "loading": "लोड हो रहा है",
    "wsSentLogDesc": "वेब-सॉकेट भेजे गए संदेश लॉग",
    "wsReceivedLogDesc": "वेब-सॉकेट प्राप्त संदेश लॉग",
+   "wsStateLogDesc": "वेब-सॉकेट कनेक्शन स्थिति परिवर्तन लॉग",
    "dbQueryLogDesc": "डेटाबेस क्वेरी लॉग",
    "dbResultLogDesc": "डेटाबेस परिणाम लॉग",
    "dbErrorLogDesc": "डेटाबेस त्रुटि लॉग",

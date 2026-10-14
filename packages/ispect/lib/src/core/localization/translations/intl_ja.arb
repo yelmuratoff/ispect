@@ -211,6 +211,7 @@
    "loading": "読み込み中",
    "wsSentLogDesc": "WebSocket 送信メッセージのログ",
    "wsReceivedLogDesc": "WebSocket 受信メッセージのログ",
+   "wsStateLogDesc": "WebSocket 接続状態の変更ログ",
    "dbQueryLogDesc": "データベースクエリのログ",
    "dbResultLogDesc": "データベース結果のログ",
    "dbErrorLogDesc": "データベースエラーのログ",
