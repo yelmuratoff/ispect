@@ -29,7 +29,7 @@ class KeyBasedRedaction implements RedactionStrategy {
     }
 
     // Sensitive keys: redact the value.
-    if (!classification.sensitive || node is bool) return null;
+    if (!classification.sensitive) return null;
 
     if (node is String) {
       if (context.isIgnoredValue(node)) return node;

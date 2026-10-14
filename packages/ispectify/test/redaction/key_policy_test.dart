@@ -388,39 +388,22 @@ void main() {
       expect(out['gender'], '[REDACTED]');
     });
 
-    test('KeyBasedRedaction leaves booleans under edge-masked keys untouched',
-        () {
-      final context = RedactionContext(
-        placeholder: '[REDACTED]',
-        redactBinary: true,
-        redactBase64: true,
-        sensitiveKeysLower: const {'email', 'password'},
-        sensitiveKeyPatterns: const [],
-        fullyMaskedKeyNamesLower: const {'password'},
-        isIgnoredValue: (_) => false,
-        isIgnoredKey: (_) => false,
-        maskString: (value, {keyName}) => 'MASKED',
-        binaryPlaceholder: (len) => '[binary]',
-        base64Placeholder: (len) => '[base64]',
-        redactUint8List: (data) => Uint8List(data.length),
-        looksLikeAuthorizationValue: (_) => false,
-        isLikelyBase64: (_) => false,
-        isProbablyBinaryString: (_) => false,
+    test('masks booleans under keys the app marks sensitive', () {
+      final service = RedactionService(
+        additionalSensitiveKeys: const {'is_pregnant', 'hivStatus'},
       );
-      const strategy = KeyBasedRedaction();
 
-      expect(
-        strategy.tryRedact(true, context: context, keyName: 'email'),
-        isNull,
-      );
-      expect(
-        strategy.tryRedact(1, context: context, keyName: 'email'),
-        '[REDACTED]',
-      );
-      expect(
-        strategy.tryRedact(true, context: context, keyName: 'password'),
-        '[REDACTED]',
-      );
+      final out = service.redact({
+        'is_pregnant': true,
+        'hivStatus': false,
+        'email_verified': true,
+        'has_password': false,
+      })! as Map<String, Object?>;
+
+      expect(out['is_pregnant'], '[REDACTED]');
+      expect(out['hivStatus'], '[REDACTED]');
+      expect(out['email_verified'], isTrue);
+      expect(out['has_password'], isFalse);
     });
   });
 
