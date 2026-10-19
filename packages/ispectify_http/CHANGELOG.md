@@ -8,7 +8,7 @@
 - **`?key=` API keys:** Masked in URLs and generated cURL commands, not only in free text.
 - **Re-redaction after policy changes:** Exports re-mask entries captured before `unignoreKey`, instead of reusing the earlier text.
 - **Email path segments:** Email-shaped URL path segments are masked in exported text.
-- **Postal and card fields:** Postal code, ZIP, street address, and card expiry are fully masked.
+- **Postal and card fields:** Postal code, ZIP, street address, and card expiry keys (`card_expiry`, `card_expiration`) are fully masked.
 - **Plural credential keys:** `api_keys`, `access_tokens`, `passwords`, `secrets`, `private_keys`, and similar keys are masked like their singular forms.
 - **Flag fields next to secrets:** Fields such as `pin_set` or `password_verified` stay visible only for true/false values.
 - **SQL literals:** Normalized statements no longer leak a literal after a backslash-terminated string or a PostgreSQL `#` operator.
@@ -18,12 +18,13 @@
 - **Readable status fields:** Booleans and metadata next to secrets (`email_verified`, `has_password`, `mfa_enabled`, `token_expires_in`, `token_type`) stay visible, and REST paths such as `/users/42` are no longer masked as filesystem paths.
 - **Ignored keys in free text:** `ignoredKeys` also apply to messages and other free text.
 - **Redaction failures:** A failing custom redaction strategy yields `<redaction-failed>` and a warning, and a trace whose value cannot be redacted is still recorded with that value masked.
-- **Trace levels:** Traces default to the level their log type declares, so performance jank logs as a warning.
+- **Trace levels:** Traces default to the level their log type declares, including custom registered types, so performance jank logs as a warning.
 - **Log type titles:** Cards and the desktop status bar show the log type title (for example "HTTP Request") and custom type titles instead of the raw key.
 - **Hide this type:** Hiding a log type no longer hides types that appear later, and tapping a hidden type's chip shows it again without narrowing the list.
-- **Host error handlers:** ISpect passes errors on to `FlutterError.onError` and `PlatformDispatcher.onError` handlers installed before it, such as crash reporters.
-- **Database keys:** Keys of key-value operations stay readable in traces unless a part of them looks sensitive (credential names, session prefixes, emails, phone numbers, tokens, opaque IDs).
-- **Database log keys:** `ISpectDbCore.pickLogKey` returns the key DB traces actually log under, so `read`, `fetch`, and `SELECT` now return `db-result` instead of `db-query`.
+- **Host error handlers:** ISpect passes errors on to `FlutterError.onError` and `PlatformDispatcher.onError` handlers installed before it, such as crash reporters, and returns their `PlatformDispatcher.onError` result. Drop manual forwarding from `onFlutterError` or `onPlatformDispatcherError` to avoid duplicate reports.
+- **Database keys:** Keys of key-value operations stay readable in traces unless a part of them looks sensitive (credential names, session prefixes, emails, phone, card, and ID numbers, tokens, opaque IDs).
+- **Database log keys:** `ISpectDbCore.pickLogKey` returns the key DB traces actually log under, so `read`, `fetch`, and `SELECT` now return `db-result` instead of `db-query`; update filters that match reads by `db-query`.
+- **`SamplingFilter`:** A `sampleRate` below 1 throws `ArgumentError` in every build mode.
 - **Search scope:** Search matches field values, not field names, so queries such as "error" or "time" no longer match every log.
 - **Header counts:** The log, error, and warning counts in the header follow the active type filters.
 - **Settings sheet:** Reverse, group, and expand appear once, as Display toggles, instead of also as action rows.
