@@ -23,6 +23,10 @@ final _dbKeyMixedRun = RegExp(
   '(?=[A-Za-z0-9]*[A-Za-z])(?=[A-Za-z0-9]*[0-9])[A-Za-z0-9]{8,}',
 );
 final _dbKeyPhoneSegment = RegExp(r'^\+?\d{7,15}$');
+final _dbKeyDigitSequence = RegExp(r'\d(?:[\s().-]*\d)*');
+final _dbKeyNonDigit = RegExp(r'\D');
+final _dbKeyIsoDate = RegExp(r'(?<!\d)\d{4}-\d{2}-\d{2}(?!\d)');
+const _dbKeyMinIdentifierDigits = 9;
 const _dbKeyCredentialNamespaces = {'auth', 'sid', 'session', 'sessions'};
 final _inertDbToken = ISpectDbToken(stopwatch: Stopwatch());
 
@@ -841,6 +845,7 @@ extension ISpectLoggerDb on ISpectLogger {
     if (redactor == null) return bounded;
     if (_isSensitiveDbKeyName(bounded, redactor) ||
         _dbKeyEmailPattern.hasMatch(bounded) ||
+        _embedsIdentifierNumber(bounded) ||
         _hasSensitiveDbKeySegment(bounded, redactor)) {
       return defaultPlaceholder;
     }
@@ -872,6 +877,13 @@ extension ISpectLoggerDb on ISpectLogger {
     }
     return false;
   }
+
+  static bool _embedsIdentifierNumber(String key) =>
+      _dbKeyDigitSequence.allMatches(key.replaceAll(_dbKeyIsoDate, '_')).any(
+            (match) =>
+                match[0]!.replaceAll(_dbKeyNonDigit, '').length >=
+                _dbKeyMinIdentifierDigits,
+          );
 
   static bool _isOpaqueOrPhoneDbKeySegment(String segment) {
     if (_dbKeyPhoneSegment.hasMatch(segment)) return true;
