@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.1.0-dev.8
+## 7.1.0
 
 ### Security
 

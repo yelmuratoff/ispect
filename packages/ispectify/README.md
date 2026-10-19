@@ -59,7 +59,7 @@
 
 ```yaml
 dependencies:
-  ispectify: ^7.1.0-dev.8
+  ispectify: ^7.1.0
 ```
 
 ## Logger-only quick start
