@@ -82,6 +82,7 @@ final class ISpect {
     final previousLogger = _logger;
     _logger = logger;
     _isInitialized = true;
+    ISpectServiceExtensions.register(() => loggerIfInitialized);
     if (retirePrevious &&
         previousLogger != null &&
         !identical(previousLogger, logger)) {

@@ -66,6 +66,7 @@ export 'src/redaction/strategies/key_based_redaction.dart';
 export 'src/redaction/strategies/pattern_based_redaction.dart';
 export 'src/redaction/strategies/redaction_context.dart';
 export 'src/redaction/strategies/redaction_strategy.dart';
+export 'src/service_extensions/service_extensions.dart';
 export 'src/testing/fake_logger.dart';
 export 'src/trace/extensions/analytics.dart';
 export 'src/trace/extensions/auth.dart';

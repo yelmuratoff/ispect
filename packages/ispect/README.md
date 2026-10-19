@@ -67,7 +67,7 @@ navigation diagnostics.
 dependencies:
   flutter_localizations:
     sdk: flutter
-  ispect: ^7.1.0-dev.5
+  ispect: ^7.1.0
 ```
 
 ```dart
@@ -262,6 +262,7 @@ The toolkit handles the diagnostics most projects rebuild by hand for every new 
 | Riverpod observer | Provider add, update, dispose, and failure events routed through the log pipeline with the same redaction surface.                                                                                                                                                           |
 | Redaction         | Auth headers, tokens, passwords, PII, and financial data masked before they reach logs, exports, observers, or the cURL helper.                                                                                                                                              |
 | Observer hooks    | Forward selected log categories to your own sink through an `ISpectObserver` adapter.                                                                                                                                                                                        |
+| Agent access      | Read-only `ext.ispect.*` VM service extensions let DevTools, scripts, and AI agents query the redacted log history of a running debug build.                                                                                                                                 |
 | Localization      | 14 UI languages: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi, ckb, ku.                                                                                                                                                                                                    |
 
 ## Compared to the obvious alternatives
@@ -376,6 +377,38 @@ Persistence activates only on non-web builds run with `--dart-define=ISPECT_ENAB
 
 The global redaction switch remains authoritative. Setting `ISpectRedaction.enabled = false` while file history is configured deliberately allows raw values to be persisted. Keep it enabled unless an isolated internal investigation explicitly requires unredacted diagnostics.
 
+## VM service extensions
+
+A debug or profile build compiled with `ISPECT_ENABLED` exposes the log
+history through read-only VM service extensions, so DevTools, scripts, and AI
+agents can query a running app. `ISpect.run` and `ISpect.initialize` register
+them automatically. An app that uses only `ispectify` registers its logger
+itself:
+
+```dart
+ISpectServiceExtensions.register(() => logger);
+```
+
+| Method                  | Returns                                                                                                         |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `ext.ispect.getSummary` | Entry and level counts, the most frequent log keys, and the latest errors.                                      |
+| `ext.ispect.getLogs`    | Compact entries filtered by `minLevel`, `keys`, and `query`, paged with `limit`, `afterId`, and `beforeId`.     |
+| `ext.ispect.getLog`     | One full record by `id`.                                                                                        |
+| `ext.ispect.getTrace`   | Up to 200 entries sharing a correlation or transaction ID, such as one call's request, response, and error.     |
+
+Responses pass through the same redaction and size limits as a JSON Lines
+export. Release builds have no VM service, and builds without the flag compile
+the extensions out. A client connected through `package:vm_service` calls them
+by name:
+
+```dart
+final response = await service.callServiceExtension(
+  ISpectServiceExtensions.getLogs,
+  isolateId: isolateId,
+  args: {'minLevel': 'error', 'limit': '20'},
+);
+```
+
 ## The ISpect toolkit
 
 ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
@@ -394,7 +427,7 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 
 ## Release channel
 
-The version declared in `version.config` (currently `7.1.0-dev.5`) is the
+The version declared in `version.config` (currently `7.1.0`) is the
 repository version used by package metadata and generated documentation. It
 may be a stable release or a prerelease; check pub.dev for the latest published
 stable version before pinning a production integration.
@@ -403,7 +436,7 @@ stable version before pinning a production integration.
 
 What you can verify from the repository today:
 
-- Repository metadata and generated documentation currently target `7.1.0-dev.5`.
+- Repository metadata and generated documentation currently target `7.1.0`.
 - SDK baseline is Dart `>=3.6.0 <4.0.0` for the pure Dart packages. `ispect` requires Dart `>=3.8.0` and Flutter `>=3.35.0`; `ispect_layout` requires Dart `>=3.8.0` and Flutter `>=3.32.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
 - The `production_safety` workflow runs disabled direct-API tests for every package and compares disabled/enabled release AOT probes using exact implementation sentinels.
 - Core diagnostics and supported integrations resolve one configurable default `RedactionService`; explicit integration services remain local overrides.
@@ -513,8 +546,12 @@ dart run skills@ get
 
 For a single package, use `dart run skills@ get -p <package_name>` (for example,
 `-p ispectify_dio`). The skills cover public integration APIs, compile-time
-gating, and safe capture settings. See [Dart package skills](https://dart.dev/ai/package-skills)
-for installation and update options. These consumer skills are separate from
+gating, and safe capture settings. `ispect` and `ispectify` also ship
+`ispect-read-logs` and `ispectify-read-logs`, which let an agent read redacted
+logs from a running debug build through the `ext.ispect` VM service extensions.
+Run the same `get` command after upgrading to refresh installed skills. See
+[Dart package skills](https://dart.dev/ai/package-skills) for installation and
+update options. These consumer skills are separate from
 the repository's contributor skills.
 
 ## Contributing

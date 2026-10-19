@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.1.0-dev.5
+## 7.1.0
 
 ### Security
 
@@ -8,77 +8,61 @@
 - **`?key=` API keys:** Masked in URLs and generated cURL commands, not only in free text.
 - **Re-redaction after policy changes:** Exports re-mask entries captured before `unignoreKey`, instead of reusing the earlier text.
 - **Email path segments:** Email-shaped URL path segments are masked in exported text.
-- **Postal and card fields:** Postal code, ZIP, street address, and card expiry are fully masked.
+- **Postal and card fields:** Postal code, ZIP, street address, and card expiry keys (`card_expiry`, `card_expiration`) are fully masked.
 - **Plural credential keys:** `api_keys`, `access_tokens`, `passwords`, `secrets`, `private_keys`, and similar keys are masked like their singular forms.
 - **Flag fields next to secrets:** Fields such as `pin_set` or `password_verified` stay visible only for true/false values.
 - **SQL literals:** Normalized statements no longer leak a literal after a backslash-terminated string or a PostgreSQL `#` operator.
 
 ### Behavioral Changes
 
-- **Readable status fields:** Booleans and metadata next to secrets (`email_verified`, `has_password`, `mfa_enabled`, `token_expires_in`) stay visible, and REST paths such as `/users/42` are no longer masked as filesystem paths.
+- **Readable status fields:** Booleans and metadata next to secrets (`email_verified`, `has_password`, `mfa_enabled`, `token_expires_in`, `token_type`) stay visible, and REST paths such as `/users/42` are no longer masked as filesystem paths.
 - **Ignored keys in free text:** `ignoredKeys` also apply to messages and other free text.
 - **Redaction failures:** A failing custom redaction strategy yields `<redaction-failed>` and a warning, and a trace whose value cannot be redacted is still recorded with that value masked.
-- **Trace levels:** Traces default to the level their log type declares, so performance jank logs as a warning.
+- **Trace levels:** Traces default to the level their log type declares, including custom registered types, so performance jank logs as a warning.
 - **Log type titles:** Cards and the desktop status bar show the log type title (for example "HTTP Request") and custom type titles instead of the raw key.
 - **Hide this type:** Hiding a log type no longer hides types that appear later, and tapping a hidden type's chip shows it again without narrowing the list.
-- **Host error handlers:** ISpect passes errors on to `FlutterError.onError` and `PlatformDispatcher.onError` handlers installed before it, such as crash reporters.
-- **Database keys:** Key-value keys stay readable in traces unless a part of them looks sensitive (credential names, session prefixes, emails, phone numbers, tokens, opaque IDs).
-- **Database log keys:** `ISpectDbCore.pickLogKey` returns the key DB traces actually log under: operations match the DB trace category case-sensitively, so `read`, `fetch`, and `SELECT` now return `db-result` instead of `db-query`.
-- **Search scope:** Search matches field values, not field names.
+- **Host error handlers:** ISpect passes errors on to `FlutterError.onError` and `PlatformDispatcher.onError` handlers installed before it, such as crash reporters, and returns their `PlatformDispatcher.onError` result. Drop manual forwarding from `onFlutterError` or `onPlatformDispatcherError` to avoid duplicate reports.
+- **Database keys:** Keys of key-value operations stay readable in traces unless a part of them looks sensitive (credential names, session prefixes, emails, phone, card, and ID numbers, tokens, opaque IDs).
+- **Database log keys:** `ISpectDbCore.pickLogKey` returns the key DB traces actually log under, so `read`, `fetch`, and `SELECT` now return `db-result` instead of `db-query`; update filters that match reads by `db-query`.
+- **`SamplingFilter`:** A `sampleRate` below 1 throws `ArgumentError` in every build mode.
+- **Search scope:** Search matches field values, not field names, so queries such as "error" or "time" no longer match every log.
 - **Header counts:** The log, error, and warning counts in the header follow the active type filters.
-- **Settings sheet:** Reverse, group, and expand are offered only as Display toggles.
+- **Settings sheet:** Reverse, group, and expand appear once, as Display toggles, instead of also as action rows.
 - **Sheet builders:** `showISpectSheet` builders receive the sheet's own context.
 - **Color picker zoom:** The scroll wheel zooms the picker loupe, and every picker session starts at the default zoom.
 
 ### Bug Fixes
 
-- **http response bodies:** Bodies are captured through `InterceptedClient` as the caller reads them, without delaying the response, consuming the request timeout, or losing the post-redirect URL; a response whose body is not read is still logged, without it.
-- **Search:** Queries such as "error" or "time" no longer match every log, and refining a highlight query updates the matches and counts.
-- **Convenience getters:** `httpStatusCode`, `requestId`, `httpHeaders`, `blocType`, and `eventType` read the keys the adapters write.
-- **Database tracing:** Sampling applies once and errors follow `errorSampleRate`; `maxStatementLength` applies with redaction on; entries inside `dbTransaction` carry its transaction ID as `correlationId`; `db()` shows the table and statement in the console.
+- **Disabled builds:** `ISpectBlocObserver` and `ISpectHttpInterceptor` no longer leave ISpect state in builds compiled without `ISPECT_ENABLED`.
+- **http response bodies:** `InterceptedClient` captures bodies as the caller reads them, without delaying the response, consuming its timeout, or losing the post-redirect URL; a response with an unread body is logged without it.
+- **Search matches:** Refining a highlight query updates the matches and counts, and a grouped HTTP card counts once, so next/previous no longer stops twice on the same request.
+- **Convenience getters:** `httpStatusCode`, `requestId`, `httpHeaders`, `blocType`, and `eventType` return the values the adapters record instead of `null`.
+- **Database tracing:** Sampling applies once, errors follow `errorSampleRate`, `maxStatementLength` works with redaction on, entries inside `dbTransaction` carry its ID as `correlationId`, and `db()` shows the table and statement in the console.
 - **File history:** Reading logs while auto-save runs, an oversized record, a failing retention pass, or a umask of `002` no longer break history.
 - **Restored settings:** Older settings snapshots keep tools, logging, and history enabled instead of turning them off.
 - **Desktop keyboard navigation:** Arrow keys follow the rendered rows, including grouped HTTP transactions.
 - **Route correlation:** A pop shares the correlation ID of the push it closes.
-- **Layout inspector:** Taps no longer reach the app after a multi-touch, panel-entered modes survive unrelated key releases, and the hovered outline follows scrolling content.
-- **Right-to-left apps:** The performance overlay no longer forces left-to-right layout on the host app.
+- **Layout inspector:** Taps no longer reach the app after a multi-touch, panel-entered modes survive unrelated key releases, the hovered outline follows scrolling content, and a new `theme` applies without remounting the inspector.
+- **Performance overlay:** The overlay no longer forces left-to-right layout on right-to-left apps, and resetting before the first memory reading no longer throws.
+- **Parked panel:** The panel parked at a screen edge no longer shows a lighter shape under its handle.
 - **HTTP composer:** Closing during a request no longer throws, and repeated query keys survive edit-and-resend.
 - **Plugins:** A host rebuild no longer re-runs a plugin's `onInit` and `onDispose`.
-- **Release tooling:** `release-prep` restores every file when a step throws, and changelog propagation tells `7.1.0` apart from `7.1.0-dev.4`.
-- **Idle errors:** Errors presented while the app is idle are logged without waiting for another frame.
+- **Idle errors:** Flutter errors reported while the app is idle are no longer held until something else triggers a frame.
 - **BLoC correlation:** Several observers on one bloc keep their own correlation IDs, and completions past the pending limit no longer take another event's ID.
-- **Layout inspector theme:** A new `theme` applies without remounting the inspector.
 - **Pasted logs:** Load and paste errors are localized, and large pastes keep the configured processing policy.
-- **Performance overlay:** Resetting before the first memory reading no longer throws.
-- **Observer failures:** The warning respects `useConsoleLogs: false` and names the error type.
+- **Observer failures:** The warning about a failing observer respects `useConsoleLogs: false` and names the error type.
 
 ### Improvements
 
-- **Localization:** Settings, log viewer, desktop table, composer, JSON viewer, and error screens are translated in every supported locale, with plural-aware counts.
+- **VM service extensions:** `ext.ispect.getSummary`, `getLogs`, `getLog`, and `getTrace` let DevTools, scripts, and AI agents read redacted log history and HTTP request traces from a running debug build. `ISpect.initialize` registers them; pure Dart apps call `ISpectServiceExtensions.register`.
+- **AI package skills:** All nine packages include setup guidance for coding agents, and `ispect` and `ispectify` add a skill for reading logs from a running debug build, installable with `dart run skills@ get`.
+- **Localization:** Settings, log viewer, desktop table, composer, JSON viewer, error screens, and log type descriptions are translated in every supported locale, with plural-aware counts.
 - **Session history:** Loading and clearing failures show an error state with Retry instead of an empty list.
-- **Shared capture policy:** BLoC, Riverpod, Dio, http, and WebSocket adapters share one capture and redaction policy.
-- **Less work per log:** Entries below the console level are no longer rendered (`ISpectBaseLogger.isEnabledFor`), file history resolves each day's segment once per save, and redaction classifies each key once per policy, so network capture, database traces, and exports redact faster.
-- **Release tooling:** `deps` and `sync` handle exact, range, and map-form internal constraints; `publish` and `check-published` share one version gate and suggestion; `PUBLISH_FORCE` is documented.
+- **Less work per log:** Entries below the console level are skipped before rendering, with the check exposed as `ISpectBaseLogger.isEnabledFor`, and file history saves and redaction repeat less work, so network capture, database traces, and exports are faster.
 
 ### Deprecations
 
 - **Scheduled for 8.0.0:** Unused helpers on BLoC and Riverpod settings, `DbLogKeys` and `DbTxnOps` constants, `ISpectDbTxn.runInTransactionZone`, `NetworkLoggerMixin.shouldProcess`, `RedactionService.redactExportString`, `InspectorMode.inspectAndCompare`, the `l10n` parameter of `ISpectToaster` toasts, and others; see `docs/DEPRECATIONS.md`.
-
-## 7.1.0-dev.4
-
-### Bug Fixes
-
-- **Parked panel:** The panel parked at a screen edge no longer shows a lighter shape under its handle.
-
-## 7.1.0-dev.3
-
-### Improvements
-
-- **AI package skills:** All nine packages include setup guidance for coding agents, installable with `dart run skills@ get`.
-
-### Bug Fixes
-
-- **Grouped search matches:** Search counts a grouped HTTP card once, so next/previous no longer stops twice on the same request.
 
 ## 7.0.0
 

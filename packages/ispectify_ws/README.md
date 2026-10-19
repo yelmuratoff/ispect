@@ -58,9 +58,9 @@
 
 ```yaml
 dependencies:
-  ispect: ^7.1.0-dev.5
-  ispectify: ^7.1.0-dev.5
-  ispectify_ws: ^7.1.0-dev.5
+  ispect: ^7.1.0
+  ispectify: ^7.1.0
+  ispectify_ws: ^7.1.0
   # plus your WebSocket client, e.g.
   # ws: ^1.0.0  |  web_socket_channel: ^3.0.0  |  socket_io_client: ^3.0.0
 ```
@@ -242,8 +242,12 @@ dart run skills@ get
 
 For a single package, use `dart run skills@ get -p <package_name>` (for example,
 `-p ispectify_dio`). The skills cover public integration APIs, compile-time
-gating, and safe capture settings. See [Dart package skills](https://dart.dev/ai/package-skills)
-for installation and update options. These consumer skills are separate from
+gating, and safe capture settings. `ispect` and `ispectify` also ship
+`ispect-read-logs` and `ispectify-read-logs`, which let an agent read redacted
+logs from a running debug build through the `ext.ispect` VM service extensions.
+Run the same `get` command after upgrading to refresh installed skills. See
+[Dart package skills](https://dart.dev/ai/package-skills) for installation and
+update options. These consumer skills are separate from
 the repository's contributor skills.
 
 ## Contributing

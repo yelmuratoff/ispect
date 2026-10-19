@@ -565,6 +565,8 @@ void main() {
         'cart_items',
         'user:42',
         'orders/2026-10-14',
+        'cache:2026-10-14 10:30',
+        'events.2026-10-14.1',
         'feature_flags:checkout_v2',
         'user_profile_cache_v2',
       ]) {
@@ -625,6 +627,30 @@ void main() {
         'contacts/+15551234567',
         'cache|deadbeef0123456789abcdef',
         'profile#bob@example.com',
+      ]) {
+        logger.db(source: 'kv', operation: 'read', key: storageKey);
+
+        final entry = logger.history.last;
+        final additionalData = entry.additionalData ?? {};
+        final meta = additionalData['meta'] as Map;
+        expect(additionalData['key'], defaultPlaceholder, reason: storageKey);
+        expect(meta['key'], defaultPlaceholder, reason: storageKey);
+        expect(entry.message.toString(), isNot(contains(storageKey)));
+      }
+    });
+
+    test('masks storage keys that embed a card, phone, or national ID number',
+        () {
+      for (final storageKey in const [
+        'card:4111111111111111',
+        'card_4111111111111111',
+        'cards/4111 1111 1111 1111',
+        'cards/4111-1111-1111-1111',
+        'user:+1-555-123-4567',
+        'user:555-123-4567',
+        'user:+1 (555) 123-4567',
+        'contacts/555.123.4567',
+        'user:123-45-6789',
       ]) {
         logger.db(source: 'kv', operation: 'read', key: storageKey);
 

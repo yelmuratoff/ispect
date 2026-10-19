@@ -215,6 +215,7 @@ The toolkit handles the diagnostics most projects rebuild by hand for every new 
 | Riverpod observer | Provider add, update, dispose, and failure events routed through the log pipeline with the same redaction surface.                                                                                                                                                           |
 | Redaction         | Auth headers, tokens, passwords, PII, and financial data masked before they reach logs, exports, observers, or the cURL helper.                                                                                                                                              |
 | Observer hooks    | Forward selected log categories to your own sink through an `ISpectObserver` adapter.                                                                                                                                                                                        |
+| Agent access      | Read-only `ext.ispect.*` VM service extensions let DevTools, scripts, and AI agents query the redacted log history of a running debug build.                                                                                                                                 |
 | Localization      | 14 UI languages: en, ru, kk, zh, es, fr, de, pt, ar, ko, ja, hi, ckb, ku.                                                                                                                                                                                                    |
 
 ## Compared to the obvious alternatives
@@ -328,6 +329,8 @@ Passing `fileHistory:` above is all it takes: the log viewer then automatically 
 Persistence activates only on non-web builds run with `--dart-define=ISPECT_ENABLED=true` (see [Production safety](#production-safety)); otherwise the file history stays inert.
 
 The global redaction switch remains authoritative. Setting `ISpectRedaction.enabled = false` while file history is configured deliberately allows raw values to be persisted. Keep it enabled unless an isolated internal investigation explicitly requires unredacted diagnostics.
+
+<!-- partial:vm_service_extensions -->
 
 <!-- partial:install_matrix -->
 

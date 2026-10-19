@@ -35,6 +35,8 @@ of the default mode; `--dry-run` still publishes nothing.
 ./bash/release_prep.sh --carry-changelog
 → dart run tool/bin/ispect_tool.dart release-prep --carry-changelog
 
+dart run tool/bin/ispect_tool.dart release-prep --skip-bump
+
 ./bash/publish.sh --auto
 → dart run tool/bin/ispect_tool.dart publish --auto
 ```

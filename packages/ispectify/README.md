@@ -59,7 +59,7 @@
 
 ```yaml
 dependencies:
-  ispectify: ^7.1.0-dev.5
+  ispectify: ^7.1.0
 ```
 
 ## Logger-only quick start
@@ -318,6 +318,38 @@ HTTP log entries expose `curlCommand`/`curlCommandWith()`. Generated commands
 redact URLs, headers, and bodies by default and use `--data-raw`. Pass
 `enableRedaction: false` only for isolated local debugging.
 
+## VM service extensions
+
+A debug or profile build compiled with `ISPECT_ENABLED` exposes the log
+history through read-only VM service extensions, so DevTools, scripts, and AI
+agents can query a running app. `ISpect.run` and `ISpect.initialize` register
+them automatically. An app that uses only `ispectify` registers its logger
+itself:
+
+```dart
+ISpectServiceExtensions.register(() => logger);
+```
+
+| Method                  | Returns                                                                                                         |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `ext.ispect.getSummary` | Entry and level counts, the most frequent log keys, and the latest errors.                                      |
+| `ext.ispect.getLogs`    | Compact entries filtered by `minLevel`, `keys`, and `query`, paged with `limit`, `afterId`, and `beforeId`.     |
+| `ext.ispect.getLog`     | One full record by `id`.                                                                                        |
+| `ext.ispect.getTrace`   | Up to 200 entries sharing a correlation or transaction ID, such as one call's request, response, and error.     |
+
+Responses pass through the same redaction and size limits as a JSON Lines
+export. Release builds have no VM service, and builds without the flag compile
+the extensions out. A client connected through `package:vm_service` calls them
+by name:
+
+```dart
+final response = await service.callServiceExtension(
+  ISpectServiceExtensions.getLogs,
+  isolateId: isolateId,
+  args: {'minLevel': 'error', 'limit': '20'},
+);
+```
+
 ## Data redaction
 
 Sensitive data is masked before it reaches logs or observers. Redaction is on by default. The built-in rules cover auth headers, tokens, passwords, API keys, cookies, common PII (SSN, passport, driver's license), financial data (credit cards, IBAN), and phone numbers.
@@ -422,8 +454,12 @@ dart run skills@ get
 
 For a single package, use `dart run skills@ get -p <package_name>` (for example,
 `-p ispectify_dio`). The skills cover public integration APIs, compile-time
-gating, and safe capture settings. See [Dart package skills](https://dart.dev/ai/package-skills)
-for installation and update options. These consumer skills are separate from
+gating, and safe capture settings. `ispect` and `ispectify` also ship
+`ispect-read-logs` and `ispectify-read-logs`, which let an agent read redacted
+logs from a running debug build through the `ext.ispect` VM service extensions.
+Run the same `get` command after upgrading to refresh installed skills. See
+[Dart package skills](https://dart.dev/ai/package-skills) for installation and
+update options. These consumer skills are separate from
 the repository's contributor skills.
 
 ## Contributing

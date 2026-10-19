@@ -271,6 +271,8 @@ HTTP log entries expose `curlCommand`/`curlCommandWith()`. Generated commands
 redact URLs, headers, and bodies by default and use `--data-raw`. Pass
 `enableRedaction: false` only for isolated local debugging.
 
+<!-- partial:vm_service_extensions -->
+
 <!-- partial:redaction -->
 
 ## Security

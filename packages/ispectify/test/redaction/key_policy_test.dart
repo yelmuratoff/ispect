@@ -564,6 +564,11 @@ void main() {
         'streetAddress',
         'card_expire',
         'cardexpire',
+        'card_expiry',
+        'cardExpiry',
+        'card-expiry',
+        'card_expiration',
+        'cardExpiration',
       ];
 
       final out =

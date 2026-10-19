@@ -18,6 +18,9 @@ This is passive tracing, not a database client or driver factory.
 - Project results to counts or safe summaries with `projectResult`, not whole
   rows, credentials, or user content.
 - Preserve results and failures; traces do not replace transactions or retries.
+- Wrap the app's own transaction body in `logger.dbTransaction(run: ...)` so
+  every DB trace inside carries its transaction ID as `correlationId`. It only
+  groups diagnostics and does not open a database transaction.
 
 ```dart
 import 'package:ispectify/ispectify.dart';
@@ -51,9 +54,10 @@ builds; storage calls must still execute when tracing is disabled.
 Keep `ISpectDbConfig.redact` true. Omit `redactKeys` to follow the global
 service: a supplied set is a local replacement, not an additive extension.
 Extend the global service's keys for app-specific fields. Strict capture
-avoids app-defined formatting; balanced is the default. Omit `resourceLimits`
-to inherit logger policy, or clear overrides with
-`copyWith(inheritResourceLimits: true)`.
+avoids app-defined formatting; balanced is the default. A `sampleRate` below
+1 thins successful traces only; failures follow `errorSampleRate`, which
+defaults to 1. Omit `resourceLimits` to inherit logger policy, or clear
+overrides with `copyWith(inheritResourceLimits: true)`.
 
 Verify success and a thrown error using a fake storage call. Check unchanged
 results, propagating errors, summaries without rows, and masked captured args.

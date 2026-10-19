@@ -47,6 +47,10 @@ Keep redaction enabled. Extend keys with `ISpectRedaction` or the interceptor's
 `redactor` argument. Metadata-only and production presets use strict capture;
 balanced may invoke guarded app formatters. Use `configure(...)` to update an
 attached interceptor and `inheritResourceLimits: true` to resume logger budgets.
+Response bodies are captured as the app reads them, only when the response
+declares a `Content-Length` within `DiagnosticResourceLimits.maxNetworkBodyBytes`.
+Chunked or compressed responses without one, and bodies the app does not
+start reading right away, are logged without the body.
 
 Verify successful and failing calls using `MockClient` from
 `package:http/testing.dart`. Check pairing and masked captured secrets. For
