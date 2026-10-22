@@ -71,7 +71,11 @@ class ISpectBuilder extends StatefulWidget {
   /// This is the recommended way to use ISpect - no conditional logic needed
   /// in your code. When `kISpectEnabled` is `false`, simply returns [child].
   ///
-  /// Use [isISpectEnabled] to control visibility at runtime (e.g., for admins only).
+  /// [isISpectEnabled] sets whether the panel is visible. The ISpect scope
+  /// stays mounted either way, so the host can show the panel later through
+  /// `ISpect.read(context).toggleISpect()`, and changing the value never
+  /// remounts [child]. To mount nothing for some users, return [child]
+  /// yourself instead of calling `wrap`.
   /// The global `kISpectEnabled` controls tree-shaking at compile time.
   static Widget wrap({
     required Widget child,
@@ -80,7 +84,7 @@ class ISpectBuilder extends StatefulWidget {
     ISpectTheme? theme,
     DraggablePanelController? controller,
   }) {
-    if (!kISpectEnabled || !isISpectEnabled) return child;
+    if (!kISpectEnabled) return child;
 
     // ignore: deprecated_member_use_from_same_package
     return ISpectBuilder(
