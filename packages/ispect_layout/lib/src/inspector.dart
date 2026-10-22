@@ -87,6 +87,7 @@ class InspectorState extends State<Inspector> {
   bool _isPanelVisible = false;
   Size? _lastObservedSize;
   InspectorMode? _heldShortcutMode;
+  final GlobalKey _childKey = GlobalKey();
 
   bool get isPanelVisible => _isPanelVisible;
 
@@ -193,8 +194,9 @@ class InspectorState extends State<Inspector> {
 
   @override
   Widget build(BuildContext context) {
+    final child = KeyedSubtree(key: _childKey, child: widget.child);
     if (!_isEnabled) {
-      return widget.child;
+      return child;
     }
 
     final content = Stack(
@@ -205,8 +207,6 @@ class InspectorState extends State<Inspector> {
           child: ValueListenableBuilder<InspectorMode>(
             valueListenable: _controller.modeNotifier,
             builder: (context, mode, _) {
-              Widget child = widget.child;
-
               final isIgnoringPointer = mode != InspectorMode.none;
 
               return MouseRegion(

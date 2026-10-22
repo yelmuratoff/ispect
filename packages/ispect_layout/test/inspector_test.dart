@@ -356,6 +356,27 @@ void main() {
       expect(state.controller, same(controller));
       expect(controller.theme, InspectorTheme.defaults);
     });
+
+    testWidgets('switching isEnabled keeps the child state', (tester) async {
+      Widget build({required bool isEnabled}) => MaterialApp(
+        home: Scaffold(
+          body: Inspector(
+            isEnabled: isEnabled,
+            child: const Align(alignment: Alignment.topLeft, child: _Counter()),
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(build(isEnabled: false));
+      await tester.tap(find.text('count: 0'));
+      await tester.pump();
+
+      await tester.pumpWidget(build(isEnabled: true));
+      expect(find.text('count: 1'), findsOneWidget);
+
+      await tester.pumpWidget(build(isEnabled: false));
+      expect(find.text('count: 1'), findsOneWidget);
+    });
   });
 
   group('Widget inspector', () {
