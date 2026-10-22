@@ -194,6 +194,8 @@ class InspectorState extends State<Inspector> {
 
   @override
   Widget build(BuildContext context) {
+    if (!kISpectLayoutEnabled) return widget.child;
+
     final child = KeyedSubtree(key: _childKey, child: widget.child);
     if (!_isEnabled) {
       return child;
