@@ -96,6 +96,8 @@ class _MyAppState extends State<MyApp> {
       builder: (_, child) => ISpectBuilder.wrap(
         child: child!,
         // Compile-time gating already happens via kISpectEnabled.
+        // Start with the panel hidden; toggleISpect() can still show it.
+        // To leave ISpect out for some users, return child! without wrap.
         // isISpectEnabled: currentUser.isAdmin,
         //
         // Custom theme for the ISpect UI (colors, log icons, page title,
