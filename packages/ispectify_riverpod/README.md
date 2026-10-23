@@ -58,9 +58,9 @@
 ```yaml
 dependencies:
   flutter_riverpod: ^2.5.0
-  ispect: ^7.1.0
-  ispectify: ^7.1.0
-  ispectify_riverpod: ^7.1.0
+  ispect: ^7.2.0
+  ispectify: ^7.2.0
+  ispectify_riverpod: ^7.2.0
 ```
 
 ## Quick start
