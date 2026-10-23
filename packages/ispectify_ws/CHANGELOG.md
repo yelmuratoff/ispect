@@ -1,5 +1,17 @@
 # Changelog
 
+## 7.2.0
+
+### Behavioral Changes
+
+- **`ISpectBuilder.wrap(isISpectEnabled: false)`:** Mounts ISpect with the panel hidden instead of leaving it out, so `ISpect.read(context).toggleISpect()` can show the panel later. To leave ISpect out for some users, return the child without calling `wrap`.
+
+### Bug Fixes
+
+- **Showing and hiding ISpect:** `toggleISpect()`, changing `isISpectEnabled`, and `Inspector.isEnabled` no longer reset the state of the app underneath.
+- **Panel taps:** A tap that drifts a few pixels on the collapsed or parked panel opens or unparks it instead of starting a drag (`draggable_panel` 4.1.3).
+- **Parked panel touch area:** The parked panel takes touches across the full minimum tap target, not only its visible edge, so it can be brought back on curved-edge screens and next to the system back gesture (`draggable_panel` 4.1.3).
+
 ## 7.1.0
 
 ### Security
