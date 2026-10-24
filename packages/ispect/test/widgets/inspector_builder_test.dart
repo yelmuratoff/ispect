@@ -36,6 +36,26 @@ class _TestPlugin extends InspectorPlugin {
   }
 }
 
+class _InitCounter extends StatefulWidget {
+  const _InitCounter({required this.onInit});
+
+  final VoidCallback onInit;
+
+  @override
+  State<_InitCounter> createState() => _InitCounterState();
+}
+
+class _InitCounterState extends State<_InitCounter> {
+  @override
+  void initState() {
+    super.initState();
+    widget.onInit();
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
+}
+
 final _emptyApp = MaterialApp(
   localizationsDelegates: ISpectLocalizations.delegate(),
   home: const SizedBox.shrink(),
@@ -417,21 +437,58 @@ void main() {
       });
 
       testWidgets(
-        'returns child directly when isISpectEnabled is false at runtime',
+        'isISpectEnabled false keeps the scope and hides the panel until '
+        'the host toggles it',
         (tester) async {
-          const child = SizedBox.shrink(key: Key('disabled-child'));
-          // Without `--dart-define=ISPECT_ENABLED=true` the `false` argument
-          // matches the default, but we pin down the runtime-toggle contract
-          // regardless of the compile-time flag.
-          final wrapped = ISpectBuilder.wrap(
-            child: child,
-            // ignore: avoid_redundant_argument_values
-            isISpectEnabled: false,
+          if (!kISpectEnabled) return;
+
+          late BuildContext childContext;
+          await tester.pumpWidget(
+            MaterialApp(
+              localizationsDelegates: ISpectLocalizations.delegate(),
+              builder: (context, child) => ISpectBuilder.wrap(
+                // ignore: avoid_redundant_argument_values
+                isISpectEnabled: false,
+                child: child!,
+              ),
+              home: Builder(
+                builder: (context) {
+                  childContext = context;
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
           );
 
-          expect(identical(wrapped, child), isTrue);
+          expect(find.byType(DraggableActionPanel), findsNothing);
+
+          ISpect.read(childContext).toggleISpect();
+          await tester.pump();
+
+          expect(find.byType(DraggableActionPanel), findsOneWidget);
         },
       );
+
+      testWidgets('flipping isISpectEnabled keeps the host subtree state', (
+        tester,
+      ) async {
+        if (!kISpectEnabled) return;
+
+        var initCount = 0;
+        Widget app({required bool enabled}) => MaterialApp(
+          localizationsDelegates: ISpectLocalizations.delegate(),
+          home: ISpectBuilder.wrap(
+            isISpectEnabled: enabled,
+            child: _InitCounter(onInit: () => initCount++),
+          ),
+        );
+
+        await tester.pumpWidget(app(enabled: false));
+        await tester.pumpWidget(app(enabled: true));
+
+        expect(initCount, 1);
+        expect(find.byType(DraggableActionPanel), findsOneWidget);
+      });
     });
 
     group('auto-wired navigator observer', () {
