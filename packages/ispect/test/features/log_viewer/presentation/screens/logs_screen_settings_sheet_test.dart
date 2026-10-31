@@ -6,6 +6,7 @@ import 'package:ispect/src/core/localization/generated/ispect_localizations_en.d
 import 'package:ispect/src/core/localization/generated/ispect_localizations_ru.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/log_viewer_dialogs.dart';
 
 void main() {
   late ISpectLogger logger;
@@ -22,6 +23,7 @@ void main() {
     ISpectViewController? controller,
     ISpectSettingsState? settings,
     Locale? locale,
+    ThemeData? hostTheme,
   }) async {
     tester.view
       ..physicalSize = const Size(1200, 3200)
@@ -34,6 +36,7 @@ void main() {
         model: model,
         child: MaterialApp(
           locale: locale,
+          theme: hostTheme,
           localizationsDelegates: ISpectLocalization.localizationDelegates,
           supportedLocales: ISpectLocalization.supportedLocales,
           home: LogsScreen(
@@ -50,8 +53,14 @@ void main() {
     WidgetTester tester, {
     ISpectOptions? options,
     Locale? locale,
+    ThemeData? hostTheme,
   }) async {
-    await pumpLogsScreen(tester, options: options, locale: locale);
+    await pumpLogsScreen(
+      tester,
+      options: options,
+      locale: locale,
+      hostTheme: hostTheme,
+    );
     await tester.tap(find.byIcon(Icons.more_horiz_rounded).first);
     await tester.pumpAndSettle();
   }
@@ -253,6 +262,80 @@ void main() {
 
       final screen = tester.widget<JsonScreen>(find.byType(JsonScreen));
       expect(screen.data['data'], hasLength(2));
+    });
+
+    testWidgets('an empty paste keeps the dialog open and says why', (
+      tester,
+    ) async {
+      await openMenu(tester);
+      final l10n = ISpectGeneratedLocalizationEn();
+
+      await tester.tap(find.text(l10n.importLogs).last);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, '   ');
+      await tester.tap(find.text(l10n.process));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PasteContentDialog), findsOneWidget);
+      expect(find.text(l10n.contentEmptyError), findsOneWidget);
+      expect(find.byType(JsonScreen), findsNothing);
+
+      await tester.enterText(find.byType(TextField).last, '[{"a":1}]');
+      await tester.pump();
+
+      expect(find.text(l10n.contentEmptyError), findsNothing);
+    });
+
+    testWidgets('choosing paste in the source dialog opens the paste dialog', (
+      tester,
+    ) async {
+      await openMenu(
+        tester,
+        options: ISpectOptions(onLoadLogContent: (_) async => null),
+      );
+      final l10n = ISpectGeneratedLocalizationEn();
+
+      await tester.tap(find.text(l10n.importLogs).last);
+      await tester.pumpAndSettle();
+
+      final source = find.byType(LogSourceDialog);
+      expect(
+        find.descendant(of: source, matching: find.text(l10n.loadFileContent)),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.descendant(of: source, matching: find.text(l10n.pasteContent)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(source, findsNothing);
+      expect(find.byType(PasteContentDialog), findsOneWidget);
+    });
+
+    testWidgets('the paste dialog keeps the ISpect accent under a host theme', (
+      tester,
+    ) async {
+      await openMenu(
+        tester,
+        hostTheme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        ),
+      );
+      final l10n = ISpectGeneratedLocalizationEn();
+
+      await tester.tap(find.text(l10n.importLogs).last);
+      await tester.pumpAndSettle();
+
+      final processFill = tester.widget<Material>(
+        find
+            .descendant(
+              of: find.widgetWithText(FilledButton, l10n.process),
+              matching: find.byType(Material),
+            )
+            .first,
+      );
+      expect(processFill.color, const Color(0xFF3B82F6));
     });
 
     testWidgets('reports empty loaded content in the active locale', (

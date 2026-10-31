@@ -10,6 +10,7 @@
 - **Logs panel button:** The in-app menu can no longer hide the panel button that opens the log viewer. Hosts still control it with `ISpectSettingsState.isLogPageEnabled` in `ISpectOptions.initialSettings`.
 - **Export sheet:** Without a host `onShare`, the action and the sheet are called Export and lead with Download; with `onShare`, both say Share and Share leads. The sheet shows how many logs it exports and what the selected format is for.
 - **Log details** always show the Share or Export button, even when the host has no `onShare`.
+- **ISpect panel:** Hides while an ISpect sheet or dialog is open and comes back when it closes. A panel the host hid stays hidden.
 
 ### Improvements
 
@@ -21,12 +22,14 @@
 - **Consistent screens:** Sessions, Navigation Flow, HTTP Composer, and the JSON viewer share one title style. Sessions keeps Copy path and Open path in a More menu and names the action on its clear confirmation.
 - **Screen readers:** Settings toggles, menu actions, and collapsible sections are announced once, with their on/off or expanded state.
 - **Filter sheet:** Log type chips show type titles instead of raw keys, and the search modes are named Highlight and Hide others.
+- **Import logs dialogs:** The source choice and Paste dialogs use the ISpect theme and header. Process stays enabled and says so when the pasted content is empty.
 
 ### Bug Fixes
 
 - **Reopening the log viewer** after turning off a log type no longer reports a "setState() called during build" error.
 - **Clear all filters** in the filter sheet also clears the search text.
 - **Sessions folder:** A failing host `onOpenFile` is logged instead of surfacing as an uncaught error.
+- **Closing sheets:** The close button of the settings sheet, and of other ISpect sheets, works when the sheet sits under the parked panel.
 
 ## 7.2.0
 

@@ -9,6 +9,7 @@ import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/debug_report.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
+import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
@@ -211,8 +212,8 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   );
 
   void _showClearAllDialog() {
-    showDialog<void>(
-      context: context,
+    showISpectDialog<void>(
+      context,
       builder: (context) => ISpectAlertDialog(
         title: Text(context.ispectL10n.clearAllSessions),
         content: Text(context.ispectL10n.confirmClearAllDailySessions),

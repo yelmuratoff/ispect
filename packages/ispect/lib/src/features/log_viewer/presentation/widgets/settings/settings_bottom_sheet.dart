@@ -40,7 +40,7 @@ class ISpectSettingsBottomSheet {
     maxChildSize: 0.9,
     dialogWidth: (MediaQuery.sizeOf(context).width * 0.8).clamp(
       0,
-      ISpectConstants.settingsDialogMaxWidth,
+      ISpectConstants.wideModalMaxWidth,
     ),
     topOnlyRadius: true,
     routeSettings: const RouteSettings(name: 'ISpect Logs Settings Sheet'),

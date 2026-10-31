@@ -3,6 +3,7 @@ import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:ispect/src/common/widgets/ispect_modal_tracker.dart';
 import 'package:ispect/src/core/res/ispect_default_palette.dart';
 import 'package:ispect/src/core/res/ispect_theme_data.dart';
 
@@ -14,12 +15,32 @@ Widget _ispectThemedModal(
   ISpectScopeModel iSpect, {
   required bool isDark,
   required Widget child,
-}) => iSpect.theme.useHostColors
-    ? child
-    : Theme(
-        data: buildISpectThemeData(dark: isDark),
-        child: child,
-      );
+}) => ISpectModalGuard(
+  child: iSpect.theme.useHostColors
+      ? child
+      : Theme(
+          data: buildISpectThemeData(dark: isDark),
+          child: child,
+        ),
+);
+
+Future<T?> showISpectDialog<T>(
+  BuildContext context, {
+  required WidgetBuilder builder,
+  RouteSettings? routeSettings,
+}) {
+  final iSpect = ISpect.read(context);
+  final isDark = context.ispectIsDark;
+  return showDialog<T>(
+    context: context,
+    routeSettings: routeSettings,
+    builder: (_) => _ispectThemedModal(
+      iSpect,
+      isDark: isDark,
+      child: Builder(builder: builder),
+    ),
+  );
+}
 
 /// Shows a responsive sheet: bottom sheet on phone, dialog on larger screens.
 ///

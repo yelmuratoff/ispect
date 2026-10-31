@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
@@ -151,7 +152,7 @@ class _LogsScreenState extends State<LogsScreen> {
     if (widget.options.observer case final ISpectNavigatorObserver observer)
       _buildNavigationFlowAction(observer),
     if (ISpect.logger.fileLogHistory != null) _buildDailySessionsAction(),
-    _buildImportLogsAction(),
+    _buildImportLogsAction(context),
     _buildClearHistoryAction(context),
     ...widget.options.actionItems,
     _buildTipsAction(context),
@@ -159,8 +160,8 @@ class _LogsScreenState extends State<LogsScreen> {
 
   Future<void> _confirmClearHistory(BuildContext context) async {
     final l10n = context.ispectL10n;
-    final confirmed = await showDialog<bool>(
-      context: context,
+    final confirmed = await showISpectDialog<bool>(
+      context,
       builder: (dialogContext) => ISpectAlertDialog(
         title: Text(l10n.clearHistoryConfirmTitle),
         content: Text(l10n.clearHistoryConfirmMessage),
@@ -233,12 +234,13 @@ class _LogsScreenState extends State<LogsScreen> {
     ).push(context),
   );
 
-  ISpectActionItem _buildImportLogsAction() => ISpectActionItem(
-    title: context.ispectL10n.importLogs,
-    icon: Icons.file_open_outlined,
-    description: context.ispectL10n.importLogsDesc,
-    onTap: (_) => _handleImportLogsTap(),
-  );
+  ISpectActionItem _buildImportLogsAction(BuildContext context) =>
+      ISpectActionItem(
+        title: context.ispectL10n.importLogs,
+        icon: Icons.file_open_outlined,
+        description: context.ispectL10n.importLogsDesc,
+        onTap: (_) => _handleImportLogsTap(context),
+      );
 
   ISpectActionItem _buildTipsAction(BuildContext context) => ISpectActionItem(
     title: context.ispectL10n.tips,
@@ -246,34 +248,34 @@ class _LogsScreenState extends State<LogsScreen> {
     onTap: (_) => ISpectOnboardingDialog.show(context),
   );
 
-  Future<void> _handleImportLogsTap() async {
-    if (!mounted) return;
+  Future<void> _handleImportLogsTap(BuildContext context) async {
+    if (!context.mounted) return;
     final loader = widget.options.onLoadLogContent;
     if (loader == null) {
-      _showPasteDialog();
+      _showPasteDialog(context);
       return;
     }
 
-    final choice = await showDialog<LogSourceChoice>(
-      context: context,
+    final choice = await showISpectDialog<LogSourceChoice>(
+      context,
       builder: (_) => const LogSourceDialog(),
     );
 
-    if (!mounted || choice == null) return;
+    if (!context.mounted || choice == null) return;
 
     switch (choice) {
       case LogSourceChoice.external:
         await _loadContentFromCallback();
       case LogSourceChoice.paste:
-        _showPasteDialog();
+        _showPasteDialog(context);
     }
   }
 
-  void _showPasteDialog() {
-    if (!mounted) return;
-    showDialog<void>(
-      context: context,
-      builder: (context) =>
+  void _showPasteDialog(BuildContext context) {
+    if (!context.mounted) return;
+    showISpectDialog<void>(
+      context,
+      builder: (_) =>
           PasteContentDialog(onContentProcessed: _processPastedContent),
     );
   }

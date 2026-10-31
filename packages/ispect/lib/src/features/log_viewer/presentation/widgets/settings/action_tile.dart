@@ -11,21 +11,47 @@ class ActionTile extends StatelessWidget {
   final ISpectActionItem action;
 
   @override
+  Widget build(BuildContext context) => ActionRow(
+    icon: action.icon,
+    title: action.title,
+    description: action.description,
+    descriptionMaxLines: 2,
+    onTap: () {
+      Navigator.pop(context);
+      action.onTap?.call(context);
+    },
+  );
+}
+
+class ActionRow extends StatelessWidget {
+  const ActionRow({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.description,
+    this.descriptionMaxLines,
+    super.key,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? description;
+  final int? descriptionMaxLines;
+  final VoidCallback onTap;
+
+  @override
   Widget build(BuildContext context) {
     final textColor = context.appTheme.textColor;
-    final description = action.description;
+    final description = this.description;
 
     return Semantics(
       button: true,
       child: ISpectBorderedSurface(
-        onTap: () {
-          Navigator.pop(context);
-          action.onTap?.call(context);
-        },
+        onTap: onTap,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           children: [
-            ISpectIconBadge(icon: action.icon, size: ISpectIconBadgeSize.small),
+            ISpectIconBadge(icon: icon, size: ISpectIconBadgeSize.small),
             const Gap(12),
             Expanded(
               child: Column(
@@ -33,7 +59,7 @@ class ActionTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    action.title,
+                    title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: context.appTheme.textTheme.labelLarge?.copyWith(
@@ -44,8 +70,10 @@ class ActionTile extends StatelessWidget {
                   if (description != null)
                     Text(
                       description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      maxLines: descriptionMaxLines,
+                      overflow: descriptionMaxLines == null
+                          ? null
+                          : TextOverflow.ellipsis,
                       style: context.appTheme.textTheme.bodySmall?.copyWith(
                         color: textColor.withValues(alpha: 0.55),
                       ),
