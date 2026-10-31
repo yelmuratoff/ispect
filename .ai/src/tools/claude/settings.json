@@ -35,7 +35,6 @@
             "Edit"
         ],
         "ask": [
-            "Bash(git push *)",
             "Bash(git rebase *)",
             "Bash(git reset *)",
             "Bash(dart run tool/bin/ispect_tool.dart sync *)",

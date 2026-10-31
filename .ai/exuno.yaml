@@ -1,7 +1,7 @@
 # AgentSync - Project Configuration
 # All keys are optional - remove any that you leave at the default.
 
-exuno_version: "0.46.0"
+exuno_version: "0.47.0"
 
 # Tools: which ones to sync for this project.
 # Each name must match a base tool (see `agentsync list`) or a custom override
