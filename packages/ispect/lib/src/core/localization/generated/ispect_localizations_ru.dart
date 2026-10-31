@@ -958,7 +958,8 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
       'Долгое нажатие на карточку лога для быстрых действий';
 
   @override
-  String get tipFilter => 'Фильтрация по типу лога через чипы или настройки';
+  String get tipFilter =>
+      'Фильтрация по типу лога - чипами под кнопкой фильтров';
 
   @override
   String get tipExpand => 'Нажмите развернуть для просмотра JSON с поиском';
@@ -969,7 +970,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'Открой Поток навигации в настройках - увидишь историю маршрутов';
+      'Открой Поток навигации в меню «Ещё» - увидишь историю маршрутов';
 
   @override
   String get tipShareSession =>
@@ -977,7 +978,7 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get tipReverseLogs =>
-      'Нажми стрелки в шапке, чтобы перевернуть порядок логов';
+      'Порядок логов, группировка HTTP и другие настройки отображения - под кнопкой фильтров';
 
   @override
   String get gotIt => 'Понятно';
@@ -1411,4 +1412,73 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get exception => 'Исключение';
+
+  @override
+  String get settingsLogging => 'Логирование';
+
+  @override
+  String get panelButtons => 'Кнопки панели';
+
+  @override
+  String get importLogs => 'Импорт логов';
+
+  @override
+  String get importLogsDesc =>
+      'Открыть сохранённый файл логов или вставленный текст в просмотрщике';
+
+  @override
+  String get recordedLogTypes => 'Записываемые типы логов';
+
+  @override
+  String get recordedLogTypesDesc => 'Выключенные типы не записываются';
+
+  @override
+  String get clearHistoryConfirmTitle => 'Очистить историю логов?';
+
+  @override
+  String get clearHistoryConfirmMessage =>
+      'Все логи будут удалены. Если они ещё нужны, сначала поделитесь ими.';
+
+  @override
+  String get export => 'Экспорт';
+
+  @override
+  String get exportFormatJsonHint => 'Открывается снова через «Импорт логов»';
+
+  @override
+  String get exportFormatTextHint => 'Обычный текст для чтения и чатов';
+
+  @override
+  String get exportFormatMarkdownHint => 'С разметкой для задач и pull request';
+
+  @override
+  String get exportFormatCsvHint => 'Таблица для табличных редакторов';
+
+  @override
+  String get noLogsYet => 'Логов пока нет';
+
+  @override
+  String get noLogsYetHint => 'Логи появятся здесь, пока приложение работает';
+
+  @override
+  String get noMatchingLogs => 'Нет подходящих логов';
+
+  @override
+  String get noSavedSessions => 'Нет сохранённых сессий';
+
+  @override
+  String get noSavedSessionsHint =>
+      'Сессии появятся здесь, когда логи сохранятся в файлы';
+
+  @override
+  String get exportLogs => 'Экспорт логов';
+
+  @override
+  String get exportLogsDesc => 'Скачать логи файлом или скопировать сводку';
+
+  @override
+  String get searchModeHighlight => 'Подсветить';
+
+  @override
+  String get searchModeFilter => 'Скрыть прочие';
 }

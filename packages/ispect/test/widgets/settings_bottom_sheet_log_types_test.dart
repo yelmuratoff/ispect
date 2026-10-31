@@ -60,6 +60,19 @@ void main() {
   Future<void> openSheet(WidgetTester tester) async {
     await tester.tap(find.text('Open settings'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Recorded log types'));
+    await tester.pumpAndSettle();
+  }
+
+  (int recorded, int total) recordedCount(WidgetTester tester) {
+    final counter = tester.widget<Text>(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Text && RegExp(r'^\d+/\d+$').hasMatch(widget.data ?? ''),
+      ),
+    );
+    final [recorded, total] = counter.data!.split('/').map(int.parse).toList();
+    return (recorded, total);
   }
 
   Future<void> closeSheet(WidgetTester tester) async {
@@ -80,6 +93,19 @@ void main() {
   }
 
   Set<String?> capturedKeys() => loggerValue.history.map((e) => e.key).toSet();
+
+  testWidgets('the section header counts the types that stay recorded', (
+    tester,
+  ) async {
+    await pumpShell(tester);
+    await openSheet(tester);
+    final (initialRecorded, total) = recordedCount(tester);
+
+    await tapInSheet(tester, 'Riverpod Add');
+
+    expect(initialRecorded, total);
+    expect(recordedCount(tester), (total - 1, total));
+  });
 
   testWidgets('a disabled log type survives closing and reopening the sheet', (
     tester,

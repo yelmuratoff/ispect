@@ -555,7 +555,7 @@ class _ComposerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       _SectionHeader(title: title, count: count),
       ISpectBorderedSurface(

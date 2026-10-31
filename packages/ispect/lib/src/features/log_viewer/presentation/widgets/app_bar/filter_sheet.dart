@@ -8,6 +8,8 @@ import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/compact_toggle_grid.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/toggle_spec.dart';
 
 class ISpectFilterSheet extends StatelessWidget {
   const ISpectFilterSheet({
@@ -96,10 +98,63 @@ class ISpectFilterSheet extends StatelessWidget {
                   ),
                 ),
               ),
-            const Gap(8),
+            _DisplaySection(controller: controller),
+            const Gap(16),
           ],
         );
       },
+    );
+  }
+}
+
+class _DisplaySection extends StatelessWidget {
+  const _DisplaySection({required this.controller});
+
+  final ISpectViewController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.ispectL10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ISpectSectionLabel(title: l10n.settingsDisplay),
+        CompactToggleGrid(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          tiles: [
+            ToggleSpec(
+              title: l10n.reverseLogs,
+              icon: Icons.swap_vert_rounded,
+              enabled: controller.isLogOrderReversed,
+              onChanged: (_) => controller.toggleLogOrder(),
+            ),
+            ToggleSpec(
+              title: l10n.groupHttpLogs,
+              icon: Icons.merge_type_rounded,
+              enabled: controller.groupHttpLogs,
+              onChanged: (_) => controller.toggleGroupHttpLogs(),
+            ),
+            ToggleSpec(
+              title: l10n.expandLogs,
+              icon: Icons.unfold_more_rounded,
+              enabled: controller.expandedLogs,
+              onChanged: (_) => controller.toggleExpandedLogs(),
+            ),
+            ToggleSpec(
+              title: l10n.relativeTime,
+              icon: Icons.schedule_rounded,
+              enabled: controller.useRelativeTime,
+              onChanged: (_) => controller.toggleTimestampFormat(),
+            ),
+            ToggleSpec(
+              title: l10n.compactUrls,
+              icon: Icons.link_off_rounded,
+              enabled: controller.compactNetworkUrls,
+              onChanged: (_) => controller.toggleCompactNetworkUrls(),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -138,7 +193,7 @@ class _SearchModeSection extends StatelessWidget {
                         ? primaryColor
                         : null,
                   ),
-                  label: Text(context.ispectL10n.search),
+                  label: Text(context.ispectL10n.searchModeHighlight),
                 ),
                 ButtonSegment<SearchMode>(
                   value: SearchMode.filter,
@@ -149,7 +204,7 @@ class _SearchModeSection extends StatelessWidget {
                         ? primaryColor
                         : null,
                   ),
-                  label: Text(context.ispectL10n.filters),
+                  label: Text(context.ispectL10n.searchModeFilter),
                 ),
               ],
               selected: {searchMode},
@@ -200,7 +255,7 @@ class _LogTypeChipsWrap extends StatelessWidget {
 
         return _LogTypeChip(
           key: ValueKey('log-type-chip-$title'),
-          title: title ?? '',
+          title: theme.getTypeTitle(context, key: title) ?? title ?? '',
           count: count,
           isSelected: selectedTitles.contains(title),
           typeColor: typeColor,

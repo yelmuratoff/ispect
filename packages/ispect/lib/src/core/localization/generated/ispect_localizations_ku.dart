@@ -951,7 +951,7 @@ class ISpectGeneratedLocalizationKu extends ISpectGeneratedLocalization {
   String get tipLongPress => 'بۆ کارێن بلەز ل سەر کارتا تومارێ درێژ دابگرە';
 
   @override
-  String get tipFilter => 'ب جۆرێ تومارێ ب چیپ یان ڕێکخستنان فلتەر بکە';
+  String get tipFilter => 'ب چیپێن دوگمەیا فلتەری ب جۆرێ تومارێ فلتەر بکە';
 
   @override
   String get tipExpand =>
@@ -963,7 +963,7 @@ class ISpectGeneratedLocalizationKu extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'ڕەوتێ گەریانێ ژ ڕێکخستنان ڤەکە بۆ دیتنا مێژوویا ڕێیێ ب دیتنەکێ';
+      'ڕەوتێ گەریانێ ژ «بژاردەیێن دی» ڤەکە بۆ دیتنا مێژوویا ڕێیێ ب دیتنەکێ';
 
   @override
   String get tipShareSession =>
@@ -971,7 +971,7 @@ class ISpectGeneratedLocalizationKu extends ISpectGeneratedLocalization {
 
   @override
   String get tipReverseLogs =>
-      'ل سەر تیرێن بەروڤاژی ل سەر بارا ئەپی کلیک بکە بۆ گوهۆڕینا ڕێزا توماران';
+      'ڕێزا توماران، گروپکرنا HTTP و بژاردەیێن دی یێن نیشاندانێ د دوگمەیا فلتەری دانە';
 
   @override
   String get gotIt => 'تێگەهشتم';
@@ -1394,4 +1394,75 @@ class ISpectGeneratedLocalizationKu extends ISpectGeneratedLocalization {
 
   @override
   String get exception => 'دەرکەفتن';
+
+  @override
+  String get settingsLogging => 'تومارکرن';
+
+  @override
+  String get panelButtons => 'دوگمەیێن پانێلێ';
+
+  @override
+  String get importLogs => 'هاوردەکرنا توماران';
+
+  @override
+  String get importLogsDesc =>
+      'فایلەکا توماران یا پاشەکەفتکری یان تومارێن پێڤەکری د نیشاندەری دا ڤەکە';
+
+  @override
+  String get recordedLogTypes => 'جۆرێن تومارێ یێن دهێنە تومارکرن';
+
+  @override
+  String get recordedLogTypesDesc => 'جۆرێن ناچالاککری ناهێنە تومارکرن';
+
+  @override
+  String get clearHistoryConfirmTitle => 'مێژوویا توماران پاقژ بکەی؟';
+
+  @override
+  String get clearHistoryConfirmMessage =>
+      'همی تومار دێ هێنە ژێبرن. ئەگەر هێشتا پێدڤی ب وان هەیە، پێشی وان بارڤە بکە.';
+
+  @override
+  String get export => 'هەناردەکرن';
+
+  @override
+  String get exportFormatJsonHint =>
+      'دشێت دیسا ب «هاوردەکرنا توماران» بێتە ڤەکرن';
+
+  @override
+  String get exportFormatTextHint => 'نڤیسینا سادە بۆ خواندنێ و چاتێ';
+
+  @override
+  String get exportFormatMarkdownHint => 'ڕێکخستی بۆ ئاریشەیان و pull request';
+
+  @override
+  String get exportFormatCsvHint => 'خشتە بۆ بەرنامەیێن خشتەیان';
+
+  @override
+  String get noLogsYet => 'هێشتا چ تومار نینن';
+
+  @override
+  String get noLogsYetHint => 'دەمێ ئەپ کار دکەت تومار ل ڤێرە دیار دبن';
+
+  @override
+  String get noMatchingLogs => 'چ تومارێن گونجای نینن';
+
+  @override
+  String get noSavedSessions => 'چ دانیشتنێن پاشەکەفتکری نینن';
+
+  @override
+  String get noSavedSessionsHint =>
+      'دەمێ تومار د فایلان دا دهێنە پاشەکەفتکرن دانیشتن ل ڤێرە دیار دبن';
+
+  @override
+  String get exportLogs => 'هەناردەکرنا توماران';
+
+  @override
+  String get exportLogsDesc =>
+      'توماران وەک فایل دابەزینە یان کورتەیەکێ کۆپی بکە';
+
+  @override
+  String get searchModeHighlight => 'دیارکرن';
+
+  @override
+  String get searchModeFilter => 'یێن دی بشێرە';
 }

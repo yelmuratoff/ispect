@@ -934,7 +934,7 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get tipLongPress => '로그 카드를 길게 눌러 빠른 작업 실행';
 
   @override
-  String get tipFilter => '칩이나 설정을 사용하여 로그 유형별 필터링';
+  String get tipFilter => '필터 버튼의 칩으로 로그 유형별 필터링';
 
   @override
   String get tipExpand => '확장을 눌러 검색 가능한 전체 JSON 보기';
@@ -943,13 +943,13 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String get tipKeyboard => '화살표 키로 이동, Enter로 열기, /로 검색';
 
   @override
-  String get tipNavigationFlow => '설정에서 내비게이션 흐름을 열어 경로 기록을 시각적으로 확인';
+  String get tipNavigationFlow => '\'더보기\'에서 네비게이션 플로우를 열어 경로 기록을 시각적으로 확인';
 
   @override
   String get tipShareSession => '버그 리포트용으로 로그 파일을 공유 - 데이터는 자동으로 가려집니다';
 
   @override
-  String get tipReverseLogs => '앱 바의 화살표를 눌러 로그 순서를 뒤집기';
+  String get tipReverseLogs => '로그 순서, HTTP 그룹화 등 표시 옵션은 필터 버튼에 있습니다';
 
   @override
   String get gotIt => '확인';
@@ -1356,4 +1356,70 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get exception => '예외';
+
+  @override
+  String get settingsLogging => '로깅';
+
+  @override
+  String get panelButtons => '패널 버튼';
+
+  @override
+  String get importLogs => '로그 가져오기';
+
+  @override
+  String get importLogsDesc => '저장된 로그 파일이나 붙여넣은 로그를 뷰어에서 열기';
+
+  @override
+  String get recordedLogTypes => '기록할 로그 유형';
+
+  @override
+  String get recordedLogTypesDesc => '끈 유형은 기록되지 않습니다';
+
+  @override
+  String get clearHistoryConfirmTitle => '로그 기록을 지우시겠습니까?';
+
+  @override
+  String get clearHistoryConfirmMessage => '모든 로그가 삭제됩니다. 아직 필요하다면 먼저 공유하세요.';
+
+  @override
+  String get export => '내보내기';
+
+  @override
+  String get exportFormatJsonHint => '\'로그 가져오기\'로 다시 열 수 있습니다';
+
+  @override
+  String get exportFormatTextHint => '읽기와 채팅용 일반 텍스트';
+
+  @override
+  String get exportFormatMarkdownHint => '이슈와 풀 리퀘스트용 서식';
+
+  @override
+  String get exportFormatCsvHint => '스프레드시트용 표';
+
+  @override
+  String get noLogsYet => '아직 로그가 없습니다';
+
+  @override
+  String get noLogsYetHint => '앱이 실행되는 동안 여기에 로그가 표시됩니다';
+
+  @override
+  String get noMatchingLogs => '일치하는 로그가 없습니다';
+
+  @override
+  String get noSavedSessions => '저장된 세션이 없습니다';
+
+  @override
+  String get noSavedSessionsHint => '로그가 파일로 저장되면 여기에 세션이 표시됩니다';
+
+  @override
+  String get exportLogs => '로그 내보내기';
+
+  @override
+  String get exportLogsDesc => '로그를 파일로 다운로드하거나 요약을 복사';
+
+  @override
+  String get searchModeHighlight => '강조';
+
+  @override
+  String get searchModeFilter => '나머지 숨기기';
 }

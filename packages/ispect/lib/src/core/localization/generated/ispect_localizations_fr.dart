@@ -976,7 +976,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get tipFilter =>
-      'Filtrer par type de log avec les chips ou les paramètres';
+      'Filtrer par type de log avec les chips du bouton des filtres';
 
   @override
   String get tipExpand =>
@@ -988,7 +988,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'Ouvre Flux de navigation dans les paramètres pour voir l\'historique des routes';
+      'Ouvre Flux de navigation dans « Plus d\'options » pour voir l\'historique des routes';
 
   @override
   String get tipShareSession =>
@@ -996,7 +996,7 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get tipReverseLogs =>
-      'Touche les flèches dans la barre pour inverser l\'ordre des logs';
+      'L\'ordre des logs, le regroupement HTTP et les autres options d\'affichage sont dans le bouton des filtres';
 
   @override
   String get gotIt => 'Compris';
@@ -1424,4 +1424,78 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get exception => 'Exception';
+
+  @override
+  String get settingsLogging => 'Journalisation';
+
+  @override
+  String get panelButtons => 'Boutons du panneau';
+
+  @override
+  String get importLogs => 'Importer des journaux';
+
+  @override
+  String get importLogsDesc =>
+      'Ouvrir dans le visualiseur un fichier de journaux enregistré ou des journaux collés';
+
+  @override
+  String get recordedLogTypes => 'Types de journaux enregistrés';
+
+  @override
+  String get recordedLogTypesDesc =>
+      'Les types désactivés ne sont pas enregistrés';
+
+  @override
+  String get clearHistoryConfirmTitle => 'Effacer l\'historique des journaux ?';
+
+  @override
+  String get clearHistoryConfirmMessage =>
+      'Tous les journaux seront supprimés. Partagez-les d\'abord si vous en avez encore besoin.';
+
+  @override
+  String get export => 'Exporter';
+
+  @override
+  String get exportFormatJsonHint => 'Se rouvre avec « Importer des journaux »';
+
+  @override
+  String get exportFormatTextHint =>
+      'Texte brut pour la lecture et les discussions';
+
+  @override
+  String get exportFormatMarkdownHint =>
+      'Mis en forme pour les tickets et les pull requests';
+
+  @override
+  String get exportFormatCsvHint => 'Tableau pour les tableurs';
+
+  @override
+  String get noLogsYet => 'Aucun journal pour l\'instant';
+
+  @override
+  String get noLogsYetHint =>
+      'Les journaux s\'affichent ici pendant que l\'app tourne';
+
+  @override
+  String get noMatchingLogs => 'Aucun journal correspondant';
+
+  @override
+  String get noSavedSessions => 'Aucune session enregistrée';
+
+  @override
+  String get noSavedSessionsHint =>
+      'Les sessions s\'affichent ici une fois les journaux enregistrés dans des fichiers';
+
+  @override
+  String get exportLogs => 'Exporter les journaux';
+
+  @override
+  String get exportLogsDesc =>
+      'Télécharger les journaux dans un fichier ou copier un résumé';
+
+  @override
+  String get searchModeHighlight => 'Surligner';
+
+  @override
+  String get searchModeFilter => 'Masquer le reste';
 }

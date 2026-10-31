@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/file_processing_result.dart';
@@ -10,6 +11,7 @@ import 'package:ispect/src/features/log_viewer/presentation/screens/navigation_f
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_viewer_dialogs.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_builder.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_viewer_body.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/onboarding_dialog.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_all_logs_sheet.dart';
 import 'package:ispect/src/features/log_viewer/services/file_processing_service.dart';
@@ -111,7 +113,11 @@ class _LogsScreenState extends State<LogsScreen> {
       searchFocusNode: _searchFocusNode,
       logsScrollController: _logsScrollController,
       appBarTitle: widget.appBarTitle,
-      onSettingsTap: () => _openLogsSettings(context),
+      onShareTap: () => _shareAllLogs(context),
+      shareTooltip: _canShare(context)
+          ? context.ispectL10n.shareLogsFile
+          : context.ispectL10n.exportLogs,
+      onMoreTap: () => _openLogsSettings(context),
     );
 
     return Scaffold(
@@ -142,35 +148,71 @@ class _LogsScreenState extends State<LogsScreen> {
 
   List<ISpectActionItem> _buildSettingsActions(BuildContext context) => [
     _buildShareLogsAction(context),
-    _buildClearHistoryAction(context),
     if (widget.options.observer case final ISpectNavigatorObserver observer)
       _buildNavigationFlowAction(observer),
     if (ISpect.logger.fileLogHistory != null) _buildDailySessionsAction(),
-    _buildLogViewerAction(),
+    _buildImportLogsAction(),
+    _buildClearHistoryAction(context),
     ...widget.options.actionItems,
+    _buildTipsAction(context),
   ];
+
+  Future<void> _confirmClearHistory(BuildContext context) async {
+    final l10n = context.ispectL10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => ISpectAlertDialog(
+        title: Text(l10n.clearHistoryConfirmTitle),
+        content: Text(l10n.clearHistoryConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: dialogContext.appTheme.colorScheme.error,
+            ),
+            child: Text(l10n.clearHistory),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    _logsViewController.clearLogsHistory(
+      widget.onClearHistory ?? ISpect.logger.clearHistory,
+    );
+  }
+
+  Future<void> _shareAllLogs(BuildContext context) =>
+      ISpectShareAllLogsBottomSheet(
+        logs: widget.logs,
+        onShare: widget.options.onShare,
+        metadataProvider: widget.options.metadataProvider,
+      ).show(context);
 
   ISpectActionItem _buildClearHistoryAction(BuildContext context) =>
       ISpectActionItem(
-        onTap: (_) => _logsViewController.clearLogsHistory(
-          widget.onClearHistory ?? ISpect.logger.clearHistory,
-        ),
+        onTap: (_) => _confirmClearHistory(context),
         title: context.ispectL10n.clearHistory,
         icon: Icons.delete_outline,
         description: context.ispectL10n.clearHistoryDesc,
       );
 
-  ISpectActionItem _buildShareLogsAction(BuildContext context) =>
-      ISpectActionItem(
-        onTap: (_) => ISpectShareAllLogsBottomSheet(
-          logs: widget.logs,
-          onShare: widget.options.onShare,
-          metadataProvider: widget.options.metadataProvider,
-        ).show(context),
-        title: context.ispectL10n.shareLogsFile,
-        icon: Icons.ios_share_outlined,
-        description: context.ispectL10n.shareLogsFileDesc,
-      );
+  bool _canShare(BuildContext context) =>
+      (widget.options.onShare ?? ISpect.read(context).options.onShare) != null;
+
+  ISpectActionItem _buildShareLogsAction(BuildContext context) {
+    final l10n = context.ispectL10n;
+    final canShare = _canShare(context);
+    return ISpectActionItem(
+      onTap: (_) => _shareAllLogs(context),
+      title: canShare ? l10n.shareLogsFile : l10n.exportLogs,
+      icon: Icons.share_rounded,
+      description: canShare ? l10n.shareLogsFileDesc : l10n.exportLogsDesc,
+    );
+  }
 
   ISpectActionItem _buildNavigationFlowAction(
     ISpectNavigatorObserver observer,
@@ -191,14 +233,20 @@ class _LogsScreenState extends State<LogsScreen> {
     ).push(context),
   );
 
-  ISpectActionItem _buildLogViewerAction() => ISpectActionItem(
-    title: context.ispectL10n.logViewer,
-    icon: Icons.developer_mode_rounded,
-    description: context.ispectL10n.logViewerDesc,
-    onTap: (_) => _handleLogViewerTap(),
+  ISpectActionItem _buildImportLogsAction() => ISpectActionItem(
+    title: context.ispectL10n.importLogs,
+    icon: Icons.file_open_outlined,
+    description: context.ispectL10n.importLogsDesc,
+    onTap: (_) => _handleImportLogsTap(),
   );
 
-  Future<void> _handleLogViewerTap() async {
+  ISpectActionItem _buildTipsAction(BuildContext context) => ISpectActionItem(
+    title: context.ispectL10n.tips,
+    icon: Icons.tips_and_updates_outlined,
+    onTap: (_) => ISpectOnboardingDialog.show(context),
+  );
+
+  Future<void> _handleImportLogsTap() async {
     if (!mounted) return;
     final loader = widget.options.onLoadLogContent;
     if (loader == null) {

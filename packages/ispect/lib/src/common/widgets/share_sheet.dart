@@ -13,7 +13,7 @@ class ISpectShareSheet extends StatelessWidget {
   const ISpectShareSheet({
     required this.actions,
     super.key,
-    this.icon = Icons.ios_share_rounded,
+    this.icon = Icons.share_rounded,
   });
 
   final IconData icon;
@@ -27,7 +27,7 @@ class ISpectShareSheet extends StatelessWidget {
   static Future<void> show(
     BuildContext context, {
     required List<Widget> Function(BuildContext sheetContext) actionsBuilder,
-    IconData icon = Icons.ios_share_rounded,
+    IconData icon = Icons.share_rounded,
   }) => showISpectSheet(
     context,
     topOnlyRadius: true,

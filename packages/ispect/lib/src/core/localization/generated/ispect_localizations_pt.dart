@@ -968,7 +968,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
 
   @override
   String get tipFilter =>
-      'Filtrar por tipo de log usando chips ou configurações';
+      'Filtrar por tipo de log com os chips do botão de filtros';
 
   @override
   String get tipExpand =>
@@ -980,7 +980,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'Abra Fluxo de navegação nas configurações para ver o histórico de rotas';
+      'Abra Fluxo de navegação em “Mais opções” para ver o histórico de rotas';
 
   @override
   String get tipShareSession =>
@@ -988,7 +988,7 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
 
   @override
   String get tipReverseLogs =>
-      'Toque nas setas na barra para inverter a ordem dos logs';
+      'A ordem dos logs, o agrupamento HTTP e outras opções de exibição ficam no botão de filtros';
 
   @override
   String get gotIt => 'Entendi';
@@ -1414,4 +1414,76 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
 
   @override
   String get exception => 'Exceção';
+
+  @override
+  String get settingsLogging => 'Registro de logs';
+
+  @override
+  String get panelButtons => 'Botões do painel';
+
+  @override
+  String get importLogs => 'Importar logs';
+
+  @override
+  String get importLogsDesc =>
+      'Abrir no visualizador um arquivo de logs salvo ou logs colados';
+
+  @override
+  String get recordedLogTypes => 'Tipos de registro gravados';
+
+  @override
+  String get recordedLogTypesDesc => 'Tipos desativados não são gravados';
+
+  @override
+  String get clearHistoryConfirmTitle => 'Limpar o histórico de logs?';
+
+  @override
+  String get clearHistoryConfirmMessage =>
+      'Todos os logs serão removidos. Compartilhe-os antes se ainda precisar deles.';
+
+  @override
+  String get export => 'Exportar';
+
+  @override
+  String get exportFormatJsonHint => 'Pode ser reaberto em “Importar logs”';
+
+  @override
+  String get exportFormatTextHint => 'Texto simples para leitura e chats';
+
+  @override
+  String get exportFormatMarkdownHint =>
+      'Formatado para issues e pull requests';
+
+  @override
+  String get exportFormatCsvHint => 'Tabela para planilhas';
+
+  @override
+  String get noLogsYet => 'Ainda não há logs';
+
+  @override
+  String get noLogsYetHint =>
+      'Os logs aparecem aqui enquanto o app está em execução';
+
+  @override
+  String get noMatchingLogs => 'Nenhum log corresponde';
+
+  @override
+  String get noSavedSessions => 'Nenhuma sessão salva';
+
+  @override
+  String get noSavedSessionsHint =>
+      'As sessões aparecem aqui quando os logs são salvos em arquivos';
+
+  @override
+  String get exportLogs => 'Exportar logs';
+
+  @override
+  String get exportLogsDesc =>
+      'Baixar os logs como arquivo ou copiar um resumo';
+
+  @override
+  String get searchModeHighlight => 'Destacar';
+
+  @override
+  String get searchModeFilter => 'Ocultar o resto';
 }

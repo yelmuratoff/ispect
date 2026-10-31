@@ -49,7 +49,14 @@ void main() {
   }
 
   Future<void> openSettings(WidgetTester tester) async {
-    await tester.tap(find.byIcon(Icons.settings_outlined).first);
+    await tester.tap(find.byIcon(Icons.more_horiz_rounded).first);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Recorded log types'),
+      250,
+      scrollable: find.byType(Scrollable, skipOffstage: false).last,
+    );
+    await tester.tap(find.text('Recorded log types'));
     await tester.pumpAndSettle();
   }
 
@@ -115,5 +122,15 @@ void main() {
       scope.settings.disabledLogTypes,
       containsAll(<String>['riverpod-add', 'http-request', 'info']),
     );
+  });
+
+  testWidgets('reopening the screen keeps a type turned off in an earlier '
+      'visit without rebuilding the scope mid-build', (tester) async {
+    scope.settings = seed.copyWith(disabledLogTypes: {'riverpod-add'});
+
+    await pumpLogsScreen(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(scope.settings.disabledLogTypes, contains('riverpod-add'));
   });
 }

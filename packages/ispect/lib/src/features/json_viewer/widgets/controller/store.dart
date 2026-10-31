@@ -50,6 +50,8 @@ class JsonExplorerStore extends ChangeNotifier {
   /// Whether the tree contains at least one expandable (object/array) node.
   bool get hasExpandableNodes => _hasExpandableNodes;
 
+  bool get isFullyExpanded => _displayNodes.length == _allNodes.length;
+
   /// Whether an async search is currently in progress.
   bool get isSearching => _isSearching;
 

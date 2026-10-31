@@ -958,7 +958,7 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get tipFilter =>
-      'चिप्स या सेटिंग्स का उपयोग करके लॉग प्रकार से फ़िल्टर करें';
+      'फ़िल्टर बटन के चिप्स से लॉग प्रकार के अनुसार फ़िल्टर करें';
 
   @override
   String get tipExpand =>
@@ -970,14 +970,15 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'रूट इतिहास देखने के लिए सेटिंग्स से नेविगेशन फ्लो खोलें';
+      'रूट इतिहास देखने के लिए “और विकल्प” से नेविगेशन फ्लो खोलें';
 
   @override
   String get tipShareSession =>
       'बग रिपोर्ट के लिए लॉग फ़ाइल साझा करें - डेटा स्वतः छिपाया जाता है';
 
   @override
-  String get tipReverseLogs => 'लॉग क्रम पलटने के लिए ऐप बार में तीर दबाएँ';
+  String get tipReverseLogs =>
+      'लॉग क्रम, HTTP ग्रुपिंग और अन्य डिस्प्ले विकल्प फ़िल्टर बटन में हैं';
 
   @override
   String get gotIt => 'समझ गया';
@@ -1399,4 +1400,76 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get exception => 'अपवाद';
+
+  @override
+  String get settingsLogging => 'लॉगिंग';
+
+  @override
+  String get panelButtons => 'पैनल बटन';
+
+  @override
+  String get importLogs => 'लॉग इम्पोर्ट करें';
+
+  @override
+  String get importLogsDesc =>
+      'सहेजी गई लॉग फ़ाइल या पेस्ट किए गए लॉग व्यूअर में खोलें';
+
+  @override
+  String get recordedLogTypes => 'रिकॉर्ड किए जाने वाले लॉग प्रकार';
+
+  @override
+  String get recordedLogTypesDesc => 'बंद किए गए प्रकार रिकॉर्ड नहीं होते';
+
+  @override
+  String get clearHistoryConfirmTitle => 'लॉग इतिहास साफ करें?';
+
+  @override
+  String get clearHistoryConfirmMessage =>
+      'सभी लॉग हटा दिए जाएँगे। अगर अभी भी ज़रूरत है, तो पहले उन्हें साझा करें।';
+
+  @override
+  String get export => 'एक्सपोर्ट';
+
+  @override
+  String get exportFormatJsonHint =>
+      '“लॉग इम्पोर्ट करें” से फिर खोला जा सकता है';
+
+  @override
+  String get exportFormatTextHint => 'पढ़ने और चैट के लिए सादा टेक्स्ट';
+
+  @override
+  String get exportFormatMarkdownHint =>
+      'इश्यू और पुल रिक्वेस्ट के लिए फ़ॉर्मैट किया गया';
+
+  @override
+  String get exportFormatCsvHint => 'स्प्रेडशीट के लिए तालिका';
+
+  @override
+  String get noLogsYet => 'अभी कोई लॉग नहीं';
+
+  @override
+  String get noLogsYetHint => 'ऐप चलने के दौरान लॉग यहाँ दिखेंगे';
+
+  @override
+  String get noMatchingLogs => 'कोई मेल खाता लॉग नहीं';
+
+  @override
+  String get noSavedSessions => 'कोई सहेजा गया सेशन नहीं';
+
+  @override
+  String get noSavedSessionsHint =>
+      'लॉग फ़ाइलों में सहेजे जाने पर सेशन यहाँ दिखेंगे';
+
+  @override
+  String get exportLogs => 'लॉग एक्सपोर्ट करें';
+
+  @override
+  String get exportLogsDesc =>
+      'लॉग फ़ाइल के रूप में डाउनलोड करें या सारांश कॉपी करें';
+
+  @override
+  String get searchModeHighlight => 'हाइलाइट';
+
+  @override
+  String get searchModeFilter => 'बाकी छिपाएँ';
 }

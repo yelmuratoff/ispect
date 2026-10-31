@@ -966,7 +966,8 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
       'Mantén presionada una tarjeta de log para acciones rápidas';
 
   @override
-  String get tipFilter => 'Filtra por tipo de log usando chips o ajustes';
+  String get tipFilter =>
+      'Filtra por tipo de log con los chips del botón de filtros';
 
   @override
   String get tipExpand => 'Toca expandir para ver JSON completo con búsqueda';
@@ -977,7 +978,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'Abre Flujo de navegación en ajustes para ver el historial de rutas';
+      'Abre Flujo de navegación en «Más opciones» para ver el historial de rutas';
 
   @override
   String get tipShareSession =>
@@ -985,7 +986,7 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get tipReverseLogs =>
-      'Pulsa las flechas en la barra para invertir el orden de los logs';
+      'El orden de los logs, la agrupación HTTP y otras opciones de visualización están en el botón de filtros';
 
   @override
   String get gotIt => 'Entendido';
@@ -1412,4 +1413,77 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get exception => 'Excepción';
+
+  @override
+  String get settingsLogging => 'Registro';
+
+  @override
+  String get panelButtons => 'Botones del panel';
+
+  @override
+  String get importLogs => 'Importar registros';
+
+  @override
+  String get importLogsDesc =>
+      'Abrir en el visor un archivo de registros guardado o registros pegados';
+
+  @override
+  String get recordedLogTypes => 'Tipos de registro guardados';
+
+  @override
+  String get recordedLogTypesDesc => 'Los tipos desactivados no se guardan';
+
+  @override
+  String get clearHistoryConfirmTitle => '¿Borrar el historial de registros?';
+
+  @override
+  String get clearHistoryConfirmMessage =>
+      'Se eliminarán todos los registros. Compártelos antes si aún los necesitas.';
+
+  @override
+  String get export => 'Exportar';
+
+  @override
+  String get exportFormatJsonHint =>
+      'Se puede volver a abrir con «Importar registros»';
+
+  @override
+  String get exportFormatTextHint => 'Texto plano para leer y para chats';
+
+  @override
+  String get exportFormatMarkdownHint =>
+      'Con formato para issues y pull requests';
+
+  @override
+  String get exportFormatCsvHint => 'Tabla para hojas de cálculo';
+
+  @override
+  String get noLogsYet => 'Aún no hay registros';
+
+  @override
+  String get noLogsYetHint =>
+      'Los registros aparecen aquí mientras la app se ejecuta';
+
+  @override
+  String get noMatchingLogs => 'No hay registros que coincidan';
+
+  @override
+  String get noSavedSessions => 'No hay sesiones guardadas';
+
+  @override
+  String get noSavedSessionsHint =>
+      'Las sesiones aparecen aquí cuando los registros se guardan en archivos';
+
+  @override
+  String get exportLogs => 'Exportar registros';
+
+  @override
+  String get exportLogsDesc =>
+      'Descargar los registros como archivo o copiar un resumen';
+
+  @override
+  String get searchModeHighlight => 'Resaltar';
+
+  @override
+  String get searchModeFilter => 'Ocultar resto';
 }

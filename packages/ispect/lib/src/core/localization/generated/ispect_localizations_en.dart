@@ -953,7 +953,8 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String get tipLongPress => 'Long press a log card for quick actions';
 
   @override
-  String get tipFilter => 'Filter by log type using chips or settings';
+  String get tipFilter =>
+      'Filter by log type with the chips under the filter button';
 
   @override
   String get tipExpand => 'Tap expand to view full JSON with search';
@@ -964,7 +965,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'Open Navigation Flow from settings to see route history visually';
+      'Open Navigation Flow from More options to see route history visually';
 
   @override
   String get tipShareSession =>
@@ -972,7 +973,7 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get tipReverseLogs =>
-      'Tap the reverse arrows in the app bar to flip log order';
+      'Log order, HTTP grouping and other display options are under the filter button';
 
   @override
   String get gotIt => 'Got it';
@@ -1394,4 +1395,74 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get exception => 'Exception';
+
+  @override
+  String get settingsLogging => 'Logging';
+
+  @override
+  String get panelButtons => 'Panel buttons';
+
+  @override
+  String get importLogs => 'Import logs';
+
+  @override
+  String get importLogsDesc =>
+      'Open a saved log file or pasted logs in the viewer';
+
+  @override
+  String get recordedLogTypes => 'Recorded log types';
+
+  @override
+  String get recordedLogTypesDesc => 'Turned-off types are not recorded';
+
+  @override
+  String get clearHistoryConfirmTitle => 'Clear log history?';
+
+  @override
+  String get clearHistoryConfirmMessage =>
+      'All logs will be removed. Share them first if you still need them.';
+
+  @override
+  String get export => 'Export';
+
+  @override
+  String get exportFormatJsonHint => 'Opens again in Import logs';
+
+  @override
+  String get exportFormatTextHint => 'Plain text for reading and chats';
+
+  @override
+  String get exportFormatMarkdownHint =>
+      'Formatted for issues and pull requests';
+
+  @override
+  String get exportFormatCsvHint => 'A table for spreadsheets';
+
+  @override
+  String get noLogsYet => 'No logs yet';
+
+  @override
+  String get noLogsYetHint => 'Logs appear here while the app runs';
+
+  @override
+  String get noMatchingLogs => 'No matching logs';
+
+  @override
+  String get noSavedSessions => 'No saved sessions';
+
+  @override
+  String get noSavedSessionsHint =>
+      'Sessions appear here once logs are saved to files';
+
+  @override
+  String get exportLogs => 'Export logs';
+
+  @override
+  String get exportLogsDesc => 'Download the logs as a file or copy a summary';
+
+  @override
+  String get searchModeHighlight => 'Highlight';
+
+  @override
+  String get searchModeFilter => 'Hide others';
 }

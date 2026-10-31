@@ -956,7 +956,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get tipFilter =>
-      'Чиптер немесе параметрлер арқылы лог түрі бойынша сүзу';
+      'Лог түрі бойынша сүзу - сүзгі түймесіндегі чиптер арқылы';
 
   @override
   String get tipExpand => 'Іздеумен толық JSON көру үшін кеңейтуді басыңыз';
@@ -967,7 +967,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'Маршруттар тарихын көру үшін баптаулардан Навигация ағынын ашыңыз';
+      'Маршруттар тарихын көру үшін «Қосымша» мәзірінен Навигация ағынын ашыңыз';
 
   @override
   String get tipShareSession =>
@@ -975,7 +975,7 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get tipReverseLogs =>
-      'Логтар ретін аудару үшін тақырыптағы көрсеткілерді басыңыз';
+      'Логтар реті, HTTP топтау және басқа көрсету баптаулары сүзгі түймесінде';
 
   @override
   String get gotIt => 'Түсінікті';
@@ -1400,4 +1400,78 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get exception => 'Ерекшелік';
+
+  @override
+  String get settingsLogging => 'Логтау';
+
+  @override
+  String get panelButtons => 'Панель түймелері';
+
+  @override
+  String get importLogs => 'Логтарды импорттау';
+
+  @override
+  String get importLogsDesc =>
+      'Сақталған лог файлын немесе қойылған мәтінді көрушіде ашу';
+
+  @override
+  String get recordedLogTypes => 'Жазылатын лог түрлері';
+
+  @override
+  String get recordedLogTypesDesc => 'Өшірілген түрлер жазылмайды';
+
+  @override
+  String get clearHistoryConfirmTitle => 'Лог тарихын тазарту керек пе?';
+
+  @override
+  String get clearHistoryConfirmMessage =>
+      'Барлық логтар жойылады. Әлі қажет болса, алдымен оларды бөлісіңіз.';
+
+  @override
+  String get export => 'Экспорттау';
+
+  @override
+  String get exportFormatJsonHint =>
+      '«Логтарды импорттау» арқылы қайта ашылады';
+
+  @override
+  String get exportFormatTextHint =>
+      'Оқуға және чаттарға арналған қарапайым мәтін';
+
+  @override
+  String get exportFormatMarkdownHint =>
+      'Тапсырмалар мен pull request үшін пішімделген';
+
+  @override
+  String get exportFormatCsvHint => 'Кестелік редакторларға арналған кесте';
+
+  @override
+  String get noLogsYet => 'Әзірге логтар жоқ';
+
+  @override
+  String get noLogsYetHint =>
+      'Қолданба жұмыс істегенде логтар осында пайда болады';
+
+  @override
+  String get noMatchingLogs => 'Сәйкес логтар жоқ';
+
+  @override
+  String get noSavedSessions => 'Сақталған сессиялар жоқ';
+
+  @override
+  String get noSavedSessionsHint =>
+      'Логтар файлдарға сақталғанда сессиялар осында пайда болады';
+
+  @override
+  String get exportLogs => 'Логтарды экспорттау';
+
+  @override
+  String get exportLogsDesc =>
+      'Логтарды файл ретінде жүктеу немесе қысқашасын көшіру';
+
+  @override
+  String get searchModeHighlight => 'Белгілеу';
+
+  @override
+  String get searchModeFilter => 'Басқасын жасыру';
 }

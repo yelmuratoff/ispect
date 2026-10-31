@@ -12,7 +12,6 @@ import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controlle
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_button.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_sheet.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/search_bar.dart';
-import 'package:ispect/src/features/log_viewer/presentation/widgets/onboarding_dialog.dart';
 
 class ISpectAppBar extends StatefulWidget {
   const ISpectAppBar({
@@ -22,7 +21,9 @@ class ISpectAppBar extends StatefulWidget {
     required this.uniqTitles,
     required this.onToggleTitle,
     required this.focusNode,
-    this.onSettingsTap,
+    this.onShareTap,
+    this.shareTooltip,
+    this.onMoreTap,
     this.backgroundColor,
     this.totalCount,
     this.errorCount,
@@ -38,7 +39,11 @@ class ISpectAppBar extends StatefulWidget {
   final Map<String, int> counts;
   final List<String?> uniqTitles;
 
-  final VoidCallback? onSettingsTap;
+  final VoidCallback? onShareTap;
+
+  final String? shareTooltip;
+
+  final VoidCallback? onMoreTap;
 
   final FocusNode focusNode;
 
@@ -131,24 +136,17 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
             context.ispectThemeBackground ??
             context.appTheme.scaffoldBackgroundColor,
         actions: [
-          ISpectAppBarIconButton(
-            icon: Icons.import_export_rounded,
-            tooltip: context.ispectL10n.reverseLogs,
-            onPressed: widget.controller.toggleLogOrder,
-            color: !widget.controller.isLogOrderReversed
-                ? context.ispectPrimaryColor
-                : null,
-          ),
-          ISpectAppBarIconButton(
-            icon: Icons.tips_and_updates_outlined,
-            tooltip: context.ispectL10n.tips,
-            onPressed: () => ISpectOnboardingDialog.show(context),
-          ),
-          if (widget.onSettingsTap != null)
+          if (widget.onShareTap != null)
             ISpectAppBarIconButton(
-              icon: Icons.settings_outlined,
-              tooltip: context.ispectL10n.settings,
-              onPressed: widget.onSettingsTap,
+              icon: Icons.share_rounded,
+              tooltip: widget.shareTooltip ?? context.ispectL10n.shareLogsFile,
+              onPressed: widget.onShareTap,
+            ),
+          if (widget.onMoreTap != null)
+            ISpectAppBarIconButton(
+              icon: Icons.more_horiz_rounded,
+              tooltip: context.ispectL10n.moreOptions,
+              onPressed: widget.onMoreTap,
             ),
           const Gap(6),
         ],
@@ -229,7 +227,7 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
         uniqTitles: widget.uniqTitles,
         onToggleTitle: widget.onToggleTitle,
         scrollController: scrollController,
-        onClearAllFilters: widget.controller.clearAllFilters,
+        onClearAllFilters: widget.controller.clearSearchAndFilters,
       ),
     );
   }

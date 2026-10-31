@@ -41,6 +41,8 @@ void main() {
     );
     await tester.tap(find.text('Open settings'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Advanced'));
+    await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
       find.text('Resource profile'),

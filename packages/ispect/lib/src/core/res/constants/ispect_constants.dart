@@ -34,6 +34,8 @@ final class ISpectConstants {
   static const double standardHorizontalPadding = 12;
   static const double standardVerticalPadding = 8;
   static const double standardGap = 6;
+  static const double settingsTileMinWidth = 240;
+  static const double settingsDialogMaxWidth = 720;
 
   // ===== Animation & Limits =====
 

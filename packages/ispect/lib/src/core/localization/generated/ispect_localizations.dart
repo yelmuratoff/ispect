@@ -1862,7 +1862,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @tipFilter.
   ///
   /// In en, this message translates to:
-  /// **'Filter by log type using chips or settings'**
+  /// **'Filter by log type with the chips under the filter button'**
   String get tipFilter;
 
   /// No description provided for @tipExpand.
@@ -1880,7 +1880,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @tipNavigationFlow.
   ///
   /// In en, this message translates to:
-  /// **'Open Navigation Flow from settings to see route history visually'**
+  /// **'Open Navigation Flow from More options to see route history visually'**
   String get tipNavigationFlow;
 
   /// No description provided for @tipShareSession.
@@ -1892,7 +1892,7 @@ abstract class ISpectGeneratedLocalization {
   /// No description provided for @tipReverseLogs.
   ///
   /// In en, this message translates to:
-  /// **'Tap the reverse arrows in the app bar to flip log order'**
+  /// **'Log order, HTTP grouping and other display options are under the filter button'**
   String get tipReverseLogs;
 
   /// No description provided for @gotIt.
@@ -2614,6 +2614,138 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Exception'**
   String get exception;
+
+  /// No description provided for @settingsLogging.
+  ///
+  /// In en, this message translates to:
+  /// **'Logging'**
+  String get settingsLogging;
+
+  /// No description provided for @panelButtons.
+  ///
+  /// In en, this message translates to:
+  /// **'Panel buttons'**
+  String get panelButtons;
+
+  /// No description provided for @importLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Import logs'**
+  String get importLogs;
+
+  /// No description provided for @importLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a saved log file or pasted logs in the viewer'**
+  String get importLogsDesc;
+
+  /// No description provided for @recordedLogTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded log types'**
+  String get recordedLogTypes;
+
+  /// No description provided for @recordedLogTypesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Turned-off types are not recorded'**
+  String get recordedLogTypesDesc;
+
+  /// No description provided for @clearHistoryConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear log history?'**
+  String get clearHistoryConfirmTitle;
+
+  /// No description provided for @clearHistoryConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All logs will be removed. Share them first if you still need them.'**
+  String get clearHistoryConfirmMessage;
+
+  /// No description provided for @export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get export;
+
+  /// No description provided for @exportFormatJsonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens again in Import logs'**
+  String get exportFormatJsonHint;
+
+  /// No description provided for @exportFormatTextHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain text for reading and chats'**
+  String get exportFormatTextHint;
+
+  /// No description provided for @exportFormatMarkdownHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Formatted for issues and pull requests'**
+  String get exportFormatMarkdownHint;
+
+  /// No description provided for @exportFormatCsvHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A table for spreadsheets'**
+  String get exportFormatCsvHint;
+
+  /// No description provided for @noLogsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No logs yet'**
+  String get noLogsYet;
+
+  /// No description provided for @noLogsYetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs appear here while the app runs'**
+  String get noLogsYetHint;
+
+  /// No description provided for @noMatchingLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching logs'**
+  String get noMatchingLogs;
+
+  /// No description provided for @noSavedSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved sessions'**
+  String get noSavedSessions;
+
+  /// No description provided for @noSavedSessionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions appear here once logs are saved to files'**
+  String get noSavedSessionsHint;
+
+  /// No description provided for @exportLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Export logs'**
+  String get exportLogs;
+
+  /// No description provided for @exportLogsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the logs as a file or copy a summary'**
+  String get exportLogsDesc;
+
+  /// No description provided for @searchModeHighlight.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight'**
+  String get searchModeHighlight;
+
+  /// No description provided for @searchModeFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide others'**
+  String get searchModeFilter;
 }
 
 class _ISpectGeneratedLocalizationDelegate

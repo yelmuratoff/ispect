@@ -71,5 +71,43 @@ void main() {
       expect(isChipToggled(tester, 'error'), isTrue);
       expect(isChipToggled(tester, 'info'), isFalse);
     });
+
+    testWidgets('a chip shows the log type title, not its raw key', (
+      tester,
+    ) async {
+      await tester.pumpWidget(sheet(const ['http-request']));
+      await tester.pumpAndSettle();
+
+      final chip = find.byKey(const ValueKey('log-type-chip-http-request'));
+      expect(
+        find.descendant(
+          of: chip,
+          matching: find.textContaining('HTTP Request'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: chip,
+          matching: find.textContaining('http-request'),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('the search mode names what happens to the list', (
+      tester,
+    ) async {
+      await tester.pumpWidget(sheet(const ['info']));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Highlight'), findsOneWidget);
+      expect(find.text('Hide others'), findsOneWidget);
+
+      await tester.tap(find.text('Hide others'));
+      await tester.pumpAndSettle();
+
+      expect(controller.searchMode, SearchMode.filter);
+    });
   });
 }

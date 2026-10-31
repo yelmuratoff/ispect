@@ -934,7 +934,7 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get tipLongPress => '长按日志卡片可快速操作';
 
   @override
-  String get tipFilter => '使用标签或设置按日志类型筛选';
+  String get tipFilter => '通过筛选按钮中的标签按日志类型筛选';
 
   @override
   String get tipExpand => '点击展开查看完整JSON并搜索';
@@ -943,13 +943,13 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String get tipKeyboard => '方向键导航，回车打开，/ 搜索';
 
   @override
-  String get tipNavigationFlow => '在设置中打开导航流，可视化查看路由历史';
+  String get tipNavigationFlow => '在“更多选项”中打开导航流程，可视化查看路由历史';
 
   @override
   String get tipShareSession => '分享日志文件用于错误报告 - 数据会自动脱敏';
 
   @override
-  String get tipReverseLogs => '点击顶栏的箭头反转日志顺序';
+  String get tipReverseLogs => '日志顺序、HTTP 分组等显示选项位于筛选按钮中';
 
   @override
   String get gotIt => '知道了';
@@ -1356,4 +1356,70 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get exception => '异常';
+
+  @override
+  String get settingsLogging => '日志记录';
+
+  @override
+  String get panelButtons => '面板按钮';
+
+  @override
+  String get importLogs => '导入日志';
+
+  @override
+  String get importLogsDesc => '在查看器中打开已保存的日志文件或粘贴的日志';
+
+  @override
+  String get recordedLogTypes => '记录的日志类型';
+
+  @override
+  String get recordedLogTypesDesc => '已关闭的类型不会被记录';
+
+  @override
+  String get clearHistoryConfirmTitle => '清除日志历史记录？';
+
+  @override
+  String get clearHistoryConfirmMessage => '所有日志都将被移除。如仍需要，请先分享。';
+
+  @override
+  String get export => '导出';
+
+  @override
+  String get exportFormatJsonHint => '可通过“导入日志”再次打开';
+
+  @override
+  String get exportFormatTextHint => '纯文本，便于阅读和聊天';
+
+  @override
+  String get exportFormatMarkdownHint => '带格式，适合 Issue 和 Pull Request';
+
+  @override
+  String get exportFormatCsvHint => '适用于电子表格的表格';
+
+  @override
+  String get noLogsYet => '暂无日志';
+
+  @override
+  String get noLogsYetHint => '应用运行时日志会显示在这里';
+
+  @override
+  String get noMatchingLogs => '没有匹配的日志';
+
+  @override
+  String get noSavedSessions => '没有已保存的会话';
+
+  @override
+  String get noSavedSessionsHint => '日志保存到文件后，会话会显示在这里';
+
+  @override
+  String get exportLogs => '导出日志';
+
+  @override
+  String get exportLogsDesc => '将日志下载为文件或复制摘要';
+
+  @override
+  String get searchModeHighlight => '高亮';
+
+  @override
+  String get searchModeFilter => '隐藏其他';
 }

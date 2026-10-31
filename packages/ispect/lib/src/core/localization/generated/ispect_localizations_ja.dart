@@ -934,7 +934,7 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get tipLongPress => 'ログカードを長押しでクイックアクション';
 
   @override
-  String get tipFilter => 'チップや設定でログタイプ別にフィルタリング';
+  String get tipFilter => 'フィルターボタンのチップでログタイプ別にフィルタリング';
 
   @override
   String get tipExpand => '展開をタップして検索付きの完全なJSONを表示';
@@ -943,13 +943,13 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String get tipKeyboard => '矢印キーで移動、Enterで開く、/で検索';
 
   @override
-  String get tipNavigationFlow => '設定からナビゲーションフローを開いてルート履歴を可視化';
+  String get tipNavigationFlow => '「その他」からナビゲーションフローを開いてルート履歴を可視化';
 
   @override
   String get tipShareSession => 'バグ報告用にログファイルを共有 - データは自動的にマスクされます';
 
   @override
-  String get tipReverseLogs => 'アプリバーの矢印をタップしてログの順序を反転';
+  String get tipReverseLogs => 'ログの順序、HTTPのグループ化などの表示オプションはフィルターボタンにあります';
 
   @override
   String get gotIt => '了解';
@@ -1356,4 +1356,70 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get exception => '例外';
+
+  @override
+  String get settingsLogging => 'ロギング';
+
+  @override
+  String get panelButtons => 'パネルのボタン';
+
+  @override
+  String get importLogs => 'ログをインポート';
+
+  @override
+  String get importLogsDesc => '保存したログファイルや貼り付けたログをビューアで開く';
+
+  @override
+  String get recordedLogTypes => '記録するログタイプ';
+
+  @override
+  String get recordedLogTypesDesc => 'オフにしたタイプは記録されません';
+
+  @override
+  String get clearHistoryConfirmTitle => 'ログ履歴をクリアしますか？';
+
+  @override
+  String get clearHistoryConfirmMessage => 'すべてのログが削除されます。まだ必要な場合は、先に共有してください。';
+
+  @override
+  String get export => 'エクスポート';
+
+  @override
+  String get exportFormatJsonHint => '「ログをインポート」で再度開けます';
+
+  @override
+  String get exportFormatTextHint => '読みやすいプレーンテキスト（チャット向け）';
+
+  @override
+  String get exportFormatMarkdownHint => 'Issue やプルリクエスト向けの書式付き';
+
+  @override
+  String get exportFormatCsvHint => '表計算ソフト向けの表';
+
+  @override
+  String get noLogsYet => 'まだログがありません';
+
+  @override
+  String get noLogsYetHint => 'アプリの実行中にここにログが表示されます';
+
+  @override
+  String get noMatchingLogs => '一致するログがありません';
+
+  @override
+  String get noSavedSessions => '保存されたセッションはありません';
+
+  @override
+  String get noSavedSessionsHint => 'ログがファイルに保存されると、ここにセッションが表示されます';
+
+  @override
+  String get exportLogs => 'ログをエクスポート';
+
+  @override
+  String get exportLogsDesc => 'ログをファイルでダウンロード、または要約をコピー';
+
+  @override
+  String get searchModeHighlight => 'ハイライト';
+
+  @override
+  String get searchModeFilter => '他を隠す';
 }

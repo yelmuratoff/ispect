@@ -942,7 +942,7 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String get tipLongPress => 'اضغط مطولاً على بطاقة السجل للإجراءات السريعة';
 
   @override
-  String get tipFilter => 'تصفية حسب نوع السجل باستخدام الشرائح أو الإعدادات';
+  String get tipFilter => 'صفِّ حسب نوع السجل باستخدام الشرائح في زر التصفية';
 
   @override
   String get tipExpand => 'انقر على توسيع لعرض JSON الكامل مع البحث';
@@ -952,14 +952,15 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'افتح تدفق التنقل من الإعدادات لرؤية سجل المسارات بصريًا';
+      'افتح تدفق التنقل من «المزيد» لرؤية سجل المسارات بصريًا';
 
   @override
   String get tipShareSession =>
       'شارك ملف السجلات لتقارير الأخطاء - يتم إخفاء البيانات تلقائيًا';
 
   @override
-  String get tipReverseLogs => 'اضغط على الأسهم في الشريط لعكس ترتيب السجلات';
+  String get tipReverseLogs =>
+      'ترتيب السجلات وتجميع HTTP وخيارات العرض الأخرى موجودة في زر التصفية';
 
   @override
   String get gotIt => 'فهمت';
@@ -1393,4 +1394,71 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get exception => 'استثناء';
+
+  @override
+  String get settingsLogging => 'التسجيل';
+
+  @override
+  String get panelButtons => 'أزرار اللوحة';
+
+  @override
+  String get importLogs => 'استيراد السجلات';
+
+  @override
+  String get importLogsDesc => 'فتح ملف سجلات محفوظ أو سجلات ملصقة في العارض';
+
+  @override
+  String get recordedLogTypes => 'أنواع السجلات المسجّلة';
+
+  @override
+  String get recordedLogTypesDesc => 'لا تُسجَّل الأنواع المعطّلة';
+
+  @override
+  String get clearHistoryConfirmTitle => 'مسح جميع السجلات؟';
+
+  @override
+  String get clearHistoryConfirmMessage =>
+      'ستتم إزالة جميع السجلات. شاركها أولًا إذا كنت لا تزال بحاجة إليها.';
+
+  @override
+  String get export => 'تصدير';
+
+  @override
+  String get exportFormatJsonHint => 'يمكن فتحه مجددًا عبر «استيراد السجلات»';
+
+  @override
+  String get exportFormatTextHint => 'نص عادي للقراءة والمحادثات';
+
+  @override
+  String get exportFormatMarkdownHint => 'منسّق للبلاغات وطلبات الدمج';
+
+  @override
+  String get exportFormatCsvHint => 'جدول لبرامج جداول البيانات';
+
+  @override
+  String get noLogsYet => 'لا توجد سجلات بعد';
+
+  @override
+  String get noLogsYetHint => 'تظهر السجلات هنا أثناء تشغيل التطبيق';
+
+  @override
+  String get noMatchingLogs => 'لا توجد سجلات مطابقة';
+
+  @override
+  String get noSavedSessions => 'لا توجد جلسات محفوظة';
+
+  @override
+  String get noSavedSessionsHint => 'تظهر الجلسات هنا بعد حفظ السجلات في ملفات';
+
+  @override
+  String get exportLogs => 'تصدير السجلات';
+
+  @override
+  String get exportLogsDesc => 'تحميل السجلات كملف أو نسخ الملخص';
+
+  @override
+  String get searchModeHighlight => 'تمييز';
+
+  @override
+  String get searchModeFilter => 'إخفاء الباقي';
 }

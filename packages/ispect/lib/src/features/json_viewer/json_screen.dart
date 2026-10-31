@@ -160,11 +160,22 @@ class _JsonScreenState extends State<JsonScreen> {
 
   Timer? _searchDebounceTimer;
 
+  String? _titleMeta;
+
+  void _toggleTreeExpansion() {
+    if (_store.isFullyExpanded) {
+      _store.collapseAll();
+    } else {
+      _store.expandAll();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _store = JsonExplorerStore(processingPolicy: widget.processingPolicy);
     _store.buildNodes(widget._dataSnapshot);
+    _titleMeta = _logTitleMeta(widget.data);
   }
 
   @override
@@ -173,7 +184,27 @@ class _JsonScreenState extends State<JsonScreen> {
 
     if (oldWidget.data['id'] != widget.data['id']) {
       _store.buildNodes(widget._dataSnapshot);
+      _titleMeta = _logTitleMeta(widget.data);
     }
+  }
+
+  static String? _logTitleMeta(Map<String, dynamic> data) {
+    final key = data['key']?.toString();
+    if (key == null) return null;
+    final time = DateTime.tryParse(data['time']?.toString() ?? '');
+    final levelIndex = int.tryParse(data['log-level']?.toString() ?? '');
+    final level =
+        levelIndex != null &&
+            levelIndex >= 0 &&
+            levelIndex < LogLevel.values.length
+        ? LogLevel.values[levelIndex].name
+        : null;
+    final parts = [
+      if (time != null) ISpectDateTimeFormatter(time).timeAndSeconds,
+      if (level != null && level.toLowerCase() != key.toLowerCase())
+        level.toUpperCase(),
+    ];
+    return parts.isEmpty ? null : parts.join(' · ');
   }
 
   @override
@@ -221,67 +252,92 @@ class _JsonScreenState extends State<JsonScreen> {
         backgroundColor: bgColor,
         leading: ISpectAppBarBackButton(onPressed: widget.onClose),
         title: ISpectAppBarTitle(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (logColor != null)
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: ISpectSquircle.decoration(
-                    color: logColor.withValues(alpha: 0.12),
-                    radius: ISpectConstants.standardBorderRadius,
-                  ),
-                  child: Icon(logIcon, size: 16, color: logColor),
+          child: logKey == null
+              ? Text(context.ispectL10n.jsonViewer)
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (logColor != null)
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: ISpectSquircle.decoration(
+                          color: logColor.withValues(alpha: 0.12),
+                          radius: ISpectConstants.standardBorderRadius,
+                        ),
+                        child: Icon(logIcon, size: 16, color: logColor),
+                      ),
+                    const Gap(10),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            logTitle ?? context.ispectL10n.jsonViewer,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: logColor,
+                            ),
+                          ),
+                          if (_titleMeta case final meta?)
+                            Text(
+                              meta,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                height: 1.2,
+                                color: context.appTheme.textColor.withValues(
+                                  alpha: 0.55,
+                                ),
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              const Gap(10),
-              Flexible(
-                child: Text(
-                  logTitle ?? context.ispectL10n.jsonViewer,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: logColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
         actions: [
-          JsonStoreSelector<bool>(
+          JsonStoreSelector<({bool hasExpandable, bool isFullyExpanded})>(
             store: _store,
-            selector: (s) => s.hasExpandableNodes,
-            builder: (context, hasExpandable) {
-              if (!hasExpandable) return const SizedBox.shrink();
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ISpectAppBarIconButton(
-                    icon: Icons.unfold_more_rounded,
-                    tooltip: context.ispectL10n.expandLogs,
-                    onPressed: _store.expandAll,
-                  ),
-                  ISpectAppBarIconButton(
-                    icon: Icons.unfold_less_rounded,
-                    tooltip: context.ispectL10n.collapseLogs,
-                    onPressed: _store.collapseAll,
-                  ),
-                ],
+            selector: (s) => (
+              hasExpandable: s.hasExpandableNodes,
+              isFullyExpanded: s.isFullyExpanded,
+            ),
+            builder: (context, tree) {
+              if (!tree.hasExpandable) return const SizedBox.shrink();
+              return ISpectAppBarIconButton(
+                icon: tree.isFullyExpanded
+                    ? Icons.unfold_less_rounded
+                    : Icons.unfold_more_rounded,
+                tooltip: tree.isFullyExpanded
+                    ? context.ispectL10n.collapseLogs
+                    : context.ispectL10n.expandLogs,
+                onPressed: _toggleTreeExpansion,
               );
             },
           ),
-          if (context.iSpect.options.onShare != null)
-            ISpectAppBarIconButton(
-              icon: Icons.share_rounded,
-              tooltip: context.ispectL10n.shareLogsFile,
-              onPressed: () async {
-                await ISpectShareLogBottomSheet(
-                  data: widget.data,
-                  truncatedData: widget.truncatedData ?? widget.data,
-                ).show(context);
-              },
-            ),
+          ISpectAppBarIconButton(
+            icon: Icons.share_rounded,
+            tooltip: context.iSpect.options.onShare != null
+                ? context.ispectL10n.shareLogsFile
+                : context.ispectL10n.exportLogs,
+            onPressed: () async {
+              await ISpectShareLogBottomSheet(
+                data: widget.data,
+                truncatedData: widget.truncatedData ?? widget.data,
+              ).show(context);
+            },
+          ),
           const Gap(4),
         ],
       ),

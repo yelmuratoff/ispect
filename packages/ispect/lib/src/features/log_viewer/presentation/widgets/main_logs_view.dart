@@ -27,7 +27,9 @@ class MainLogsView extends StatefulWidget {
     required this.logsScrollController,
     required this.logsViewController,
     super.key,
-    this.onSettingsTap,
+    this.onShareTap,
+    this.shareTooltip,
+    this.onMoreTap,
     this.appBarTitle,
   });
 
@@ -36,7 +38,9 @@ class MainLogsView extends StatefulWidget {
   final FocusNode searchFocusNode;
   final ScrollController logsScrollController;
   final ISpectViewController logsViewController;
-  final VoidCallback? onSettingsTap;
+  final VoidCallback? onShareTap;
+  final String? shareTooltip;
+  final VoidCallback? onMoreTap;
   final String? appBarTitle;
 
   @override
@@ -166,7 +170,9 @@ class _MainLogsViewState extends State<MainLogsView> {
                 counts: state.logTypeKeys.counts,
                 uniqTitles: state.logTypeKeys.unique,
                 controller: viewController,
-                onSettingsTap: widget.onSettingsTap,
+                onShareTap: widget.onShareTap,
+                shareTooltip: widget.shareTooltip,
+                onMoreTap: widget.onMoreTap,
                 onToggleTitle: (key, selected) => viewController
                     .handleLogTypeKeyFilterToggle(key, isSelected: selected),
                 backgroundColor: widget.iSpectTheme.theme.background?.resolve(
@@ -208,7 +214,14 @@ class _MainLogsViewState extends State<MainLogsView> {
                 ),
               if (!isDesktop) const SliverGap(4),
               if (state.sorted.isEmpty)
-                const SliverToBoxAdapter(child: EmptyLogsWidget()),
+                SliverToBoxAdapter(
+                  child: state.isFiltered && viewController.hasClearableFilters
+                      ? EmptyLogsWidget(
+                          reason: EmptyLogsReason.noMatches,
+                          onClearFilters: viewController.clearSearchAndFilters,
+                        )
+                      : const EmptyLogsWidget(reason: EmptyLogsReason.noLogs),
+                ),
               if (state.grouped case final grouped?)
                 _buildGroupedList(grouped, state.isReversed, isDesktop, options)
               else

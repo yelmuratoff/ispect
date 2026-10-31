@@ -5,40 +5,57 @@ import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/toggle_spec.dart';
 
-class CompactToggleGrid extends StatelessWidget {
-  const CompactToggleGrid({required this.tiles, super.key});
+class SettingsTileGrid extends StatelessWidget {
+  const SettingsTileGrid({
+    required this.children,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16),
+    super.key,
+  });
 
-  final List<ToggleSpec> tiles;
+  static const double _gap = ISpectConstants.standardGap;
+
+  final List<Widget> children;
+  final EdgeInsetsGeometry padding;
 
   @override
-  Widget build(BuildContext context) {
-    final rows = <List<ToggleSpec>>[];
-    for (var i = 0; i < tiles.length; i += 2) {
-      rows.add(tiles.sublist(i, (i + 2).clamp(0, tiles.length)));
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          for (final (i, row) in rows.indexed) ...[
-            if (i > 0) const Gap(6),
-            Row(
-              children: [
-                Expanded(child: CompactToggleRow(spec: row[0])),
-                const Gap(6),
-                Expanded(
-                  child: row.length > 1
-                      ? CompactToggleRow(spec: row[1])
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ),
+  Widget build(BuildContext context) => Padding(
+    padding: padding,
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final fitsTwo =
+            constraints.maxWidth >=
+            ISpectConstants.settingsTileMinWidth * 2 + _gap;
+        final tileWidth = fitsTwo
+            ? (constraints.maxWidth - _gap) / 2
+            : constraints.maxWidth;
+        return Wrap(
+          spacing: _gap,
+          runSpacing: _gap,
+          children: [
+            for (final child in children)
+              SizedBox(width: tileWidth, child: child),
           ],
-        ],
-      ),
-    );
-  }
+        );
+      },
+    ),
+  );
+}
+
+class CompactToggleGrid extends StatelessWidget {
+  const CompactToggleGrid({
+    required this.tiles,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16),
+    super.key,
+  });
+
+  final List<ToggleSpec> tiles;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) => SettingsTileGrid(
+    padding: padding,
+    children: [for (final spec in tiles) CompactToggleRow(spec: spec)],
+  );
 }
 
 class CompactToggleRow extends StatelessWidget {
@@ -62,44 +79,50 @@ class CompactToggleRow extends StatelessWidget {
         toggled: enabled,
         label: spec.title,
         onTap: onTap,
-        child: ISpectBorderedSurface(
-          onTap: onTap,
-          backgroundColor: enabled
-              ? primaryColor.withValues(alpha: 0.1)
-              : cardColor,
-          borderColor: enabled ? primaryColor.withValues(alpha: 0.45) : null,
-          borderWidth: enabled ? 1.2 : 1,
-          borderRadius: const BorderRadius.all(
-            Radius.circular(ISpectConstants.largeBorderRadius),
+        excludeSemantics: true,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: kMinInteractiveDimension,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          child: Row(
-            children: [
-              Icon(
-                spec.icon,
-                size: 16,
-                color: enabled
-                    ? primaryColor
-                    : textColor.withValues(alpha: 0.55),
-              ),
-              const Gap(8),
-              Expanded(
-                child: Text(
-                  spec.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.appTheme.textTheme.labelMedium?.copyWith(
-                    color: enabled
-                        ? primaryColor
-                        : textColor.withValues(alpha: 0.7),
-                    fontWeight: enabled ? FontWeight.w600 : FontWeight.w500,
-                    fontSize: 12.5,
+          child: ISpectBorderedSurface(
+            onTap: onTap,
+            backgroundColor: enabled
+                ? primaryColor.withValues(alpha: 0.1)
+                : cardColor,
+            borderColor: enabled ? primaryColor.withValues(alpha: 0.45) : null,
+            borderWidth: enabled ? 1.2 : 1,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(ISpectConstants.largeBorderRadius),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Icon(
+                  spec.icon,
+                  size: 16,
+                  color: enabled
+                      ? primaryColor
+                      : textColor.withValues(alpha: 0.55),
+                ),
+                const Gap(10),
+                Expanded(
+                  child: Text(
+                    spec.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.appTheme.textTheme.labelMedium?.copyWith(
+                      color: enabled
+                          ? primaryColor
+                          : textColor.withValues(alpha: 0.7),
+                      fontWeight: enabled ? FontWeight.w600 : FontWeight.w500,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
-              ),
-              const Gap(8),
-              _CompactSwitch(enabled: enabled, primaryColor: primaryColor),
-            ],
+                const Gap(8),
+                _CompactSwitch(enabled: enabled, primaryColor: primaryColor),
+              ],
+            ),
           ),
         ),
       ),

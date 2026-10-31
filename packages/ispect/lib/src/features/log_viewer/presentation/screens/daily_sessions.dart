@@ -8,6 +8,7 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/debug_report.dart';
+import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
@@ -138,30 +139,10 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   Widget _buildScaffold(BuildContext context) => Scaffold(
     backgroundColor: context.ispectThemeBackground,
     appBar: ISpectFlatAppBar(
-      title: ISpectAppBarTitle(
-        child: Text(
-          context.ispectL10n.sessions,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.5,
-          ),
-        ),
-      ),
+      title: ISpectAppBarTitle(child: Text(context.ispectL10n.sessions)),
       leading: const ISpectAppBarBackButton(),
       actionsPadding: const EdgeInsets.only(right: 12),
       actions: [
-        if (context.iSpect.options.onOpenFile != null)
-          ISpectAppBarIconButton(
-            icon: Icons.open_in_new_rounded,
-            tooltip: context.ispectL10n.openPath,
-            onPressed: _openPath,
-          ),
-        ISpectAppBarIconButton(
-          icon: Icons.copy_all_rounded,
-          tooltip: context.ispectL10n.copyPath,
-          onPressed: _copyPathToClipboard,
-        ),
         ISpectAppBarIconButton(
           icon: Icons.refresh_rounded,
           tooltip: context.ispectL10n.refresh,
@@ -173,6 +154,40 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
             tooltip: context.ispectL10n.clearAllSessions,
             onPressed: _showClearAllDialog,
           ),
+        if (widget.history != null)
+          PopupMenuButton<Future<void> Function()>(
+            icon: Icon(
+              Icons.more_horiz_rounded,
+              size: context.ispectAppBarIconSize,
+            ),
+            tooltip: context.ispectL10n.moreOptions,
+            onSelected: (action) => unawaited(
+              action().catchError((Object error, StackTrace stackTrace) {
+                ISpect.logger.handle(
+                  exception: error,
+                  stackTrace: stackTrace,
+                  message: 'Failed to open the sessions folder',
+                );
+              }),
+            ),
+            itemBuilder: (context) => [
+              if (context.iSpect.options.onOpenFile != null)
+                PopupMenuItem(
+                  value: _openPath,
+                  child: _MenuRow(
+                    icon: Icons.open_in_new_rounded,
+                    label: context.ispectL10n.openPath,
+                  ),
+                ),
+              PopupMenuItem(
+                value: _copyPathToClipboard,
+                child: _MenuRow(
+                  icon: Icons.copy_rounded,
+                  label: context.ispectL10n.copyPath,
+                ),
+              ),
+            ],
+          ),
       ],
     ),
     body: _isLoading
@@ -180,10 +195,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
         : _loadFailed
         ? _SessionsLoadError(onRetry: _retryLoad)
         : _dates.isEmpty
-        ? const Padding(
-            padding: EdgeInsets.only(top: 16, left: 16),
-            child: EmptyLogsWidget(),
-          )
+        ? const EmptyLogsWidget(reason: EmptyLogsReason.noSessions)
         : ListView.builder(
             itemCount: _dates.length,
             itemBuilder: (context, index) {
@@ -228,7 +240,10 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
                 await _loadSessions(isRefreshing: true);
               }
             },
-            child: Text(context.ispectL10n.ok),
+            style: TextButton.styleFrom(
+              foregroundColor: context.appTheme.colorScheme.error,
+            ),
+            child: Text(context.ispectL10n.clearAllSessions),
           ),
         ],
       ),
@@ -409,4 +424,17 @@ class _SessionListTileState extends State<_SessionListTile> {
       );
     }
   }
+}
+
+class _MenuRow extends StatelessWidget {
+  const _MenuRow({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [Icon(icon, size: 18), const Gap(12), Text(label)],
+  );
 }

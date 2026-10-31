@@ -1,5 +1,33 @@
 # Changelog
 
+## 7.3.0-dev.1
+
+### Behavioral Changes
+
+- **Logs screen app bar:** Shows Share, which opens the export sheet in one tap, and a More (`•••`) menu. The reverse-order, tips, and settings buttons are gone.
+- **Display options** (log order, HTTP grouping, expanded logs, relative time, compact URLs) moved from settings to the filter sheet.
+- **Clear history** asks for confirmation before it removes logs.
+- **Logs panel button:** The in-app menu can no longer hide the panel button that opens the log viewer. Hosts still control it with `ISpectSettingsState.isLogPageEnabled` in `ISpectOptions.initialSettings`.
+- **Export sheet:** Without a host `onShare`, the action and the sheet are called Export and lead with Download; with `onShare`, both say Share and Share leads. The sheet shows how many logs it exports and what the selected format is for.
+- **Log details** always show the Share or Export button, even when the host has no `onShare`.
+
+### Improvements
+
+- **More menu:** Actions come first with their descriptions visible. Logging and Panel buttons follow; Recorded log types (with a recorded/total counter) and Advanced start collapsed.
+- **Settings on phones:** Toggles use one column with full labels and 48 dp rows. Tablets and desktop keep two columns.
+- **Clearer names:** The "Log Viewer" action is now "Import logs", and "Info about logs" is now "Recorded log types".
+- **Log details:** The title shows the log time and level, and one button expands or collapses the whole tree.
+- **Empty states:** Separate messages for no logs yet, no matching logs (with Clear all filters), and no saved sessions.
+- **Consistent screens:** Sessions, Navigation Flow, HTTP Composer, and the JSON viewer share one title style. Sessions keeps Copy path and Open path in a More menu and names the action on its clear confirmation.
+- **Screen readers:** Settings toggles, menu actions, and collapsible sections are announced once, with their on/off or expanded state.
+- **Filter sheet:** Log type chips show type titles instead of raw keys, and the search modes are named Highlight and Hide others.
+
+### Bug Fixes
+
+- **Reopening the log viewer** after turning off a log type no longer reports a "setState() called during build" error.
+- **Clear all filters** in the filter sheet also clears the search text.
+- **Sessions folder:** A failing host `onOpenFile` is logged instead of surfacing as an uncaught error.
+
 ## 7.2.0
 
 ### Behavioral Changes

@@ -157,7 +157,7 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.clear_all_rounded));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.widgetWithText(TextButton, 'Clear all sessions'));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -189,7 +189,7 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.clear_all_rounded));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
+      await tester.tap(find.widgetWithText(TextButton, 'Clear all sessions'));
       await tester.pumpAndSettle();
 
       expect(find.text('Failed to clear sessions'), findsOneWidget);
@@ -247,6 +247,63 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Не удалось загрузить логи сессии'), findsOneWidget);
+    });
+  });
+
+  group('DailySessionsScreen more menu', () {
+    testWidgets('offers the sessions folder actions', (tester) async {
+      await tester.pumpWidget(
+        appShell(
+          DailySessionsScreen(history: _FakeFileLogHistory()),
+          options: ISpectOptions(onOpenFile: (_) async {}),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('More options'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Copy path'), findsOneWidget);
+      expect(find.text('Open path'), findsOneWidget);
+    });
+
+    testWidgets('logs a failing host folder opener instead of throwing', (
+      tester,
+    ) async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      ISpect.initialize(logger);
+      addTearDown(ISpect.dispose);
+      await tester.pumpWidget(
+        appShell(
+          DailySessionsScreen(history: _FakeFileLogHistory()),
+          options: ISpectOptions(
+            onOpenFile: (_) async => throw StateError('opener failed'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('More options'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Open path'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(
+        logger.history.map((e) => e.message),
+        contains('Failed to open the sessions folder'),
+      );
+    });
+
+    testWidgets('is hidden without a file history', (tester) async {
+      await tester.pumpWidget(
+        appShell(const DailySessionsScreen(history: null)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip('More options'), findsNothing);
     });
   });
 }
