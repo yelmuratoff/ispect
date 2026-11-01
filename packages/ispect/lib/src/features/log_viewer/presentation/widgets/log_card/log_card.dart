@@ -173,7 +173,7 @@ class _LogCardHeader extends StatelessWidget {
                   ? color.withValues(alpha: 0.08)
                   : Colors.transparent,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 6, 6, 6),
+                padding: const EdgeInsets.fromLTRB(8, 6, 0, 6),
                 child: CollapsedBody(
                   icon: icon,
                   color: color,

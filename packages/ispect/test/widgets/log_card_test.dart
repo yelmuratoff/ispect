@@ -138,6 +138,24 @@ void main() {
       expect(find.text('info'), findsOneWidget);
     });
 
+    testWidgets('Given a LogCard, '
+        'When it is rendered, '
+        'Then its row actions use the neutral color, not the type color', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildLogCard());
+      await tester.pumpAndSettle();
+
+      final buttons = tester.widgetList<SquareIconButton>(
+        find.byType(SquareIconButton),
+      );
+      expect(buttons, isNotEmpty);
+      expect(
+        buttons.map((button) => button.color),
+        everyElement(isNot(Colors.blue)),
+      );
+    });
+
     testWidgets('Given a LogCard for a type with a title, '
         'When it is rendered, '
         'Then it shows the key rather than the title', (tester) async {
@@ -438,6 +456,26 @@ void main() {
       }
     });
 
+    testWidgets('row actions keep full tap targets with tightly spaced chips', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildLogCard());
+      await tester.pumpAndSettle();
+
+      final buttons = find.byType(SquareIconButton);
+      Rect target(int index) => tester.getRect(
+        find.descendant(of: buttons.at(index), matching: find.byType(InkWell)),
+      );
+      Rect chip(int index) => tester.getRect(
+        find.descendant(of: buttons.at(index), matching: find.byType(Ink)),
+      );
+
+      expect(target(0).size, const Size.square(kMinInteractiveDimension));
+      expect(target(1).size, const Size.square(kMinInteractiveDimension));
+      expect(target(0).right, lessThanOrEqualTo(target(1).left));
+      expect(chip(1).left - chip(0).right, SquareIconButton.trailPadding.start);
+    });
+
     testWidgets('SquareIconButton confines its ripple to the visual surface', (
       tester,
     ) async {
@@ -533,15 +571,17 @@ void _expectRippleMatchesInkSurface(WidgetTester tester, Finder control) {
   );
   final inkWell = tester.widget<InkWell>(inkWellFinder);
   final tapSize = tester.getSize(inkWellFinder);
-  final surfaceSize = tester.getSize(surfaceFinder);
+  final surfaceRect = tester
+      .getRect(surfaceFinder)
+      .shift(-tester.getTopLeft(inkWellFinder));
   final clipBounds = inkWell.customBorder!
       .getOuterPath(Offset.zero & tapSize)
       .getBounds();
 
-  expect(clipBounds.size, within<Size>(distance: 0.1, from: surfaceSize));
+  expect(clipBounds.size, within<Size>(distance: 0.1, from: surfaceRect.size));
   expect(
     clipBounds.center,
-    within<Offset>(distance: 0.1, from: (Offset.zero & tapSize).center),
+    within<Offset>(distance: 0.1, from: surfaceRect.center),
   );
 }
 

@@ -28,7 +28,8 @@
 - **Screen readers** announce settings toggles, menu actions and collapsible sections once, with their state.
 - **Input errors** wrap instead of being cut off.
 - **Log type titles:** Every built-in log type has a readable title in log details and filters, such as Info or Auth Success.
-- **HTTP cards** show the time with milliseconds, like other cards.
+- **HTTP cards** show the time with milliseconds and have a menu button, like other cards.
+- **Card buttons** are neutral and use full-size tap targets.
 
 ### Bug Fixes
 

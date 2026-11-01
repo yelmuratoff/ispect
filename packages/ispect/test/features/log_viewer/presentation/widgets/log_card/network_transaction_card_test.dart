@@ -491,4 +491,36 @@ void main() {
       expect(find.text('11:45:00.123'), findsOneWidget);
     },
   );
+
+  testWidgets('a grouped card opens its actions from a menu button', (
+    tester,
+  ) async {
+    tester.view
+      ..devicePixelRatio = 1
+      ..physicalSize = const Size(390, 800);
+    addTearDown(tester.view.reset);
+    final transaction = NetworkTransaction(
+      requestId: 'request-1',
+      request: ISpectLogData(
+        'GET /todos/1',
+        key: ISpectLogType.httpRequest.key,
+        additionalData: const {
+          TraceKeys.operation: 'GET',
+          TraceKeys.target: 'https://api.example.com/todos/1',
+        },
+      ),
+    );
+    await tester.pumpWidget(
+      appShell(
+        ISpectThemeScope(
+          child: NetworkTransactionCard(transaction: transaction),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.more_vert_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('HTTP Request'), findsOneWidget);
+  });
 }

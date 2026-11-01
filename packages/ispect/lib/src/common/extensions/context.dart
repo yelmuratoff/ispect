@@ -92,6 +92,9 @@ extension ISpectColorTokens on BuildContext {
   Color get ispectRowCardColor =>
       ispectTheme.card?.resolve(this) ?? appTheme.cardColor;
 
+  /// Neutral tint for secondary row actions such as expand and menu buttons.
+  Color get ispectActionColor => appTheme.colorScheme.onSurface;
+
   /// Subtle 1px border tint shared by tiles, inputs, and chips.
   Color get ispectSubtleBorderColor =>
       appTheme.colorScheme.onSurface.withValues(alpha: 0.08);
