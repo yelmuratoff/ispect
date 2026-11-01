@@ -281,7 +281,7 @@ class _MobileHeader extends StatelessWidget {
                   context.formatLogTime(
                     tx.request.time,
                     relative: useRelativeTime,
-                    absolute: _formatTime(tx.request.time),
+                    absolute: tx.request.formattedTime,
                   ),
                   maxLines: 1,
                   style: TextStyle(
@@ -315,12 +315,5 @@ class _MobileHeader extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  static String _formatTime(DateTime time) {
-    final h = time.hour.toString().padLeft(2, '0');
-    final m = time.minute.toString().padLeft(2, '0');
-    final s = time.second.toString().padLeft(2, '0');
-    return '$h:$m:$s';
   }
 }

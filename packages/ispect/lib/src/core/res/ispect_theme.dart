@@ -580,7 +580,7 @@ final Expando<Map<String, String>> _builtInTitlesExpando =
 Map<String, String> _getBuiltInTitles(BuildContext context) =>
     _builtInTitlesExpando[context.ispectL10n] ??= {
       for (final description in ISpectConstants.defaultLogDescriptions(context))
-        if (description.title case final title?) description.key: title,
+        description.key: description.displayTitle,
     };
 
 Map<String, Color> _getLightColors(ISpectTheme theme) {

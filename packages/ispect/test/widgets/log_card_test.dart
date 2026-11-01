@@ -131,12 +131,23 @@ void main() {
 
     testWidgets('Given a LogCard with key "info", '
         'When it is rendered, '
-        'Then it shows the log type title', (tester) async {
+        'Then it shows the log key', (tester) async {
       await tester.pumpWidget(buildLogCard());
       await tester.pumpAndSettle();
 
-      // ISpectLogType.fromKey('info')?.displayTitle == 'info'
       expect(find.text('info'), findsOneWidget);
+    });
+
+    testWidgets('Given a LogCard for a type with a title, '
+        'When it is rendered, '
+        'Then it shows the key rather than the title', (tester) async {
+      await tester.pumpWidget(
+        buildLogCard(data: makeLogData(key: 'bloc-create')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('bloc-create'), findsOneWidget);
+      expect(find.text('BLoC Create'), findsNothing);
     });
 
     testWidgets('Given a LogCard with time 12:00:00, '

@@ -121,7 +121,8 @@ class _LogCardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final httpLogText = data.httpLogText;
     final message = data.isHttpLog ? httpLogText : data.textMessage;
-    final title = context.ispectTheme.getTypeTitle(context, key: data.key);
+    final key = data.key;
+    final title = key == null || key.isEmpty ? null : key;
     final semanticsLabel = title == null
         ? message ?? ''
         : '$title: ${message ?? ''}';

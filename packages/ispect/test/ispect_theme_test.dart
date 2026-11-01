@@ -233,6 +233,11 @@ void main() {
           'Outbound Call',
         );
         expect(theme.getTypeTitle(context, key: 'http-error'), 'HTTP Error');
+        expect(
+          theme.getTypeTitle(context, key: 'auth-success'),
+          'Auth Success',
+        );
+        expect(theme.getTypeTitle(context, key: 'info'), 'Info');
         expect(theme.getTypeTitle(context, key: 'unknown-key'), 'unknown-key');
         expect(theme.getTypeTitle(context, key: ''), isNull);
         expect(theme.getTypeTitle(context, key: null), isNull);

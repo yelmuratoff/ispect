@@ -40,12 +40,8 @@ class CollapsedBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Padding(
-        padding: const EdgeInsets.only(top: 1),
-        child: DecoratedLeadingIcon(icon: icon, color: color),
-      ),
+      DecoratedLeadingIcon(icon: icon, color: color),
       const Gap(ISpectConstants.standardGap),
       Expanded(
         child: Column(

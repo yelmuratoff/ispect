@@ -10,6 +10,7 @@
 - **Logs panel button** can no longer be hidden from the in-app menu. Hosts still control it with `ISpectSettingsState.isLogPageEnabled`.
 - **Export sheet** is named Share when the host sets `onShare` and Export otherwise, and shows how many logs it exports.
 - **ISpect panel** hides while an ISpect sheet or dialog is open.
+- **Logs list** shows each log's key, such as `auth-success`, on every card, like the desktop table. Type titles stay in log details, filters and the context menu.
 
 ### Improvements
 
@@ -26,6 +27,8 @@
 - **Import logs dialogs** use the ISpect theme.
 - **Screen readers** announce settings toggles, menu actions and collapsible sections once, with their state.
 - **Input errors** wrap instead of being cut off.
+- **Log type titles:** Every built-in log type has a readable title in log details and filters, such as Info or Auth Success.
+- **HTTP cards** show the time with milliseconds, like other cards.
 
 ### Bug Fixes
 

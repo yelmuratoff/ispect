@@ -459,4 +459,36 @@ void main() {
       expect(tapCount, 1);
     });
   }
+
+  testWidgets(
+    'a grouped card shows its time with milliseconds like a log card',
+    (tester) async {
+      tester.view
+        ..devicePixelRatio = 1
+        ..physicalSize = const Size(390, 800);
+      addTearDown(tester.view.reset);
+      final transaction = NetworkTransaction(
+        requestId: 'request-1',
+        request: ISpectLogData(
+          'GET /todos/1',
+          key: ISpectLogType.httpRequest.key,
+          time: DateTime(2026, 11, 1, 11, 45, 0, 123),
+          additionalData: const {
+            TraceKeys.operation: 'GET',
+            TraceKeys.target: 'https://api.example.com/todos/1',
+          },
+        ),
+      );
+
+      await tester.pumpWidget(
+        appShell(
+          ISpectThemeScope(
+            child: NetworkTransactionCard(transaction: transaction),
+          ),
+        ),
+      );
+
+      expect(find.text('11:45:00.123'), findsOneWidget);
+    },
+  );
 }

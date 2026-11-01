@@ -197,8 +197,8 @@ void main() {
       logIcons: {'firebase-read': Icons.cloud_rounded},
     );
 
-    testWidgets('a custom type shows its configured title on the card and '
-        'in the context menu', (tester) async {
+    testWidgets('a custom type shows its key on the card and its configured '
+        'title in the context menu', (tester) async {
       await tester.pumpWidget(
         appShell(
           SingleChildScrollView(
@@ -216,13 +216,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Firebase Read'), findsOneWidget);
-      expect(find.text('firebase-read'), findsNothing);
+      expect(find.text('firebase-read'), findsOneWidget);
+      expect(find.text('Firebase Read'), findsNothing);
 
       await tester.longPress(find.text('read users'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Firebase Read'), findsNWidgets(2));
+      expect(find.text('Firebase Read'), findsOneWidget);
     });
 
     testWidgets('the context menu labels its filter section in Russian', (
