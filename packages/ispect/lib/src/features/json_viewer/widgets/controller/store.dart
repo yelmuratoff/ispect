@@ -5,9 +5,11 @@ import 'package:flutter/widgets.dart';
 
 import 'package:ispect/src/common/utils/debug_report.dart';
 import 'package:ispect/src/common/utils/json_input_preflight.dart';
+import 'package:ispect/src/features/json_viewer/models/json_outline.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/services/json_node_builder.dart';
 import 'package:ispect/src/features/json_viewer/services/json_node_service.dart';
+import 'package:ispect/src/features/json_viewer/services/json_outline_resolver.dart';
 import 'package:ispect/src/features/json_viewer/services/json_search_service.dart';
 import 'package:ispect/src/features/json_viewer/services/json_tree_flattener.dart';
 import 'package:ispectify/ispectify.dart';
@@ -35,6 +37,7 @@ class JsonExplorerStore extends ChangeNotifier {
   int _searchGeneration = 0;
   bool _isSearching = false;
   NodeViewModelState? _selectedNode;
+  List<ResolvedJsonLandmark> _landmarks = const [];
   bool _mounted = true;
   bool _hasExpandableNodes = false;
 
@@ -60,6 +63,27 @@ class JsonExplorerStore extends ChangeNotifier {
 
   /// Gets the currently selected node (for breadcrumb display).
   NodeViewModelState? get selectedNode => _selectedNode;
+
+  /// Sections of the document offered as shortcuts by the current outline.
+  List<ResolvedJsonLandmark> get landmarks => _landmarks;
+
+  /// The landmark whose section holds the [selectedNode], if any.
+  JsonLandmark? get activeLandmark {
+    for (var node = _selectedNode; node != null; node = node.parent) {
+      for (final (:landmark, node: landmarkNode) in _landmarks) {
+        if (identical(landmarkNode, node)) return landmark;
+      }
+    }
+    return null;
+  }
+
+  /// Expands [node] and its ancestors and selects it.
+  void revealNode(NodeViewModelState node) {
+    expandParentNodes(node);
+    expandNode(node);
+    _selectedNode = node;
+    notifyListeners();
+  }
 
   /// Selects a node to display its path in the breadcrumb.
   void selectNode(NodeViewModelState? node) {
@@ -183,6 +207,7 @@ class JsonExplorerStore extends ChangeNotifier {
   Future<void> buildNodes(
     JsonInputSnapshot snapshot, {
     bool areAllCollapsed = false,
+    JsonOutline outline = const JsonOutline(),
   }) async {
     if (!mounted) return;
 
@@ -211,9 +236,13 @@ class JsonExplorerStore extends ChangeNotifier {
       _invalidateSearch();
     }
 
+    JsonOutlineResolver.fold(outline.foldedPaths, builtNodes);
+    _landmarks = JsonOutlineResolver.resolve(outline.landmarks, builtNodes);
     _allNodes = UnmodifiableListView(flatList);
     _hasExpandableNodes = flatList.any((n) => n.isRoot);
-    _displayNodes = List<NodeViewModelState>.of(flatList);
+    _displayNodes = List<NodeViewModelState>.of(
+      JsonTreeFlattener.flatten(builtNodes),
+    );
 
     _nodeService = JsonNodeService();
     _searchService = JsonSearchService(processingPolicy: processingPolicy);

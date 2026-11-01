@@ -4,7 +4,9 @@ import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
@@ -14,16 +16,6 @@ import 'package:ispect/src/common/widgets/resizable_split_view.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
-
-const List<String> _httpMethods = [
-  'GET',
-  'POST',
-  'PUT',
-  'PATCH',
-  'DELETE',
-  'HEAD',
-  'OPTIONS',
-];
 
 const double _kTabletFormMaxWidth = 720;
 const int _kInlinePreviewMaxLines = 12;
@@ -36,23 +28,30 @@ class HttpComposerScreen extends StatefulWidget {
   const HttpComposerScreen({
     required this.senders,
     this.onPickComposerFile,
-    this.seed,
+    this.replay,
     super.key,
   });
 
   final List<NetworkRequestSender> senders;
   final ISpectComposerFilePicker? onPickComposerFile;
 
-  /// Optional request to pre-fill the form (used by "edit & resend").
-  final NetworkReplayRequest? seed;
+  /// Optional captured request to pre-fill the form (used by "edit & resend"),
+  /// with the redacted values it had to leave out.
+  final ParsedReplayRequest? replay;
+
+  /// Whether [openFromLog] can open the composer for [log]: a client is
+  /// registered and [log] carries a request that can be rebuilt.
+  static bool canOpenFromLog(ISpectLogData log) =>
+      ISpect.senders.isNotEmpty &&
+      HttpComposerController.seedFromLog(log) != null;
 
   /// Opens the composer pre-filled from a captured network [log].
   ///
   /// Pushes [route] onto the nearest navigator (ISpect's own).
   static Future<void> openFromLog(BuildContext context, ISpectLogData log) {
     final model = ISpect.read(context);
-    final seed = HttpComposerController.seedFromLog(log);
-    return Navigator.of(context).push(route(model: model, seed: seed));
+    final replay = HttpComposerController.replayFromLog(log);
+    return Navigator.of(context).push(route(model: model, replay: replay));
   }
 
   /// Builds the composer route, reusing the registered senders and the host's
@@ -62,14 +61,14 @@ class HttpComposerScreen extends StatefulWidget {
   /// theme/localization on routes that don't inherit the scope.
   static Route<void> route({
     required ISpectScopeModel model,
-    NetworkReplayRequest? seed,
+    ParsedReplayRequest? replay,
   }) => MaterialPageRoute<void>(
     builder: (_) => ISpectScopeController(
       model: model,
       child: HttpComposerScreen(
         senders: ISpect.senders,
         onPickComposerFile: model.options.onPickComposerFile,
-        seed: seed,
+        replay: replay,
       ),
     ),
     settings: const RouteSettings(name: 'ISpect HTTP Composer'),
@@ -83,7 +82,9 @@ class _HttpComposerScreenState extends State<HttpComposerScreen> {
   late final HttpComposerController _controller = HttpComposerController(
     senders: widget.senders,
     filePicker: widget.onPickComposerFile,
-    seed: widget.seed,
+    seed: widget.replay?.request,
+    withheldHeaders: widget.replay?.redactedHeaderKeys ?? const {},
+    bodyWithheld: widget.replay?.bodyRedacted ?? false,
     resourceLimits: ISpectResourceLimits.current,
   );
   late final TextEditingController _urlController = TextEditingController(
@@ -96,8 +97,25 @@ class _HttpComposerScreenState extends State<HttpComposerScreen> {
   double _splitRatio = 0.5;
 
   @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_syncUrlField);
+  }
+
+  void _syncUrlField() {
+    final url = _controller.url;
+    if (_urlController.text == url) return;
+    _urlController.value = TextEditingValue(
+      text: url,
+      selection: TextSelection.collapsed(offset: url.length),
+    );
+  }
+
+  @override
   void dispose() {
-    _controller.dispose();
+    _controller
+      ..removeListener(_syncUrlField)
+      ..dispose();
     _urlController.dispose();
     _bodyController.dispose();
     super.dispose();
@@ -210,6 +228,10 @@ class _RequestPane extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              if (controller.hasWithheldValues) ...[
+                _WithheldNotice(controller: controller),
+                const Gap(16),
+              ],
               _RequestHeaderCard(
                 controller: controller,
                 urlController: urlController,
@@ -387,17 +409,94 @@ class _MethodPill extends StatelessWidget {
 
   final HttpComposerController controller;
 
+  Future<void> _askCustomMethod(BuildContext context) async {
+    final method = await showISpectDialog<String>(
+      context,
+      builder: (_) => _CustomMethodDialog(initialMethod: controller.method),
+    );
+    if (method != null) controller.setMethod(method);
+  }
+
   @override
   Widget build(BuildContext context) => _SelectPill<String>(
     semanticsLabel: context.ispectL10n.composerMethod,
     value: controller.method,
-    items: _httpMethods,
+    items: controller.methodChoices,
     labelOf: (method) => method,
     accentOf: (method) =>
         JsonColors.methodColorFor(method, Theme.of(context).brightness) ??
         context.ispectPrimaryColor,
     onSelected: controller.setMethod,
+    menuFooter: [
+      _SelectMenuItem<String>(
+        key: const ValueKey('composer-custom-method'),
+        label: context.ispectL10n.composerCustomMethodMenu,
+        selected: false,
+        onPressed: () => _askCustomMethod(context),
+      ),
+    ],
   );
+}
+
+class _CustomMethodDialog extends StatefulWidget {
+  const _CustomMethodDialog({required this.initialMethod});
+
+  final String initialMethod;
+
+  @override
+  State<_CustomMethodDialog> createState() => _CustomMethodDialogState();
+}
+
+class _CustomMethodDialogState extends State<_CustomMethodDialog> {
+  late final _controller = TextEditingController(
+    text: HttpComposerController.presetMethods.contains(widget.initialMethod)
+        ? ''
+        : widget.initialMethod,
+  );
+  bool _showInvalid = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onChanged(String _) {
+    if (_showInvalid) setState(() => _showInvalid = false);
+  }
+
+  void _submit() {
+    final method = HttpComposerController.normalizeMethod(_controller.text);
+    if (method == null) {
+      setState(() => _showInvalid = true);
+      return;
+    }
+    Navigator.of(context).pop(method);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.ispectL10n;
+    return ISpectAlertDialog(
+      title: Text(l10n.composerCustomMethod),
+      content: ISpectTextField(
+        controller: _controller,
+        autofocus: true,
+        labelText: l10n.composerMethod,
+        hintText: 'SEARCH',
+        errorText: _showInvalid ? l10n.composerCustomMethodInvalid : null,
+        onChanged: _onChanged,
+        onSubmitted: (_) => _submit(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(onPressed: _submit, child: Text(l10n.apply)),
+      ],
+    );
+  }
 }
 
 class _ClientPill extends StatelessWidget {
@@ -430,6 +529,7 @@ class _SelectPill<T> extends StatelessWidget {
     this.accentOf,
     this.leading,
     this.isExpanded = false,
+    this.menuFooter = const [],
   });
 
   final String semanticsLabel;
@@ -440,6 +540,7 @@ class _SelectPill<T> extends StatelessWidget {
   final Color Function(T value)? accentOf;
   final IconData? leading;
   final bool isExpanded;
+  final List<Widget> menuFooter;
 
   @override
   Widget build(BuildContext context) {
@@ -479,6 +580,7 @@ class _SelectPill<T> extends StatelessWidget {
             selected: item == value,
             onPressed: () => onSelected(item),
           ),
+        ...menuFooter,
       ],
       builder: (context, menu, _) => ISpectBorderedSurface(
         onTap: () => menu.isOpen ? menu.close() : menu.open(),
@@ -516,6 +618,7 @@ class _SelectMenuItem<T> extends StatelessWidget {
     required this.selected,
     required this.onPressed,
     this.color,
+    super.key,
   });
 
   final String label;
@@ -938,6 +1041,58 @@ class _SendButton extends StatelessWidget {
       shape: ISpectSquircle.border(),
     ),
   );
+}
+
+class _WithheldNotice extends StatelessWidget {
+  const _WithheldNotice({required this.controller});
+
+  final HttpComposerController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.ispectL10n;
+    final headerNames = controller.withheldHeaderNames;
+    final textStyle = TextStyle(
+      color: context.appTheme.textColor.withValues(alpha: 0.85),
+      height: 1.4,
+    );
+    return DecoratedBox(
+      key: const ValueKey('composer-withheld-notice'),
+      decoration: ISpectSquircle.decoration(
+        color: JsonColors.statusWarning.withValues(alpha: 0.1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(
+              Icons.visibility_off_outlined,
+              size: 18,
+              color: JsonColors.statusWarning,
+            ),
+            const Gap(10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (controller.bodyWithheld)
+                    Text(l10n.composerBodyWithheld, style: textStyle),
+                  if (controller.bodyWithheld && headerNames.isNotEmpty)
+                    const Gap(ISpectConstants.standardGap),
+                  if (headerNames.isNotEmpty)
+                    Text(
+                      l10n.composerHeadersWithheld(headerNames.join(', ')),
+                      style: textStyle,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _ValidationText extends StatelessWidget {

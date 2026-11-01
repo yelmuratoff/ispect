@@ -464,5 +464,10 @@
    "exportLogs": "هەناردەکردنی تۆمارەکان",
    "exportLogsDesc": "تۆمارەکان وەک فایل دابگرە یان پوختەیەک کۆپی بکە",
    "searchModeHighlight": "دیارکردن",
-   "searchModeFilter": "شاردنەوەی ئەوانی تر"
+   "searchModeFilter": "شاردنەوەی ئەوانی تر",
+   "composerCustomMethod": "میتۆدی تایبەت",
+   "composerCustomMethodMenu": "میتۆدی تایبەت…",
+   "composerCustomMethodInvalid": "یەک وشە بەبێ بۆشایی بنووسە، وەک SEARCH",
+   "composerBodyWithheld": "ناوەڕۆک لە تۆمارەکەدا شاردرابووەوە و کۆپی نەکرا. پێش ناردن دووبارە بینووسەوە.",
+   "composerHeadersWithheld": "سەرپەڕە شاردراوەکان کۆپی نەکران: {names}"
 }

@@ -436,5 +436,10 @@
     "exportLogs": "Логтарды экспорттау",
     "exportLogsDesc": "Логтарды файл ретінде жүктеу немесе қысқашасын көшіру",
     "searchModeHighlight": "Белгілеу",
-    "searchModeFilter": "Басқасын жасыру"
+    "searchModeFilter": "Басқасын жасыру",
+    "composerCustomMethod": "Өз әдісіңіз",
+    "composerCustomMethodMenu": "Өз әдісіңіз…",
+    "composerCustomMethodInvalid": "Бос орынсыз бір сөз енгізіңіз, мысалы SEARCH",
+    "composerBodyWithheld": "Мазмұн логта жасырылған, сондықтан көшірілмеді. Жіберер алдында оны қайта енгізіңіз.",
+    "composerHeadersWithheld": "Жасырылған тақырыптар көшірілмеді: {names}"
 }

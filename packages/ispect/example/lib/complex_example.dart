@@ -46,6 +46,8 @@ class _ThemePreset {
   final ISpectDynamicColor? background;
 }
 
+const _apiBaseUrl = 'https://dummyjson.com';
+
 const _themePresets = <_ThemePreset>[
   _ThemePreset('Default', Colors.deepPurple, null, null),
   _ThemePreset(
@@ -1755,7 +1757,7 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
     super.initState();
     final logger = ISpect.logger;
 
-    _dio = Dio();
+    _dio = Dio(BaseOptions(baseUrl: _apiBaseUrl));
     _dio.interceptors.add(
       ISpectDioInterceptor(
         logger: logger,
@@ -1784,7 +1786,13 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
     // Expose both clients to the in-app HTTP composer ("mini-Postman"). Replays
     // and composed requests then travel through these same instrumented clients.
     ISpect.registerSender(DioRequestSender(_dio, label: 'Dio'));
-    ISpect.registerSender(HttpClientRequestSender(_httpClient, label: 'HTTP'));
+    ISpect.registerSender(
+      HttpClientRequestSender(
+        _httpClient,
+        label: 'HTTP',
+        baseUrl: Uri.parse(_apiBaseUrl),
+      ),
+    );
   }
 
   @override
@@ -1853,8 +1861,8 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
                 _chip('GET 404', Icons.error, Colors.red.shade800, () {
                   _dio.get('https://dummyjson.com/products/0');
                 }),
-                _chip('Invalid URL', Icons.link_off, Colors.grey, () {
-                  _dio.get('htt://invalid-url');
+                _chip('Unknown host', Icons.link_off, Colors.grey, () {
+                  _dio.get('https://invalid.invalid');
                 }),
               ],
             ),

@@ -1469,4 +1469,23 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => 'شاردنەوەی ئەوانی تر';
+
+  @override
+  String get composerCustomMethod => 'میتۆدی تایبەت';
+
+  @override
+  String get composerCustomMethodMenu => 'میتۆدی تایبەت…';
+
+  @override
+  String get composerCustomMethodInvalid =>
+      'یەک وشە بەبێ بۆشایی بنووسە، وەک SEARCH';
+
+  @override
+  String get composerBodyWithheld =>
+      'ناوەڕۆک لە تۆمارەکەدا شاردرابووەوە و کۆپی نەکرا. پێش ناردن دووبارە بینووسەوە.';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return 'سەرپەڕە شاردراوەکان کۆپی نەکران: $names';
+  }
 }

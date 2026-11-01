@@ -13,12 +13,16 @@ import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/json_viewer/breadcrumb_bar.dart';
+import 'package:ispect/src/features/json_viewer/models/json_outline.dart';
+import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
+import 'package:ispect/src/features/json_viewer/widgets/landmark_bar.dart';
 import 'package:ispect/src/features/json_viewer/widgets/store_selector.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/search_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/network_log_outline.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
@@ -32,6 +36,7 @@ class JsonScreen extends StatefulWidget {
     Map<String, dynamic>? truncatedData,
     Map<String, dynamic> Function()? truncatedDataBuilder,
     VoidCallback? onClose,
+    List<Widget> actions = const [],
     Map<String, dynamic>? correlatedLogData,
     String? correlatedLogLabel,
     Duration? correlationDuration,
@@ -77,6 +82,7 @@ class JsonScreen extends StatefulWidget {
       correlatedLogDataSnapshot: correlatedLogDataSnapshot,
       correlatedLogLabel: correlatedLogLabel,
       correlationDuration: correlationDuration,
+      actions: actions,
       processingPolicy: scheduling,
       key: key,
     );
@@ -90,6 +96,7 @@ class JsonScreen extends StatefulWidget {
     required this.onClose,
     required this.correlatedLogLabel,
     required this.correlationDuration,
+    required this.actions,
     required this.processingPolicy,
     super.key,
   }) : _dataSnapshot = dataSnapshot,
@@ -117,6 +124,9 @@ class JsonScreen extends StatefulWidget {
   }
 
   final VoidCallback? onClose;
+
+  /// App bar actions shown before the expand and share actions.
+  final List<Widget> actions;
 
   /// Optional correlated log data for cross-navigation (e.g. request ↔ response).
   Map<String, dynamic>? get correlatedLogData =>
@@ -174,7 +184,10 @@ class _JsonScreenState extends State<JsonScreen> {
   void initState() {
     super.initState();
     _store = JsonExplorerStore(processingPolicy: widget.processingPolicy);
-    _store.buildNodes(widget._dataSnapshot);
+    _store.buildNodes(
+      widget._dataSnapshot,
+      outline: NetworkLogOutline.forLogKey(widget.data['key']),
+    );
     _titleMeta = _logTitleMeta(widget.data);
   }
 
@@ -183,9 +196,25 @@ class _JsonScreenState extends State<JsonScreen> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.data['id'] != widget.data['id']) {
-      _store.buildNodes(widget._dataSnapshot);
+      _store.buildNodes(
+        widget._dataSnapshot,
+        outline: NetworkLogOutline.forLogKey(widget.data['key']),
+      );
       _titleMeta = _logTitleMeta(widget.data);
     }
+  }
+
+  void _revealLandmark(NodeViewModelState node) {
+    _store.revealNode(node);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _scrollToNode(node, alignment: 0),
+    );
+  }
+
+  void _scrollToNode(NodeViewModelState node, {double alignment = 0.3}) {
+    if (!mounted) return;
+    final index = _store.displayNodes.indexOf(node);
+    if (index >= 0) _scrollToIndex(index, alignment: alignment);
   }
 
   static String? _logTitleMeta(Map<String, dynamic> data) {
@@ -307,6 +336,7 @@ class _JsonScreenState extends State<JsonScreen> {
                 ),
         ),
         actions: [
+          ...widget.actions,
           JsonStoreSelector<({bool hasExpandable, bool isFullyExpanded})>(
             store: _store,
             selector: (s) => (
@@ -352,7 +382,7 @@ class _JsonScreenState extends State<JsonScreen> {
             ),
           // Search bar
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
             child: ValueListenableBuilder(
               valueListenable: _hasSearchText,
               builder: (context, hasText, _) => Row(
@@ -406,6 +436,20 @@ class _JsonScreenState extends State<JsonScreen> {
               ),
             ),
           ),
+          JsonStoreSelector<
+            ({List<ResolvedJsonLandmark> landmarks, JsonLandmark? active})
+          >(
+            store: _store,
+            selector: (s) => (landmarks: s.landmarks, active: s.activeLandmark),
+            builder: (context, outline) => outline.landmarks.isEmpty
+                ? const Gap(12)
+                : JsonLandmarkBar(
+                    landmarks: outline.landmarks,
+                    active: outline.active,
+                    activeColor: logColor ?? context.ispectPrimaryColor,
+                    onSelected: _revealLandmark,
+                  ),
+          ),
           // Breadcrumb path: hidden for root-level selection (no path to show).
           AnimatedBuilder(
             animation: _store,
@@ -418,16 +462,7 @@ class _JsonScreenState extends State<JsonScreen> {
                 node: selectedNode,
                 onSegmentTap: (node) {
                   _store.selectNode(node);
-                  final index = _store.displayNodes.indexOf(node);
-                  if (index >= 0) {
-                    _listController.animateToItem(
-                      index: index,
-                      scrollController: _scrollController,
-                      alignment: 0.3,
-                      duration: (_) => const Duration(milliseconds: 300),
-                      curve: (_) => Curves.easeOutCubic,
-                    );
-                  }
+                  _scrollToNode(node);
                 },
               );
             },
@@ -508,13 +543,13 @@ class _JsonScreenState extends State<JsonScreen> {
     }
   }
 
-  void _scrollToIndex(int index) {
+  void _scrollToIndex(int index, {double alignment = 0.5}) {
     _listController.animateToItem(
       index: index,
       duration: (estimatedDistance) => const Duration(milliseconds: 250),
       curve: (estimatedDistance) => Curves.easeOutCubic,
       scrollController: _scrollController,
-      alignment: 0.5,
+      alignment: alignment,
     );
   }
 }

@@ -1422,4 +1422,21 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => '隐藏其他';
+
+  @override
+  String get composerCustomMethod => '自定义方法';
+
+  @override
+  String get composerCustomMethodMenu => '自定义方法…';
+
+  @override
+  String get composerCustomMethodInvalid => '请输入一个不含空格的单词，例如 SEARCH';
+
+  @override
+  String get composerBodyWithheld => '请求体在日志中已脱敏，未被复制。发送前请重新输入。';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return '已脱敏的请求头未被复制：$names';
+  }
 }

@@ -37,6 +37,24 @@ final class _ThrowingSender implements NetworkRequestSender {
   }
 }
 
+final class _BaseUrlSender
+    implements NetworkRequestSender, NetworkBaseUrlProvider {
+  _BaseUrlSender(this.id, this.baseUrl);
+
+  @override
+  final String id;
+
+  @override
+  Uri? baseUrl;
+
+  @override
+  String get label => id;
+
+  @override
+  Future<NetworkReplayResult> send(NetworkReplayRequest request) async =>
+      const NetworkReplayResult(statusCode: 200);
+}
+
 HttpComposerController _controller({
   List<NetworkRequestSender>? senders,
   NetworkReplayRequest? seed,
@@ -248,6 +266,99 @@ void main() {
     );
   });
 
+  group('HttpComposerController custom method', () {
+    for (final (input, expected) in const [
+      ('  search ', 'SEARCH'),
+      ('propfind', 'PROPFIND'),
+      ('X-MY_VERB.1', 'X-MY_VERB.1'),
+      ('', null),
+      ('   ', null),
+      ('GET /x', null),
+      ('A:B', null),
+      ('ПОИСК', null),
+    ]) {
+      test('normalizes "$input" to $expected', () {
+        expect(HttpComposerController.normalizeMethod(input), expected);
+      });
+    }
+
+    test('lists a typed method after the presets while it is selected', () {
+      final controller = _controller()..setMethod('SEARCH');
+
+      expect(controller.methodChoices, [
+        ...HttpComposerController.presetMethods,
+        'SEARCH',
+      ]);
+
+      controller.setMethod('POST');
+
+      expect(controller.methodChoices, HttpComposerController.presetMethods);
+    });
+  });
+
+  group('HttpComposerController base URL', () {
+    final api = _BaseUrlSender('api', Uri.parse('https://api.test/v1/'));
+    final cdn = _BaseUrlSender('cdn', Uri.parse('https://cdn.test'));
+    final noBase = _BaseUrlSender('plain', null);
+
+    test('a new request starts from the selected client base URL', () {
+      expect(_controller(senders: [api, cdn]).url, 'https://api.test/v1/');
+    });
+
+    test('a new request starts empty when the client has no base URL', () {
+      expect(_controller(senders: [noBase]).url, isEmpty);
+    });
+
+    test('switching client swaps a base URL the user has not extended', () {
+      final controller = _controller(senders: [api, cdn, noBase])
+        ..selectSender('cdn');
+
+      expect(controller.url, 'https://cdn.test');
+
+      controller.selectSender('plain');
+
+      expect(controller.url, isEmpty);
+    });
+
+    test('switching client keeps a URL the user typed', () {
+      final controller = _controller(senders: [api, cdn])
+        ..setUrl('https://api.test/v1/todos/1')
+        ..selectSender('cdn');
+
+      expect(controller.url, 'https://api.test/v1/todos/1');
+    });
+
+    test('switching client fills an emptied URL', () {
+      final controller = _controller(senders: [api, cdn])
+        ..setUrl('')
+        ..selectSender('cdn');
+
+      expect(controller.url, 'https://cdn.test');
+    });
+
+    test('switching client swaps the filled-in URL after the base moved', () {
+      final staging = _BaseUrlSender('staging', Uri.parse('https://v1.test'));
+      final controller = _controller(senders: [staging, cdn]);
+
+      staging.baseUrl = Uri.parse('https://v2.test');
+      controller.selectSender('cdn');
+
+      expect(controller.url, 'https://cdn.test');
+    });
+
+    test('a request opened from a log keeps the logged URL', () {
+      final controller = _controller(
+        senders: [api],
+        seed: NetworkReplayRequest(
+          method: 'GET',
+          uri: Uri.parse('https://other.test/users'),
+        ),
+      );
+
+      expect(controller.url, 'https://other.test/users');
+    });
+  });
+
   group('HttpComposerController seed', () {
     test('prefills method, url, headers and a JSON body from a request', () {
       final controller = _controller(
@@ -311,6 +422,48 @@ void main() {
       expect(seed!.method, 'POST');
       expect(seed.uri.toString(), 'https://api.test/users');
       expect(seed.body, isA<JsonReplayBody>());
+    });
+
+    test('names the redacted values it had to leave out', () {
+      final log = ISpectLogData(
+        'http',
+        key: ISpectLogType.httpRequest.key,
+        additionalData: const {
+          TraceKeys.meta: {
+            NetworkJsonKeys.requestData: {
+              NetworkJsonKeys.method: 'PUT',
+              NetworkJsonKeys.url: 'https://api.test/profile',
+              NetworkJsonKeys.headers: {
+                'Accept': 'application/json',
+                'X-Token': '[REDACTED]',
+              },
+              NetworkJsonKeys.data: {'password': '[REDACTED]'},
+              NetworkJsonKeys.redactionProvenance: {
+                NetworkJsonKeys.bodyRedacted: true,
+                NetworkJsonKeys.redactedHeaderKeys: ['X-Token'],
+              },
+            },
+          },
+        },
+      );
+
+      final replay = HttpComposerController.replayFromLog(log)!;
+      final controller = HttpComposerController(
+        senders: [_RecordingSender()],
+        seed: replay.request,
+        withheldHeaders: {...replay.redactedHeaderKeys, 'Cookie'},
+        bodyWithheld: replay.bodyRedacted,
+      );
+
+      expect(replay.request.body, isNull);
+      expect(replay.request.headers, {'Accept': 'application/json'});
+      expect(controller.bodyWithheld, isTrue);
+      expect(controller.withheldHeaderNames, ['Cookie', 'X-Token']);
+      expect(controller.hasWithheldValues, isTrue);
+    });
+
+    test('a fully copied request has nothing withheld', () {
+      expect(_controller().hasWithheldValues, isFalse);
     });
 
     test('reconstructs from the nested request of a response log', () {

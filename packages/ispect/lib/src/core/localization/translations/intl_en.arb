@@ -551,5 +551,17 @@
    "exportLogs": "Export logs",
    "exportLogsDesc": "Download the logs as a file or copy a summary",
    "searchModeHighlight": "Highlight",
-   "searchModeFilter": "Hide others"
+   "searchModeFilter": "Hide others",
+   "composerCustomMethod": "Custom method",
+   "composerCustomMethodMenu": "Custom method…",
+   "composerCustomMethodInvalid": "Enter one word without spaces, like SEARCH",
+   "composerBodyWithheld": "The body was redacted in the log and wasn't copied. Enter it again before sending.",
+   "composerHeadersWithheld": "Redacted headers weren't copied: {names}",
+   "@composerHeadersWithheld": {
+      "placeholders": {
+         "names": {
+            "type": "String"
+         }
+      }
+   }
 }

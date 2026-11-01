@@ -1422,4 +1422,22 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => '나머지 숨기기';
+
+  @override
+  String get composerCustomMethod => '사용자 지정 방법';
+
+  @override
+  String get composerCustomMethodMenu => '사용자 지정 방법…';
+
+  @override
+  String get composerCustomMethodInvalid => 'SEARCH처럼 공백 없이 한 단어로 입력하세요';
+
+  @override
+  String get composerBodyWithheld =>
+      '본문은 로그에서 가려져 있어 복사되지 않았습니다. 보내기 전에 다시 입력하세요.';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return '가려진 헤더는 복사되지 않았습니다: $names';
+  }
 }

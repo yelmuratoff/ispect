@@ -25,6 +25,24 @@ class _FakeSender implements NetworkRequestSender {
   }
 }
 
+final class _BaseUrlSender
+    implements NetworkRequestSender, NetworkBaseUrlProvider {
+  _BaseUrlSender(this.label, this.baseUrl);
+
+  @override
+  final String label;
+
+  @override
+  final Uri baseUrl;
+
+  @override
+  String get id => label;
+
+  @override
+  Future<NetworkReplayResult> send(NetworkReplayRequest request) async =>
+      const NetworkReplayResult(statusCode: 200);
+}
+
 final class _HostileReplayError implements Exception {
   int toJsonCalls = 0;
   int toStringCalls = 0;
@@ -59,6 +77,130 @@ void main() {
       expect(sender.received, isNotNull);
       expect(sender.received!.uri.toString(), 'https://api.test/ping');
       expect(find.text('200'), findsOneWidget);
+    });
+
+    testWidgets('the URL field follows the base URL of the chosen client', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        appShell(
+          HttpComposerScreen(
+            senders: [
+              _BaseUrlSender('Api', Uri.parse('https://api.test')),
+              _BaseUrlSender('Cdn', Uri.parse('https://cdn.test')),
+            ],
+          ),
+        ),
+      );
+      TextField urlField() =>
+          tester.widget<TextField>(find.byType(TextField).first);
+
+      expect(urlField().controller!.text, 'https://api.test');
+
+      await tester.tap(find.text('Api'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cdn').last);
+      await tester.pumpAndSettle();
+
+      expect(urlField().controller!.text, 'https://cdn.test');
+    });
+
+    Future<void> openCustomMethod(WidgetTester tester) async {
+      await tester.tap(find.text('GET'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('composer-custom-method')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('sends a custom method the user typed', (tester) async {
+      final sender = _FakeSender();
+      await tester.pumpWidget(appShell(HttpComposerScreen(senders: [sender])));
+
+      await openCustomMethod(tester);
+      await tester.enterText(find.byType(TextField).last, ' search ');
+      await tester.tap(find.text('Apply'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextField).first,
+        'https://api.test/items',
+      );
+      await tester.tap(find.byIcon(Icons.send_rounded));
+      await tester.pumpAndSettle();
+
+      expect(find.text('SEARCH'), findsOneWidget);
+      expect(sender.received?.method, 'SEARCH');
+    });
+
+    testWidgets('an invalid custom method keeps the dialog open', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        appShell(HttpComposerScreen(senders: [_FakeSender()])),
+      );
+
+      await openCustomMethod(tester);
+      await tester.enterText(find.byType(TextField).last, 'not a method');
+      await tester.tap(find.text('Apply'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Enter one word without spaces, like SEARCH'),
+        findsOneWidget,
+      );
+      expect(find.text('Custom method'), findsOneWidget);
+    });
+
+    testWidgets('says which redacted values were not copied from the log', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        appShell(
+          HttpComposerScreen(
+            senders: [_FakeSender()],
+            replay: ParsedReplayRequest(
+              request: NetworkReplayRequest(
+                method: 'PUT',
+                uri: Uri.parse('https://api.test/profile'),
+              ),
+              redactedHeaderKeys: const {'X-Token', 'Cookie'},
+              bodyRedacted: true,
+            ),
+          ),
+        ),
+      );
+
+      expect(
+        find.text(
+          "The body was redacted in the log and wasn't copied. "
+          'Enter it again before sending.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text("Redacted headers weren't copied: Cookie, X-Token"),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('shows no notice when everything was copied', (tester) async {
+      await tester.pumpWidget(
+        appShell(
+          HttpComposerScreen(
+            senders: [_FakeSender()],
+            replay: ParsedReplayRequest(
+              request: NetworkReplayRequest(
+                method: 'GET',
+                uri: Uri.parse('https://api.test/ping'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(
+        find.byKey(const ValueKey('composer-withheld-notice')),
+        findsNothing,
+      );
     });
 
     testWidgets('opens the JSON viewer for a JSON response body', (

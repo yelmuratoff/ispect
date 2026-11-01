@@ -1422,4 +1422,22 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => '他を隠す';
+
+  @override
+  String get composerCustomMethod => 'カスタムメソッド';
+
+  @override
+  String get composerCustomMethodMenu => 'カスタムメソッド…';
+
+  @override
+  String get composerCustomMethodInvalid => 'SEARCH のように、スペースを含まない1語で入力してください';
+
+  @override
+  String get composerBodyWithheld =>
+      'ボディはログでマスクされていたためコピーされていません。送信前にもう一度入力してください。';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return 'マスクされたヘッダーはコピーされていません: $names';
+  }
 }

@@ -42,6 +42,23 @@ Dio _dioWith(HttpClientAdapter adapter) =>
     Dio(BaseOptions(baseUrl: 'https://api.test'))..httpClientAdapter = adapter;
 
 void main() {
+  group('DioRequestSender.baseUrl', () {
+    test('follows the base URL the Dio instance currently has', () {
+      final dio = Dio(BaseOptions(baseUrl: 'https://api.test/v1/'));
+      final sender = DioRequestSender(dio);
+
+      expect(sender.baseUrl, Uri.parse('https://api.test/v1/'));
+
+      dio.options.baseUrl = 'https://staging.api.test';
+
+      expect(sender.baseUrl, Uri.parse('https://staging.api.test'));
+    });
+
+    test('is null when the Dio instance has no base URL', () {
+      expect(DioRequestSender(Dio()).baseUrl, isNull);
+    });
+  });
+
   group('DioRequestSender.send', () {
     test('returns the response for a successful GET', () async {
       final adapter = _FakeHttpAdapter((_) => _jsonResponse({'ok': true}));

@@ -436,5 +436,10 @@
    "exportLogs": "लॉग एक्सपोर्ट करें",
    "exportLogsDesc": "लॉग फ़ाइल के रूप में डाउनलोड करें या सारांश कॉपी करें",
    "searchModeHighlight": "हाइलाइट",
-   "searchModeFilter": "बाकी छिपाएँ"
+   "searchModeFilter": "बाकी छिपाएँ",
+   "composerCustomMethod": "कस्टम विधि",
+   "composerCustomMethodMenu": "कस्टम विधि…",
+   "composerCustomMethodInvalid": "बिना स्पेस के एक शब्द दर्ज करें, जैसे SEARCH",
+   "composerBodyWithheld": "बॉडी लॉग में छिपाई गई थी, इसलिए कॉपी नहीं हुई। भेजने से पहले इसे फिर से दर्ज करें।",
+   "composerHeadersWithheld": "छिपाए गए हेडर कॉपी नहीं हुए: {names}"
 }

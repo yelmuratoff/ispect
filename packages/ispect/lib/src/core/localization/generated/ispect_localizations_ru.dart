@@ -1481,4 +1481,23 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => 'Скрыть прочие';
+
+  @override
+  String get composerCustomMethod => 'Свой метод';
+
+  @override
+  String get composerCustomMethodMenu => 'Свой метод…';
+
+  @override
+  String get composerCustomMethodInvalid =>
+      'Введите одно слово без пробелов, например SEARCH';
+
+  @override
+  String get composerBodyWithheld =>
+      'Тело было замаскировано в логе и не скопировано. Введите его заново перед отправкой.';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return 'Замаскированные заголовки не скопированы: $names';
+  }
 }

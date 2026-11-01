@@ -1461,4 +1461,23 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => 'إخفاء الباقي';
+
+  @override
+  String get composerCustomMethod => 'طريقة مخصصة';
+
+  @override
+  String get composerCustomMethodMenu => 'طريقة مخصصة…';
+
+  @override
+  String get composerCustomMethodInvalid =>
+      'أدخل كلمة واحدة بلا مسافات، مثل SEARCH';
+
+  @override
+  String get composerBodyWithheld =>
+      'كان المحتوى مخفيًا في السجل ولم يُنسخ. أدخله مجددًا قبل الإرسال.';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return 'لم تُنسخ الرؤوس المخفية: $names';
+  }
 }

@@ -436,5 +436,10 @@
     "exportLogs": "导出日志",
     "exportLogsDesc": "将日志下载为文件或复制摘要",
     "searchModeHighlight": "高亮",
-    "searchModeFilter": "隐藏其他"
+    "searchModeFilter": "隐藏其他",
+    "composerCustomMethod": "自定义方法",
+    "composerCustomMethodMenu": "自定义方法…",
+    "composerCustomMethodInvalid": "请输入一个不含空格的单词，例如 SEARCH",
+    "composerBodyWithheld": "请求体在日志中已脱敏，未被复制。发送前请重新输入。",
+    "composerHeadersWithheld": "已脱敏的请求头未被复制：{names}"
 }

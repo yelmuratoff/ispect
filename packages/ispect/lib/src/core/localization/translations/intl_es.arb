@@ -436,5 +436,10 @@
    "exportLogs": "Exportar registros",
    "exportLogsDesc": "Descargar los registros como archivo o copiar un resumen",
    "searchModeHighlight": "Resaltar",
-   "searchModeFilter": "Ocultar resto"
+   "searchModeFilter": "Ocultar resto",
+   "composerCustomMethod": "Método personalizado",
+   "composerCustomMethodMenu": "Método personalizado…",
+   "composerCustomMethodInvalid": "Escribe una sola palabra sin espacios, por ejemplo SEARCH",
+   "composerBodyWithheld": "El cuerpo estaba enmascarado en el registro y no se copió. Vuelve a escribirlo antes de enviar.",
+   "composerHeadersWithheld": "Los encabezados enmascarados no se copiaron: {names}"
 }

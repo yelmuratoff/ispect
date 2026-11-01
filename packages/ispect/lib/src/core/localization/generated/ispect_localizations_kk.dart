@@ -1474,4 +1474,23 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => 'Басқасын жасыру';
+
+  @override
+  String get composerCustomMethod => 'Өз әдісіңіз';
+
+  @override
+  String get composerCustomMethodMenu => 'Өз әдісіңіз…';
+
+  @override
+  String get composerCustomMethodInvalid =>
+      'Бос орынсыз бір сөз енгізіңіз, мысалы SEARCH';
+
+  @override
+  String get composerBodyWithheld =>
+      'Мазмұн логта жасырылған, сондықтан көшірілмеді. Жіберер алдында оны қайта енгізіңіз.';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return 'Жасырылған тақырыптар көшірілмеді: $names';
+  }
 }

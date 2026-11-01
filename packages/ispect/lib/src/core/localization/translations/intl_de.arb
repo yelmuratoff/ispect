@@ -436,5 +436,10 @@
    "exportLogs": "Protokolle exportieren",
    "exportLogsDesc": "Protokolle als Datei herunterladen oder eine Zusammenfassung kopieren",
    "searchModeHighlight": "Hervorheben",
-   "searchModeFilter": "Nur Treffer"
+   "searchModeFilter": "Nur Treffer",
+   "composerCustomMethod": "Eigene Methode",
+   "composerCustomMethodMenu": "Eigene Methode…",
+   "composerCustomMethodInvalid": "Geben Sie ein Wort ohne Leerzeichen ein, z. B. SEARCH",
+   "composerBodyWithheld": "Der Body wurde im Log maskiert und nicht übernommen. Geben Sie ihn vor dem Senden erneut ein.",
+   "composerHeadersWithheld": "Maskierte Header wurden nicht übernommen: {names}"
 }

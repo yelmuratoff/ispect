@@ -464,5 +464,10 @@
     "exportLogs": "هەناردەکرنا توماران",
     "exportLogsDesc": "توماران وەک فایل دابەزینە یان کورتەیەکێ کۆپی بکە",
     "searchModeHighlight": "دیارکرن",
-    "searchModeFilter": "یێن دی بشێرە"
+    "searchModeFilter": "یێن دی بشێرە",
+    "composerCustomMethod": "ڕێبازا تایبەت",
+    "composerCustomMethodMenu": "ڕێبازا تایبەت…",
+    "composerCustomMethodInvalid": "ئێک پەیڤ بێ بۆشایی بنڤیسە، وەکی SEARCH",
+    "composerBodyWithheld": "ناڤەڕۆک د تومارێ دا هاتبوو شاردن و نەهاتە کۆپیکرن. بەری هنارتنێ دووبارە بنڤیسە.",
+    "composerHeadersWithheld": "سەرپەڕێن شاردی نەهاتنە کۆپیکرن: {names}"
 }

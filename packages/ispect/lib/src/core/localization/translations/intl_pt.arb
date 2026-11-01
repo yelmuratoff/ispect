@@ -436,5 +436,10 @@
     "exportLogs": "Exportar logs",
     "exportLogsDesc": "Baixar os logs como arquivo ou copiar um resumo",
     "searchModeHighlight": "Destacar",
-    "searchModeFilter": "Ocultar o resto"
+    "searchModeFilter": "Ocultar o resto",
+    "composerCustomMethod": "Método personalizado",
+    "composerCustomMethodMenu": "Método personalizado…",
+    "composerCustomMethodInvalid": "Digite uma única palavra sem espaços, por exemplo SEARCH",
+    "composerBodyWithheld": "O corpo estava mascarado no log e não foi copiado. Digite-o novamente antes de enviar.",
+    "composerHeadersWithheld": "Cabeçalhos mascarados não foram copiados: {names}"
 }

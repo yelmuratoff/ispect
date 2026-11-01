@@ -1465,4 +1465,23 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => 'Hide others';
+
+  @override
+  String get composerCustomMethod => 'Custom method';
+
+  @override
+  String get composerCustomMethodMenu => 'Custom method…';
+
+  @override
+  String get composerCustomMethodInvalid =>
+      'Enter one word without spaces, like SEARCH';
+
+  @override
+  String get composerBodyWithheld =>
+      'The body was redacted in the log and wasn\'t copied. Enter it again before sending.';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return 'Redacted headers weren\'t copied: $names';
+  }
 }

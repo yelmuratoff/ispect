@@ -23,6 +23,11 @@
 - **Screen readers:** Settings toggles, menu actions, and collapsible sections are announced once, with their on/off or expanded state.
 - **Filter sheet:** Log type chips show type titles instead of raw keys, and the search modes are named Highlight and Hide others.
 - **Import logs dialogs:** The source choice and Paste dialogs use the ISpect theme and header. Process stays enabled and says so when the pasted content is empty.
+- **HTTP log details:** Headers and the request copy inside a response start folded, and chips for Data, Headers and Query parameters jump to that part of the JSON. Edit & resend is in the app bar when a client is registered.
+- **HTTP composer base URL:** A new request starts from the selected client's base URL and follows it when you switch clients. `DioRequestSender` reads `Dio.options.baseUrl`, `HttpClientRequestSender` takes `baseUrl:`, and custom senders can implement `NetworkBaseUrlProvider`.
+- **HTTP composer methods:** `QUERY` (RFC 10008) is in the method list, and Custom method accepts any other method token, such as `SEARCH` or `PROPFIND`.
+- **Edit & resend notice:** When the logged body or headers were redacted, the composer says what it didn't copy, so you can enter it again before sending.
+- **Input errors** wrap onto up to three lines instead of being cut off after one.
 
 ### Bug Fixes
 
@@ -30,6 +35,8 @@
 - **Clear all filters** in the filter sheet also clears the search text.
 - **Sessions folder:** A failing host `onOpenFile` is logged instead of surfacing as an uncaught error.
 - **Closing sheets:** The close button of the settings sheet, and of other ISpect sheets, works when the sheet sits under the parked panel.
+- **Edit & resend:** Dio and http requests were marked as having a redacted query even when nothing was redacted, so the composer refused to rebuild them. Only a query the redactor changed is marked now, and a redacted value still blocks the resend.
+- **Copy as cURL:** Works again for request, response and error logs from the Dio and http adapters.
 
 ## 7.2.0
 

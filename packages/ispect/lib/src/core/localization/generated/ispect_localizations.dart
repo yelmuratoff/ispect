@@ -2746,6 +2746,36 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Hide others'**
   String get searchModeFilter;
+
+  /// No description provided for @composerCustomMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom method'**
+  String get composerCustomMethod;
+
+  /// No description provided for @composerCustomMethodMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom method…'**
+  String get composerCustomMethodMenu;
+
+  /// No description provided for @composerCustomMethodInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter one word without spaces, like SEARCH'**
+  String get composerCustomMethodInvalid;
+
+  /// No description provided for @composerBodyWithheld.
+  ///
+  /// In en, this message translates to:
+  /// **'The body was redacted in the log and wasn\'t copied. Enter it again before sending.'**
+  String get composerBodyWithheld;
+
+  /// No description provided for @composerHeadersWithheld.
+  ///
+  /// In en, this message translates to:
+  /// **'Redacted headers weren\'t copied: {names}'**
+  String composerHeadersWithheld(String names);
 }
 
 class _ISpectGeneratedLocalizationDelegate

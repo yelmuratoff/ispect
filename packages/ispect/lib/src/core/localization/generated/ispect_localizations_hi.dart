@@ -1472,4 +1472,23 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => 'बाकी छिपाएँ';
+
+  @override
+  String get composerCustomMethod => 'कस्टम विधि';
+
+  @override
+  String get composerCustomMethodMenu => 'कस्टम विधि…';
+
+  @override
+  String get composerCustomMethodInvalid =>
+      'बिना स्पेस के एक शब्द दर्ज करें, जैसे SEARCH';
+
+  @override
+  String get composerBodyWithheld =>
+      'बॉडी लॉग में छिपाई गई थी, इसलिए कॉपी नहीं हुई। भेजने से पहले इसे फिर से दर्ज करें।';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return 'छिपाए गए हेडर कॉपी नहीं हुए: $names';
+  }
 }

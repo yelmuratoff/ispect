@@ -436,5 +436,10 @@
    "exportLogs": "تصدير السجلات",
    "exportLogsDesc": "تحميل السجلات كملف أو نسخ الملخص",
    "searchModeHighlight": "تمييز",
-   "searchModeFilter": "إخفاء الباقي"
+   "searchModeFilter": "إخفاء الباقي",
+   "composerCustomMethod": "طريقة مخصصة",
+   "composerCustomMethodMenu": "طريقة مخصصة…",
+   "composerCustomMethodInvalid": "أدخل كلمة واحدة بلا مسافات، مثل SEARCH",
+   "composerBodyWithheld": "كان المحتوى مخفيًا في السجل ولم يُنسخ. أدخله مجددًا قبل الإرسال.",
+   "composerHeadersWithheld": "لم تُنسخ الرؤوس المخفية: {names}"
 }

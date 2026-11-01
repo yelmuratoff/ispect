@@ -1499,4 +1499,23 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => 'Nur Treffer';
+
+  @override
+  String get composerCustomMethod => 'Eigene Methode';
+
+  @override
+  String get composerCustomMethodMenu => 'Eigene Methode…';
+
+  @override
+  String get composerCustomMethodInvalid =>
+      'Geben Sie ein Wort ohne Leerzeichen ein, z. B. SEARCH';
+
+  @override
+  String get composerBodyWithheld =>
+      'Der Body wurde im Log maskiert und nicht übernommen. Geben Sie ihn vor dem Senden erneut ein.';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return 'Maskierte Header wurden nicht übernommen: $names';
+  }
 }

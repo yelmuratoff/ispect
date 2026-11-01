@@ -436,5 +436,10 @@
     "exportLogs": "Экспорт логов",
     "exportLogsDesc": "Скачать логи файлом или скопировать сводку",
     "searchModeHighlight": "Подсветить",
-    "searchModeFilter": "Скрыть прочие"
+    "searchModeFilter": "Скрыть прочие",
+    "composerCustomMethod": "Свой метод",
+    "composerCustomMethodMenu": "Свой метод…",
+    "composerCustomMethodInvalid": "Введите одно слово без пробелов, например SEARCH",
+    "composerBodyWithheld": "Тело было замаскировано в логе и не скопировано. Введите его заново перед отправкой.",
+    "composerHeadersWithheld": "Замаскированные заголовки не скопированы: {names}"
 }

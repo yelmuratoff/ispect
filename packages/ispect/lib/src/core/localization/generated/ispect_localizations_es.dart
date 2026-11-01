@@ -1486,4 +1486,23 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => 'Ocultar resto';
+
+  @override
+  String get composerCustomMethod => 'Método personalizado';
+
+  @override
+  String get composerCustomMethodMenu => 'Método personalizado…';
+
+  @override
+  String get composerCustomMethodInvalid =>
+      'Escribe una sola palabra sin espacios, por ejemplo SEARCH';
+
+  @override
+  String get composerBodyWithheld =>
+      'El cuerpo estaba enmascarado en el registro y no se copió. Vuelve a escribirlo antes de enviar.';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return 'Los encabezados enmascarados no se copiaron: $names';
+  }
 }

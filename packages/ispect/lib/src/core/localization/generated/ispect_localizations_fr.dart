@@ -1498,4 +1498,23 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
 
   @override
   String get searchModeFilter => 'Masquer le reste';
+
+  @override
+  String get composerCustomMethod => 'Méthode personnalisée';
+
+  @override
+  String get composerCustomMethodMenu => 'Méthode personnalisée…';
+
+  @override
+  String get composerCustomMethodInvalid =>
+      'Saisissez un seul mot sans espaces, par exemple SEARCH';
+
+  @override
+  String get composerBodyWithheld =>
+      'Le corps était masqué dans le journal et n\'a pas été copié. Saisissez-le à nouveau avant l\'envoi.';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return 'Les en-têtes masqués n\'ont pas été copiés : $names';
+  }
 }

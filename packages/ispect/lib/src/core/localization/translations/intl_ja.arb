@@ -436,5 +436,10 @@
    "exportLogs": "ログをエクスポート",
    "exportLogsDesc": "ログをファイルでダウンロード、または要約をコピー",
    "searchModeHighlight": "ハイライト",
-   "searchModeFilter": "他を隠す"
+   "searchModeFilter": "他を隠す",
+   "composerCustomMethod": "カスタムメソッド",
+   "composerCustomMethodMenu": "カスタムメソッド…",
+   "composerCustomMethodInvalid": "SEARCH のように、スペースを含まない1語で入力してください",
+   "composerBodyWithheld": "ボディはログでマスクされていたためコピーされていません。送信前にもう一度入力してください。",
+   "composerHeadersWithheld": "マスクされたヘッダーはコピーされていません: {names}"
 }
