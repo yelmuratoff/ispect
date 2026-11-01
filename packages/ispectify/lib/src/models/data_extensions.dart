@@ -132,27 +132,54 @@ StackTrace: ${bounded(captured.stackTraceText)}]''';
     bool enableRedaction = true,
   }) {
     final captured = captureISpectLogDataForEgress(this);
-    if (captured.key == ISpectLogType.httpRequest.key) {
-      return CurlUtils.generateCurl(
-        captured.additionalData,
-        redactor: redactor,
-        enableRedaction: enableRedaction,
-        resourceLimits: captured.resourceLimits,
-      );
-    } else if (captured.key == ISpectLogType.httpResponse.key ||
-        captured.key == ISpectLogType.httpError.key) {
-      final requestOptionsValue = captured.additionalData?['request-options'];
-      final requestOptions = requestOptionsValue is Map<String, dynamic>
-          ? requestOptionsValue
-          : null;
-      return requestOptions != null
-          ? CurlUtils.generateCurl(
-              requestOptions,
-              redactor: redactor,
-              enableRedaction: enableRedaction,
-              resourceLimits: captured.resourceLimits,
-            )
-          : null;
+    final key = captured.key;
+    final Map<String, dynamic>? request;
+    if (key == ISpectLogType.httpRequest.key) {
+      request = _capturedRequestOf(captured.additionalData) ??
+          captured.additionalData;
+    } else if (key == ISpectLogType.httpResponse.key ||
+        key == ISpectLogType.httpError.key) {
+      final requestOptions = captured.additionalData?['request-options'];
+      request = _capturedRequestOf(captured.additionalData) ??
+          (requestOptions is Map<String, dynamic> ? requestOptions : null);
+    } else {
+      request = null;
+    }
+    if (request == null) return null;
+    return CurlUtils.generateCurl(
+      request,
+      redactor: redactor,
+      enableRedaction: enableRedaction,
+      resourceLimits: captured.resourceLimits,
+    );
+  }
+
+  /// The request a network adapter captured with this log, or `null` when the
+  /// log carries none.
+  ///
+  /// Request logs hold it under `request-data`; response and error logs hold
+  /// the copy the adapter attached to the response. Values are as captured:
+  /// redacted when redaction was active at capture time.
+  Map<String, dynamic>? get capturedNetworkRequest =>
+      _capturedRequestOf(captureISpectLogDataForEgress(this).additionalData);
+
+  static Map<String, dynamic>? _capturedRequestOf(
+    Map<String, dynamic>? additionalData,
+  ) {
+    final meta = additionalData?[TraceKeys.meta];
+    if (meta is! Map) return null;
+    final requestData = meta[NetworkJsonKeys.requestData];
+    if (requestData is Map) return Map<String, dynamic>.from(requestData);
+    for (final payloadKey in const [
+      NetworkJsonKeys.responseData,
+      NetworkJsonKeys.errorData,
+    ]) {
+      final payload = meta[payloadKey];
+      if (payload is! Map) continue;
+      final response = payload[NetworkJsonKeys.response];
+      final request = payload[NetworkJsonKeys.request] ??
+          (response is Map ? response[NetworkJsonKeys.request] : null);
+      if (request is Map) return Map<String, dynamic>.from(request);
     }
     return null;
   }

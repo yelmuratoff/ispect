@@ -174,14 +174,7 @@ final class NetworkPayloadSanitizer {
       final (currentLeft, currentRight) = pending.removeLast();
       inspected++;
       if (identical(currentLeft, currentRight)) continue;
-      if (currentLeft == null ||
-          currentRight == null ||
-          currentLeft.runtimeType != currentRight.runtimeType) {
-        return false;
-      }
-      if (currentLeft is String || currentLeft is num || currentLeft is bool) {
-        if (currentLeft != currentRight) return false;
-      } else if (currentLeft is Map<String, Object?> &&
+      if (currentLeft is Map<String, Object?> &&
           currentRight is Map<String, Object?>) {
         if (currentLeft.length != currentRight.length) return false;
         for (final entry in currentLeft.entries) {
@@ -194,12 +187,21 @@ final class NetworkPayloadSanitizer {
         for (var index = 0; index < currentLeft.length; index++) {
           pending.add((currentLeft[index], currentRight[index]));
         }
-      } else {
+      } else if (!_sameScalar(currentLeft, currentRight)) {
         return false;
       }
     }
     return pending.isEmpty;
   }
+
+  static bool _sameScalar(Object? left, Object? right) =>
+      switch ((left, right)) {
+        (final String left, final String right) => left == right,
+        (final bool left, final bool right) => left == right,
+        (final int left, final int right) => left == right,
+        (final double left, final double right) => left == right,
+        _ => false,
+      };
 
   /// Ensures the value is represented as a string-keyed map. Non-map values are
   /// wrapped in `{ 'data': value }`.

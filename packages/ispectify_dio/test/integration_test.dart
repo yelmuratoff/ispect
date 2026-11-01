@@ -293,6 +293,87 @@ void main() {
     });
   });
 
+  group('Dio integration: replay and cURL', () {
+    Future<ISpectLogger> capture(
+      Future<void> Function(Dio dio) send, {
+      int statusCode = 200,
+    }) async {
+      final logger = ISpectLogger(
+        options: ISpectLoggerOptions(useConsoleLogs: false),
+      );
+      final dio = _dioWith(
+        _FakeHttpAdapter(
+          (_) => _jsonResponse({'id': 1}, statusCode: statusCode),
+        ),
+      )..interceptors.add(
+          ISpectDioInterceptor(
+            logger: logger,
+            settings: const ISpectDioInterceptorSettings(
+              printRequestHeaders: true,
+              printRequestData: true,
+              printResponseHeaders: true,
+              printResponseData: true,
+            ),
+          ),
+        );
+      try {
+        await send(dio);
+      } on DioException catch (_) {}
+      return logger;
+    }
+
+    test('a request with a plain query can be rebuilt for replay', () async {
+      final logger = await capture(
+        (dio) => dio.get<dynamic>('/todos', queryParameters: {'page': 2}),
+      );
+      final request = logger.history
+          .firstWhere((log) => log.key == ISpectLogType.httpRequest.key);
+
+      final parsed = NetworkReplayRequestParser.fromRequestMap(
+        request.capturedNetworkRequest!,
+      );
+
+      expect(parsed?.request.method, 'GET');
+      expect(parsed?.request.uri.toString(), 'https://api.test/todos?page=2');
+    });
+
+    test('a request with a secret in its query is not rebuilt', () async {
+      final logger = await capture(
+        (dio) => dio.get<dynamic>(
+          '/todos',
+          queryParameters: {'token': 'QUERY-SECRET-VALUE'},
+        ),
+      );
+      final request = logger.history
+          .firstWhere((log) => log.key == ISpectLogType.httpRequest.key);
+
+      expect(
+        NetworkReplayRequestParser.fromRequestMap(
+          request.capturedNetworkRequest!,
+        ),
+        isNull,
+      );
+    });
+
+    test('request, response and error logs all export cURL', () async {
+      final success = await capture(
+        (dio) => dio.post<dynamic>('/todos', data: {'title': 'Buy milk'}),
+      );
+      final failure = await capture(
+        (dio) => dio.get<dynamic>('/missing'),
+        statusCode: 404,
+      );
+
+      for (final log in [...success.history, ...failure.history]) {
+        expect(
+          log.curlCommand,
+          allOf(contains('curl'), contains('https://api.test/')),
+          reason: '${log.key} should export cURL',
+        );
+      }
+    });
+  });
+
   group('Dio integration: redaction', () {
     test('Authorization header is redacted in history records', () async {
       final logger = ISpectLogger(
