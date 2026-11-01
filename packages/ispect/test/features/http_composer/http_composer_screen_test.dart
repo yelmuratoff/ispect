@@ -150,6 +150,22 @@ void main() {
       expect(find.text('Custom method'), findsOneWidget);
     });
 
+    testWidgets('the custom method field is named without a floating label', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        appShell(HttpComposerScreen(senders: [_FakeSender()])),
+      );
+
+      await openCustomMethod(tester);
+      final field = find.byType(TextField).last;
+
+      expect(tester.widget<TextField>(field).decoration?.labelText, isNull);
+      expect(tester.getSemantics(field).label, contains('Method'));
+      semantics.dispose();
+    });
+
     testWidgets('says which redacted values were not copied from the log', (
       tester,
     ) async {

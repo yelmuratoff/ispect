@@ -159,6 +159,28 @@ void main() {
       expect(chipColor('headers'), isNot(chipColor('body')));
     });
 
+    testWidgets('the chip of the section in view is announced as selected', (
+      tester,
+    ) async {
+      await _pumpDetail(tester, _httpResponse());
+      bool? selected(String id) => tester
+          .widget<Semantics>(
+            find
+                .descendant(of: _landmark(id), matching: find.byType(Semantics))
+                .first,
+          )
+          .properties
+          .selected;
+
+      expect(selected('headers'), isFalse);
+
+      await tester.tap(_landmark('headers'));
+      await tester.pumpAndSettle();
+
+      expect(selected('headers'), isTrue);
+      expect(selected('body'), isFalse);
+    });
+
     testWidgets('a request offers its body, headers and query', (tester) async {
       await _pumpDetail(tester, _httpRequest());
 

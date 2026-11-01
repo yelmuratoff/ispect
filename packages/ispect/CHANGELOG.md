@@ -35,7 +35,7 @@
 - **Clear all filters** in the filter sheet also clears the search text.
 - **Sessions folder:** A failing host `onOpenFile` is logged instead of surfacing as an uncaught error.
 - **Closing sheets:** The close button of the settings sheet, and of other ISpect sheets, works when the sheet sits under the parked panel.
-- **Edit & resend:** Dio and http requests were marked as having a redacted query even when nothing was redacted, so the composer refused to rebuild them. Only a query the redactor changed is marked now, and a redacted value still blocks the resend.
+- **Edit & resend:** Dio and http requests were marked as having a redacted query even when nothing was redacted, so the composer refused to rebuild them. Only a query the redactor changed is marked now, and a redacted query still blocks the resend.
 - **Copy as cURL:** Works again for request, response and error logs from the Dio and http adapters.
 
 ## 7.2.0

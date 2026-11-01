@@ -479,14 +479,16 @@ class _CustomMethodDialogState extends State<_CustomMethodDialog> {
     final l10n = context.ispectL10n;
     return ISpectAlertDialog(
       title: Text(l10n.composerCustomMethod),
-      content: ISpectTextField(
-        controller: _controller,
-        autofocus: true,
-        labelText: l10n.composerMethod,
-        hintText: 'SEARCH',
-        errorText: _showInvalid ? l10n.composerCustomMethodInvalid : null,
-        onChanged: _onChanged,
-        onSubmitted: (_) => _submit(),
+      content: Semantics(
+        label: l10n.composerMethod,
+        child: ISpectTextField(
+          controller: _controller,
+          autofocus: true,
+          hintText: 'SEARCH',
+          errorText: _showInvalid ? l10n.composerCustomMethodInvalid : null,
+          onChanged: _onChanged,
+          onSubmitted: (_) => _submit(),
+        ),
       ),
       actions: [
         TextButton(

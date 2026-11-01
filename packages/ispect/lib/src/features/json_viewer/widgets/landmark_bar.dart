@@ -41,6 +41,7 @@ class JsonLandmarkBar extends StatelessWidget {
                     : landmark.label(context),
                 icon: landmark.icon,
                 color: identical(landmark, active) ? activeColor : restColor,
+                selected: identical(landmark, active),
                 onTap: () => onSelected(node),
               ),
             ],
