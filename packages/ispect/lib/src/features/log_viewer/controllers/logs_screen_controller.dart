@@ -351,7 +351,9 @@ class LogsScreenController {
   }
 
   void _onSearchFocusChanged() {
-    if (!searchFocusNode.hasFocus && keyboardFocusNode.canRequestFocus) {
+    if (!searchFocusNode.hasFocus &&
+        keyboardFocusNode.canRequestFocus &&
+        (keyboardFocusNode.enclosingScope?.hasFocus ?? false)) {
       keyboardFocusNode.requestFocus();
     }
   }
