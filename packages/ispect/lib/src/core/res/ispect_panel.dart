@@ -13,6 +13,7 @@ final class ISpectPanelData {
     required this.theme,
     required this.actionTheme,
     required this.child,
+    this.isVisible = true,
   });
 
   /// The panel controller ISpect manages (or the one passed to `ISpectBuilder`).
@@ -36,6 +37,11 @@ final class ISpectPanelData {
 
   /// The app content the panel floats over. Pass it to the panel's `child`.
   final Widget? child;
+
+  /// Whether the panel should show. It is `false` while an ISpect sheet or
+  /// dialog is open. Pass it to the panel's `visible` so the panel steps aside
+  /// without ISpect changing the phase of [controller].
+  final bool isVisible;
 }
 
 /// Builds the diagnostics panel from the pieces ISpect assembles.

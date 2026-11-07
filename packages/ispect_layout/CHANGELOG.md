@@ -6,8 +6,13 @@
 
 - **HTTP composer:** A client base URL that carries credentials or a secret query parameter is no longer filled in for new requests, so it doesn't end up on screen. Plain base URLs are still filled in, and so is every base URL when redaction is off.
 
+### Improvements
+
+- **Custom panels:** `ISpectPanelData.isVisible` is `false` while an ISpect sheet or dialog is open; pass it to the panel's `visible` (`draggable_panel` 4.2.0).
+
 ### Bug Fixes
 
+- **Hiding the panel during an ISpect sheet:** A panel the host hides while an ISpect sheet or dialog is open stays hidden after it closes. ISpect now steps the panel aside with `visible` instead of hiding and showing the host's controller.
 - **Log action buttons:** Screen readers announce the icon buttons on log cards, desktop rows and HTTP transaction cards once instead of reading their name twice.
 - **Clear all filters** shows in the filter sheet whenever the list is narrowed, including a Hide others search with no log types selected.
 - **Settings toggles in right-to-left languages:** The switch thumb moves toward the end edge when turned on.

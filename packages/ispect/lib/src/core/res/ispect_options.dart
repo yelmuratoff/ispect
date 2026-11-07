@@ -157,6 +157,7 @@ final class ISpectOptions {
   /// ISpectOptions(
   ///   panelBuilder: (context, data) => DraggableActionPanel(
   ///     controller: data.controller,
+  ///     visible: data.isVisible,
   ///     actions: data.actions,
   ///     buttons: data.buttons,
   ///     theme: data.theme.copyWith(

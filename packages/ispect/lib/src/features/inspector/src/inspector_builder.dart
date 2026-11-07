@@ -129,7 +129,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   /// non-interactive so the app below stays usable while no ISpect route is open.
   late final ValueNotifier<bool> _hasOverlayRoute;
   late final ISpectModalTracker _modalTracker;
-  bool _panelHiddenForModal = false;
+  late final ValueNotifier<bool> _isPanelVisible;
   bool _isInitialized = false;
   int _overlayDepth = 0;
   List<InspectorPlugin> _activePlugins = const [];
@@ -149,6 +149,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     _navigatorKey = GlobalKey<NavigatorState>();
     _hasOverlayRoute = ValueNotifier<bool>(false);
     _modalTracker = ISpectModalTracker()..addListener(_onModalsChanged);
+    _isPanelVisible = ValueNotifier<bool>(true);
     _isInitialized = true;
 
     _syncPlugins();
@@ -204,24 +205,11 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     _activePlugins = List<InspectorPlugin>.unmodifiable(next.values);
   }
 
-  void _onModalsChanged() => SchedulerBinding.instance.addPostFrameCallback(
-    (_) => _syncPanelWithModals(),
-  );
-
-  void _syncPanelWithModals() {
-    if (!mounted) return;
-    if (_modalTracker.hasOpenModal) {
-      if (_panelHiddenForModal || _panelController.phase == PanelPhase.hidden) {
-        return;
-      }
-      _panelHiddenForModal = true;
-      _panelController.hide();
-      return;
-    }
-    if (!_panelHiddenForModal) return;
-    _panelHiddenForModal = false;
-    _panelController.show();
-  }
+  void _onModalsChanged() =>
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _isPanelVisible.value = !_modalTracker.hasOpenModal;
+      });
 
   void _applyInitialSettings() {
     final initialSettings = widget.options?.initialSettings;
@@ -248,6 +236,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     _modalTracker
       ..removeListener(_onModalsChanged)
       ..dispose();
+    _isPanelVisible.dispose();
     model.dispose();
     super.dispose();
   }
@@ -309,11 +298,13 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       listenable: Listenable.merge([
         controller.modeNotifier,
         _logPageController,
+        _isPanelVisible,
       ]),
       child: child,
       builder: (context, child) {
         final data = ISpectPanelData(
           controller: _panelController,
+          isVisible: _isPanelVisible.value,
           theme: theme.panelTheme ?? _buildDefaultPanelTheme(context),
           actionTheme:
               theme.panelActionTheme ?? _buildDefaultActionTheme(context),
@@ -408,6 +399,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
           theme: data.theme,
           actionTheme: data.actionTheme,
           controller: data.controller,
+          visible: data.isVisible,
           actions: data.actions,
           buttons: data.buttons,
           title: iSpect.theme.pageTitle,
