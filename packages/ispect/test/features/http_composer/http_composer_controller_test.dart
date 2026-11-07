@@ -309,6 +309,44 @@ void main() {
       expect(_controller(senders: [noBase]).url, isEmpty);
     });
 
+    for (final base in [
+      'https://user:secret@api.test/v1/',
+      'https://api.test/v1/?api_key=SECRET-KEY',
+    ]) {
+      test('a base URL that carries a secret is not shown: $base', () {
+        final sender = _BaseUrlSender('secret', Uri.parse(base));
+
+        expect(_controller(senders: [sender]).url, isEmpty);
+      });
+    }
+
+    test('a base URL with a harmless query is still filled in', () {
+      final sender = _BaseUrlSender(
+        'versioned',
+        Uri.parse('https://api.test/v1/?version=2'),
+      );
+
+      expect(
+        _controller(senders: [sender]).url,
+        'https://api.test/v1/?version=2',
+      );
+    });
+
+    test('with redaction off a secret-bearing base URL is filled in', () {
+      final sender = _BaseUrlSender(
+        'secret',
+        Uri.parse('https://user:secret@api.test/v1/'),
+      );
+
+      ISpectRedaction.enabled = false;
+      addTearDown(ISpectRedaction.reset);
+
+      expect(
+        _controller(senders: [sender]).url,
+        'https://user:secret@api.test/v1/',
+      );
+    });
+
     test('switching client swaps a base URL the user has not extended', () {
       final controller = _controller(senders: [api, cdn, noBase])
         ..selectSender('cdn');

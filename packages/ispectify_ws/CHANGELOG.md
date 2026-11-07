@@ -2,6 +2,10 @@
 
 ## 7.3.0-dev.5
 
+### Security
+
+- **HTTP composer:** A client base URL that carries credentials or a secret query parameter is no longer filled in for new requests, so it doesn't end up on screen. Plain base URLs are still filled in, and so is every base URL when redaction is off.
+
 ### Bug Fixes
 
 - **Log action buttons:** Screen readers announce the icon buttons on log cards, desktop rows and HTTP transaction cards once instead of reading their name twice.
