@@ -39,7 +39,7 @@
 - **Reopening the log viewer** after turning off a log type no longer throws "setState() called during build".
 - **Clear all filters** also clears the search text.
 - **Sessions folder:** A failing host `onOpenFile` is logged instead of throwing.
-- **Logs screen next to other panes:** Leaving search no longer takes focus back from another pane, and Cmd/Ctrl+K opens search only while the logs pane has focus.
+- **Logs screen next to other panes:** Leaving search no longer takes focus back from another pane or text field, and Cmd/Ctrl+K opens search only while the logs pane has focus.
 
 ## 7.2.0
 

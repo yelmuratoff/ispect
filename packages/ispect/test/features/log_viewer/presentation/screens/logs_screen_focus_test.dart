@@ -135,6 +135,60 @@ void main() {
     );
   });
 
+  group('LogsScreen sharing a focus scope with another field', () {
+    const neighbourKey = ValueKey('neighbour-field');
+
+    setUp(() {
+      ISpect.initialize(
+        ISpectLogger(options: ISpectLoggerOptions(useConsoleLogs: false)),
+      );
+      addTearDown(ISpect.dispose);
+    });
+
+    testWidgets('leaving search for the other field keeps focus there', (
+      tester,
+    ) async {
+      tester.view
+        ..physicalSize = const Size(1400, 900)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        ISpectScopeController(
+          model: ISpectScopeModel(isISpectEnabled: true),
+          child: MaterialApp(
+            localizationsDelegates: ISpectLocalization.localizationDelegates,
+            supportedLocales: ISpectLocalization.supportedLocales,
+            home: const Column(
+              children: [
+                Material(child: TextField(key: neighbourKey)),
+                Expanded(child: LogsScreen(options: ISpectOptions())),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final search = find.descendant(
+        of: find.byType(LogsScreen),
+        matching: find.byType(EditableText),
+      );
+      await tester.tap(search);
+      await tester.pumpAndSettle();
+      expect(tester.widget<EditableText>(search).focusNode.hasFocus, isTrue);
+
+      await tester.tap(find.byKey(neighbourKey));
+      await tester.pumpAndSettle();
+
+      final neighbour = tester.widget<EditableText>(
+        find.descendant(
+          of: find.byKey(neighbourKey),
+          matching: find.byType(EditableText),
+        ),
+      );
+      expect(neighbour.focusNode.hasFocus, isTrue);
+    });
+  });
+
   group('LogsScreen pushed as a route', () {
     setUp(() {
       ISpect.initialize(

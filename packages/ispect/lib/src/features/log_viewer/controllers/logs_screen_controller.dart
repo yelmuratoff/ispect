@@ -351,11 +351,11 @@ class LogsScreenController {
   }
 
   void _onSearchFocusChanged() {
-    if (!searchFocusNode.hasFocus &&
-        keyboardFocusNode.canRequestFocus &&
-        (keyboardFocusNode.enclosingScope?.hasFocus ?? false)) {
-      keyboardFocusNode.requestFocus();
-    }
+    if (searchFocusNode.hasFocus || !keyboardFocusNode.canRequestFocus) return;
+    final scope = keyboardFocusNode.enclosingScope;
+    final focusFellBackToScope =
+        scope != null && identical(FocusManager.instance.primaryFocus, scope);
+    if (focusFellBackToScope) keyboardFocusNode.requestFocus();
   }
 
   // --- Live tail ---
