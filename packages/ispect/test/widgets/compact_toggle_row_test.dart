@@ -56,4 +56,59 @@ void main() {
       semantics.dispose();
     });
   });
+
+  group('CompactToggleRow switch direction', () {
+    Future<({Rect track, Rect thumb})> pumpSwitch(
+      WidgetTester tester, {
+      required Locale locale,
+      required bool enabled,
+    }) async {
+      await tester.pumpWidget(
+        appShell(
+          locale: locale,
+          CompactToggleRow(
+            spec: ToggleSpec(
+              title: 'Console logs',
+              icon: Icons.terminal_rounded,
+              enabled: enabled,
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final thumb = find.byWidgetPredicate(
+        (widget) =>
+            widget is Container &&
+            widget.decoration is BoxDecoration &&
+            (widget.decoration! as BoxDecoration).shape == BoxShape.circle,
+      );
+      final track = find.ancestor(of: thumb, matching: find.byType(Stack));
+      return (track: tester.getRect(track.first), thumb: tester.getRect(thumb));
+    }
+
+    for (final (languageCode, onSideIsRight) in [('en', true), ('ar', false)]) {
+      testWidgets('the thumb moves toward the end edge in $languageCode', (
+        tester,
+      ) async {
+        final off = await pumpSwitch(
+          tester,
+          locale: Locale(languageCode),
+          enabled: false,
+        );
+        final on = await pumpSwitch(
+          tester,
+          locale: Locale(languageCode),
+          enabled: true,
+        );
+
+        expect(on.track, off.track);
+        expect(
+          on.thumb.center.dx > off.thumb.center.dx,
+          onSideIsRight,
+          reason: 'on=${on.thumb} off=${off.thumb}',
+        );
+      });
+    }
+  });
 }

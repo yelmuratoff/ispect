@@ -439,6 +439,7 @@ class _DesktopActionIcon extends StatelessWidget {
     onTap: onPressed,
     child: Tooltip(
       message: tooltip ?? '',
+      excludeFromSemantics: true,
       child: InkWell(
         excludeFromSemantics: true,
         customBorder: ISpectSquircle.border(

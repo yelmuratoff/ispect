@@ -280,6 +280,7 @@ class SmallActionIcon extends StatelessWidget {
     onTap: onPressed,
     child: Tooltip(
       message: tooltip ?? '',
+      excludeFromSemantics: true,
       child: Material(
         type: MaterialType.transparency,
         child: InkWell(

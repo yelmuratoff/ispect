@@ -24,7 +24,7 @@ void main() {
         uniqTitles: uniqTitles,
         onToggleTitle: (key, selected) =>
             controller.handleLogTypeKeyFilterToggle(key, isSelected: selected),
-        onClearAllFilters: controller.clearAllFilters,
+        onClearAllFilters: controller.clearSearchAndFilters,
       ),
     );
 
@@ -93,6 +93,34 @@ void main() {
         ),
         findsNothing,
       );
+    });
+
+    testWidgets('offers clear all for a hide-others search without chips', (
+      tester,
+    ) async {
+      controller
+        ..searchMode = SearchMode.filter
+        ..searchByCorrelationId('timeout');
+      await tester.pumpWidget(sheet(const ['info']));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Clear all filters'));
+      await tester.pumpAndSettle();
+
+      expect(controller.hasClearableFilters, isFalse);
+      expect(controller.searchController.text, isEmpty);
+    });
+
+    testWidgets('hides clear all when nothing narrows the list', (
+      tester,
+    ) async {
+      controller
+        ..searchMode = SearchMode.highlight
+        ..searchByCorrelationId('timeout');
+      await tester.pumpWidget(sheet(const ['info']));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Clear all filters'), findsNothing);
     });
 
     testWidgets('a chip announces its title and count once', (tester) async {

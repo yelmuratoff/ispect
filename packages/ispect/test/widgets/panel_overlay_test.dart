@@ -459,5 +459,89 @@ void main() {
 
       expect(panelController(tester).phase, PanelPhase.hidden);
     });
+
+    testWidgets('a panel the host hides while a sheet is open stays hidden', (
+      tester,
+    ) async {
+      if (!kISpectEnabled) return;
+      await pumpLogsWithPanel(tester);
+      await tester.tap(find.byIcon(Icons.more_horiz_rounded));
+      await tester.pumpAndSettle();
+
+      panelController(tester).hide();
+      await tester.pumpAndSettle();
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+
+      expect(panelController(tester).phase, PanelPhase.hidden);
+    });
+
+    testWidgets('a sheet steps the panel aside without changing its phase', (
+      tester,
+    ) async {
+      if (!kISpectEnabled) return;
+      await pumpLogsWithPanel(tester);
+      final phase = panelController(tester).phase;
+
+      await tester.tap(find.byIcon(Icons.more_horiz_rounded));
+      await tester.pumpAndSettle();
+
+      expect(panelController(tester).phase, phase);
+      expect(
+        tester
+            .widget<DraggableActionPanel>(find.byType(DraggableActionPanel))
+            .visible,
+        isFalse,
+      );
+
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<DraggableActionPanel>(find.byType(DraggableActionPanel))
+            .visible,
+        isTrue,
+      );
+    });
+
+    testWidgets('a custom panel builder learns when to step aside', (
+      tester,
+    ) async {
+      if (!kISpectEnabled) return;
+      final seen = <bool>[];
+      tester.view
+        ..physicalSize = const Size(560, 760)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: ISpectLocalization.localizationDelegates,
+          supportedLocales: ISpectLocalization.supportedLocales,
+          builder: (context, child) => ISpectBuilder.wrap(
+            options: ISpectOptions(
+              panelBuilder: (context, data) {
+                seen.add(data.isVisible);
+                return DraggableActionPanel(
+                  controller: data.controller,
+                  visible: data.isVisible,
+                  actions: data.actions,
+                  child: data.child,
+                );
+              },
+            ),
+            child: child!,
+          ),
+          home: const LogsScreen(options: ISpectOptions()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.more_horiz_rounded));
+      await tester.pumpAndSettle();
+
+      expect(seen.first, isTrue);
+      expect(seen.last, isFalse);
+    });
   });
 }

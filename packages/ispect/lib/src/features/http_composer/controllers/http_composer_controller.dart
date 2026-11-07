@@ -164,10 +164,16 @@ final class HttpComposerController extends ChangeNotifier {
     _prefilledUrl = _url;
   }
 
-  static String? _baseUrlOf(NetworkRequestSender? sender) => switch (sender) {
-    final NetworkBaseUrlProvider provider => provider.baseUrl?.toString(),
-    _ => null,
-  };
+  static String? _baseUrlOf(NetworkRequestSender? sender) {
+    final url = switch (sender) {
+      final NetworkBaseUrlProvider provider => provider.baseUrl?.toString(),
+      _ => null,
+    };
+    if (url == null || !ISpectRedaction.enabled) return url;
+    final carriesSecret =
+        ISpectRedaction.resolveService().redactUrl(url) != url;
+    return carriesSecret ? null : url;
+  }
 
   void setBodyKind(ComposerBodyKind kind) {
     _bodyKind = kind;

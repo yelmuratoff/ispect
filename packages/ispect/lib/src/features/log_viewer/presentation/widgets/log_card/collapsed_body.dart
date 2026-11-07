@@ -289,7 +289,11 @@ class SquareIconButton extends StatelessWidget {
     );
 
     if (tooltip case final tooltip?) {
-      button = Tooltip(message: tooltip, child: button);
+      button = Tooltip(
+        message: tooltip,
+        excludeFromSemantics: true,
+        child: button,
+      );
     }
 
     return button;
