@@ -36,7 +36,7 @@ class ISpectFilterSheet extends StatelessWidget {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
-        final hasSelectedChips = controller.activeLogTypeFilterCount > 0;
+        final canClearFilters = controller.hasClearableFilters;
 
         return ListView(
           controller: scrollController,
@@ -69,8 +69,7 @@ class ISpectFilterSheet extends StatelessWidget {
               ),
             ],
 
-            // Clear all - only when chips are selected
-            if (hasSelectedChips)
+            if (canClearFilters)
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
