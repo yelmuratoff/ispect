@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.3.0-dev.5
+
+### Bug Fixes
+
+- **Log action buttons:** Screen readers announce the icon buttons on log cards, desktop rows and HTTP transaction cards once instead of reading their name twice.
+
 ## 7.3.0-dev.4
 
 ### Behavioral Changes
