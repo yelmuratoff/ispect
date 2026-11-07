@@ -297,6 +297,7 @@ void main() {
     Future<ISpectLogger> capture(
       Future<void> Function(Dio dio) send, {
       int statusCode = 200,
+      bool enableRedaction = true,
     }) async {
       final logger = ISpectLogger(
         options: ISpectLoggerOptions(useConsoleLogs: false),
@@ -308,7 +309,8 @@ void main() {
       )..interceptors.add(
           ISpectDioInterceptor(
             logger: logger,
-            settings: const ISpectDioInterceptorSettings(
+            settings: ISpectDioInterceptorSettings(
+              enableRedaction: enableRedaction,
               printRequestHeaders: true,
               printRequestData: true,
               printResponseHeaders: true,
@@ -372,6 +374,55 @@ void main() {
         );
       }
     });
+
+    test('cURL keeps the query parameters Dio sent separately', () async {
+      final success = await capture(
+        (dio) => dio.get<dynamic>('/todos', queryParameters: {'page': 2}),
+      );
+      final failure = await capture(
+        (dio) => dio.get<dynamic>('/todos', queryParameters: {'page': 2}),
+        statusCode: 404,
+      );
+
+      for (final log in [...success.history, ...failure.history]) {
+        expect(
+          log.curlCommand,
+          contains("--url 'https://api.test/todos?page=2'"),
+          reason: '${log.key} cURL should carry the query',
+        );
+      }
+    });
+
+    for (final captureRedaction in [true, false]) {
+      test(
+          'cURL masks header, query and body secrets of every log '
+          '(capture redaction ${captureRedaction ? 'on' : 'off'})', () async {
+        const headerSecret = 'Bearer HEADER-SECRET-VALUE';
+        const querySecret = 'QUERY-SECRET-VALUE';
+        const bodySecret = 'BODY-SECRET-VALUE';
+        Future<void> send(Dio dio) => dio.post<dynamic>(
+              '/login',
+              queryParameters: {'token': querySecret, 'page': 2},
+              data: {'user': 'demo', 'password': bodySecret},
+              options: Options(headers: {'Authorization': headerSecret}),
+            );
+        final success = await capture(send, enableRedaction: captureRedaction);
+        final failure = await capture(
+          send,
+          statusCode: 401,
+          enableRedaction: captureRedaction,
+        );
+
+        for (final log in [...success.history, ...failure.history]) {
+          final curl = log.curlCommand;
+          expect(curl, contains('page=2'), reason: log.key);
+          expect(curl, contains('token='), reason: log.key);
+          expect(curl, isNot(contains(headerSecret)), reason: log.key);
+          expect(curl, isNot(contains(querySecret)), reason: log.key);
+          expect(curl, isNot(contains(bodySecret)), reason: log.key);
+        }
+      });
+    }
   });
 
   group('Dio integration: redaction', () {

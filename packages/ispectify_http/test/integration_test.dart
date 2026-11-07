@@ -670,6 +670,63 @@ void main() {
       expect(logger.history, isEmpty);
     });
   });
+
+  group('HTTP integration: cURL', () {
+    for (final (statusCode, captureRedaction) in [
+      (200, true),
+      (401, true),
+      (200, false),
+      (401, false),
+    ]) {
+      test(
+          'cURL of a $statusCode exchange masks header, query and body secrets '
+          '(capture redaction ${captureRedaction ? 'on' : 'off'})', () async {
+        const headerSecret = 'Bearer HEADER-SECRET-VALUE';
+        const querySecret = 'QUERY-SECRET-VALUE';
+        const bodySecret = 'BODY-SECRET-VALUE';
+        final logger = ISpectLogger(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
+        );
+        final client = InterceptedClient.build(
+          interceptors: [
+            ISpectHttpInterceptor(
+              logger: logger,
+              settings: ISpectHttpInterceptorSettings(
+                enableRedaction: captureRedaction,
+                printRequestHeaders: true,
+                printRequestData: true,
+                printResponseHeaders: true,
+                printResponseData: true,
+                printErrorHeaders: true,
+                printErrorData: true,
+              ),
+            ),
+          ],
+          client: _mockJson({'id': 1}, statusCode: statusCode),
+        );
+
+        await client.post(
+          Uri.parse('https://api.test/login?token=$querySecret&page=2'),
+          headers: {
+            'Authorization': headerSecret,
+            'content-type': 'application/json',
+          },
+          body: jsonEncode({'user': 'demo', 'password': bodySecret}),
+        );
+        client.close();
+
+        expect(logger.history, hasLength(2));
+        for (final log in logger.history) {
+          final curl = log.curlCommand;
+          expect(curl, contains('https://api.test/login?'), reason: log.key);
+          expect(curl, contains('page=2'), reason: log.key);
+          expect(curl, isNot(contains(headerSecret)), reason: log.key);
+          expect(curl, isNot(contains(querySecret)), reason: log.key);
+          expect(curl, isNot(contains(bodySecret)), reason: log.key);
+        }
+      });
+    }
+  });
 }
 
 Map<String, dynamic> _meta(ISpectLogData entry) =>

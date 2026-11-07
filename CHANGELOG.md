@@ -34,6 +34,7 @@
 ### Bug Fixes
 
 - **Edit & resend and Copy as cURL** were missing for Dio and http logs.
+- **Copy as cURL for Dio** dropped the query parameters passed in `queryParameters`.
 - **Closing sheets:** The close button works when the sheet sits under the parked panel.
 - **Reopening the log viewer** after turning off a log type no longer throws "setState() called during build".
 - **Clear all filters** also clears the search text.
