@@ -25,7 +25,7 @@
 - **Consistent screens:** Sessions, Navigation Flow, HTTP Composer and the JSON viewer share one title style.
 - **Filter sheet:** Log type chips show titles instead of raw keys, and the search modes are named Highlight and Hide others.
 - **Import logs dialogs** use the ISpect theme.
-- **Screen readers** announce settings toggles, menu actions and collapsible sections once, with their state.
+- **Screen readers** announce settings toggles, filter chips, menu actions and collapsible sections once, with their state, and say when a toggle can't be changed.
 - **Input errors** wrap instead of being cut off.
 - **Log type titles:** Every built-in log type has a readable title in log details and filters, such as Info or Auth Success.
 - **HTTP cards** show the time with milliseconds and have a menu button, like other cards.

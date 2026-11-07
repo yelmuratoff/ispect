@@ -95,6 +95,15 @@ void main() {
       );
     });
 
+    testWidgets('a chip announces its title and count once', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(sheet(const ['info']));
+      await tester.pumpAndSettle();
+
+      expect(find.bySemanticsLabel('Info (1)'), findsOneWidget);
+      semantics.dispose();
+    });
+
     testWidgets('the search mode names what happens to the list', (
       tester,
     ) async {

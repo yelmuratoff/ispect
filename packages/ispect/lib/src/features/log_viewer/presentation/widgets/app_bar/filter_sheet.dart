@@ -293,6 +293,7 @@ class _LogTypeChip extends StatelessWidget {
     return Semantics(
       toggled: isSelected,
       label: '$title ($count)',
+      excludeSemantics: true,
       onTap: () => onSelected(!isSelected),
       child: GestureDetector(
         excludeFromSemantics: true,

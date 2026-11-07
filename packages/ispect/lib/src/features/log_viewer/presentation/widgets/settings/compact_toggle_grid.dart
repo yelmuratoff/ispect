@@ -76,6 +76,7 @@ class CompactToggleRow extends StatelessWidget {
     return Opacity(
       opacity: disabled ? 0.45 : 1,
       child: Semantics(
+        enabled: !disabled,
         toggled: enabled,
         label: spec.title,
         onTap: onTap,
