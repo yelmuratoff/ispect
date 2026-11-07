@@ -163,11 +163,11 @@ class _CompactSwitch extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            AnimatedPositioned(
+            AnimatedPositionedDirectional(
               duration: const Duration(milliseconds: 180),
               curve: Curves.easeInOut,
               top: _thumbPadding,
-              left: enabled
+              start: enabled
                   ? _trackWidth - _thumbSize - _thumbPadding
                   : _thumbPadding,
               child: Container(

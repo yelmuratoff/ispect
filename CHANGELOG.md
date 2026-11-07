@@ -6,6 +6,7 @@
 
 - **Log action buttons:** Screen readers announce the icon buttons on log cards, desktop rows and HTTP transaction cards once instead of reading their name twice.
 - **Clear all filters** shows in the filter sheet whenever the list is narrowed, including a Hide others search with no log types selected.
+- **Settings toggles in right-to-left languages:** The switch thumb moves toward the end edge when turned on.
 
 ## 7.3.0-dev.4
 
