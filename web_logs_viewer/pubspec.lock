@@ -125,10 +125,10 @@ packages:
     dependency: transitive
     description:
       name: draggable_panel
-      sha256: "37a78061e54bf5fd7cb92700c17f1827d902033b59a193a3555e75d304213c46"
+      sha256: ba2ccb83f06609ac4b1aaef685a42f3f6e6ea96f48024e5e05132f608385c5fc
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.4"
+    version: "4.2.0"
   fake_async:
     dependency: transitive
     description:
@@ -732,4 +732,4 @@ packages:
     version: "6.6.1"
 sdks:
   dart: ">=3.8.1 <4.0.0"
-  flutter: ">=3.32.0"
+  flutter: ">=3.35.0"
