@@ -121,6 +121,51 @@ final class _ThrowOnMapIteration extends MapBase<Object?, Object?> {
 }
 
 void main() {
+  group('NetworkPayloadSanitizer.jsonEquals', () {
+    const limits = DiagnosticResourceLimits.balanced;
+
+    for (final (name, left, right, expected)
+        in <(String, Object?, Object?, bool)>[
+      (
+        'maps of different static types',
+        <String, Object?>{'a': 1},
+        <String, dynamic>{'a': 1},
+        true,
+      ),
+      (
+        'lists of different element types',
+        <String>['x'],
+        <Object?>['x'],
+        true,
+      ),
+      ('a fixed-length and a growable list', List.filled(1, 'x'), ['x'], true),
+      ('an int and the equal double', 1, 1.0, false),
+      ('null and a value', null, 'x', false),
+      ('a string and the number it spells', '1', 1, false),
+      ('maps with a changed value', {'a': 'x'}, {'a': '[REDACTED]'}, false),
+      ('maps with a missing key', {'a': 1, 'b': 2}, {'a': 1}, false),
+    ]) {
+      test('$name ${expected ? 'are' : 'are not'} equal', () {
+        expect(
+          NetworkPayloadSanitizer.jsonEquals(left, right, limits),
+          expected,
+        );
+      });
+    }
+
+    test('values past the traversal budget count as changed', () {
+      final wide = {
+        for (var index = 0; index <= limits.maxTraversalNodes; index++)
+          'k$index': index,
+      };
+
+      expect(
+        NetworkPayloadSanitizer.jsonEquals(wide, Map.of(wide), limits),
+        isFalse,
+      );
+    });
+  });
+
   group('NetworkPayloadSanitizer.toStringKeyMap', () {
     test('replaces unknown values without executing caller methods', () {
       final value = _HostileDto();

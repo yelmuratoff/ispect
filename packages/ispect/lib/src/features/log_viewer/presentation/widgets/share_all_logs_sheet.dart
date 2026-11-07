@@ -77,16 +77,18 @@ class ISpectShareAllLogsBottomSheet {
       availableFormats: ExportFormat.values,
       onShare: onShare ?? options.onShare,
     );
+    final snapshot = logs ?? ISpect.logger.history;
 
     return ISpectExportSheet.show(
       context,
       controller: controller,
+      subtitle: context.ispectL10n.logCount(snapshot.length),
       contentBuilder: (format, {required action, redactKeys}) async {
         final metadata = await (metadataProvider ?? options.metadataProvider)
             ?.call();
         return buildLogsExportContent(
           format,
-          logs: logs ?? ISpect.logger.history,
+          logs: snapshot,
           redactKeys: redactKeys,
           metadata: metadata,
         );

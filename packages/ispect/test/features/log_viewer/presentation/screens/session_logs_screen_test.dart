@@ -84,7 +84,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('ISpect'), findsOneWidget);
-      expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.more_horiz_rounded), findsOneWidget);
       expect(
         tester.widget<LogListItem>(find.byType(LogListItem)).isExpanded,
         isFalse,
@@ -115,7 +115,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('snapshot-only entry'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.tap(find.byIcon(Icons.more_horiz_rounded));
     await tester.pumpAndSettle();
     final clearHistory = find.text('Clear history');
     final settingsScrollable = find.byType(Scrollable).last;
@@ -133,8 +133,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.tap(clearHistory.hitTestable());
-    await tester.pump();
-    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Clear history').last);
     await tester.pumpAndSettle();
 
     expect(find.textContaining('snapshot-only entry'), findsNothing);

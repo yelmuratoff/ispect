@@ -123,4 +123,73 @@ void main() {
       findsOneWidget,
     );
   });
+
+  group('sheet framing', () {
+    Future<void> openSheet(
+      WidgetTester tester, {
+      ISpectShareCallback? onShare,
+      String? subtitle,
+    }) async {
+      final controller = ExportController(
+        availableFormats: ExportFormat.values,
+        onShare: onShare,
+        feedbackDuration: Duration.zero,
+      );
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        appShell(
+          Builder(
+            builder: (context) => TextButton(
+              onPressed: () => ISpectExportSheet.show(
+                context,
+                controller: controller,
+                subtitle: subtitle,
+                contentBuilder: (_, {required action, redactKeys}) async =>
+                    'body',
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    Finder filledButtonWithText(String text) => find.ancestor(
+      of: find.text(text),
+      matching: find.byWidgetPredicate((widget) => widget is FilledButton),
+    );
+
+    testWidgets('without a host share callback it is an export led by '
+        'download', (tester) async {
+      await openSheet(tester, subtitle: '3 logs');
+
+      expect(find.text(en.export), findsOneWidget);
+      expect(find.text('3 logs'), findsOneWidget);
+      expect(filledButtonWithText(en.downloadLogsFile), findsOneWidget);
+      expect(find.text(en.share), findsNothing);
+    });
+
+    testWidgets('with a host share callback sharing is the primary action', (
+      tester,
+    ) async {
+      await openSheet(tester, onShare: (_) async {});
+
+      expect(filledButtonWithText(en.share), findsOneWidget);
+      expect(find.text(en.export), findsNothing);
+    });
+
+    testWidgets('the hint follows the selected format', (tester) async {
+      await openSheet(tester);
+
+      expect(find.text(en.exportFormatJsonHint), findsOneWidget);
+
+      await tester.tap(find.text('CSV'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(en.exportFormatCsvHint), findsOneWidget);
+      expect(find.text(en.exportFormatJsonHint), findsNothing);
+    });
+  });
 }

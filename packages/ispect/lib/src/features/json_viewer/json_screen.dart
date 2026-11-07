@@ -13,12 +13,16 @@ import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/json_viewer/breadcrumb_bar.dart';
+import 'package:ispect/src/features/json_viewer/models/json_outline.dart';
+import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/controller/store.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart';
+import 'package:ispect/src/features/json_viewer/widgets/landmark_bar.dart';
 import 'package:ispect/src/features/json_viewer/widgets/store_selector.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/search_bar.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/network_log_outline.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
@@ -32,6 +36,7 @@ class JsonScreen extends StatefulWidget {
     Map<String, dynamic>? truncatedData,
     Map<String, dynamic> Function()? truncatedDataBuilder,
     VoidCallback? onClose,
+    List<Widget> actions = const [],
     Map<String, dynamic>? correlatedLogData,
     String? correlatedLogLabel,
     Duration? correlationDuration,
@@ -77,6 +82,7 @@ class JsonScreen extends StatefulWidget {
       correlatedLogDataSnapshot: correlatedLogDataSnapshot,
       correlatedLogLabel: correlatedLogLabel,
       correlationDuration: correlationDuration,
+      actions: actions,
       processingPolicy: scheduling,
       key: key,
     );
@@ -90,6 +96,7 @@ class JsonScreen extends StatefulWidget {
     required this.onClose,
     required this.correlatedLogLabel,
     required this.correlationDuration,
+    required this.actions,
     required this.processingPolicy,
     super.key,
   }) : _dataSnapshot = dataSnapshot,
@@ -117,6 +124,9 @@ class JsonScreen extends StatefulWidget {
   }
 
   final VoidCallback? onClose;
+
+  /// App bar actions shown before the expand and share actions.
+  final List<Widget> actions;
 
   /// Optional correlated log data for cross-navigation (e.g. request ↔ response).
   Map<String, dynamic>? get correlatedLogData =>
@@ -160,11 +170,25 @@ class _JsonScreenState extends State<JsonScreen> {
 
   Timer? _searchDebounceTimer;
 
+  String? _titleMeta;
+
+  void _toggleTreeExpansion() {
+    if (_store.isFullyExpanded) {
+      _store.collapseAll();
+    } else {
+      _store.expandAll();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _store = JsonExplorerStore(processingPolicy: widget.processingPolicy);
-    _store.buildNodes(widget._dataSnapshot);
+    _store.buildNodes(
+      widget._dataSnapshot,
+      outline: NetworkLogOutline.forLogKey(widget.data['key']),
+    );
+    _titleMeta = _logTitleMeta(widget.data);
   }
 
   @override
@@ -172,8 +196,44 @@ class _JsonScreenState extends State<JsonScreen> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.data['id'] != widget.data['id']) {
-      _store.buildNodes(widget._dataSnapshot);
+      _store.buildNodes(
+        widget._dataSnapshot,
+        outline: NetworkLogOutline.forLogKey(widget.data['key']),
+      );
+      _titleMeta = _logTitleMeta(widget.data);
     }
+  }
+
+  void _revealLandmark(NodeViewModelState node) {
+    _store.revealNode(node);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _scrollToNode(node, alignment: 0),
+    );
+  }
+
+  void _scrollToNode(NodeViewModelState node, {double alignment = 0.3}) {
+    if (!mounted) return;
+    final index = _store.displayNodes.indexOf(node);
+    if (index >= 0) _scrollToIndex(index, alignment: alignment);
+  }
+
+  static String? _logTitleMeta(Map<String, dynamic> data) {
+    final key = data['key']?.toString();
+    if (key == null) return null;
+    final time = DateTime.tryParse(data['time']?.toString() ?? '');
+    final levelIndex = int.tryParse(data['log-level']?.toString() ?? '');
+    final level =
+        levelIndex != null &&
+            levelIndex >= 0 &&
+            levelIndex < LogLevel.values.length
+        ? LogLevel.values[levelIndex].name
+        : null;
+    final parts = [
+      if (time != null) ISpectDateTimeFormatter(time).timeAndSeconds,
+      if (level != null && level.toLowerCase() != key.toLowerCase())
+        level.toUpperCase(),
+    ];
+    return parts.isEmpty ? null : parts.join(' · ');
   }
 
   @override
@@ -221,67 +281,93 @@ class _JsonScreenState extends State<JsonScreen> {
         backgroundColor: bgColor,
         leading: ISpectAppBarBackButton(onPressed: widget.onClose),
         title: ISpectAppBarTitle(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (logColor != null)
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: ISpectSquircle.decoration(
-                    color: logColor.withValues(alpha: 0.12),
-                    radius: ISpectConstants.standardBorderRadius,
-                  ),
-                  child: Icon(logIcon, size: 16, color: logColor),
+          child: logKey == null
+              ? Text(context.ispectL10n.jsonViewer)
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (logColor != null)
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: ISpectSquircle.decoration(
+                          color: logColor.withValues(alpha: 0.12),
+                          radius: ISpectConstants.standardBorderRadius,
+                        ),
+                        child: Icon(logIcon, size: 16, color: logColor),
+                      ),
+                    const Gap(10),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            logTitle ?? context.ispectL10n.jsonViewer,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: logColor,
+                            ),
+                          ),
+                          if (_titleMeta case final meta?)
+                            Text(
+                              meta,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                height: 1.2,
+                                color: context.appTheme.textColor.withValues(
+                                  alpha: 0.55,
+                                ),
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              const Gap(10),
-              Flexible(
-                child: Text(
-                  logTitle ?? context.ispectL10n.jsonViewer,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: logColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
         actions: [
-          JsonStoreSelector<bool>(
+          ...widget.actions,
+          JsonStoreSelector<({bool hasExpandable, bool isFullyExpanded})>(
             store: _store,
-            selector: (s) => s.hasExpandableNodes,
-            builder: (context, hasExpandable) {
-              if (!hasExpandable) return const SizedBox.shrink();
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ISpectAppBarIconButton(
-                    icon: Icons.unfold_more_rounded,
-                    tooltip: context.ispectL10n.expandLogs,
-                    onPressed: _store.expandAll,
-                  ),
-                  ISpectAppBarIconButton(
-                    icon: Icons.unfold_less_rounded,
-                    tooltip: context.ispectL10n.collapseLogs,
-                    onPressed: _store.collapseAll,
-                  ),
-                ],
+            selector: (s) => (
+              hasExpandable: s.hasExpandableNodes,
+              isFullyExpanded: s.isFullyExpanded,
+            ),
+            builder: (context, tree) {
+              if (!tree.hasExpandable) return const SizedBox.shrink();
+              return ISpectAppBarIconButton(
+                icon: tree.isFullyExpanded
+                    ? Icons.unfold_less_rounded
+                    : Icons.unfold_more_rounded,
+                tooltip: tree.isFullyExpanded
+                    ? context.ispectL10n.collapseLogs
+                    : context.ispectL10n.expandLogs,
+                onPressed: _toggleTreeExpansion,
               );
             },
           ),
-          if (context.iSpect.options.onShare != null)
-            ISpectAppBarIconButton(
-              icon: Icons.share_rounded,
-              tooltip: context.ispectL10n.shareLogsFile,
-              onPressed: () async {
-                await ISpectShareLogBottomSheet(
-                  data: widget.data,
-                  truncatedData: widget.truncatedData ?? widget.data,
-                ).show(context);
-              },
-            ),
+          ISpectAppBarIconButton(
+            icon: Icons.share_rounded,
+            tooltip: context.iSpect.options.onShare != null
+                ? context.ispectL10n.shareLogsFile
+                : context.ispectL10n.exportLogs,
+            onPressed: () async {
+              await ISpectShareLogBottomSheet(
+                data: widget.data,
+                truncatedData: widget.truncatedData ?? widget.data,
+              ).show(context);
+            },
+          ),
           const Gap(4),
         ],
       ),
@@ -296,7 +382,7 @@ class _JsonScreenState extends State<JsonScreen> {
             ),
           // Search bar
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
             child: ValueListenableBuilder(
               valueListenable: _hasSearchText,
               builder: (context, hasText, _) => Row(
@@ -350,6 +436,20 @@ class _JsonScreenState extends State<JsonScreen> {
               ),
             ),
           ),
+          JsonStoreSelector<
+            ({List<ResolvedJsonLandmark> landmarks, JsonLandmark? active})
+          >(
+            store: _store,
+            selector: (s) => (landmarks: s.landmarks, active: s.activeLandmark),
+            builder: (context, outline) => outline.landmarks.isEmpty
+                ? const Gap(12)
+                : JsonLandmarkBar(
+                    landmarks: outline.landmarks,
+                    active: outline.active,
+                    activeColor: logColor ?? context.ispectPrimaryColor,
+                    onSelected: _revealLandmark,
+                  ),
+          ),
           // Breadcrumb path: hidden for root-level selection (no path to show).
           AnimatedBuilder(
             animation: _store,
@@ -362,16 +462,7 @@ class _JsonScreenState extends State<JsonScreen> {
                 node: selectedNode,
                 onSegmentTap: (node) {
                   _store.selectNode(node);
-                  final index = _store.displayNodes.indexOf(node);
-                  if (index >= 0) {
-                    _listController.animateToItem(
-                      index: index,
-                      scrollController: _scrollController,
-                      alignment: 0.3,
-                      duration: (_) => const Duration(milliseconds: 300),
-                      curve: (_) => Curves.easeOutCubic,
-                    );
-                  }
+                  _scrollToNode(node);
                 },
               );
             },
@@ -452,13 +543,13 @@ class _JsonScreenState extends State<JsonScreen> {
     }
   }
 
-  void _scrollToIndex(int index) {
+  void _scrollToIndex(int index, {double alignment = 0.5}) {
     _listController.animateToItem(
       index: index,
       duration: (estimatedDistance) => const Duration(milliseconds: 250),
       curve: (estimatedDistance) => Curves.easeOutCubic,
       scrollController: _scrollController,
-      alignment: 0.5,
+      alignment: alignment,
     );
   }
 }

@@ -22,7 +22,8 @@ class ISpectExportSheet extends StatelessWidget {
   const ISpectExportSheet({
     required this.controller,
     required this.contentBuilder,
-    this.icon = Icons.ios_share_rounded,
+    this.icon = Icons.share_rounded,
+    this.subtitle,
     super.key,
   });
 
@@ -30,12 +31,15 @@ class ISpectExportSheet extends StatelessWidget {
   final ExportContentBuilder contentBuilder;
   final IconData icon;
 
+  final String? subtitle;
+
   /// Shows the export sheet sized to its content.
   static Future<void> show(
     BuildContext context, {
     required ExportController controller,
     required ExportContentBuilder contentBuilder,
-    IconData icon = Icons.ios_share_rounded,
+    IconData icon = Icons.share_rounded,
+    String? subtitle,
   }) => showISpectSheet(
     context,
     topOnlyRadius: true,
@@ -43,6 +47,7 @@ class ISpectExportSheet extends StatelessWidget {
       controller: controller,
       contentBuilder: contentBuilder,
       icon: icon,
+      subtitle: subtitle,
     ),
   );
 
@@ -57,7 +62,13 @@ class ISpectExportSheet extends StatelessWidget {
         children: [
           const ISpectDragHandle(),
           const Gap(8),
-          ISpectBottomSheetHeader(title: context.ispectL10n.share, icon: icon),
+          ISpectBottomSheetHeader(
+            title: controller.canShare
+                ? context.ispectL10n.share
+                : context.ispectL10n.export,
+            subtitle: subtitle,
+            icon: icon,
+          ),
           const Gap(16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -94,45 +105,65 @@ class _FormatChips extends StatelessWidget {
       alpha: 0.12,
     );
 
+    final l10n = context.ispectL10n;
+    final formatHint = switch (controller.selectedFormat) {
+      ExportFormat.json => l10n.exportFormatJsonHint,
+      ExportFormat.text => l10n.exportFormatTextHint,
+      ExportFormat.markdown => l10n.exportFormatMarkdownHint,
+      ExportFormat.csv => l10n.exportFormatCsvHint,
+    };
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 4,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final format in controller.availableFormats)
-            Builder(
-              builder: (context) {
-                final isSelected = controller.selectedFormat == format;
-                return ChoiceChip(
-                  label: Text(
-                    format.label,
-                    style: TextStyle(
-                      color: isSelected ? primaryColor : null,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w500,
-                    ),
-                  ),
-                  avatar: Icon(
-                    format.icon,
-                    size: 16,
-                    color: isSelected ? primaryColor : null,
-                  ),
-                  selected: isSelected,
-                  selectedColor: primaryColor.withValues(alpha: 0.18),
-                  side: BorderSide(
-                    color: isSelected
-                        ? primaryColor.withValues(alpha: 0.7)
-                        : outlineColor,
-                    width: isSelected ? 1.4 : 1,
-                  ),
-                  showCheckmark: false,
-                  onSelected: (_) => controller.selectFormat(format),
-                  visualDensity: VisualDensity.compact,
-                );
-              },
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              for (final format in controller.availableFormats)
+                Builder(
+                  builder: (context) {
+                    final isSelected = controller.selectedFormat == format;
+                    return ChoiceChip(
+                      label: Text(
+                        format.label,
+                        style: TextStyle(
+                          color: isSelected ? primaryColor : null,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w500,
+                        ),
+                      ),
+                      avatar: Icon(
+                        format.icon,
+                        size: 16,
+                        color: isSelected ? primaryColor : null,
+                      ),
+                      selected: isSelected,
+                      selectedColor: primaryColor.withValues(alpha: 0.18),
+                      side: BorderSide(
+                        color: isSelected
+                            ? primaryColor.withValues(alpha: 0.7)
+                            : outlineColor,
+                        width: isSelected ? 1.4 : 1,
+                      ),
+                      showCheckmark: false,
+                      onSelected: (_) => controller.selectFormat(format),
+                      visualDensity: VisualDensity.compact,
+                    );
+                  },
+                ),
+            ],
+          ),
+          const Gap(6),
+          Text(
+            formatHint,
+            style: context.appTheme.textTheme.bodySmall?.copyWith(
+              color: context.appTheme.textColor.withValues(alpha: 0.55),
             ),
+          ),
         ],
       ),
     );
@@ -157,10 +188,115 @@ class _ActionButtons extends StatelessWidget {
     }
   }
 
+  Future<void> _download(BuildContext context) async {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final capturedL10n = context.ispectL10n;
+    final onOpenFile = context.iSpect.options.onOpenFile;
+
+    _closeSheet(context);
+
+    unawaited(
+      ISpectToaster.showLoadingToast(
+        null,
+        title: capturedL10n.downloadLogsFile,
+        messenger: messenger,
+      ),
+    );
+
+    await controller.download(contentBuilder);
+    final path = controller.resultPath;
+    if (path.isEmpty) return;
+
+    if (kIsWeb) {
+      unawaited(
+        ISpectToaster.showInfoToast(
+          null,
+          title: capturedL10n.downloadLogsFile,
+          messenger: messenger,
+        ),
+      );
+      return;
+    }
+
+    final SnackBarAction action;
+    if (onOpenFile != null) {
+      action = SnackBarAction(
+        label: capturedL10n.openPath,
+        onPressed: () {
+          onOpenFile(path).catchError(
+            (Object error) => debugReportFailure('Failed to open file', error),
+          );
+        },
+      );
+    } else {
+      action = SnackBarAction(
+        label: capturedL10n.copyPath,
+        onPressed: () {
+          copyClipboard(
+            null,
+            value: path,
+            messenger: messenger,
+            l10n: capturedL10n,
+          );
+        },
+      );
+    }
+    final fileName = path.split(RegExp(r'[/\\]')).last;
+    unawaited(
+      ISpectToaster.showInfoToast(
+        null,
+        title: capturedL10n.logsFileSaved(fileName),
+        duration: const Duration(seconds: 6),
+        messenger: messenger,
+        action: action,
+      ),
+    );
+  }
+
+  Future<void> _share(BuildContext context) async {
+    await controller.share(contentBuilder);
+    if (!context.mounted) return;
+    _closeSheet(context);
+  }
+
+  Future<void> _copy(BuildContext context) async {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final capturedL10n = context.ispectL10n;
+    _closeSheet(context);
+    final outcome = await controller.copy(
+      contentBuilder,
+      messenger: messenger,
+      l10n: capturedL10n,
+    );
+    if (outcome != ExportState.error) return;
+    unawaited(
+      ISpectToaster.showErrorToast(
+        null,
+        title: capturedL10n.copyToClipboardFailed,
+        messenger: messenger,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isExporting = controller.state == ExportState.exporting;
     final l10n = context.ispectL10n;
+    final actions = <_ExportActionSpec>[
+      if (controller.canShare)
+        (icon: Icons.share_rounded, label: l10n.share, run: _share),
+      (
+        icon: Icons.download_rounded,
+        label: l10n.downloadLogsFile,
+        run: _download,
+      ),
+      (
+        icon: Icons.copy_rounded,
+        label: l10n.copyToClipboardTruncated,
+        run: _copy,
+      ),
+    ];
+    final [primary, ...secondary] = actions;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -171,121 +307,34 @@ class _ActionButtons extends StatelessWidget {
             padding: EdgeInsets.only(bottom: 12),
             child: LinearProgressIndicator(),
           ),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: isExporting ? null : () => primary.run(context),
+            icon: Icon(primary.icon, size: 18),
+            label: Text(primary.label),
+          ),
+        ),
+        const Gap(8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
           children: [
-            ISpectSheetActionButton(
-              icon: Icons.download_rounded,
-              label: l10n.downloadLogsFile,
-              onPressed: isExporting
-                  ? null
-                  : () async {
-                      final messenger = ScaffoldMessenger.maybeOf(context);
-                      final capturedL10n = context.ispectL10n;
-                      final onOpenFile = context.iSpect.options.onOpenFile;
-
-                      _closeSheet(context);
-
-                      unawaited(
-                        ISpectToaster.showLoadingToast(
-                          null,
-                          title: capturedL10n.downloadLogsFile,
-                          messenger: messenger,
-                        ),
-                      );
-
-                      await controller.download(contentBuilder);
-                      final path = controller.resultPath;
-                      if (path.isEmpty) return;
-
-                      if (kIsWeb) {
-                        unawaited(
-                          ISpectToaster.showInfoToast(
-                            null,
-                            title: capturedL10n.downloadLogsFile,
-                            messenger: messenger,
-                          ),
-                        );
-                      } else {
-                        final SnackBarAction action;
-                        if (onOpenFile != null) {
-                          action = SnackBarAction(
-                            label: capturedL10n.openPath,
-                            onPressed: () {
-                              onOpenFile(path).catchError(
-                                (Object error) => debugReportFailure(
-                                  'Failed to open file',
-                                  error,
-                                ),
-                              );
-                            },
-                          );
-                        } else {
-                          action = SnackBarAction(
-                            label: capturedL10n.copyPath,
-                            onPressed: () {
-                              copyClipboard(
-                                null,
-                                value: path,
-                                messenger: messenger,
-                                l10n: capturedL10n,
-                              );
-                            },
-                          );
-                        }
-                        final fileName = path.split(RegExp(r'[/\\]')).last;
-                        unawaited(
-                          ISpectToaster.showInfoToast(
-                            null,
-                            title: capturedL10n.logsFileSaved(fileName),
-                            duration: const Duration(seconds: 6),
-                            messenger: messenger,
-                            action: action,
-                          ),
-                        );
-                      }
-                    },
-            ),
-            if (controller.canShare)
+            for (final action in secondary)
               ISpectSheetActionButton(
-                icon: Icons.share_rounded,
-                label: l10n.share,
-                onPressed: isExporting
-                    ? null
-                    : () async {
-                        await controller.share(contentBuilder);
-                        if (!context.mounted) return;
-                        _closeSheet(context);
-                      },
+                icon: action.icon,
+                label: action.label,
+                onPressed: isExporting ? null : () => action.run(context),
               ),
-            ISpectSheetActionButton(
-              icon: Icons.copy_rounded,
-              label: l10n.copyToClipboardTruncated,
-              onPressed: isExporting
-                  ? null
-                  : () async {
-                      final messenger = ScaffoldMessenger.maybeOf(context);
-                      final capturedL10n = context.ispectL10n;
-                      _closeSheet(context);
-                      final outcome = await controller.copy(
-                        contentBuilder,
-                        messenger: messenger,
-                        l10n: capturedL10n,
-                      );
-                      if (outcome != ExportState.error) return;
-                      unawaited(
-                        ISpectToaster.showErrorToast(
-                          null,
-                          title: capturedL10n.copyToClipboardFailed,
-                          messenger: messenger,
-                        ),
-                      );
-                    },
-            ),
           ],
         ),
       ],
     );
   }
 }
+
+typedef _ExportActionSpec = ({
+  IconData icon,
+  String label,
+  Future<void> Function(BuildContext context) run,
+});

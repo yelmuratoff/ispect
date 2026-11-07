@@ -99,6 +99,7 @@ class JsonColors {
     'OPTIONS': Color(0xFF00695C),
     'TRACE': Color(0xFF424242),
     'CONNECT': Color(0xFF4E342E),
+    'QUERY': Color(0xFF283593),
   };
 
   /// HTTP method colors for the dark theme.
@@ -116,6 +117,7 @@ class JsonColors {
     'OPTIONS': Color(0xFF4DB6AC),
     'TRACE': Color(0xFFBDBDBD),
     'CONNECT': Color(0xFFA1887F),
+    'QUERY': Color(0xFF7986CB),
   };
 
   /// Returns the color for an HTTP [method] on the given [brightness].

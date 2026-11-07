@@ -40,12 +40,8 @@ class CollapsedBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Padding(
-        padding: const EdgeInsets.only(top: 1),
-        child: DecoratedLeadingIcon(icon: icon, color: color),
-      ),
+      DecoratedLeadingIcon(icon: icon, color: color),
       const Gap(ISpectConstants.standardGap),
       Expanded(
         child: Column(
@@ -119,7 +115,6 @@ class CollapsedBody extends StatelessWidget {
         const Gap(4),
         SlowBadge(durationMs: slowDurationMs!),
       ],
-      const Gap(4),
       if (onToggleExpanded != null)
         Semantics(
           expanded: expanded,
@@ -127,27 +122,27 @@ class CollapsedBody extends StatelessWidget {
             icon: expanded
                 ? Icons.keyboard_arrow_up_rounded
                 : Icons.keyboard_arrow_down_rounded,
-            color: color,
+            color: context.ispectActionColor,
             tooltip: expanded
                 ? context.ispectL10n.collapseLogs
                 : context.ispectL10n.expandLogs,
+            chipPadding: SquareIconButton.leadPadding,
             onPressed: onToggleExpanded,
           ),
         )
       else
         SquareIconButton(
           icon: Icons.open_in_full_rounded,
-          color: color,
+          color: context.ispectActionColor,
           tooltip: context.ispectL10n.expandLogs,
-          dense: true,
+          chipPadding: SquareIconButton.leadPadding,
           onPressed: onExpandTap,
         ),
-      const Gap(4),
       SquareIconButton(
         icon: Icons.more_vert_rounded,
-        color: color,
+        color: context.ispectActionColor,
         tooltip: context.ispectL10n.actions,
-        dense: true,
+        chipPadding: SquareIconButton.trailPadding,
         onPressed: onMenuTap,
       ),
     ],
@@ -199,6 +194,7 @@ class SquareIconButton extends StatelessWidget {
     required this.onPressed,
     this.tooltip,
     this.dense = false,
+    this.chipPadding,
     super.key,
   });
 
@@ -211,10 +207,34 @@ class SquareIconButton extends StatelessWidget {
   /// so action-row controls sit tight instead of spreading across fixed squares.
   final bool dense;
 
+  /// Where the chip sits inside its full-size tap target; centered when null.
+  ///
+  /// [leadPadding] and [trailPadding] let two targets tile at the end of a
+  /// row while their chips keep a tight gap and a narrow end margin.
+  final EdgeInsetsDirectional? chipPadding;
+
+  static const double _targetSlack =
+      kMinInteractiveDimension - ISpectConstants.actionControlHeight;
+
+  static const EdgeInsetsDirectional leadPadding = EdgeInsetsDirectional.only(
+    start: _targetSlack,
+  );
+
+  static const EdgeInsetsDirectional trailPadding = EdgeInsetsDirectional.only(
+    start: _targetSlack - ISpectConstants.standardGap,
+    end: ISpectConstants.standardGap,
+  );
+
   @override
   Widget build(BuildContext context) {
     const feedbackInset =
         (kMinInteractiveDimension - ISpectConstants.actionControlHeight) / 2;
+    final horizontal =
+        (chipPadding ??
+                const EdgeInsetsDirectional.symmetric(
+                  horizontal: feedbackInset,
+                ))
+            .resolve(Directionality.of(context));
     final chip = SizedBox.square(
       dimension: ISpectConstants.actionControlHeight,
       child: Ink(
@@ -238,10 +258,12 @@ class SquareIconButton extends StatelessWidget {
           excludeFromSemantics: true,
           customBorder: ISpectSquircle.insetBorder(
             radius: ISpectConstants.mediumBorderRadius,
-            insets: EdgeInsets.symmetric(
-              horizontal: dense ? 0 : feedbackInset,
-              vertical: feedbackInset,
-            ),
+            insets: dense
+                ? const EdgeInsets.symmetric(vertical: feedbackInset)
+                : horizontal.copyWith(
+                    top: feedbackInset,
+                    bottom: feedbackInset,
+                  ),
           ),
           onTap: onPressed,
           child: dense
@@ -254,7 +276,13 @@ class SquareIconButton extends StatelessWidget {
               : SizedBox(
                   width: kMinInteractiveDimension,
                   height: kMinInteractiveDimension,
-                  child: Center(child: chip),
+                  child: Padding(
+                    padding: horizontal.copyWith(
+                      top: feedbackInset,
+                      bottom: feedbackInset,
+                    ),
+                    child: chip,
+                  ),
                 ),
         ),
       ),

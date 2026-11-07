@@ -171,6 +171,7 @@ class _MobileTransactionCardState extends State<_MobileTransactionCard> {
                       displayUrl: displayUrl,
                       useRelativeTime: widget.useRelativeTime,
                       onToggleExpanded: toggleExpanded,
+                      onMenuTap: widget.onLongPress,
                     ),
                   ),
                 ),
@@ -221,6 +222,7 @@ class _MobileHeader extends StatelessWidget {
     required this.displayUrl,
     required this.useRelativeTime,
     required this.onToggleExpanded,
+    required this.onMenuTap,
   });
 
   final NetworkTransaction tx;
@@ -230,6 +232,7 @@ class _MobileHeader extends StatelessWidget {
   final String displayUrl;
   final bool useRelativeTime;
   final VoidCallback onToggleExpanded;
+  final VoidCallback onMenuTap;
 
   @override
   Widget build(BuildContext context) {
@@ -281,7 +284,7 @@ class _MobileHeader extends StatelessWidget {
                   context.formatLogTime(
                     tx.request.time,
                     relative: useRelativeTime,
-                    absolute: _formatTime(tx.request.time),
+                    absolute: tx.request.formattedTime,
                   ),
                   maxLines: 1,
                   style: TextStyle(
@@ -306,21 +309,22 @@ class _MobileHeader extends StatelessWidget {
             icon: expanded
                 ? Icons.keyboard_arrow_up_rounded
                 : Icons.keyboard_arrow_down_rounded,
-            color: color,
+            color: context.ispectActionColor,
             tooltip: expanded
                 ? context.ispectL10n.collapseLogs
                 : context.ispectL10n.expandLogs,
+            chipPadding: SquareIconButton.leadPadding,
             onPressed: onToggleExpanded,
           ),
         ),
+        SquareIconButton(
+          icon: Icons.more_vert_rounded,
+          color: context.ispectActionColor,
+          tooltip: context.ispectL10n.actions,
+          chipPadding: SquareIconButton.trailPadding,
+          onPressed: onMenuTap,
+        ),
       ],
     );
-  }
-
-  static String _formatTime(DateTime time) {
-    final h = time.hour.toString().padLeft(2, '0');
-    final m = time.minute.toString().padLeft(2, '0');
-    final s = time.second.toString().padLeft(2, '0');
-    return '$h:$m:$s';
   }
 }

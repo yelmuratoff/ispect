@@ -6,7 +6,6 @@ import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/share_sheet.dart';
 import 'package:ispect/src/core/res/json_color.dart';
-import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
 import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
@@ -235,10 +234,7 @@ List<Widget> buildActionWidgets({
     }
   }
 
-  final canEditResend =
-      ISpect.senders.isNotEmpty &&
-      HttpComposerController.seedFromLog(tx.request) != null;
-  if (canEditResend) {
+  if (HttpComposerScreen.canOpenFromLog(tx.request)) {
     void openComposer() => HttpComposerScreen.openFromLog(context, tx.request);
     widgets.addAll([
       const Gap(4),

@@ -121,7 +121,8 @@ class _LogCardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final httpLogText = data.httpLogText;
     final message = data.isHttpLog ? httpLogText : data.textMessage;
-    final title = context.ispectTheme.getTypeTitle(context, key: data.key);
+    final key = data.key;
+    final title = key == null || key.isEmpty ? null : key;
     final semanticsLabel = title == null
         ? message ?? ''
         : '$title: ${message ?? ''}';
@@ -172,7 +173,7 @@ class _LogCardHeader extends StatelessWidget {
                   ? color.withValues(alpha: 0.08)
                   : Colors.transparent,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 6, 6, 6),
+                padding: const EdgeInsets.fromLTRB(8, 6, 0, 6),
                 child: CollapsedBody(
                   icon: icon,
                   color: color,

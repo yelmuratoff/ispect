@@ -1,5 +1,46 @@
 # Changelog
 
+## 7.3.0-dev.4
+
+### Behavioral Changes
+
+- **Logs screen app bar:** Share opens the export sheet in one tap; the other actions moved to the More (`•••`) menu.
+- **Display options** (order, HTTP grouping, expanded logs, relative time, compact URLs) moved from settings to the filter sheet.
+- **Clear history** asks for confirmation.
+- **Logs panel button** can no longer be hidden from the in-app menu. Hosts still control it with `ISpectSettingsState.isLogPageEnabled`.
+- **Export sheet** is named Share when the host sets `onShare` and Export otherwise, and shows how many logs it exports.
+- **ISpect panel** hides while an ISpect sheet or dialog is open.
+- **Logs list** shows each log's key, such as `auth-success`, on every card, like the desktop table. Type titles stay in log details, filters and the context menu.
+
+### Improvements
+
+- **More menu:** Actions come first; recorded log types and advanced settings start collapsed.
+- **Settings on phones** use one column with full labels.
+- **Clearer names:** "Log Viewer" is now "Import logs", and "Info about logs" is now "Recorded log types".
+- **Log details:** The title shows the log time and level, one button expands or collapses the tree, and Share or Export is always there.
+- **HTTP log details:** Headers and the request copy start folded, and chips jump to Data, Headers and Query parameters.
+- **Edit & resend** is also in the log details app bar and says which redacted values it didn't copy.
+- **HTTP composer:** New requests start from the client's base URL, and `QUERY` and custom methods are available. `HttpClientRequestSender` takes `baseUrl:`; custom senders can implement `NetworkBaseUrlProvider`.
+- **Empty states:** Separate messages for no logs, no matching logs, and no saved sessions.
+- **Consistent screens:** Sessions, Navigation Flow, HTTP Composer and the JSON viewer share one title style.
+- **Filter sheet:** Log type chips show titles instead of raw keys, and the search modes are named Highlight and Hide others.
+- **Import logs dialogs** use the ISpect theme.
+- **Screen readers** announce settings toggles, filter chips, menu actions and collapsible sections once, with their state, and say when a toggle can't be changed.
+- **Input errors** wrap instead of being cut off.
+- **Log type titles:** Every built-in log type has a readable title in log details and filters, such as Info or Auth Success.
+- **HTTP cards** show the time with milliseconds and have a menu button, like other cards.
+- **Card buttons** are neutral and use full-size tap targets.
+
+### Bug Fixes
+
+- **Edit & resend and Copy as cURL** were missing for Dio and http logs.
+- **Copy as cURL for Dio** dropped the query parameters passed in `queryParameters`.
+- **Closing sheets:** The close button works when the sheet sits under the parked panel.
+- **Reopening the log viewer** after turning off a log type no longer throws "setState() called during build".
+- **Clear all filters** also clears the search text.
+- **Sessions folder:** A failing host `onOpenFile` is logged instead of throwing.
+- **Logs screen next to other panes:** Leaving search no longer takes focus back from another pane or text field, and Cmd/Ctrl+K opens search only while the logs pane has focus.
+
 ## 7.2.0
 
 ### Behavioral Changes

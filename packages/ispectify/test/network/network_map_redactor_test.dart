@@ -386,6 +386,23 @@ void main() {
         expect(dataMap['password'], isNot('secret'));
       });
 
+      test('leaves a body it did not change unmarked', () {
+        final map = <String, dynamic>{
+          NetworkJsonKeys.data: <String, dynamic>{
+            'title': 'Buy milk',
+            'tags': <String>['home'],
+          },
+        };
+
+        NetworkMapRedactor.redactData(map, redactor);
+
+        expect(map[NetworkJsonKeys.data], {
+          'title': 'Buy milk',
+          'tags': ['home'],
+        });
+        expect(map, isNot(contains(NetworkJsonKeys.redactionProvenance)));
+      });
+
       test('no-op when key is absent', () {
         final map = <String, dynamic>{'other': 'value'};
 
@@ -533,6 +550,76 @@ void main() {
           containsPair(NetworkJsonKeys.ispectRequestId, '42'),
         );
         expect(extra.toString(), isNot(contains('secret')));
+      });
+
+      for (final query in <Map<String, dynamic>>[
+        <String, dynamic>{},
+        <String, dynamic>{'page': 1, 'sort': 'asc'},
+        <String, dynamic>{
+          'tag': <String>['home', 'work'],
+        },
+      ]) {
+        test('leaves the unchanged query $query unmarked', () {
+          final map = <String, dynamic>{
+            NetworkJsonKeys.queryParameters: query,
+          };
+
+          NetworkMapRedactor.redactMapField(
+            map,
+            redactor,
+            key: NetworkJsonKeys.queryParameters,
+          );
+
+          expect(map[NetworkJsonKeys.queryParameters], query);
+          expect(map, isNot(contains(NetworkJsonKeys.redactionProvenance)));
+        });
+      }
+
+      test('marks a query whose values it redacted', () {
+        final map = <String, dynamic>{
+          NetworkJsonKeys.queryParameters: <String, dynamic>{
+            'token': 'QUERY-SECRET',
+            'page': 1,
+          },
+        };
+
+        NetworkMapRedactor.redactMapField(
+          map,
+          redactor,
+          key: NetworkJsonKeys.queryParameters,
+        );
+
+        expect(map.toString(), isNot(contains('QUERY-SECRET')));
+        expect(
+          map[NetworkJsonKeys.redactionProvenance],
+          containsPair(NetworkJsonKeys.queryRedacted, true),
+        );
+      });
+
+      test('marks a redacted query and body with a custom placeholder', () {
+        final custom = RedactionService(placeholder: '<hidden>');
+        final map = <String, dynamic>{
+          NetworkJsonKeys.queryParameters: <String, dynamic>{
+            'token': 'QUERY-SECRET',
+          },
+          NetworkJsonKeys.data: <String, dynamic>{'password': 'BODY-SECRET'},
+        };
+
+        NetworkMapRedactor.redactMapField(
+          map,
+          custom,
+          key: NetworkJsonKeys.queryParameters,
+        );
+        NetworkMapRedactor.redactData(map, custom);
+
+        expect(map.toString(), isNot(contains('SECRET')));
+        expect(
+          map[NetworkJsonKeys.redactionProvenance],
+          allOf(
+            containsPair(NetworkJsonKeys.queryRedacted, true),
+            containsPair(NetworkJsonKeys.bodyRedacted, true),
+          ),
+        );
       });
 
       test('omits raw query parameters when a redactor returns null', () {

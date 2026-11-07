@@ -29,6 +29,7 @@ class ISpectShareLogBottomSheet {
     return ISpectExportSheet.show(
       context,
       controller: controller,
+      subtitle: data['key'] == null ? null : context.ispectL10n.logCount(1),
       contentBuilder: (format, {required action, redactKeys}) async {
         final metadata = await metadataProvider?.call();
         return buildContent(

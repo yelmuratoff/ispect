@@ -5,8 +5,10 @@ import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 
 /// Detail view widget for displaying selected log data.
@@ -129,11 +131,16 @@ class _LogDetailViewState extends State<LogDetailView> {
       transactionId is String ? transactionId : null,
     );
     _isViewingRequest = activeData.key == ISpectLogType.httpRequest.key;
+    final log = widget.activeData;
     _jsonScreen = JsonScreen(
       key: UniqueKey(),
       data: _viewerSnapshot(),
       truncatedDataBuilder: () => _viewerSnapshot(truncated: true),
       onClose: _handleClose,
+      actions: [
+        if (HttpComposerScreen.canOpenFromLog(log))
+          _EditAndResendAction(log: log),
+      ],
     );
   }
 
@@ -225,6 +232,20 @@ class _LogDetailViewState extends State<LogDetailView> {
       ],
     );
   }
+}
+
+class _EditAndResendAction extends StatelessWidget {
+  const _EditAndResendAction({required this.log});
+
+  final ISpectLogData log;
+
+  @override
+  Widget build(BuildContext context) => ISpectAppBarIconButton(
+    key: const ValueKey('log-detail-edit-and-resend'),
+    icon: Icons.api_rounded,
+    tooltip: context.ispectL10n.composerEditAndResend,
+    onPressed: () => HttpComposerScreen.openFromLog(context, log),
+  );
 }
 
 class _TraceCorrelationBanner extends StatelessWidget {

@@ -6,55 +6,57 @@ import '../helpers/pump_ispect.dart';
 
 void main() {
   group('EmptyLogsWidget', () {
-    testWidgets('Given the widget is created, '
-        'When it is pumped, '
-        'Then it renders correctly', (tester) async {
-      await tester.pumpWidget(appShell(const EmptyLogsWidget()));
+    testWidgets('an empty history invites waiting for logs, not filtering', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        appShell(const EmptyLogsWidget(reason: EmptyLogsReason.noLogs)),
+      );
       await tester.pumpAndSettle();
 
-      expect(find.byType(EmptyLogsWidget), findsOneWidget);
+      expect(find.text('No logs yet'), findsOneWidget);
+      expect(find.text('Logs appear here while the app runs'), findsOneWidget);
+      expect(find.byIcon(Icons.search_off_rounded), findsNothing);
+      expect(find.text('Clear all filters'), findsNothing);
     });
 
-    testWidgets('Given the widget is rendered, '
-        'When looking for the terminal icon, '
-        'Then it shows terminal_rounded icon', (tester) async {
-      await tester.pumpWidget(appShell(const EmptyLogsWidget()));
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.terminal_rounded), findsOneWidget);
-    });
-
-    testWidgets('Given the widget is rendered, '
-        'When looking for the search-off icon, '
-        'Then it shows search_off_rounded icon', (tester) async {
-      await tester.pumpWidget(appShell(const EmptyLogsWidget()));
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.search_off_rounded), findsOneWidget);
-    });
-
-    testWidgets('Given the default English locale, '
-        'When looking for the "not found" title, '
-        'Then it shows localized not-found text', (tester) async {
-      await tester.pumpWidget(appShell(const EmptyLogsWidget()));
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('Not'), findsOneWidget);
-    });
-
-    testWidgets('Given the default English locale, '
-        'When looking for the hint text, '
-        'Then it shows localized no-results hint', (tester) async {
-      await tester.pumpWidget(appShell(const EmptyLogsWidget()));
-      await tester.pumpAndSettle();
-
-      // The hint text should be present below the title.
-      expect(
-        find.textContaining(
-          RegExp('(filter|search|adjust|try)', caseSensitive: false),
+    testWidgets('a filter with no matches offers to clear the filters', (
+      tester,
+    ) async {
+      var clears = 0;
+      await tester.pumpWidget(
+        appShell(
+          EmptyLogsWidget(
+            reason: EmptyLogsReason.noMatches,
+            onClearFilters: () => clears++,
+          ),
         ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('No matching logs'), findsOneWidget);
+      expect(find.byIcon(Icons.search_off_rounded), findsOneWidget);
+
+      await tester.tap(find.text('Clear all filters'));
+      await tester.pump();
+
+      expect(clears, 1);
+    });
+
+    testWidgets('an empty sessions list explains where sessions come from', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        appShell(const EmptyLogsWidget(reason: EmptyLogsReason.noSessions)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('No saved sessions'), findsOneWidget);
+      expect(
+        find.text('Sessions appear here once logs are saved to files'),
         findsOneWidget,
       );
+      expect(find.text('Clear all filters'), findsNothing);
     });
   });
 }

@@ -7,7 +7,8 @@ abstract final class CurlUtils {
   /// Generates a cURL command string from the provided request data.
   ///
   /// - [data]: A map containing request details such as 'uri', 'method',
-  ///   'headers', 'data'.
+  ///   'headers', 'data'. A 'query-parameters' map is appended to a URL that
+  ///   has no query of its own.
   /// - [redactor]: Optional custom redaction policy. A default
   ///   [RedactionService] is used when omitted.
   /// - [enableRedaction]: Explicitly set to `false` only for controlled local
@@ -44,7 +45,11 @@ abstract final class CurlUtils {
       if (rawUri == null || methodValue is! String) return null;
 
       final uri = _boundString(
-        rawUri,
+        _withQueryParameters(
+          rawUri,
+          data[NetworkJsonKeys.queryParameters],
+          resourceLimits,
+        ),
         redactionActive: redactionActive,
         resourceLimits: resourceLimits,
       );
@@ -173,6 +178,26 @@ abstract final class CurlUtils {
     } catch (_) {
       return null;
     }
+  }
+
+  static String _withQueryParameters(
+    String url,
+    Object? query,
+    DiagnosticResourceLimits resourceLimits,
+  ) {
+    if (query is! Map || query.isEmpty || url.contains('?')) return url;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return url;
+    final parameters = <String, List<String>>{
+      for (final entry in query.entries.take(resourceLimits.maxCollectionItems))
+        '${entry.key}': [
+          for (final item in entry.value is Iterable<Object?>
+              ? entry.value as Iterable<Object?>
+              : <Object?>[entry.value])
+            _boundedText(item, resourceLimits),
+        ],
+    };
+    return uri.replace(queryParameters: parameters).toString();
   }
 
   static Map<String, Object?>? _coerceHeaders(

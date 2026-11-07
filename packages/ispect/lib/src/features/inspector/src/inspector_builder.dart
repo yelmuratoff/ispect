@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/logger_settings.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/error_boundary.dart';
+import 'package:ispect/src/common/widgets/ispect_modal_tracker.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/core/res/ispect_default_palette.dart';
 import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
@@ -126,6 +128,8 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   /// Drives pointer passthrough: `false` keeps the navigator transparent and
   /// non-interactive so the app below stays usable while no ISpect route is open.
   late final ValueNotifier<bool> _hasOverlayRoute;
+  late final ISpectModalTracker _modalTracker;
+  bool _panelHiddenForModal = false;
   bool _isInitialized = false;
   int _overlayDepth = 0;
   List<InspectorPlugin> _activePlugins = const [];
@@ -144,6 +148,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         );
     _navigatorKey = GlobalKey<NavigatorState>();
     _hasOverlayRoute = ValueNotifier<bool>(false);
+    _modalTracker = ISpectModalTracker()..addListener(_onModalsChanged);
     _isInitialized = true;
 
     _syncPlugins();
@@ -199,6 +204,25 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     _activePlugins = List<InspectorPlugin>.unmodifiable(next.values);
   }
 
+  void _onModalsChanged() => SchedulerBinding.instance.addPostFrameCallback(
+    (_) => _syncPanelWithModals(),
+  );
+
+  void _syncPanelWithModals() {
+    if (!mounted) return;
+    if (_modalTracker.hasOpenModal) {
+      if (_panelHiddenForModal || _panelController.phase == PanelPhase.hidden) {
+        return;
+      }
+      _panelHiddenForModal = true;
+      _panelController.hide();
+      return;
+    }
+    if (!_panelHiddenForModal) return;
+    _panelHiddenForModal = false;
+    _panelController.show();
+  }
+
   void _applyInitialSettings() {
     final initialSettings = widget.options?.initialSettings;
     if (initialSettings == null) return;
@@ -221,6 +245,9 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       _panelController.dispose();
     }
     _hasOverlayRoute.dispose();
+    _modalTracker
+      ..removeListener(_onModalsChanged)
+      ..dispose();
     model.dispose();
     super.dispose();
   }
@@ -238,10 +265,13 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         var currentChild = widget.child;
 
         // Host ISpect's own screens so its navigation never touches the host router.
-        currentChild = _ISpectNavigationHost(
-          navigatorKey: _navigatorKey,
-          hasOverlayRoute: _hasOverlayRoute,
-          child: currentChild,
+        currentChild = ISpectModalTrackerScope(
+          tracker: _modalTracker,
+          child: _ISpectNavigationHost(
+            navigatorKey: _navigatorKey,
+            hasOverlayRoute: _hasOverlayRoute,
+            child: currentChild,
+          ),
         );
 
         // Add inspector from the inspector package.

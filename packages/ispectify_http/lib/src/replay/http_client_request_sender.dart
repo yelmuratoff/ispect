@@ -12,8 +12,14 @@ import 'package:ispectify/ispectify.dart';
 /// interceptor pipeline runs end-to-end. Unlike Dio, `http` does not throw on a
 /// non-2xx status, so 4xx/5xx responses are returned with their status and body
 /// and a `null` error.
-final class HttpClientRequestSender implements NetworkRequestSender {
-  HttpClientRequestSender(this.client, {this.id = 'http', this.label = 'HTTP'});
+final class HttpClientRequestSender
+    implements NetworkRequestSender, NetworkBaseUrlProvider {
+  HttpClientRequestSender(
+    this.client, {
+    this.id = 'http',
+    this.label = 'HTTP',
+    this.baseUrl,
+  });
 
   final http.Client client;
 
@@ -22,6 +28,11 @@ final class HttpClientRequestSender implements NetworkRequestSender {
 
   @override
   final String label;
+
+  /// The base URL the app uses with [client]; `http` has no base URL of its
+  /// own, so the composer offers this one for new requests.
+  @override
+  final Uri? baseUrl;
 
   @override
   Future<NetworkReplayResult> send(NetworkReplayRequest request) async {

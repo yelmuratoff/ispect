@@ -142,17 +142,18 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
-      expect(find.text('ОТОБРАЖЕНИЕ'), findsOneWidget);
-      expect(find.text('Развернуть логи'), findsOneWidget);
-      expect(find.text('Относительное время'), findsOneWidget);
+      expect(find.text('ЛОГИРОВАНИЕ'), findsOneWidget);
+      expect(find.text('КНОПКИ ПАНЕЛИ'), findsOneWidget);
+      expect(find.text('Записываемые типы логов'), findsOneWidget);
 
+      await tester.tap(find.text('Дополнительно'));
+      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.text('Профиль ресурсов'),
         250,
         scrollable: find.byType(Scrollable, skipOffstage: false).last,
       );
 
-      expect(find.text('ДОПОЛНИТЕЛЬНО'), findsOneWidget);
       expect(find.text('Профиль ресурсов'), findsOneWidget);
       expect(find.text('Сбалансированный'), findsWidgets);
     });
@@ -196,8 +197,8 @@ void main() {
       logIcons: {'firebase-read': Icons.cloud_rounded},
     );
 
-    testWidgets('a custom type shows its configured title on the card and '
-        'in the context menu', (tester) async {
+    testWidgets('a custom type shows its key on the card and its configured '
+        'title in the context menu', (tester) async {
       await tester.pumpWidget(
         appShell(
           SingleChildScrollView(
@@ -215,13 +216,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Firebase Read'), findsOneWidget);
-      expect(find.text('firebase-read'), findsNothing);
+      expect(find.text('firebase-read'), findsOneWidget);
+      expect(find.text('Firebase Read'), findsNothing);
 
       await tester.longPress(find.text('read users'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Firebase Read'), findsNWidgets(2));
+      expect(find.text('Firebase Read'), findsOneWidget);
     });
 
     testWidgets('the context menu labels its filter section in Russian', (
@@ -450,9 +451,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.settings_outlined));
+      await tester.tap(find.byIcon(Icons.more_horiz_rounded));
       await tester.pumpAndSettle();
-      final logViewerAction = find.text('Просмотр логов').last;
+      final logViewerAction = find.text('Импорт логов').last;
       await tester.scrollUntilVisible(
         logViewerAction,
         200,

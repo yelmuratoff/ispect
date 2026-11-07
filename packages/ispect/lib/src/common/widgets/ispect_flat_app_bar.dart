@@ -54,6 +54,12 @@ class ISpectFlatAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Center(child: leading),
             ),
       leadingWidth: leading == null ? null : leadingWidth,
+      titleTextStyle: context.appTheme.textTheme.titleLarge?.copyWith(
+        color: context.appTheme.textColor,
+        fontSize: 18,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 0.5,
+      ),
       title: title,
       actions: actions,
       actionsPadding: actionsPadding,

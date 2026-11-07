@@ -974,7 +974,8 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
       'Lang auf eine Log-Karte drücken für Schnellaktionen';
 
   @override
-  String get tipFilter => 'Nach Log-Typ filtern über Chips oder Einstellungen';
+  String get tipFilter =>
+      'Nach Log-Typ filtern über die Chips unter der Filter-Schaltfläche';
 
   @override
   String get tipExpand =>
@@ -986,7 +987,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get tipNavigationFlow =>
-      'Öffne den Navigations-Fluss in den Einstellungen, um den Routenverlauf visuell zu sehen';
+      'Öffne den Navigationsfluss über „Mehr Optionen“, um den Routenverlauf visuell zu sehen';
 
   @override
   String get tipShareSession =>
@@ -994,7 +995,7 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get tipReverseLogs =>
-      'Tippe die Pfeile in der Leiste, um die Log-Reihenfolge umzukehren';
+      'Log-Reihenfolge, HTTP-Gruppierung und weitere Anzeigeoptionen findest du unter der Filter-Schaltfläche';
 
   @override
   String get gotIt => 'Verstanden';
@@ -1424,4 +1425,97 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
 
   @override
   String get exception => 'Ausnahme';
+
+  @override
+  String get settingsLogging => 'Protokollierung';
+
+  @override
+  String get panelButtons => 'Panel-Schaltflächen';
+
+  @override
+  String get importLogs => 'Protokolle importieren';
+
+  @override
+  String get importLogsDesc =>
+      'Gespeicherte Protokolldatei oder eingefügte Logs im Viewer öffnen';
+
+  @override
+  String get recordedLogTypes => 'Aufgezeichnete Logtypen';
+
+  @override
+  String get recordedLogTypesDesc =>
+      'Deaktivierte Typen werden nicht aufgezeichnet';
+
+  @override
+  String get clearHistoryConfirmTitle => 'Protokollverlauf löschen?';
+
+  @override
+  String get clearHistoryConfirmMessage =>
+      'Alle Protokolle werden entfernt. Teilen Sie sie vorher, wenn Sie sie noch brauchen.';
+
+  @override
+  String get export => 'Exportieren';
+
+  @override
+  String get exportFormatJsonHint =>
+      'Lässt sich über „Protokolle importieren“ wieder öffnen';
+
+  @override
+  String get exportFormatTextHint => 'Reiner Text zum Lesen und für Chats';
+
+  @override
+  String get exportFormatMarkdownHint =>
+      'Formatiert für Issues und Pull Requests';
+
+  @override
+  String get exportFormatCsvHint => 'Tabelle für Tabellenkalkulationen';
+
+  @override
+  String get noLogsYet => 'Noch keine Protokolle';
+
+  @override
+  String get noLogsYetHint =>
+      'Protokolle erscheinen hier, während die App läuft';
+
+  @override
+  String get noMatchingLogs => 'Keine passenden Protokolle';
+
+  @override
+  String get noSavedSessions => 'Keine gespeicherten Sitzungen';
+
+  @override
+  String get noSavedSessionsHint =>
+      'Sitzungen erscheinen hier, sobald Protokolle in Dateien gespeichert werden';
+
+  @override
+  String get exportLogs => 'Protokolle exportieren';
+
+  @override
+  String get exportLogsDesc =>
+      'Protokolle als Datei herunterladen oder eine Zusammenfassung kopieren';
+
+  @override
+  String get searchModeHighlight => 'Hervorheben';
+
+  @override
+  String get searchModeFilter => 'Nur Treffer';
+
+  @override
+  String get composerCustomMethod => 'Eigene Methode';
+
+  @override
+  String get composerCustomMethodMenu => 'Eigene Methode…';
+
+  @override
+  String get composerCustomMethodInvalid =>
+      'Geben Sie ein Wort ohne Leerzeichen ein, z. B. SEARCH';
+
+  @override
+  String get composerBodyWithheld =>
+      'Der Body wurde im Log maskiert und nicht übernommen. Geben Sie ihn vor dem Senden erneut ein.';
+
+  @override
+  String composerHeadersWithheld(String names) {
+    return 'Maskierte Header wurden nicht übernommen: $names';
+  }
 }

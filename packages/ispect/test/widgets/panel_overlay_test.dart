@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
+import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
 
 void main() {
@@ -359,6 +361,103 @@ void main() {
 
       expect(find.byType(LogsScreen), findsNothing);
       expect(controller.phase, isNot(PanelPhase.hidden));
+    });
+  });
+
+  group('ISpect panel and ISpect sheets', () {
+    bool isUnder(Object target, RenderObject ancestor) {
+      if (target is! RenderObject) return false;
+      RenderObject? node = target;
+      while (node != null) {
+        if (identical(node, ancestor)) return true;
+        node = node.parent;
+      }
+      return false;
+    }
+
+    Future<void> pumpLogsWithPanel(WidgetTester tester) async {
+      tester.view
+        ..physicalSize = const Size(560, 760)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: ISpectLocalization.localizationDelegates,
+          supportedLocales: ISpectLocalization.supportedLocales,
+          builder: (context, child) => ISpectBuilder.wrap(child: child!),
+          home: const LogsScreen(options: ISpectOptions()),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    List<double> panelRowsAt(WidgetTester tester, double x) {
+      final host = tester.renderObject(
+        find.byWidgetPredicate((w) => w.runtimeType.toString() == 'PanelHost'),
+      );
+      final rows = <double>[];
+      for (var y = 0.0; y < 760; y += 4) {
+        final result = HitTestResult();
+        WidgetsBinding.instance.hitTestInView(
+          result,
+          Offset(x, y),
+          tester.view.viewId,
+        );
+        if (result.path.any((entry) => isUnder(entry.target, host))) {
+          rows.add(y);
+        }
+      }
+      return rows;
+    }
+
+    DraggablePanelController panelController(WidgetTester tester) => tester
+        .widget<DraggableActionPanel>(find.byType(DraggableActionPanel))
+        .controller!;
+
+    final closeButton = find.descendant(
+      of: find.byType(ISpectBottomSheetHeader),
+      matching: find.byIcon(Icons.close_rounded),
+    );
+
+    testWidgets('the sheet closes from under the parked tab, which comes '
+        'back afterwards', (tester) async {
+      if (!kISpectEnabled) return;
+      await pumpLogsWithPanel(tester);
+      final tabRows = panelRowsAt(tester, 530);
+      expect(tabRows, isNotEmpty);
+
+      await tester.tap(find.byIcon(Icons.more_horiz_rounded));
+      await tester.pumpAndSettle();
+      final tabCenter = (tabRows.first + tabRows.last) / 2;
+      await tester.dragFrom(
+        tester.getCenter(find.byType(ISpectDragHandle)),
+        Offset(0, tabCenter - tester.getCenter(closeButton).dy),
+      );
+      await tester.pumpAndSettle();
+
+      expect(panelRowsAt(tester, 530), isEmpty);
+
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ISpectBottomSheetHeader), findsNothing);
+      expect(panelController(tester).phase, PanelPhase.stashed);
+    });
+
+    testWidgets('a panel the host hid stays hidden after a sheet closes', (
+      tester,
+    ) async {
+      if (!kISpectEnabled) return;
+      await pumpLogsWithPanel(tester);
+      panelController(tester).hide();
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.more_horiz_rounded));
+      await tester.pumpAndSettle();
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+
+      expect(panelController(tester).phase, PanelPhase.hidden);
     });
   });
 }

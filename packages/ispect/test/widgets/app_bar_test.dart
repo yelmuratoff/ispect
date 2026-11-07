@@ -25,7 +25,8 @@ void main() {
 
     Widget buildAppBar({
       String title = 'ISpect',
-      VoidCallback? onSettingsTap,
+      VoidCallback? onShareTap,
+      VoidCallback? onMoreTap,
       int? totalCount,
     }) => appShell(
       CustomScrollView(
@@ -37,7 +38,8 @@ void main() {
             uniqTitles: const ['info', 'error'],
             onToggleTitle: (_, __) {},
             focusNode: focusNode,
-            onSettingsTap: onSettingsTap,
+            onShareTap: onShareTap,
+            onMoreTap: onMoreTap,
             totalCount: totalCount,
           ),
           const SliverFillRemaining(),
@@ -138,22 +140,38 @@ void main() {
       expect(controller.filter.searchQuery, 'test');
     });
 
-    testWidgets('Given an onSettingsTap callback is provided, '
-        'When the app bar is rendered, '
-        'Then the settings button appears', (tester) async {
-      await tester.pumpWidget(buildAppBar(onSettingsTap: () {}));
+    testWidgets('the share button runs the share callback in one tap', (
+      tester,
+    ) async {
+      var shareTaps = 0;
+      await tester.pumpWidget(buildAppBar(onShareTap: () => shareTaps++));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
+      await tester.tap(find.byTooltip('Share log file'));
+      await tester.pump();
+
+      expect(shareTaps, 1);
     });
 
-    testWidgets('Given no onSettingsTap callback, '
-        'When the app bar is rendered, '
-        'Then the settings button is hidden', (tester) async {
+    testWidgets('the more button runs the menu callback', (tester) async {
+      var moreTaps = 0;
+      await tester.pumpWidget(buildAppBar(onMoreTap: () => moreTaps++));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('More options'));
+      await tester.pump();
+
+      expect(moreTaps, 1);
+    });
+
+    testWidgets('share and more buttons are hidden without callbacks', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildAppBar());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.settings_outlined), findsNothing);
+      expect(find.byTooltip('Share log file'), findsNothing);
+      expect(find.byTooltip('More options'), findsNothing);
     });
   });
 }

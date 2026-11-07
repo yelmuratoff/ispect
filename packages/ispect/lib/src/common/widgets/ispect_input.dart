@@ -9,6 +9,7 @@ import 'package:ispect/src/common/utils/squircle.dart';
 abstract final class ISpectInputStyle {
   static const double radius = 10;
   static const double fontSize = 14;
+  static const int errorMaxLines = 3;
   static const EdgeInsets denseContentPadding = EdgeInsets.symmetric(
     horizontal: 12,
     vertical: 12,
@@ -61,6 +62,7 @@ InputDecoration ispectInputDecoration(
     hintText: hintText,
     hintStyle: ISpectInputStyle.hintStyle(context),
     errorText: errorText,
+    errorMaxLines: ISpectInputStyle.errorMaxLines,
     prefixIcon: prefixIcon,
     suffixIcon: suffixIcon,
     isDense: isDense,

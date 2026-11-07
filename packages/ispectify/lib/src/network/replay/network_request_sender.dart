@@ -23,3 +23,13 @@ abstract interface class NetworkRequestSender {
   /// composer can render the failure inline.
   Future<NetworkReplayResult> send(NetworkReplayRequest request);
 }
+
+/// Implemented by a [NetworkRequestSender] whose client sends requests
+/// against a base URL.
+///
+/// The composer pre-fills a new request with [baseUrl] when the sender is
+/// selected, so only the path needs typing.
+abstract interface class NetworkBaseUrlProvider {
+  /// The base URL of the client, or `null` when it has none.
+  Uri? get baseUrl;
+}

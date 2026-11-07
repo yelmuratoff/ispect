@@ -23,7 +23,9 @@ class LogsViewerBody extends StatefulWidget {
     required this.logsScrollController,
     super.key,
     this.appBarTitle,
-    this.onSettingsTap,
+    this.onShareTap,
+    this.shareTooltip,
+    this.onMoreTap,
   });
 
   final List<ISpectLogData> logsData;
@@ -32,7 +34,9 @@ class LogsViewerBody extends StatefulWidget {
   final FocusNode searchFocusNode;
   final ScrollController logsScrollController;
   final String? appBarTitle;
-  final VoidCallback? onSettingsTap;
+  final VoidCallback? onShareTap;
+  final String? shareTooltip;
+  final VoidCallback? onMoreTap;
 
   @override
   State<LogsViewerBody> createState() => _LogsViewerBodyState();
@@ -94,7 +98,9 @@ class _LogsViewerBodyState extends State<LogsViewerBody> {
           logsScrollController: widget.logsScrollController,
           logsViewController: controller,
           appBarTitle: widget.appBarTitle,
-          onSettingsTap: widget.onSettingsTap,
+          onShareTap: widget.onShareTap,
+          shareTooltip: widget.shareTooltip,
+          onMoreTap: widget.onMoreTap,
         );
 
         if (!showDetailPanel) {

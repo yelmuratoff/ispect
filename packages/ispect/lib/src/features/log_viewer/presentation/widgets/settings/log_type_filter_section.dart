@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
-import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/log_description.dart';
+import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/collapsible_settings_section.dart';
 import 'package:ispectify/ispectify.dart';
 
 /// A widget that displays a grid of log type chips
@@ -48,25 +48,40 @@ class LogTypeFilterSection extends StatelessWidget {
 
     // Group by category
     final groups = _groupLogTypes(context, logDescriptions);
+    final recordedCount = logDescriptions
+        .where((d) => !disabledLogTypes.contains(d.key))
+        .length;
 
-    final selectAllLabel = _isAllEnabled
-        ? context.ispectL10n.deselectAll
-        : context.ispectL10n.selectAll;
+    final l10n = context.ispectL10n;
+    final selectAllLabel = _isAllEnabled ? l10n.deselectAll : l10n.selectAll;
     final onSelectAllTap = _isAllEnabled
         ? () => onDeselectAll(logDescriptions.map((d) => d.key).toSet())
         : onSelectAll;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return CollapsibleSettingsSection(
+      title: l10n.recordedLogTypes,
+      icon: Icons.playlist_add_check_rounded,
+      trailing: _RecordedCount(
+        recorded: recordedCount,
+        total: logDescriptions.length,
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ISpectSectionLabel(
-            title: context.ispectL10n.iSpectifyLogsInfo,
-            padding: const EdgeInsets.fromLTRB(4, 10, 4, 2),
-            trailing: _SelectAllLink(
-              label: selectAllLabel,
-              onTap: onSelectAllTap,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 0, 6),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.recordedLogTypesDesc,
+                    style: context.appTheme.textTheme.bodySmall?.copyWith(
+                      color: context.appTheme.textColor.withValues(alpha: 0.55),
+                    ),
+                  ),
+                ),
+                _SelectAllLink(label: selectAllLabel, onTap: onSelectAllTap),
+              ],
             ),
           ),
           ...groups.entries.map(
@@ -77,7 +92,6 @@ class LogTypeFilterSection extends StatelessWidget {
               onLogTypeToggled: onLogTypeToggled,
             ),
           ),
-          const Gap(12),
         ],
       ),
     );
@@ -148,6 +162,28 @@ class LogTypeFilterSection extends StatelessWidget {
   }
 }
 
+class _RecordedCount extends StatelessWidget {
+  const _RecordedCount({required this.recorded, required this.total});
+
+  final int recorded;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final isFiltered = recorded < total;
+    return Text(
+      '$recorded/$total',
+      style: context.appTheme.textTheme.labelMedium?.copyWith(
+        color: isFiltered
+            ? context.ispectPrimaryColor
+            : context.appTheme.textColor.withValues(alpha: 0.45),
+        fontWeight: FontWeight.w600,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+    );
+  }
+}
+
 class _SelectAllLink extends StatelessWidget {
   const _SelectAllLink({required this.label, required this.onTap});
 
@@ -163,14 +199,23 @@ class _SelectAllLink extends StatelessWidget {
       excludeFromSemantics: true,
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        child: Text(
-          label,
-          style: context.appTheme.textTheme.labelSmall?.copyWith(
-            color: context.appTheme.textColor.withValues(alpha: 0.55),
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.4,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minHeight: kMinInteractiveDimension,
+          minWidth: kMinInteractiveDimension,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Center(
+            widthFactor: 1,
+            child: Text(
+              label,
+              style: context.appTheme.textTheme.labelSmall?.copyWith(
+                color: context.appTheme.textColor.withValues(alpha: 0.55),
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.4,
+              ),
+            ),
           ),
         ),
       ),

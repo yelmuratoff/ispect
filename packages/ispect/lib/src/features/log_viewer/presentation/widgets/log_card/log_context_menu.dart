@@ -8,10 +8,8 @@ import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_icon_badge.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
-import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
 import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
-import 'package:ispect/src/ispect.dart';
 import 'package:ispectify/ispectify.dart';
 
 enum LogContextAction {
@@ -39,9 +37,7 @@ Future<void> showLogContextMenu({
 
   final hasFilterActions = data.key != null && onTypeFilterTap != null;
   final hasNavigationFlow = onNavigationFlowTap != null;
-  final canEditResend =
-      ISpect.senders.isNotEmpty &&
-      HttpComposerController.seedFromLog(data) != null;
+  final canEditResend = HttpComposerScreen.canOpenFromLog(data);
   final logKey = data.key;
   final logTitle = theme.getTypeTitle(context, key: logKey) ?? l10n.actions;
   final logDescription = theme.getTypeDescription(context, key: logKey);

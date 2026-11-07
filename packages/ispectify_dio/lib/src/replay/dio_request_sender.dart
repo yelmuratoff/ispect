@@ -7,7 +7,8 @@ import 'package:ispectify/ispectify.dart';
 /// base options, auth interceptors, and retries apply - and the existing
 /// [ISpectDioInterceptor] captures it, so no separate unredacted log is made.
 /// Register one per client via the ISpect entry point.
-final class DioRequestSender implements NetworkRequestSender {
+final class DioRequestSender
+    implements NetworkRequestSender, NetworkBaseUrlProvider {
   DioRequestSender(this.dio, {this.id = 'dio', this.label = 'Dio'});
 
   final Dio dio;
@@ -17,6 +18,13 @@ final class DioRequestSender implements NetworkRequestSender {
 
   @override
   final String label;
+
+  /// The current `BaseOptions.baseUrl` of [dio], or `null` when it is empty.
+  @override
+  Uri? get baseUrl {
+    final value = dio.options.baseUrl;
+    return value.isEmpty ? null : Uri.tryParse(value);
+  }
 
   @override
   Future<NetworkReplayResult> send(NetworkReplayRequest request) async {

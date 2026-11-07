@@ -46,6 +46,8 @@ class _ThemePreset {
   final ISpectDynamicColor? background;
 }
 
+const _apiBaseUrl = 'https://dummyjson.com';
+
 const _themePresets = <_ThemePreset>[
   _ThemePreset('Default', Colors.deepPurple, null, null),
   _ThemePreset(
@@ -209,6 +211,19 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _observer = ISpectNavigatorObserver();
+  final _clients = _NetworkClients(ISpect.logger);
+
+  @override
+  void initState() {
+    super.initState();
+    _clients.register();
+  }
+
+  @override
+  void dispose() {
+    _clients.dispose();
+    super.dispose();
+  }
 
   ThemeMode _themeMode = ThemeMode.system;
   _ThemePreset _preset = _themePresets.first;
@@ -276,6 +291,7 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       home: _HomePage(
+        clients: _clients,
         themeMode: _themeMode,
         preset: _preset,
         locale: _locale,
@@ -293,6 +309,7 @@ class _MyAppState extends State<MyApp> {
 
 class _HomePage extends StatefulWidget {
   const _HomePage({
+    required this.clients,
     required this.themeMode,
     required this.preset,
     required this.locale,
@@ -301,6 +318,7 @@ class _HomePage extends StatefulWidget {
     required this.onLocaleChanged,
   });
 
+  final _NetworkClients clients;
   final ThemeMode themeMode;
   final _ThemePreset preset;
   final Locale locale;
@@ -505,7 +523,7 @@ class _HomePageState extends State<_HomePage> {
           // Network & DB
           _SectionHeader(title: 'Network & Database'),
           const SizedBox(height: 8),
-          _NetworkDbSection(),
+          _NetworkDbSection(clients: widget.clients),
           const SizedBox(height: 20),
 
           // Domain traces
@@ -1730,14 +1748,67 @@ class _CounterView extends StatelessWidget {
 // Network & Database section
 // ---------------------------------------------------------------------------
 
+final class _NetworkClients {
+  _NetworkClients(ISpectLogger logger)
+      : dio = Dio(BaseOptions(baseUrl: _apiBaseUrl))
+          ..interceptors.add(
+            ISpectDioInterceptor(
+              logger: logger,
+              settings: const ISpectDioInterceptorSettings(
+                printRequestHeaders: true,
+                printResponseHeaders: true,
+                printRequestData: true,
+                printResponseData: true,
+                enableRedaction: true,
+              ),
+            ),
+          ),
+        http = InterceptedClient.build(
+          interceptors: [
+            ISpectHttpInterceptor(
+              logger: logger,
+              settings: ISpectHttpInterceptorSettingsBuilder()
+                  .withAllHeaders()
+                  .withRedaction()
+                  .build(),
+            ),
+          ],
+        );
+
+  final Dio dio;
+  final InterceptedClient http;
+
+  void register() {
+    ISpect.registerSender(DioRequestSender(dio, label: 'Dio'));
+    ISpect.registerSender(
+      HttpClientRequestSender(
+        http,
+        label: 'HTTP',
+        baseUrl: Uri.parse(_apiBaseUrl),
+      ),
+    );
+  }
+
+  void dispose() {
+    ISpect.unregisterSender('dio');
+    ISpect.unregisterSender('http');
+    dio.close();
+    http.close();
+  }
+}
+
 class _NetworkDbSection extends StatefulWidget {
+  const _NetworkDbSection({required this.clients});
+
+  final _NetworkClients clients;
+
   @override
   State<_NetworkDbSection> createState() => _NetworkDbSectionState();
 }
 
 class _NetworkDbSectionState extends State<_NetworkDbSection> {
-  late final Dio _dio;
-  late final InterceptedClient _httpClient;
+  Dio get _dio => widget.clients.dio;
+  InterceptedClient get _httpClient => widget.clients.http;
   bool _isLoading = false;
   String? _accessToken;
   String? _refreshToken;
@@ -1749,52 +1820,6 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
     enableTransactionMarkers: true,
     slowThreshold: Duration(milliseconds: 250),
   );
-
-  @override
-  void initState() {
-    super.initState();
-    final logger = ISpect.logger;
-
-    _dio = Dio();
-    _dio.interceptors.add(
-      ISpectDioInterceptor(
-        logger: logger,
-        settings: const ISpectDioInterceptorSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-          printRequestData: true,
-          printResponseData: true,
-          enableRedaction: true,
-        ),
-      ),
-    );
-
-    _httpClient = InterceptedClient.build(
-      interceptors: [
-        ISpectHttpInterceptor(
-          logger: logger,
-          settings: ISpectHttpInterceptorSettingsBuilder()
-              .withAllHeaders()
-              .withRedaction()
-              .build(),
-        ),
-      ],
-    );
-
-    // Expose both clients to the in-app HTTP composer ("mini-Postman"). Replays
-    // and composed requests then travel through these same instrumented clients.
-    ISpect.registerSender(DioRequestSender(_dio, label: 'Dio'));
-    ISpect.registerSender(HttpClientRequestSender(_httpClient, label: 'HTTP'));
-  }
-
-  @override
-  void dispose() {
-    ISpect.unregisterSender('dio');
-    ISpect.unregisterSender('http');
-    _dio.close();
-    _httpClient.close();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -1853,8 +1878,8 @@ class _NetworkDbSectionState extends State<_NetworkDbSection> {
                 _chip('GET 404', Icons.error, Colors.red.shade800, () {
                   _dio.get('https://dummyjson.com/products/0');
                 }),
-                _chip('Invalid URL', Icons.link_off, Colors.grey, () {
-                  _dio.get('htt://invalid-url');
+                _chip('Unknown host', Icons.link_off, Colors.grey, () {
+                  _dio.get('https://invalid.invalid');
                 }),
               ],
             ),

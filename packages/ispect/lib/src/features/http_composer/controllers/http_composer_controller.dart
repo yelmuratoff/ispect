@@ -34,20 +34,39 @@ final class HttpComposerController extends ChangeNotifier {
     required List<NetworkRequestSender> senders,
     ISpectComposerFilePicker? filePicker,
     NetworkReplayRequest? seed,
+    Set<String> withheldHeaders = const {},
+    this.bodyWithheld = false,
     this.resourceLimits = DiagnosticResourceLimits.balanced,
   }) : _senders = senders,
-       _filePicker = filePicker {
+       _filePicker = filePicker,
+       withheldHeaderNames = List.unmodifiable(
+         withheldHeaders.toList()..sort(),
+       ) {
     resourceLimits.validate();
     if (senders.isNotEmpty) _selectedSenderId = senders.first.id;
-    if (seed != null) _applySeed(seed);
+    if (seed != null) {
+      _applySeed(seed);
+    } else {
+      _prefillBaseUrl();
+    }
   }
 
   final List<NetworkRequestSender> _senders;
   final ISpectComposerFilePicker? _filePicker;
   final DiagnosticResourceLimits resourceLimits;
 
+  /// Names of the headers left out of the seed because their logged value
+  /// was redacted, sorted.
+  final List<String> withheldHeaderNames;
+
+  /// Whether the logged body was redacted and so left out of the seed.
+  final bool bodyWithheld;
+
+  bool get hasWithheldValues => bodyWithheld || withheldHeaderNames.isNotEmpty;
+
   String _method = 'GET';
   String _url = '';
+  String _prefilledUrl = '';
   final List<ComposerKeyValue> _headers = [];
   final List<ComposerKeyValue> _queryParams = [];
   ComposerBodyKind _bodyKind = ComposerBodyKind.none;
@@ -93,6 +112,32 @@ final class HttpComposerController extends ChangeNotifier {
   /// Whether file attachment is available (a picker was supplied by the host).
   bool get canAttachFiles => _filePicker != null;
 
+  static const presetMethods = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'HEAD',
+    'OPTIONS',
+    'QUERY',
+  ];
+
+  /// The methods the picker lists: the presets, plus the current method when
+  /// the user typed one of their own.
+  List<String> get methodChoices => presetMethods.contains(_method)
+      ? presetMethods
+      : [...presetMethods, _method];
+
+  /// [input] trimmed and uppercased, or `null` when it is not a single HTTP
+  /// method token (RFC 9110, section 5.6.2).
+  static String? normalizeMethod(String input) {
+    final method = input.trim().toUpperCase();
+    return _methodToken.hasMatch(method) ? method : null;
+  }
+
+  static final _methodToken = RegExp(r"^[!#$%&'*+\-.^_`|~0-9A-Z]+$");
+
   void setMethod(String value) {
     _method = value;
     notifyListeners();
@@ -103,10 +148,26 @@ final class HttpComposerController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Selects the client to send through.
+  ///
+  /// A URL that is empty or still the base URL the composer filled in is
+  /// replaced with the new client's base URL; a URL the user edited is kept.
   void selectSender(String id) {
     _selectedSenderId = id;
+    final url = _url.trim();
+    if (url.isEmpty || url == _prefilledUrl) _prefillBaseUrl();
     notifyListeners();
   }
+
+  void _prefillBaseUrl() {
+    _url = _baseUrlOf(_resolveSender()) ?? '';
+    _prefilledUrl = _url;
+  }
+
+  static String? _baseUrlOf(NetworkRequestSender? sender) => switch (sender) {
+    final NetworkBaseUrlProvider provider => provider.baseUrl?.toString(),
+    _ => null,
+  };
 
   void setBodyKind(ComposerBodyKind kind) {
     _bodyKind = kind;
@@ -376,33 +437,19 @@ final class HttpComposerController extends ChangeNotifier {
   ///
   /// Redacted header/body values are dropped by the parser so they are not
   /// resent; the registered client's interceptors re-add them at send time.
-  static NetworkReplayRequest? seedFromLog(ISpectLogData log) {
-    final map = _requestMapFromLog(log);
+  static NetworkReplayRequest? seedFromLog(ISpectLogData log) =>
+      replayFromLog(log)?.request;
+
+  /// Like [seedFromLog], and also names the header and body values that were
+  /// redacted in [log] and therefore left out of the request.
+  static ParsedReplayRequest? replayFromLog(ISpectLogData log) {
+    final map = log.capturedNetworkRequest;
     if (map == null) return null;
     final captured = captureISpectLogDataForEgress(log);
     return NetworkReplayRequestParser.fromRequestMap(
       map,
       resourceLimits: captured.resourceLimits,
-    )?.request;
-  }
-
-  static Map<String, dynamic>? _requestMapFromLog(ISpectLogData log) {
-    final meta = log.additionalData?[TraceKeys.meta];
-    if (meta is! Map) return null;
-    final requestData = meta[NetworkJsonKeys.requestData];
-    if (requestData is Map) return Map<String, dynamic>.from(requestData);
-    for (final key in const [
-      NetworkJsonKeys.responseData,
-      NetworkJsonKeys.errorData,
-    ]) {
-      final payload = meta[key];
-      if (payload is! Map) continue;
-      final nested =
-          payload[NetworkJsonKeys.request] ??
-          (payload[NetworkJsonKeys.response] as Map?)?[NetworkJsonKeys.request];
-      if (nested is Map) return Map<String, dynamic>.from(nested);
-    }
-    return null;
+    );
   }
 
   void _applySeed(NetworkReplayRequest seed) {

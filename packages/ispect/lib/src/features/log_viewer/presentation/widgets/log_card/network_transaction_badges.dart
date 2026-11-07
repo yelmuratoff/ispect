@@ -160,6 +160,7 @@ class DetailChip extends StatelessWidget {
     this.icon = Icons.open_in_new_rounded,
     this.iconOnly = false,
     this.dense = false,
+    this.selected,
     super.key,
   });
 
@@ -169,6 +170,7 @@ class DetailChip extends StatelessWidget {
   final IconData icon;
   final bool iconOnly;
   final bool dense;
+  final bool? selected;
 
   @override
   Widget build(BuildContext context) {
@@ -227,6 +229,7 @@ class DetailChip extends StatelessWidget {
 
     return Semantics(
       button: true,
+      selected: selected,
       label: label,
       onTap: onTap,
       child: Material(

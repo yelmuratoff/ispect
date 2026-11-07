@@ -259,14 +259,18 @@ class ISpectViewController implements Listenable {
   ISpectSettingsState get settings => _settingsManager.settings;
 
   void updateSettings(ISpectSettingsState newSettings) {
+    final excludedTypesChanged = !setEquals(
+      settings.disabledLogTypes,
+      newSettings.disabledLogTypes,
+    );
+    _settingsManager.updateSettings(newSettings);
     _updateDiagnosticPolicies(
       newSettings.resourceLimits,
       newSettings.processingPolicy,
     );
-    if (!setEquals(settings.disabledLogTypes, newSettings.disabledLogTypes)) {
+    if (excludedTypesChanged) {
       _filterManager.updateExcludedLogTypeKeys(newSettings.disabledLogTypes);
     }
-    _settingsManager.updateSettings(newSettings);
     _display.applyFromSettings(newSettings);
   }
 
@@ -317,6 +321,16 @@ class ISpectViewController implements Listenable {
       filter.logTypeKeys.length + hiddenLogTypeKeys.length;
 
   void clearAllFilters() => _filterManager.clearAllFilters();
+
+  bool get hasClearableFilters =>
+      activeLogTypeFilterCount > 0 ||
+      (searchMode == SearchMode.filter &&
+          (filter.searchQuery?.isNotEmpty ?? false));
+
+  void clearSearchAndFilters() {
+    _search.searchController.clear();
+    _filterManager.clearAllFilters();
+  }
 
   List<ISpectLogData> applyCurrentFilters(List<ISpectLogData> logsData) =>
       _filterManager.applyCurrentFilters(logsData);

@@ -10,6 +10,7 @@ abstract final class HttpMethods {
     'OPTIONS',
     'TRACE',
     'CONNECT',
+    'QUERY',
   };
 
   /// Whether [method] is one of the [standard] verbs, matched exactly.

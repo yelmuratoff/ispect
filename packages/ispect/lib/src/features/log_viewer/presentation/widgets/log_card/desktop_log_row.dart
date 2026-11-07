@@ -205,13 +205,10 @@ class _DesktopLogRowState extends State<DesktopLogRow> {
       bgColor = zebraColor;
     }
 
-    final typeTitle = context.ispectTheme.getTypeTitle(
-      context,
-      key: widget.data.key,
-    );
-    final semanticLabel = typeTitle == null
+    final typeKey = widget.data.key;
+    final semanticLabel = typeKey == null || typeKey.isEmpty
         ? _message
-        : '$typeTitle: $_message';
+        : '$typeKey: $_message';
     final semanticTap = widget.onOpenDetail != null ? _handleTap : widget.onTap;
 
     return MouseRegion(

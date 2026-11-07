@@ -34,8 +34,8 @@ class _OnboardingSheet extends StatelessWidget {
       _HintData(Icons.filter_alt_rounded, l10n.tipFilter),
       if (isDesktop) _HintData(Icons.open_in_full_rounded, l10n.tipExpand),
       _HintData(Icons.alt_route_rounded, l10n.tipNavigationFlow),
-      _HintData(Icons.ios_share_rounded, l10n.tipShareSession),
-      _HintData(Icons.import_export_rounded, l10n.tipReverseLogs),
+      _HintData(Icons.share_rounded, l10n.tipShareSession),
+      _HintData(Icons.tune_rounded, l10n.tipReverseLogs),
       if (isDesktop) _HintData(Icons.keyboard_rounded, l10n.tipKeyboard),
     ];
 
