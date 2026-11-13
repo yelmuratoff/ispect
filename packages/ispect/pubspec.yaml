@@ -12,6 +12,10 @@ topics:
   - toolkit
   - debug-toolkit
 
+screenshots:
+  - description: "A network response opened as JSON, the widget inspector on a Paragraph, and the floating ISpect panel, all inside the running app."
+    path: assets/screenshots/banner.webp
+
 platforms:
   android:
   ios:
