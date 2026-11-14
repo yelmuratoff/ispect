@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
 import 'package:ispect_layout/src/widgets/components/svg_props.dart';
+import 'package:material_ui/material_ui.dart';
 
 PropSpec? _propBySubtitle(List<PropSpec> props, String subtitle) {
   for (final p in props) {

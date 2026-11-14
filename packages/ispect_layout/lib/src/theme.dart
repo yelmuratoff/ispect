@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Visual palette for the inspector overlay. Passed in via [Inspector.theme]
 /// so host apps can retune accent colours (e.g. for dark themes where the

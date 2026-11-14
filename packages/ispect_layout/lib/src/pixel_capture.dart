@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Utilities for turning a [RenderRepaintBoundary] into a rasterised [ui.Image]
 /// and translating global pointer coordinates into the image's pixel space.

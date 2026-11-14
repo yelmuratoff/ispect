@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/src/widgets/components/element_resolver.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   testWidgets('resolves the owning element once and reuses it', (tester) async {

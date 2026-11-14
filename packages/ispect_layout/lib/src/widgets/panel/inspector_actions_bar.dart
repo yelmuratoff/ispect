@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/inspector_controller.dart';
 import 'package:ispect_layout/src/theme.dart';
 import 'package:ispect_layout/src/widgets/color_picker/utils.dart';
 import 'package:ispect_layout/src/widgets/multi_value_listenable.dart';
 import 'package:ispect_layout/src/widgets/squircle.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Floating Confirm / Cancel bar shown at the bottom of the screen while
 /// [InspectorMode.colorPicker] or [InspectorMode.zoom] is active.

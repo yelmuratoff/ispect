@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/components/element_resolver.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
 import 'package:ispect_layout/src/widgets/components/value_descriptors.dart';
+import 'package:material_ui/material_ui.dart';
 
 String _fmt(double v, int decimalPlaces) =>
     formatInspectorDouble(v, decimalPlaces: decimalPlaces);

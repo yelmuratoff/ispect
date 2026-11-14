@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Reads the color of a pixel at ([x], [y]) from a raw `RGBA8888` [byteData]
 /// buffer with straight (non-premultiplied) alpha (as produced by

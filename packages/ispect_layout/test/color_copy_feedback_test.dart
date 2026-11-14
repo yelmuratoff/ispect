@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/src/widgets/color_picker/color_picker_snackbar.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
+import 'package:material_ui/material_ui.dart';
 
 Widget _withoutMessenger(Widget child) => WidgetsApp(
   color: const Color(0xFF000000),

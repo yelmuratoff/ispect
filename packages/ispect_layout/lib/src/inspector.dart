@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/inspector_controller.dart';
 import 'package:ispect_layout/src/ispect_layout_enabled.dart';
@@ -10,6 +9,7 @@ import 'package:ispect_layout/src/theme.dart';
 import 'package:ispect_layout/src/widgets/ignore_tap_gesture.dart';
 import 'package:ispect_layout/src/widgets/zoom/zoom_overlay.dart';
 import 'package:ispect_layout/src/widgets/zoomable_color_picker/zoomable_color_picker.dart';
+import 'package:material_ui/material_ui.dart';
 
 import './widgets/panel/inspector_actions_bar.dart';
 import './widgets/panel/inspector_panel.dart';

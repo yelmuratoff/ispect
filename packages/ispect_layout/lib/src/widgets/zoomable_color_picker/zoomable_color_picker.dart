@@ -1,8 +1,8 @@
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:ispect_layout/src/widgets/color_picker/utils.dart';
 import 'package:ispect_layout/src/widgets/zoom/zoom_painter.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Visual style for [ZoomableColorPickerOverlay]. Centralises the magic
 /// numbers that used to be hard-coded inside the widget tree.

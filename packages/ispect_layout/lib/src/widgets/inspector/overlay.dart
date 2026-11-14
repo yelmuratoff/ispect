@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:ispect_layout/src/theme.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../components/box_info_widget.dart';
 import 'box_info.dart';

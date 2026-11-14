@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/src/widgets/inspector/render_box_extension.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   testWidgets('displaySize follows a FittedBox fill transform', (tester) async {

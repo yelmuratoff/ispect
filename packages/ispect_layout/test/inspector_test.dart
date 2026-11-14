@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/ispect_layout.dart';
 import 'package:ispect_layout/src/widgets/components/box_info_panel_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _containerKey = ValueKey('container');
 const _roundedMaterialChildKey = ValueKey('rounded-material-child');

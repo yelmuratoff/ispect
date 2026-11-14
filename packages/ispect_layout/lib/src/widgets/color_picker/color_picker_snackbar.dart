@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'color_scheme_inspector.dart';
 import 'utils.dart';
