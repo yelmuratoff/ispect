@@ -34,7 +34,7 @@ jobs:
       - name: Setup Flutter test runner
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: "3.35.7"
+          flutter-version: "3.47.5"
           channel: stable
           cache: true
 
@@ -112,15 +112,10 @@ jobs:
           - ispectify_bloc
           - ispectify_riverpod
         flutter:
-          - version: "3.35.7"
+          - version: "3.47.5"
             channel_signal: required
           - version: "stable"
             channel_signal: advisory
-        include:
-          - package: ispect_layout
-            flutter:
-              version: "3.32.6"
-              channel_signal: required
 
     steps:
       - name: Checkout
@@ -170,7 +165,7 @@ jobs:
           path: packages/${{ matrix.package }}/coverage/lcov.info
 
       - name: Upload to Codecov
-        if: always() && matrix.flutter.version == '3.35.7'
+        if: always() && matrix.flutter.version == '3.47.5'
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           files: packages/${{ matrix.package }}/coverage/lcov.info
