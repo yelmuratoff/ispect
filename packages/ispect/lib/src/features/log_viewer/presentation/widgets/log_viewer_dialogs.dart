@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -6,6 +5,7 @@ import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_input.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/action_tile.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Choice for how to load log content.
 enum LogSourceChoice { external, paste }

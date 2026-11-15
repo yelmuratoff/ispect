@@ -26,13 +26,19 @@ platforms:
 
 environment:
   sdk: ">=3.8.0 <4.0.0"
-  flutter: ">=3.35.0"
+  flutter: ">=3.47.0"
 
 dependency_overrides:
   ispectify:
     path: ../ispectify
   ispect_layout:
     path: ../ispect_layout
+  # TODO(yelmuratoff): drop once draggable_panel 5.0.0 is on pub.dev,
+  # https://github.com/yelmuratoff/draggable_panel/pull/1
+  draggable_panel:
+    git:
+      url: https://github.com/yelmuratoff/draggable_panel.git
+      ref: feat/material-ui
 
 dependencies:
   flutter:
@@ -52,8 +58,10 @@ dependencies:
 
   # UI
   ispect_layout: ^7.3.0-dev.5
-  draggable_panel: ^4.2.0
+  draggable_panel: ^5.0.0
   super_sliver_list: ^0.4.1
+  material_ui: ^1.11.0
+  cupertino_ui: ^1.1.6
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// [AppBar] preset shared by ISpect screens that sit on top of the
 /// ISpect-themed scaffold background. Disables M3 surface tint / scroll

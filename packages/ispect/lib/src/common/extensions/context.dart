@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/adjust_color.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// List of extensions for `BuildContext`
 extension ISpectContextExtension on BuildContext {

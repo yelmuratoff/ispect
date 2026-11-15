@@ -2,7 +2,6 @@
 
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
@@ -17,6 +16,7 @@ import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/session_logs_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/empty_logs_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DailySessionsScreen extends StatefulWidget {
   const DailySessionsScreen({required this.history, super.key});

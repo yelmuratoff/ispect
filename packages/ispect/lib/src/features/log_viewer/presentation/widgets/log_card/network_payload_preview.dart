@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:material_ui/material_ui.dart';
 
 class NetworkPayloadPreview extends StatelessWidget {
   const NetworkPayloadPreview({

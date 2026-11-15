@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
+import 'package:material_ui/material_ui.dart';
 
 class BreadcrumbBar extends StatefulWidget {
   const BreadcrumbBar({required this.node, required this.onSegmentTap});

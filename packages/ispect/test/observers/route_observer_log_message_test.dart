@@ -1,12 +1,12 @@
 import 'dart:collection';
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/observers/route_extension.dart';
 import 'package:ispect/src/common/observers/route_sanitizer.dart';
 import 'package:ispect/src/common/observers/transition.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   tearDown(() async {

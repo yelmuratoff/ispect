@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Squircle shape factory shared across ISpect surfaces.
 ///

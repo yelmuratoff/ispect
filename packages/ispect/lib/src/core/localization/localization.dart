@@ -1,7 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:cupertino_ui/cupertino_ui.dart'
+    show GlobalCupertinoLocalizations;
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
 import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
+import 'package:material_ui/material_ui.dart';
 
 export 'generated/ispect_localizations.dart';
 

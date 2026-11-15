@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/core/res/json_color.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SlowBadge extends StatelessWidget {
   const SlowBadge({required this.durationMs, super.key});

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A squircle, subtly bordered container used as the visual shell for tiles,
 /// chips, hint rows, and action cards across ISpect.

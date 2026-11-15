@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/examples/example_app.dart';
 import 'package:ispectify_riverpod/ispectify_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 
 final _counterProvider = StateProvider<int>((_) => 0, name: 'counter');
 

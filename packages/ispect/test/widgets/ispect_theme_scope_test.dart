@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/core/res/ispect_default_palette.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   group('ISpectThemeScope', () {

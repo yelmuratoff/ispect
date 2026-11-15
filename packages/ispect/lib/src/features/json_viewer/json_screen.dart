@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/debug_report.dart';
@@ -24,6 +23,7 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/sear
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/network_log_outline.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 class JsonScreen extends StatefulWidget {

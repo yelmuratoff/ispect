@@ -1,6 +1,5 @@
 import 'dart:ui' show PointerDeviceKind;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
@@ -8,8 +7,15 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/net
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_card.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_desktop_row.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../../helpers/pump_ispect.dart';
+
+// find.byTooltip reads the message of a semantics-excluded tooltip only from
+// the framework Tooltip, so it never matches the material_ui Tooltip.
+Finder _byTooltipMessage(String message) => find.byWidgetPredicate(
+  (widget) => widget is Tooltip && widget.message == message,
+);
 
 final class _CountingRedactionService extends RedactionService {
   int structuredExportCalls = 0;
@@ -181,7 +187,7 @@ void main() {
         await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
         await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
 
-        final disclosure = find.byTooltip('Expand logs');
+        final disclosure = _byTooltipMessage('Expand logs');
         expect(tester.getSize(disclosure), const Size(48, 48));
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.pump();
@@ -189,11 +195,11 @@ void main() {
         await tester.pump();
         await tester.sendKeyEvent(LogicalKeyboardKey.enter);
         await tester.pumpAndSettle();
-        expect(find.byTooltip('Collapse logs'), findsOneWidget);
+        expect(_byTooltipMessage('Collapse logs'), findsOneWidget);
         expect(detailOpened, isFalse);
         await tester.sendKeyEvent(LogicalKeyboardKey.enter);
         await tester.pumpAndSettle();
-        expect(find.byTooltip('Expand logs'), findsOneWidget);
+        expect(_byTooltipMessage('Expand logs'), findsOneWidget);
         expect(detailOpened, isFalse);
       } finally {
         semantics.dispose();
@@ -252,7 +258,7 @@ void main() {
           expect(find.text('HTTP Request'), findsOneWidget);
           expect(tapped, isFalse);
           expect(openedDetail, isNull);
-          expect(find.byTooltip('Collapse logs'), findsNothing);
+          expect(_byTooltipMessage('Collapse logs'), findsNothing);
 
           if (outcome != 'pending') {
             await tester.tap(find.byIcon(Icons.share_rounded));

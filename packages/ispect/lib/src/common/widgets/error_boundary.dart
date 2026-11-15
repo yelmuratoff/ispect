@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A widget that catches errors thrown by the [pluginBuilder] call itself
 /// and displays a styled fallback instead of the default red error screen.

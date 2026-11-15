@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum EmptyLogsReason { noLogs, noMatches, noSessions }
 

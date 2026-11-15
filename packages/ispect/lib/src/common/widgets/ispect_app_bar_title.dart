@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Wraps an AppBar title so every `Text` inside scales down on desktop via
 /// `MediaQuery.textScaler`, letting call sites keep their natural font sizes.

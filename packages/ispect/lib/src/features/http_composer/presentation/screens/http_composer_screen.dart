@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/resource_limits.dart';
@@ -16,6 +15,7 @@ import 'package:ispect/src/common/widgets/resizable_split_view.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/http_composer/controllers/http_composer_controller.dart';
+import 'package:material_ui/material_ui.dart';
 
 const double _kTabletFormMaxWidth = 720;
 const int _kInlinePreviewMaxLines = 12;

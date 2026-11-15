@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Tracks whether the inspector's logger page is currently active so the
 /// floating panel can hide its draggable button while the user is inside the

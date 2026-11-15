@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/services/log_correlation_index.dart';
@@ -7,6 +6,7 @@ import 'package:ispect/src/common/widgets/resizable_split_view.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/main_logs_view.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Filterable logs list plus its responsive detail panel.
 ///

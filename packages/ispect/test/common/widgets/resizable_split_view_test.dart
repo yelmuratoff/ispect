@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/common/widgets/resizable_split_view.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../helpers/pump_ispect.dart';
 

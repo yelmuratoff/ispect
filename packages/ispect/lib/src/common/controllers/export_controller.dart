@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/logs_file/logs_file.dart';
@@ -11,6 +10,7 @@ import 'package:ispect/src/core/localization/generated/ispect_localizations.dart
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:ispect/src/ispect.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Current state of an export operation.
 enum ExportState { idle, exporting, done, error }

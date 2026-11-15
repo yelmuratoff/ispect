@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Describes a tappable action shown inside the ISpect inspector panel
 /// (e.g. in the custom-actions grid).

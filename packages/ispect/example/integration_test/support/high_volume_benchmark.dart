@@ -3,12 +3,12 @@
 
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_builder.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_viewer_body.dart';
+import 'package:material_ui/material_ui.dart';
 
 const highVolumeEventCount = 2000;
 const _highVolumeErrorStride = 10;

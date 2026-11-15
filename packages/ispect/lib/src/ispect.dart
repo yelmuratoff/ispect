@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/controllers/ispect_scope.dart';
 import 'package:ispect/src/common/errors/ispect_scope_not_found_error.dart';
 import 'package:ispect/src/common/extensions/init.dart';
@@ -10,6 +9,7 @@ import 'package:ispect/src/common/services/error_handler_options.dart';
 import 'package:ispect/src/common/services/error_handler_service.dart';
 import 'package:ispect/src/common/utils/logs_file/factory/logs_file_factory.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The main entry point for initializing and managing logging/error handling.
 final class ISpect {

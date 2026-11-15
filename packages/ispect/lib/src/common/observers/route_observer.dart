@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/observers/route_extension.dart';
 import 'package:ispect/src/common/observers/route_sanitizer.dart';
 import 'package:ispect/src/common/observers/transition.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Extension on `StringBuffer` to conditionally write a line.
 extension StringBufferExtension on StringBuffer {

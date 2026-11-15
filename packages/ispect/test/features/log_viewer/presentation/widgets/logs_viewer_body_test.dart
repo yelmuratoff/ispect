@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
@@ -11,6 +10,7 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/net
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_details.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_viewer_body.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../helpers/pump_ispect.dart';
 

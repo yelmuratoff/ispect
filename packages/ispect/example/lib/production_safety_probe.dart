@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_layout/ispect_layout.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'production_safety_diagnostics.dart' show exerciseDiagnosticsApis;
 

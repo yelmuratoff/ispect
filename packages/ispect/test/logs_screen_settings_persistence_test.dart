@@ -3,10 +3,10 @@
 // handed `ISpectOptions.initialSettings` - the startup seed that must never
 // be replayed over the user's live choices.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   const seed = ISpectSettingsState(

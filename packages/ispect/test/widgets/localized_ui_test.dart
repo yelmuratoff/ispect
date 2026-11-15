@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/logger_notifier.dart';
@@ -18,6 +17,7 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/net
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/limit_tile.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/settings_bottom_sheet.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../helpers/pump_ispect.dart';
 

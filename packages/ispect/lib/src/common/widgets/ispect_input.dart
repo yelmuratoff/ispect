@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Shared sizing tokens for ISpect inputs. Keep in sync with
 /// [ISpectSearchField] so search bars and plain text fields read as one

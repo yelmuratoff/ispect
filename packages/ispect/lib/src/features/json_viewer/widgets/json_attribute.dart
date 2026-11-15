@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/features/json_viewer/models/node_view_model.dart';
 import 'package:ispect/src/features/json_viewer/services/value_style_cache.dart';
 import 'package:ispect/src/features/json_viewer/theme.dart';
@@ -9,6 +8,7 @@ import 'package:ispect/src/features/json_viewer/widgets/rendering/primitives.dar
 import 'package:ispect/src/features/json_viewer/widgets/rendering/property_node_widget.dart';
 import 'package:ispect/src/features/json_viewer/widgets/rendering/root_node_widget.dart';
 import 'package:ispect/src/features/json_viewer/widgets/store_selector.dart';
+import 'package:material_ui/material_ui.dart';
 
 class JsonAttribute extends StatefulWidget {
   const JsonAttribute({

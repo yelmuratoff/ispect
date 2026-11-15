@@ -18,8 +18,8 @@
 // Riverpod/Bloc observers, stress tests, compact network URLs, jank logging)
 // run `lib/complex_example.dart`.
 
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:material_ui/material_ui.dart';
 
 // Forward ISpect events to your crash reporter / analytics.
 // Wire it into ISpect.run(logger: ISpectFlutter.init(observer: SentryISpectObserver())).

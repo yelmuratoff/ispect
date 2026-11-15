@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/core/res/ispect_default_palette.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Builds the [ThemeData] ISpect injects above its own surfaces (via
 /// `ISpectThemeScope`) so every `Theme.of(context)` inside ISpect resolves to

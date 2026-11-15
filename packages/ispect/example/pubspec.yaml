@@ -25,6 +25,12 @@ dependency_overrides:
     path: ../../ispectify_ws
   ispectify_db:
     path: ../../ispectify_db
+  # TODO(yelmuratoff): drop once draggable_panel 5.0.0 is on pub.dev,
+  # https://github.com/yelmuratoff/draggable_panel/pull/1
+  draggable_panel:
+    git:
+      url: https://github.com/yelmuratoff/draggable_panel.git
+      ref: feat/material-ui
 
 dependencies:
   flutter:
@@ -56,6 +62,9 @@ dependencies:
   ispectify_riverpod: ^7.3.0-dev.5
   ispectify_ws: ^7.3.0-dev.5
   ispectify_db: ^7.3.0-dev.5
+
+  material_ui: ^1.11.0
+  cupertino_ui: ^1.1.6
 
 dev_dependencies:
   flutter_test:

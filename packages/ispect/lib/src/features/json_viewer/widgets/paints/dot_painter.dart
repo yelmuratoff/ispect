@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A CustomPainter that draws a series of dots in a horizontal line.
 ///

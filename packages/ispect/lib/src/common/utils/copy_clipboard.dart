@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/resource_limits.dart';
 import 'package:ispect/src/core/localization/generated/ispect_localizations_en.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Copies the given `value` to the clipboard and displays a toast notification.
 ///

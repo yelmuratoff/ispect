@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
@@ -6,6 +5,7 @@ import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/ispect_modal_tracker.dart';
 import 'package:ispect/src/core/res/ispect_default_palette.dart';
 import 'package:ispect/src/core/res/ispect_theme_data.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Wraps modal sheet/dialog content in ISpect's owned theme. Modals push onto
 /// the root navigator, above the ISpect scope, so [isDark] is resolved from the

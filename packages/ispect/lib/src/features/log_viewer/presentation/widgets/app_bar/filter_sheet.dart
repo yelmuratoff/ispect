@@ -1,6 +1,5 @@
 // ignore_for_file: inference_failure_on_function_return_type, avoid_positional_boolean_parameters
 
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
@@ -10,6 +9,7 @@ import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/compact_toggle_grid.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/toggle_spec.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ISpectFilterSheet extends StatelessWidget {
   const ISpectFilterSheet({

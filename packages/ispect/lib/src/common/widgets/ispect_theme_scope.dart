@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/core/res/ispect_theme_data.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Injects ISpect's owned [ThemeData] above [child] so every `Theme.of` inside
 /// resolves to the flat, tonal design language (dark by default).

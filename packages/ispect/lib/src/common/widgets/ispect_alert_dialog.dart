@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Thin [AlertDialog] wrapper that applies the ISpect surface defaults
 /// (ISpect-themed background, no M3 surface tint).

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/column_widths.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A sticky table header row for the desktop log table.
 class DesktopLogTableHeader extends StatelessWidget {

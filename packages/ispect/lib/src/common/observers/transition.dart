@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/resource_limits.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum TransitionType {
   push,

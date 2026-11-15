@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/examples/example_app.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
 import 'package:ispectify_http/ispectify_http.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   final logger = ISpectFlutter.init();

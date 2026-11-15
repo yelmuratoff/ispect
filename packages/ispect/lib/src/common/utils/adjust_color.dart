@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Adjusts the brightness of a given `color` by the specified [brightness] factor.
 ///

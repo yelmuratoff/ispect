@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -16,6 +15,7 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/onboarding_d
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/settings_bottom_sheet.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_all_logs_sheet.dart';
 import 'package:ispect/src/features/log_viewer/services/file_processing_service.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Screen for browsing, searching, and filtering application logs.
 class LogsScreen extends StatefulWidget {

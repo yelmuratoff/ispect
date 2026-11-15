@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/default_curl_redactor.dart';
@@ -10,6 +9,7 @@ import 'package:ispect/src/features/http_composer/presentation/screens/http_comp
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_log_bottom_sheet.dart';
+import 'package:material_ui/material_ui.dart';
 
 Color transactionColor(NetworkTransaction tx) {
   if (tx.isError) return JsonColors.statusError;

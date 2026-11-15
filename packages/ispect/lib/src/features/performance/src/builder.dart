@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/core/res/ispect_default_palette.dart';
 import 'package:ispect/src/features/performance/performance.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Wraps [child] with an [ISpectPerformanceOverlay] gated by
 /// [isPerformanceTrackingEnabled]. Keeps the host's ambient [Directionality]

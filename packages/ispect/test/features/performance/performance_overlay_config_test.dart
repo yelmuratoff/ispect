@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/src/features/performance/src/overlay_config.dart';
+import 'package:material_ui/material_ui.dart';
 
 PerformanceOverlayConfig _config({
   int sampleSize = 64,
