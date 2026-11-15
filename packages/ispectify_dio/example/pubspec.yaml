@@ -15,6 +15,12 @@ dependency_overrides:
     path: ../../ispect
   ispect_layout:
     path: ../../ispect_layout
+  # TODO(yelmuratoff): drop once draggable_panel 5.0.0 is on pub.dev,
+  # https://github.com/yelmuratoff/draggable_panel/pull/1
+  draggable_panel:
+    git:
+      url: https://github.com/yelmuratoff/draggable_panel.git
+      ref: feat/material-ui
 
 dependencies:
   flutter:
@@ -22,6 +28,7 @@ dependencies:
   dio: ^5.0.0
   ispectify_dio: ^7.3.0-dev.5
   ispect: ^7.3.0-dev.5
+  material_ui: ^1.11.0
 
 dev_dependencies:
   flutter_test:
