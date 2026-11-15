@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/decoration_utils.dart';
@@ -14,6 +13,7 @@ import 'package:ispect/src/features/log_viewer/presentation/screens/navigation_f
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_context_menu.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_payload_preview.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
+import 'package:material_ui/material_ui.dart';
 
 part 'collapsed_body.dart';
 

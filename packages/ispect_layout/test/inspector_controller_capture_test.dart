@@ -1,10 +1,10 @@
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/ispect_layout.dart';
 import 'package:ispect_layout/src/widgets/inspector/overlay.dart';
 import 'package:ispect_layout/src/widgets/zoom/zoom_overlay.dart';
 import 'package:ispect_layout/src/widgets/zoomable_color_picker/zoomable_color_picker.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<InspectorController> _pumpInspector(WidgetTester tester) async {
   final controller = InspectorController();

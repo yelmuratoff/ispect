@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:ispect_layout/src/widgets/components/information_box_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Shared painter for the zoom overlay and zoomable color picker.
 ///

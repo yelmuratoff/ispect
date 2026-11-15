@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/src/widgets/components/box_info_panel_widget.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
 import 'package:ispect_layout/src/widgets/inspector/box_info.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<void> _pumpPanel(WidgetTester tester, RenderBox target) async {
   await tester.pumpWidget(

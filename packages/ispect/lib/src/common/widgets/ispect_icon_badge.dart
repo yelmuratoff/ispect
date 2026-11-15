@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Rounded-square icon container with a primary-tinted background, used across
 /// sheet headers, dialog titles, action tiles, and hint rows.

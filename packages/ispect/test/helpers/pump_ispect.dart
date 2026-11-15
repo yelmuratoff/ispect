@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Wraps [child] in the minimal shell required for ISpect widgets:
 /// [ISpectScopeController] (provides `context.ispectTheme`) and

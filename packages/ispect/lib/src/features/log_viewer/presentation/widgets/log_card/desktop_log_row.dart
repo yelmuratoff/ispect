@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
@@ -16,6 +15,7 @@ import 'package:ispect/src/features/log_viewer/presentation/screens/navigation_f
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/column_widths.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_context_menu.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A compact, single-line log row optimized for desktop/web layouts.
 ///

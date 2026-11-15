@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Color calculation helpers tailored for JSON viewer UI.
 extension JsonColorCalc on Color {

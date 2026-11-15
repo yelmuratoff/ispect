@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -6,6 +5,7 @@ import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/log_description.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/collapsible_settings_section.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A widget that displays a grid of log type chips
 /// to enable/disable specific log types for filtering.

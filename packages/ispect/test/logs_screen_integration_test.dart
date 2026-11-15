@@ -7,11 +7,11 @@
 // `ISpectLogger` trace API must trigger a rebuild that renders the log
 // entry in the widget tree.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/logs_builder.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   testWidgets(

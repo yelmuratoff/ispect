@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -14,6 +13,7 @@ import 'package:ispect/src/features/log_viewer/controllers/log_page_controller.d
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
 import 'package:ispect/src/features/performance/src/builder.dart';
 import 'package:ispect_layout/ispect_layout.dart' as pkg_inspector;
+import 'package:material_ui/material_ui.dart';
 
 /// A widget that wraps your app with ISpect debugging tools.
 ///

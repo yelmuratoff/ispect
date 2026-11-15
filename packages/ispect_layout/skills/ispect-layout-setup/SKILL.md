@@ -21,8 +21,8 @@ The package is standalone; a logger or the full ISpect panel is unnecessary.
   controller when supplying one.
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:ispect_layout/ispect_layout.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() => runApp(
       MaterialApp(

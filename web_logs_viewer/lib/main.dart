@@ -1,11 +1,14 @@
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart'
+    show GlobalCupertinoLocalizations;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
+import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
-import 'package:http_interceptor/http_interceptor.dart';
 import 'package:ispectify_http/ispectify_http.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:web_logs_viewer/src/core/localization/generated/app_localizations.dart';

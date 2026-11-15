@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/controllers/export_controller.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/models/export_format.dart';
@@ -11,6 +10,7 @@ import 'package:ispect/src/common/widgets/adaptive_sheet.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/dialogs/toaster.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A unified bottom sheet for exporting / sharing / copying log data.
 ///

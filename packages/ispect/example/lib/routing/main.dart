@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/examples/example_app.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   final logger = ISpectFlutter.init();

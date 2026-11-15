@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/components/element_resolver.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
 import 'package:ispect_layout/src/widgets/components/value_descriptors.dart';
+import 'package:material_ui/material_ui.dart';
 
 // flutter_svg paints through private render objects (`vector_graphics`), so
 // there is no public render type to match on. Instead the `SvgPicture` *widget*

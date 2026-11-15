@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A horizontal split view with a draggable divider between two children.
 ///

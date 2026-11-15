@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:ispectify/ispectify.dart';
 import 'package:ispectify_ws_example/examples/socket_io_example.dart';
 import 'package:ispectify_ws_example/examples/web_socket_channel_example.dart';
 import 'package:ispectify_ws_example/examples/ws_example.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   runApp(const MyApp());

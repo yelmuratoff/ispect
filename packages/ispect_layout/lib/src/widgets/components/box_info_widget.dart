@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect_layout/src/theme.dart';
 import 'package:ispect_layout/src/widgets/inspector/render_box_extension.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../inspector/box_info.dart';
 import '../inspector/compare_overlay_painter.dart';

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_detail_view.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   testWidgets('selected transaction entry survives host rebuild', (

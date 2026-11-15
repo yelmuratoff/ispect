@@ -59,20 +59,18 @@ final class _ReadableMessageValue {
 
 final class _HostileExtensionLogGetters extends ISpectLogData {
   _HostileExtensionLogGetters({
-    Object? exception,
+    super.exception,
     Error? error,
     StackTrace? stackTrace,
-    DiagnosticCaptureMode captureMode = DiagnosticCaptureMode.balanced,
+    super.captureMode,
   }) : super(
           'trusted-extension-message',
           id: 'trusted-extension-id',
           time: DateTime.utc(2026, 7, 26),
           key: ISpectLogType.httpRequest.key,
           logLevel: LogLevel.error,
-          exception: exception,
           error: error ?? StateError('trusted-error'),
           stackTrace: stackTrace ?? StackTrace.fromString('trusted-stack'),
-          captureMode: captureMode,
           additionalData: const {
             'method': 'GET',
             'uri': 'https://example.com/safe',

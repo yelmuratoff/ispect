@@ -1,11 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:draggable_panel/draggable_panel.dart';
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/models/action_item.dart';
 import 'package:ispect/src/common/plugins/inspector_plugin.dart';
 import 'package:ispect/src/common/widgets/builder/data_builder.dart';
 import 'package:ispect/src/core/res/ispect_callbacks.dart';
 import 'package:ispect/src/core/res/ispect_panel.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A configuration class for `ISpect`, defining various options including locale settings,
 /// feature toggles, action items, and panel configurations.

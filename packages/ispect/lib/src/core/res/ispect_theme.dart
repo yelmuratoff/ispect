@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:material_ui/material_ui.dart';
 
 @immutable
 class ISpectDynamicColor {

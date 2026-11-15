@@ -1,6 +1,5 @@
 // ignore_for_file: implementation_imports, inference_failure_on_function_return_type, avoid_positional_boolean_parameters
 
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
@@ -12,6 +11,7 @@ import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controlle
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_button.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/filter_sheet.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/app_bar/search_bar.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ISpectAppBar extends StatefulWidget {
   const ISpectAppBar({

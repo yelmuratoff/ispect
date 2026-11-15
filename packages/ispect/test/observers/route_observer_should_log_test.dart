@@ -3,9 +3,9 @@
 // modal (e.g. a profile opened from a bottom sheet) - it must stay a page
 // transition governed by `isLogPages`, not get dropped as "modal".
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   PageRoute<void> pageRoute({String? name}) => MaterialPageRoute<void>(

@@ -2,13 +2,13 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:isolate';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/models/export_format.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/session_logs_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_list_item.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/share_all_logs_sheet.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../helpers/pump_ispect.dart';
 

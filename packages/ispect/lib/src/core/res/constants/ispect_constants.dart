@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/log_viewer/domain/models/log_description.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:material_ui/material_ui.dart';
 
+part 'ispect_log_descriptions.dart';
 part 'ispect_log_icons.dart';
 part 'ispect_log_palette.dart';
-part 'ispect_log_descriptions.dart';
 
 /// Numeric, color, and log-type constants used across the ISpect UI. The
 /// large icon / color / description tables live in sibling `part` files;

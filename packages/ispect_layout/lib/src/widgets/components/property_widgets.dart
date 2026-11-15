@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/color_picker/utils.dart';
@@ -6,6 +5,7 @@ import 'package:ispect_layout/src/widgets/components/property_extractors.dart'
     show describeAlignment;
 import 'package:ispect_layout/src/widgets/components/value_descriptors.dart'
     show formatRadius;
+import 'package:material_ui/material_ui.dart';
 
 /// Declarative spec for a single info chip; rendered by [PropSection].
 typedef PropSpec = ({IconData icon, String subtitle, Widget child});

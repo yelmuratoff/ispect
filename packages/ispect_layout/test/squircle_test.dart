@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/src/widgets/squircle.dart';
+import 'package:material_ui/material_ui.dart';
 
 double _outline(ShapeBorder shape, Rect rect) => shape
     .getOuterPath(rect)

@@ -36,4 +36,4 @@ Run the correct package-scoped analyzer, tests, and repo consistency checks for 
 - The repo root is not a Melos workspace; root-level `dart test` does not validate all packages.
 - `ispectify_dio`, `ispectify_http`, `ispectify_ws`, `ispectify_bloc`, and `ispectify_riverpod` run in the Flutter-package CI job (`test-flutter` in `.github/workflows/test.yml`) even though their code is non-UI; only `ispectify` and `ispectify_db` run in `test-dart`.
 - Coverage directories are generated output; do not commit them.
-- The pinned required Flutter CI signal is `3.35.7`, plus `3.32.6` for `ispect_layout`; latest stable is advisory.
+- The pinned required Flutter CI signal is `3.47.5`; latest stable is advisory.

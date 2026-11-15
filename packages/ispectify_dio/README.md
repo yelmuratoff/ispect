@@ -59,18 +59,19 @@
 ```yaml
 dependencies:
   dio: ^5.8.0+1
-  ispect: ^7.3.0-dev.5
-  ispectify: ^7.3.0-dev.5
-  ispectify_dio: ^7.3.0-dev.5
+  ispect: ^8.0.0-dev.1
+  ispectify: ^8.0.0-dev.1
+  ispectify_dio: ^8.0.0-dev.1
+  material_ui: ^1.11.0
 ```
 
 ## Quick start
 
 ```dart
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
+import 'package:material_ui/material_ui.dart';
 
 final logger = ISpectFlutter.init();
 final dio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));

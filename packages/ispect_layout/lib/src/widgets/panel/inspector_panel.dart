@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect_layout/src/inspector_controller.dart';
 import 'package:ispect_layout/src/widgets/multi_value_listenable.dart';
+import 'package:material_ui/material_ui.dart';
 
 class InspectorPanel extends StatefulWidget {
   const InspectorPanel({

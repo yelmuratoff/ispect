@@ -1,5 +1,14 @@
 # Changelog
 
+## 8.0.0-dev.1
+
+### Breaking Changes
+
+- **Material from `material_ui`:** `ispect` and `ispect_layout` import Material from the standalone `material_ui` package instead of `package:flutter/material.dart`, which Flutter 3.50 deprecates. ISpect reads the theme and `MaterialLocalizations` through `material_ui`, so the app's `MaterialApp` and its Material and Cupertino localization delegates have to come from `material_ui` and `cupertino_ui` too. Run `dart fix --apply --code=migrate_design_widgets` in the app. Steps are in `docs/DEPRECATIONS.md`.
+- **Localization delegates:** Register ISpect's localizations with `ISpectLocalizations.delegate()` or `ISpectLocalization.localizationDelegates`. The generated `ISpectGeneratedLocalization.localizationsDelegates` still lists the framework Material and Cupertino delegates, which a `material_ui` app can't use.
+- **Minimum SDK:** `ispect` and `ispect_layout` require Flutter 3.47, the first release with `material_ui`, and with it Dart 3.13.
+- **Floating panel:** The panel is built on `draggable_panel` 5.0.0, its `material_ui` release. Its theme's `buttonStyle` and `closeButtonStyle` take a `material_ui` `ButtonStyle`.
+
 ## 7.3.0-dev.5
 
 ### Security

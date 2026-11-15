@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/controllers/logger_notifier.dart';
 import 'package:ispect/src/common/extensions/context.dart';
@@ -15,6 +14,7 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/lim
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/log_type_filter_section.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/policy_profile_tile.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/settings/toggle_spec.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ISpectSettingsBottomSheet {
   const ISpectSettingsBottomSheet({

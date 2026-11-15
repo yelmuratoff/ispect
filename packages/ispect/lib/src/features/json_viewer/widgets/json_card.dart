@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
 import 'package:ispect/src/features/json_viewer/extensions/color_extensions.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A card-like container widget that wraps its child
 /// with customizable styling.

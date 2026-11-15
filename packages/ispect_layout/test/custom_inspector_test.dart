@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/ispect_layout.dart';
-import 'package:ispect_layout/src/widgets/panel/inspector_panel.dart';
 import 'package:ispect_layout/src/widgets/inspector/overlay.dart';
+import 'package:ispect_layout/src/widgets/panel/inspector_panel.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   testWidgets('Inspector uses panelBuilder when provided', (tester) async {

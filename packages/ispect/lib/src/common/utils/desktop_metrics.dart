@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Centralized UI metrics for ISpect's compact desktop chrome.
 abstract final class ISpectDesktopMetrics {

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/core/res/ispect_theme.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// ISpect's built-in default design language: dark-first, flat, with
 /// tonal-elevation surfaces (layered by lightness, not shadow) and a single

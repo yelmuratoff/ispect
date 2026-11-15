@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Signature for build custom `ISpectLogError`
 /// messages in showing `Snackbar` or another widgets

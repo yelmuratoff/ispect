@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
@@ -7,6 +6,7 @@ import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
 import 'package:ispect/src/common/widgets/ispect_bordered_surface.dart';
 import 'package:ispect/src/common/widgets/ispect_icon_badge.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Shows a tips sheet with helpful hints about the logs screen.
 class ISpectOnboardingDialog {

@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/core/res/json_color.dart';
 import 'package:ispect/src/features/json_viewer/utils/colors.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<Color> _colorFor(
   WidgetTester tester, {

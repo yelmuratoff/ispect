@@ -1,12 +1,12 @@
 import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:ispect_layout/src/number_format.dart';
 import 'package:ispect_layout/src/widgets/components/image_props.dart';
 import 'package:ispect_layout/src/widgets/components/property_widgets.dart';
 import 'package:ispect_layout/src/widgets/components/value_descriptors.dart';
+import 'package:material_ui/material_ui.dart';
 
 export 'package:ispect_layout/src/widgets/components/image_props.dart';
 export 'package:ispect_layout/src/widgets/components/svg_props.dart';

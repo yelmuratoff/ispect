@@ -4,10 +4,10 @@
 
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A navigator that rejects imperative pops, mirroring how a declarative
 /// router (e.g. `yx_navigation`) overrides [NavigatorState.pop].

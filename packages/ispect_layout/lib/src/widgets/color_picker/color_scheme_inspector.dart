@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Looks up which `ColorScheme` token(s) a picked colour corresponds to.
 ///

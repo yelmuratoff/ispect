@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:ispect_layout/src/number_format.dart';
+import 'package:material_ui/material_ui.dart';
 
 class InformationBoxWidget extends StatelessWidget {
   const InformationBoxWidget({super.key, required this.child, this.color});

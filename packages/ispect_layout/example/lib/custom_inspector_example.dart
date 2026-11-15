@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:ispect_layout/ispect_layout.dart';
 import 'package:draggable_panel/draggable_panel.dart';
+import 'package:ispect_layout/ispect_layout.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   runApp(const CustomInspectorExample());

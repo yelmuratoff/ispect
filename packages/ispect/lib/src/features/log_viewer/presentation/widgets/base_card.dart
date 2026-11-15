@@ -1,7 +1,7 @@
 // ignore_for_file: implementation_imports
 
-import 'package:flutter/material.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ISpectBaseCard extends StatelessWidget {
   const ISpectBaseCard({

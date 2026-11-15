@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/widgets/bottom_sheet_header.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   group('ISpect panel overlay', () {

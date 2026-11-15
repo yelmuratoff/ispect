@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 extension ISpectRouteExtension on Route<dynamic>? {
   /// Retrieves the route name with meaningful fallbacks based on route type.

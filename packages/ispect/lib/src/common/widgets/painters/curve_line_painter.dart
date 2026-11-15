@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A custom painter that draws a curved line with a quadratic Bezier path.
 ///

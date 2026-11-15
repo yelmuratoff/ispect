@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_dynamic_calls
 
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/core/res/json_color.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Utility class containing color and styling helper methods for JSON tree viewing
 class JsonColorsUtils {

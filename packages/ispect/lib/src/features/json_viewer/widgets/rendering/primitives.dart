@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
@@ -12,6 +11,7 @@ import 'package:ispect/src/features/json_viewer/theme.dart';
 import 'package:ispect/src/features/json_viewer/widgets/explorer.dart'
     show NodeBuilder;
 import 'package:ispect/src/features/json_viewer/widgets/paints/dot_painter.dart';
+import 'package:material_ui/material_ui.dart';
 
 class CopyButton extends StatelessWidget {
   const CopyButton({required this.node, required this.theme, super.key});

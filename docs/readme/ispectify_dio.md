@@ -15,15 +15,16 @@ dependencies:
   ispect: ^{{version}}
   ispectify: ^{{version}}
   ispectify_dio: ^{{version}}
+  material_ui: ^1.11.0
 ```
 
 ## Quick start
 
 ```dart
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_dio/ispectify_dio.dart';
+import 'package:material_ui/material_ui.dart';
 
 final logger = ISpectFlutter.init();
 final dio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));

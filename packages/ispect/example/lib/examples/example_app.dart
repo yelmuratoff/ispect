@@ -1,6 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:cupertino_ui/cupertino_ui.dart'
+    show GlobalCupertinoLocalizations;
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
 import 'package:ispect/ispect.dart';
+import 'package:material_ui/material_ui.dart';
 
 Widget buildExampleApp({
   required String title,

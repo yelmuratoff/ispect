@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A model class that holds the state of the ISpect scope.
 ///

@@ -1,8 +1,8 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/ispect_layout.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   testWidgets('one pointer sample emits one consolidated inspect state', (

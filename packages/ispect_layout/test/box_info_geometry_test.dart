@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/src/widgets/inspector/box_info.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   testWidgets('padding is measured in container coordinates', (tester) async {

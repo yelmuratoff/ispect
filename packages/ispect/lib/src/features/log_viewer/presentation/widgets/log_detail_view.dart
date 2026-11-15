@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
@@ -10,6 +9,7 @@ import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
 import 'package:ispect/src/core/res/constants/ispect_constants.dart';
 import 'package:ispect/src/features/http_composer/presentation/screens/http_composer_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Detail view widget for displaying selected log data.
 ///

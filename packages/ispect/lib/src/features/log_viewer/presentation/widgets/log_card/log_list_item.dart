@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/utils/screen_size.dart';
 import 'package:ispect/src/features/log_viewer/controllers/ispect_view_controller.dart';
 import 'package:ispect/src/features/log_viewer/controllers/logs_screen_controller.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/desktop_log_row.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/log_card.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A widget that represents a single log entry in the list.
 class LogListItem extends StatelessWidget {

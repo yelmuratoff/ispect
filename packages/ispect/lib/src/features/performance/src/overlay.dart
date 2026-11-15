@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'dart:ui' show VertexMode, Vertices;
 
 import 'package:flutter/foundation.dart' show ValueListenable;
-import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:ispect/src/features/performance/src/memory_stats.dart'
     as memory;
@@ -11,6 +10,7 @@ import 'package:ispect/src/features/performance/src/sampler.dart';
 import 'package:ispect/src/features/performance/src/stats.dart';
 import 'package:ispect/src/ispect.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Fallback when [View.display.refreshRate] is unavailable.
 const double _kFallbackRefreshRate = 60;

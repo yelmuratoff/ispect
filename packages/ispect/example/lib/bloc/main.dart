@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect_example/examples/example_app.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   final logger = ISpectFlutter.init();

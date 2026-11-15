@@ -10,7 +10,7 @@ Captured diagnostics can contain sensitive data, so redaction and data minimizat
 
 ## Tech Stack
 
-- Dart SDK `>=3.6.0 <4.0.0` for the `ispectify*` packages and `>=3.8.0 <4.0.0` for `ispect` and `ispect_layout`; `ispect` requires Flutter `>=3.35.0` and `ispect_layout` Flutter `>=3.32.0`. CI pins Flutter `3.35.7` and also runs `ispect_layout` on its `3.32.6` floor.
+- Dart SDK `>=3.6.0 <4.0.0` for the `ispectify*` packages and `>=3.8.0 <4.0.0` for `ispect` and `ispect_layout`; `ispect` and `ispect_layout` require Flutter `>=3.47.0` and import Material from `package:material_ui`, never `package:flutter/material.dart`. CI pins Flutter `3.47.5`.
 - Pure Dart packages: `packages/ispectify`, `packages/ispectify_db`, `packages/ispectify_dio`, `packages/ispectify_http`, `packages/ispectify_ws`, `packages/ispectify_bloc`, `packages/ispectify_riverpod`.
 - Flutter packages: `packages/ispect`, `packages/ispect_layout`.
 - `web_logs_viewer` is a Flutter web demo using local path overrides to the packages.

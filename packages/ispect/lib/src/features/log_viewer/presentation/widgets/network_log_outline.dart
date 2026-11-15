@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/features/json_viewer/models/json_outline.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:material_ui/material_ui.dart';
 
 abstract final class NetworkLogOutline {
   static JsonOutline forLogKey(Object? logKey) =>

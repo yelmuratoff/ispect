@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/widgets/gap/gap.dart';
@@ -8,6 +7,7 @@ import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/col
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_badges.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_details.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/log_card/network_transaction_helpers.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Desktop variant of [NetworkTransactionCard] - table-row layout with
 /// inline expandable details and hover-only action buttons.

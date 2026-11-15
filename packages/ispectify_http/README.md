@@ -59,18 +59,19 @@
 dependencies:
   http: ^1.5.0
   http_interceptor: ^3.0.0
-  ispect: ^7.3.0-dev.5
-  ispectify: ^7.3.0-dev.5
-  ispectify_http: ^7.3.0-dev.5
+  ispect: ^8.0.0-dev.1
+  ispectify: ^8.0.0-dev.1
+  ispectify_http: ^8.0.0-dev.1
+  material_ui: ^1.11.0
 ```
 
 ## Quick start
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_http/ispectify_http.dart';
+import 'package:material_ui/material_ui.dart';
 
 final logger = ISpectFlutter.init();
 

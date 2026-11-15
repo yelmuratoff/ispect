@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect_layout/src/widgets/components/overlay_painter.dart';
 import 'package:ispect_layout/src/widgets/inspector/box_info.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _targetKey = ValueKey('target');
 

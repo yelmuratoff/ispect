@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Browses an independent, immutable set of logs (a file-history session or a
 /// caller-supplied list) using the same viewer as the live logs screen.

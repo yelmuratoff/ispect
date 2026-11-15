@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/extensions/context.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
 import 'package:ispect/src/common/utils/squircle.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ISpectFilterButton extends StatelessWidget {
   const ISpectFilterButton({

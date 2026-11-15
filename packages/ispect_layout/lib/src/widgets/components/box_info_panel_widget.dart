@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:ispect_layout/src/number_format.dart';
@@ -10,6 +9,7 @@ import 'package:ispect_layout/src/widgets/inspector/box_info.dart';
 import 'package:ispect_layout/src/widgets/inspector/compare_distances.dart';
 import 'package:ispect_layout/src/widgets/inspector/render_box_extension.dart';
 import 'package:ispect_layout/src/widgets/squircle.dart';
+import 'package:material_ui/material_ui.dart';
 
 class BoxInfoPanelWidget extends StatefulWidget {
   const BoxInfoPanelWidget({

@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:ispect/src/common/services/error_handler_options.dart';
 import 'package:ispect/src/common/utils/safe_diagnostic_snapshot.dart';
 import 'package:ispectify/ispectify.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Installs and owns the app-level error/log handlers (`FlutterError`,
 /// `PlatformDispatcher`, guarded-zone, and `print`) and funnels every captured

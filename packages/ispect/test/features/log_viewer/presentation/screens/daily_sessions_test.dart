@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/daily_sessions.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/session_logs_screen.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../helpers/pump_ispect.dart';
 
