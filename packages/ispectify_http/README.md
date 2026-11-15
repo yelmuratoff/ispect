@@ -62,15 +62,16 @@ dependencies:
   ispect: ^7.3.0-dev.5
   ispectify: ^7.3.0-dev.5
   ispectify_http: ^7.3.0-dev.5
+  material_ui: ^1.11.0
 ```
 
 ## Quick start
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_http/ispectify_http.dart';
+import 'package:material_ui/material_ui.dart';
 
 final logger = ISpectFlutter.init();
 

@@ -20,13 +20,21 @@ navigation diagnostics.
 dependencies:
   flutter_localizations:
     sdk: flutter
+  material_ui: ^1.11.0
+  cupertino_ui: ^1.1.6
   ispect: ^{{version}}
 ```
 
+ISpect builds on `material_ui`, the standalone Material package that Flutter
+3.47 introduced, so the app's `MaterialApp` and localization delegates come
+from `material_ui` and `cupertino_ui` too.
+
 ```dart
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show GlobalCupertinoLocalizations;
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
 import 'package:ispect/ispect.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() => ISpect.run(() => runApp(const MyApp()));
 
@@ -346,7 +354,7 @@ stable version before pinning a production integration.
 What you can verify from the repository today:
 
 - Repository metadata and generated documentation currently target `{{version}}`.
-- SDK baseline is Dart `>=3.6.0 <4.0.0` for the pure Dart packages. `ispect` requires Dart `>=3.8.0` and Flutter `>=3.35.0`; `ispect_layout` requires Dart `>=3.8.0` and Flutter `>=3.32.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
+- SDK baseline is Dart `>=3.6.0 <4.0.0` for the pure Dart packages. `ispect` and `ispect_layout` require Dart `>=3.8.0` and Flutter `>=3.47.0`, the first release with `material_ui`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
 - The `production_safety` workflow runs disabled direct-API tests for every package and compares disabled/enabled release AOT probes using exact implementation sentinels.
 - Core diagnostics and supported integrations resolve one configurable default `RedactionService`; explicit integration services remain local overrides.
 - Deprecations come with replacements and removal targets in `docs/DEPRECATIONS.md`.

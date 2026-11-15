@@ -88,6 +88,7 @@ Everything above is read from public render-object state, so it works in profile
 ```yaml
 dependencies:
   ispect_layout: ^7.3.0-dev.5
+  material_ui: ^1.11.0
 ```
 
 ## Quick start
@@ -99,8 +100,8 @@ flutter run --dart-define=ISPECT_ENABLED=true
 ```
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:ispect_layout/ispect_layout.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   runApp(

@@ -61,15 +61,16 @@ dependencies:
   ispect: ^7.3.0-dev.5
   ispectify: ^7.3.0-dev.5
   ispectify_bloc: ^7.3.0-dev.5
+  material_ui: ^1.11.0
 ```
 
 ## Quick start
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispectify_bloc/ispectify_bloc.dart';
+import 'package:material_ui/material_ui.dart';
 
 ISpect.run(
   () => runApp(const MyApp()),
