@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:web_logs_viewer/src/core/models/models.dart';
 import 'package:web_logs_viewer/src/core/utils/file_type_detector.dart';
 import 'package:web_logs_viewer/src/features/file_viewer/presentation/widgets/file_content_widget.dart';

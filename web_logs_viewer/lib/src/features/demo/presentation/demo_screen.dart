@@ -1,19 +1,17 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
 import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:ispect/ispect.dart';
-
 import 'package:ispectify_dio/ispectify_dio.dart';
-
-import 'package:http_interceptor/http_interceptor.dart' as http_interceptor;
+import 'package:material_ui/material_ui.dart';
 import 'package:web_logs_viewer/src/core/localization/generated/app_localizations.dart';
-import 'package:web_logs_viewer/src/features/demo/data/ispect_ws_interceptor.dart';
 import 'package:web_logs_viewer/src/core/services/theme_manager.dart';
 import 'package:web_logs_viewer/src/core/utils/load_file_example.dart';
 import 'package:web_logs_viewer/src/features/demo/bloc/test_bloc.dart';
+import 'package:web_logs_viewer/src/features/demo/data/ispect_ws_interceptor.dart';
 import 'package:ws/ws.dart';
 
 final Dio dio = Dio(

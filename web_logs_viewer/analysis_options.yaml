@@ -1,1 +1,7 @@
 include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    # gen-l10n in Flutter 3.50 still emits the deprecated framework
+    # Global*Localizations delegates.
+    - "lib/src/core/localization/generated/**"
