@@ -33,14 +33,6 @@ dependencies:
     path: ../
   material_ui: ^1.11.0
 
-# TODO(yelmuratoff): drop once draggable_panel 5.0.0 is on pub.dev,
-# https://github.com/yelmuratoff/draggable_panel/pull/1
-dependency_overrides:
-  draggable_panel:
-    git:
-      url: https://github.com/yelmuratoff/draggable_panel.git
-      ref: 37bc38991dbd1ec375765329e183ddd8a3f0d1bf
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

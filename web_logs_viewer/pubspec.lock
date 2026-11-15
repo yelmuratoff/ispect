@@ -130,13 +130,12 @@ packages:
     source: hosted
     version: "2.1.1"
   draggable_panel:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "."
-      ref: "37bc38991dbd1ec375765329e183ddd8a3f0d1bf"
-      resolved-ref: "37bc38991dbd1ec375765329e183ddd8a3f0d1bf"
-      url: "https://github.com/yelmuratoff/draggable_panel.git"
-    source: git
+      name: draggable_panel
+      sha256: "41f19466ad5e88db5e9586fc432f56fb7ba13689c959a8d5059362f10ce074ef"
+      url: "https://pub.dev"
+    source: hosted
     version: "5.0.0"
   fake_async:
     dependency: transitive
