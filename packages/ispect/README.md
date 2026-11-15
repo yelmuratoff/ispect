@@ -69,7 +69,7 @@ dependencies:
     sdk: flutter
   material_ui: ^1.11.0
   cupertino_ui: ^1.1.6
-  ispect: ^7.3.0-dev.5
+  ispect: ^8.0.0-dev.1
 ```
 
 ISpect builds on `material_ui`, the standalone Material package that Flutter
@@ -435,7 +435,7 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 
 ## Release channel
 
-The version declared in `version.config` (currently `7.3.0-dev.5`) is the
+The version declared in `version.config` (currently `8.0.0-dev.1`) is the
 repository version used by package metadata and generated documentation. It
 may be a stable release or a prerelease; check pub.dev for the latest published
 stable version before pinning a production integration.
@@ -444,7 +444,7 @@ stable version before pinning a production integration.
 
 What you can verify from the repository today:
 
-- Repository metadata and generated documentation currently target `7.3.0-dev.5`.
+- Repository metadata and generated documentation currently target `8.0.0-dev.1`.
 - SDK baseline is Dart `>=3.6.0 <4.0.0` for the pure Dart packages. `ispect` and `ispect_layout` require Dart `>=3.8.0` and Flutter `>=3.47.0`, the first release with `material_ui`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
 - The `production_safety` workflow runs disabled direct-API tests for every package and compares disabled/enabled release AOT probes using exact implementation sentinels.
 - Core diagnostics and supported integrations resolve one configurable default `RedactionService`; explicit integration services remain local overrides.

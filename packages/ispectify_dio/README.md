@@ -59,9 +59,9 @@
 ```yaml
 dependencies:
   dio: ^5.8.0+1
-  ispect: ^7.3.0-dev.5
-  ispectify: ^7.3.0-dev.5
-  ispectify_dio: ^7.3.0-dev.5
+  ispect: ^8.0.0-dev.1
+  ispectify: ^8.0.0-dev.1
+  ispectify_dio: ^8.0.0-dev.1
   material_ui: ^1.11.0
 ```
 
