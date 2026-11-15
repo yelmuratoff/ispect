@@ -133,8 +133,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "."
-      ref: "feat/material-ui"
-      resolved-ref: "6520cf901945fa24fa28179317a61f6cf4ef5ccd"
+      ref: "37bc38991dbd1ec375765329e183ddd8a3f0d1bf"
+      resolved-ref: "37bc38991dbd1ec375765329e183ddd8a3f0d1bf"
       url: "https://github.com/yelmuratoff/draggable_panel.git"
     source: git
     version: "5.0.0"

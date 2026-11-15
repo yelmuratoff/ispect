@@ -28,7 +28,7 @@ dependency_overrides:
   draggable_panel:
     git:
       url: https://github.com/yelmuratoff/draggable_panel.git
-      ref: feat/material-ui
+      ref: 37bc38991dbd1ec375765329e183ddd8a3f0d1bf
 
 dependencies:
   flutter:
