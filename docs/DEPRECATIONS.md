@@ -74,3 +74,23 @@ Before 8.0.0:
 - Document removals and migrations in the root changelog and README sources.
 - Keep replacement examples for migrations that are not obvious.
 - Add no new deprecation without a clear major-version removal target.
+
+### Moving to 8.0: Material from `material_ui`
+
+8.0 imports Material from the standalone `material_ui` package, and ISpect looks
+up the theme and `MaterialLocalizations` there. The app moves with it:
+
+1. Raise the app's Flutter constraint to 3.47 or later.
+2. Run `flutter pub add material_ui cupertino_ui`, then
+   `dart fix --apply --code=migrate_design_widgets`.
+3. Take `GlobalMaterialLocalizations` from `material_ui` and
+   `GlobalCupertinoLocalizations` from `cupertino_ui`; only
+   `GlobalWidgetsLocalizations` still comes from `flutter_localizations`.
+4. Register ISpect's localizations with `ISpectLocalizations.delegate()` or
+   `ISpectLocalization.localizationDelegates`. The generated
+   `ISpectGeneratedLocalization.localizationsDelegates` still lists the
+   framework Material and Cupertino delegates, because `gen-l10n` emits them.
+
+The Flutter guide,
+[Migrate to standalone material_ui and cupertino_ui packages](https://docs.flutter.dev/release/breaking-changes/material-ui-and-cupertino-ui),
+covers dependencies that haven't moved yet.

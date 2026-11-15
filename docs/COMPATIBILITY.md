@@ -6,7 +6,7 @@ The compatibility policy for the ISpect monorepo.
 
 Current package constraints:
 
-- Dart: `>=3.6.0 <4.0.0`; `ispect` and `ispect_layout` require Dart `3.8.0+`.
+- Dart: `>=3.6.0 <4.0.0`; `ispect` and `ispect_layout` declare Dart `3.8.0+`, and in practice need Dart `3.13.0+`, which `material_ui` 1.11 requires and Flutter 3.47 ships with.
 - Flutter: `ispect` and `ispect_layout` require Flutter `3.47.0+`, the first release with the standalone `material_ui` package they build on. The host app's `MaterialApp` and Material/Cupertino localization delegates must come from `material_ui` and `cupertino_ui` as well.
 
 CI runs against a pinned Flutter SDK (`3.47.5`) as the required signal, and against the latest stable Flutter channel as an advisory signal. The pinned SDK is the compatibility baseline for the current development line.
@@ -27,9 +27,10 @@ CI runs against a pinned Flutter SDK (`3.47.5`) as the required signal, and agai
 
 ## Release channels
 
-The `7.x` line is the current stable channel on pub.dev, and new work targets
-it. `6.x` is the previous major line; upgrade notes live in `CHANGELOG.md` and
-`docs/DEPRECATIONS.md`.
+New work targets the `8.x` line, in prerelease as `8.0.0-dev.N`. It builds on
+`material_ui` and needs Flutter 3.47. The `7.x` line stays the stable channel on
+pub.dev for apps still on the framework Material library. `6.x` is the previous
+major line. Upgrade notes live in `CHANGELOG.md` and `docs/DEPRECATIONS.md`.
 
 ## Compatibility changes
 
