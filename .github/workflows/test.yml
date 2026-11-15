@@ -51,7 +51,7 @@ jobs:
       - name: Run tests
         run: |
           cd packages/${{ matrix.package }}
-          flutter test --dart-define=ISPECT_ENABLED=true --coverage
+          flutter test --no-pub --dart-define=ISPECT_ENABLED=true --coverage
 
       - name: Verify disabled production API
         if: hashFiles(format('packages/{0}/test/production_safety_test.dart', matrix.package)) != ''
