@@ -1,0 +1,122 @@
+{
+  "dart-version": "3.13.4 (stable) (Tue Sep 15 01:01:15 2026 -0700) on \"linux_x64\"",
+  "operating-system": "linux",
+  "results": [
+    {
+      "name": "logger.metadata-only",
+      "microseconds-per-run": 9.198535104760909
+    },
+    {
+      "name": "logger.with-payload",
+      "microseconds-per-run": 34.556399652106
+    },
+    {
+      "name": "logger.with-payload.strict",
+      "microseconds-per-run": 34.77595379236966
+    },
+    {
+      "name": "logger.with-payload.redaction-disabled",
+      "microseconds-per-run": 31.612165102679178
+    },
+    {
+      "name": "logger.metadata-only.console",
+      "microseconds-per-run": 12.15892072863417
+    },
+    {
+      "name": "logger.with-payload.console",
+      "microseconds-per-run": 36.498272013823886
+    },
+    {
+      "name": "capture.with-payload",
+      "microseconds-per-run": 22.209980987523764
+    },
+    {
+      "name": "export.history.json-lines.100",
+      "microseconds-per-run": 3123.2886115444617
+    },
+    {
+      "name": "export.history.text.100",
+      "microseconds-per-run": 5263.4633507853405
+    },
+    {
+      "name": "logger.history-disabled",
+      "microseconds-per-run": 0.010334265
+    },
+    {
+      "name": "logger.bounded-history",
+      "microseconds-per-run": 9.112325
+    },
+    {
+      "name": "redaction.1kb",
+      "microseconds-per-run": 18.480506155950753
+    },
+    {
+      "name": "redaction.10kb",
+      "microseconds-per-run": 170.83285899094437
+    },
+    {
+      "name": "redaction.100kb",
+      "microseconds-per-run": 1741.1671664167916
+    },
+    {
+      "name": "redaction.export.1kb",
+      "microseconds-per-run": 69.77890942181156
+    },
+    {
+      "name": "snapshot.1kb",
+      "microseconds-per-run": 8.148356
+    },
+    {
+      "name": "export.json-lines.100",
+      "microseconds-per-run": 3957.024
+    },
+    {
+      "name": "export.json-lines.1000",
+      "microseconds-per-run": 38742.11111111111
+    },
+    {
+      "name": "export.json-lines.100.redaction-disabled",
+      "microseconds-per-run": 623.03625
+    },
+    {
+      "name": "export.json-lines.1000.redaction-disabled",
+      "microseconds-per-run": 7065.9055944055945
+    },
+    {
+      "name": "db.direct-operation",
+      "microseconds-per-run": 0.001891523999054238
+    },
+    {
+      "name": "db.trace-sync",
+      "microseconds-per-run": 103.14308053166536
+    },
+    {
+      "name": "dio.baseline",
+      "microseconds-per-run": 19.882
+    },
+    {
+      "name": "dio.metadata-only",
+      "microseconds-per-run": 147.717
+    },
+    {
+      "name": "dio.body-enabled",
+      "microseconds-per-run": 192.492
+    },
+    {
+      "name": "http.baseline",
+      "microseconds-per-run": 7.185
+    },
+    {
+      "name": "http.metadata-only",
+      "microseconds-per-run": 76.427
+    },
+    {
+      "name": "http.body-enabled",
+      "microseconds-per-run": 148.853
+    }
+  ],
+  "release-size": {
+    "disabled-apk-bytes": 17231461,
+    "enabled-apk-bytes": 21360229
+  }
+}
