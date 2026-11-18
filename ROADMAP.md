@@ -55,6 +55,16 @@ packages/ispect/example/lib/
 
 Requests for "more inspector customization" are open-ended, and theming already exists. Before adding surface area, collect concrete asks (default filters, visible columns, panel layout) so the API grows against real call sites rather than speculative options.
 
+## Network timeline
+
+A waterfall view of HTTP traffic in the log viewer: one bar per request, offset by its start time, sized by its duration, and colored by outcome (success, error, pending). A flat log list makes it hard to see which requests ran in parallel, which slow call delayed the ones after it, and where retries piled up. `NetworkTransaction` already pairs each request with its response or error and exposes `duration`, so the work is mostly in the `ispect` UI.
+
+Questions to settle before building it:
+
+- How to scale the axis when one request takes 60 seconds and the rest take 200 ms, without squeezing the short bars into slivers.
+- Whether WebSocket and database traces share the axis or get their own lanes.
+- Tapping a bar should open the existing network log details rather than a new screen.
+
 ## Later: optional integrations
 
 Potential integrations land only when there is real demand and a maintainable API surface:
