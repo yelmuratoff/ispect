@@ -58,9 +58,9 @@
 
 ```yaml
 dependencies:
-  ispect: ^8.0.0-dev.1
-  ispectify: ^8.0.0-dev.1
-  ispectify_ws: ^8.0.0-dev.1
+  ispect: ^8.0.0-dev.2
+  ispectify: ^8.0.0-dev.2
+  ispectify_ws: ^8.0.0-dev.2
   # plus your WebSocket client, e.g.
   # ws: ^1.0.0  |  web_socket_channel: ^3.0.0  |  socket_io_client: ^3.0.0
 ```
@@ -221,6 +221,7 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | Package                                                             | What it does                                                                                    |
 | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | [`ispect`](https://pub.dev/packages/ispect)                         | Flutter UI: debug panel, log viewer, navigation observer, inspector integration.                |
+| [`ispect_devtools`](https://pub.dev/packages/ispect_devtools)       | Flutter DevTools tab with the running app's logs in ISpect's log viewer.                        |
 | [`ispect_layout`](https://pub.dev/packages/ispect_layout)           | Visual layout inspector with sizes, constraints, decorations, compare mode, and a color picker. |
 | [`ispectify`](https://pub.dev/packages/ispectify)                   | Pure-Dart logging core: typed log entries, filtering, tracing, observers.                       |
 | [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)           | Dio HTTP interceptor with automatic redaction.                                                  |

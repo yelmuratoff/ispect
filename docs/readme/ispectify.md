@@ -271,6 +271,54 @@ HTTP log entries expose `curlCommand`/`curlCommandWith()`. Generated commands
 redact URLs, headers, and bodies by default and use `--data-raw`. Pass
 `enableRedaction: false` only for isolated local debugging.
 
+## Background isolates
+
+A logger lives in one isolate, so logs written in `Isolate.run`, a background
+push handler, or a WorkManager task never reach the history you open in the
+app. `package:ispectify/ispectify_isolate.dart` forwards them. It needs
+`dart:isolate` and is not available on the web.
+
+Open a receiver on the main isolate and hand its port to the background
+isolate. There, attach a forwarder to the logger:
+
+```dart
+import 'package:ispectify/ispectify_isolate.dart';
+
+final receiver = ISpectIsolateLogReceiver.open(logger);
+await Isolate.spawn(syncOrders, receiver?.sendPort);
+
+Future<void> syncOrders(SendPort? port) async {
+  final logger = ISpectLogger();
+  if (port != null) logger.addObserver(ISpectIsolateLogForwarder(port));
+  logger.info('Order sync started');
+}
+```
+
+Each entry crosses as one redacted JSON Lines record, so secrets are masked
+before they leave the background isolate. A build without `ISPECT_ENABLED`
+opens no port: `open` returns `null`, which is why the port is nullable above,
+and the forwarder sends nothing.
+
+Plugins start their background isolates themselves, so register the port under
+a name and look it up there with `IsolateNameServer` from `dart:ui`. Remove the
+old mapping first: a name registered before a hot restart still points at the
+previous, closed port. Call `receiver.close()` when the app no longer needs
+background logs.
+
+```dart
+if (receiver != null) {
+  IsolateNameServer.removePortNameMapping('ispect-logs');
+  IsolateNameServer.registerPortWithName(receiver.sendPort, 'ispect-logs');
+}
+
+// In the background handler:
+final port = IsolateNameServer.lookupPortByName('ispect-logs');
+final backgroundLogger = ISpectLogger();
+if (port != null) {
+  backgroundLogger.addObserver(ISpectIsolateLogForwarder(port));
+}
+```
+
 <!-- partial:vm_service_extensions -->
 
 <!-- partial:redaction -->

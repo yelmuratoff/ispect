@@ -88,6 +88,7 @@ flutter build apk
 | BLoC/Cubit lifecycle                            | `ispectify_bloc`                    |
 | Riverpod provider lifecycle                     | `ispectify_riverpod`                |
 | Layout inspection only                          | `ispect_layout`                     |
+| Logs in a Flutter DevTools tab                  | `ispect_devtools` (dev dependency)  |
 
 Each adapter depends on `ispectify`; add `ispect` only when the Flutter UI is
 useful. See the package README for the focused setup.
@@ -339,6 +340,18 @@ Persistence activates only on non-web builds run with `--dart-define=ISPECT_ENAB
 The global redaction switch remains authoritative. Setting `ISpectRedaction.enabled = false` while file history is configured deliberately allows raw values to be persisted. Keep it enabled unless an isolated internal investigation explicitly requires unredacted diagnostics.
 
 <!-- partial:vm_service_extensions -->
+
+## DevTools tab
+
+Add `ispect_devtools` to `dev_dependencies` to get an ISpect tab in Flutter
+DevTools. While the app runs in debug or profile mode with `ISPECT_ENABLED`,
+the tab shows its newest 200 entries and then every new log in the same viewer
+as the in-app panel, with search, filters, and network details, so you can
+test on a device and read logs on the desktop. DevTools asks once whether to enable the extension for the
+project. The tab reads logs through `ext.ispect.getLogs`, so it sees the same
+redacted data as an export. The extension is a separate package because its
+web build weighs about 15 MB, which apps that never open DevTools should not
+download.
 
 <!-- partial:install_matrix -->
 

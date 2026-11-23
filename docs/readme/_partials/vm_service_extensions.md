@@ -13,7 +13,7 @@ ISpectServiceExtensions.register(() => logger);
 | Method                  | Returns                                                                                                         |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `ext.ispect.getSummary` | Entry and level counts, the most frequent log keys, and the latest errors.                                      |
-| `ext.ispect.getLogs`    | Compact entries filtered by `minLevel`, `keys`, and `query`, paged with `limit`, `afterId`, and `beforeId`.     |
+| `ext.ispect.getLogs`    | Compact entries filtered by `minLevel`, `keys`, and `query`, paged with `limit`, `afterId`, and `beforeId`. Pass `detail=full` for full records. |
 | `ext.ispect.getLog`     | One full record by `id`.                                                                                        |
 | `ext.ispect.getTrace`   | Up to 200 entries sharing a correlation or transaction ID, such as one call's request, response, and error.     |
 

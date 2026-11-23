@@ -1,5 +1,21 @@
 # Changelog
 
+## 8.0.0-dev.2
+
+### Improvements
+
+- **Launches in saved sessions:** A day with more than one app launch opens a list of its launches, with each launch's time span, log count and error count, so you can open the logs of the run that failed. `LaunchLogs.groupByLaunch` groups stored logs the same way in code.
+- **New errors on the panel:** The panel counts errors logged since the log viewer was last opened, as a badge on the panel and its Logs action and a red handle while parked. Custom panels read it from `ISpectPanelData.unseenErrorCount`.
+- **Response data converters:** `responseDataConverter` on the Dio and http settings and builders renders bodies ISpect cannot read on its own, such as protobuf or MessagePack. The converted value is bounded and redacted like any other body; when a converter throws, the response is still logged with a placeholder body.
+- **Logs from background isolates:** `package:ispectify/ispectify_isolate.dart` adds `ISpectIsolateLogReceiver` and `ISpectIsolateLogForwarder`, which carry logs from `Isolate.run`, background push handlers and WorkManager tasks into the main logger. Entries are redacted before they leave the background isolate.
+- **DevTools tab:** The new `ispect_devtools` package, added as a dev dependency, gives Flutter DevTools an ISpect tab that shows the running app's logs in ISpect's viewer.
+- **`ISpectLogsScreen`:** ISpect's log viewer as a public widget, for hosting it outside the floating panel.
+- **Full records from `ext.ispect.getLogs`:** `detail=full` returns each entry as a full redacted record, capped at the export size limit per page, and `getLog` now includes the entry `id`. `getSummary` reports protocol version 2.
+
+### Bug Fixes
+
+- **Saved logs without a launch ID:** Entries from legacy day files or with a malformed launch ID no longer read back as part of the current launch.
+
 ## 8.0.0-dev.1
 
 ### Breaking Changes

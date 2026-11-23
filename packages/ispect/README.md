@@ -69,7 +69,7 @@ dependencies:
     sdk: flutter
   material_ui: ^1.11.0
   cupertino_ui: ^1.1.6
-  ispect: ^8.0.0-dev.1
+  ispect: ^8.0.0-dev.2
 ```
 
 ISpect builds on `material_ui`, the standalone Material package that Flutter
@@ -135,6 +135,7 @@ flutter build apk
 | BLoC/Cubit lifecycle                            | `ispectify_bloc`                    |
 | Riverpod provider lifecycle                     | `ispectify_riverpod`                |
 | Layout inspection only                          | `ispect_layout`                     |
+| Logs in a Flutter DevTools tab                  | `ispect_devtools` (dev dependency)  |
 
 Each adapter depends on `ispectify`; add `ispect` only when the Flutter UI is
 useful. See the package README for the focused setup.
@@ -400,7 +401,7 @@ ISpectServiceExtensions.register(() => logger);
 | Method                  | Returns                                                                                                         |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `ext.ispect.getSummary` | Entry and level counts, the most frequent log keys, and the latest errors.                                      |
-| `ext.ispect.getLogs`    | Compact entries filtered by `minLevel`, `keys`, and `query`, paged with `limit`, `afterId`, and `beforeId`.     |
+| `ext.ispect.getLogs`    | Compact entries filtered by `minLevel`, `keys`, and `query`, paged with `limit`, `afterId`, and `beforeId`. Pass `detail=full` for full records. |
 | `ext.ispect.getLog`     | One full record by `id`.                                                                                        |
 | `ext.ispect.getTrace`   | Up to 200 entries sharing a correlation or transaction ID, such as one call's request, response, and error.     |
 
@@ -417,6 +418,18 @@ final response = await service.callServiceExtension(
 );
 ```
 
+## DevTools tab
+
+Add `ispect_devtools` to `dev_dependencies` to get an ISpect tab in Flutter
+DevTools. While the app runs in debug or profile mode with `ISPECT_ENABLED`,
+the tab shows its newest 200 entries and then every new log in the same viewer
+as the in-app panel, with search, filters, and network details, so you can
+test on a device and read logs on the desktop. DevTools asks once whether to enable the extension for the
+project. The tab reads logs through `ext.ispect.getLogs`, so it sees the same
+redacted data as an export. The extension is a separate package because its
+web build weighs about 15 MB, which apps that never open DevTools should not
+download.
+
 ## The ISpect toolkit
 
 ISpect is a modular monorepo. Pick the packages your project needs. Each one works on its own.
@@ -424,6 +437,7 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 | Package                                                             | What it does                                                                                    |
 | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | [`ispect`](https://pub.dev/packages/ispect)                         | Flutter UI: debug panel, log viewer, navigation observer, inspector integration.                |
+| [`ispect_devtools`](https://pub.dev/packages/ispect_devtools)       | Flutter DevTools tab with the running app's logs in ISpect's log viewer.                        |
 | [`ispect_layout`](https://pub.dev/packages/ispect_layout)           | Visual layout inspector with sizes, constraints, decorations, compare mode, and a color picker. |
 | [`ispectify`](https://pub.dev/packages/ispectify)                   | Pure-Dart logging core: typed log entries, filtering, tracing, observers.                       |
 | [`ispectify_dio`](https://pub.dev/packages/ispectify_dio)           | Dio HTTP interceptor with automatic redaction.                                                  |
@@ -435,7 +449,7 @@ ISpect is a modular monorepo. Pick the packages your project needs. Each one wor
 
 ## Release channel
 
-The version declared in `version.config` (currently `8.0.0-dev.1`) is the
+The version declared in `version.config` (currently `8.0.0-dev.2`) is the
 repository version used by package metadata and generated documentation. It
 may be a stable release or a prerelease; check pub.dev for the latest published
 stable version before pinning a production integration.
@@ -444,7 +458,7 @@ stable version before pinning a production integration.
 
 What you can verify from the repository today:
 
-- Repository metadata and generated documentation currently target `8.0.0-dev.1`.
+- Repository metadata and generated documentation currently target `8.0.0-dev.2`.
 - SDK baseline is Dart `>=3.6.0 <4.0.0` for the pure Dart packages. `ispect` and `ispect_layout` require Flutter `>=3.47.0`, the first release with `material_ui`, and with it Dart `>=3.13.0`. Flutter packages are tested against the pinned Flutter SDK in CI, and the latest stable channel runs as an advisory signal.
 - The `production_safety` workflow runs disabled direct-API tests for every package and compares disabled/enabled release AOT probes using exact implementation sentinels.
 - Core diagnostics and supported integrations resolve one configurable default `RedactionService`; explicit integration services remain local overrides.

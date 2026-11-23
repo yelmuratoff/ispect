@@ -10,7 +10,7 @@ need on demand instead of working from memorized API. Treat each package's expor
 `lib/<package>.dart` and `README.md` as the authoritative API surface.
 
 - Repository: https://github.com/yelmuratoff/ispect
-- Version: 8.0.0-dev.1
+- Version: 8.0.0-dev.2
 
 ## Integration prompt
 
@@ -19,6 +19,7 @@ need on demand instead of working from memorized API. Treat each package's expor
 ## Packages
 
 - [ispect](packages/ispect/README.md): In-app observability and QA diagnostics toolkit for Flutter, with logs, network tracing, layout inspection, exports, and redaction.
+- [ispect_devtools](packages/ispect_devtools/README.md): Flutter DevTools tab for ISpect that shows the running app's logs, network calls, and traces in ISpect's log viewer.
 - [ispect_layout](packages/ispect_layout/README.md): Visual layout inspector for Flutter - inspect sizes, paddings, decorations, transforms, text styles, and compare widgets side-by-side at runtime.
 - [ispectify](packages/ispectify/README.md): Pure-Dart structured logging, tracing, filtering, history, observers, export, and redaction core for the ISpect toolkit.
 - [ispectify_bloc](packages/ispectify_bloc/README.md): BLoC and Cubit observer for ISpect with event, transition, change, error, completion, and redacted metadata logging.
