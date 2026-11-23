@@ -1,5 +1,14 @@
 import 'package:ispectify/ispectify.dart';
 
+/// Turns a response into the JSON-compatible value ISpect logs as its body,
+/// for formats ISpect cannot read on its own, such as protobuf or
+/// MessagePack.
+///
+/// The returned value is bounded and redacted like any captured body. When
+/// the converter throws, the response is still logged with a placeholder
+/// body, next to a warning that names only the exception type.
+typedef ISpectResponseDataConverter<T> = Object? Function(T response);
+
 /// Shared defaults for every ISpect network diagnostics adapter.
 ///
 /// Adapter settings and fluent builders both read from this namespace so the

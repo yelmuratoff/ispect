@@ -31,6 +31,7 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
     this.requestChain,
     this.responseChain,
     this.errorChain,
+    this.responseDataConverter,
   });
 
   /// For request filtering.
@@ -56,6 +57,11 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
 
   /// Filter chain for errors. Takes priority over [errorFilter].
   final NetworkFilterChain<DioException>? errorChain;
+
+  /// Renders response bodies ISpect cannot read on its own, for both
+  /// successful responses and the response of a [DioException]. Without it,
+  /// ISpect logs `Response.data` as Dio decoded it.
+  final ISpectResponseDataConverter<Response<dynamic>>? responseDataConverter;
 
   /// Returns `true` when the request should be logged.
   ///
@@ -110,6 +116,7 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
     NetworkFilterChain<RequestOptions>? requestChain,
     NetworkFilterChain<Response<dynamic>>? responseChain,
     NetworkFilterChain<DioException>? errorChain,
+    ISpectResponseDataConverter<Response<dynamic>>? responseDataConverter,
   }) =>
       ISpectDioInterceptorSettings(
         enabled: enabled ?? this.enabled,
@@ -137,5 +144,7 @@ class ISpectDioInterceptorSettings extends BaseNetworkInterceptorSettings {
         requestChain: requestChain ?? this.requestChain,
         responseChain: responseChain ?? this.responseChain,
         errorChain: errorChain ?? this.errorChain,
+        responseDataConverter:
+            responseDataConverter ?? this.responseDataConverter,
       );
 }

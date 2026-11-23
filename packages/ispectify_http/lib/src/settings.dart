@@ -31,6 +31,7 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
     this.requestChain,
     this.responseChain,
     this.errorChain,
+    this.responseDataConverter,
   });
 
   /// For request filtering.
@@ -56,6 +57,12 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
 
   /// Filter chain for errors. Takes priority over [errorFilter].
   final NetworkFilterChain<BaseResponse>? errorChain;
+
+  /// Renders response bodies ISpect cannot read on its own, for successful
+  /// and error responses. It receives the response with its captured
+  /// [Response.bodyBytes]. Without it, ISpect decodes the body as text or
+  /// JSON.
+  final ISpectResponseDataConverter<Response>? responseDataConverter;
 
   /// Returns `true` when the request should be logged.
   bool shouldProcessRequest(BaseRequest value) {
@@ -104,6 +111,7 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
     NetworkFilterChain<BaseRequest>? requestChain,
     NetworkFilterChain<BaseResponse>? responseChain,
     NetworkFilterChain<BaseResponse>? errorChain,
+    ISpectResponseDataConverter<Response>? responseDataConverter,
   }) =>
       ISpectHttpInterceptorSettings(
         enabled: enabled ?? this.enabled,
@@ -131,5 +139,7 @@ class ISpectHttpInterceptorSettings extends BaseNetworkInterceptorSettings {
         requestChain: requestChain ?? this.requestChain,
         responseChain: responseChain ?? this.responseChain,
         errorChain: errorChain ?? this.errorChain,
+        responseDataConverter:
+            responseDataConverter ?? this.responseDataConverter,
       );
 }

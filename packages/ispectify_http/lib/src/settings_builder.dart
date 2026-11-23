@@ -43,6 +43,17 @@ class ISpectHttpInterceptorSettingsBuilder
   factory ISpectHttpInterceptorSettingsBuilder.disabled() =>
       ISpectHttpInterceptorSettingsBuilder()..enabled = false;
 
+  ISpectResponseDataConverter<Response>? responseDataConverter;
+
+  /// Sets the converter that renders response bodies ISpect cannot read on
+  /// its own. See [ISpectHttpInterceptorSettings.responseDataConverter].
+  ISpectHttpInterceptorSettingsBuilder withResponseDataConverter(
+    ISpectResponseDataConverter<Response> converter,
+  ) {
+    responseDataConverter = converter;
+    return this;
+  }
+
   @override
   ISpectHttpInterceptorSettings build() => ISpectHttpInterceptorSettings(
         enabled: enabled,
@@ -68,5 +79,6 @@ class ISpectHttpInterceptorSettingsBuilder
         requestChain: requestChain,
         responseChain: responseChain,
         errorChain: errorChain,
+        responseDataConverter: responseDataConverter,
       );
 }

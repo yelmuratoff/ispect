@@ -255,6 +255,20 @@ class ISpectHttpInterceptor
         : settings.logResponses && settings.printResponseData;
   }
 
+  ISpectResponseDataConverter<Response>? _guardedDataConverter() {
+    final convert = settings.responseDataConverter;
+    if (convert == null) return null;
+    return (response) {
+      Object? converted = LogExportOutput.truncatedMarker;
+      guardDiagnostics(
+        _logger,
+        () => converted = convert(response),
+        what: 'http response data converter',
+      );
+      return converted;
+    };
+  }
+
   void _captureResponse(BaseResponse response, {Response? body}) {
     if (!captureEnabled) return;
 
@@ -324,6 +338,7 @@ class ISpectHttpInterceptor
       ),
       response: body,
       multipartRequest: request is MultipartRequest ? request : null,
+      dataConverter: _guardedDataConverter(),
     );
 
     final responseDataJson = responseData.toJson(

@@ -6,11 +6,22 @@ class DioResponseData {
   DioResponseData({
     required this.response,
     required this.requestData,
+    this.dataConverter,
   });
 
   final Response<dynamic>? response;
 
   final DioRequestData requestData;
+
+  /// Renders [response] data ISpect cannot read on its own. A thrown
+  /// exception propagates to the interceptor's capture guard.
+  final ISpectResponseDataConverter<Response<dynamic>>? dataConverter;
+
+  Object? _responseData(Response<dynamic>? resp) {
+    final converter = dataConverter;
+    if (resp == null || converter == null) return resp?.data;
+    return converter(resp);
+  }
 
   /// Returns a raw JSON-compatible map of the response.
   ///
@@ -60,7 +71,7 @@ class DioResponseData {
       if (includeData)
         NetworkJsonKeys.data: LogExportOutput.boundJsonValue(
           NetworkPayloadSanitizer.encodeJsonGracefully(
-            resp?.data,
+            _responseData(resp),
             captureMode: captureMode,
             resourceLimits: requestData.resourceLimits,
           ),

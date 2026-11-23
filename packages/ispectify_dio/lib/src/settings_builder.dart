@@ -43,6 +43,17 @@ class ISpectDioInterceptorSettingsBuilder
   factory ISpectDioInterceptorSettingsBuilder.disabled() =>
       ISpectDioInterceptorSettingsBuilder()..enabled = false;
 
+  ISpectResponseDataConverter<Response<dynamic>>? responseDataConverter;
+
+  /// Sets the converter that renders response bodies ISpect cannot read on
+  /// its own. See [ISpectDioInterceptorSettings.responseDataConverter].
+  ISpectDioInterceptorSettingsBuilder withResponseDataConverter(
+    ISpectResponseDataConverter<Response<dynamic>> converter,
+  ) {
+    responseDataConverter = converter;
+    return this;
+  }
+
   @override
   ISpectDioInterceptorSettings build() => ISpectDioInterceptorSettings(
         enabled: enabled,
@@ -68,5 +79,6 @@ class ISpectDioInterceptorSettingsBuilder
         requestChain: requestChain,
         responseChain: responseChain,
         errorChain: errorChain,
+        responseDataConverter: responseDataConverter,
       );
 }

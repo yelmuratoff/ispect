@@ -20,12 +20,17 @@ class HttpResponseData {
       'Will be removed in 8.0.0.',
     )
     Object? preDecodedBody = _bodyNotPrepared,
+    this.dataConverter,
   }) : _preDecodedBody = preDecodedBody;
 
   final BaseResponse baseResponse;
   final Response? response;
   final MultipartRequest? multipartRequest;
   final HttpRequestData requestData;
+
+  /// Renders [response] bodies ISpect cannot read on its own. A thrown
+  /// exception propagates to the interceptor's capture guard.
+  final ISpectResponseDataConverter<Response>? dataConverter;
 
   /// Optional prepared body to avoid repeated bounded byte decoding.
   /// When provided, [toJson] snapshots this value instead of inspecting
@@ -177,6 +182,17 @@ class HttpResponseData {
     required bool redactionActive,
     required DiagnosticCaptureMode captureMode,
   }) {
+    final converter = dataConverter;
+    if (converter != null) {
+      return (
+        body: _boundPrepared(
+          converter(response),
+          redactionActive: redactionActive,
+          captureMode: captureMode,
+        ),
+        bodyBytes: response.bodyBytes.lengthInBytes,
+      );
+    }
     try {
       final bytes = response.bodyBytes;
       final prepared = identical(_preDecodedBody, _bodyNotPrepared)
@@ -186,15 +202,10 @@ class HttpResponseData {
               redactionActive: redactionActive,
               resourceLimits: requestData.resourceLimits,
             )
-          : LogExportOutput.boundJsonValue(
+          : _boundPrepared(
               _preDecodedBody,
-              maxBytes: requestData.resourceLimits.maxNetworkBodyBytes,
-              resourceLimits: requestData.resourceLimits,
-              replaceOversizedStrings: redactionActive,
-              allowCustomSerialization:
-                  captureMode == DiagnosticCaptureMode.balanced,
-              allowCustomStringification:
-                  captureMode == DiagnosticCaptureMode.balanced,
+              redactionActive: redactionActive,
+              captureMode: captureMode,
             );
       return (body: prepared, bodyBytes: bytes.lengthInBytes);
     } on Object {
@@ -204,6 +215,21 @@ class HttpResponseData {
       );
     }
   }
+
+  Object? _boundPrepared(
+    Object? value, {
+    required bool redactionActive,
+    required DiagnosticCaptureMode captureMode,
+  }) =>
+      LogExportOutput.boundJsonValue(
+        value,
+        maxBytes: requestData.resourceLimits.maxNetworkBodyBytes,
+        resourceLimits: requestData.resourceLimits,
+        replaceOversizedStrings: redactionActive,
+        allowCustomSerialization: captureMode == DiagnosticCaptureMode.balanced,
+        allowCustomStringification:
+            captureMode == DiagnosticCaptureMode.balanced,
+      );
 
   static Object? _decodeBody(
     Uint8List bytes,

@@ -130,6 +130,20 @@ class ISpectDioInterceptor extends Interceptor
     );
   }
 
+  ISpectResponseDataConverter<Response<dynamic>>? _guardedDataConverter() {
+    final convert = settings.responseDataConverter;
+    if (convert == null) return null;
+    return (response) {
+      Object? converted = LogExportOutput.truncatedMarker;
+      guardDiagnostics(
+        _logger,
+        () => converted = convert(response),
+        what: 'Dio response data converter',
+      );
+      return converted;
+    };
+  }
+
   void _captureResponse(Response<dynamic> response) {
     if (!_responseCaptureEnabled) return;
     if (!settings.shouldProcessResponse(response)) return;
@@ -149,6 +163,7 @@ class ISpectDioInterceptor extends Interceptor
     final responseDataJson = DioResponseData(
       response: response,
       requestData: requestData,
+      dataConverter: _guardedDataConverter(),
     ).toJson(
       includeData: settings.printResponseData,
       includeHeaders: settings.printResponseHeaders,
@@ -217,6 +232,7 @@ class ISpectDioInterceptor extends Interceptor
       responseData: DioResponseData(
         response: err.response,
         requestData: requestData,
+        dataConverter: _guardedDataConverter(),
       ),
     ).toJson(
       includeData: settings.printErrorData,
