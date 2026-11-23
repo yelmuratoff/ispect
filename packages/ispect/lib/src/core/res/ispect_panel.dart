@@ -14,6 +14,7 @@ final class ISpectPanelData {
     required this.actionTheme,
     required this.child,
     this.isVisible = true,
+    this.unseenErrorCount = 0,
   });
 
   /// The panel controller ISpect manages (or the one passed to `ISpectBuilder`).
@@ -42,6 +43,11 @@ final class ISpectPanelData {
   /// dialog is open. Pass it to the panel's `visible` so the panel steps aside
   /// without ISpect changing the phase of [controller].
   final bool isVisible;
+
+  /// The number of errors logged since the log viewer was last opened. ISpect
+  /// already badges the log viewer action in [actions] and tints the parked
+  /// handle in [theme] while it is above zero.
+  final int unseenErrorCount;
 }
 
 /// Builds the diagnostics panel from the pieces ISpect assembles.

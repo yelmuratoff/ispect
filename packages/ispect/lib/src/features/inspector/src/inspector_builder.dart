@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:ispect/ispect.dart';
@@ -130,6 +132,8 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   late final ValueNotifier<bool> _hasOverlayRoute;
   late final ISpectModalTracker _modalTracker;
   late final ValueNotifier<bool> _isPanelVisible;
+  StreamSubscription<ISpectLogData>? _logSubscription;
+  ISpectLogger? _subscribedLogger;
   bool _isInitialized = false;
   int _overlayDepth = 0;
   List<InspectorPlugin> _activePlugins = const [];
@@ -141,6 +145,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
 
     model = ISpectScopeModel();
     _logPageController = ISpectLogPageController();
+    _syncLogSubscription();
     _panelController =
         widget.controller ??
         DraggablePanelController(
@@ -205,6 +210,32 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     _activePlugins = List<InspectorPlugin>.unmodifiable(next.values);
   }
 
+  void _syncLogSubscription() {
+    final logger = ISpect.loggerIfInitialized;
+    if (identical(logger, _subscribedLogger)) return;
+    unawaited(_logSubscription?.cancel());
+    _logSubscription = null;
+    _subscribedLogger = logger;
+    _logPageController.resetUnseenErrors();
+    if (logger == null) return;
+    logger.history.forEach(_logPageController.recordLog);
+    _logSubscription = logger.stream.listen(
+      _logPageController.recordLog,
+      onDone: _onLoggerStreamDone,
+    );
+  }
+
+  void _onLoggerStreamDone() {
+    if (mounted) _syncLogSubscription();
+  }
+
+  void _resyncLogSubscriptionAfterFrame() {
+    if (identical(ISpect.loggerIfInitialized, _subscribedLogger)) return;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncLogSubscription();
+    });
+  }
+
   void _onModalsChanged() =>
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -228,6 +259,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       plugin.onDispose();
     }
 
+    unawaited(_logSubscription?.cancel());
     _logPageController.dispose();
     if (widget.controller == null) {
       _panelController.dispose();
@@ -248,6 +280,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       return widget.child;
     }
 
+    _resyncLogSubscriptionAfterFrame();
     return ListenableBuilder(
       listenable: model,
       builder: (context, _) {
@@ -302,29 +335,45 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       ]),
       child: child,
       builder: (context, child) {
+        final inLoggerPage = _logPageController.inLoggerPage;
+        final unseenErrorCount = settings.isLogPageEnabled
+            ? _logPageController.unseenErrorCount
+            : 0;
+        final errorColor = _errorColor(context);
+        final panelTheme = theme.panelTheme ?? _buildDefaultPanelTheme(context);
         final data = ISpectPanelData(
           controller: _panelController,
           isVisible: _isPanelVisible.value,
-          theme: theme.panelTheme ?? _buildDefaultPanelTheme(context),
+          theme: unseenErrorCount > 0
+              ? panelTheme.copyWith(handleColor: errorColor)
+              : panelTheme,
           actionTheme:
               theme.panelActionTheme ?? _buildDefaultActionTheme(context),
           buttons: options.panelButtons,
+          unseenErrorCount: unseenErrorCount,
           child: child,
           actions: [
             if (settings.isLogPageEnabled)
               PanelAction(
-                icon: _logPageController.inLoggerPage
-                    ? Icons.undo_rounded
-                    : Icons.reorder_rounded,
-                badge: _logPageController.inLoggerPage
+                icon: inLoggerPage ? Icons.undo_rounded : Icons.reorder_rounded,
+                badge: inLoggerPage
                     ? const PanelBadge.dot()
+                    : unseenErrorCount > 0
+                    ? PanelBadge(
+                        label: _unseenErrorLabel(unseenErrorCount),
+                        color: errorColor,
+                      )
                     : null,
                 onPressed: () => _launchInfospect(context, options),
-                label: _logPageController.inLoggerPage
+                label: inLoggerPage
                     ? context.ispectL10n.back
                     : context.ispectL10n.logs,
-                tooltip: _logPageController.inLoggerPage
+                tooltip: inLoggerPage
                     ? context.ispectL10n.backToMainScreen
+                    : unseenErrorCount > 0
+                    ? context.ispectL10n.openLogViewerWithNewErrors(
+                        unseenErrorCount,
+                      )
                     : context.ispectL10n.openLogViewer,
               ),
             if (settings.isPerformanceEnabled)
@@ -405,6 +454,14 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
           title: iSpect.theme.pageTitle,
           onClose: data.controller.stash,
           behavior: const PanelBehavior(collapsible: false),
+          collapsedBuilder: unseenErrorCount > 0
+              ? (context, status) => _UnseenErrorsCollapsedIcon(
+                  count: unseenErrorCount,
+                  label: _unseenErrorLabel(unseenErrorCount),
+                  color: errorColor,
+                  actionTheme: data.actionTheme,
+                )
+              : null,
           child: data.child,
         );
       },
@@ -495,6 +552,17 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         actionShape: _gridShape,
         buttonStyle: ButtonStyle(shape: WidgetStatePropertyAll(_gridShape)),
       );
+
+  Color _errorColor(BuildContext context) => context.ispectTheme.useHostColors
+      ? Theme.of(context).colorScheme.error
+      : ISpectDefaultPalette.error.pick(isDark: context.ispectIsDark)!;
+
+  String _unseenErrorLabel(int count) =>
+      count > _maxUnseenErrorLabel ? '$_maxUnseenErrorLabel+' : '$count';
+
+  static const _maxUnseenErrorLabel = 99;
+
+  static const _collapsedPanelIcon = Icons.zoom_out_map_rounded;
 
   Color _ownedColor(
     BuildContext context,
@@ -595,6 +663,41 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         _logPageController.setInLoggerPage(isLoggerPage: false);
       }
     }
+  }
+}
+
+class _UnseenErrorsCollapsedIcon extends StatelessWidget {
+  const _UnseenErrorsCollapsedIcon({
+    required this.count,
+    required this.label,
+    required this.color,
+    required this.actionTheme,
+  });
+
+  final int count;
+  final String label;
+  final Color color;
+  final DraggableActionPanelThemeData actionTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = DraggableActionPanelThemeData.resolve(context, actionTheme);
+    return Center(
+      child: Semantics(
+        label: context.ispectL10n.errorCount(count),
+        child: ExcludeSemantics(
+          child: Badge(
+            label: Text(label),
+            backgroundColor: color,
+            child: Icon(
+              _ISpectBuilderState._collapsedPanelIcon,
+              color: theme.collapsedIconColor,
+              size: theme.collapsedIconSize,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
