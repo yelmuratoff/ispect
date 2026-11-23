@@ -1,6 +1,6 @@
 # Changelog
 
-## 8.0.0-dev.2
+## 8.0.0-dev.3
 
 ### Improvements
 
@@ -15,8 +15,6 @@
 ### Bug Fixes
 
 - **Saved logs without a launch ID:** Entries from legacy day files or with a malformed launch ID no longer read back as part of the current launch.
-
-## 8.0.0-dev.1
 
 ### Breaking Changes
 

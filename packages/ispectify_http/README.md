@@ -59,9 +59,9 @@
 dependencies:
   http: ^1.5.0
   http_interceptor: ^3.0.0
-  ispect: ^8.0.0-dev.2
-  ispectify: ^8.0.0-dev.2
-  ispectify_http: ^8.0.0-dev.2
+  ispect: ^8.0.0-dev.3
+  ispectify: ^8.0.0-dev.3
+  ispectify_http: ^8.0.0-dev.3
   material_ui: ^1.11.0
 ```
 

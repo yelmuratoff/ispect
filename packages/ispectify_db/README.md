@@ -59,9 +59,9 @@
 
 ```yaml
 dependencies:
-  ispect: ^8.0.0-dev.2
-  ispectify: ^8.0.0-dev.2
-  ispectify_db: ^8.0.0-dev.2
+  ispect: ^8.0.0-dev.3
+  ispectify: ^8.0.0-dev.3
+  ispectify_db: ^8.0.0-dev.3
 ```
 
 ## Quick start
