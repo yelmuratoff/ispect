@@ -84,3 +84,6 @@ packages/ispectify_riverpod/example/pubspec.lock
 
 # Agent task bundles
 .agent-work/
+
+# FVM Version Cache
+.fvm/

@@ -8,6 +8,7 @@ on:
             - "docs/**"
             - "README.md"
             - "SECURITY.md"
+            - ".fvmrc"
             - ".github/workflows/production_safety.yml"
     push:
         branches: [ main, develop ]
@@ -16,6 +17,7 @@ on:
             - "docs/**"
             - "README.md"
             - "SECURITY.md"
+            - ".fvmrc"
             - ".github/workflows/production_safety.yml"
 
 permissions:
@@ -37,22 +39,16 @@ jobs:
                       runtime: dart
                     - package: ispect
                       runtime: flutter
-                      flutter: "3.47.5"
                     - package: ispect_layout
                       runtime: flutter
-                      flutter: "3.47.5"
                     - package: ispectify_bloc
                       runtime: flutter
-                      flutter: "3.47.5"
                     - package: ispectify_dio
                       runtime: flutter
-                      flutter: "3.47.5"
                     - package: ispectify_http
                       runtime: flutter
-                      flutter: "3.47.5"
                     - package: ispectify_ws
                       runtime: flutter
-                      flutter: "3.47.5"
 
         steps:
             - name: Checkout
@@ -68,7 +64,7 @@ jobs:
               if: matrix.runtime == 'flutter'
               uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
               with:
-                  flutter-version: ${{ matrix.flutter }}
+                  flutter-version-file: .fvmrc
                   channel: stable
                   cache: true
 
@@ -101,7 +97,7 @@ jobs:
             - name: Setup Flutter
               uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
               with:
-                  flutter-version: "3.47.5"
+                  flutter-version-file: .fvmrc
                   channel: stable
                   cache: true
 

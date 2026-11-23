@@ -11,6 +11,7 @@ on:
       - "packages/ispectify_http/**"
       - "bash/run_benchmarks.sh"
       - "bash/measure_release_size.sh"
+      - ".fvmrc"
       - ".github/workflows/benchmarks.yml"
   schedule:
     - cron: "17 3 * * 1"
@@ -35,7 +36,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: "3.47.5"
+          flutter-version-file: .fvmrc
           channel: stable
           cache: true
 
