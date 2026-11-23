@@ -5,11 +5,13 @@ on:
     branches: [main, develop]
     paths:
       - "packages/**"
+      - "ispect_devtools_extension/**"
       - ".github/workflows/test.yml"
   pull_request:
     branches: [main, develop]
     paths:
       - "packages/**"
+      - "ispect_devtools_extension/**"
       - ".github/workflows/test.yml"
 
 permissions:
@@ -27,7 +29,7 @@ jobs:
 
       - name: Check imports
         run: |
-          if git grep -nE "package:flutter/(material|cupertino)\.dart" -- 'packages/*.dart' 'web_logs_viewer/*.dart' ':!packages/ispectify_db/example/**'; then
+          if git grep -nE "package:flutter/(material|cupertino)\.dart" -- 'packages/*.dart' 'web_logs_viewer/*.dart' 'ispect_devtools_extension/*.dart' ':!packages/ispectify_db/example/**'; then
             echo "::error::Import Material from package:material_ui and Cupertino from package:cupertino_ui."
             exit 1
           fi
@@ -188,3 +190,41 @@ jobs:
           flags: ${{ matrix.package }}
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+
+  # The DevTools tab that ispect_devtools ships, built the way publishing builds it.
+  test-devtools-extension:
+    name: "Test the DevTools extension"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Flutter (pinned 3.47.5)
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: "3.47.5"
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          cd ispect_devtools_extension
+          flutter pub get
+
+      - name: Analyze
+        run: |
+          cd ispect_devtools_extension
+          flutter analyze --fatal-infos
+
+      - name: Run tests
+        run: |
+          cd ispect_devtools_extension
+          flutter test --dart-define=ISPECT_ENABLED=true
+
+      - name: Build and validate the extension
+        run: |
+          dart pub get --directory tool
+          dart run tool/bin/ispect_tool.dart devtools-extension
+          cd ispect_devtools_extension
+          dart run devtools_extensions validate --package=../packages/ispect_devtools
