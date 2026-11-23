@@ -6,6 +6,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 import 'devtools_extension.dart';
 import 'exceptions.dart';
+import 'flutter_sdk.dart';
 import 'next_version.dart';
 import 'pub_client.dart';
 import 'pubspec.dart';
@@ -297,7 +298,7 @@ final class PublishRun {
     PublishConfirmation? confirmation,
     Map<String, String>? environment,
     List<String>? packages,
-  })  : runner = runner ?? const SystemProcessRunner(),
+  })  : runner = runner ?? PinnedFlutterRunner.forRepo(repoRoot),
         publishedVersions = publishedVersions ??
             ((package) => PubClient().publishedVersions(package)),
         confirmation = confirmation ?? const StdinConfirmation(),
@@ -431,14 +432,24 @@ final class PublishRun {
       return 1;
     }
 
+    final pin = readFlutterPin(repoRoot);
+    if (pin != null && installed != pin) {
+      _error(
+        'Flutter $installed is running, but $flutterPinFile pins $pin. '
+        'Run `fvm install` in the repository root, or put Flutter $pin first '
+        'on PATH, and run again.',
+      );
+      return 1;
+    }
+
     final unmet = [
       for (final MapEntry(key: package, value: constraint) in required.entries)
         if (!constraint.allows(installed)) '$package needs flutter $constraint',
     ];
     if (unmet.isNotEmpty) {
       _error(
-        'Flutter $installed on PATH is too old: ${unmet.join('; ')}. '
-        'Put a matching Flutter first on PATH and run again.',
+        'Flutter $installed is too old: ${unmet.join('; ')}. '
+        '${pin == null ? 'Pin a matching release with `fvm use <release>`.' : 'Raise the release $flutterPinFile pins.'}',
       );
       return 1;
     }

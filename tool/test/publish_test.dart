@@ -276,7 +276,7 @@ dependencies:
       return repo;
     }
 
-    test('an older Flutter on PATH stops the run before any publish', () async {
+    test('an older Flutter stops the run before any publish', () async {
       final runner = FakeProcessRunner(flutterVersion: '3.44.2');
 
       final result = await invoke(
@@ -290,9 +290,60 @@ dependencies:
       expect(runner.pubGetOrder, isEmpty);
       expect(
         result.errorLines.single,
-        contains(
-          'Flutter 3.44.2 on PATH is too old: ispect needs flutter >=3.47.0',
-        ),
+        contains('Flutter 3.44.2 is too old: ispect needs flutter >=3.47.0'),
+      );
+    });
+
+    test('a Flutter other than the .fvmrc pin stops the run', () async {
+      final repo = fixtureNeedingFlutter();
+      writeFixtureFile(p.join(repo, '.fvmrc'), '{"flutter": "3.48.0"}');
+      final runner = FakeProcessRunner(flutterVersion: '3.47.5');
+
+      final result = await invoke(
+        repo,
+        const ['--auto', '--skip-pub-version-check'],
+        runner: runner,
+      );
+
+      expect(result.exitCode, 1);
+      expect(runner.publishedPackages, isEmpty);
+      expect(
+        result.errorLines.single,
+        contains('Flutter 3.47.5 is running, but .fvmrc pins 3.48.0'),
+      );
+    });
+
+    test('the .fvmrc pin satisfying every package lets them publish', () async {
+      final repo = fixtureNeedingFlutter();
+      writeFixtureFile(p.join(repo, '.fvmrc'), '{"flutter": "3.47.5"}');
+      final runner = FakeProcessRunner(flutterVersion: '3.47.5');
+
+      final result = await invoke(
+        repo,
+        const ['--auto', '--skip-pub-version-check'],
+        runner: runner,
+      );
+
+      expect(result.exitCode, 0);
+      expect(runner.publishedPackages, publishOrder);
+    });
+
+    test('a pin below a package floor names the pin to raise', () async {
+      final repo = fixtureNeedingFlutter();
+      writeFixtureFile(p.join(repo, '.fvmrc'), '{"flutter": "3.44.2"}');
+      final runner = FakeProcessRunner(flutterVersion: '3.44.2');
+
+      final result = await invoke(
+        repo,
+        const ['--auto', '--skip-pub-version-check'],
+        runner: runner,
+      );
+
+      expect(result.exitCode, 1);
+      expect(runner.publishedPackages, isEmpty);
+      expect(
+        result.errorLines.single,
+        contains('Raise the release .fvmrc pins'),
       );
     });
 

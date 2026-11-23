@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 
 import '../core/aot_probe.dart';
-import '../core/publish.dart';
+import '../core/flutter_sdk.dart';
 
 /// Proves the pure-Dart packages tree-shake out of a build without
 /// `ISPECT_ENABLED`, the local half of the CI release footprint check.
@@ -26,8 +26,8 @@ final class AotProbeCommand extends Command<int> {
       final report = runAotProbe(
         repoRoot: repoRoot,
         scratch: scratch,
-        runner: const SystemProcessRunner(),
-        dartExecutable: Platform.resolvedExecutable,
+        runner: PinnedFlutterRunner.forRepo(repoRoot),
+        dartExecutable: 'dart',
       );
       for (final sentinel in report.retainedWhenDisabled) {
         stderr

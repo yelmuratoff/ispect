@@ -47,6 +47,11 @@ final class DependencyConsistencyException extends ToolException {
   final List<String> inconsistencies;
 }
 
+/// `.fvmrc` does not pin an exact Flutter release.
+final class FlutterPinException extends ToolException {
+  const FlutterPinException(super.message);
+}
+
 /// A documentation source directory or template file is missing.
 final class DocsSourceException extends ToolException {
   const DocsSourceException(super.message);
