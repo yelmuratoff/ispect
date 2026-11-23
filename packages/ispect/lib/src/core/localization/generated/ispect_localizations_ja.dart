@@ -1440,4 +1440,20 @@ class ISpectGeneratedLocalizationJa extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'マスクされたヘッダーはコピーされていません: $names';
   }
+
+  @override
+  String get allLaunches => 'すべての起動';
+
+  @override
+  String get unknownLaunch => '不明な起動';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ログビューアを開く（新しいエラー$count件）',
+    );
+    return '$_temp0';
+  }
 }

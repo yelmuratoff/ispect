@@ -1505,4 +1505,21 @@ class ISpectGeneratedLocalizationPt extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'Cabeçalhos mascarados não foram copiados: $names';
   }
+
+  @override
+  String get allLaunches => 'Todas as execuções';
+
+  @override
+  String get unknownLaunch => 'Execução desconhecida';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Abrir visualizador de logs, $count erros novos',
+      one: 'Abrir visualizador de logs, $count erro novo',
+    );
+    return '$_temp0';
+  }
 }

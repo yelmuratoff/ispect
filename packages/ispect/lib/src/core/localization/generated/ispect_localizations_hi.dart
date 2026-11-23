@@ -1491,4 +1491,21 @@ class ISpectGeneratedLocalizationHi extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'छिपाए गए हेडर कॉपी नहीं हुए: $names';
   }
+
+  @override
+  String get allLaunches => 'सभी लॉन्च';
+
+  @override
+  String get unknownLaunch => 'अज्ञात लॉन्च';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'लॉग व्यूअर खोलें, $count नई त्रुटियाँ',
+      one: 'लॉग व्यूअर खोलें, $count नई त्रुटि',
+    );
+    return '$_temp0';
+  }
 }

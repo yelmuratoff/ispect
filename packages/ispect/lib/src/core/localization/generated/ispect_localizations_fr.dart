@@ -1517,4 +1517,21 @@ class ISpectGeneratedLocalizationFr extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'Les en-têtes masqués n\'ont pas été copiés : $names';
   }
+
+  @override
+  String get allLaunches => 'Tous les lancements';
+
+  @override
+  String get unknownLaunch => 'Lancement inconnu';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ouvrir le visualiseur de journaux, $count nouvelles erreurs',
+      one: 'Ouvrir le visualiseur de journaux, $count nouvelle erreur',
+    );
+    return '$_temp0';
+  }
 }

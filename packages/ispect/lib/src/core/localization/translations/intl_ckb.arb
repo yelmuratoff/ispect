@@ -469,5 +469,8 @@
    "composerCustomMethodMenu": "میتۆدی تایبەت…",
    "composerCustomMethodInvalid": "یەک وشە بەبێ بۆشایی بنووسە، وەک SEARCH",
    "composerBodyWithheld": "ناوەڕۆک لە تۆمارەکەدا شاردرابووەوە و کۆپی نەکرا. پێش ناردن دووبارە بینووسەوە.",
-   "composerHeadersWithheld": "سەرپەڕە شاردراوەکان کۆپی نەکران: {names}"
+   "composerHeadersWithheld": "سەرپەڕە شاردراوەکان کۆپی نەکران: {names}",
+   "allLaunches": "هەموو کارپێکردنەکان",
+   "unknownLaunch": "کارپێکردنی نەناسراو",
+   "openLogViewerWithNewErrors": "{count, plural, one{کردنەوەی بینەری تۆمار، {count} هەڵەی نوێ} other{کردنەوەی بینەری تۆمار، {count} هەڵەی نوێ}}"
 }

@@ -1500,4 +1500,23 @@ class ISpectGeneratedLocalizationRu extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'Замаскированные заголовки не скопированы: $names';
   }
+
+  @override
+  String get allLaunches => 'Все запуски';
+
+  @override
+  String get unknownLaunch => 'Неизвестный запуск';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Открыть просмотр логов, $count новой ошибки',
+      many: 'Открыть просмотр логов, $count новых ошибок',
+      few: 'Открыть просмотр логов, $count новые ошибки',
+      one: 'Открыть просмотр логов, $count новая ошибка',
+    );
+    return '$_temp0';
+  }
 }

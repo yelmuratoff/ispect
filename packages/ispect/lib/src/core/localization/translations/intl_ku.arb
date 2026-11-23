@@ -469,5 +469,8 @@
     "composerCustomMethodMenu": "ڕێبازا تایبەت…",
     "composerCustomMethodInvalid": "ئێک پەیڤ بێ بۆشایی بنڤیسە، وەکی SEARCH",
     "composerBodyWithheld": "ناڤەڕۆک د تومارێ دا هاتبوو شاردن و نەهاتە کۆپیکرن. بەری هنارتنێ دووبارە بنڤیسە.",
-    "composerHeadersWithheld": "سەرپەڕێن شاردی نەهاتنە کۆپیکرن: {names}"
+    "composerHeadersWithheld": "سەرپەڕێن شاردی نەهاتنە کۆپیکرن: {names}",
+    "allLaunches": "هەمی دەستپێکرن",
+    "unknownLaunch": "دەستپێکرنا نەنیاس",
+    "openLogViewerWithNewErrors": "{count, plural, one{نیشاندەرێ توماران ڤەکە، {count} خەلەتیا نوو} other{نیشاندەرێ توماران ڤەکە، {count} خەلەتیێن نوو}}"
 }

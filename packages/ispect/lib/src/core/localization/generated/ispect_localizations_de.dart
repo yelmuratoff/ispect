@@ -1518,4 +1518,21 @@ class ISpectGeneratedLocalizationDe extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'Maskierte Header wurden nicht übernommen: $names';
   }
+
+  @override
+  String get allLaunches => 'Alle Starts';
+
+  @override
+  String get unknownLaunch => 'Unbekannter Start';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Protokoll-Viewer öffnen, $count neue Fehler',
+      one: 'Protokoll-Viewer öffnen, $count neuer Fehler',
+    );
+    return '$_temp0';
+  }
 }

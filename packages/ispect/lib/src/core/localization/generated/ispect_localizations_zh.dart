@@ -1439,4 +1439,20 @@ class ISpectGeneratedLocalizationZh extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return '已脱敏的请求头未被复制：$names';
   }
+
+  @override
+  String get allLaunches => '所有启动';
+
+  @override
+  String get unknownLaunch => '未知启动';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '打开日志查看器，$count 个新错误',
+    );
+    return '$_temp0';
+  }
 }

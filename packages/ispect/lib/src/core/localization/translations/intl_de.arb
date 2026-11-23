@@ -441,5 +441,8 @@
    "composerCustomMethodMenu": "Eigene Methode…",
    "composerCustomMethodInvalid": "Geben Sie ein Wort ohne Leerzeichen ein, z. B. SEARCH",
    "composerBodyWithheld": "Der Body wurde im Log maskiert und nicht übernommen. Geben Sie ihn vor dem Senden erneut ein.",
-   "composerHeadersWithheld": "Maskierte Header wurden nicht übernommen: {names}"
+   "composerHeadersWithheld": "Maskierte Header wurden nicht übernommen: {names}",
+   "allLaunches": "Alle Starts",
+   "unknownLaunch": "Unbekannter Start",
+   "openLogViewerWithNewErrors": "{count, plural, one{Protokoll-Viewer öffnen, {count} neuer Fehler} other{Protokoll-Viewer öffnen, {count} neue Fehler}}"
 }

@@ -1488,4 +1488,21 @@ class ISpectGeneratedLocalizationCkb extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'سەرپەڕە شاردراوەکان کۆپی نەکران: $names';
   }
+
+  @override
+  String get allLaunches => 'هەموو کارپێکردنەکان';
+
+  @override
+  String get unknownLaunch => 'کارپێکردنی نەناسراو';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'کردنەوەی بینەری تۆمار، $count هەڵەی نوێ',
+      one: 'کردنەوەی بینەری تۆمار، $count هەڵەی نوێ',
+    );
+    return '$_temp0';
+  }
 }

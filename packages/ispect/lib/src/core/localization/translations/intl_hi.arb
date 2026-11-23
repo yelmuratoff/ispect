@@ -441,5 +441,8 @@
    "composerCustomMethodMenu": "कस्टम विधि…",
    "composerCustomMethodInvalid": "बिना स्पेस के एक शब्द दर्ज करें, जैसे SEARCH",
    "composerBodyWithheld": "बॉडी लॉग में छिपाई गई थी, इसलिए कॉपी नहीं हुई। भेजने से पहले इसे फिर से दर्ज करें।",
-   "composerHeadersWithheld": "छिपाए गए हेडर कॉपी नहीं हुए: {names}"
+   "composerHeadersWithheld": "छिपाए गए हेडर कॉपी नहीं हुए: {names}",
+   "allLaunches": "सभी लॉन्च",
+   "unknownLaunch": "अज्ञात लॉन्च",
+   "openLogViewerWithNewErrors": "{count, plural, one{लॉग व्यूअर खोलें, {count} नई त्रुटि} other{लॉग व्यूअर खोलें, {count} नई त्रुटियाँ}}"
 }

@@ -1480,4 +1480,25 @@ class ISpectGeneratedLocalizationAr extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'لم تُنسخ الرؤوس المخفية: $names';
   }
+
+  @override
+  String get allLaunches => 'كل مرات التشغيل';
+
+  @override
+  String get unknownLaunch => 'تشغيل غير معروف';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'فتح عارض السجلات، $count خطأ جديد',
+      many: 'فتح عارض السجلات، $count خطأً جديدًا',
+      few: 'فتح عارض السجلات، $count أخطاء جديدة',
+      two: 'فتح عارض السجلات، خطآن جديدان',
+      one: 'فتح عارض السجلات، خطأ جديد واحد',
+      zero: 'فتح عارض السجلات، $count خطأ جديد',
+    );
+    return '$_temp0';
+  }
 }

@@ -1440,4 +1440,20 @@ class ISpectGeneratedLocalizationKo extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return '가려진 헤더는 복사되지 않았습니다: $names';
   }
+
+  @override
+  String get allLaunches => '모든 실행';
+
+  @override
+  String get unknownLaunch => '알 수 없는 실행';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '로그 뷰어 열기, 새 오류 $count개',
+    );
+    return '$_temp0';
+  }
 }

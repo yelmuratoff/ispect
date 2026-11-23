@@ -441,5 +441,8 @@
    "composerCustomMethodMenu": "طريقة مخصصة…",
    "composerCustomMethodInvalid": "أدخل كلمة واحدة بلا مسافات، مثل SEARCH",
    "composerBodyWithheld": "كان المحتوى مخفيًا في السجل ولم يُنسخ. أدخله مجددًا قبل الإرسال.",
-   "composerHeadersWithheld": "لم تُنسخ الرؤوس المخفية: {names}"
+   "composerHeadersWithheld": "لم تُنسخ الرؤوس المخفية: {names}",
+   "allLaunches": "كل مرات التشغيل",
+   "unknownLaunch": "تشغيل غير معروف",
+   "openLogViewerWithNewErrors": "{count, plural, zero{فتح عارض السجلات، {count} خطأ جديد} one{فتح عارض السجلات، خطأ جديد واحد} two{فتح عارض السجلات، خطآن جديدان} few{فتح عارض السجلات، {count} أخطاء جديدة} many{فتح عارض السجلات، {count} خطأً جديدًا} other{فتح عارض السجلات، {count} خطأ جديد}}"
 }

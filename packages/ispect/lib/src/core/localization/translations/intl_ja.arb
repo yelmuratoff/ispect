@@ -441,5 +441,8 @@
    "composerCustomMethodMenu": "カスタムメソッド…",
    "composerCustomMethodInvalid": "SEARCH のように、スペースを含まない1語で入力してください",
    "composerBodyWithheld": "ボディはログでマスクされていたためコピーされていません。送信前にもう一度入力してください。",
-   "composerHeadersWithheld": "マスクされたヘッダーはコピーされていません: {names}"
+   "composerHeadersWithheld": "マスクされたヘッダーはコピーされていません: {names}",
+   "allLaunches": "すべての起動",
+   "unknownLaunch": "不明な起動",
+   "openLogViewerWithNewErrors": "{count, plural, other{ログビューアを開く（新しいエラー{count}件）}}"
 }

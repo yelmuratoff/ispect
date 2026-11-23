@@ -1484,4 +1484,21 @@ class ISpectGeneratedLocalizationEn extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'Redacted headers weren\'t copied: $names';
   }
+
+  @override
+  String get allLaunches => 'All launches';
+
+  @override
+  String get unknownLaunch => 'Unknown launch';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Open the log viewer, $count new errors',
+      one: 'Open the log viewer, $count new error',
+    );
+    return '$_temp0';
+  }
 }

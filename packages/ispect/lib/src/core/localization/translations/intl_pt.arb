@@ -441,5 +441,8 @@
     "composerCustomMethodMenu": "Método personalizado…",
     "composerCustomMethodInvalid": "Digite uma única palavra sem espaços, por exemplo SEARCH",
     "composerBodyWithheld": "O corpo estava mascarado no log e não foi copiado. Digite-o novamente antes de enviar.",
-    "composerHeadersWithheld": "Cabeçalhos mascarados não foram copiados: {names}"
+    "composerHeadersWithheld": "Cabeçalhos mascarados não foram copiados: {names}",
+    "allLaunches": "Todas as execuções",
+    "unknownLaunch": "Execução desconhecida",
+    "openLogViewerWithNewErrors": "{count, plural, one{Abrir visualizador de logs, {count} erro novo} other{Abrir visualizador de logs, {count} erros novos}}"
 }

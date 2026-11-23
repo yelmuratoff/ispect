@@ -563,5 +563,15 @@
             "type": "String"
          }
       }
+   },
+   "allLaunches": "All launches",
+   "unknownLaunch": "Unknown launch",
+   "openLogViewerWithNewErrors": "{count, plural, one{Open the log viewer, {count} new error} other{Open the log viewer, {count} new errors}}",
+   "@openLogViewerWithNewErrors": {
+      "placeholders": {
+         "count": {
+            "type": "int"
+         }
+      }
    }
 }

@@ -441,5 +441,8 @@
     "composerCustomMethodMenu": "Свой метод…",
     "composerCustomMethodInvalid": "Введите одно слово без пробелов, например SEARCH",
     "composerBodyWithheld": "Тело было замаскировано в логе и не скопировано. Введите его заново перед отправкой.",
-    "composerHeadersWithheld": "Замаскированные заголовки не скопированы: {names}"
+    "composerHeadersWithheld": "Замаскированные заголовки не скопированы: {names}",
+    "allLaunches": "Все запуски",
+    "unknownLaunch": "Неизвестный запуск",
+    "openLogViewerWithNewErrors": "{count, plural, one{Открыть просмотр логов, {count} новая ошибка} few{Открыть просмотр логов, {count} новые ошибки} many{Открыть просмотр логов, {count} новых ошибок} other{Открыть просмотр логов, {count} новой ошибки}}"
 }

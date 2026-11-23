@@ -1493,4 +1493,21 @@ class ISpectGeneratedLocalizationKk extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'Жасырылған тақырыптар көшірілмеді: $names';
   }
+
+  @override
+  String get allLaunches => 'Барлық іске қосулар';
+
+  @override
+  String get unknownLaunch => 'Белгісіз іске қосу';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Лог көрушісін ашу, $count жаңа қате',
+      one: 'Лог көрушісін ашу, $count жаңа қате',
+    );
+    return '$_temp0';
+  }
 }

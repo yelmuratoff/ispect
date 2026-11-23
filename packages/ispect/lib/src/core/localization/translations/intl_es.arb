@@ -441,5 +441,8 @@
    "composerCustomMethodMenu": "Método personalizado…",
    "composerCustomMethodInvalid": "Escribe una sola palabra sin espacios, por ejemplo SEARCH",
    "composerBodyWithheld": "El cuerpo estaba enmascarado en el registro y no se copió. Vuelve a escribirlo antes de enviar.",
-   "composerHeadersWithheld": "Los encabezados enmascarados no se copiaron: {names}"
+   "composerHeadersWithheld": "Los encabezados enmascarados no se copiaron: {names}",
+   "allLaunches": "Todos los inicios",
+   "unknownLaunch": "Inicio desconocido",
+   "openLogViewerWithNewErrors": "{count, plural, one{Abrir visor de registros, {count} error nuevo} other{Abrir visor de registros, {count} errores nuevos}}"
 }

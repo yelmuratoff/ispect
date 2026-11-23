@@ -1505,4 +1505,21 @@ class ISpectGeneratedLocalizationEs extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'Los encabezados enmascarados no se copiaron: $names';
   }
+
+  @override
+  String get allLaunches => 'Todos los inicios';
+
+  @override
+  String get unknownLaunch => 'Inicio desconocido';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Abrir visor de registros, $count errores nuevos',
+      one: 'Abrir visor de registros, $count error nuevo',
+    );
+    return '$_temp0';
+  }
 }

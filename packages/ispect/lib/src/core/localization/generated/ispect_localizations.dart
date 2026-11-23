@@ -2776,6 +2776,24 @@ abstract class ISpectGeneratedLocalization {
   /// In en, this message translates to:
   /// **'Redacted headers weren\'t copied: {names}'**
   String composerHeadersWithheld(String names);
+
+  /// No description provided for @allLaunches.
+  ///
+  /// In en, this message translates to:
+  /// **'All launches'**
+  String get allLaunches;
+
+  /// No description provided for @unknownLaunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown launch'**
+  String get unknownLaunch;
+
+  /// No description provided for @openLogViewerWithNewErrors.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{Open the log viewer, {count} new error} other{Open the log viewer, {count} new errors}}'**
+  String openLogViewerWithNewErrors(int count);
 }
 
 class _ISpectGeneratedLocalizationDelegate

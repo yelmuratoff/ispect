@@ -1484,4 +1484,21 @@ class ISpectGeneratedLocalizationKu extends ISpectGeneratedLocalization {
   String composerHeadersWithheld(String names) {
     return 'سەرپەڕێن شاردی نەهاتنە کۆپیکرن: $names';
   }
+
+  @override
+  String get allLaunches => 'هەمی دەستپێکرن';
+
+  @override
+  String get unknownLaunch => 'دەستپێکرنا نەنیاس';
+
+  @override
+  String openLogViewerWithNewErrors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'نیشاندەرێ توماران ڤەکە، $count خەلەتیێن نوو',
+      one: 'نیشاندەرێ توماران ڤەکە، $count خەلەتیا نوو',
+    );
+    return '$_temp0';
+  }
 }

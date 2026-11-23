@@ -441,5 +441,8 @@
     "composerCustomMethodMenu": "Өз әдісіңіз…",
     "composerCustomMethodInvalid": "Бос орынсыз бір сөз енгізіңіз, мысалы SEARCH",
     "composerBodyWithheld": "Мазмұн логта жасырылған, сондықтан көшірілмеді. Жіберер алдында оны қайта енгізіңіз.",
-    "composerHeadersWithheld": "Жасырылған тақырыптар көшірілмеді: {names}"
+    "composerHeadersWithheld": "Жасырылған тақырыптар көшірілмеді: {names}",
+    "allLaunches": "Барлық іске қосулар",
+    "unknownLaunch": "Белгісіз іске қосу",
+    "openLogViewerWithNewErrors": "{count, plural, one{Лог көрушісін ашу, {count} жаңа қате} other{Лог көрушісін ашу, {count} жаңа қате}}"
 }
