@@ -9,7 +9,7 @@ Current package constraints:
 - Dart: `>=3.6.0 <4.0.0`; `ispect` and `ispect_layout` declare Dart `3.8.0+`, and in practice need Dart `3.13.0+`, which `material_ui` 1.11 requires and Flutter 3.47 ships with.
 - Flutter: `ispect` and `ispect_layout` require Flutter `3.47.0+`, the first release with the standalone `material_ui` package they build on. The host app's `MaterialApp` and Material/Cupertino localization delegates must come from `material_ui` and `cupertino_ui` as well.
 
-CI runs against a pinned Flutter SDK (`3.47.5`) as the required signal, and against the latest stable Flutter channel as an advisory signal. The pinned SDK is the compatibility baseline for the current development line.
+CI runs against the Flutter SDK that `.fvmrc` pins as the required signal, and against the latest stable Flutter channel as an advisory signal. The pinned SDK is the compatibility baseline for the current development line.
 
 ## Package matrix
 

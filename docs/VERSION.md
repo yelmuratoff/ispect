@@ -60,7 +60,7 @@ When a push to `main` or `develop` changes `CHANGELOG.md`, `version.config`, REA
 
 - Runs `ispect_tool release-prep --skip-bump` to synchronize versions, dependencies, changelogs, generated READMEs, and `llms.txt`.
 - Synchronizes the standalone web-viewer manifest and lockfile.
-- Validates the lockfile with the CI-pinned Flutter 3.47.5 toolchain.
+- Validates the lockfile with the Flutter toolchain `.fvmrc` pins.
 - Opens a pull request from an `auto/sync/<sha>` branch when the run changed any files.
 
 On a pull request, GitHub Actions checks that:

@@ -104,7 +104,7 @@ The GitHub Actions workflows automate the rest.
 
 - Triggers on pushes to `main` or `develop` that change `version.config`, `CHANGELOG.md`, `llms.txt`, `docs/readme/**`, `docs/*.md`, `ROADMAP.md`, `SECURITY.md`, `web_logs_viewer/pubspec.lock`, `tool/**`, or the workflow itself.
 - Runs `ispect_tool release-prep --skip-bump`, using the same workflow as local development.
-- Validates the web-viewer lockfile with the CI-pinned Flutter 3.47.5 toolchain.
+- Validates the web-viewer lockfile with the Flutter toolchain `.fvmrc` pins.
 - Opens a pull request from an `auto/sync/<sha>` branch when that run changed any files.
 
 `validate_versions.yml`:
@@ -123,7 +123,7 @@ The GitHub Actions workflows automate the rest.
 4. `docs/readme/**` remains the README source of truth; generated READMEs and `llms.txt` are rebuilt.
 5. The web-viewer manifest and lockfile are synchronized with the same version.
 6. All checks pass before the transaction is accepted.
-7. CI repeats the no-bump path and validates the lockfile with Flutter 3.47.5.
+7. CI repeats the no-bump path and validates the lockfile with the Flutter release `.fvmrc` pins.
 
 ## Best practices
 
