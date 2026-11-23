@@ -4,6 +4,7 @@ import 'package:args/command_runner.dart';
 import 'package:ispect_tool/src/cli/aot_probe_command.dart';
 import 'package:ispect_tool/src/cli/check_command.dart';
 import 'package:ispect_tool/src/cli/deps_command.dart';
+import 'package:ispect_tool/src/cli/devtools_extension_command.dart';
 import 'package:ispect_tool/src/cli/docs_commands.dart';
 import 'package:ispect_tool/src/cli/publish_command.dart';
 import 'package:ispect_tool/src/cli/publish_gate_command.dart';
@@ -33,6 +34,7 @@ Future<void> main(List<String> arguments) async {
     ..addCommand(ChangelogCommand(repoRoot))
     ..addCommand(ReleasePrepCommand(repoRoot))
     ..addCommand(PublishCommand(repoRoot))
+    ..addCommand(DevToolsExtensionCommand(repoRoot))
     ..addCommand(AotProbeCommand(repoRoot));
 
   try {

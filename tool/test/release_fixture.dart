@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 /// The packages `bash/tests/release_prep_test.sh` builds into its fixture.
 const List<String> releaseFixturePackages = [
   'ispect',
+  'ispect_devtools',
   'ispect_layout',
   'ispectify',
   'ispectify_bloc',

@@ -26,6 +26,8 @@ dependency_overrides:
     path: ../../ispectify_ws
   ispectify_db:
     path: ../../ispectify_db
+  ispect_devtools:
+    path: ../../ispect_devtools
 
 dependencies:
   flutter:
@@ -62,6 +64,7 @@ dependencies:
   cupertino_ui: ^1.1.6
 
 dev_dependencies:
+  ispect_devtools: ^8.0.0-dev.2
   flutter_test:
     sdk: flutter
   integration_test:

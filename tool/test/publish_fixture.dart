@@ -22,6 +22,10 @@ String createPublishFixture({
   Map<String, String> packageVersions = const {},
 }) {
   writeFixtureFile(p.join(destination, 'version.config'), 'VERSION=$version\n');
+  writeFixtureFile(
+    p.join(destination, 'ispect_devtools_extension', 'pubspec.yaml'),
+    'name: ispect_devtools_extension\npublish_to: none\n',
+  );
 
   for (final package in publishOrder) {
     writeFixtureFile(

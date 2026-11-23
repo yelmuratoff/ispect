@@ -136,6 +136,11 @@ final class VersionSync {
       _replaceVersionLine(pubspec, target, dryRun, changedFiles);
       _updateInternalRefs(pubspec, packageNames, target, dryRun, changedFiles);
 
+      final extensionConfig = File(devToolsExtensionConfigPath(directory));
+      if (extensionConfig.existsSync()) {
+        _replaceVersionLine(extensionConfig, target, dryRun, changedFiles);
+      }
+
       final example = File(p.join(directory, 'example', 'pubspec.yaml'));
       if (example.existsSync()) {
         _updateInternalRefs(

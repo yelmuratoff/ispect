@@ -385,6 +385,35 @@ void main() {
       );
     });
 
+    test('a failed run restores the DevTools extension config', () async {
+      final repo = fixture('fail-extension-config');
+      writeFixtureFile(
+        p.join(
+          repo,
+          'packages',
+          'ispect_devtools',
+          'extension',
+          'devtools',
+          'config.yaml',
+        ),
+        'name: ispect\nversion: 7.0.0-dev.1\n',
+      );
+      final before = treeSnapshot(repo);
+
+      final status = await release(
+        repo,
+        const [],
+        wrapSteps: (base) => _FailingSteps(
+          base,
+          failing: _Step.buildReadmes,
+          exitCode: 73,
+        ),
+      );
+
+      expect(status, 73);
+      expect(treeSnapshot(repo), before);
+    });
+
     test('a file system failure in a step restores every artifact', () async {
       final repo = fixture('fail-file-system');
       final before = treeSnapshot(repo);

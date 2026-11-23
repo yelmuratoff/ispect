@@ -145,8 +145,19 @@ final class DartReleaseSteps implements ReleaseSteps {
     final expected = VersionConfig.forRepo(repoRoot).read();
     out.writeln('[INFO] Version from version.config: $expected');
 
-    final declared = PackageVersions(repoRoot).read();
+    final versions = PackageVersions(repoRoot);
+    final declared = versions.read();
     final outOfSync = <String>[];
+    for (final entry in versions.devToolsExtensionVersions().entries) {
+      final matches = entry.value == expected.toString();
+      out.writeln(
+        '${matches ? "[OK ]" : "[ERR]"} ${entry.key} DevTools extension: '
+        '${entry.value}',
+      );
+      if (!matches) {
+        outOfSync.add('${entry.key} DevTools extension');
+      }
+    }
     for (final entry in declared.entries) {
       final matches = entry.value == expected.toString();
       out.writeln(
@@ -418,6 +429,7 @@ final class ReleasePrep {
         'CHANGELOG.md',
         'README.md',
         'example/pubspec.yaml',
+        'extension/devtools/config.yaml',
       ]) {
         targets.add('packages/$directory/$relative');
       }

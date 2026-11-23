@@ -1,0 +1,25 @@
+name: ispect_devtools
+description: Flutter DevTools tab for ISpect that shows the running app's logs, network calls, and traces in ISpect's log viewer.
+version: 8.0.0-dev.2
+homepage: https://github.com/yelmuratoff/ispect
+repository: https://github.com/yelmuratoff/ispect
+issue_tracker: https://github.com/yelmuratoff/ispect/issues
+topics:
+  - devtools
+  - debugging
+  - logging
+
+environment:
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+dependency_overrides:
+  ispect:
+    path: ../ispect
+  ispect_layout:
+    path: ../ispect_layout
+  ispectify:
+    path: ../ispectify
+
+dependencies:
+  ispect: ^8.0.0-dev.2

@@ -1,0 +1,32 @@
+name: ispect_devtools_extension
+description: "ISpect tab for Flutter DevTools."
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+dependency_overrides:
+  ispect:
+    path: ../packages/ispect
+  ispect_layout:
+    path: ../packages/ispect_layout
+  ispectify:
+    path: ../packages/ispectify
+
+dependencies:
+  flutter:
+    sdk: flutter
+  devtools_extensions: ^0.5.1
+  ispect: any
+  material_ui: ^1.11.0
+  vm_service: ">=15.0.0 <16.0.0"
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

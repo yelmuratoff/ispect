@@ -95,6 +95,11 @@ const List<ReadmeTarget> readmeTargets = [
     packageName: 'ispect',
   ),
   ReadmeTarget(
+    sourceName: 'ispect_devtools',
+    outputPath: 'packages/ispect_devtools/README.md',
+    packageName: 'ispect_devtools',
+  ),
+  ReadmeTarget(
     sourceName: 'ispect_layout',
     outputPath: 'packages/ispect_layout/README.md',
     packageName: 'ispect_layout',

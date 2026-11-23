@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
+import 'devtools_extension.dart';
 import 'exceptions.dart';
 import 'next_version.dart';
 import 'pub_client.dart';
@@ -50,6 +51,7 @@ const List<String> publishOrder = [
   'ispectify_db',
   'ispect_layout',
   'ispect',
+  'ispect_devtools',
 ];
 
 final RegExp _anyConstraint = RegExp(
@@ -521,6 +523,16 @@ final class PublishRun {
   Future<bool> _publishPackage(String package, PublishOptions options) async {
     final directory = p.join(repoRoot, 'packages', package);
 
+    if (package == devToolsExtensionHost) {
+      _warn('($package) build the DevTools extension');
+      final failure =
+          buildDevToolsExtension(repoRoot: repoRoot, runner: runner);
+      if (failure != null) {
+        _recordFailure(package, 'devtools_extension', failure.output, options);
+        return false;
+      }
+    }
+
     _warn('($package) pub get');
     // package:realm pins analyzer ^7 against the SDK's flutter_test.
     final get = runner.run(
@@ -605,6 +617,7 @@ final class PublishRun {
   static String _stageLabel(String stage) => switch (stage) {
         'pub_get' => 'Pub get',
         'publish' => 'Publish',
+        'devtools_extension' => 'DevTools extension build',
         _ => 'Dry-run',
       };
 

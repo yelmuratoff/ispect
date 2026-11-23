@@ -28,6 +28,7 @@ final class FakeProcessRunner implements ProcessRunner {
     this.pubGetResults = const {},
     this.dryRunResults = const {},
     this.publishResults = const {},
+    this.extensionBuildResult = _ok,
   });
 
   final List<String> statusLines;
@@ -39,6 +40,7 @@ final class FakeProcessRunner implements ProcessRunner {
   final Map<String, CommandResult> pubGetResults;
   final Map<String, CommandResult> dryRunResults;
   final Map<String, CommandResult> publishResults;
+  final CommandResult extensionBuildResult;
 
   final List<String> commands = [];
   var statusCalls = 0;
@@ -89,6 +91,18 @@ final class FakeProcessRunner implements ProcessRunner {
         exitCode: 0,
         output: _joined(podfileLocks[owner] ?? const []),
       );
+    }
+    if (executable == 'flutter' && arguments.join(' ') == 'pub get') {
+      return _ok;
+    }
+    if (executable == 'flutter' && arguments.first == 'build') {
+      if (extensionBuildResult.succeeded) {
+        writeFixtureFile(
+          p.join(workingDirectory, 'build', 'web', 'index.html'),
+          '<html></html>',
+        );
+      }
+      return extensionBuildResult;
     }
     if (executable == 'dart' && arguments.first == 'format') {
       formatted = true;
@@ -226,6 +240,96 @@ void main() {
 
       expect(result.exitCode, 2);
       expect(result.err, 'Unknown package: ispect_ui\n');
+    });
+  });
+
+  group('DevTools extension', () {
+    test(
+        'publishing ispect_devtools builds the extension into the package '
+        'first', () async {
+      final repo = fixture();
+      final runner = FakeProcessRunner();
+
+      final result = await invoke(
+        repo,
+        const [
+          '--auto',
+          '--only',
+          'ispect_devtools',
+          '--skip-pub-version-check',
+        ],
+        runner: runner,
+      );
+
+      expect(result.exitCode, 0);
+      final build = runner.commands.indexWhere(
+        (c) => c.startsWith('flutter build web'),
+      );
+      final pubGet = runner.commands
+          .indexOf('dart pub get --no-example [ispect_devtools]');
+      expect(build, isNonNegative);
+      expect(build, lessThan(pubGet));
+      expect(
+        runner.commands[build],
+        contains('--dart-define=ISPECT_ENABLED=true'),
+      );
+      expect(
+        File(
+          p.join(
+            repo,
+            'packages',
+            'ispect_devtools',
+            'extension',
+            'devtools',
+            'build',
+            'index.html',
+          ),
+        ).existsSync(),
+        isTrue,
+      );
+      expect(runner.publishedPackages, const ['ispect_devtools']);
+    });
+
+    test('a failed extension build keeps ispect_devtools from publishing',
+        () async {
+      final runner = FakeProcessRunner(
+        extensionBuildResult: const CommandResult(
+          exitCode: 1,
+          output: 'Compilation failed\n',
+        ),
+      );
+
+      final result = await invoke(
+        fixture(),
+        const [
+          '--auto',
+          '--only',
+          'ispect_devtools',
+          '--skip-pub-version-check',
+        ],
+        runner: runner,
+      );
+
+      expect(result.exitCode, isNot(0));
+      expect(runner.publishedPackages, isEmpty);
+      expect(
+        result.errorLines,
+        contains(
+          contains('DevTools extension build failed for ispect_devtools'),
+        ),
+      );
+    });
+
+    test('other packages publish without building the extension', () async {
+      final runner = FakeProcessRunner();
+
+      await invoke(
+        fixture(),
+        const ['--auto', '--only', 'ispect', '--skip-pub-version-check'],
+        runner: runner,
+      );
+
+      expect(runner.commands.where((c) => c.startsWith('flutter')), isEmpty);
     });
   });
 
@@ -642,6 +746,7 @@ void main() {
         'ispectify_db',
         'ispect_layout',
         'ispect',
+        'ispect_devtools',
       ]);
     });
 
@@ -662,7 +767,7 @@ void main() {
           reason: '$adapter must not go out before ispectify',
         );
       }
-      expect(order.last, 'ispect');
+      expect(order.last, 'ispect_devtools');
     });
 
     test('every package is dry-run in its own directory', () async {

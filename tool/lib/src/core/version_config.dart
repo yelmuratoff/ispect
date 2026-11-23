@@ -95,4 +95,25 @@ final class PackageVersions {
     }
     return result;
   }
+
+  /// Package name to the `version:` of the DevTools extension it ships in
+  /// `extension/devtools/config.yaml`, for the packages that ship one.
+  Map<String, String> devToolsExtensionVersions() {
+    final result = <String, String>{};
+    for (final directory in packageDirectories(repoRoot)) {
+      final config = File(devToolsExtensionConfigPath(directory));
+      final pubspec = File(p.join(directory, 'pubspec.yaml'));
+      if (!config.existsSync() || !pubspec.existsSync()) {
+        continue;
+      }
+      final name = Pubspec.read(pubspec, repoRoot: repoRoot).name;
+      result[name] =
+          _version.firstMatch(config.readAsStringSync())?.group(1) ?? '';
+    }
+    return result;
+  }
 }
+
+/// The DevTools extension config of the package in [packageDirectory].
+String devToolsExtensionConfigPath(String packageDirectory) =>
+    p.join(packageDirectory, 'extension', 'devtools', 'config.yaml');

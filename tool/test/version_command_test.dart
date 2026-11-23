@@ -147,4 +147,62 @@ void main() {
       expect(readConfig(repo), 'VERSION=7.0.1\n');
     });
   });
+
+  group('DevTools extension version', () {
+    String extensionConfig(String repo) => p.join(
+          repo,
+          'packages',
+          'ispect_devtools',
+          'extension',
+          'devtools',
+          'config.yaml',
+        );
+
+    String fixtureWithExtension() {
+      final repo = createReleaseFixture(
+        destination: p.join(workspace.path, 'repo'),
+        version: '7.0.0-dev.1',
+      );
+      writeFixtureFile(
+        extensionConfig(repo),
+        'name: ispect\nversion: 0.1.0\nrequiresConnection: true\n',
+      );
+      return repo;
+    }
+
+    Future<int?> check(String repo) => IOOverrides.runZoned(
+          () => (CommandRunner<int>('ispect_tool', 'test')
+                ..addCommand(VersionCommand(repo)))
+              .run(['version', 'check']),
+          stdout: () => out,
+          stderr: () => err,
+        );
+
+    test('a bump rewrites the extension version with the packages', () async {
+      final repo = fixtureWithExtension();
+
+      await expectLater(bump(repo, ['dev']), completion(0));
+
+      expect(
+        File(extensionConfig(repo)).readAsStringSync(),
+        'name: ispect\nversion: 7.0.0-dev.2\nrequiresConnection: true\n',
+      );
+      await expectLater(check(repo), completion(0));
+    });
+
+    test('version check reports an extension left behind', () async {
+      final repo = fixtureWithExtension();
+      await expectLater(bump(repo, ['dev']), completion(0));
+      writeFixtureFile(
+        extensionConfig(repo),
+        'name: ispect\nversion: 0.1.0\nrequiresConnection: true\n',
+      );
+
+      await expectLater(check(repo), completion(1));
+      expect(
+        err.buffer.toString(),
+        contains('ispect_devtools DevTools extension'),
+      );
+    });
+  });
 }
