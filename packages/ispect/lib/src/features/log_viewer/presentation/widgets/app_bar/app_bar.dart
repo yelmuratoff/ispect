@@ -118,16 +118,19 @@ class _ISpectAppBarState extends State<ISpectAppBar> {
         pinned: true,
         toolbarHeight: toolbarHeight ?? kToolbarHeight,
         leadingWidth: (toolbarHeight ?? kToolbarHeight) - 4,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Center(
-            child: ISpectAppBarIconButton(
-              icon: Icons.arrow_back_rounded,
-              tooltip: context.ispectL10n.back,
-              onPressed: () => context.iSpect.options.pop(context),
-            ),
-          ),
-        ),
+        automaticallyImplyLeading: false,
+        leading: Navigator.of(context).canPop()
+            ? Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Center(
+                  child: ISpectAppBarIconButton(
+                    icon: Icons.arrow_back_rounded,
+                    tooltip: context.ispectL10n.back,
+                    onPressed: () => context.iSpect.options.pop(context),
+                  ),
+                ),
+              )
+            : null,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,

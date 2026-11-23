@@ -63,3 +63,4 @@ export 'src/common/widgets/dialogs/toaster.dart';
 export 'src/common/widgets/ispect_selector.dart';
 export 'src/core/res/ispect_callbacks.dart';
 export 'src/features/json_viewer/json_screen.dart';
+export 'src/features/log_viewer/presentation/screens/ispect_logs_screen.dart';
