@@ -48,6 +48,11 @@ final class SegmentReader {
         maxBytes: _limits.recordBytes,
       );
 
+  ISpectLogData _roundTripWithoutSession(ISpectLogData data) =>
+      FileLogCodec.withoutSessionId(
+        _roundTrip(FileLogCodec.withoutSessionId(data), sessionId: _sessionId),
+      );
+
   Future<List<ISpectLogData>> readDirectory(Directory directory) async {
     final validated = await _store.validatedDateDirectory(
       directory.path,
@@ -107,12 +112,8 @@ final class SegmentReader {
               break fileLoop;
             }
             inspectedRecords++;
-            final safeLog = ISpectRedaction.enabled
-                ? _roundTrip(
-                    FileLogCodec.withoutSessionId(log),
-                    sessionId: _sessionId,
-                  )
-                : log;
+            final safeLog =
+                ISpectRedaction.enabled ? _roundTripWithoutSession(log) : log;
             final safeId = captureISpectLogDataForEgress(safeLog).id;
             byId.putIfAbsent(safeId, () => safeLog);
           }
@@ -210,15 +211,13 @@ final class SegmentReader {
           final storedSessionId = captureISpectLogDataForEgress(
             log,
           ).additionalData?[TraceKeys.sessionId];
-          final safeLog = ISpectRedaction.enabled
-              ? _roundTrip(
-                  log,
-                  sessionId: storedSessionId is String &&
-                          LogId.isValid(storedSessionId)
-                      ? storedSessionId
-                      : _sessionId,
-                )
-              : log;
+          final hasTrustedSession =
+              storedSessionId is String && LogId.isValid(storedSessionId);
+          final safeLog = !ISpectRedaction.enabled
+              ? log
+              : hasTrustedSession
+                  ? _roundTrip(log, sessionId: storedSessionId)
+                  : _roundTripWithoutSession(log);
           final safeId = captureISpectLogDataForEgress(safeLog).id;
           byId.putIfAbsent(safeId, () => safeLog);
         } on FileLogLimitException catch (error) {

@@ -6,6 +6,7 @@ export 'src/filter/category_filter.dart';
 export 'src/filter/filter.dart';
 export 'src/history/file_log/file_log_history.dart';
 export 'src/history/history.dart';
+export 'src/history/launch_logs.dart';
 export 'src/history/serialization.dart';
 export 'src/ispectify.dart';
 export 'src/logger/console_utils.dart';

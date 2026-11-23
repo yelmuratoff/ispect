@@ -756,7 +756,7 @@ void main() {
     expect(live.getterCalls, 0);
   });
 
-  test('replaces a tampered stored session ID before active-redaction reads',
+  test('drops a tampered stored session ID before active-redaction reads',
       () async {
     const secret = 'Bearer STORED_SESSION_SECRET';
     final root = await createPrivateTempDirectory('ispect-security-');
@@ -788,11 +788,14 @@ void main() {
     final logs = await history.getLogsByDate(date);
 
     expect(logs, hasLength(1));
-    final sessionId =
-        logs.single.additionalData?[TraceKeys.sessionId] as String?;
-    expect(sessionId, isNot(secret));
-    expect(sessionId, isNot(contains('STORED_SESSION_SECRET')));
-    expect(sessionId, hasLength(26));
+    expect(
+      logs.single.additionalData?.containsKey(TraceKeys.sessionId),
+      isNot(isTrue),
+    );
+    expect(
+      jsonEncode(logs.single.toJson()),
+      isNot(contains('STORED_SESSION_SECRET')),
+    );
   });
 
   test('file error reporting never formats custom redactor output', () async {
