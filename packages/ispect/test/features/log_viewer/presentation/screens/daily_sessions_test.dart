@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/daily_sessions.dart';
+import 'package:ispect/src/features/log_viewer/presentation/screens/day_launches_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/session_logs_screen.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -21,9 +22,12 @@ final class _FakeFileLogHistory implements FileLogHistory {
   bool failDates;
   bool gateDates = false;
   final List<Completer<List<DateTime>>> pendingDates = [];
+  List<ISpectLogData> dayLogs = const [];
+  bool gateLogs = false;
+  final List<Completer<List<ISpectLogData>>> pendingLogs = [];
   final bool failClear;
   final bool failSize;
-  final bool failLogs;
+  bool failLogs;
   final List<ISpectLogData> _entries = [];
 
   @override
@@ -69,15 +73,279 @@ final class _FakeFileLogHistory implements FileLogHistory {
   @override
   Future<List<ISpectLogData>> getLogsByDate(DateTime date) async {
     if (failLogs) throw Exception('session unreadable');
-    return const [];
+    if (gateLogs) {
+      final pending = Completer<List<ISpectLogData>>();
+      pendingLogs.add(pending);
+      return pending.future;
+    }
+    return dayLogs;
   }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+const _launchA = '01JAAAAAAAAAAAAAAAAAAAAAAA';
+const _launchB = '01JBBBBBBBBBBBBBBBBBBBBBBB';
+
+ISpectLogData _launchLog(
+  String message, {
+  required DateTime time,
+  String? launchId,
+  LogLevel? logLevel,
+}) => ISpectLogData(
+  message,
+  time: time,
+  logLevel: logLevel,
+  additionalData: launchId == null ? null : {TraceKeys.sessionId: launchId},
+);
+
 void main() {
   final session = DateTime(2024, 3, 2);
+
+  group('DailySessionsScreen day launches', () {
+    late _FakeFileLogHistory history;
+
+    setUp(() {
+      ISpect.initialize(
+        ISpectLogger.testing(
+          options: ISpectLoggerOptions(useConsoleLogs: false),
+        ),
+      );
+      history = _FakeFileLogHistory(dates: [session]);
+    });
+    tearDown(ISpect.dispose);
+
+    List<ISpectLogData> twoLaunches() => [
+      _launchLog('morning', time: DateTime(2024, 3, 2, 9), launchId: _launchA),
+      _launchLog(
+        'afternoon',
+        time: DateTime(2024, 3, 2, 14),
+        launchId: _launchB,
+      ),
+      _launchLog(
+        'afternoon failed',
+        time: DateTime(2024, 3, 2, 14, 5),
+        launchId: _launchB,
+        logLevel: LogLevel.error,
+      ),
+    ];
+
+    Future<void> openDay(WidgetTester tester, {Locale? locale}) async {
+      await tester.pumpWidget(
+        appShell(DailySessionsScreen(history: history), locale: locale),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('02.03.2024'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('lists the launches of a day newest first', (tester) async {
+      history.dayLogs = twoLaunches();
+      await openDay(tester);
+
+      expect(find.byType(DayLaunchesScreen), findsOneWidget);
+      expect(find.text('All launches'), findsOneWidget);
+      expect(find.text('3 logs'), findsOneWidget);
+      final afternoon = find.byKey(const ValueKey('ispect-launch-$_launchB'));
+      final morning = find.byKey(const ValueKey('ispect-launch-$_launchA'));
+      expect(
+        tester.getTopLeft(afternoon).dy,
+        lessThan(tester.getTopLeft(morning).dy),
+      );
+      expect(
+        find.descendant(of: afternoon, matching: find.text('1 error')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('ispect-launch-all')),
+          matching: find.text('1 error'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: morning, matching: find.textContaining('error')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('opens only the logs of the chosen launch', (tester) async {
+      history.dayLogs = twoLaunches();
+      await openDay(tester);
+
+      await tester.tap(find.byKey(const ValueKey('ispect-launch-$_launchA')));
+      await tester.pumpAndSettle();
+
+      final screen = tester.widget<SessionLogsScreen>(
+        find.byType(SessionLogsScreen),
+      );
+      expect(screen.logs?.map((log) => log.message), ['morning']);
+    });
+
+    testWidgets('opens the whole day from all launches', (tester) async {
+      history.dayLogs = twoLaunches();
+      await openDay(tester);
+
+      await tester.tap(find.byKey(const ValueKey('ispect-launch-all')));
+      await tester.pumpAndSettle();
+
+      final screen = tester.widget<SessionLogsScreen>(
+        find.byType(SessionLogsScreen),
+      );
+      expect(screen.logs, hasLength(3));
+    });
+
+    testWidgets('opens the logs directly when the day has one launch', (
+      tester,
+    ) async {
+      history.dayLogs = [
+        _launchLog('only', time: DateTime(2024, 3, 2, 9), launchId: _launchA),
+      ];
+      await openDay(tester);
+
+      expect(find.byType(DayLaunchesScreen), findsNothing);
+      final screen = tester.widget<SessionLogsScreen>(
+        find.byType(SessionLogsScreen),
+      );
+      expect(screen.logs?.map((log) => log.message), ['only']);
+    });
+
+    testWidgets('labels logs recorded without a launch ID', (tester) async {
+      history.dayLogs = [
+        _launchLog(
+          'tracked',
+          time: DateTime(2024, 3, 2, 9),
+          launchId: _launchA,
+        ),
+        _launchLog('legacy', time: DateTime(2024, 3, 2, 8)),
+      ];
+      await openDay(tester);
+
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('ispect-launch-unknown')),
+          matching: find.text('Unknown launch'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('opens an empty log list for a day without logs', (
+      tester,
+    ) async {
+      await openDay(tester);
+
+      expect(find.byType(DayLaunchesScreen), findsNothing);
+      final screen = tester.widget<SessionLogsScreen>(
+        find.byType(SessionLogsScreen),
+      );
+      expect(screen.logs, isEmpty);
+    });
+
+    testWidgets('names launches in the active locale', (tester) async {
+      history.dayLogs = [
+        ...twoLaunches(),
+        _launchLog('legacy', time: DateTime(2024, 3, 2, 8)),
+      ];
+      await openDay(tester, locale: const Locale('ru'));
+
+      expect(find.text('Все запуски'), findsOneWidget);
+      expect(find.text('Неизвестный запуск'), findsOneWidget);
+    });
+
+    testWidgets('stays on the day list and reports an unreadable day', (
+      tester,
+    ) async {
+      history = _FakeFileLogHistory(dates: [session], failLogs: true);
+      await openDay(tester);
+
+      expect(find.byType(SessionLogsScreen), findsNothing);
+      expect(find.byType(DayLaunchesScreen), findsNothing);
+      expect(find.text('Failed to load session logs'), findsOneWidget);
+    });
+
+    testWidgets('lets the day be opened again after a failed read', (
+      tester,
+    ) async {
+      history.failLogs = true;
+      await openDay(tester);
+      expect(
+        find.descendant(
+          of: find.byType(ListTile),
+          matching: find.byType(CircularProgressIndicator),
+        ),
+        findsNothing,
+      );
+
+      history.failLogs = false;
+      await tester.tap(find.text('02.03.2024'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SessionLogsScreen), findsOneWidget);
+    });
+
+    testWidgets('opens nothing when the list closes while a day loads', (
+      tester,
+    ) async {
+      history.gateLogs = true;
+      await tester.pumpWidget(appShell(DailySessionsScreen(history: history)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('02.03.2024'));
+      await tester.pump();
+
+      await tester.pumpWidget(appShell(const SizedBox.shrink()));
+      history.pendingLogs.single.complete(twoLaunches());
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(SessionLogsScreen), findsNothing);
+      expect(find.byType(DayLaunchesScreen), findsNothing);
+    });
+
+    testWidgets('ignores clear all while a day loads', (tester) async {
+      history.gateLogs = true;
+      await tester.pumpWidget(appShell(DailySessionsScreen(history: history)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('02.03.2024'));
+      await tester.pump();
+
+      await tester.tap(find.byIcon(Icons.clear_all_rounded));
+      await tester.pump();
+
+      expect(find.byType(AlertDialog), findsNothing);
+      history.pendingLogs.single.complete(const []);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('reads the day once when tapped again while it loads', (
+      tester,
+    ) async {
+      history.gateLogs = true;
+      await tester.pumpWidget(appShell(DailySessionsScreen(history: history)));
+      await tester.pumpAndSettle();
+
+      final day = find.text('02.03.2024');
+      await tester.tap(day);
+      await tester.pump();
+      await tester.tap(day);
+      await tester.pump();
+
+      expect(history.pendingLogs, hasLength(1));
+      expect(
+        find.descendant(
+          of: find.byType(ListTile),
+          matching: find.byType(CircularProgressIndicator),
+        ),
+        findsOneWidget,
+      );
+
+      history.pendingLogs.single.complete(const []);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SessionLogsScreen), findsOneWidget);
+    });
+  });
 
   group('DailySessionsScreen', () {
     testWidgets('shows an error with retry when listing sessions fails', (

@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:ispect/ispect.dart';
 import 'package:ispect/src/common/extensions/context.dart';
-import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/common/utils/copy_clipboard.dart';
 import 'package:ispect/src/common/utils/debug_report.dart';
 import 'package:ispect/src/common/utils/desktop_metrics.dart';
@@ -14,6 +13,7 @@ import 'package:ispect/src/common/widgets/ispect_alert_dialog.dart';
 import 'package:ispect/src/common/widgets/ispect_app_bar_title.dart';
 import 'package:ispect/src/common/widgets/ispect_flat_app_bar.dart';
 import 'package:ispect/src/common/widgets/ispect_theme_scope.dart';
+import 'package:ispect/src/features/log_viewer/presentation/screens/day_launches_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/session_logs_screen.dart';
 import 'package:ispect/src/features/log_viewer/presentation/widgets/empty_logs_widget.dart';
 import 'package:material_ui/material_ui.dart';
@@ -44,6 +44,7 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
   bool _isLoading = true;
   bool _loadFailed = false;
   int _loadEpoch = 0;
+  DateTime? _openingDate;
 
   @override
   void initState() {
@@ -205,13 +206,15 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
                 key: ObjectKey(session),
                 session: session,
                 history: widget.history!,
-                onTap: () => _navigateToSession(session),
+                isOpening: _openingDate == session,
+                onTap: () => _openDay(session),
               );
             },
           ),
   );
 
   void _showClearAllDialog() {
+    if (_openingDate != null) return;
     showISpectDialog<void>(
       context,
       builder: (context) => ISpectAlertDialog(
@@ -251,14 +254,51 @@ class _DailySessionsScreenState extends State<DailySessionsScreen> {
     );
   }
 
-  Future<void> _navigateToSession(DateTime session) async {
+  Future<void> _openDay(DateTime date) async {
+    final history = widget.history;
+    if (history == null || _openingDate != null) return;
+    setState(() => _openingDate = date);
+
+    final List<ISpectLogData> logs;
+    try {
+      logs = await history.getLogsByDate(date);
+    } on Exception catch (error, stackTrace) {
+      ISpect.logger.handle(
+        exception: error,
+        stackTrace: stackTrace,
+        message: 'Failed to load session logs',
+      );
+      _showOpenDayErrorToast();
+      return;
+    } finally {
+      if (mounted) setState(() => _openingDate = null);
+    }
     if (!mounted) return;
 
+    final launches = LaunchLogs.groupByLaunch(logs);
+    if (launches.length > 1) {
+      await DayLaunchesScreen(
+        date: date,
+        dayLogs: logs,
+        launches: launches,
+      ).push(context);
+      return;
+    }
     await SessionLogsScreen(
-      sessionDate: session,
+      logs: logs,
+      sessionDate: date,
       onShare: context.iSpect.options.onShare,
       metadataProvider: context.iSpect.options.metadataProvider,
     ).push(context);
+  }
+
+  void _showOpenDayErrorToast() {
+    if (!mounted) return;
+    ISpectToaster.showErrorToast(
+      context,
+      title: context.ispectL10n.error,
+      message: context.ispectL10n.sessionLogsLoadFailed,
+    );
   }
 
   void _showClearErrorToast() {
@@ -321,12 +361,14 @@ class _SessionListTile extends StatefulWidget {
   const _SessionListTile({
     required this.session,
     required this.history,
+    required this.isOpening,
     required this.onTap,
     super.key,
   });
 
   final DateTime session;
   final FileLogHistory history;
+  final bool isOpening;
   final VoidCallback onTap;
 
   @override
@@ -361,18 +403,11 @@ class _SessionListTileState extends State<_SessionListTile> {
     }
   }
 
-  String _getSessionTitle(DateTime date) {
-    if (date.isToday) {
-      return '📅 ${context.ispectL10n.current}: ${date.toFormattedString()}';
-    }
-    return date.toFormattedString();
-  }
-
   @override
   Widget build(BuildContext context) => ListTile(
     dense: true,
     title: Text(
-      _getSessionTitle(widget.session),
+      sessionDayTitle(context, widget.session),
       style: context.appTheme.textTheme.titleSmall,
     ),
     subtitle: _fileSize != null
@@ -407,7 +442,16 @@ class _SessionListTileState extends State<_SessionListTile> {
               _navigateToSession(widget.session);
             },
           ),
-        const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+        if (widget.isOpening)
+          SizedBox.square(
+            dimension: 14,
+            child: CircularProgressIndicator.adaptive(
+              strokeWidth: 2,
+              semanticsLabel: context.ispectL10n.loading,
+            ),
+          )
+        else
+          const Icon(Icons.arrow_forward_ios_rounded, size: 14),
       ],
     ),
     onTap: widget.onTap,

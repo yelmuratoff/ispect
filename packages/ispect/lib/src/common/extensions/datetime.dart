@@ -10,6 +10,9 @@ extension DateTimeExtensions on DateTime {
   /// ```
   String toFormattedString() => DateFormat('dd.MM.yyyy').format(toLocal());
 
+  /// Formats the local time of day as 'HH:mm:ss', e.g. '14:02:11'.
+  String toTimeString() => DateFormat('HH:mm:ss').format(toLocal());
+
   /// Checks if the DateTime instance represents today's date.
   bool get isToday {
     final now = DateTime.now();

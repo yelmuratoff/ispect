@@ -4,6 +4,10 @@ import 'package:ispect/src/common/extensions/datetime.dart';
 import 'package:ispect/src/features/log_viewer/presentation/screens/logs_screen.dart';
 import 'package:material_ui/material_ui.dart';
 
+String sessionDayTitle(BuildContext context, DateTime date) => date.isToday
+    ? '📅 ${context.ispectL10n.current}: ${date.toFormattedString()}'
+    : date.toFormattedString();
+
 /// Browses an independent, immutable set of logs (a file-history session or a
 /// caller-supplied list) using the same viewer as the live logs screen.
 ///
@@ -69,11 +73,7 @@ class _SessionLogsScreenState extends State<SessionLogsScreen> {
   String? _resolveTitle(BuildContext context, ISpectScopeModel scope) {
     if (widget.appBarTitle != null) return widget.appBarTitle;
     final date = widget.sessionDate;
-    if (date != null) {
-      return date.isToday
-          ? '📅 ${context.ispectL10n.current}: ${date.toFormattedString()}'
-          : date.toFormattedString();
-    }
+    if (date != null) return sessionDayTitle(context, date);
     return scope.theme.pageTitle;
   }
 
