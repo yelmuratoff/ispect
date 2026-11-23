@@ -29,13 +29,13 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  ispect: ^8.0.0-dev.1
-  ispectify: ^8.0.0-dev.1
-  ispectify_dio: ^8.0.0-dev.1
-  ispectify_http: ^8.0.0-dev.1
-  ispectify_bloc: ^8.0.0-dev.1
-  ispectify_ws: ^8.0.0-dev.1
-  ispectify_db: ^8.0.0-dev.1
+  ispect: ^8.0.0-dev.2
+  ispectify: ^8.0.0-dev.2
+  ispectify_dio: ^8.0.0-dev.2
+  ispectify_http: ^8.0.0-dev.2
+  ispectify_bloc: ^8.0.0-dev.2
+  ispectify_ws: ^8.0.0-dev.2
+  ispectify_db: ^8.0.0-dev.2
 
   iconsax_plus: ^1.0.0
 

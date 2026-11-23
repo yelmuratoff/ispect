@@ -48,15 +48,15 @@ dependencies:
   auto_route:
 
   # Use local paths through dependency_overrides
-  ispect: ^8.0.0-dev.1
-  ispect_layout: ^8.0.0-dev.1
-  ispectify: ^8.0.0-dev.1
-  ispectify_dio: ^8.0.0-dev.1
-  ispectify_http: ^8.0.0-dev.1
-  ispectify_bloc: ^8.0.0-dev.1
-  ispectify_riverpod: ^8.0.0-dev.1
-  ispectify_ws: ^8.0.0-dev.1
-  ispectify_db: ^8.0.0-dev.1
+  ispect: ^8.0.0-dev.2
+  ispect_layout: ^8.0.0-dev.2
+  ispectify: ^8.0.0-dev.2
+  ispectify_dio: ^8.0.0-dev.2
+  ispectify_http: ^8.0.0-dev.2
+  ispectify_bloc: ^8.0.0-dev.2
+  ispectify_riverpod: ^8.0.0-dev.2
+  ispectify_ws: ^8.0.0-dev.2
+  ispectify_db: ^8.0.0-dev.2
 
   material_ui: ^1.11.0
   cupertino_ui: ^1.1.6
