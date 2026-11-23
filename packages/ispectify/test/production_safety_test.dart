@@ -1,7 +1,9 @@
 import 'dart:developer' show ServiceExtensionResponse, registerExtension;
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:ispectify/ispectify.dart';
+import 'package:ispectify/ispectify_isolate.dart';
 import 'package:ispectify/src/service_extensions/service_extension_handler.dart';
 import 'package:test/test.dart';
 
@@ -143,6 +145,33 @@ void main() {
 
       expect(response.result, isNull);
       expect(response.errorDetail, contains('ISPECT_ENABLED'));
+    },
+    skip: kISpectEnabled
+        ? 'This regression exercises a build without ISPECT_ENABLED.'
+        : false,
+  );
+
+  test(
+    'isolate log bridge opens no port and forwards nothing when compiled out',
+    () async {
+      expect(kISpectEnabled, isFalse);
+
+      final logger = ISpectLogger();
+      addTearDown(logger.dispose);
+      expect(ISpectIsolateLogReceiver.open(logger), isNull);
+
+      final port = ReceivePort();
+      addTearDown(port.close);
+      ISpectIsolateLogForwarder(port.sendPort)
+          .onLog(ISpectLogData('synthetic production diagnostic'));
+
+      expect(
+        await port.first.timeout(
+          const Duration(milliseconds: 50),
+          onTimeout: () => null,
+        ),
+        isNull,
+      );
     },
     skip: kISpectEnabled
         ? 'This regression exercises a build without ISPECT_ENABLED.'
