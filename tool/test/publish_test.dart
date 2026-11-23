@@ -375,7 +375,7 @@ dependencies:
       expect(result.combined, contains('Flutter 3.47.5 satisfies'));
     });
 
-    test('a run of Dart-only packages never asks for Flutter', () async {
+    test('a Dart-only run without a pin never asks for Flutter', () async {
       final runner = FakeProcessRunner(flutterVersion: null);
 
       final result = await invoke(
@@ -388,6 +388,27 @@ dependencies:
       expect(
         runner.commands.where((c) => c.startsWith('flutter --version')),
         isEmpty,
+      );
+    });
+
+    test('a Dart-only run off the .fvmrc pin stops before formatting',
+        () async {
+      final repo = fixtureNeedingFlutter();
+      writeFixtureFile(p.join(repo, '.fvmrc'), '{"flutter": "3.47.5"}');
+      final runner = FakeProcessRunner(flutterVersion: '3.44.2');
+
+      final result = await invoke(
+        repo,
+        const ['--auto', '--only', 'ispectify', '--skip-pub-version-check'],
+        runner: runner,
+      );
+
+      expect(result.exitCode, 1);
+      expect(runner.formatted, isFalse);
+      expect(runner.publishedPackages, isEmpty);
+      expect(
+        result.errorLines.single,
+        contains('Flutter 3.44.2 is running, but .fvmrc pins 3.47.5'),
       );
     });
   });

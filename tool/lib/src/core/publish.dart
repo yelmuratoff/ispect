@@ -413,7 +413,8 @@ final class PublishRun {
             case final constraint?)
           package: constraint,
     };
-    if (required.isEmpty) {
+    final pin = readFlutterPin(repoRoot);
+    if (pin == null && required.isEmpty) {
       return 0;
     }
 
@@ -426,13 +427,12 @@ final class PublishRun {
         result.succeeded ? _frameworkVersion(result.output) : null;
     if (installed == null) {
       _error(
-        'Publishing ${required.keys.join(', ')} needs Flutter, but '
-        '`flutter --version` reported no version',
+        '${pin == null ? 'Publishing ${required.keys.join(', ')} needs Flutter' : '$flutterPinFile pins Flutter $pin'}, '
+        'but `flutter --version` reported no version',
       );
       return 1;
     }
 
-    final pin = readFlutterPin(repoRoot);
     if (pin != null && installed != pin) {
       _error(
         'Flutter $installed is running, but $flutterPinFile pins $pin. '
