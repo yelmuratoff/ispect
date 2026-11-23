@@ -193,39 +193,47 @@ void main() {
     skip: kISpectEnabled,
   );
 
-  test('disabled run leaves the host redaction policy untouched', () {
-    final hostService = RedactionService(
-      sensitiveKeys: const {'host_field'},
-      placeholder: '<host>',
-    );
-    final ignoredService = RedactionService(
-      sensitiveKeys: const {'ignored_field'},
-      placeholder: '<ignored>',
-    );
-    ISpectRedaction.configure(enabled: true, service: hostService);
-    addTearDown(ISpectRedaction.reset);
-    var callbackCalls = 0;
+  test(
+    'disabled run leaves the host redaction policy untouched',
+    () {
+      final hostService = RedactionService(
+        sensitiveKeys: const {'host_field'},
+        placeholder: '<host>',
+      );
+      final ignoredService = RedactionService(
+        sensitiveKeys: const {'ignored_field'},
+        placeholder: '<ignored>',
+      );
+      ISpectRedaction.configure(enabled: true, service: hostService);
+      addTearDown(ISpectRedaction.reset);
+      var callbackCalls = 0;
 
-    ISpect.run(
-      () => callbackCalls++,
-      redactionEnabled: false,
-      redactionService: ignoredService,
-    );
+      ISpect.run(
+        () => callbackCalls++,
+        redactionEnabled: false,
+        redactionService: ignoredService,
+      );
 
-    expect(callbackCalls, 1);
-    expect(ISpectRedaction.enabled, isTrue);
-    expect(ISpectRedaction.service, same(hostService));
-  }, skip: kISpectEnabled);
+      expect(callbackCalls, 1);
+      expect(ISpectRedaction.enabled, isTrue);
+      expect(ISpectRedaction.service, same(hostService));
+    },
+    skip: kISpectEnabled,
+  );
 
-  test('initialize registers no VM service extensions when compiled out', () {
-    ISpect.initialize(ISpectLogger());
+  test(
+    'initialize registers no VM service extensions when compiled out',
+    () {
+      ISpect.initialize(ISpectLogger());
 
-    expect(
-      () => registerExtension(
-        ISpectServiceExtensions.getSummary,
-        (_, __) async => ServiceExtensionResponse.result('{}'),
-      ),
-      returnsNormally,
-    );
-  }, skip: kISpectEnabled);
+      expect(
+        () => registerExtension(
+          ISpectServiceExtensions.getSummary,
+          (_, __) async => ServiceExtensionResponse.result('{}'),
+        ),
+        returnsNormally,
+      );
+    },
+    skip: kISpectEnabled,
+  );
 }
