@@ -8,6 +8,7 @@ import 'devtools_extension.dart';
 import 'exceptions.dart';
 import 'next_version.dart';
 import 'pub_client.dart';
+import 'pubspec.dart';
 import 'version_config.dart';
 
 const String _versionFile = 'version.config';
@@ -373,6 +374,11 @@ final class PublishRun {
       return versions;
     }
 
+    final flutter = _checkFlutterSdk();
+    if (flutter != 0) {
+      return flutter;
+    }
+
     final published = await _checkPublishedVersionLine(version, options);
     if (published != 0) {
       return published;
@@ -394,6 +400,66 @@ final class PublishRun {
     }
 
     return _ensureCleanGit();
+  }
+
+  int _checkFlutterSdk() {
+    final required = <String, VersionConstraint>{
+      for (final package in packages)
+        if (Pubspec.read(
+          File(p.join(repoRoot, 'packages', package, 'pubspec.yaml')),
+          repoRoot: repoRoot,
+        ).flutterConstraint
+            case final constraint?)
+          package: constraint,
+    };
+    if (required.isEmpty) {
+      return 0;
+    }
+
+    final result = runner.run(
+      'flutter',
+      const ['--version', '--machine'],
+      workingDirectory: repoRoot,
+    );
+    final installed =
+        result.succeeded ? _frameworkVersion(result.output) : null;
+    if (installed == null) {
+      _error(
+        'Publishing ${required.keys.join(', ')} needs Flutter, but '
+        '`flutter --version` reported no version',
+      );
+      return 1;
+    }
+
+    final unmet = [
+      for (final MapEntry(key: package, value: constraint) in required.entries)
+        if (!constraint.allows(installed)) '$package needs flutter $constraint',
+    ];
+    if (unmet.isNotEmpty) {
+      _error(
+        'Flutter $installed on PATH is too old: ${unmet.join('; ')}. '
+        'Put a matching Flutter first on PATH and run again.',
+      );
+      return 1;
+    }
+    _info('Flutter $installed satisfies every package');
+    return 0;
+  }
+
+  static Version? _frameworkVersion(String output) {
+    final start = output.indexOf('{');
+    if (start < 0) {
+      return null;
+    }
+    try {
+      final decoded = jsonDecode(output.substring(start));
+      if (decoded case {'frameworkVersion': final String version}) {
+        return Version.parse(version);
+      }
+    } on FormatException {
+      return null;
+    }
+    return null;
   }
 
   int _checkVersions(Version expected) {

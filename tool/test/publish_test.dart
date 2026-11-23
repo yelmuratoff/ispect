@@ -29,6 +29,7 @@ final class FakeProcessRunner implements ProcessRunner {
     this.dryRunResults = const {},
     this.publishResults = const {},
     this.extensionBuildResult = _ok,
+    this.flutterVersion = '3.47.5',
   });
 
   final List<String> statusLines;
@@ -41,6 +42,7 @@ final class FakeProcessRunner implements ProcessRunner {
   final Map<String, CommandResult> dryRunResults;
   final Map<String, CommandResult> publishResults;
   final CommandResult extensionBuildResult;
+  final String? flutterVersion;
 
   final List<String> commands = [];
   var statusCalls = 0;
@@ -91,6 +93,17 @@ final class FakeProcessRunner implements ProcessRunner {
         exitCode: 0,
         output: _joined(podfileLocks[owner] ?? const []),
       );
+    }
+    if (executable == 'flutter' &&
+        arguments.join(' ') == '--version --machine') {
+      final version = flutterVersion;
+      return version == null
+          ? const CommandResult(exitCode: 127, output: 'flutter: not found\n')
+          : CommandResult(
+              exitCode: 0,
+              output: 'Checking Dart SDK version...\n'
+                  '{"frameworkVersion": "$version", "channel": "stable"}\n',
+            );
     }
     if (executable == 'flutter' && arguments.join(' ') == 'pub get') {
       return _ok;
@@ -240,6 +253,91 @@ void main() {
 
       expect(result.exitCode, 2);
       expect(result.err, 'Unknown package: ispect_ui\n');
+    });
+  });
+
+  group('Flutter SDK preflight', () {
+    String fixtureNeedingFlutter() {
+      final repo = fixture();
+      writeFixtureFile(
+        p.join(repo, 'packages', 'ispect', 'pubspec.yaml'),
+        '''
+name: ispect
+description: ispect fixture package for the publish preflight.
+version: 7.0.0-dev.1
+repository: https://example.invalid/ispect
+environment:
+  sdk: ^3.6.0
+  flutter: ">=3.47.0"
+dependencies:
+  meta: ^1.0.0
+''',
+      );
+      return repo;
+    }
+
+    test('an older Flutter on PATH stops the run before any publish', () async {
+      final runner = FakeProcessRunner(flutterVersion: '3.44.2');
+
+      final result = await invoke(
+        fixtureNeedingFlutter(),
+        const ['--auto', '--skip-pub-version-check'],
+        runner: runner,
+      );
+
+      expect(result.exitCode, 1);
+      expect(runner.publishedPackages, isEmpty);
+      expect(runner.pubGetOrder, isEmpty);
+      expect(
+        result.errorLines.single,
+        contains(
+          'Flutter 3.44.2 on PATH is too old: ispect needs flutter >=3.47.0',
+        ),
+      );
+    });
+
+    test('a missing Flutter stops the run before any publish', () async {
+      final runner = FakeProcessRunner(flutterVersion: null);
+
+      final result = await invoke(
+        fixtureNeedingFlutter(),
+        const ['--auto', '--skip-pub-version-check'],
+        runner: runner,
+      );
+
+      expect(result.exitCode, 1);
+      expect(runner.publishedPackages, isEmpty);
+      expect(result.errorLines.single, contains('needs Flutter'));
+    });
+
+    test('a matching Flutter lets every package publish', () async {
+      final runner = FakeProcessRunner();
+
+      final result = await invoke(
+        fixtureNeedingFlutter(),
+        const ['--auto', '--skip-pub-version-check'],
+        runner: runner,
+      );
+
+      expect(result.exitCode, 0);
+      expect(runner.publishedPackages, publishOrder);
+      expect(result.combined, contains('Flutter 3.47.5 satisfies'));
+    });
+
+    test('a run of Dart-only packages never asks for Flutter', () async {
+      final runner = FakeProcessRunner(flutterVersion: null);
+
+      final result = await invoke(
+        fixtureNeedingFlutter(),
+        const ['--auto', '--only', 'ispectify', '--skip-pub-version-check'],
+        runner: runner,
+      );
+
+      expect(result.exitCode, 0);
+      expect(
+        runner.commands.where((c) => c.startsWith('flutter --version')),
+        isEmpty,
+      );
     });
   });
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
 import 'exceptions.dart';
@@ -39,4 +40,22 @@ final class Pubspec {
   final File file;
   final YamlMap document;
   final String name;
+
+  /// The `environment: flutter:` constraint, or `null` for a package that
+  /// does not declare one.
+  ///
+  /// Throws [PubspecException] when the constraint does not parse.
+  VersionConstraint? get flutterConstraint {
+    final environment = document['environment'];
+    if (environment is! YamlMap) return null;
+    final raw = environment['flutter'];
+    if (raw == null) return null;
+    try {
+      return VersionConstraint.parse(raw.toString());
+    } on FormatException catch (e) {
+      throw PubspecException(
+        '${file.path} declares an invalid flutter constraint: ${e.message}',
+      );
+    }
+  }
 }
