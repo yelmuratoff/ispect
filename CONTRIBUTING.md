@@ -4,8 +4,7 @@ Thanks for the interest. This is the short version of how the monorepo is laid o
 
 ## Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.47.5+).
-- [Dart SDK](https://dart.dev/get-dart) (stable).
+- [FVM](https://fvm.app), which installs the Flutter SDK that `.fvmrc` pins. The pinned SDK brings its own Dart. Without FVM, put that exact Flutter release first on PATH.
 
 ## Monorepo structure
 
@@ -32,6 +31,9 @@ Dependencies: every `ispectify_*` package depends on `ispectify`. `ispect` depen
 git clone https://github.com/yelmuratoff/ispect.git
 cd ispect
 
+# Install the Flutter SDK pinned in .fvmrc and link it under .fvm/.
+fvm install
+
 # Resolve the tool dependencies; the hook and every ispect_tool command need them.
 (cd tool && dart pub get)
 
@@ -41,6 +43,8 @@ cp tool/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 # Validate version and dependency consistency.
 dart run tool/bin/ispect_tool.dart check
 ```
+
+`ispect_tool` runs `flutter` and `dart` from the pinned SDK by itself. For the commands you type, use `fvm flutter` and `fvm dart`, so formatting and analysis match CI. VS Code picks the SDK up from the committed `.vscode/settings.json`. To move to another Flutter release, run `fvm use <release>` and commit `.fvmrc` together with the settings file.
 
 ## Running tests and lint
 
