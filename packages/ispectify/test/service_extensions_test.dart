@@ -173,6 +173,110 @@ void main() {
       expect(oldest['hasMore'], isFalse);
     });
 
+    test('detail=full returns each entry as a full redacted record', () {
+      final raw = _loggerWithRawHistory([_unmaskedSecretLog()]);
+      addTearDown(raw.dispose);
+
+      final body = _call(raw, ISpectServiceExtensions.getLogs, {
+        'detail': 'full',
+      });
+
+      final entry = _logs(body).single;
+      final record = entry['log']! as Map<String, Object?>;
+      expect(entry['id'], raw.history.single.id);
+      expect(entry['level'], 'error');
+      expect(record['message'], 'request failed');
+      expect(record['additional-data'], isA<Map<String, Object?>>());
+      expect(jsonEncode(body), isNot(contains(_secret)));
+      expect(
+        ISpectLogDataJsonUtils.fromJson(record).message,
+        'request failed',
+      );
+    });
+
+    test('detail=full pages forward from afterId', () {
+      logger.info('old');
+      final first = _call(logger, ISpectServiceExtensions.getLogs, {
+        'detail': 'full',
+      });
+      logger.info('new');
+
+      final next = _call(logger, ISpectServiceExtensions.getLogs, {
+        'detail': 'full',
+        'afterId': first['cursor']! as String,
+      });
+
+      final record = _logs(next).single['log']! as Map<String, Object?>;
+      expect(record['message'], 'new');
+      expect(next['cursor'], logger.history.last.id);
+    });
+
+    group('detail=full size budget', () {
+      late ISpectLogger small;
+
+      setUp(() {
+        small = ISpectLogger(
+          options: ISpectLoggerOptions(
+            useConsoleLogs: false,
+            resourceLimits: const DiagnosticResourceLimits(
+              maxCapturedValueBytes: 1024,
+              maxLogRecordBytes: 2048,
+              maxExportDocumentBytes: 4096,
+            ),
+          ),
+        );
+        for (var i = 0; i < 6; i++) {
+          small.info('entry $i ${'x' * 900}');
+        }
+      });
+      tearDown(() => small.dispose());
+
+      List<String> messagesOf(Map<String, Object?> body) => [
+            for (final entry in _logs(body))
+              ((entry['log']! as Map<String, Object?>)['message']! as String)
+                  .split(' ')
+                  .take(2)
+                  .join(' '),
+          ];
+
+      test('the newest page keeps the newest records that fit', () {
+        final body = _call(small, ISpectServiceExtensions.getLogs, {
+          'detail': 'full',
+        });
+
+        expect(jsonEncode(body).length, lessThan(4096 + 1024));
+        expect(messagesOf(body).last, 'entry 5');
+        expect(messagesOf(body), isNot(contains('entry 0')));
+        expect(body['hasMore'], isTrue);
+      });
+
+      test('paging forward stops at the budget and resumes from there', () {
+        final firstId = small.history.first.id;
+        final body = _call(small, ISpectServiceExtensions.getLogs, {
+          'detail': 'full',
+          'afterId': firstId,
+        });
+
+        final messages = messagesOf(body);
+        expect(messages.first, 'entry 1');
+        expect(messages, isNot(contains('entry 5')));
+        expect(body['hasMore'], isTrue);
+        expect(
+          body['cursor'],
+          _logs(body).last['id'],
+        );
+      });
+    });
+
+    test('rejects an unknown detail', () {
+      final response = _callError(logger, ISpectServiceExtensions.getLogs, {
+        'detail': 'everything',
+      });
+
+      expect(response.errorCode, ServiceExtensionResponse.invalidParams);
+      expect(response.errorDetail, contains('compact or full'));
+    });
+
     test('rejects afterId and beforeId together', () {
       logger.info('only');
       final id = logger.history.single.id;

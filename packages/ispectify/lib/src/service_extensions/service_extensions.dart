@@ -23,8 +23,10 @@ import 'package:ispectify/src/service_extensions/service_extension_handler.dart'
 ///   after that entry and `hasMore` reports newer ones, so polling with the
 ///   returned `cursor` streams new logs. `query` matches captured values
 ///   before export redaction, so a hit can come from a value the response
-///   masks.
-/// - [getLog]: the `level` and the full redacted JSON Lines record of `id`.
+///   masks. `detail=full` returns each entry in the [getLog] shape instead of
+///   the compact one.
+/// - [getLog]: the `id`, the `level`, and the full redacted JSON Lines record
+///   of `id`.
 /// - [getTrace]: the oldest [maxLimit] entries whose correlation or
 ///   transaction ID equals `id`, such as the request, response, and error of
 ///   one HTTP call; `hasMore` reports the rest.
@@ -34,7 +36,9 @@ import 'package:ispectify/src/service_extensions/service_extension_handler.dart'
 ///
 /// Registration is a no-op unless `ISPECT_ENABLED` is set at compile time.
 abstract final class ISpectServiceExtensions {
-  static const protocolVersion = 1;
+  /// The version [getSummary] reports. Version 2 added `detail=full` to
+  /// [getLogs]; a client that needs it checks for at least 2.
+  static const protocolVersion = 2;
 
   static const getSummary = 'ext.ispect.getSummary';
   static const getLogs = 'ext.ispect.getLogs';

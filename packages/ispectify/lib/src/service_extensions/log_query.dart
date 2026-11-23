@@ -100,6 +100,7 @@ final class LogQuery {
     String? query,
     String? afterId,
     String? beforeId,
+    bool fullRecords = false,
   }) {
     if (afterId != null && beforeId != null) {
       throw const InvalidLogQuery(
@@ -133,13 +134,65 @@ final class LogQuery {
       hasMore = more;
     }
 
+    if (!fullRecords) {
+      return _page(
+        page,
+        [for (final log in page) _compact(log)],
+        hasMore: hasMore,
+        afterId: afterId,
+      );
+    }
+    final budgeted = _fullWithinBudget(page, keepNewest: afterId == null);
+    return _page(
+      budgeted.logs,
+      budgeted.records,
+      hasMore: hasMore || budgeted.trimmed,
+      afterId: afterId,
+    );
+  }
+
+  Map<String, Object?> _page(
+    List<ISpectLogData> logs,
+    List<Map<String, Object?>> records, {
+    required bool hasMore,
+    required String? afterId,
+  }) {
     final cursorLog =
-        afterId != null && hasMore ? page.last : history.lastOrNull;
+        afterId != null && hasMore ? logs.last : _logger.history.lastOrNull;
     return {
-      'logs': [for (final log in page) _compact(log)],
+      'logs': records,
       'hasMore': hasMore,
       if (cursorLog != null) 'cursor': _id(cursorLog),
     };
+  }
+
+  ({List<ISpectLogData> logs, List<Map<String, Object?>> records, bool trimmed})
+      _fullWithinBudget(
+    List<ISpectLogData> page, {
+    required bool keepNewest,
+  }) {
+    final logs = <ISpectLogData>[];
+    final records = <Map<String, Object?>>[];
+    var bytes = 0;
+    var trimmed = false;
+    for (final log in keepNewest ? page.reversed : page) {
+      final record = _full(log);
+      final size = jsonEncode(record).length;
+      if (logs.isNotEmpty && bytes + size > _limits.maxExportDocumentBytes) {
+        trimmed = true;
+        break;
+      }
+      bytes += size;
+      logs.add(log);
+      records.add(record);
+    }
+    return keepNewest
+        ? (
+            logs: logs.reversed.toList(),
+            records: records.reversed.toList(),
+            trimmed: trimmed,
+          )
+        : (logs: logs, records: records, trimmed: trimmed);
   }
 
   /// Throws [InvalidLogQuery] when no entry with [id] is in the history.
@@ -152,13 +205,15 @@ final class LogQuery {
         'take ids from getLogs, getTrace, or getSummary.',
       );
     }
-    final log = history[index];
-    return {
-      if (captureISpectLogWithoutPayload(log).logLevel case final level?)
-        'level': level.name,
-      'log': _redactedRecord(log),
-    };
+    return _full(history[index]);
   }
+
+  Map<String, Object?> _full(ISpectLogData log) => {
+        'id': _id(log),
+        if (captureISpectLogWithoutPayload(log).logLevel case final level?)
+          'level': level.name,
+        'log': _redactedRecord(log),
+      };
 
   Map<String, Object?> trace(String id, {required int limit}) {
     final correlation = CorrelationFilter(id);

@@ -42,6 +42,7 @@ abstract final class ServiceExtensionHandler {
             query: parameters['query'],
             afterId: _optional(parameters, 'afterId'),
             beforeId: _optional(parameters, 'beforeId'),
+            fullRecords: _parseFullRecords(parameters['detail']),
           ),
         ISpectServiceExtensions.getLog =>
           query.log(_required(parameters, 'id')),
@@ -66,6 +67,14 @@ abstract final class ServiceExtensionHandler {
       );
     }
   }
+
+  static bool _parseFullRecords(String? raw) => switch (raw) {
+        null || 'compact' => false,
+        'full' => true,
+        _ => throw InvalidLogQuery(
+            'detail must be compact or full, got $raw.',
+          ),
+      };
 
   static int _parseLimit(String? raw) {
     if (raw == null || raw.isEmpty) return ISpectServiceExtensions.defaultLimit;
