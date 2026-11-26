@@ -712,6 +712,9 @@ class _UnseenErrorsCollapsedIcon extends StatelessWidget {
 ///
 /// While no ISpect route is open the navigator holds only a transparent
 /// placeholder and ignores pointers, so the app below stays fully interactive.
+/// It also stays out of the semantics tree then: the placeholder route's
+/// [ModalBarrier] would otherwise block the semantics of the whole app below,
+/// hiding it from screen readers and UI automation such as Appium.
 class _ISpectNavigationHost extends StatelessWidget {
   const _ISpectNavigationHost({
     required this.navigatorKey,
@@ -730,8 +733,10 @@ class _ISpectNavigationHost extends StatelessWidget {
     Widget overlay = HeroControllerScope.none(
       child: ValueListenableBuilder<bool>(
         valueListenable: hasOverlayRoute,
-        builder: (context, hasRoute, navigator) =>
-            IgnorePointer(ignoring: !hasRoute, child: navigator),
+        builder: (context, hasRoute, navigator) => ExcludeSemantics(
+          excluding: !hasRoute,
+          child: IgnorePointer(ignoring: !hasRoute, child: navigator),
+        ),
         child: Navigator(
           key: navigatorKey,
           onGenerateInitialRoutes: (_, __) => [
