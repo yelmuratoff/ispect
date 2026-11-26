@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.3.0-dev.6
+
+### Improvements
+
+- **Accessibility tree:** While no ISpect page is open, the app's own elements stay available to TalkBack, VoiceOver and UI test tools such as Appium and Maestro.
+
 ## 7.3.0-dev.5
 
 ### Security
