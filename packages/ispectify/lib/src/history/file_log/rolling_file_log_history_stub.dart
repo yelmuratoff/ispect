@@ -25,6 +25,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     FutureOr<void> Function(Never file, String operation)? ioHook,
     int? archiveCompressedByteLimit,
     bool? providerDirectoryRequiresOwnerOnlyProtection,
+    bool? providerDirectoryGroupIsAppPrivate,
     void Function(
       String message, {
       Object? error,

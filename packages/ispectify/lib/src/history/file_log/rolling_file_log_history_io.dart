@@ -39,6 +39,8 @@ final class RollingFileLogHistory implements FileLogHistory {
           archiveCompressedByteLimit: null,
           providerDirectoryRequiresOwnerOnlyProtection:
               _defaultProviderDirectoryRequiresOwnerOnlyProtection,
+          providerDirectoryGroupIsAppPrivate:
+              _defaultProviderDirectoryGroupIsAppPrivate,
           diagnosticSink: null,
         );
 
@@ -52,6 +54,7 @@ final class RollingFileLogHistory implements FileLogHistory {
     FutureOr<void> Function(File file, String operation)? ioHook,
     int? archiveCompressedByteLimit,
     bool? providerDirectoryRequiresOwnerOnlyProtection,
+    bool? providerDirectoryGroupIsAppPrivate,
     void Function(
       String message, {
       Object? error,
@@ -69,6 +72,9 @@ final class RollingFileLogHistory implements FileLogHistory {
           providerDirectoryRequiresOwnerOnlyProtection:
               providerDirectoryRequiresOwnerOnlyProtection ??
                   _defaultProviderDirectoryRequiresOwnerOnlyProtection,
+          providerDirectoryGroupIsAppPrivate:
+              providerDirectoryGroupIsAppPrivate ??
+                  _defaultProviderDirectoryGroupIsAppPrivate,
           diagnosticSink: diagnosticSink,
         );
 
@@ -82,12 +88,15 @@ final class RollingFileLogHistory implements FileLogHistory {
     required FutureOr<void> Function(File file, String operation)? ioHook,
     required int? archiveCompressedByteLimit,
     required bool providerDirectoryRequiresOwnerOnlyProtection,
+    required bool providerDirectoryGroupIsAppPrivate,
     required _FileLogDiagnosticSink? diagnosticSink,
   })  : _store = ManagedLogStore(
           directoryProvider: directoryProvider,
           options: options,
           providerDirectoryRequiresOwnerOnlyProtection:
               providerDirectoryRequiresOwnerOnlyProtection,
+          providerDirectoryGroupIsAppPrivate:
+              providerDirectoryGroupIsAppPrivate,
           ioHook: ioHook,
         ),
         _options = options,
@@ -118,6 +127,10 @@ final class RollingFileLogHistory implements FileLogHistory {
   // iOS relies on its mandatory sandbox even when Library/Caches is 0755.
   static bool get _defaultProviderDirectoryRequiresOwnerOnlyProtection =>
       !Platform.isIOS;
+
+  // Android gives every app its own group and creates its cache directory 02771.
+  static bool get _defaultProviderDirectoryGroupIsAppPrivate =>
+      Platform.isAndroid;
 
   final ManagedLogStore _store;
   final FileLogHistoryOptions _options;
