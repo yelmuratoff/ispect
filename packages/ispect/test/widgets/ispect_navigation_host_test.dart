@@ -136,6 +136,48 @@ void main() {
     );
 
     testWidgets(
+      'wrapped child leaves the semantics tree while an ISpect route is open '
+      'and returns after it closes',
+      (tester) async {
+        if (!kISpectEnabled) return;
+        final semantics = tester.ensureSemantics();
+
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: ISpectLocalizations.delegate(),
+            home: ISpectBuilder(
+              options: const ISpectOptions(),
+              child: Scaffold(
+                body: Center(
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: const Text('app-button'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        void pressLogsAction() => tester
+            .widget<DraggableActionPanel>(find.byType(DraggableActionPanel))
+            .actions
+            .first
+            .onPressed();
+
+        pressLogsAction();
+        await tester.pumpAndSettle();
+        expect(find.semantics.byLabel('app-button'), findsNothing);
+
+        pressLogsAction();
+        await tester.pumpAndSettle();
+        expect(find.semantics.byLabel('app-button'), findsOne);
+        semantics.dispose();
+      },
+    );
+
+    testWidgets(
       'mounts a navigator dedicated to ISpect alongside the host navigator',
       (tester) async {
         if (!kISpectEnabled) return;
