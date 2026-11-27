@@ -59,10 +59,10 @@ The package has no Dart API and never reaches the app binary. It only carries th
 
 ```yaml
 dependencies:
-  ispect: ^8.0.0-dev.4
+  ispect: ^8.0.0-dev.5
 
 dev_dependencies:
-  ispect_devtools: ^8.0.0-dev.4
+  ispect_devtools: ^8.0.0-dev.5
 ```
 
 ## Use it

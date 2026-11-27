@@ -87,7 +87,7 @@ Everything above is read from public render-object state, so it works in profile
 
 ```yaml
 dependencies:
-  ispect_layout: ^8.0.0-dev.4
+  ispect_layout: ^8.0.0-dev.5
   material_ui: ^1.11.0
 ```
 

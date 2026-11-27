@@ -58,9 +58,9 @@
 ```yaml
 dependencies:
   flutter_riverpod: ^2.5.0
-  ispect: ^8.0.0-dev.4
-  ispectify: ^8.0.0-dev.4
-  ispectify_riverpod: ^8.0.0-dev.4
+  ispect: ^8.0.0-dev.5
+  ispectify: ^8.0.0-dev.5
+  ispectify_riverpod: ^8.0.0-dev.5
   material_ui: ^1.11.0
 ```
 
