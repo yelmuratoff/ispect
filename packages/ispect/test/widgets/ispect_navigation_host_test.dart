@@ -25,6 +25,42 @@ class _ThrowOnPopNavigatorState extends NavigatorState {
   }
 }
 
+class _ReplacingPlugin extends InspectorPlugin {
+  _ReplacingPlugin({required this.onReplacementTap});
+
+  final VoidCallback onReplacementTap;
+
+  @override
+  String get id => 'replacing-plugin';
+
+  @override
+  String get title => 'Replacing plugin';
+
+  @override
+  IconData get icon => Icons.swap_horiz;
+
+  @override
+  Widget buildScreen(BuildContext context) => Scaffold(
+    body: Center(
+      child: TextButton(
+        onPressed: () => Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (_) => Scaffold(
+              body: Center(
+                child: TextButton(
+                  onPressed: onReplacementTap,
+                  child: const Text('replacement-button'),
+                ),
+              ),
+            ),
+          ),
+        ),
+        child: const Text('replace-route'),
+      ),
+    ),
+  );
+}
+
 void main() {
   group('ISpect navigation decoupling', () {
     testWidgets(
@@ -173,6 +209,42 @@ void main() {
         pressLogsAction();
         await tester.pumpAndSettle();
         expect(find.semantics.byLabel('app-button'), findsOne);
+        semantics.dispose();
+      },
+    );
+
+    testWidgets(
+      'a plugin screen that replaces its route stays interactive and in the '
+      'semantics tree',
+      (tester) async {
+        if (!kISpectEnabled) return;
+        final semantics = tester.ensureSemantics();
+        var tapped = false;
+        final plugin = _ReplacingPlugin(onReplacementTap: () => tapped = true);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: ISpectLocalizations.delegate(),
+            home: ISpectBuilder(
+              options: ISpectOptions(plugins: [plugin]),
+              child: const Scaffold(body: Text('app-text')),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        tester
+            .widget<DraggableActionPanel>(find.byType(DraggableActionPanel))
+            .actions
+            .singleWhere((action) => action.icon == plugin.icon)
+            .onPressed();
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('replace-route'));
+        await tester.pumpAndSettle();
+
+        expect(find.semantics.byLabel('replacement-button'), findsOne);
+        await tester.tap(find.text('replacement-button'));
+        expect(tapped, isTrue);
         semantics.dispose();
       },
     );

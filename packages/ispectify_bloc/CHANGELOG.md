@@ -6,6 +6,7 @@
 
 - **Saved logs on Android:** The file history now saves logs on Android. Android makes an app's cache directory writable by the app's own group, and ISpect refused it, so no log reached the disk and `sessionDirectory` threw a `StateError`. A directory that any user can write to, or one without an owner-only parent directory such as shared storage, is still refused.
 - **Accessibility tree:** While no ISpect page is open, the app's own elements stay available to TalkBack, VoiceOver and UI test tools such as Appium and Maestro. Before, they saw only the floating panel.
+- **Plugin screens that replace their route:** A screen a plugin opens with `pushReplacement` now takes taps and stays visible to screen readers. Before, it ignored touches and was hidden from the accessibility tree.
 
 ## 8.0.0-dev.4
 

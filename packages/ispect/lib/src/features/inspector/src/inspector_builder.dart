@@ -130,12 +130,12 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
   /// Drives pointer passthrough: `false` keeps the navigator transparent and
   /// non-interactive so the app below stays usable while no ISpect route is open.
   late final ValueNotifier<bool> _hasOverlayRoute;
+  late final _OverlayRouteObserver _overlayRouteObserver;
   late final ISpectModalTracker _modalTracker;
   late final ValueNotifier<bool> _isPanelVisible;
   StreamSubscription<ISpectLogData>? _logSubscription;
   ISpectLogger? _subscribedLogger;
   bool _isInitialized = false;
-  int _overlayDepth = 0;
   List<InspectorPlugin> _activePlugins = const [];
 
   @override
@@ -153,6 +153,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         );
     _navigatorKey = GlobalKey<NavigatorState>();
     _hasOverlayRoute = ValueNotifier<bool>(false);
+    _overlayRouteObserver = _OverlayRouteObserver(_hasOverlayRoute);
     _modalTracker = ISpectModalTracker()..addListener(_onModalsChanged);
     _isPanelVisible = ValueNotifier<bool>(true);
     _isInitialized = true;
@@ -292,6 +293,7 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
           child: _ISpectNavigationHost(
             navigatorKey: _navigatorKey,
             hasOverlayRoute: _hasOverlayRoute,
+            routeObserver: _overlayRouteObserver,
             child: currentChild,
           ),
         );
@@ -578,28 +580,12 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
         side: border == null ? BorderSide.none : BorderSide(color: border),
       );
 
-  void _enterOverlay() {
-    _overlayDepth++;
-    _hasOverlayRoute.value = true;
-    _panelController.collapse();
-  }
-
-  void _exitOverlay() {
-    if (_overlayDepth > 0) _overlayDepth--;
-
-    if (mounted) _hasOverlayRoute.value = _overlayDepth > 0;
-  }
-
   Future<void> _launchComposer() async {
     final navigator = _navigatorKey.currentState;
     if (navigator == null) return;
 
-    _enterOverlay();
-    try {
-      await navigator.push(HttpComposerScreen.route(model: model));
-    } finally {
-      _exitOverlay();
-    }
+    _panelController.collapse();
+    await navigator.push(HttpComposerScreen.route(model: model));
   }
 
   Future<void> _launchPluginScreen(
@@ -626,12 +612,8 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
       settings: RouteSettings(name: 'ISpect Plugin: ${plugin.id}'),
     );
 
-    _enterOverlay();
-    try {
-      await navigator.push(route);
-    } finally {
-      _exitOverlay();
-    }
+    _panelController.collapse();
+    await navigator.push(route);
   }
 
   Future<void> _launchInfospect(
@@ -654,11 +636,10 @@ class _ISpectBuilderState extends State<ISpectBuilder> {
     );
 
     _logPageController.setInLoggerPage(isLoggerPage: true);
-    _enterOverlay();
+    _panelController.collapse();
     try {
       await navigator.push(iSpectScreen);
     } finally {
-      _exitOverlay();
       if (mounted) {
         _logPageController.setInLoggerPage(isLoggerPage: false);
       }
@@ -719,11 +700,13 @@ class _ISpectNavigationHost extends StatelessWidget {
   const _ISpectNavigationHost({
     required this.navigatorKey,
     required this.hasOverlayRoute,
+    required this.routeObserver,
     required this.child,
   });
 
   final GlobalKey<NavigatorState> navigatorKey;
   final ValueListenable<bool> hasOverlayRoute;
+  final NavigatorObserver routeObserver;
   final Widget child;
 
   @override
@@ -739,6 +722,7 @@ class _ISpectNavigationHost extends StatelessWidget {
         ),
         child: Navigator(
           key: navigatorKey,
+          observers: [routeObserver],
           onGenerateInitialRoutes: (_, __) => [
             PageRouteBuilder<void>(
               opaque: false,
@@ -773,5 +757,29 @@ class _ISpectNavigationHost extends StatelessWidget {
         Positioned.fill(child: overlay),
       ],
     );
+  }
+}
+
+final class _OverlayRouteObserver extends NavigatorObserver {
+  _OverlayRouteObserver(this._hasOverlayRoute);
+
+  final ValueNotifier<bool> _hasOverlayRoute;
+  int _routeCount = 0;
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _updateRouteCount(1);
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _updateRouteCount(-1);
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _updateRouteCount(-1);
+
+  void _updateRouteCount(int delta) {
+    _routeCount += delta;
+    _hasOverlayRoute.value = _routeCount > 1;
   }
 }
