@@ -19,20 +19,25 @@ final class ManagedLogStore {
     required FileLogDirectoryProvider directoryProvider,
     required FileLogHistoryOptions options,
     required bool providerDirectoryRequiresOwnerOnlyProtection,
+    required bool providerDirectoryGroupIsAppPrivate,
     FutureOr<void> Function(File file, String operation)? ioHook,
   })  : _directoryProvider = directoryProvider,
         _options = options,
         _providerDirectoryRequiresOwnerOnlyProtection =
             providerDirectoryRequiresOwnerOnlyProtection,
+        _providerDirectoryGroupIsAppPrivate =
+            providerDirectoryGroupIsAppPrivate,
         _ioHook = ioHook;
 
   static const int _ioChunkSize = 64 * 1024;
   static const int _groupOrWorldPermissionBits = 0x3f;
   static const int _groupOrWorldWriteBits = 0x12;
+  static const int _worldWriteBit = 0x02;
 
   final FileLogDirectoryProvider _directoryProvider;
   final FileLogHistoryOptions _options;
   final bool _providerDirectoryRequiresOwnerOnlyProtection;
+  final bool _providerDirectoryGroupIsAppPrivate;
   final FutureOr<void> Function(File file, String operation)? _ioHook;
 
   String? _resolvedProviderDirectory;
@@ -81,6 +86,7 @@ final class ManagedLogStore {
       providerDirectory,
       operation: 'initialize',
       requireOwnerOnlyProtection: _providerDirectoryRequiresOwnerOnlyProtection,
+      groupIsAppPrivate: _providerDirectoryGroupIsAppPrivate,
     );
     _resolvedProviderDirectory = providerDirectory.path;
     _canonicalProviderDirectory =
@@ -304,6 +310,7 @@ final class ManagedLogStore {
       directory,
       operation: operation,
       requireOwnerOnlyProtection: _providerDirectoryRequiresOwnerOnlyProtection,
+      groupIsAppPrivate: _providerDirectoryGroupIsAppPrivate,
     );
     if (await directory.resolveSymbolicLinks() != canonicalPath) {
       throw FileLogAccessException(operation: operation);
@@ -376,11 +383,15 @@ final class ManagedLogStore {
     Directory directory, {
     required String operation,
     bool requireOwnerOnlyProtection = false,
+    bool groupIsAppPrivate = false,
   }) async {
     if (Platform.isWindows) return;
     final stat = await directory.stat();
+    final forbiddenWriteBits = requireOwnerOnlyProtection && groupIsAppPrivate
+        ? _worldWriteBit
+        : _groupOrWorldWriteBits;
     if (stat.type != FileSystemEntityType.directory ||
-        stat.mode & _groupOrWorldWriteBits != 0) {
+        stat.mode & forbiddenWriteBits != 0) {
       throw FileLogAccessException(operation: operation);
     }
     if (!requireOwnerOnlyProtection ||
