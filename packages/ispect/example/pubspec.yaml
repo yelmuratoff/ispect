@@ -50,21 +50,21 @@ dependencies:
   auto_route:
 
   # Use local paths through dependency_overrides
-  ispect: ^8.0.0-dev.4
-  ispect_layout: ^8.0.0-dev.4
-  ispectify: ^8.0.0-dev.4
-  ispectify_dio: ^8.0.0-dev.4
-  ispectify_http: ^8.0.0-dev.4
-  ispectify_bloc: ^8.0.0-dev.4
-  ispectify_riverpod: ^8.0.0-dev.4
-  ispectify_ws: ^8.0.0-dev.4
-  ispectify_db: ^8.0.0-dev.4
+  ispect: ^8.0.0-dev.5
+  ispect_layout: ^8.0.0-dev.5
+  ispectify: ^8.0.0-dev.5
+  ispectify_dio: ^8.0.0-dev.5
+  ispectify_http: ^8.0.0-dev.5
+  ispectify_bloc: ^8.0.0-dev.5
+  ispectify_riverpod: ^8.0.0-dev.5
+  ispectify_ws: ^8.0.0-dev.5
+  ispectify_db: ^8.0.0-dev.5
 
   material_ui: ^1.11.0
   cupertino_ui: ^1.1.6
 
 dev_dependencies:
-  ispect_devtools: ^8.0.0-dev.4
+  ispect_devtools: ^8.0.0-dev.5
   flutter_test:
     sdk: flutter
   integration_test:
