@@ -723,12 +723,7 @@ class _ISpectNavigationHost extends StatelessWidget {
         child: Navigator(
           key: navigatorKey,
           observers: [routeObserver],
-          onGenerateInitialRoutes: (_, __) => [
-            PageRouteBuilder<void>(
-              opaque: false,
-              pageBuilder: (_, __, ___) => const SizedBox.shrink(),
-            ),
-          ],
+          onGenerateInitialRoutes: (_, __) => [_PlaceholderRoute()],
         ),
       ),
     );
@@ -760,26 +755,41 @@ class _ISpectNavigationHost extends StatelessWidget {
   }
 }
 
+final class _PlaceholderRoute extends PageRouteBuilder<void> {
+  _PlaceholderRoute()
+    : super(
+        opaque: false,
+        pageBuilder: (_, __, ___) => const SizedBox.shrink(),
+      );
+}
+
 final class _OverlayRouteObserver extends NavigatorObserver {
   _OverlayRouteObserver(this._hasOverlayRoute);
 
   final ValueNotifier<bool> _hasOverlayRoute;
-  int _routeCount = 0;
+  int _overlayRouteCount = 0;
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      _updateRouteCount(1);
+      _updateCount(_weight(route));
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      _updateRouteCount(-1);
+      _updateCount(-_weight(route));
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      _updateRouteCount(-1);
+      _updateCount(-_weight(route));
 
-  void _updateRouteCount(int delta) {
-    _routeCount += delta;
-    _hasOverlayRoute.value = _routeCount > 1;
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) =>
+      _updateCount(_weight(newRoute) - _weight(oldRoute));
+
+  int _weight(Route<dynamic>? route) =>
+      route == null || route is _PlaceholderRoute ? 0 : 1;
+
+  void _updateCount(int delta) {
+    _overlayRouteCount += delta;
+    _hasOverlayRoute.value = _overlayRouteCount > 0;
   }
 }

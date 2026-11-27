@@ -25,9 +25,13 @@ class _ThrowOnPopNavigatorState extends NavigatorState {
   }
 }
 
-class _ReplacingPlugin extends InspectorPlugin {
-  _ReplacingPlugin({required this.onReplacementTap});
+typedef _RouteReplacement =
+    void Function(NavigatorState navigator, Route<void> replacement);
 
+class _ReplacingPlugin extends InspectorPlugin {
+  _ReplacingPlugin({required this.replace, required this.onReplacementTap});
+
+  final _RouteReplacement replace;
   final VoidCallback onReplacementTap;
 
   @override
@@ -43,7 +47,8 @@ class _ReplacingPlugin extends InspectorPlugin {
   Widget buildScreen(BuildContext context) => Scaffold(
     body: Center(
       child: TextButton(
-        onPressed: () => Navigator.of(context).pushReplacement(
+        onPressed: () => replace(
+          Navigator.of(context),
           MaterialPageRoute<void>(
             builder: (_) => Scaffold(
               body: Center(
@@ -213,41 +218,51 @@ void main() {
       },
     );
 
-    testWidgets(
-      'a plugin screen that replaces its route stays interactive and in the '
-      'semantics tree',
-      (tester) async {
-        if (!kISpectEnabled) return;
-        final semantics = tester.ensureSemantics();
-        var tapped = false;
-        final plugin = _ReplacingPlugin(onReplacementTap: () => tapped = true);
+    final replacements = <String, _RouteReplacement>{
+      'pushReplacement': (navigator, route) => navigator.pushReplacement(route),
+      'pushAndRemoveUntil with an empty stack': (navigator, route) =>
+          navigator.pushAndRemoveUntil(route, (_) => false),
+    };
+    for (final MapEntry(key: name, value: replace) in replacements.entries) {
+      testWidgets(
+        'a plugin screen replaced through $name stays interactive and in the '
+        'semantics tree',
+        (tester) async {
+          if (!kISpectEnabled) return;
+          final semantics = tester.ensureSemantics();
+          var tapped = false;
+          final plugin = _ReplacingPlugin(
+            replace: replace,
+            onReplacementTap: () => tapped = true,
+          );
 
-        await tester.pumpWidget(
-          MaterialApp(
-            localizationsDelegates: ISpectLocalizations.delegate(),
-            home: ISpectBuilder(
-              options: ISpectOptions(plugins: [plugin]),
-              child: const Scaffold(body: Text('app-text')),
+          await tester.pumpWidget(
+            MaterialApp(
+              localizationsDelegates: ISpectLocalizations.delegate(),
+              home: ISpectBuilder(
+                options: ISpectOptions(plugins: [plugin]),
+                child: const Scaffold(body: Text('app-text')),
+              ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
 
-        tester
-            .widget<DraggableActionPanel>(find.byType(DraggableActionPanel))
-            .actions
-            .singleWhere((action) => action.icon == plugin.icon)
-            .onPressed();
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('replace-route'));
-        await tester.pumpAndSettle();
+          tester
+              .widget<DraggableActionPanel>(find.byType(DraggableActionPanel))
+              .actions
+              .singleWhere((action) => action.icon == plugin.icon)
+              .onPressed();
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('replace-route'));
+          await tester.pumpAndSettle();
 
-        expect(find.semantics.byLabel('replacement-button'), findsOne);
-        await tester.tap(find.text('replacement-button'));
-        expect(tapped, isTrue);
-        semantics.dispose();
-      },
-    );
+          expect(find.semantics.byLabel('replacement-button'), findsOne);
+          await tester.tap(find.text('replacement-button'));
+          expect(tapped, isTrue);
+          semantics.dispose();
+        },
+      );
+    }
 
     testWidgets(
       'mounts a navigator dedicated to ISpect alongside the host navigator',
