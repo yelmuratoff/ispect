@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.3.0-dev.7
+
+### Bug Fixes
+
+- **Saved logs on Android:** The file history now saves logs on Android. Android makes an app's cache directory writable by the app's own group, and ISpect refused it, so no log reached the disk and `sessionDirectory` threw a `StateError`. A directory that any user can write to, or one without an owner-only parent directory such as shared storage, is still refused.
+
 ## 7.3.0-dev.6
 
 ### Improvements

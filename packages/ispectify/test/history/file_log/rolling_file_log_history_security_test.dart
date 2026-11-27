@@ -211,6 +211,109 @@ void main() {
     );
   });
 
+  group('provider writable by the app-private group',
+      skip: Platform.isWindows
+          ? 'POSIX permission bits are unavailable on Windows'
+          : false, () {
+    Future<Directory> ownerOnlyRoot() async {
+      final root = await createPrivateTempDirectory('ispect-security-');
+      addTearDown(() => root.delete(recursive: true));
+      return root;
+    }
+
+    Future<Directory> sharedRoot() async {
+      final root = await Directory('/tmp').createTemp('ispect-security-');
+      addTearDown(() => root.delete(recursive: true));
+      final chmod = await Process.run('chmod', ['0755', root.path]);
+      expect(chmod.exitCode, 0);
+      return root;
+    }
+
+    Future<Directory> providerWithMode(Directory parent, String mode) async {
+      final provider = Directory(
+        '${parent.path}${Platform.pathSeparator}provider',
+      );
+      await provider.create();
+      final chmod = await Process.run('chmod', [mode, provider.path]);
+      expect(chmod.exitCode, 0);
+      return provider;
+    }
+
+    file_io.RollingFileLogHistory historyFor(
+      Directory provider, {
+      required bool groupIsAppPrivate,
+      bool requiresOwnerOnlyProtection = true,
+    }) {
+      final history = file_io.RollingFileLogHistory.testing(
+        ISpectLoggerOptions(useConsoleLogs: false),
+        directoryProvider: () async => provider.path,
+        options: const FileLogHistoryOptions(enableAutoSave: false),
+        providerDirectoryRequiresOwnerOnlyProtection:
+            requiresOwnerOnlyProtection,
+        providerDirectoryGroupIsAppPrivate: groupIsAppPrivate,
+      );
+      addTearDown(history.dispose);
+      return history;
+    }
+
+    test('is accepted beneath an owner-only ancestor', () async {
+      final provider = await providerWithMode(await ownerOnlyRoot(), '0771');
+      final history = historyFor(provider, groupIsAppPrivate: true);
+
+      await expectLater(history.getAvailableLogDates(), completion(isEmpty));
+      expect(
+        await Directory(
+          '${provider.path}${Platform.pathSeparator}ispect_logs',
+        ).exists(),
+        isTrue,
+      );
+    });
+
+    test('is rejected without an owner-only ancestor', () async {
+      final provider = await providerWithMode(await sharedRoot(), '0771');
+      final history = historyFor(provider, groupIsAppPrivate: true);
+
+      await expectLater(
+        history.getAvailableLogDates(),
+        throwsA(isA<FileLogAccessException>()),
+      );
+    });
+
+    test('is rejected when owner-only protection is not required', () async {
+      final provider = await providerWithMode(await sharedRoot(), '0771');
+      final history = historyFor(
+        provider,
+        groupIsAppPrivate: true,
+        requiresOwnerOnlyProtection: false,
+      );
+
+      await expectLater(
+        history.getAvailableLogDates(),
+        throwsA(isA<FileLogAccessException>()),
+      );
+    });
+
+    test('is rejected when it is also world-writable', () async {
+      final provider = await providerWithMode(await ownerOnlyRoot(), '0773');
+      final history = historyFor(provider, groupIsAppPrivate: true);
+
+      await expectLater(
+        history.getAvailableLogDates(),
+        throwsA(isA<FileLogAccessException>()),
+      );
+    });
+
+    test('is rejected when the group is shared', () async {
+      final provider = await providerWithMode(await ownerOnlyRoot(), '0771');
+      final history = historyFor(provider, groupIsAppPrivate: false);
+
+      await expectLater(
+        history.getAvailableLogDates(),
+        throwsA(isA<FileLogAccessException>()),
+      );
+    });
+  });
+
   test('revalidates provider write permissions after initialization', () async {
     if (Platform.isWindows) {
       markTestSkipped('POSIX permission bits are unavailable on Windows');
